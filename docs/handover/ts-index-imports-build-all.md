@@ -295,9 +295,49 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   `similarity` switched to by-name (lib bundle smoke test); ADDED `cli.unit.test.ts` spawning `cli.mjs --help` (bin
   execution — `dts` can't verify cli.mjs since cli.ts has no exports); network test renamed to
   `client.expensive.unit.test.ts` (excluded from default `test:unit`) — `build(module-image-diff): produce dist (lib + bin, node)`.
+- `cli-rgffplay` (NODE pure-CLI, commit `86e55896`) — bin -> `dist/final/node/index.mjs`. ADDED `index.unit.test.ts`
+  spawning the built bin with NO args (prints usage + exits non-zero BEFORE any rg/ffplay spawn — the only inert path;
+  a real query plays audio). nano-spawn inlined by the node config's alwaysBundle.
+- `module-token-count` (NODE lib+bin, commit ~`token-count`) — dual-entry; ADDED two tests (had none): `index.unit.test.ts`
+  imports the pure `DEFAULT_MODEL` const by-name (lib smoke, no Anthropic API), `cli.unit.test.ts` spawns `cli.mjs --help`
+  (optique exits before any API call). Counting itself is paid/network so no counting test.
+- `cli-mvm` (NODE lib+bin, commit `dd02f9dd`) — dual-entry; `list.unit.test.ts` (`splitOnWhitespace`, public via index
+  `export *`) switched to by-name (lib smoke); `iso9660.unit.test.ts` stays on source (`createIso` is internal). ADDED
+  `cli.unit.test.ts` spawning `mvm --help` (only inert path; every subcommand mutates KVM VMs).
+- `cli-terminal-exec` (NODE lib+bin, INVERTED split, commit `50dda7b5`) — LIBRARY entry is `src/launch.ts` -> `launch.mjs`
+  (the `.` export), BIN entry is `src/index.ts` -> `index.mjs`. ADDED `launch.unit.test.ts` importing `launchTerminal`
+  by-name and asserting `typeof === 'function'` WITHOUT calling it (executes the lib bundle, spawns no terminal; verified
+  the import is side-effect-free). The bin is NEVER executed by any test (running it opens a terminal). Internal helper
+  tests stay on source.
+- `mcp-mvm` (NODE pure-CLI, MCP stdio server, commit `05e86703`) — bin -> dist; cli-mvm + mcp-stdio inlined. ADDED
+  `index.unit.test.ts` spawning the bin with `stdin: 'ignore'` (EOF): `serve` reads zero JSON-RPC lines and exits 0,
+  registering all 8 tools but firing no tool call (no VM). EOF is the only inert invocation.
+- `dev-script-vm-builder` (NODE pure-CLI, custom entry, commit `ffe93377`) — no `src/index.ts`; entry overridden to the
+  bin `src/build-and-import.ts`. NO smoke test: it parses no args and runs `sudo podman build` immediately at top level,
+  and importing it triggers the VM pipeline. Verification is build + dts emit. import.ts/sign-and-push.ts stay source-run.
+- `dev-script-task-util` (NODE multi-bin, SIX entries, HIGHEST RISK, commit `8d719386`) — six bins
+  (command/append/depends/oxlint-wrapper/pnpm-filter/tsgo-filter). BOOTSTRAP ORDER MATTERS: task-oxlint/task-tsgo are
+  invoked by the mise lint templates repo-wide via `.bin` shims, so BUILD FIRST (bin still at src), verify the dist bins
+  work standalone, THEN flip bin + `pnpm install` (shims now point at existing dist). Verified repo-wide: lint:types +
+  lint:oxlint pass through the dist bins on task-util AND module-const. 8 internal tests stay on source. RELOCATED three
+  flaky-under-parallel-load tsgo-filter CLI integration tests to `tsgo-filter.expensive.unit.test.ts` (pre-existing
+  flakiness — leftover dirs from a 2026-05-23 run; `par-each` starves the tsgo subprocess -> empty stdout). Fast file is
+  deterministic 3/3.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
 by-name form. Both work; no need to retrofit the first two.)
+
+### Smoke-test ladder by inertness (decision guide for any remaining/future bin)
+
+Pick the lightest rung the bin's safety allows; each executes the built artifact:
+1. By-name lib import + `typeof` check, never calling the side-effecting export (cli-terminal-exec) — when the only
+   public symbol has side effects but its module is side-effect-free at import.
+2. `--help`/`--version` spawn (image-diff, token-count, cli-mvm) — when the parser short-circuits before any handler.
+3. No-args spawn asserting usage + non-zero exit (cli-rgffplay) — when no-args errors BEFORE the dangerous action.
+4. EOF-stdin spawn asserting clean exit (mcp-mvm) — when a server loop terminates on closed stdin without acting.
+5. NO execution, build + dts only (dev-script-vm-builder) — when every entrypoint path has an unavoidable side effect
+   (sudo build) and the module can't be imported inertly. Document WHY in the commit + buildAndTest description.
+Relocate any flaky/slow/network/VM test that the new `test:unit` glob activates to `<name>.expensive.unit.test.ts`.
 
 ### Remaining — bundle sets determined (deps + `node:` built-in scan)
 
@@ -320,8 +360,8 @@ without it).
 
 Two bin shapes:
 
-PURE-CLI (bin only, NO library `.` export — exemplar `cli-git`): `cli-fy` (DONE), `cli-rgffplay`, `mcp-mvm`,
-`dev-script-task-util`, `dev-script-vm-builder`. Recipe (PROVEN on cli-fy, commit `f747a476`):
+PURE-CLI (bin only, NO library `.` export — exemplar `cli-git`): ALL DONE — `cli-fy`, `cli-rgffplay`, `mcp-mvm`,
+`dev-script-task-util` (multi-bin), `dev-script-vm-builder` (custom entry). Recipe (PROVEN on cli-fy, commit `f747a476`):
 1. `tsdown.node.config.ts` = `export { default, } from '@monochromatic-dev/config-tsdown/.node.ts';`
 2. mise.toml: keep the package's existing `run`/lint tasks; ADD build + `build:js` + `build:js:node` + the three
    `watch:*` twins + `test:unit` (if missing) + `buildAndTest` (`mise run build; mise run test:unit`).
@@ -342,9 +382,9 @@ PURE-CLI (bin only, NO library `.` export — exemplar `cli-git`): `cli-fy` (DON
    `--version` after confirming help is inert; `cli-terminal-exec` (lib+bin below) must NOT be run at all (AGENTS.md:
    probing terminal-exec opens a terminal) -- verify it by build + shebang + parser-read only.
 
-LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY): `module-image-diff` (DONE, commit
-`943e0f1a`), `module-token-count`, `cli-mvm` (lib `index.ts` + bin `src/cli.ts`; VM -> --help-only), `cli-terminal-exec`
-(lib `launch.ts` + bin `index.ts`; DO NOT RUN). Recipe (PROVEN on module-image-diff; in-repo precedent
+LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY): ALL DONE — `module-image-diff` (commit
+`943e0f1a`), `module-token-count`, `cli-mvm`, `cli-terminal-exec` (INVERTED: lib `launch.ts`, bin `index.ts`; bin NEVER
+run). Recipe (PROVEN on module-image-diff; in-repo precedent
 `packages/dev-script/deps-cube/tsdown.node.config.ts` is the same dual-entry shape):
 1. Confirm lib AND bin share a platform (else two configs -- the hardest shape; avoid for the first pilot). Check with
    the node-builtins grep. `module-image-diff` is node+node (lib uses `node:fs/promises`+`node:path` in encoding.*;
