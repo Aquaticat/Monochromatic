@@ -7,7 +7,7 @@ import {
 import {
   cosineSimilarity,
   dotProduct,
-} from './similarity.ts';
+} from '@monochromatic-dev/module-image-diff';
 
 await describe({
   name: '',
