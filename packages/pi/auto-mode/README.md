@@ -193,6 +193,24 @@ can audit verdicts without instrumenting the code further.
 - `/guard reset`: clear all trust directives
 - `/guard`: list active trust directives
 
+## Bypass mode
+
+`Shift+Tab` toggles bypass mode when pi has no built-in binding on that key.
+Stock pi binds `Shift+Tab` to `app.thinking.cycle`, so users who want the
+bypass shortcut must unbind or remap that action in `~/.pi/agent/keybindings.json`:
+
+```json
+{
+  "app.thinking.cycle": []
+}
+```
+
+While bypass is enabled, auto-mode allows tool calls without flagger or judge
+evaluation. The footer shows `auto-mode: bypass`, toggles are written as
+`auto-mode:bypass` session entries, and each tool call allowed while bypass is
+active is written as a bypass audit entry. Press `Shift+Tab` again to restore
+guardrail checks.
+
 ## Tools
 
 - `propose_trust`: request permission for something the guardrail blocked.

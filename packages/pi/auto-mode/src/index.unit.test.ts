@@ -51,6 +51,12 @@ type CommandMap = Map<string, {
   definition: unknown;
 }>;
 
+/** Shape of the mock shortcut map. */
+type ShortcutMap = Map<string, {
+  handler: HandlerFn;
+  definition: unknown;
+}>;
+
 /** Custom entry appended via pi.appendEntry. */
 type AppendedEntry = {
   customType: string;
@@ -66,6 +72,7 @@ function createMockApi() {
   const registrations: RegistrationMap = new Map();
   const tools: ToolMap = new Map();
   const commands: CommandMap = new Map();
+  const shortcuts: ShortcutMap = new Map();
   const entries: AppendedEntry[] = [];
 
   const api = {
@@ -95,6 +102,15 @@ function createMockApi() {
         definition: options,
       },);
     },
+    registerShortcut(
+      shortcut: string,
+      options: Record<string, unknown>,
+    ) {
+      shortcuts.set(shortcut, {
+        handler: options.handler as HandlerFn,
+        definition: options,
+      },);
+    },
     appendEntry(
       customType: string,
       data: unknown,
@@ -108,6 +124,7 @@ function createMockApi() {
     registrations,
     tools,
     commands,
+    shortcuts,
     entries,
   };
 }
@@ -152,12 +169,14 @@ await describe({
     //region Registration
 
     it({
-      name: 'registers all five event handlers',
+      name: 'registers all seven event handlers',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         autoMode(api,);
 
         const expectedEvents = [
+          'session_start',
+          'session_tree',
           'before_agent_start',
           'agent_start',
           'turn_start',

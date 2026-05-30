@@ -344,6 +344,10 @@ function createMockApi(): {
       _name: string,
       _options: unknown,
     ): void {},
+    registerShortcut(
+      _shortcut: string,
+      _options: unknown,
+    ): void {},
     appendEntry(
       _customType: string,
       _data: unknown,

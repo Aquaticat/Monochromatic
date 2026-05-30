@@ -16,9 +16,18 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { updateWidget, } from './ask-user.ts';
+import {
+  announceBypassToggle,
+  appendBypassAllowEntry,
+  appendBypassToggleEntry,
+  BYPASS_SHORTCUT,
+  findLatestBypassEnabled,
+  updateBypassStatus,
+} from './bypass.ts';
 import { loadMergedConfig, } from './config.ts';
 import { evaluate, } from './evaluate.ts';
 import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
+import { registerGuardCommand, } from './guard-command.ts';
 import { l as parentLogger, } from './log.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
 import {
@@ -32,10 +41,9 @@ import {
   describeAction,
   isRelevantTool,
 } from './tool-helpers.ts';
-import {
-  type BatchEntry,
-  type SignalContext,
-  TRUST_ENTRY_TYPE,
+import type {
+  BatchEntry,
+  SignalContext,
 } from './types.ts';
 
 /** Tagged logger for the auto-mode entry point. */
@@ -101,62 +109,7 @@ export default function autoMode(
 
   //region /guard command
 
-  pi.registerCommand(
-    'guard',
-    {
-      description: 'Manage auto-mode: /guard <trust directive> or /guard reset',
-      async handler(
-        args: string,
-        ctx: ExtensionContext,
-      ) {
-        /** Dynamically imported context helper; lazy to keep startup cost low when /guard is never used. */
-        const { getTrustDirectives, } = await import('./context.ts');
-        /** Trimmed argument string; empty string falls through to the "list directives" branch. */
-        const trimmed = args.trim();
-        if (trimmed === '') {
-          /** Current trust directives for the session, listed back to the user when /guard is bare. */
-          const directives = getTrustDirectives(ctx,);
-          if (directives.length
-            === 0)
-            ctx.ui
-              .notify('No trust directives set for this session.',);
-          else {
-            ctx.ui
-              .notify(
-              `Trust directives:\n${
-                directives
-                  .map(
-                    function formatDirective(
-                      d,
-                      i,
-                    ) {
-                      return `  ${i + 1}. ${d}`;
-                    },
-                  )
-                  .join('\n',)
-              }`,
-            );
-          }
-          return;
-        }
-        if (trimmed === 'reset') {
-          pi.appendEntry(
-            TRUST_ENTRY_TYPE,
-            null,
-          );
-          ctx.ui
-            .notify('Trust directives cleared for this session.',);
-          return;
-        }
-        pi.appendEntry(
-          TRUST_ENTRY_TYPE,
-          trimmed,
-        );
-        ctx.ui
-          .notify(`Trust directive added: ${trimmed}`,);
-      },
-    },
-  );
+  registerGuardCommand({ pi, },);
 
   //endregion
 
@@ -168,7 +121,7 @@ export default function autoMode(
 
   //region Turn-level tracking
 
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- handler closure state for turn and skill latches */
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- handler closure state for turn, skill, and bypass latches */
   /** Batch siblings accumulated during the current agent turn; surfaced to the judge for context. */
   let currentTurnBatch: BatchEntry[] = [];
   /** True once any tool call in this turn is denied; latched until the next `turn_start`. */
@@ -183,11 +136,71 @@ export default function autoMode(
   }[] = [];
   /** Skill base directories visible in the current prompt; read-tool access bypasses path prompts. */
   let currentSkillReadDirs: readonly string[] = [];
+  /**
+   * Runtime bypass state, restored from session entries and toggled by
+   * {@link BYPASS_SHORTCUT}.
+   */
+  let bypassEnabled = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   //endregion
 
+  //region Bypass shortcut
+
+  pi.registerShortcut(
+    BYPASS_SHORTCUT,
+    {
+      description: 'Toggle auto-mode bypass',
+      handler(
+        ctx: ExtensionContext,
+      ) {
+        bypassEnabled = !bypassEnabled;
+        innerL.warn(
+          `bypass ${bypassEnabled ? 'enabled' : 'disabled'} by shortcut`,
+        );
+        appendBypassToggleEntry({
+          pi,
+          enabled: bypassEnabled,
+        },);
+        announceBypassToggle({
+          ctx,
+          enabled: bypassEnabled,
+        },);
+      },
+    },
+  );
+
+  //endregion
+
   //region Event handlers
+
+  pi.on(
+    'session_start',
+    function handleSessionStart(
+      _event: unknown,
+      ctx: ExtensionContext,
+    ) {
+      bypassEnabled = findLatestBypassEnabled({ ctx, },);
+      updateBypassStatus({
+        ctx,
+        enabled: bypassEnabled,
+      },);
+    },
+  );
+
+  pi.on(
+    'session_tree',
+    function handleSessionTree(
+      _event: unknown,
+      ctx: ExtensionContext,
+    ) {
+      bypassEnabled = findLatestBypassEnabled({ ctx, },);
+      updateBypassStatus({
+        ctx,
+        enabled: bypassEnabled,
+      },);
+    },
+  );
 
   pi.on(
     'before_agent_start',
@@ -261,6 +274,17 @@ export default function autoMode(
       event: ToolCallEvent,
       ctx: ExtensionContext,
     ) {
+      if (bypassEnabled) {
+        /** Human-readable rendering of the tool call allowed without guardrail evaluation. */
+        const action = describeAction(event,);
+        innerL.warn(`bypass allow: ${action}`,);
+        appendBypassAllowEntry({
+          pi,
+          action,
+        },);
+        return undefined;
+      }
+
       /** Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`. */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
