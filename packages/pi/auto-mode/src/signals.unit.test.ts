@@ -487,6 +487,196 @@ await describe({
       },
     },),
 
+    it({
+      name: 'allows project dotenv credential handoff to trusted temp helper',
+      fn: async function allowsProjectDotenvCredentialHandoff() {
+        const projectRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-project-'
+        ),);
+        const agentRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-agent-'
+        ),);
+        const envPath = join(
+          projectRoot,
+          '.env.local',
+        );
+        const scriptPath = join(
+          agentRoot,
+          'gemcheck.ts',
+        );
+        const imageGlob = join(
+          agentRoot,
+          'page-*.png',
+        );
+        await writeFile(
+          envPath,
+          'IMAGE_DIFF_GEMINI_API_KEY=test\n',
+        );
+        await writeFile(
+          scriptPath,
+          'export {};\n',
+        );
+
+        const analysis = analyzeBashCommand(
+          `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" bun ${scriptPath} gemini-3.5-flash ${imageGlob}`,
+        );
+        const ctx: SignalContext = {
+          cwd: projectRoot,
+          home: '/var/home/user',
+        };
+
+        expect(bashSignals({ analysis, ctx, },),).toBe(true,);
+        expect(bashSignals({
+          analysis,
+          ctx,
+          trustedAgentTempDirs: [agentRoot,],
+        },),).toBe(false,);
+
+        await rm(
+          projectRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+        await rm(
+          agentRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'does not allow non-dotenv secret file handoff to trusted temp helper',
+      fn: async function rejectsNonDotenvSecretHandoff() {
+        const projectRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-project-'
+        ),);
+        const agentRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-agent-'
+        ),);
+        const sshRoot = join(
+          projectRoot,
+          '.ssh',
+        );
+        await mkdir(
+          sshRoot,
+          { recursive: true, },
+        );
+        const secretPath = join(
+          sshRoot,
+          'id_rsa',
+        );
+        const scriptPath = join(
+          agentRoot,
+          'gemcheck.ts',
+        );
+        await writeFile(
+          secretPath,
+          'not-real\n',
+        );
+        await writeFile(
+          scriptPath,
+          'export {};\n',
+        );
+
+        const analysis = analyzeBashCommand(
+          `KEY=$(grep VALUE ${secretPath}); GEMINI_API_KEY="$KEY" bun ${scriptPath}`,
+        );
+        const ctx: SignalContext = {
+          cwd: projectRoot,
+          home: '/var/home/user',
+        };
+
+        expect(bashSignals({
+          analysis,
+          ctx,
+          trustedAgentTempDirs: [agentRoot,],
+        },),).toBe(true,);
+
+        await rm(
+          projectRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+        await rm(
+          agentRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'does not allow unrelated dotenv read beside trusted temp handoff',
+      fn: async function rejectsUnrelatedDotenvRead() {
+        const projectRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-project-'
+        ),);
+        const agentRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-agent-'
+        ),);
+        const envPath = join(
+          projectRoot,
+          '.env.local',
+        );
+        const scriptPath = join(
+          agentRoot,
+          'gemcheck.ts',
+        );
+        await writeFile(
+          envPath,
+          'IMAGE_DIFF_GEMINI_API_KEY=test\nOTHER_SECRET=blocked\n',
+        );
+        await writeFile(
+          scriptPath,
+          'export {};\n',
+        );
+
+        const analysis = analyzeBashCommand(
+          `grep IMAGE_DIFF_GEMINI_API_KEY ${envPath}; GEMINI_API_KEY=value bun ${scriptPath}; cat ${envPath}`,
+        );
+        const ctx: SignalContext = {
+          cwd: projectRoot,
+          home: '/var/home/user',
+        };
+
+        expect(bashSignals({
+          analysis,
+          ctx,
+          trustedAgentTempDirs: [agentRoot,],
+        },),).toBe(true,);
+
+        await rm(
+          projectRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+        await rm(
+          agentRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
     //endregion
 
     //region Pipeline

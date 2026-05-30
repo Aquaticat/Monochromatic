@@ -147,10 +147,20 @@ type SignalContext = {
 
 //region Command types
 
+/** Environment assignment prefix parsed before shell command name. */
+type EnvAssignment = {
+  /** Variable name receiving assignment. */
+  readonly name: string;
+  /** Value text after `=`, after shell-quote processing. */
+  readonly value: string;
+};
+
 /** Parsed command from shell-quote. */
 type CommandInfo = {
   /** Command name (e.g. "rm", "sudo"). */
   readonly name: string;
+  /** Environment assignments that prefix command invocation. */
+  readonly envAssignments: readonly EnvAssignment[];
   /** Positional arguments and flags. */
   readonly args: readonly string[];
   /** Redirect targets (files after > or >>). */
@@ -291,6 +301,7 @@ export type {
   BudgetModelAuth,
   BudgetModelOptions,
   CommandInfo,
+  EnvAssignment,
   EvaluateResult,
   FlowVerdict,
   GuardDecision,

@@ -158,14 +158,26 @@ there when they need repeated inspection outside the current project. The
 allowlist uses canonical filesystem paths, so symlinks that resolve outside
 `/tmp/agent` still go through the normal signal and judge pipeline.
 
+For bash tool calls, the same private `/tmp/agent` root is trusted for existing
+non-secret helper paths. Running an inspected helper script from there does not
+trigger a location-only prompt. Bash calls still flag destructive commands,
+secret-looking paths inside `/tmp/agent`, and paths outside the trusted root.
+
+When a bash command passes a secret-looking environment variable to a trusted
+`/tmp/agent` script or interpreter command, auto-mode permits `grep` to source
+that key from a project-local `.env` file. This covers image-diff or model-check
+helpers such as `GEMINI_API_KEY="$KEY" bun /tmp/agent/...`. It does not allow
+arbitrary secret files, unrelated dotenv reads, home dotfiles, direct network
+commands with secret parameter references, or untrusted script paths.
+
 Auto-mode also allows `read` tool access to existing files in linked git
 worktrees attached to the current repository. The worktree list comes from real
 git metadata, and each candidate root is classified with `rev-parse` so the main
 worktree is not added to this cross-worktree allowlist.
 
-The allowlist is read-only and still preserves secret-path checks. `write`,
-`edit`, and `bash` tool calls targeting skill directories, linked worktrees,
-or `/tmp/agent` still go through the normal signal and judge pipeline.
+The allowlist preserves secret-path checks. `write` and `edit` calls targeting
+skill directories, linked worktrees, or `/tmp/agent` still go through the normal
+signal and judge pipeline.
 
 ## Logging
 

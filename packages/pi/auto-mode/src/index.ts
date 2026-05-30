@@ -26,7 +26,7 @@ import {
   shouldFlag,
 } from './signals.ts';
 import { buildSystemPrompt, } from './system-prompt.ts';
-import { agentTempReadAllowlistedDirs, } from './temp-read-allowlist.ts';
+import { agentTempAllowlistedDirs, } from './temp-read-allowlist.ts';
 import {
   buildApprovalFingerprint,
   describeAction,
@@ -268,13 +268,19 @@ export default function autoMode(
           .HOME
           ?? '/home',
       };
+      /** Private agent temp roots shared by structured reads and trusted bash helper execution. */
+      const trustedAgentTempDirs = agentTempAllowlistedDirs();
       /** Read-only roots whose existing non-secret contents bypass location prompts. */
       const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
         ? [
-          ...agentTempReadAllowlistedDirs(),
+          ...trustedAgentTempDirs,
           ...linkedWorktreeReadAllowlistedDirs({ cwd: ctx.cwd, },),
           ...currentSkillReadDirs,
         ]
+        : [];
+      /** Bash roots whose existing non-secret helper paths bypass location prompts. */
+      const bashAllowlistedDirs: readonly string[] = event.toolName === 'bash'
+        ? trustedAgentTempDirs
         : [];
 
       /** True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up. */
@@ -283,6 +289,7 @@ export default function autoMode(
         ctx: signalCtx,
         config,
         readAllowlistedDirs,
+        bashAllowlistedDirs,
       },)
         || (denialInPreviousTurn && isRelevantTool(event,));
 

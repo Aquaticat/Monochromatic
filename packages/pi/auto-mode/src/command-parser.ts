@@ -15,10 +15,17 @@ import {
   extractParamRefs,
   looksLikePath,
 } from './command-refs.ts';
+import {
+  NO_SHELL_ASSIGNMENT,
+  parseShellAssignmentWord,
+} from './shell-assignment.ts';
 import type {
   BashAnalysis,
   CommandInfo,
 } from './types.ts';
+
+/** `findIndex` result when no command word follows leading assignments. */
+const NO_COMMAND_WORD_INDEX = -1;
 
 //region Public API
 
@@ -165,8 +172,23 @@ function analyzeBashCommand(
   const allFiles = commands.flatMap(
     function collectFiles(c,) {
       return [
+        ...c.envAssignments
+          .map(
+            function assignmentValue(assignment,) {
+              return assignment.value;
+            },
+          )
+          .filter(
+            function assignmentValueLooksLikePath(value,) {
+              return looksLikePath(value,);
+            },
+          ),
         ...c.args
-          .filter(looksLikePath,),
+          .filter(
+            function argLooksLikePath(arg,) {
+              return looksLikePath(arg,);
+            },
+          ),
         ...c.redirectTargets,
       ];
     },
@@ -235,17 +257,74 @@ function flushCurrentCommand(
       === 0))
     return { flushed: false, };
 
-  /** Command name (first word, empty string on redirect-only commands) plus its remaining word arguments. */
-  const [name = '', ...cmdArgs] = args;
+  /** Environment-assignment prefixes and remaining command words. */
+  const split = splitLeadingAssignments(args,);
+  /** Command name (first non-assignment word, empty string on assignment-only or redirect-only commands) plus remaining word arguments. */
+  const [name = '', ...cmdArgs] = split.commandWords;
 
   return {
     flushed: true,
     command: {
       name,
+      envAssignments: split.envAssignments,
       args: cmdArgs,
       redirectTargets,
       paramRefs: [...paramRefs,],
     },
+  };
+}
+
+/**
+ * Split leading `NAME=value` shell assignment words from command words.
+ *
+ * @param args - shell-quote word tokens for command segment
+ *
+ * @returns assignment prefixes and command words after those prefixes
+ *
+ * @example
+ * ```typescript
+ * splitLeadingAssignments(['API_KEY=value', 'bun', 'script.ts']);
+ * // { envAssignments: [{ name: 'API_KEY', value: 'value' }], commandWords: ['bun', 'script.ts'] }
+ * ```
+ */
+function splitLeadingAssignments(
+  args: readonly string[],
+): {
+  readonly envAssignments: readonly CommandInfo['envAssignments'][number][];
+  readonly commandWords: readonly string[];
+} {
+  /** First word that is not a shell environment assignment. */
+  const commandIndex = args.findIndex(
+    function isCommandWord(word,) {
+      return parseShellAssignmentWord(word,)
+        === NO_SHELL_ASSIGNMENT;
+    },
+  );
+  /** Whether every word in segment is an assignment prefix. */
+  const hasOnlyAssignments = commandIndex === NO_COMMAND_WORD_INDEX;
+  /** Words before command name; each must parse as assignment. */
+  const assignmentWords = hasOnlyAssignments
+    ? args
+    : args.slice(
+      0,
+      commandIndex,
+    );
+  /** Remaining words after environment assignments. */
+  const commandWords = hasOnlyAssignments
+    ? []
+    : args.slice(commandIndex,);
+
+  return {
+    envAssignments: assignmentWords.map(
+      function parseAssignmentWord(word,) {
+        /** Parsed assignment; sentinel would contradict commandIndex split above. */
+        const assignment = parseShellAssignmentWord(word,);
+        if (assignment === NO_SHELL_ASSIGNMENT)
+          throw new Error(`Expected shell assignment word: ${word}`);
+        return assignment;
+      },
+    ),
+    commandWords,
   };
 }
 

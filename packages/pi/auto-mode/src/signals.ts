@@ -23,6 +23,10 @@ import {
   isMutatingCommand,
 } from './bash-helpers.ts';
 import { analyzeBashCommand, } from './command-parser.ts';
+import {
+  type CommandMatcher,
+  matchUserCommands,
+} from './command-matchers.ts';
 import { looksLikePath, } from './command-refs.ts';
 import {
   ENV_DUMP_COMMANDS,
@@ -34,6 +38,10 @@ import {
   textSignals,
 } from './content-signals.ts';
 import { pathSignals, } from './path-signals.ts';
+import {
+  hasTrustedAgentTempCredentialHandoff,
+  isTrustedAgentTempBashPathAllowed,
+} from './trusted-agent-temp-bash.ts';
 import {
   describeAction,
   extractToolText,
@@ -47,9 +55,6 @@ import type {
 } from './types.ts';
 
 //region Public types
-
-/** A command matcher: either a command name or a command prefix. */
-export type CommandMatcher = string | readonly string[];
 
 /**
  * Merged config with compiled patterns.
@@ -94,12 +99,15 @@ function shouldFlag(
     ctx,
     config,
     readAllowlistedDirs = [],
+    bashAllowlistedDirs = [],
   }: {
     readonly event: ToolCallEvent;
     readonly ctx: SignalContext;
     readonly config?: MergedConfig;
     /** Directories whose contents are safe for read-tool skill activation. */
     readonly readAllowlistedDirs?: readonly string[];
+    /** Private agent temp directories trusted for bash helper execution. */
+    readonly bashAllowlistedDirs?: readonly string[];
   },
 ): boolean {
   if (isToolCallEventType(
@@ -113,6 +121,7 @@ function shouldFlag(
       analysis,
       ctx,
       ...(config !== undefined ? { config, } : {}),
+      trustedAgentTempDirs: bashAllowlistedDirs,
     },)) {
       return true;
     }
@@ -182,14 +191,24 @@ function bashSignals(
     analysis,
     ctx,
     config,
+    trustedAgentTempDirs = [],
   }: {
     readonly analysis: BashAnalysis;
     readonly ctx: SignalContext;
     readonly config?: MergedConfig;
+    /** Private agent temp directories trusted for bash helper execution. */
+    readonly trustedAgentTempDirs?: readonly string[];
   },
 ): boolean {
   if (!analysis.parsed)
     return true;
+
+  /** Whether this command can read project dotenv only to feed trusted temp helper credentials. */
+  const allowProjectDotenvCredentialSource = hasTrustedAgentTempCredentialHandoff({
+    analysis,
+    ctx,
+    trustedAgentTempDirs,
+  },);
 
   for (const cmd of analysis.commands) {
     if (PRIVILEGE_COMMANDS.has(cmd.name,))
@@ -276,6 +295,15 @@ function bashSignals(
         filePath: f,
         ctx,
       },)) {
+        if (isTrustedAgentTempBashPathAllowed({
+          filePath: f,
+          ctx,
+          trustedAgentTempDirs,
+          command: cmd,
+          allowProjectDotenvCredentialSource,
+        },)) {
+          continue;
+        }
         return true;
       }
     }
@@ -332,63 +360,10 @@ function bashSignals(
 
 //endregion
 
-//region User command matching
-
-/**
- * Check if any command matches user-configured matchers.
- *
- * @returns `true` if any command matches
- *
- * @example
- * ```typescript
- * matchUserCommands({ analysis, matchers: ["terraform"] });
- * matchUserCommands({ analysis, matchers: [["docker", "compose"]] });
- * ```
- */
-function matchUserCommands(
-  {
-    analysis,
-    matchers,
-  }: {
-    readonly analysis: BashAnalysis;
-    readonly matchers: readonly CommandMatcher[];
-  },
-): boolean {
-  for (const cmd of analysis.commands) {
-    for (const matcher of matchers) {
-      if ((typeof matcher) === 'string') {
-        if (cmd.name
-          === matcher)
-          return true;
-      }
-      else {
-        if (cmd.name
-          !== matcher[0])
-          continue;
-        /** Argument tokens that must appear after the command name for the matcher to fire. */
-        const prefix = matcher.slice(1,);
-        if (prefix.every(
-          function argMatches(
-            sub,
-            i,
-          ) {
-            return cmd.args[i]
-              === sub;
-          },
-        )) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
-//endregion
-
 export {
   bashSignals,
   hasFlag,
   matchUserCommands,
   shouldFlag,
 };
+export type { CommandMatcher, };

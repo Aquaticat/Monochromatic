@@ -12,6 +12,7 @@ import {
   rm,
   writeFile,
 } from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import type { ExtensionAPI, ToolCallEvent, } from '@earendil-works/pi-coding-agent';
@@ -275,6 +276,87 @@ await describe({
         );
 
         expect(result,).toBeUndefined();
+        await rm(
+          tempRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'allows bash credential handoff to trusted agent temp helper',
+      fn: async function allowsAgentTempBashCredentialHandoff() {
+        await mkdir(
+          AGENT_TEMP_READ_DIR,
+          { recursive: true, },
+        );
+        await chmod(
+          AGENT_TEMP_READ_DIR,
+          PRIVATE_DIRECTORY_MODE,
+        );
+        const projectRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-index-project-',
+        ),);
+        const tempRoot = await mkdtemp(join(
+          AGENT_TEMP_READ_DIR,
+          'amode-index-test-',
+        ),);
+        const envPath = join(
+          projectRoot,
+          '.env.local',
+        );
+        const scriptPath = join(
+          tempRoot,
+          'gemcheck.ts',
+        );
+        const imageGlob = join(
+          tempRoot,
+          'page-*.png',
+        );
+        await writeFile(
+          envPath,
+          'IMAGE_DIFF_GEMINI_API_KEY=test\n',
+        );
+        await writeFile(
+          scriptPath,
+          'export {};\n',
+        );
+
+        const { api, registrations, } = createMockApi();
+        autoMode(api,);
+
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+
+        const result = await toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'bash',
+            toolCallId: 'bash-agent-temp-credential',
+            input: {
+              command:
+                `KEY=$(grep --max-count=1 IMAGE_DIFF_GEMINI_API_KEY ${envPath} | cut --delimiter='=' --fields=2- | tr --delete '"'); GEMINI_API_KEY="$KEY" bun ${scriptPath} gemini-3.5-flash ${imageGlob}`,
+            },
+          },
+          {
+            cwd: projectRoot,
+          },
+        );
+
+        expect(result,).toBeUndefined();
+        await rm(
+          projectRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
         await rm(
           tempRoot,
           {

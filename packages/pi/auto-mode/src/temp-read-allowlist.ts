@@ -1,9 +1,10 @@
 /**
- * Trusted temporary read allowlist helpers.
+ * Trusted temporary allowlist helpers.
  *
  * Owns the policy for deciding whether `/tmp/agent` is safe to trust for
- * structured read-tool bypasses. The path must exist, be a directory, be owned
- * by the current process user, and have no group or other permission bits.
+ * structured read-tool bypasses and bash helper execution. The path must exist,
+ * be a directory, be owned by the current process user, and have no group or
+ * other permission bits.
  *
  * @module
  */
@@ -60,16 +61,31 @@ function isTrustedReadAllowlistDir(
  *
  * @example
  * ```typescript
- * const dirs = agentTempReadAllowlistedDirs();
+ * const dirs = agentTempAllowlistedDirs();
  * ```
  */
-function agentTempReadAllowlistedDirs(): readonly string[] {
+function agentTempAllowlistedDirs(): readonly string[] {
   if (!isTrustedReadAllowlistDir(AGENT_TEMP_READ_DIR,))
     return [];
   return [AGENT_TEMP_READ_DIR,];
 }
 
+/**
+ * Return agent temp root for structured read-tool bypass compatibility.
+ *
+ * @returns singleton allowlist when `/tmp/agent` is private, otherwise empty list
+ *
+ * @example
+ * ```typescript
+ * const dirs = agentTempReadAllowlistedDirs();
+ * ```
+ */
+function agentTempReadAllowlistedDirs(): readonly string[] {
+  return agentTempAllowlistedDirs();
+}
+
 export {
+  agentTempAllowlistedDirs,
   agentTempReadAllowlistedDirs,
   isTrustedReadAllowlistDir,
 };

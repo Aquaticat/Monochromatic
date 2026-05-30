@@ -120,6 +120,27 @@ await describe({
 
     //endregion
 
+    //region Environment assignments
+
+    it({
+      name: 'parses leading environment assignments before command name',
+      fn: async () => {
+        const result = analyzeBashCommand(
+          'GEMINI_API_KEY=value bun /tmp/agent/gemcheck.ts',
+        );
+        expect(result.commands[0]?.name,).toBe('bun',);
+        expect(result.commands[0]?.envAssignments,).toEqual([
+          {
+            name: 'GEMINI_API_KEY',
+            value: 'value',
+          },
+        ],);
+        expect(result.commands[0]?.args,).toEqual(['/tmp/agent/gemcheck.ts',],);
+      },
+    },),
+
+    //endregion
+
     //region Logical chains
 
     it({

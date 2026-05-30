@@ -1,0 +1,224 @@
+/**
+ * Shell assignment word helpers.
+ *
+ * Bash treats leading `NAME=value` words as environment assignments for the
+ * command that follows. The guardrail also uses assignment-name extraction to
+ * recognise credential handoffs in commands that include command substitution.
+ *
+ * @module
+ */
+
+import type { EnvAssignment, } from './types.ts';
+
+//region Sentinels
+
+/** Sentinel returned when token is not shell assignment word. */
+const NO_SHELL_ASSIGNMENT: unique symbol = Symbol('no-shell-assignment',);
+
+/** Result from parsing shell assignment word. */
+type ShellAssignmentParseResult = EnvAssignment | typeof NO_SHELL_ASSIGNMENT;
+
+//endregion Sentinels
+
+//region Public API
+
+/**
+ * Parse shell assignment word when whole token is `NAME=value`.
+ *
+ * @param word - shell token to inspect
+ *
+ * @returns parsed assignment when token starts with valid shell identifier
+ *
+ * @example
+ * ```typescript
+ * parseShellAssignmentWord('API_KEY=value'); // { name: 'API_KEY', value: 'value' }
+ * parseShellAssignmentWord('echo'); // NO_SHELL_ASSIGNMENT
+ * ```
+ */
+function parseShellAssignmentWord(
+  word: string,
+): ShellAssignmentParseResult {
+  /** Equals sign separating shell assignment name from value. */
+  const equalsIndex = word.indexOf('=',);
+  if (equalsIndex <= 0)
+    return NO_SHELL_ASSIGNMENT;
+
+  /** Candidate variable name before equals sign. */
+  const name = word.slice(
+    0,
+    equalsIndex,
+  );
+  if (!isShellIdentifier(name,))
+    return NO_SHELL_ASSIGNMENT;
+
+  return {
+    name,
+    value: word.slice(equalsIndex + 1,),
+  };
+}
+
+/**
+ * Extract shell assignment names embedded anywhere in token text.
+ *
+ * `shell-quote` keeps command-substitution fragments as ordinary words, so a
+ * command such as `KEY=$(grep ...); API_KEY=$KEY bun script.ts` can surface as
+ * one token containing `); API_KEY=`. This helper recovers assignment names
+ * from that token without treating source text as regular expressions.
+ *
+ * @param word - shell token or token fragment to scan
+ *
+ * @returns assignment names found before equals signs
+ *
+ * @example
+ * ```typescript
+ * extractShellAssignmentNames('); API_KEY='); // ['API_KEY']
+ * ```
+ */
+function extractShellAssignmentNames(
+  word: string,
+): readonly string[] {
+  /** Assignment names discovered while scanning token text. */
+  const names: string[] = [];
+
+  for (let index = 0; index < word.length; index += 1) {
+    /** Character where a shell identifier may begin. */
+    const candidateStart = word.at(index,) ?? '';
+    if (!isShellIdentifierStartChar(candidateStart,))
+      continue;
+
+    /** Previous character blocks matches from middle of longer identifiers. */
+    const previous = index > 0
+      ? word.at(index - 1,) ?? ''
+      : '';
+    if (isShellIdentifierChar(previous,))
+      continue;
+
+    /** Index immediately after contiguous shell identifier characters. */
+    const identifierEnd = findShellIdentifierEnd({
+      word,
+      start: index,
+    },);
+    if (word.at(identifierEnd,) !== '=')
+      continue;
+
+    names.push(word.slice(
+      index,
+      identifierEnd,
+    ),);
+  }
+
+  return names;
+}
+
+//endregion Public API
+
+//region Character helpers
+
+/**
+ * Check whether string is valid shell identifier.
+ *
+ * @param value - identifier candidate
+ *
+ * @returns whether candidate follows shell variable naming rules
+ *
+ * @example
+ * ```typescript
+ * isShellIdentifier('API_KEY'); // true
+ * isShellIdentifier('1API_KEY'); // false
+ * ```
+ */
+function isShellIdentifier(
+  value: string,
+): boolean {
+  if (value === '')
+    return false;
+  if (!isShellIdentifierStartChar(value.at(0,) ?? '',))
+    return false;
+
+  for (let index = 1; index < value.length; index += 1) {
+    if (!isShellIdentifierChar(value.at(index,) ?? '',))
+      return false;
+  }
+
+  return true;
+}
+
+/**
+ * Find first index after shell identifier characters.
+ *
+ * @param word - token text being scanned
+ *
+ * @param start - index where identifier starts
+ *
+ * @returns index of first non-identifier character
+ *
+ * @example
+ * ```typescript
+ * findShellIdentifierEnd({ word: 'API_KEY=value', start: 0 }); // 7
+ * ```
+ */
+function findShellIdentifierEnd(
+  {
+    word,
+    start,
+  }: {
+    readonly word: string;
+    readonly start: number;
+  },
+): number {
+  for (let index = start + 1; index < word.length; index += 1) {
+    if (!isShellIdentifierChar(word.at(index,) ?? '',))
+      return index;
+  }
+
+  return word.length;
+}
+
+/**
+ * Check whether character may start shell identifier.
+ *
+ * @param char - single-character string
+ *
+ * @returns whether character is ASCII letter or underscore
+ *
+ * @example
+ * ```typescript
+ * isShellIdentifierStartChar('A'); // true
+ * isShellIdentifierStartChar('1'); // false
+ * ```
+ */
+function isShellIdentifierStartChar(
+  char: string,
+): boolean {
+  return ((char >= 'A') && (char <= 'Z'))
+    || ((char >= 'a') && (char <= 'z'))
+    || (char === '_');
+}
+
+/**
+ * Check whether character may appear after first shell identifier character.
+ *
+ * @param char - single-character string
+ *
+ * @returns whether character is ASCII letter, digit, or underscore
+ *
+ * @example
+ * ```typescript
+ * isShellIdentifierChar('1'); // true
+ * isShellIdentifierChar('-'); // false
+ * ```
+ */
+function isShellIdentifierChar(
+  char: string,
+): boolean {
+  return isShellIdentifierStartChar(char,)
+    || ((char >= '0') && (char <= '9'));
+}
+
+//endregion Character helpers
+
+export {
+  extractShellAssignmentNames,
+  NO_SHELL_ASSIGNMENT,
+  parseShellAssignmentWord,
+};

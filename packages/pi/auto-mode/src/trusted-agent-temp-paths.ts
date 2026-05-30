@@ -1,0 +1,280 @@
+/**
+ * Trusted agent temp path classification helpers.
+ *
+ * These helpers keep canonical path checks separate from bash command-shape
+ * detection. They require existing filesystem targets so missing paths fail
+ * closed, and they compare canonical paths so symlink escapes stay guarded.
+ *
+ * @module
+ */
+
+import { realpathSync, } from 'node:fs';
+import * as nodePath from 'node:path';
+
+import { SECRET_VAR_PATTERN, } from './constants.ts';
+import {
+  isUnder,
+  pathSignals,
+  resolvePath,
+} from './path-signals.ts';
+import type {
+  CommandInfo,
+  SignalContext,
+} from './types.ts';
+
+//region Sentinels
+
+/** Sentinel for paths whose canonical filesystem target cannot be resolved. */
+const REALPATH_UNAVAILABLE = Symbol('realpath-unavailable',);
+
+/** Result from attempting filesystem canonicalisation. */
+type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
+
+//endregion Sentinels
+
+//region Public API
+
+/**
+ * Check whether path is existing non-secret file under trusted agent temp root.
+ *
+ * @param filePath - shell path token
+ *
+ * @param ctx - path resolution context
+ *
+ * @param trustedAgentTempDirs - private agent temp roots trusted for helpers
+ *
+ * @returns whether path is safe to ignore as bash location signal
+ *
+ * @example
+ * ```typescript
+ * isExistingNonSecretTrustedAgentTempPath({ filePath, ctx, trustedAgentTempDirs });
+ * ```
+ */
+function isExistingNonSecretTrustedAgentTempPath(
+  {
+    filePath,
+    ctx,
+    trustedAgentTempDirs,
+  }: {
+    readonly filePath: string;
+    readonly ctx: SignalContext;
+    readonly trustedAgentTempDirs: readonly string[];
+  },
+): boolean {
+  if (!isExistingPathUnderTrustedAgentTemp({
+    filePath,
+    ctx,
+    trustedAgentTempDirs,
+  },)) {
+    return false;
+  }
+
+  return !pathSignals({
+    filePath,
+    ctx,
+    allowlistedDirs: trustedAgentTempDirs,
+  },);
+}
+
+/**
+ * Check whether path resolves inside trusted agent temp root.
+ *
+ * @param filePath - shell path token
+ *
+ * @param ctx - path resolution context
+ *
+ * @param trustedAgentTempDirs - private agent temp roots trusted for helpers
+ *
+ * @returns whether canonical path stays inside canonical trusted root
+ *
+ * @example
+ * ```typescript
+ * isExistingPathUnderTrustedAgentTemp({ filePath, ctx, trustedAgentTempDirs });
+ * ```
+ */
+function isExistingPathUnderTrustedAgentTemp(
+  {
+    filePath,
+    ctx,
+    trustedAgentTempDirs,
+  }: {
+    readonly filePath: string;
+    readonly ctx: SignalContext;
+    readonly trustedAgentTempDirs: readonly string[];
+  },
+): boolean {
+  if (filePath === '')
+    return false;
+
+  /** Canonical target path for command token. */
+  const canonicalPath = realpathOrUnavailable(resolvePath({
+    filePath,
+    cwd: ctx.cwd,
+  },),);
+  if (canonicalPath === REALPATH_UNAVAILABLE)
+    return false;
+
+  return trustedAgentTempDirs.some(
+    function trustedDirContainsPath(trustedDir,) {
+      /** Canonical trusted root used to block symlink escapes. */
+      const canonicalTrustedDir = realpathOrUnavailable(nodePath.resolve(
+        ctx.cwd,
+        trustedDir,
+      ),);
+      return (canonicalTrustedDir !== REALPATH_UNAVAILABLE)
+        && isUnder({
+          resolved: canonicalPath,
+          dir: canonicalTrustedDir,
+        },);
+    },
+  );
+}
+
+/**
+ * Check whether command path is project dotenv credential extraction source.
+ *
+ * @param command - parsed command segment containing path token
+ *
+ * @param filePath - shell path token
+ *
+ * @param ctx - path resolution context
+ *
+ * @returns whether grep reads credential name from project dotenv file
+ *
+ * @example
+ * ```typescript
+ * isProjectDotenvCredentialExtractionPath({ command, filePath: '.env.local', ctx });
+ * ```
+ */
+function isProjectDotenvCredentialExtractionPath(
+  {
+    command,
+    filePath,
+    ctx,
+  }: {
+    readonly command: CommandInfo;
+    readonly filePath: string;
+    readonly ctx: SignalContext;
+  },
+): boolean {
+  if (command.name
+    !== 'grep')
+    return false;
+
+  if (!command
+    .args
+    .some(
+      function argIsSecretName(argument,) {
+        return SECRET_VAR_PATTERN.test(argument,);
+      },
+    )) {
+    return false;
+  }
+
+  return isExistingProjectDotenvPath({
+    filePath,
+    ctx,
+  },);
+}
+
+//endregion Public API
+
+//region Dotenv paths
+
+/**
+ * Check whether path is existing project-local dotenv file.
+ *
+ * @param filePath - shell path token
+ *
+ * @param ctx - path resolution context
+ *
+ * @returns whether path is `.env` or `.env.*` inside project cwd
+ *
+ * @example
+ * ```typescript
+ * isExistingProjectDotenvPath({ filePath: '.env.local', ctx });
+ * ```
+ */
+function isExistingProjectDotenvPath(
+  {
+    filePath,
+    ctx,
+  }: {
+    readonly filePath: string;
+    readonly ctx: SignalContext;
+  },
+): boolean {
+  /** Canonical source path to ensure missing files fail closed. */
+  const canonicalPath = realpathOrUnavailable(resolvePath({
+    filePath,
+    cwd: ctx.cwd,
+  },),);
+  if (canonicalPath === REALPATH_UNAVAILABLE)
+    return false;
+
+  /** Canonical project root to keep home dotfiles and sibling repos blocked. */
+  const canonicalCwd = realpathOrUnavailable(ctx.cwd,);
+  if (canonicalCwd === REALPATH_UNAVAILABLE)
+    return false;
+
+  return isUnder({
+    resolved: canonicalPath,
+    dir: canonicalCwd,
+  },)
+    && isDotenvBasename(nodePath.basename(canonicalPath,),);
+}
+
+/**
+ * Check whether basename is project dotenv filename.
+ *
+ * @param basename - final path segment
+ *
+ * @returns whether basename is `.env` or starts with `.env.`
+ *
+ * @example
+ * ```typescript
+ * isDotenvBasename('.env.local'); // true
+ * isDotenvBasename('id_rsa'); // false
+ * ```
+ */
+function isDotenvBasename(
+  basename: string,
+): boolean {
+  return (basename === '.env')
+    || basename.startsWith('.env.',);
+}
+
+//endregion Dotenv paths
+
+//region Realpath
+
+/**
+ * Resolve filesystem path to canonical target without throwing.
+ *
+ * @param path - filesystem path to canonicalise
+ *
+ * @returns canonical path or sentinel when path is missing or inaccessible
+ *
+ * @example
+ * ```typescript
+ * realpathOrUnavailable('/tmp/agent');
+ * ```
+ */
+function realpathOrUnavailable(
+  path: string,
+): RealpathResult {
+  try {
+    return realpathSync.native(path,);
+  }
+  catch {
+    return REALPATH_UNAVAILABLE;
+  }
+}
+
+//endregion Realpath
+
+export {
+  isExistingNonSecretTrustedAgentTempPath,
+  isExistingPathUnderTrustedAgentTemp,
+  isProjectDotenvCredentialExtractionPath,
+};
