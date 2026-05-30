@@ -5,19 +5,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type DispatchResult,
   JSON_RPC_PARSE_ERROR,
   type JsonRpcOutbound,
-} from './json-rpc.ts';
-import {
-  serve,
-  type StdoutWriter,
-} from './transport.ts';
-
-import {
-  type DispatchResult,
   type McpServerHandle,
   NO_RESPONSE,
-} from './server-types.ts';
+  serve,
+  type StdoutWriter,
+} from '@monochromatic-dev/mcp-stdio';
 
 //region helpers: test doubles for stdin/stdout and server handle
 

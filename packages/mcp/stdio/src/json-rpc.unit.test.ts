@@ -10,7 +10,7 @@ import {
   JSON_RPC_INVALID_PARAMS,
   JSON_RPC_METHOD_NOT_FOUND,
   JSON_RPC_PARSE_ERROR,
-} from './json-rpc.ts';
+} from '@monochromatic-dev/mcp-stdio';
 
 //region isJsonRpcMessage: validates minimum JSON-RPC 2.0 shape
 

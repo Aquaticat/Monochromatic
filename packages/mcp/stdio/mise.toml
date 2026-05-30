@@ -1,3 +1,21 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
+
 [tasks.lint]
 extends = "lint"
 
@@ -6,3 +24,10 @@ extends = "lint:types"
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build the node bundle, then run unit tests against the built dist"
+run = "mise run build; mise run test:unit"

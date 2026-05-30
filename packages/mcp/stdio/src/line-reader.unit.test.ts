@@ -4,7 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { readLines, } from './line-reader.ts';
+import { readLines, } from '@monochromatic-dev/mcp-stdio';
 
 //region helpers: create ReadableStream from string content
 

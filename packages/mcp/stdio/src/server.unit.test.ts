@@ -5,21 +5,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  createMcpServer,
+  defineTool,
   JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_PARAMS,
   JSON_RPC_METHOD_NOT_FOUND,
   type JsonRpcErrorResponse,
   type JsonRpcInbound,
   type JsonRpcResponse,
-} from './json-rpc.ts';
-import { PROTOCOL_VERSION, } from './protocol.ts';
-import { defineTool, } from './server-define-tool.ts';
-import { createMcpServer, } from './server.ts';
-
-import {
   NO_RESPONSE,
+  PROTOCOL_VERSION,
   type ToolEntry,
-} from './server-types.ts';
+} from '@monochromatic-dev/mcp-stdio';
 
 /** Reusable test tool that echoes arguments back as text content. */
 const echoTool: ToolEntry = {
