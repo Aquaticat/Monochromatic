@@ -268,7 +268,7 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   `eslint/no-duplicate-imports` case). No regex (pure string scan), idempotent. Used for `module-or-throw` (25 files,
   all single-binding public). buildAndTest is the oracle for internal-symbol mistakes.
 
-### Done (neutral unless noted; repo-wide lint:types not yet re-run as final — see Final verification)
+### Done (neutral unless noted; ALL conversions complete — repo-wide lint:types PASSED, build+test+resolution gate pending, see Final verification)
 
 - `module-async-time` (`test:unit` variant; tests switched to relative-to-dist) — `build(module-async-time): produce neutral dist (Phase C pilot)`.
 - `module-const` (custom `test` aggregator variant; 5 tests switched to relative-to-dist) — `build(module-const): produce neutral dist`.
@@ -323,6 +323,30 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   flaky-under-parallel-load tsgo-filter CLI integration tests to `tsgo-filter.expensive.unit.test.ts` (pre-existing
   flakiness — leftover dirs from a 2026-05-23 run; `par-each` starves the tsgo subprocess -> empty stdout). Fast file is
   deterministic 3/3.
+- `module-fs-path` (NEUTRAL cross-runtime, commit `3650453d`) — neutral dist; TLA dynamic `node:path`/`node:fs/promises`
+  imports survive as runtime externals; happy-opfs external. `path-ops.unit.test.ts` switched its `./index.ts` import to
+  by-name (the `.` dist) as the lib smoke; find-* tests stay on source. DOCUMENTED in README: rolldown constant-folds the
+  source's obfuscated `` `node${':path'}` `` specifier back to a literal `import('node:path')`, so the built `.` bundle is
+  node/bun-only; browser cross-runtime support is via `/ts` source (nothing in-repo loads the `.` dist in a browser).
+- `pi-shared-model-selection` (NODE single-index normalize, commit `2715d0bd`) — collapsed the per-feature tsdown entries
+  (core/scope/cost/budget/pi-coding-agent) to a single `src/index.ts`; package.json/export-map were already single-index
+  correct from B2. `pi-coding-agent.unit.test.ts` switched its single own-source import (`estimateAdvisorInputTokens`) to
+  by-name as the collapsed-bundle smoke. Build cleaned 16 stale per-feature files; bundle imports with all 37 exports.
+- `cli-vmsync` (NODE pure-CLI, deferred-B2 finish, commit `519c2f66`) — `src/index.ts` IS the bin (shebang), so it took
+  the cli-git shape: DROPPED all nine orphaned feature exports (no consumer; `./ts`->index.ts would expose the bin as a
+  lib), bin flips to dist, added missing build/buildAndTest tasks. ADDED `index.unit.test.ts` spawning `vmsync --help`
+  (only inert path). Feature-module unit tests + lifecycle.expensive e2e stay on source.
+- `build-tool-css` (NODE lib+bin, deferred-B2 finish, commit `3f4dd3f9`) — dual-entry (index.ts + cli.ts) so build-css
+  bin emits `cli.mjs`; FIXED the broken `.`/main/module/typings pointers (they referenced `.js`/`.d.ts` but the build
+  emits `.mjs`/`.d.mts` — a dangling `.` export nothing consumed); consolidated `./ts/fs-registry`+`./ts/process-shim`
+  into `./ts/*`; `build.unit.test.ts` switched to by-name (`.` lib smoke) + ADDED `cli.unit.test.ts` (`--help`). ALSO
+  fixed a pre-existing race in build.unit.test.ts (left `M` at session start): integration fixtures shared one output
+  path and `cleanup()` rm'd it, so module-test's CONCURRENT it-blocks deleted the file mid-read (ENOENT). Each test now
+  owns a distinct `dist/test-output-<fixture>-<test>.css` path; deterministic 4/4. (module-test runs it-blocks within a
+  describe concurrently — a key gotcha for any test sharing mutable disk/registry state.)
+- `claude-code-plugins-hook-types` — DECIDED EXEMPT (pure types, zero value exports; the `.d.mts` IS the source, no
+  source-to-dist transformation; same rationale as config-*). Source-only; no build, no `.` flip. Decided by the
+  exemption rule, not asked.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
 by-name form. Both work; no need to retrofit the first two.)
@@ -341,10 +365,12 @@ Relocate any flaky/slow/network/VM test that the new `test:unit` glob activates 
 
 ### Remaining — bundle sets determined (deps + `node:` built-in scan)
 
-NEUTRAL, no bin: ALL DONE except `claude-code-plugins-hook-types` (pure types, 0 tests, no module-test devDep). A build
-would emit only a `.d.mts` with no runtime code -- there is no source-to-dist TRANSFORMATION, so it is analogous to the
-exempt pure-data config-* packages, NOT a buildable lib. RECOMMENDATION: leave it source-only (`.` stays at
-`./src/index.ts`); do not add a build. Confirm with the user if treating it as a build is desired, otherwise skip.
+NEUTRAL, no bin: ALL DONE. `claude-code-plugins-hook-types` is DECIDED EXEMPT: its `src/` is pure type declarations
+(common.ts + event/tool-input types; verified zero `export const|function|class|let|var|default` value exports). A
+build would emit only a `.d.mts` (or an empty `.mjs`) with no runtime code -- there is no source-to-dist
+TRANSFORMATION, exactly the config-* / pure-data exemption rationale. It keeps `.` + `./ts` + `./ts/*` at source; no
+build, no `.` flip. This is determined by the exemption rule (pure types = the `.d.mts` IS the source), not a
+preference, so it was decided rather than asked.
 
 VERIFY-THEN-ROUTE: `mcp-stdio` — DONE (node bundle; see Done above). Confirmed it uses `process` stdin/stdout.
 
@@ -423,10 +449,34 @@ NORMALIZE: `pi-shared-model-selection` -> node-only single-index: collapse the t
 only (emit `dist/final/node`), drop the separate scope/cost/budget/pi-coding-agent bundles. Its export map was already
 pruned to `.`+`./ts` in B2, so only the build config + the `.` dist shape need finishing.
 
-DEFERRED B2 (fold into their Phase C conversion): `cli-vmsync` (add `./ts`+`./ts/*` first, then bin build);
-`build-tool-css` (consolidate `./ts/fs-registry`+`./ts/process-shim` to a single `./ts/*`; its `.` is already dist).
+DEFERRED B2: BOTH DONE (see Done list). `cli-vmsync` took the cli-git pure-CLI shape (dropped feature exports, NOT
+`./ts`+index.ts which would expose the bin); `build-tool-css` consolidated to `./ts/*`, fixed `.js`->`.mjs`, built the
+bin, and fixed a pre-existing concurrent-it-block disk race.
 
 ## Final verification
 
-Repo-wide `mise run lint:types`, then `mise run build` and `mise run test` across `packages/`. Re-run the resolution
-analysis for 0 dist-resolving cross-package imports.
+ALL per-package conversions are DONE and committed. Remaining = the repo-wide gate only.
+
+Invocation note: there is NO root `lint:types`/`build`/`test:unit` task by that bare name; use the package glob form
+`mise run '//packages/...:lint:types'` (and `:build`, `:test:unit`). The root `//:lint`/`//:build`/`//:test` fan out too.
+
+Gate status:
+- Repo-wide `mise run '//packages/...:lint:types'`: PASS (exit 0, ~21s; all packages incl. build-tool-css consumers
+  messages-demo/done-postcss/ssg-test — no cross-package regression from the cli-vmsync export drop or build-tool-css
+  changes). RE-RUN this once more at the very end as the final confirmation.
+- TODO: repo-wide `mise run '//packages/...:build'` (every package emits its dist; watch for any isolatedDeclarations
+  gaps newly exercised by dist emit).
+- TODO: repo-wide `mise run '//packages/...:test:unit'` (default tier excludes `*.expensive.*`; the relocated
+  tsgo-filter + build-tool-css races are out of this tier). Some packages use a custom `test` aggregator instead of
+  `test:unit` (numeric-format, const, fs-path) — those run via `mise run '//packages/...:test'` or their own task.
+- TODO: re-run the resolution analysis. Criterion: 0 NON-self cross-package imports resolve to dist.
+  CRITICAL caveat (advisor): the by-name lib smokes added this session (path-ops->fs-path, list->cli-mvm,
+  similarity->image-diff, build->build-tool-css, estimateAdvisorInputTokens->pi-shared-model-selection,
+  DEFAULT_MODEL->token-count, launchTerminal->cli-terminal-exec) are SELF-imports (package X's test importing X's own
+  `.` dist). The original analysis EXCLUDED self-imports; the re-run MUST exclude them too, or they show as false-positive
+  "dist-resolving" violations. The real check: any CROSS-package (importer pkg != target pkg) bare/feature import of a
+  NON-exempt target whose `.` resolves to dist. Expected: zero (Phase B rewrote every cross-package import to `/ts`).
+
+Close-out TODO (not yet done): decide the 3 throwaway tools at repo root — `mise.rewrite-ts-imports.ts`,
+`mise.detect-merge-sites.ts`, `mise.switch-tests-byname.ts` (untracked) — commit or delete. Surface in the final
+summary: the hook-types exemption and the fs-path `.`-dist-is-node-only README note.
