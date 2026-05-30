@@ -5,15 +5,23 @@
   "type": "module",
   "private": true,
   "main": "src/launch.ts",
+  "module": "dist/final/node/launch.mjs",
   "bin": {
-    "terminal-exec": "src/index.ts"
+    "terminal-exec": "dist/final/node/index.mjs"
   },
   "exports": {
-    ".": "./src/launch.ts",
+    ".": {
+      "types": "./dist/final/node/launch.d.mts",
+      "default": "./dist/final/node/launch.mjs"
+    },
     "./ts": "./src/launch.ts",
     "./ts/*": "./src/*"
   },
+  "files": [
+    "dist/final"
+  ],
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:"
