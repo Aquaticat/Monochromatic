@@ -6,10 +6,13 @@
   "private": true,
   "main": "src/index.ts",
   "bin": {
-    "rgffplay": "src/index.ts"
+    "rgffplay": "dist/final/node/index.mjs"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:"
   },
   "dependencies": {
