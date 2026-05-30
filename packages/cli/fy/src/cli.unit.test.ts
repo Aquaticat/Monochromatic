@@ -1,17 +1,13 @@
 import {
-  dirname,
-  resolve,
-} from 'node:path';
-import { fileURLToPath, } from 'node:url';
-import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
-/** Repo root resolved from this file, so the spawn cwd is invariant to the task's launch directory. */
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url,),), '../../../..',);
+/** Mise monorepo root for the spawn cwd, so the bin path is invariant to the task's launch directory. */
+const REPO_ROOT = await findMiseMonorepoRootCached();
 
 /** Prefix emitted by the tagged logger on info-level lines */
 const LOG_PREFIX = '[info]';
