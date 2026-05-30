@@ -55,6 +55,8 @@ type AppendedEntry = {
 type MockBranchEntry = {
   /** Session entry discriminator. */
   readonly type: string;
+  /** Extension custom entry discriminator. */
+  readonly customType?: string;
   /** Optional custom entry payload. */
   readonly data?: unknown;
 };
@@ -87,6 +89,8 @@ type ToolMap = Map<string, ProposeTrustExecute>;
  *
  * @param entries - array receiving appended session entries
  *
+ * @param branch - optional mock session branch receiving real custom entries
+ *
  * @returns mock extension API
  *
  * @example
@@ -98,9 +102,11 @@ function createMockApi(
   {
     tools,
     entries,
+    branch,
   }: {
     readonly tools: ToolMap;
     readonly entries: AppendedEntry[];
+    readonly branch?: MockBranchEntry[];
   },
 ): ExtensionAPI {
   return {
@@ -120,6 +126,11 @@ function createMockApi(
       data: unknown,
     ): void {
       entries.push({
+        customType,
+        data,
+      },);
+      branch?.push({
+        type: 'custom',
         customType,
         data,
       },);
@@ -204,7 +215,8 @@ function trustEntry(
   },
 ): MockBranchEntry {
   return {
-    type: TRUST_ENTRY_TYPE,
+    type: 'custom',
+    customType: TRUST_ENTRY_TYPE,
     data: rule,
   };
 }
@@ -221,7 +233,8 @@ function trustEntry(
  */
 function trustResetEntry(): MockBranchEntry {
   return {
-    type: TRUST_ENTRY_TYPE,
+    type: 'custom',
+    customType: TRUST_ENTRY_TYPE,
     data: null,
   };
 }
@@ -325,6 +338,8 @@ async function rejectSelection(): Promise<string> {
 /**
  * Register propose_trust and return execute handler plus recorded entries.
  *
+ * @param branch - optional mock session branch receiving real custom entries
+ *
  * @returns registered handler and mutable entry log
  *
  * @example
@@ -332,7 +347,13 @@ async function rejectSelection(): Promise<string> {
  * const { execute } = registerForTest();
  * ```
  */
-function registerForTest(): {
+function registerForTest(
+  {
+    branch,
+  }: {
+    readonly branch?: MockBranchEntry[];
+  } = {},
+): {
   readonly execute: ProposeTrustExecute;
   readonly entries: AppendedEntry[];
 } {
@@ -341,6 +362,7 @@ function registerForTest(): {
   registerProposeTrust(createMockApi({
     tools,
     entries,
+    ...(branch !== undefined ? { branch, } : {}),
   },),);
   return {
     entries,
@@ -477,6 +499,40 @@ await describe({
             data: TRUST_RULE,
           },
         ],);
+      },
+    },),
+    it({
+      name: 'reuses accepted trust rule from session branch',
+      fn: async function reusesAcceptedTrustRuleFromSessionBranch(): Promise<void> {
+        const branch: MockBranchEntry[] = [];
+        const { execute, entries, } = registerForTest({ branch, },);
+
+        await execute(
+          'trust-call',
+          { rule: TRUST_RULE, },
+          undefined,
+          undefined,
+          createContext({
+            branch,
+            select: acceptSelection,
+          },),
+        );
+
+        const result = await execute(
+          'trust-call-repeat',
+          { rule: TRUST_RULE, },
+          undefined,
+          undefined,
+          createContext({
+            branch,
+            hasUI: false,
+          },),
+        );
+
+        expect(resultText(result,),).toContain(
+          `Trust rule already trusted for this session: "${TRUST_RULE}".`,
+        );
+        expect(entries,).toHaveLength(1,);
       },
     },),
     it({

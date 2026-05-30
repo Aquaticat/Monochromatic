@@ -16,7 +16,10 @@ import {
   buildContext,
   getReusableApproval,
 } from './context.ts';
-import type { VerdictData, } from './types.ts';
+import {
+  VERDICT_ENTRY_TYPE,
+  type VerdictData,
+} from './types.ts';
 
 //region Test fixtures
 
@@ -84,8 +87,10 @@ type MockBranchEntry =
     readonly message: MockMessage;
   }
   | {
-    /** Verdict entry discriminator. */
-    readonly type: 'auto-mode:verdict';
+    /** Session custom entry discriminator. */
+    readonly type: 'custom';
+    /** Extension custom entry discriminator. */
+    readonly customType: typeof VERDICT_ENTRY_TYPE;
     /** Verdict data attached to next tool result. */
     readonly data: VerdictData;
   };
@@ -267,7 +272,8 @@ function verdictEntry(
   data: VerdictData,
 ): MockBranchEntry {
   return {
-    type: 'auto-mode:verdict',
+    type: 'custom',
+    customType: VERDICT_ENTRY_TYPE,
     data,
   };
 }

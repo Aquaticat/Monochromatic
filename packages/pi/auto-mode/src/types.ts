@@ -93,15 +93,26 @@ type Verdict = {
 function isTrustEntry(
   entry: {
     readonly type: string;
+    readonly customType?: unknown;
     readonly data?: unknown;
   },
 ): entry is {
-  type: string;
+  type: 'custom';
+  customType: typeof TRUST_ENTRY_TYPE;
   // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- external boundary: trust-directive session entries persist `data` as `string | null` via pi.appendEntry, where `null` is the protocol's clear-all-directives signal; the predicate mirrors that stored shape.
   data: string | null;
 } {
-  return entry.type
-    === TRUST_ENTRY_TYPE;
+  /** Whether entry carries Pi's custom-entry discriminator for trust directives. */
+  const hasTrustCustomType = (entry.type === 'custom')
+    && (entry.customType === TRUST_ENTRY_TYPE);
+  if (!hasTrustCustomType)
+    return false;
+  if ((typeof entry.data)
+    === 'string') {
+    return true;
+  }
+  return entry.data
+    === null;
 }
 
 /**
@@ -121,14 +132,143 @@ function isTrustEntry(
 function isVerdictEntry(
   entry: {
     readonly type: string;
+    readonly customType?: unknown;
     readonly data?: unknown;
   },
 ): entry is {
-  type: string;
+  type: 'custom';
+  customType: typeof VERDICT_ENTRY_TYPE;
   data: VerdictData;
 } {
-  return entry.type
-    === VERDICT_ENTRY_TYPE;
+  /** Whether entry carries Pi's custom-entry discriminator for verdict data. */
+  const hasVerdictCustomType = (entry.type === 'custom')
+    && (entry.customType === VERDICT_ENTRY_TYPE);
+  if (!hasVerdictCustomType)
+    return false;
+  return isVerdictData(entry.data,);
+}
+
+/**
+ * Check whether unknown custom-entry payload has verdict-data shape.
+ *
+ * @param data - custom entry payload read from session history
+ *
+ * @returns whether payload can be safely consumed as verdict data
+ *
+ * @example
+ * ```typescript
+ * isVerdictData({ action: 'read .env', verdict: 'approve', reason: 'Allowed' });
+ * ```
+ */
+function isVerdictData(
+  data: unknown,
+): data is VerdictData {
+  if (!isRecord(data,))
+    return false;
+  if ((typeof data.action)
+    !== 'string') {
+    return false;
+  }
+  if ((typeof data.reason)
+    !== 'string') {
+    return false;
+  }
+  if (!isVerdictValue(data.verdict,))
+    return false;
+  if (!isUndefinedOrString(data.approvalFingerprint,))
+    return false;
+  return isUndefinedOrReusableVerdictSource(data.reusedFromVerdict,);
+}
+
+/**
+ * Check whether unknown value is undefined or string.
+ *
+ * @param value - candidate optional string value
+ *
+ * @returns whether value can populate optional string fields
+ *
+ * @example
+ * ```typescript
+ * isUndefinedOrString('fingerprint');
+ * ```
+ */
+function isUndefinedOrString(
+  value: unknown,
+): boolean {
+  if (value === undefined)
+    return true;
+  return (typeof value)
+    === 'string';
+}
+
+/**
+ * Check whether unknown value is undefined or reusable source discriminator.
+ *
+ * @param value - candidate optional reusable source value
+ *
+ * @returns whether value can populate reusedFromVerdict
+ *
+ * @example
+ * ```typescript
+ * isUndefinedOrReusableVerdictSource('user-approve');
+ * ```
+ */
+function isUndefinedOrReusableVerdictSource(
+  value: unknown,
+): boolean {
+  if (value === undefined)
+    return true;
+  if (value === 'approve')
+    return true;
+  return value === 'user-approve';
+}
+
+/**
+ * Check whether unknown value is one of allowed verdict strings.
+ *
+ * @param value - candidate verdict value
+ *
+ * @returns whether value is a verdict discriminator
+ *
+ * @example
+ * ```typescript
+ * isVerdictValue('user-approve');
+ * ```
+ */
+function isVerdictValue(
+  value: unknown,
+): value is VerdictData['verdict'] {
+  if (value === 'approve')
+    return true;
+  if (value === 'deny')
+    return true;
+  if (value === 'ask')
+    return true;
+  if (value === 'user-approve')
+    return true;
+  return value === 'user-deny';
+}
+
+/**
+ * Check whether unknown value is a non-null object record.
+ *
+ * @param value - candidate object value
+ *
+ * @returns whether value can be accessed by string keys
+ *
+ * @example
+ * ```typescript
+ * isRecord({ ok: true });
+ * ```
+ */
+function isRecord(
+  value: unknown,
+): value is Record<string, unknown> {
+  if ((typeof value)
+    !== 'object') {
+    return false;
+  }
+  return value !== null;
 }
 
 //endregion

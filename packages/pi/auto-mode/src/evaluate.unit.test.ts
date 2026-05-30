@@ -36,6 +36,8 @@ type AppendedEntry = {
 type MockBranchEntry = {
   /** Session entry discriminator. */
   readonly type: string;
+  /** Extension custom entry discriminator. */
+  readonly customType?: string;
   /** Optional custom entry payload. */
   readonly data?: unknown;
 };
@@ -134,7 +136,8 @@ function verdictEntry(
   data: VerdictData,
 ): MockBranchEntry {
   return {
-    type: VERDICT_ENTRY_TYPE,
+    type: 'custom',
+    customType: VERDICT_ENTRY_TYPE,
     data,
   };
 }

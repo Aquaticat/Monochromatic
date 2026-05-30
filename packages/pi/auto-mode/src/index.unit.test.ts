@@ -412,7 +412,8 @@ await describe({
               getBranch() {
                 return [
                   {
-                    type: VERDICT_ENTRY_TYPE,
+                    type: 'custom',
+                    customType: VERDICT_ENTRY_TYPE,
                     data: {
                       action: 'read /repo/.env',
                       approvalFingerprint,
