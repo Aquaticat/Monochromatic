@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { estimateAdvisorInputTokens, } from './pi-coding-agent.ts';
+import { estimateAdvisorInputTokens, } from '@monochromatic-dev/pi-shared-model-selection';
 
 await describe({
   name: estimateAdvisorInputTokens.name,
