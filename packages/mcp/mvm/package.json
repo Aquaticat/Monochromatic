@@ -6,14 +6,18 @@
   "type": "module",
   "private": true,
   "bin": {
-    "mvm-mcp": "./src/index.ts"
+    "mvm-mcp": "dist/final/node/index.mjs"
   },
   "dependencies": {
     "@monochromatic-dev/cli-mvm": "workspace:*",
     "@monochromatic-dev/mcp-stdio": "workspace:*"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@types/bun": "catalog:"
+    "@monochromatic-dev/module-fs-path": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "nano-spawn": "catalog:"
   }
 }
