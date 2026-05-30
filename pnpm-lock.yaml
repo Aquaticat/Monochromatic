@@ -1187,6 +1187,9 @@ importers:
         specifier: 'catalog:'
         version: 8.0.0
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
