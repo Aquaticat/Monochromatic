@@ -18,7 +18,7 @@ import {
   expandApplyRules,
   expandMixinBodies,
   mixins,
-} from './index.ts';
+} from '@monochromatic-dev/build-tool-css';
 
 //region Test Helpers
 
@@ -36,9 +36,6 @@ const integrationFixtures = [
   { label: 'direct file path', dir: join(fixtureRoot, 'css-importing-filepath',), },
 ] as const;
 
-/** Temporary output path for build tests */
-const tempOutput = join(import.meta.dirname, '..', 'dist', 'test-output.css',);
-
 /**
  * Parses a CSS string into a PostCSS Root for unit testing mixin functions.
  * @param css - Raw CSS string
@@ -49,11 +46,15 @@ function parse(css: string,): Root {
 }
 
 /**
- * Cleans up shared mixin state and temporary output file after each test.
+ * Clears shared mixin state and, when given a per-fixture output path, removes it.
+ *
+ * @param output - Per-fixture output file to remove; omit for the mixin-only unit tests.
+ *   Each integration fixture owns a distinct output path so concurrent fixture describes never race on one file.
  */
-async function cleanup(): Promise<void> {
+async function cleanup({ output, }: { output?: string; } = {},): Promise<void> {
   mixins.clear();
-  await rm(tempOutput, { force: true, },);
+  if (output !== undefined)
+    await rm(output, { force: true, },);
 }
 
 //endregion Test Helpers
@@ -64,15 +65,33 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
   /** Path to the main CSS entry point for this fixture */
   const fixtureMainCss = join(dir, 'src', 'main.css',);
 
+  /**
+   * Builds a distinct output path per (fixture, test). module-test runs the it-blocks within a
+   * describe concurrently, so a path shared across tests lets one test's cleanup rm the file
+   * another test is mid-read on (the ENOENT this guards against).
+   *
+   * @param testSlug - Short discriminator unique to the calling test
+   * @returns Absolute output path under dist/ owned solely by that test
+   */
+  function outputFor(testSlug: string,): string {
+    return join(
+      import.meta.dirname,
+      '..',
+      'dist',
+      `test-output-${label.replaceAll(' ', '-',)}-${testSlug}.css`,
+    );
+  }
+
   return describe({
     name: `build (${label})`,
     children: [
       it({
         name: 'builds fixture CSS with import resolution and mixin expansion',
         fn: async () => {
+          const output = outputFor('builds',);
           const result = await build({
             input: fixtureMainCss,
-            output: tempOutput,
+            output,
           },);
 
           // Imports should be resolved and inlined
@@ -87,30 +106,32 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           // Mixin content should be inlined
           expect(result,).toContain('display: flex',);
           expect(result,).toContain('font-weight: bold',);
-          await cleanup();
+          await cleanup({ output, },);
         },
       },),
 
       it({
         name: 'writes output file to disk',
         fn: async () => {
+          const output = outputFor('writes',);
           await build({
             input: fixtureMainCss,
-            output: tempOutput,
+            output,
           },);
 
-          const written = await readFile(tempOutput, 'utf8',);
+          const written = await readFile(output, 'utf8',);
           expect(written,).toContain('--primary: rebeccapurple',);
-          await cleanup();
+          await cleanup({ output, },);
         },
       },),
 
       it({
         name: 'expands nested mixin references in build output',
         fn: async () => {
+          const output = outputFor('nested',);
           const result = await build({
             input: fixtureMainCss,
-            output: tempOutput,
+            output,
           },);
 
           // --card uses @apply --flex-center, so .nested-card should have flex styles
@@ -118,7 +139,7 @@ const integrationChildren = integrationFixtures.map(({ label, dir, },) => {
           // The flex-center content should appear inside .nested-card
           const nestedCardMatch = result.slice(result.indexOf('.nested-card',),);
           expect(nestedCardMatch,).toContain('display: flex',);
-          await cleanup();
+          await cleanup({ output, },);
         },
       },),
     ],

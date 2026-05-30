@@ -4,26 +4,30 @@
   "private": true,
   "description": "CSS build tool with @mixin/@apply processing and @import resolution for monorepo packages.",
   "type": "module",
-  "module": "dist/final/node/index.js",
+  "module": "dist/final/node/index.mjs",
   "exports": {
-    ".": "./dist/final/node/index.js",
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
     "./ts": "./src/index.ts",
-    "./ts/fs-registry": "./src/fs-registry.ts",
-    "./ts/process-shim": "./src/process-shim.ts"
+    "./ts/*": "./src/*"
   },
   "bin": {
-    "build-css": "./src/cli.ts"
+    "build-css": "dist/final/node/cli.mjs"
   },
-  "main": "dist/final/node/index.js",
-  "typings": "dist/final/node/index.d.ts",
+  "main": "dist/final/node/index.mjs",
+  "typings": "dist/final/node/index.d.mts",
   "files": [
+    "src",
     "dist/final"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "nano-spawn": "catalog:"
   },
   "dependencies": {
     "@monochromatic-dev/module-fs-path": "workspace:*",
