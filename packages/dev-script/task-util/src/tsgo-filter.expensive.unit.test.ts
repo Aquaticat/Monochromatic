@@ -1,0 +1,130 @@
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import { exec, } from 'node:child_process';
+import {
+  existsSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { join, } from 'node:path';
+import { pathToFileURL, } from 'node:url';
+import { promisify, } from 'node:util';
+
+// oxlint-disable-next-line typescript/strict-void-return -- Node's promisify typing treats exec callback shape as void-context even though the promisified command result is intentionally consumed in these CLI integration tests.
+const execAsync = promisify(exec,);
+
+/**
+ * Creates a fresh throwaway test directory under `dist/temp/test` and returns the
+ * source CLI path plus that directory.
+ *
+ * @returns Absolute path to the source `tsgo-filter.ts` and a unique scratch directory
+ */
+function setup() {
+  const testFileDir = import.meta.dirname;
+  const cliPath = join(testFileDir, 'tsgo-filter.ts',);
+
+  const packageDir = join(testFileDir, '..',);
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36,).slice(2, 8,);
+  const testDir = join(packageDir, 'dist', 'temp', 'test',
+    `tsgo-filter-${timestamp}-${randomId}`,);
+
+  if (!existsSync(testDir,))
+    mkdirSync(testDir, { recursive: true, },);
+
+  return { cliPath, testDir, };
+}
+
+/**
+ * Removes a throwaway test directory created by {@link setup}.
+ *
+ * @param testDir - Scratch directory to delete
+ */
+function teardown({ testDir, }: { testDir: string; },) {
+  if (existsSync(testDir,))
+    rmSync(testDir, { recursive: true, },);
+}
+
+//region Integration tests for CLI execution (spawn real tsgo; flaky under parallel load, hence .expensive.)
+
+await describe({
+  name: '',
+  children: [
+    describe({
+      name: 'task-tsgo CLI',
+      children: [
+        it({
+          name: 'forwards arguments to tsgo',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, } = fixtures;
+
+            // tsgo --version should succeed and print version info
+            const { stdout, } = await execAsync(`bun ${cliPath} --version`,);
+
+            expect(stdout.trim().length,).toBeGreaterThan(0,);
+
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'does not execute the CLI path when imported',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, testDir, } = fixtures;
+            const importProbe = join(testDir, 'import-probe.ts',);
+            writeFileSync(
+              importProbe,
+              `import ${
+                JSON.stringify(pathToFileURL(cliPath,).href,)
+              };\nconsole.log('imported only');\n`,
+            );
+
+            const { stdout, stderr, } = await execAsync(`bun ${importProbe}`,);
+
+            expect(stdout,).toBe('imported only\n',);
+            expect(stderr,).toBe('',);
+
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'exits non-zero when tsgo reports project errors',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, testDir, } = fixtures;
+
+            // Create a tsconfig that references a non-existent file
+            const tsconfig = join(testDir, 'tsconfig.json',);
+            writeFileSync(tsconfig, JSON.stringify({
+              compilerOptions: { strict: true, noEmit: true, },
+              include: ['nonexistent.ts',],
+            },),);
+
+            const sourceFile = join(testDir, 'nonexistent.ts',);
+            writeFileSync(sourceFile, 'const x: number = "not a number";\n',);
+
+            try {
+              await execAsync(`bun ${cliPath} --noEmit -p ${tsconfig}`,);
+              // Should not reach here; tsgo should fail on the type error
+              expect(true,).toBe(false,);
+            }
+            catch (error: unknown) {
+              const execError = error as { code: number; stdout: string; };
+              expect(execError.code,).toBeGreaterThan(0,);
+              expect(execError.stdout,).toContain('error TS',);
+            }
+
+            teardown(fixtures,);
+          },
+        },),
+      ],
+    },),
+  ],
+},);
+
+//endregion Integration tests for CLI execution

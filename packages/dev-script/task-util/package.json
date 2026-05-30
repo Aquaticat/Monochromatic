@@ -6,14 +6,15 @@
   "private": true,
   "main": "src/command.ts",
   "bin": {
-    "task-command": "src/command.ts",
-    "task-append": "src/append.ts",
-    "task-depends": "src/depends.ts",
-    "task-oxlint": "src/oxlint-wrapper.ts",
-    "task-pnpm": "src/pnpm-filter.ts",
-    "task-tsgo": "src/tsgo-filter.ts"
+    "task-command": "dist/final/node/command.mjs",
+    "task-append": "dist/final/node/append.mjs",
+    "task-depends": "dist/final/node/depends.mjs",
+    "task-oxlint": "dist/final/node/oxlint-wrapper.mjs",
+    "task-pnpm": "dist/final/node/pnpm-filter.mjs",
+    "task-tsgo": "dist/final/node/tsgo-filter.mjs"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:"
