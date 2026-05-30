@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * import type { HookInput } from '@monochromatic-dev/claude-code-hook-types';
+ * import type { HookInput } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
  *
  * const event = JSON.parse(raw) as HookInput;
  * switch (event.hook_event_name) {
