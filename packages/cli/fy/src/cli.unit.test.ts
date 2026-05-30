@@ -1,9 +1,17 @@
 import {
+  dirname,
+  resolve,
+} from 'node:path';
+import { fileURLToPath, } from 'node:url';
+import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
+
+/** Repo root resolved from this file, so the spawn cwd is invariant to the task's launch directory. */
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url,),), '../../../..',);
 
 /** Prefix emitted by the tagged logger on info-level lines */
 const LOG_PREFIX = '[info]';
@@ -50,8 +58,8 @@ async function runCliFy({ args, }: { args: readonly string[]; },): Promise<{
   exitCode: number;
 }> {
   try {
-    const result = await spawn('bun', ['packages/cli/fy/src/index.ts', ...args,], {
-      cwd: process.cwd(),
+    const result = await spawn('bun', ['packages/cli/fy/dist/final/node/index.mjs', ...args,], {
+      cwd: REPO_ROOT,
     },);
     return {
       exitCode: 0,

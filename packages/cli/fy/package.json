@@ -6,9 +6,10 @@
   "private": true,
   "main": "src/index.ts",
   "bin": {
-    "cli-fy": "src/index.ts"
+    "cli-fy": "dist/final/node/index.mjs"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
