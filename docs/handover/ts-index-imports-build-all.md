@@ -287,6 +287,9 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   index was EXPANDED to re-export the previously-internal `JSON_RPC_*` codes + `PROTOCOL_VERSION` + `readLines`, so all
   4 tests route through dist: json-rpc + line-reader via the tool, transport (3) + server (5) hand-merged; added the
   missing `test:unit` task — `build(mcp-stdio): produce node dist`.
+- `cli-fy` (NODE bin; FIRST pure-CLI bin) — bin repointed to `dist/final/node/index.mjs`; `cli.unit.test.ts` repointed
+  to spawn the built bin (13-scenario smoke-run) and its latent cwd bug fixed via `findMiseMonorepoRootCached`; unit
+  tests (resolve, coerce) stay on source — `build(cli-fy): produce node bin dist` + `fix(cli-fy): resolve spawn cwd ...`.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
 by-name form. Both work; no need to retrofit the first two.)
@@ -303,10 +306,59 @@ VERIFY-THEN-ROUTE: `mcp-stdio` — DONE (node bundle; see Done above). Confirmed
 NEUTRAL but cross-runtime/OPFS: `module-fs-path` (uses a computed `node:path` dynamic import + happy-opfs; its tests
 may need a non-node/DOM env). Do as its own mini-pilot.
 
-BINS (different mechanics: `#!/usr/bin/env bun` shebang on the bin entry, a `bin` bundle in addition to/instead of the
-lib bundle): `module-image-diff`, `module-token-count`, `cli-terminal-exec`, plus `cli-fy`, `cli-mvm`, `cli-rgffplay`,
-`mcp-mvm`, `dev-script-task-util`, `dev-script-vm-builder`. (`claude-code-plugins-source` is exempt.) `cli-mvm`'s bin is
-`src/cli.ts`; `dev-script-inference-canary`'s is `src/canary.ts`. Each bin needs its own mini-pilot.
+### BIN sub-batch — recipes + per-package safety (read before fanning out)
+
+SHEBANG PRE-FLIGHT (done): all 9 bin entries ALREADY carry `#!/usr/bin/env bun` on line 1 (checked via `head -1`).
+tsdown PRESERVES a shebang but does NOT add one; a missing shebang builds green and fails silently only when the
+installed bin runs (`/bin/sh` fallback). If a future bin entry lacks it, add it (in-scope: the bin is non-functional
+without it).
+
+Two bin shapes:
+
+PURE-CLI (bin only, NO library `.` export — exemplar `cli-git`): `cli-fy` (DONE), `cli-rgffplay`, `mcp-mvm`,
+`dev-script-task-util`, `dev-script-vm-builder`. Recipe (PROVEN on cli-fy, commit `f747a476`):
+1. `tsdown.node.config.ts` = `export { default, } from '@monochromatic-dev/config-tsdown/.node.ts';`
+2. mise.toml: keep the package's existing `run`/lint tasks; ADD build + `build:js` + `build:js:node` + the three
+   `watch:*` twins + `test:unit` (if missing) + `buildAndTest` (`mise run build; mise run test:unit`).
+3. package.json: `bin` target `src/<entry>.ts` -> `dist/final/node/<entry>.mjs`; add `@monochromatic-dev/config-tsdown`
+   devDep. Keep `main` at src (matches cli-git); NO `exports`, NO `files` for a private pure-CLI (cli-git has neither).
+4. NO by-name test routing: a pure CLI has no `.` dist to import. The bin's verification is a SMOKE-RUN of the built
+   bin (the by-name lever applied to an executable). If an integration test already spawns the CLI (cli-fy's
+   `cli.unit.test.ts`), REPOINT its spawn from `src/index.ts` to `dist/final/node/index.mjs` -> it becomes the
+   automated smoke-run inside buildAndTest. Unit tests of internal modules stay on source.
+5. CWD GOTCHA (bit cli-fy): a spawn-the-CLI integration test that used repo-root-relative paths with
+   `cwd: process.cwd()` only worked from repo root; run as a PACKAGE task, cwd is the package dir and the paths
+   misresolve (bun "Module not found"). FIX: set the spawn `cwd` to the monorepo root via
+   `import { findMiseMonorepoRootCached } from '@monochromatic-dev/module-fs-path/ts'` (async, no args, cached;
+   `const REPO_ROOT = await findMiseMonorepoRootCached();` at module top -- TLA is fine). Do NOT hand-roll
+   `'../../../..'` (brittle; the user corrected this). The bug was latent because the package had no test task before.
+6. SMOKE INVOCATION MUST BE PROVEN INERT (read the parser first): cli-fy's scenarios (node:path ops, --help, error
+   cases) are inert. For the remaining pure-CLIs: `mcp-mvm` + `dev-script-vm-builder` spin VMs -> ONLY `--help`/
+   `--version` after confirming help is inert; `cli-terminal-exec` (lib+bin below) must NOT be run at all (AGENTS.md:
+   probing terminal-exec opens a terminal) -- verify it by build + shebang + parser-read only.
+
+LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY): `module-image-diff` (NEXT PILOT),
+`module-token-count`, `cli-mvm` (lib `index.ts` + bin `src/cli.ts`; VM -> --help-only), `cli-terminal-exec` (lib
+`launch.ts` + bin `index.ts`; DO NOT RUN). Recipe (DRAFTED, not yet proven):
+1. Confirm lib AND bin share a platform (else two configs -- the hardest shape; avoid for the first pilot). Check with
+   the node-builtins grep. `module-image-diff` is node+node (lib uses `node:fs/promises`+`node:path` in encoding.*;
+   bin uses `@optique/run`), `--help` inert (optique prints help before any network/handler) -> the chosen first pilot.
+2. DUAL-ENTRY config (override the base's single entry):
+   ```ts
+   import { defineConfig, } from 'tsdown';
+   import base from '@monochromatic-dev/config-tsdown/.node.ts';
+   export default defineConfig({ ...base, entry: ['./src/index.ts', './src/cli.ts',], },);
+   ```
+   Emits `dist/final/node/index.mjs` (lib) + `dist/final/node/cli.mjs` (bin), each with `.d.mts`.
+3. package.json: `.` -> `{ types: index.d.mts, default: index.mjs }`; `module` -> index.mjs; `bin` -> `cli.mjs` (NOT
+   index.mjs); keep `./ts`+`./ts/*`; `files` += `dist/final`; ensure `@monochromatic-dev/config-tsdown` devDep.
+4. Lib tests: route public ones through `.` by-name (the proven lever; tool for single-import files, hand-merge for
+   2+). `module-image-diff` has 2 lib tests (similarity, client) -- check each symbol against the index, internals stay
+   on source. Bin: a separate SMOKE-RUN of `dist/final/node/cli.mjs --help` (add a tiny spawn test using
+   `findMiseMonorepoRootCached`, or run manually and record it).
+
+GENERAL: `cli-mvm`'s bin is `src/cli.ts`; `dev-script-inference-canary`'s would be `src/canary.ts` (already split in
+Phase A, but inference-canary is a dev tool -- assess separately). (`claude-code-plugins-source` is exempt.)
 
 NORMALIZE: `pi-shared-model-selection` -> node-only single-index: collapse the tsdown entry config to `src/index.ts`
 only (emit `dist/final/node`), drop the separate scope/cost/budget/pi-coding-agent bundles. Its export map was already
