@@ -290,6 +290,11 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
 - `cli-fy` (NODE bin; FIRST pure-CLI bin) — bin repointed to `dist/final/node/index.mjs`; `cli.unit.test.ts` repointed
   to spawn the built bin (13-scenario smoke-run) and its latent cwd bug fixed via `findMiseMonorepoRootCached`; unit
   tests (resolve, coerce) stay on source — `build(cli-fy): produce node bin dist` + `fix(cli-fy): resolve spawn cwd ...`.
+- `module-image-diff` (NODE lib+bin; FIRST proven dual-entry, commit `943e0f1a`) — `tsdown.node.config.ts` dual-entry
+  (`['./src/index.ts', './src/cli.ts']`) emits `index.mjs` (lib) + `cli.mjs` (bin); `.` -> node dist, `bin` -> cli.mjs.
+  `similarity` switched to by-name (lib bundle smoke test); ADDED `cli.unit.test.ts` spawning `cli.mjs --help` (bin
+  execution — `dts` can't verify cli.mjs since cli.ts has no exports); network test renamed to
+  `client.expensive.unit.test.ts` (excluded from default `test:unit`) — `build(module-image-diff): produce dist (lib + bin, node)`.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
 by-name form. Both work; no need to retrofit the first two.)
@@ -337,25 +342,39 @@ PURE-CLI (bin only, NO library `.` export — exemplar `cli-git`): `cli-fy` (DON
    `--version` after confirming help is inert; `cli-terminal-exec` (lib+bin below) must NOT be run at all (AGENTS.md:
    probing terminal-exec opens a terminal) -- verify it by build + shebang + parser-read only.
 
-LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY): `module-image-diff` (NEXT PILOT),
-`module-token-count`, `cli-mvm` (lib `index.ts` + bin `src/cli.ts`; VM -> --help-only), `cli-terminal-exec` (lib
-`launch.ts` + bin `index.ts`; DO NOT RUN). Recipe (DRAFTED, not yet proven):
+LIB+BIN (BOTH `.`/`./ts` exports AND a bin from a SEPARATE entry -- DUAL-ENTRY): `module-image-diff` (DONE, commit
+`943e0f1a`), `module-token-count`, `cli-mvm` (lib `index.ts` + bin `src/cli.ts`; VM -> --help-only), `cli-terminal-exec`
+(lib `launch.ts` + bin `index.ts`; DO NOT RUN). Recipe (PROVEN on module-image-diff; in-repo precedent
+`packages/dev-script/deps-cube/tsdown.node.config.ts` is the same dual-entry shape):
 1. Confirm lib AND bin share a platform (else two configs -- the hardest shape; avoid for the first pilot). Check with
    the node-builtins grep. `module-image-diff` is node+node (lib uses `node:fs/promises`+`node:path` in encoding.*;
-   bin uses `@optique/run`), `--help` inert (optique prints help before any network/handler) -> the chosen first pilot.
-2. DUAL-ENTRY config (override the base's single entry):
+   bin uses `@optique/run`), `--help` inert (optique prints help before any network/handler).
+2. DUAL-ENTRY config. The base default export must be re-wrapped with `defineConfig`, and under `isolatedDeclarations`
+   that needs an explicit `UserConfig` type on the const (a bare `export default defineConfig(...)` fails
+   `TS9037: Default exports can't be inferred with --isolatedDeclarations`). PROVEN form:
    ```ts
-   import { defineConfig, } from 'tsdown';
    import base from '@monochromatic-dev/config-tsdown/.node.ts';
-   export default defineConfig({ ...base, entry: ['./src/index.ts', './src/cli.ts',], },);
+   import { defineConfig, type UserConfig, } from 'tsdown';
+   const config: UserConfig = defineConfig({ ...base, entry: ['./src/index.ts', './src/cli.ts',], },);
+   export default config;
    ```
-   Emits `dist/final/node/index.mjs` (lib) + `dist/final/node/cli.mjs` (bin), each with `.d.mts`.
+   Emits `dist/final/node/index.mjs` (lib) + `dist/final/node/cli.mjs` (bin), each with `.d.mts`. tsdown chmod +x's
+   cli.mjs (shebang detected, logged "Granting execute permission"); index.mjs gets NO shebang.
 3. package.json: `.` -> `{ types: index.d.mts, default: index.mjs }`; `module` -> index.mjs; `bin` -> `cli.mjs` (NOT
    index.mjs); keep `./ts`+`./ts/*`; `files` += `dist/final`; ensure `@monochromatic-dev/config-tsdown` devDep.
 4. Lib tests: route public ones through `.` by-name (the proven lever; tool for single-import files, hand-merge for
-   2+). `module-image-diff` has 2 lib tests (similarity, client) -- check each symbol against the index, internals stay
-   on source. Bin: a separate SMOKE-RUN of `dist/final/node/cli.mjs --help` (add a tiny spawn test using
-   `findMiseMonorepoRootCached`, or run manually and record it).
+   2+). `module-image-diff` used `similarity` (both symbols public) as the lib smoke test; internals stay on source.
+5. BIN MUST BE EXECUTED, not just emitted (advisor catch). The lib by-name test loads `index.mjs`, never `cli.mjs`;
+   and `dts` cannot verify `cli.mjs` because the bin entry has NO exports (its `.d.mts` is an empty `export {}`). So
+   cli.mjs is an UNVERIFIED artifact until run. ADD a committed `cli.unit.test.ts` that spawns
+   `bun dist/final/node/cli.mjs --help`, asserting exit 0 + observed help text (model on cli-fy: `findMiseMonorepoRootCached`
+   for `cwd`, `nano-spawn` + `module-fs-path` as devDeps + `pnpm install`). Read the actual `--help` output FIRST, then
+   assert against it (test-assumptions-before-encoding). `--help` is inert -> safe in the default gate.
+6. NETWORK / VM / SLOW TESTS: rename to `<name>.expensive.unit.test.ts` (precedent `cli-vmsync/lifecycle.expensive.unit.test.ts`;
+   the `test:unit` template excludes `str contains ".expensive."` unless `--all`). Adding `test:unit` ACTIVATES the
+   `*.unit.test.ts` glob, so an unrenamed network test would fire paid APIs on every `buildAndTest` AND the final
+   repo-wide `mise run test`. Leave the renamed file on SOURCE imports (no by-name switch -> zero paid calls during the
+   conversion; the lib smoke test already covers the bundle). `module-image-diff`'s `client` test was renamed this way.
 
 GENERAL: `cli-mvm`'s bin is `src/cli.ts`; `dev-script-inference-canary`'s would be `src/canary.ts` (already split in
 Phase A, but inference-canary is a dev tool -- assess separately). (`claude-code-plugins-source` is exempt.)
