@@ -195,4 +195,7 @@ can audit verdicts without instrumenting the code further.
 
 ## Tools
 
-- `propose_trust`: request permission for something the guardrail blocked
+- `propose_trust`: request permission for something the guardrail blocked.
+  If the proposed rule exactly matches an active session trust directive,
+  auto-mode accepts it without a UI prompt. New or reset-cleared rules still
+  prompt the user.
