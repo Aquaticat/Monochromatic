@@ -1084,6 +1084,9 @@ importers:
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript

@@ -6,6 +6,7 @@
  */
 
 import spawn from 'nano-spawn';
+import { findGitRepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 import dedent from 'string-dedent';
 
 /** Single line in a diff result */
@@ -96,6 +97,13 @@ async function captureGitDiffStdout({
   readonly fixPath: string;
 },): Promise<string> {
   try {
+    // The `git` on PATH is the cli-git wrapper, which rejects any git command
+    // whose effective cwd is not the repository root. mise runs this package's
+    // build task with cwd set to the package directory, so spawn from the
+    // resolved repo root instead. The --no-index paths are absolute, so the cwd
+    // shift never changes which files git diffs.
+    /** Git repository root, resolved to satisfy cli-git's repo-root guard. */
+    const gitRoot = await findGitRepoRootCached();
     /** Spawn result holding stdout on the success path. */
     const result = await spawn(
       'git',
@@ -107,6 +115,7 @@ async function captureGitDiffStdout({
         initialPath,
         fixPath,
       ],
+      { cwd: gitRoot, },
     );
     return result.stdout;
   }

@@ -20,6 +20,7 @@
     "micromark": "catalog:",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "nano-spawn": "catalog:",
     "string-dedent": "catalog:"
   },
