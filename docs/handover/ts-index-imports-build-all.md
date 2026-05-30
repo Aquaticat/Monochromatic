@@ -480,3 +480,32 @@ Gate status:
 Close-out TODO (not yet done): decide the 3 throwaway tools at repo root — `mise.rewrite-ts-imports.ts`,
 `mise.detect-merge-sites.ts`, `mise.switch-tests-byname.ts` (untracked) — commit or delete. Surface in the final
 summary: the hook-types exemption and the fs-path `.`-dist-is-node-only README note.
+
+## Gate RESULT (all green, 2026-05-29)
+
+The whole repo-wide gate now passes. The locked task is DONE.
+
+- Resolution analysis: PASS. Wrote `mise.analyze-resolution.ts` (root, untracked): builds a package-name -> exports
+  map from every `packages/**/package.json`, scans every `@monochromatic-dev/<pkg>[/sub]` import-context specifier,
+  resolves each against the target's `exports`, and buckets it. Result over 940 specifiers: 706 cross->src, 138
+  exempt-target, 96 self-import (94 of which resolve to dist == the intentional by-name lib smokes, correctly
+  excluded), and CROSS->DIST violations: 0, UNRESOLVED: 0, unknown-target: 0. The only initial finding was a
+  documentation typo: hook-types' `src/index.ts` `@example` imported `@monochromatic-dev/claude-code-hook-types`
+  (a name no package owns; real name is `...-plugins-hook-types`). Fixed to the canonical `/ts` form (commit d452c277).
+- Repo-wide `mise run '//packages/...:build'`: PASS (exit 0, ~43s). Two non-import issues surfaced and were fixed:
+  - `module-image-diff`: a byte-identical duplicate `client.unit.test.ts` was left behind when the conversion
+    relocated it to `client.expensive.unit.test.ts` (paid Voyage/Gemini/OpenRouter calls). The duplicate would have
+    fired the paid test under the default gate. Removed (commit c07865ab).
+  - `dev-script-inference-canary-viewer`: PRE-EXISTING build break, unrelated to the import refactor. Its build runs
+    `bun src/build.ts`, which spawns `git diff --no-index`; `git` on PATH is the cli-git wrapper, whose repo-root
+    guard rejects the package-dir cwd that mise package-tasks use. Fixed by resolving the root via
+    `findGitRepoRootCached` (from `@monochromatic-dev/module-fs-path/ts`) and passing it as the spawn `cwd`; the
+    `--no-index` paths are absolute so the cwd shift is inert to the diff (commit fa4e18ed). User authorized this
+    out-of-task-set fix.
+  - `claude-code-plugins-terminal-title`: the gate regenerated this tracked hook artifact from unchanged source; the
+    committed copy was stale (older toolchain downleveled `using` via a `_usingCtx()` polyfill, current tsdown emits
+    native `using`). Behaviorally identical; refreshed so a clean checkout matches a fresh build (commit 6f5ab59e).
+    User authorized the scope expansion.
+- Repo-wide `mise run '//packages/...:test:unit'`: PASS (exit 0, ~27s; default tier, excludes `*.expensive.*`).
+- Repo-wide `mise run '//packages/...:lint:types'`: PASS (exit 0, ~16s) as final confirmation. oxlint on the one
+  edited package (inference-canary-viewer) also clean (0 warnings, 0 errors).
