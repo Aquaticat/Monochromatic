@@ -8,16 +8,184 @@ import { join, } from 'node:path';
 import { json, } from 'node:stream/consumers';
 
 /**
- * Raw OpenTofu `data.external` payload read from stdin; expected to carry an `asn` key.
+ * OpenTofu `data.external` query carrying ASN text.
+ *
+ * @example
+ * ```ts
+ * const query: ExternalAsnQuery = { asn: 'AS41231' };
+ * ```
  */
-const input = await json(process.stdin,) as Record<string, string>;
+type ExternalAsnQuery = {
+  readonly asn: string;
+};
+
 /**
- * Normalised ASN (uppercased) used both for filtering ipinfo entries and naming the cache file.
+ * Minimal ipinfo Lite record shape consumed by this script.
+ *
+ * @example
+ * ```ts
+ * const record: IpinfoLiteRecord = {
+ *   asn: 'AS41231',
+ *   network: '91.189.88.0/24',
+ * };
+ * ```
+ */
+type IpinfoLiteRecord = {
+  readonly asn: string;
+  readonly network: string;
+};
+
+/**
+ * Unknown JSON object shape used before field-specific type guards run.
+ *
+ * @example
+ * ```ts
+ * const object: UnknownRecord = { key: 'value' };
+ * ```
+ */
+type UnknownRecord = Record<PropertyKey, unknown>;
+
+/**
+ * Sentinel returned when NDJSON line does not carry matching network.
+ */
+const NO_MATCHING_NETWORK = Symbol('no matching network',);
+
+/**
+ * Sentinel type for non-matching NDJSON lines.
+ */
+type NoMatchingNetwork = typeof NO_MATCHING_NETWORK;
+
+/**
+ * Checks whether unknown value is object-like enough for property guards.
+ *
+ * @param value - Candidate JSON value.
+ *
+ * @returns Whether value supports property checks.
+ *
+ * @example
+ * ```ts
+ * isRecord({ asn: 'AS41231' }); // true
+ * ```
+ */
+function isRecord(value: unknown,): value is UnknownRecord {
+  return ((typeof value) === 'object')
+    && (value !== null);
+}
+
+/**
+ * Checks whether unknown value is OpenTofu ASN query input.
+ *
+ * @param value - Candidate OpenTofu query value.
+ *
+ * @returns Whether value carries ASN text.
+ *
+ * @example
+ * ```ts
+ * isExternalAsnQuery({ asn: 'AS41231' }); // true
+ * ```
+ */
+function isExternalAsnQuery(value: unknown,): value is ExternalAsnQuery {
+  return isRecord(value,)
+    && ((typeof value.asn) === 'string');
+}
+
+/**
+ * Parses OpenTofu query input or throws with context.
+ *
+ * @param value - Candidate OpenTofu query value.
+ *
+ * @returns Validated ASN query.
+ *
+ * @throws When value lacks ASN text.
+ *
+ * @example
+ * ```ts
+ * parseExternalAsnQuery({ asn: 'AS41231' });
+ * ```
+ */
+function parseExternalAsnQuery(value: unknown,): ExternalAsnQuery {
+  if (isExternalAsnQuery(value,))
+    return value;
+
+  throw new Error('OpenTofu external query must include string asn',);
+}
+
+/**
+ * Checks whether unknown value is ipinfo Lite record with fields consumed here.
+ *
+ * @param value - Candidate parsed NDJSON record.
+ *
+ * @returns Whether value carries ASN and network text.
+ *
+ * @example
+ * ```ts
+ * isIpinfoLiteRecord({ asn: 'AS41231', network: '91.189.88.0/24' }); // true
+ * ```
+ */
+function isIpinfoLiteRecord(value: unknown,): value is IpinfoLiteRecord {
+  return isRecord(value,)
+    && ((typeof value.asn) === 'string')
+    && ((typeof value.network) === 'string');
+}
+
+/**
+ * Parses one ipinfo NDJSON line and returns network when ASN matches.
+ *
+ * @param line - NDJSON text line from ipinfo Lite.
+ *
+ * @param targetAsn - Normalised ASN to keep.
+ *
+ * @returns Matching network CIDR, or sentinel for non-matching or malformed lines.
+ *
+ * @example
+ * ```ts
+ * parseMatchingNetwork({
+ *   line: '{"asn":"AS41231","network":"91.189.88.0/24"}',
+ *   targetAsn: 'AS41231',
+ * });
+ * ```
+ */
+function parseMatchingNetwork({
+  line,
+  targetAsn,
+}: {
+  readonly line: string;
+  readonly targetAsn: string;
+},): string | NoMatchingNetwork {
+  if (!line.includes(targetAsn,))
+    return NO_MATCHING_NETWORK;
+
+  /**
+   * Parsed NDJSON entry before runtime shape validation.
+   */
+  const entry: unknown = JSON.parse(line,);
+  if (!isIpinfoLiteRecord(entry,))
+    return NO_MATCHING_NETWORK;
+
+  if (entry.asn !== targetAsn)
+    return NO_MATCHING_NETWORK;
+
+  return entry.network;
+}
+
+/**
+ * Raw OpenTofu `data.external` payload read from stdin.
+ */
+const rawInput: unknown = await json(process.stdin,);
+
+/**
+ * Validated OpenTofu query payload.
+ */
+const input = parseExternalAsnQuery(rawInput,);
+
+/**
+ * Normalised ASN used both for filtering ipinfo entries and naming the cache file.
  */
 const TARGET_ASN = input.asn
-  ?.toUpperCase();
+  .trim()
+  .toUpperCase();
 
-if (!TARGET_ASN)
+if (TARGET_ASN === '')
   throw new Error('No ASN provided',);
 
 /**
@@ -27,13 +195,17 @@ const CACHE_FILE = join(
   import.meta.dirname,
   `cache_${TARGET_ASN}.json`,
 );
+
+/* oxlint-disable eslint/no-magic-numbers -- Cache TTL unit conversion is clearer as one policy duration expression than as separately named calendar ratios. */
 /**
- * Cache TTL: ipinfo prefix data changes slowly so a month between refetches is acceptable.
+ * Cache TTL: ipinfo prefix data changes slowly so month-scale refetches are acceptable.
  */
 const THIRTY_DAYS_MS = 30 * 24
   * 60
   * 60
   * 1_000;
+/* oxlint-enable eslint/no-magic-numbers */
+
 /**
  * ipinfo Lite dataset endpoint; token is read from env so it stays out of source.
  */
@@ -43,11 +215,18 @@ const URL =
 
 /**
  * Entry point invoked at module load: serves cached IPs when fresh, otherwise streams
- * the ipinfo Lite dataset and writes a comma-joined list of CIDRs matching the target ASN.
+ * ipinfo Lite dataset and writes comma-joined CIDRs matching target ASN.
  *
- * Output is a JSON object on stdout that OpenTofu's `external` data source consumes.
+ * Output is JSON object on stdout that OpenTofu's `external` data source consumes.
+ *
+ * @throws When fetch fails and no cached fallback exists.
+ *
+ * @example
+ * ```ts
+ * await run();
+ * ```
  */
-async function run() {
+async function run(): Promise<void> {
   // Check Cache
   if (existsSync(CACHE_FILE,)) {
     /**
@@ -71,16 +250,23 @@ async function run() {
   // Stream & Filter (Memory-only)
   try {
     /**
-     * HTTP response carrying the gzip-encoded NDJSON body.
+     * HTTP response carrying gzip-encoded NDJSON body.
      */
     const response = await fetch(URL,);
     /**
-     * Decompressed body stream; reading line-by-line avoids buffering the whole dataset.
+     * Nullable body from Fetch API, checked before stream decompression.
      */
-    const stream = response.body!
+    const { body, } = response;
+    if (body === null)
+      throw new Error('ipinfo response did not include a body',);
+
+    /**
+     * Decompressed body stream; reading line-by-line avoids buffering whole dataset.
+     */
+    const stream = body
       .pipeThrough(new DecompressionStream('gzip',),);
     /**
-     * Pull-based reader over the decompressed stream so we drive consumption ourselves.
+     * Pull-based reader over decompressed stream so consumption stays incremental.
      */
     const reader = stream.getReader();
     /**
@@ -93,23 +279,28 @@ async function run() {
      */
     const ips: string[] = [];
     /**
-     * Trailing partial line carried over between chunks until a newline arrives.
+     * Trailing partial line carried over between chunks until newline arrives.
      */
     let leftover = '';
 
     while (true) {
       /**
-       * Next stream chunk: `done` signals end-of-stream, `value` is the raw bytes.
+       * Next stream read result from sequential pull API.
+       */
+      // oxlint-disable-next-line eslint/no-await-in-loop -- ReadableStream readers are sequential pull sources; next read depends on reader state from previous read.
+      const nextRead = await reader.read();
+      /**
+       * Stream completion flag and current raw chunk.
        */
       const {
         done,
         value,
-      } = await reader.read();
+      } = nextRead;
       if (done)
         break;
 
       /**
-       * Decoded chunk prefixed with the previous leftover so line splits work across read boundaries.
+       * Decoded chunk prefixed with previous leftover so line splits work across read boundaries.
        */
       const chunk = leftover + decoder
         .decode(
@@ -117,21 +308,22 @@ async function run() {
         { stream: true, },
       );
       /**
-       * Chunk split on newlines; the last element is held back as the next iteration's leftover.
+       * Chunk split on newlines; last element is held back for next iteration.
        */
       const lines = chunk.split('\n',);
       leftover = lines.pop()
         ?? '';
 
       for (const line of lines) {
-        // Optimized check: string search before JSON.parse
-        if (line.includes(`"asn": "${TARGET_ASN}"`,)) {
-          /**
-           * Parsed NDJSON record; only `network` is read out, the rest is discarded.
-           */
-          const entry = JSON.parse(line,);
-          ips.push(entry.network,);
-        }
+        /**
+         * Matching network parsed from current line, when line belongs to target ASN.
+         */
+        const network = parseMatchingNetwork({
+          line,
+          targetAsn: TARGET_ASN,
+        },);
+        if (network !== NO_MATCHING_NETWORK)
+          ips.push(network,);
       }
     }
 
@@ -163,4 +355,4 @@ async function run() {
   }
 }
 
-run();
+await run();

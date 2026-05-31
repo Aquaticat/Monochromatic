@@ -50,6 +50,7 @@ Main Terraform configuration that:
 hcloud_token  = "your_hetzner_api_token"
 ipinfo_token  = "your_ipinfo_token"
 home_isp_asns = { home = "AS12345" }
+storagebox_hostnames = ["u123456.your-storagebox.de"]
 ```
 
 2. Create `.env.local` with:
@@ -67,9 +68,9 @@ pnpm install
 4. Initialize and apply:
 
 ```bash
-terraform init
-terraform plan
-terraform apply
+tofu init
+tofu plan
+tofu apply
 ```
 
 ## Firewall rules
@@ -88,6 +89,7 @@ terraform apply
 - DNS to Hetzner (53)
 - HTTPS TCP/UDP to CDN IPs (chunked to respect rule limits)
 - HTTPS TCP (443) to top Tor guards by consensus weight, filtered to ORPort 443 (for the v3 onion service)
+- SMB/CIFS TCP (445) to configured Hetzner Storage Box hostnames or CIDRs
 
 ## IP sources
 
@@ -101,6 +103,7 @@ The configuration aggregates IPs from:
 - YouTube (via GitHub repo)
 - Coolify (via API)
 - Tor guards advertising ORPort 443 (via Onionoo, refreshed hourly)
+- Hetzner Storage Box destinations (`*.your-storagebox.de`) via configured concrete hostnames or explicit CIDRs
 - Various static IPs (LetsEncrypt, pCloud, Linkup, Resend, OpenRouter, etc.)
 
 ## Caddy
@@ -135,7 +138,7 @@ The server uses key-only root authentication with no root password set.
 Coolify connects exclusively via SSH key (stored in Coolify's dashboard under **Security > Private Keys**),
 and `sshd_config` enforces this with:
 
-```
+```sshconfig
 PermitRootLogin prohibit-password
 PubkeyAuthentication yes
 PasswordAuthentication no

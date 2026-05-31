@@ -9,7 +9,7 @@ terraform {
       version = "~> 3.5"
     }
     external = {
-      source = "hashicorp/external"
+      source  = "hashicorp/external"
       version = "~> 2.3"
     }
     cidrblock = {
@@ -33,8 +33,20 @@ variable "home_isp_asns" {
   description = "ASN map for home ISP ranges used in ssh/ping rules. Supply via *.auto.tfvars."
 }
 
+variable "storagebox_hostnames" {
+  type        = list(string)
+  default     = []
+  description = "Concrete Hetzner Storage Box hostnames under your-storagebox.de to resolve for SMB/CIFS egress."
+}
+
+variable "storagebox_destination_ips" {
+  type        = list(string)
+  default     = []
+  description = "Optional Hetzner Storage Box destination CIDRs for SMB/CIFS egress when DNS resolution is not desired."
+}
+
 variable "target_asns" {
-  type    = map(string)
+  type = map(string)
   default = {
     ubuntu = "AS41231"
   }
@@ -61,6 +73,15 @@ data "external" "asn_data" {
 data "external" "tor_relays" {
   program = ["bun", "run", "${path.module}/fetch_tor_relays.ts"]
   query   = {}
+}
+
+data "external" "storagebox_ips" {
+  count   = length(var.storagebox_hostnames) == 0 ? 0 : 1
+  program = ["bun", "run", "${path.module}/resolve_storagebox_hosts.ts"]
+
+  query = {
+    hostnames = join(",", var.storagebox_hostnames)
+  }
 }
 
 data "http" "cloudflare_ips" {
@@ -102,7 +123,7 @@ locals {
     local.cloudflare_ips_raw_data.result.ipv4_cidrs,
     local.cloudflare_ips_raw_data.result.ipv6_cidrs
   )
-  cloudflare_ips  = [
+  cloudflare_ips = [
     for ip in local.cloudflare_ips_unsanitized : ip
     if can(cidrhost(ip, 0))
   ]
@@ -111,7 +132,7 @@ locals {
 
   cloudfront_ips_unsanitized = concat(
     local.cloudfront_ips_raw_data.CLOUDFRONT_GLOBAL_IP_LIST,
-    local.cloudfront_ips_raw_data.CLOUDFRONT_REGIONAL_EDGE_IP_LIST)
+  local.cloudfront_ips_raw_data.CLOUDFRONT_REGIONAL_EDGE_IP_LIST)
 
   cloudfront_ips = [
     for ip in local.cloudfront_ips_unsanitized : ip
@@ -122,7 +143,7 @@ locals {
 
   fastly_ips_unsanitized = concat(
     local.fastly_ips_raw_data.addresses,
-    local.fastly_ips_raw_data.ipv6_addresses)
+  local.fastly_ips_raw_data.ipv6_addresses)
 
   fastly_ips = [
     for ip in local.fastly_ips_unsanitized : ip
@@ -138,7 +159,7 @@ locals {
     local.github_ips_raw_data.git,
     local.github_ips_raw_data.packages,
     local.github_ips_raw_data.importer,
-    local.github_ips_raw_data.actions)
+  local.github_ips_raw_data.actions)
 
   github_ips = [
     for ip in local.github_ips_unsanitized : ip
@@ -156,8 +177,21 @@ locals {
     if can(cidrhost(ip, 0))
   ]
 
-  ubuntu_ips_v4 = [for ip in local.ubuntu_ips : ip if !strcontains(ip, ":")]
-  ubuntu_ips_v6 = [for ip in local.ubuntu_ips : ip if strcontains(ip, ":")]
+  storagebox_dns_ips = length(var.storagebox_hostnames) == 0 ? [] : [
+    for ip in split(",", data.external.storagebox_ips[0].result.ips) : ip
+    if ip != "" && can(cidrhost(ip, 0))
+  ]
+
+  # Hetzner Storage Box hostnames live under <username>.your-storagebox.de.
+  # Hetzner documents those host IPs as changeable, while Hetzner Cloud firewall
+  # rules accept only CIDRs, so concrete hostnames are resolved into CIDRs here.
+  storagebox_destination_ips = [
+    for ip in concat(var.storagebox_destination_ips, local.storagebox_dns_ips) : ip
+    if can(cidrhost(ip, 0))
+  ]
+
+  ubuntu_ips_v4        = [for ip in local.ubuntu_ips : ip if !strcontains(ip, ":")]
+  ubuntu_ips_v6        = [for ip in local.ubuntu_ips : ip if strcontains(ip, ":")]
   ubuntu_ips_v4_chunks = chunklist(local.ubuntu_ips_v4, 20)
   ubuntu_ips_v6_chunks = chunklist(local.ubuntu_ips_v6, 20)
 
@@ -195,7 +229,7 @@ locals {
 
   # Wattenberger
   wattenberger_ips = ["2a05:d014:58f:6200::259/128", "2a05:d014:58f:6200::258/128",
-"63.176.8.218/32", "35.157.26.135/32"]
+  "63.176.8.218/32", "35.157.26.135/32"]
 
   # LetsEncrypt
   letsencrypt_ips = ["18.208.88.157/32", "98.84.224.111/32", "2600:1f18:16e:df01::259/128", "2600:1f18:16e:df01::258/128", "172.65.32.248/32", "2606:4700:60:0:f53d:5624:85c7:3a2c/128"]
@@ -312,7 +346,7 @@ locals {
     local.github_ips,
     local.ubuntu_ips,
     local.youtube_ips,
-    local.small_cdn_ips)
+  local.small_cdn_ips)
 
   coolify_ips_unsanitized = concat(
     [for s in split("\n", trimspace(data.http.coolify_ipv4.response_body)) :
@@ -353,7 +387,7 @@ locals {
 
 check "ip_syntax_validation" {
   assert {
-    condition     = alltrue([for ip in concat(local.cdn_ips, local.hetzner_ips, local.coolify_ips, local.tor_relay_ips) : can(cidrhost(ip, 0))])
+    condition     = alltrue([for ip in concat(local.cdn_ips, local.hetzner_ips, local.coolify_ips, local.tor_relay_ips, local.storagebox_destination_ips) : can(cidrhost(ip, 0))])
     error_message = "Typo detected in your local IP list!"
   }
 }
@@ -372,6 +406,10 @@ data "cidrblock_summarization" "home_isp_ips" {
 
 data "cidrblock_summarization" "coolify_ips" {
   cidr_blocks = local.coolify_ips
+}
+
+data "cidrblock_summarization" "storagebox_destination_ips" {
+  cidr_blocks = local.storagebox_destination_ips
 }
 
 locals {
@@ -430,6 +468,27 @@ locals {
     [for i, chunk in local.ubuntu_ips_v6_chunks : {
       desc  = "http ubuntu v6 - chunk ${i}"
       port  = "80"
+      proto = "tcp"
+      ips   = chunk
+    }]
+  ))
+
+  storagebox_ips_summarized = data.cidrblock_summarization.storagebox_destination_ips.summarized_cidr_blocks
+  storagebox_ips_v4         = [for ip in local.storagebox_ips_summarized : ip if !strcontains(ip, ":")]
+  storagebox_ips_v6         = [for ip in local.storagebox_ips_summarized : ip if strcontains(ip, ":")]
+  storagebox_ips_v4_chunks  = chunklist(local.storagebox_ips_v4, 20)
+  storagebox_ips_v6_chunks  = chunklist(local.storagebox_ips_v6, 20)
+
+  storagebox_smb_out_rules = flatten(concat(
+    [for i, chunk in local.storagebox_ips_v4_chunks : {
+      desc  = "smb hetzner storagebox v4 - chunk ${i}"
+      port  = "445"
+      proto = "tcp"
+      ips   = chunk
+    }],
+    [for i, chunk in local.storagebox_ips_v6_chunks : {
+      desc  = "smb hetzner storagebox v6 - chunk ${i}"
+      port  = "445"
       proto = "tcp"
       ips   = chunk
     }]
@@ -578,6 +637,19 @@ resource "hcloud_firewall" "tofu" {
   # path-spec /16 subnet diversity prevents the prior /24-sweep abuse pattern.
   dynamic "rule" {
     for_each = local.tor_out_rules
+    content {
+      description     = rule.value.desc
+      direction       = "out"
+      protocol        = rule.value.proto
+      port            = rule.value.port
+      destination_ips = rule.value.ips
+    }
+  }
+
+  # Hetzner Storage Box SMB/CIFS outbound: Storage Box hostnames use
+  # <username>.your-storagebox.de, but hcloud firewall rules require CIDRs.
+  dynamic "rule" {
+    for_each = local.storagebox_smb_out_rules
     content {
       description     = rule.value.desc
       direction       = "out"

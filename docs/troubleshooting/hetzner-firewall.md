@@ -1,6 +1,6 @@
-# Hetzner cloud firewall outbound-allowlist breaks Tor onion, ICMP, apt-over-HTTP, unlisted-host fetch, and non-Hetzner DNS
+# Hetzner cloud firewall outbound-allowlist operational consequences
 
-This file documents five independent operational consequences of
+This file documents six independent operational consequences of
 running with an outbound-allowlist firewall on Hetzner's cloud,
 which was adopted after Hetzner flagged the server for port
 scanning (caused by a Tor relay, since disabled). Each consequence
@@ -281,11 +281,103 @@ report.
 
 ---
 
+## Bug 6: Hetzner Storage Box SMB needs outbound TCP 445 to changeable Storage Box IPs
+
+### Symptom
+
+Mounting a Hetzner Storage Box over SMB/CIFS from the host fails
+while the outbound allowlist is active:
+
+```bash
+mount.cifs -o seal,user=<username>,pass=<password> //<username>.your-storagebox.de /mnt/my-storage-box
+# timeout / connection refused on TCP 445
+```
+
+### Root cause
+
+Hetzner's Storage Box docs say SMB/CIFS uses the
+`<username>.your-storagebox.de` domain and that each Storage Box
+comes with IPv4 and IPv6 addresses that can change. The hcloud
+firewall provider's `hcloud_firewall` schema accepts `destination_ips`
+as IPs or CIDRs, not hostnames, so `*.your-storagebox.de` cannot be
+expressed directly in the firewall rule.
+
+The implemented rule resolves configured concrete Storage Box hostnames
+through `packages/config/tofu/resolve_storagebox_hosts.ts`, combines
+them with optional explicit `storagebox_destination_ips`, summarizes
+those CIDRs, chunks them, and adds outbound TCP 445 rules to
+`hcloud_firewall.tofu` via `storagebox_smb_out_rules` in
+`packages/config/tofu/hetzner.tf`.
+
+### Verification
+
+DNS checks confirmed the public domain shape and lack of wildcard DNS:
+
+```bash
+dig +short your-storagebox.de A
+# 213.133.105.29
+dig +short '*.your-storagebox.de' A
+# no answer
+dig +short u123456.your-storagebox.de A
+# 91.98.246.177
+```
+
+ASN checks for observed Storage Box addresses resolved to Hetzner
+Online, but the implementation does not allow all AS24940 ranges:
+
+```bash
+curl --silent --show-error --fail https://ipinfo.io/91.98.246.177/org
+# AS24940 Hetzner Online GmbH
+```
+
+The resolver rejects wildcard input, returns an empty CIDR list for
+an empty hostname list, and resolves a concrete hostname through DNS:
+
+```bash
+mise run //packages/config/tofu:test:storagebox-resolver
+mise run //packages/config/tofu:test:storagebox-resolver:network u123456.your-storagebox.de
+```
+
+Configuration validation passes through the package task:
+
+```bash
+mise run //packages/config/tofu:lint
+```
+
+### Verified workaround (the design itself)
+
+Resolve configured concrete Storage Box hostnames into `/32` and
+`/128` CIDRs, optionally adding explicit CIDRs via
+`storagebox_destination_ips`. Tradeoff: each Storage Box hostname must
+be listed in local tfvars, because hcloud cannot express a DNS wildcard
+and the public wildcard does not resolve.
+
+### What does not work
+
+- Putting `*.your-storagebox.de` directly in `destination_ips`: hcloud
+  firewall rules require IPs or CIDRs.
+- Pinning the current A/AAAA answer for one Storage Box hostname:
+  Hetzner documents those addresses as changeable, so the rule would
+  silently drift.
+- Opening TCP 445 to all Hetzner Online AS24940 ranges: broader than
+  Storage Boxes and unnecessary when the concrete hostname can be
+  resolved.
+- Opening TCP 445 globally: contradicts the outbound allowlist posture
+  adopted after the original abuse report.
+
+### Why we do not file this upstream
+
+By-design product boundary. Hetzner's Storage Box domain is stable for
+clients, and Hetzner Cloud firewalls intentionally operate on IP/CIDR
+rules. No upstream report.
+
+---
+
 ## Why we do not loosen the firewall
 
-Each of the five sections concludes with a small tradeoff
+Each of the six sections concludes with a small tradeoff
 acceptable given the original abuse report. The blanket "open
-ICMP / open all 443 / open all DNS" alternative re-creates the
+ICMP / open all 443 / open all DNS / open all 445" alternative re-creates the
 exposure that motivated the firewall. The audit trail above
 explains each rule's purpose; future maintainers can update one
 rule without reverting the posture.
