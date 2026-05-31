@@ -34,15 +34,19 @@ import {
 } from 'node:path';
 import type { Plugin, } from 'rolldown';
 
+import { NO_ATTR_TYPE, } from './ast-extract.ts';
 import { HANDLERS, } from './handlers.ts';
-import { ABSENT, } from './maybe.ts';
 import {
   ATTR_QUERY_KEY,
   extractAttrType,
+  NO_QUERY_ATTR,
   stripAttrQuery,
 } from './patterns.ts';
 import { scanImporterForAttribute, } from './scan-importer.ts';
-import { transformImportAttributes, } from './transform.ts';
+import {
+  NO_TRANSFORM,
+  transformImportAttributes,
+} from './transform.ts';
 
 export { importAttributesPlugin, };
 
@@ -84,14 +88,14 @@ function importAttributesPlugin(): Plugin {
       id,
     ) {
       /**
-       * Transformed module, or {@link ABSENT} when no attribute clause was present.
+       * Transformed module, or {@link NO_TRANSFORM} when no attribute clause was present.
        */
       const result = transformImportAttributes({
         code,
         id,
       },);
-      // Rolldown's transform hook signals "no change" with null; convert the ABSENT sentinel back at the boundary.
-      if (result === ABSENT)
+      // Rolldown's transform hook signals "no change" with null; convert the NO_TRANSFORM sentinel back at the boundary.
+      if (result === NO_TRANSFORM)
         return null;
       return result;
     },
@@ -111,7 +115,7 @@ function importAttributesPlugin(): Plugin {
     ) {
       /** Check for query-param-tagged specifiers (from static imports after transform). */
       const queryAttrType = extractAttrType(source,);
-      if (queryAttrType !== ABSENT) {
+      if (queryAttrType !== NO_QUERY_ATTR) {
         /** Specifier without the attribute query so the downstream resolver can locate the file. */
         const cleanSource = stripAttrQuery(source,);
 
@@ -168,7 +172,7 @@ function importAttributesPlugin(): Plugin {
           importerSourceCache,
         },);
 
-        if (attrType !== ABSENT) {
+        if (attrType !== NO_ATTR_TYPE) {
           /** Resolved descriptor for an untagged dynamic-import specifier; `null` triggers the relative fallback. */
           const resolved = await this.resolve(
             source,
@@ -212,7 +216,7 @@ function importAttributesPlugin(): Plugin {
     async load(id,) {
       /** Attribute type encoded in the requested ID; absent IDs are left to other loaders. */
       const attrType = extractAttrType(id,);
-      if (attrType === ABSENT)
+      if (attrType === NO_QUERY_ATTR)
         return null;
 
       /** Registered transformer for this attribute type; absent types are left to other loaders. */

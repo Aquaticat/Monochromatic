@@ -21,11 +21,8 @@ import {
   extractTypeFromAttributes,
   extractTypeFromOptions,
   getStringLiteralValue,
+  NO_ATTR_TYPE,
 } from './ast-extract.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `importerSourceCache` is an injected memoization cache mutated via `.set` on a miss; threading it immutably would defeat the cache, so deep-readonly cannot apply. */
 /**
@@ -41,7 +38,7 @@ import {
  *
  * @param importerSourceCache - cache to avoid re-reading the same file
  *
- * @returns attribute type string if found and supported, {@link ABSENT} otherwise
+ * @returns attribute type string if found and supported, {@link NO_ATTR_TYPE} otherwise
  *
  * @example
  * ```ts
@@ -58,7 +55,7 @@ export function scanImporterForAttribute({
   readonly specifier: string;
   readonly importerPath: string;
   importerSourceCache: Map<string, string>;
-},): Maybe<string> {
+},): string | typeof NO_ATTR_TYPE {
   /** Importer source text; lazily read from disk on cache miss and stored back. */
   let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
@@ -73,12 +70,12 @@ export function scanImporterForAttribute({
       );
     }
     catch {
-      return ABSENT;
+      return NO_ATTR_TYPE;
     }
   }
 
   if (!source.includes(specifier,))
-    return ABSENT;
+    return NO_ATTR_TYPE;
 
   /** Parsed AST root produced by rolldown's parser. */
   const result = parseSync(
@@ -86,12 +83,12 @@ export function scanImporterForAttribute({
     source,
   );
   /** Mutable accumulator written by the visitor when a matching specifier is encountered. */
-  let found: Maybe<string> = ABSENT;
+  let found: string | typeof NO_ATTR_TYPE = NO_ATTR_TYPE;
 
   /** AST visitor that records the attribute type on the first matching specifier. */
   const visitor = new Visitor({
     ImportDeclaration(node: ESTree.ImportDeclaration,): void {
-      if (found !== ABSENT)
+      if (found !== NO_ATTR_TYPE)
         return;
       if ((node.source
         .value
@@ -103,7 +100,7 @@ export function scanImporterForAttribute({
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
-      if (found !== ABSENT)
+      if (found !== NO_ATTR_TYPE)
         return;
       if ((node.source
         === null)
@@ -120,7 +117,7 @@ export function scanImporterForAttribute({
     },
 
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
-      if (found !== ABSENT)
+      if (found !== NO_ATTR_TYPE)
         return;
       if ((node.source
         .value
@@ -132,7 +129,7 @@ export function scanImporterForAttribute({
     },
 
     ImportExpression(node: ESTree.ImportExpression,): void {
-      if (found !== ABSENT)
+      if (found !== NO_ATTR_TYPE)
         return;
       if (node.options
         === null)

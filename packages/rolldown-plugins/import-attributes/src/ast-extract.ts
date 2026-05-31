@@ -16,10 +16,27 @@
 import type { ESTree, } from 'rolldown/utils';
 
 import { HANDLERS, } from './handlers.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
+
+//region Sentinels
+
+/**
+ * Sentinel returned by {@link getStringLiteralValue} and
+ * {@link getPropertyKeyName} when an AST node carries no usable string value
+ * (a computed key, or a non-string-literal expression). A `unique symbol` so
+ * an empty string can never be mistaken for "not a string"; callers narrow
+ * with `=== NON_STRING_NODE`.
+ */
+export const NON_STRING_NODE: unique symbol = Symbol('import-attributes/non-string-node',);
+
+/**
+ * Sentinel returned by {@link extractTypeFromAttributes} and
+ * {@link extractTypeFromOptions} when no supported `type` import attribute is
+ * present. A `unique symbol` so it can never collide with a real handler-type
+ * string; callers narrow with `=== NO_ATTR_TYPE`.
+ */
+export const NO_ATTR_TYPE: unique symbol = Symbol('import-attributes/no-attr-type',);
+
+//endregion Sentinels
 
 //region Helpers
 
@@ -29,15 +46,15 @@ import {
  *
  * @param key - AST property key node
  *
- * @returns key name as string, or {@link ABSENT} for computed/non-string keys
+ * @returns key name as string, or {@link NON_STRING_NODE} for computed/non-string keys
  */
-function getPropertyKeyName(key: ESTree.PropertyKey,): Maybe<string> {
+function getPropertyKeyName(key: ESTree.PropertyKey,): string | typeof NON_STRING_NODE {
   if (key.type
     === 'Identifier')
     return key.name;
   if (('value' in key) && ((typeof key.value) === 'string'))
     return key.value;
-  return ABSENT;
+  return NON_STRING_NODE;
 }
 
 /**
@@ -45,19 +62,19 @@ function getPropertyKeyName(key: ESTree.PropertyKey,): Maybe<string> {
  *
  * @param node - AST expression node
  *
- * @returns string value if the node is a string literal, {@link ABSENT} otherwise
+ * @returns string value if the node is a string literal, {@link NON_STRING_NODE} otherwise
  *
  * @example
  * ```ts
  * // Given AST node for string literal "text"
  * getStringLiteralValue(stringNode); // "text"
- * getStringLiteralValue(identifierNode); // ABSENT
+ * getStringLiteralValue(identifierNode); // NON_STRING_NODE
  * ```
  */
-export function getStringLiteralValue(node: ESTree.Expression,): Maybe<string> {
+export function getStringLiteralValue(node: ESTree.Expression,): string | typeof NON_STRING_NODE {
   if (('value' in node) && ((typeof node.value) === 'string'))
     return node.value as string;
-  return ABSENT;
+  return NON_STRING_NODE;
 }
 
 //endregion Helpers
@@ -70,7 +87,7 @@ export function getStringLiteralValue(node: ESTree.Expression,): Maybe<string> {
  *
  * @param attributes - import attribute nodes from the AST
  *
- * @returns supported attribute type string, or {@link ABSENT} if none found
+ * @returns supported attribute type string, or {@link NO_ATTR_TYPE} if none found
  *
  * @example
  * ```ts
@@ -80,7 +97,7 @@ export function getStringLiteralValue(node: ESTree.Expression,): Maybe<string> {
  */
 export function extractTypeFromAttributes(
   attributes: readonly ESTree.ImportAttribute[],
-): Maybe<string> {
+): string | typeof NO_ATTR_TYPE {
   for (const attr of attributes) {
     /** Resolved attribute key name covering both identifier and string-literal AST forms. */
     const key = attr.key
@@ -96,7 +113,7 @@ export function extractTypeFromAttributes(
       return attr.value
         .value;
   }
-  return ABSENT;
+  return NO_ATTR_TYPE;
 }
 
 /**
@@ -106,7 +123,7 @@ export function extractTypeFromAttributes(
  *
  * @param options - options expression from `ImportExpression.options`
  *
- * @returns supported attribute type string, or {@link ABSENT} if the options
+ * @returns supported attribute type string, or {@link NO_ATTR_TYPE} if the options
  * do not contain a recognized `with.type` value
  *
  * @example
@@ -117,10 +134,10 @@ export function extractTypeFromAttributes(
  */
 export function extractTypeFromOptions(
   options: ESTree.Expression,
-): Maybe<string> {
+): string | typeof NO_ATTR_TYPE {
   if (options.type
     !== 'ObjectExpression')
-    return ABSENT;
+    return NO_ATTR_TYPE;
 
   for (const prop of options.properties) {
     if (prop.type
@@ -145,7 +162,7 @@ export function extractTypeFromOptions(
       /** String value paired with the `type` entry. */
       const innerValue = getStringLiteralValue(innerProp.value,);
       if ((innerKey === 'type')
-        && (innerValue !== ABSENT)
+        && (innerValue !== NON_STRING_NODE)
         && (HANDLERS[innerValue]
           !== undefined))
       {
@@ -154,5 +171,5 @@ export function extractTypeFromOptions(
     }
   }
 
-  return ABSENT;
+  return NO_ATTR_TYPE;
 }

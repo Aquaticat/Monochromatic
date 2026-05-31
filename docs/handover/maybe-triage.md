@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat` and `terminal-title` complete; 8 targets remaining.
+`aquaticat`, `terminal-title`, `import-attributes` complete; 7 targets remaining.
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -96,13 +96,20 @@ One absence concept ("no string field extracted") flows `stringField` to `field`
 
 Verification: `mise run //packages/pi/terminal-title:lint` and `:test:unit` pass (0 warnings/errors; all tests PASS, exit 0).
 
-### import-attributes (PENDING)
+### import-attributes (COMPLETE)
 
 `packages/rolldown-plugins/import-attributes`.
-Many bucket-3 returns (`extractAttrType`, `getStringLiteralValue`, `getPropertyKeyName`, `transform`, `scanImporter`).
-`scan-importer.ts` `let found = ABSENT` is bucket 2.
-`index.ts` already converts `ABSENT` to `null` at the Rolldown transform-hook boundary (an existing seam).
-Delete `maybe.ts`.
+Four genuinely distinct, non-interacting absence purposes, so "split by purpose" yields four descriptive symbols:
+
+- `NON_STRING_NODE` (`ast-extract.ts`, exported): `getStringLiteralValue` / `getPropertyKeyName` ("AST node carries no usable string"). Narrowed in `ast-extract.ts` and as `sourceValue` in `transform.ts`.
+- `NO_ATTR_TYPE` (`ast-extract.ts`, exported): `extractTypeFromAttributes` / `extractTypeFromOptions`; scan-importer's `found` accumulator and return; `attrType` checks in `transform.ts` and `index.ts`.
+- `NO_QUERY_ATTR` (`patterns.ts`, exported): `extractAttrType` query decode; checked in `index.ts` (`resolveId`, `load`).
+- `NO_TRANSFORM` (`transform.ts`, exported): `transformImportAttributes` return; `index.ts` converts it to `null` at the existing Rolldown `transform`-hook seam.
+
+Triage correction: scan-importer's `let found = ABSENT` is the bucket-3 return accumulator (the `Visitor` API dictates the shape; the helper-shape allowlist permits the `let` because the function ends `return found`), not bucket 2 as the issue speculated.
+`src/maybe.ts`: deleted.
+
+Verification: `mise run //packages/rolldown-plugins/import-attributes:lint` passes (0 warnings/errors). The two unit test files (run with `bun <file>` since there is no `test:unit` task) pass, including the plugin behavioral test that transforms static/dynamic/re-export imports and ignores imports without a `with` clause (exercises the `NO_TRANSFORM` seam and the `NO_ATTR_TYPE` path).
 
 ### catalog-tighten (PENDING)
 
