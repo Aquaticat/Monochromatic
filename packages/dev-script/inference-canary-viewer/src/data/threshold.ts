@@ -9,21 +9,31 @@ import {
   type ViewerEntry,
 } from './viewer-types.ts';
 
-/** Minimum non-failed samples required before computing a meaningful threshold */
+/**
+ * Minimum non-failed samples required before computing a meaningful threshold
+ */
 const MIN_SAMPLES = 3;
 
-/** Absolute floor for threshold values */
+/**
+ * Absolute floor for threshold values
+ */
 const THRESHOLD_FLOOR = 0.3;
 
-/** Number of standard deviations below the mean */
+/**
+ * Number of standard deviations below the mean
+ */
 const STDDEV_MULTIPLIER = 2;
 
-/** Computed degradation threshold for a model */
+/**
+ * Computed degradation threshold for a model
+ */
 export type ModelThreshold = {
   readonly model: string;
   readonly mean: number;
   readonly stddev: number;
-  /** Threshold = max(floor, mean - 2*stddev) */
+  /**
+   * Threshold = max(floor, mean - 2*stddev)
+   */
   readonly threshold: number;
   readonly sampleCount: number;
 };
@@ -53,7 +63,9 @@ export function computeThreshold({
   readonly label: string;
   readonly entries: readonly ViewerEntry[];
 },): ModelThreshold {
-  /** Non-failed overall scores used as the statistical sample. */
+  /**
+   * Non-failed overall scores used as the statistical sample.
+   */
   const scores = entries
     .filter(function matchLabel(entry,): boolean {
       return (entry.label
@@ -75,7 +87,9 @@ export function computeThreshold({
     };
   }
 
-  /** Arithmetic mean of the sample scores. */
+  /**
+   * Arithmetic mean of the sample scores.
+   */
   const mean = scores.reduce(
     function add(
       sum,
@@ -87,7 +101,9 @@ export function computeThreshold({
   )
     / scores
     .length;
-  /** Squared-deviation average underlying the standard deviation. */
+  /**
+   * Squared-deviation average underlying the standard deviation.
+   */
   const variance = scores.reduce(
     function addVariance(
       sum,
@@ -99,9 +115,13 @@ export function computeThreshold({
   )
     / scores
     .length;
-  /** Sample standard deviation used to space the threshold below the mean. */
+  /**
+   * Sample standard deviation used to space the threshold below the mean.
+   */
   const stddev = Math.sqrt(variance,);
-  /** Floored degradation threshold returned to callers. */
+  /**
+   * Floored degradation threshold returned to callers.
+   */
   const threshold = Math.max(
     THRESHOLD_FLOOR,
     mean - (STDDEV_MULTIPLIER * stddev),

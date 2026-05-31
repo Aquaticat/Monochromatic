@@ -27,7 +27,9 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
 export function buildProbeLegend(
   entries: readonly ViewerEntry[],
 ): string {
-  /** Deduplicate by label, keeping first occurrence for model ID */
+  /**
+   * Deduplicate by label, keeping first occurrence for model ID
+   */
   const seen = new Map<string, string>();
   for (const entry of entries) {
     if (!seen.has(entry.label,)) {
@@ -38,10 +40,14 @@ export function buildProbeLegend(
     }
   }
 
-  /** Rendered legend item markup joined into the legend container body. */
+  /**
+   * Rendered legend item markup joined into the legend container body.
+   */
   const items = [...seen.entries(),]
     .map(function buildItem([label, openrouterId,],): string {
-      /** Vendor-derived accent color used by the inline dot icon. */
+      /**
+       * Vendor-derived accent color used by the inline dot icon.
+       */
       const color = vendorColor(openrouterId,);
       return h({
         tag: 'span',

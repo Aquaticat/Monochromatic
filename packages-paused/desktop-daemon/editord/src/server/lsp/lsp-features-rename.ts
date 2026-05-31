@@ -17,11 +17,17 @@ import type {
 } from './types.ts';
 import { pathToUri, } from './uri.ts';
 
-/** Result of a successful `textDocument/prepareRename` request. */
+/**
+ * Result of a successful `textDocument/prepareRename` request.
+ */
 export type PrepareRenameResult = {
-  /** Range of the symbol to rename. */
+  /**
+   * Range of the symbol to rename.
+   */
   readonly range: LspRange;
-  /** Current name of the symbol (used as placeholder in the rename input). */
+  /**
+   * Current name of the symbol (used as placeholder in the rename input).
+   */
   readonly placeholder: string;
 };
 
@@ -55,9 +61,13 @@ export async function requestPrepareRename({
   readonly line: number;
   readonly character: number;
 },): Promise<PrepareRenameResult | null> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** Raw LSP response normalised into the editord shape below. */
+  /**
+   * Raw LSP response normalised into the editord shape below.
+   */
   const result = await client.request({
     method: 'textDocument/prepareRename',
     params: {
@@ -74,7 +84,9 @@ export async function requestPrepareRename({
     return null;
 
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- LSP prepareRename returns Range | { range, placeholder } | null */
-  /** Loosely typed record so the shape branches below stay readable. */
+  /**
+   * Loosely typed record so the shape branches below stay readable.
+   */
   const raw = result as Record<string, unknown>;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
@@ -91,7 +103,9 @@ export async function requestPrepareRename({
     };
   }
 
-  /** Plain Range response: extract the symbol text from the range as placeholder. */
+  /**
+   * Plain Range response: extract the symbol text from the range as placeholder.
+   */
   if (('start' in raw) && ('end' in raw)) {
     return {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by start/end check
@@ -137,9 +151,13 @@ export async function requestRename({
   readonly character: number;
   readonly newName: string;
 },): Promise<LspWorkspaceEdit | null> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** WorkspaceEdit from LSP; null indicates no rename was produced. */
+  /**
+   * WorkspaceEdit from LSP; null indicates no rename was produced.
+   */
   const result = await client.request({
     method: 'textDocument/rename',
     params: {

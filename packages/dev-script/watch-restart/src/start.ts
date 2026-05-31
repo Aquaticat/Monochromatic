@@ -55,21 +55,37 @@ const NO_TIMER: unique symbol = Symbol('no-debounce-timer',);
  * opts out.
  */
 export type StartWatchRestartOptions = {
-  /** Watch roots; at least one is expected by `Watcher`. */
+  /**
+   * Watch roots; at least one is expected by `Watcher`.
+   */
   readonly paths: readonly string[];
-  /** Command to run; first positional after `--` at the CLI. */
+  /**
+   * Command to run; first positional after `--` at the CLI.
+   */
   readonly command: string;
-  /** Argument list for the command; remaining positionals at the CLI. */
+  /**
+   * Argument list for the command; remaining positionals at the CLI.
+   */
   readonly args?: readonly string[];
-  /** Include glob patterns matched against {@link WatchEvent.relativePath}. */
+  /**
+   * Include glob patterns matched against {@link WatchEvent.relativePath}.
+   */
   readonly include?: readonly string[];
-  /** Exclude glob patterns; an exclude match short-circuits to skip. */
+  /**
+   * Exclude glob patterns; an exclude match short-circuits to skip.
+   */
   readonly exclude?: readonly string[];
-  /** Include regex patterns matched against {@link WatchEvent.relativePath} (any-match OR). */
+  /**
+   * Include regex patterns matched against {@link WatchEvent.relativePath} (any-match OR).
+   */
   readonly includeRegex?: readonly RegExp[];
-  /** Exclude regex patterns matched against {@link WatchEvent.relativePath} (any-match short-circuits skip). */
+  /**
+   * Exclude regex patterns matched against {@link WatchEvent.relativePath} (any-match short-circuits skip).
+   */
   readonly excludeRegex?: readonly RegExp[];
-  /** Extensions admitted (case-insensitive, leading dot optional). */
+  /**
+   * Extensions admitted (case-insensitive, leading dot optional).
+   */
   readonly extensions?: readonly string[];
   /**
    * Entity types admitted; `undefined` defaults to `['file']` so the
@@ -77,7 +93,9 @@ export type StartWatchRestartOptions = {
    * events. Pass `['file', 'dir']` to include directory create/remove.
    */
   readonly types?: readonly WatchEntityType[];
-  /** Event kinds admitted; `undefined` admits all kinds reaching the filter. */
+  /**
+   * Event kinds admitted; `undefined` admits all kinds reaching the filter.
+   */
   readonly events?: readonly WatchEventKind[];
   /**
    * Include hidden files and directories (segments starting with `.`).
@@ -95,23 +113,41 @@ export type StartWatchRestartOptions = {
    * `false` lets ignored paths through (e.g. when watching `dist/` is intentional).
    */
   readonly gitignore?: boolean;
-  /** Extra gitignore-format files whose patterns AND with `.gitignore` (when enabled). */
+  /**
+   * Extra gitignore-format files whose patterns AND with `.gitignore` (when enabled).
+   */
   readonly ignoreFiles?: readonly string[];
-  /** Maximum directory-descent depth from each watch root; `undefined` is unlimited. */
+  /**
+   * Maximum directory-descent depth from each watch root; `undefined` is unlimited.
+   */
   readonly depth?: number;
-  /** Polling interval (ms); `undefined` uses native filesystem events. */
+  /**
+   * Polling interval (ms); `undefined` uses native filesystem events.
+   */
   readonly poll?: number;
-  /** Suppress byte-identical writes when `true` (default); `false` disables. */
+  /**
+   * Suppress byte-identical writes when `true` (default); `false` disables.
+   */
   readonly contentChanged?: boolean;
-  /** Cap on file size hashed by {@link contentHashFilter}; default 16 MiB. */
+  /**
+   * Cap on file size hashed by {@link contentHashFilter}; default 16 MiB.
+   */
   readonly maxHashSize?: number;
-  /** Debounce window (ms); coalesces multi-event bursts. Default 100. */
+  /**
+   * Debounce window (ms); coalesces multi-event bursts. Default 100.
+   */
   readonly debounce?: number;
-  /** SIGTERM-to-SIGKILL grace (ms) for the child; default 5_000. */
+  /**
+   * SIGTERM-to-SIGKILL grace (ms) for the child; default 5_000.
+   */
   readonly stopTimeout?: number;
-  /** Run the child at start when `true` (default); `false` defers to first event. */
+  /**
+   * Run the child at start when `true` (default); `false` defers to first event.
+   */
   readonly initial?: boolean;
-  /** Clear the terminal (`\\x1b[2J\\x1b[H`) before each child re-spawn; default `false`. */
+  /**
+   * Clear the terminal (`\\x1b[2J\\x1b[H`) before each child re-spawn; default `false`.
+   */
   readonly clear?: boolean;
   /**
    * Signal sent to the child before the SIGKILL fallback; default `'SIGTERM'`.
@@ -125,11 +161,17 @@ export type StartWatchRestartOptions = {
    * limits signals to the direct child pid only.
    */
   readonly processGroup?: boolean;
-  /** Optional user predicate AND'd onto the internal chain (runs last). */
+  /**
+   * Optional user predicate AND'd onto the internal chain (runs last).
+   */
   readonly filter?: WatchFilter;
-  /** Parent logger; the orchestrator composes a `startWatchRestart` tag on top. */
+  /**
+   * Parent logger; the orchestrator composes a `startWatchRestart` tag on top.
+   */
   readonly logger?: Logger;
-  /** Spawn factory forwarded to {@link Child}; tests inject a recording fake. */
+  /**
+   * Spawn factory forwarded to {@link Child}; tests inject a recording fake.
+   */
   readonly spawn?: SpawnFn;
 };
 
@@ -140,7 +182,9 @@ export type StartWatchRestartOptions = {
  * call is a no-op (idempotent), matching `Watcher.stop` and `Child.stop`.
  */
 export type WatchRestartHandle = {
-  /** Aborts ctx.signal, clears debounce timer, stops watcher then child. */
+  /**
+   * Aborts ctx.signal, clears debounce timer, stops watcher then child.
+   */
   readonly stop: () => Promise<void>;
 };
 
@@ -165,7 +209,9 @@ export type WatchRestartHandle = {
 function buildEventKindFilter(
   allowed: readonly WatchEventKind[],
 ): WatchFilter {
-  /** Set built once at construction for O(1) lookup on the event hot path. */
+  /**
+   * Set built once at construction for O(1) lookup on the event hot path.
+   */
   const allowedSet: ReadonlySet<WatchEventKind> = new Set<WatchEventKind>(
     allowed,
   );
@@ -209,7 +255,9 @@ function buildEventKindFilter(
 async function buildInternalFilter(
   options: StartWatchRestartOptions,
 ): Promise<WatchFilter> {
-  /** Mutable working list of filters; collected in evaluation order before composition. */
+  /**
+   * Mutable working list of filters; collected in evaluation order before composition.
+   */
   const filters: WatchFilter[] = [];
 
   /**
@@ -282,7 +330,9 @@ async function buildInternalFilter(
     === false
     ? []
     : options.paths;
-  /** Resolved extra ignore files; empty when none configured. */
+  /**
+   * Resolved extra ignore files; empty when none configured.
+   */
   const gitignoreExtraFiles: readonly string[] = options.ignoreFiles
     ?? [];
   if ((gitignoreRoots.length
@@ -347,37 +397,53 @@ async function buildInternalFilter(
 export async function startWatchRestart(
   options: StartWatchRestartOptions,
 ): Promise<WatchRestartHandle> {
-  /** Resolved parent logger; the orchestrator and inner subsystems compose tags onto it. */
+  /**
+   * Resolved parent logger; the orchestrator and inner subsystems compose tags onto it.
+   */
   const parentLogger: Logger = options.logger
     ?? defaultLogger;
-  /** Tagged logger for this orchestrator's own log lines. */
+  /**
+   * Tagged logger for this orchestrator's own log lines.
+   */
   const startLogger: Logger = tagged({
     tag: startWatchRestart.name,
     l: parentLogger,
   },);
 
-  /** Shared content-hash cache; pre-populated by the Watcher, read by `contentHashFilter`. */
+  /**
+   * Shared content-hash cache; pre-populated by the Watcher, read by `contentHashFilter`.
+   */
   const hashCache = new HashCache({
     maxHashSize: options.maxHashSize
       ?? DEFAULT_MAX_HASH_SIZE_BYTES,
   },);
 
-  /** Shared abort controller; flipped during `stop()` so in-flight filters can bail. */
+  /**
+   * Shared abort controller; flipped during `stop()` so in-flight filters can bail.
+   */
   const abort = new AbortController();
-  /** Context handed to every filter invocation. */
+  /**
+   * Context handed to every filter invocation.
+   */
   const ctx: WatchCtx = {
     logger: startLogger,
     signal: abort.signal,
     hashCache,
   };
 
-  /** Composed filter chain assembled once at start; evaluated on every event. */
+  /**
+   * Composed filter chain assembled once at start; evaluated on every event.
+   */
   const internalFilter: WatchFilter = await buildInternalFilter(options,);
-  /** Resolved debounce window. */
+  /**
+   * Resolved debounce window.
+   */
   const debounceMs: number = options.debounce
     ?? DEFAULT_DEBOUNCE_MS;
 
-  /** Underlying child manager. */
+  /**
+   * Underlying child manager.
+   */
   const child = new Child({
     command: options.command,
     ...(options.args
@@ -428,7 +494,9 @@ export async function startWatchRestart(
             await child.restart();
           }
           catch (error) {
-            /** Human-readable error string used in the restart-failure log line. */
+            /**
+             * Human-readable error string used in the restart-failure log line.
+             */
             const message = error instanceof Error
               ? error.message
               : String(error,);
@@ -450,7 +518,9 @@ export async function startWatchRestart(
    */
   async function onEvent(event: WatchEvent,): Promise<void> {
     try {
-      /** Composed filter verdict; `true` means the event should trigger a debounced restart. */
+      /**
+       * Composed filter verdict; `true` means the event should trigger a debounced restart.
+       */
       const passed = await internalFilter({
         event,
         ctx,
@@ -459,7 +529,9 @@ export async function startWatchRestart(
         scheduleRestart();
     }
     catch (error) {
-      /** Human-readable error string used in the filter-failure log line. */
+      /**
+       * Human-readable error string used in the filter-failure log line.
+       */
       const message = error instanceof Error
         ? error.message
         : String(error,);
@@ -469,7 +541,9 @@ export async function startWatchRestart(
     }
   }
 
-  /** Watcher instance owned by this orchestrator; closed during `stop()`. */
+  /**
+   * Watcher instance owned by this orchestrator; closed during `stop()`.
+   */
   const watcher = new Watcher({
     paths: options.paths,
     hashCache,

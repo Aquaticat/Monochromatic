@@ -2,13 +2,19 @@
  * Shared CLI-flag and timing helpers for stress scenarios.
  */
 
-/** Median percentile fraction. */
+/**
+ * Median percentile fraction.
+ */
 export const P50 = 0.5;
 
-/** 99th percentile fraction. */
+/**
+ * 99th percentile fraction.
+ */
 export const P99 = 0.99;
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -24,9 +30,13 @@ const DECIMAL_RADIX = 10;
  * ```
  */
 export function getFlag(name: string,): string | undefined {
-  /** Literal `--name=` prefix used to identify the flag entry in argv. */
+  /**
+   * Literal `--name=` prefix used to identify the flag entry in argv.
+   */
   const prefix = `--${name}=`;
-  /** First argv entry matching the prefix, or `undefined` when the flag is absent. */
+  /**
+   * First argv entry matching the prefix, or `undefined` when the flag is absent.
+   */
   const argument = process.argv
     .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
@@ -50,11 +60,15 @@ export function intFlag(row: {
   name: string;
   fallback: number;
 },): number {
-  /** String form of the flag; `undefined` falls through to the default. */
+  /**
+   * String form of the flag; `undefined` falls through to the default.
+   */
   const raw = getFlag(row.name,);
   if (raw === undefined)
     return row.fallback;
-  /** Numeric interpretation; non-finite results (NaN, Infinity) also fall back. */
+  /**
+   * Numeric interpretation; non-finite results (NaN, Infinity) also fall back.
+   */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,

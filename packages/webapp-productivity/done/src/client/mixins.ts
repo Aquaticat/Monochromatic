@@ -14,16 +14,24 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from './css.ts';
 
-/** Large border-radius for pill/circle shape in rem. */
+/**
+ * Large border-radius for pill/circle shape in rem.
+ */
 const PILL_RADIUS = 62.5;
 
-/** Minimum touch target size in rem (48px). */
+/**
+ * Minimum touch target size in rem (48px).
+ */
 const TOUCH_TARGET = 3;
 
-/** Disabled button opacity. */
+/**
+ * Disabled button opacity.
+ */
 const DISABLED_OPACITY = 0.45;
 
-/** Focus outline width in rem (1/8). */
+/**
+ * Focus outline width in rem (1/8).
+ */
 const OUTLINE_WIDTH = 1 / 2
   / 2
   / 2;

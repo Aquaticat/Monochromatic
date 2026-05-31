@@ -9,29 +9,43 @@ import type { OpenRouterModelId, } from './runner-types.ts';
  */
 export type VerbosityLevel = 'low' | 'medium' | 'high' | 'max';
 
-/** Configuration for the canary runner */
+/**
+ * Configuration for the canary runner
+ */
 export type RunnerConfig = {
-  /** OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
+  /**
+   * OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6")
+   */
   readonly model: OpenRouterModelId;
   /**
    * Human-readable model label used for dedup, artifact directories, and log prefixes.
    * Must be unique across all model configs tested in a single run.
    */
   readonly label: string;
-  /** Number of times to run each probe for consistency checking */
+  /**
+   * Number of times to run each probe for consistency checking
+   */
   readonly consistencyRuns: number;
-  /** Maximum tokens in the model's response */
+  /**
+   * Maximum tokens in the model's response
+   */
   readonly maxTokens: number;
   /**
    * OpenRouter verbosity parameter; controls output_config.effort on the provider side.
    * "max" available for Claude 4.6 Opus/Sonnet only; falls back to "high" elsewhere.
    */
   readonly verbosity: VerbosityLevel;
-  /** Whether to enable adaptive thinking (reasoning) */
+  /**
+   * Whether to enable adaptive thinking (reasoning)
+   */
   readonly reasoning: boolean;
-  /** API key for Authorization header */
+  /**
+   * API key for Authorization header
+   */
   readonly apiKey?: string;
-  /** Base URL for the chat completions endpoint (e.g. "https://openrouter.ai/api/v1") */
+  /**
+   * Base URL for the chat completions endpoint (e.g. "https://openrouter.ai/api/v1")
+   */
   readonly baseURL?: string;
   /**
    * Map from model label to the set of probe names to skip for that model.
@@ -51,27 +65,47 @@ export type RunnerConfig = {
  * case where every property legitimately carries `?:`.
  */
 export type RunnerConfigOverrides = {
-  /** OpenRouter model ID override; defaults to {@link defaultConfig}'s model when absent. */
+  /**
+   * OpenRouter model ID override; defaults to {@link defaultConfig}'s model when absent.
+   */
   readonly model?: OpenRouterModelId;
-  /** Model label override used for dedup, artifact directories, and log prefixes. */
+  /**
+   * Model label override used for dedup, artifact directories, and log prefixes.
+   */
   readonly label?: string;
-  /** Consistency-run count override; controls how many times each probe repeats. */
+  /**
+   * Consistency-run count override; controls how many times each probe repeats.
+   */
   readonly consistencyRuns?: number;
-  /** Response token ceiling override. */
+  /**
+   * Response token ceiling override.
+   */
   readonly maxTokens?: number;
-  /** Verbosity override forwarded to `output_config.effort`. */
+  /**
+   * Verbosity override forwarded to `output_config.effort`.
+   */
   readonly verbosity?: VerbosityLevel;
-  /** Adaptive-thinking toggle override. */
+  /**
+   * Adaptive-thinking toggle override.
+   */
   readonly reasoning?: boolean;
-  /** API key override for the Authorization header. */
+  /**
+   * API key override for the Authorization header.
+   */
   readonly apiKey?: string;
-  /** Chat-completions endpoint base URL override. */
+  /**
+   * Chat-completions endpoint base URL override.
+   */
   readonly baseURL?: string;
-  /** Per-model skip list override, enabling partial re-runs that reuse recent artifacts. */
+  /**
+   * Per-model skip list override, enabling partial re-runs that reuse recent artifacts.
+   */
   readonly skipProbes?: ReadonlyMap<string, ReadonlySet<string>>;
 };
 
-/** Conservative defaults tuned for quick diagnostics */
+/**
+ * Conservative defaults tuned for quick diagnostics
+ */
 export const defaultConfig: RunnerConfig = {
   model: 'anthropic/claude-sonnet-4.6',
   label: 'Sonnet 4.6',

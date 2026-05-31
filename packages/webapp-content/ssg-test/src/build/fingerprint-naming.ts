@@ -6,7 +6,9 @@
  */
 import { createHash, } from 'node:crypto';
 
-/** Number of hex characters to use from the SHA-256 digest. */
+/**
+ * Number of hex characters to use from the SHA-256 digest.
+ */
 const HASH_LENGTH = 10;
 
 /**
@@ -51,7 +53,9 @@ export function insertHash(
     readonly hash: string;
   },
 ): string {
-  /** Position of the final dot; `-1` indicates the file has no extension. */
+  /**
+   * Position of the final dot; `-1` indicates the file has no extension.
+   */
   const lastDot = name.lastIndexOf('.',);
   if (lastDot === (-1)) {
     return `${name}.${
@@ -61,12 +65,16 @@ export function insertHash(
       )
     }`;
   }
-  /** Filename portion before the extension; used as the prefix for the hashed name. */
+  /**
+   * Filename portion before the extension; used as the prefix for the hashed name.
+   */
   const stem = name.slice(
     0,
     lastDot,
   );
-  /** Extension portion including the leading dot; appended after the hash. */
+  /**
+   * Extension portion including the leading dot; appended after the hash.
+   */
   const ext = name.slice(lastDot,);
   return `${stem}.${
     hash.slice(

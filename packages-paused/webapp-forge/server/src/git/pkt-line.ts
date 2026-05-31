@@ -17,22 +17,34 @@
  * `server/TROUBLESHOOTING.isomorphic-git.md`).
  */
 
-/** Hexadecimal radix for pkt-len conversion. */
+/**
+ * Hexadecimal radix for pkt-len conversion.
+ */
 const HEX_RADIX = 16;
 
-/** Number of hex digits in the pkt-len prefix. */
+/**
+ * Number of hex digits in the pkt-len prefix.
+ */
 const PKT_LEN_BYTES = 4;
 
-/** A flush-pkt is `"0000"`. */
+/**
+ * A flush-pkt is `"0000"`.
+ */
 const FLUSH_PKT = new TextEncoder().encode('0000',);
 
-/** A delim-pkt is `"0001"`. */
+/**
+ * A delim-pkt is `"0001"`.
+ */
 const DELIM_PKT = new TextEncoder().encode('0001',);
 
-/** Special pkt-len value indicating flush. */
+/**
+ * Special pkt-len value indicating flush.
+ */
 const FLUSH_LEN = 0;
 
-/** Special pkt-len value indicating delim. */
+/**
+ * Special pkt-len value indicating delim.
+ */
 const DELIM_LEN = 1;
 
 /**
@@ -76,22 +88,32 @@ export function delimPkt(): Uint8Array {
  * ```
  */
 export function encodePkt(payload: Uint8Array | string,): Uint8Array {
-  /** Payload bytes; strings are UTF-8 encoded here so callers may pass either. */
+  /**
+   * Payload bytes; strings are UTF-8 encoded here so callers may pass either.
+   */
   const bytes = ((typeof payload) === 'string')
     ? new TextEncoder().encode(payload,)
     : payload;
-  /** Total frame length includes the length prefix itself per the spec. */
+  /**
+   * Total frame length includes the length prefix itself per the spec.
+   */
   const total = bytes.byteLength
     + PKT_LEN_BYTES;
-  /** Four-digit hex length prefix, zero-padded. */
+  /**
+   * Four-digit hex length prefix, zero-padded.
+   */
   const lengthHex = total.toString(HEX_RADIX,)
     .padStart(
     PKT_LEN_BYTES,
     '0',
   );
-  /** ASCII bytes of the length prefix written at offset 0 of the frame. */
+  /**
+   * ASCII bytes of the length prefix written at offset 0 of the frame.
+   */
   const prefix = new TextEncoder().encode(lengthHex,);
-  /** Destination buffer sized to fit prefix plus payload. */
+  /**
+   * Destination buffer sized to fit prefix plus payload.
+   */
   const out = new Uint8Array(total,);
   out.set(
     prefix,
@@ -123,11 +145,17 @@ export type PktLine = Uint8Array | null | 'delim';
  * ```
  */
 export function decodePktLines(data: Uint8Array,): PktLine[] {
-  /** Reused decoder for the ASCII length prefixes. */
+  /**
+   * Reused decoder for the ASCII length prefixes.
+   */
   const decoder = new TextDecoder();
-  /** Output accumulator visited in stream order. */
+  /**
+   * Output accumulator visited in stream order.
+   */
   const out: PktLine[] = [];
-  /** Cursor advancing through `data` as each frame is consumed. */
+  /**
+   * Cursor advancing through `data` as each frame is consumed.
+   */
   let offset = 0;
   while (offset < data
     .byteLength) {
@@ -140,14 +168,20 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
         } bytes too short for length prefix`,
       );
     }
-    /** Length prefix bytes for the upcoming frame. */
+    /**
+     * Length prefix bytes for the upcoming frame.
+     */
     const lengthSlice = data.subarray(
       offset,
       offset + PKT_LEN_BYTES,
     );
-    /** Decoded ASCII length string parsed below as hex. */
+    /**
+     * Decoded ASCII length string parsed below as hex.
+     */
     const lengthText = decoder.decode(lengthSlice,);
-    /** Frame length including the prefix; flush/delim are special low values. */
+    /**
+     * Frame length including the prefix; flush/delim are special low values.
+     */
     const length = Number.parseInt(
       lengthText,
       HEX_RADIX,
@@ -175,7 +209,9 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
         } remain`,
       );
     }
-    /** Frame payload sliced from `data` after the length prefix. */
+    /**
+     * Frame payload sliced from `data` after the length prefix.
+     */
     const payload = data.subarray(
       offset + PKT_LEN_BYTES,
       offset + length,

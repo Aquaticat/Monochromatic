@@ -31,7 +31,9 @@ const DISPATCHABLE_KINDS: ReadonlySet<EventKind> = new Set<EventKind>([
   'push',
 ],);
 
-/** Default batch size for the event-drain loop. */
+/**
+ * Default batch size for the event-drain loop.
+ */
 const DEFAULT_BATCH_SIZE = 256;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- Storage and WriteBuffer are sinks with mutator methods (`put`, `enqueue`, `flush`) by design; we delegate to them through the same contract. */
@@ -59,10 +61,14 @@ export async function dispatchAndFlush(row: {
   readonly writeBuffer: WriteBuffer;
   readonly batchSize?: number;
 },): Promise<number> {
-  /** Bounded page size protects the loop from unbounded backlog. */
+  /**
+   * Bounded page size protects the loop from unbounded backlog.
+   */
   const batchSize = row.batchSize
     ?? DEFAULT_BATCH_SIZE;
-  /** Advances through `events.id` order; returned to caller as the new high-water mark. */
+  /**
+   * Advances through `events.id` order; returned to caller as the new high-water mark.
+   */
   let cursor = row.afterEventId;
   // Process up to `batchSize` events per loop turn so an unbounded
   // backlog cannot starve the caller. Phase 1 callers usually only
@@ -70,7 +76,9 @@ export async function dispatchAndFlush(row: {
   // returns an empty page.
   while (true) {
     /* oxlint-disable no-await-in-loop -- sequential by design */
-    /** Next page of unprocessed events ordered by id. */
+    /**
+     * Next page of unprocessed events ordered by id.
+     */
     const events = await listEventsAfter({
       afterId: cursor,
       limit: batchSize,
@@ -82,16 +90,22 @@ export async function dispatchAndFlush(row: {
     for (const eventRow of events) {
       cursor = eventRow.id;
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event-log column is a string subtype */
-      /** Narrowed event kind; the column type is a free string at the SQL boundary. */
+      /**
+       * Narrowed event kind; the column type is a free string at the SQL boundary.
+       */
       const kind = eventRow.kind as EventKind;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       if (!DISPATCHABLE_KINDS.has(kind,))
         continue;
-      /** Comment id pulled from payload for the comment-created branch only. */
+      /**
+       * Comment id pulled from payload for the comment-created branch only.
+       */
       const commentId = kind === 'comment.created'
         ? extractCommentId(eventRow.payload,)
         : undefined;
-      /** Synthetic event passed to the dispatcher; `commentId` is omitted when absent. */
+      /**
+       * Synthetic event passed to the dispatcher; `commentId` is omitted when absent.
+       */
       const event = commentId === undefined
         ? {
           kind,
@@ -174,13 +188,17 @@ function tryParseJson(payload: string,): unknown {
  * ```
  */
 function extractCommentId(payload: string,): string | undefined {
-  /** Parsed JSON payload; `undefined` when the input is not valid JSON. */
+  /**
+   * Parsed JSON payload; `undefined` when the input is not valid JSON.
+   */
   const parsed = tryParseJson(payload,);
   if ((parsed === null) || ((typeof parsed) !== 'object'))
     return undefined;
   if (!('commentId' in parsed))
     return undefined;
-  /** Destructured commentId narrowed to string below. */
+  /**
+   * Destructured commentId narrowed to string below.
+   */
   const { commentId, } = parsed;
   return ((typeof commentId) === 'string') ? commentId : undefined;
 }

@@ -31,16 +31,22 @@ export function hasCycle(value: unknown,): boolean {
   if (((typeof value) !== 'object') || (value === null))
     return false;
 
-  /** Tracks visited object references. */
+  /**
+   * Tracks visited object references.
+   */
   const seen = new WeakSet();
 
-  /** Stack-based iterative cycle detection. */
+  /**
+   * Stack-based iterative cycle detection.
+   */
   const stack: unknown[] = [value,];
 
   // Intentional mutation: stack is consumed during traversal
   while (stack.length
     > 0) {
-    /** Next reference dequeued from the traversal stack. */
+    /**
+     * Next reference dequeued from the traversal stack.
+     */
     const current = stack.pop();
     if (((typeof current) !== 'object') || (current === null))
       continue;

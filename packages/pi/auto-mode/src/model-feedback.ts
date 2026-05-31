@@ -9,7 +9,9 @@
 
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 
-/** Fallback rationale used when a judge or guardrail branch omits a reason. */
+/**
+ * Fallback rationale used when a judge or guardrail branch omits a reason.
+ */
 const MISSING_GUARDRAIL_REASON = 'No guardrail reason was provided.';
 
 /**
@@ -38,9 +40,13 @@ function formatModelBlockReason(
     readonly guidance?: string;
   },
 ): string {
-  /** Guardrail rationale after trimming whitespace from model or UI input. */
+  /**
+   * Guardrail rationale after trimming whitespace from model or UI input.
+   */
   const normalizedReason = guardrailReason.trim();
-  /** Actionable next step after trimming whitespace from model input. */
+  /**
+   * Actionable next step after trimming whitespace from model input.
+   */
   const normalizedGuidance = guidance.trim();
 
   return [

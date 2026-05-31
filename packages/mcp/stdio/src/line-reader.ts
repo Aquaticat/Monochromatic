@@ -22,7 +22,9 @@
 export async function* readLines(
   stream: AsyncIterable<Uint8Array>,
 ): AsyncGenerator<string> {
-  /** Reused decoder so multi-byte UTF-8 sequences split across chunks are stitched correctly via `stream: true`. */
+  /**
+   * Reused decoder so multi-byte UTF-8 sequences split across chunks are stitched correctly via `stream: true`.
+   */
   const decoder = new TextDecoder();
   /**
    * Accumulates partial line data between chunk boundaries.

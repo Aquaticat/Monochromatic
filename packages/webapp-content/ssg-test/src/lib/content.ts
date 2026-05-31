@@ -28,10 +28,14 @@ import { sha256, } from './cache-hash.ts';
 
 //region Frontmatter
 
-/** Opening delimiter for YAML frontmatter blocks. */
+/**
+ * Opening delimiter for YAML frontmatter blocks.
+ */
 const FRONTMATTER_OPEN = '---';
 
-/** Unicode Byte Order Mark code point, stripped from file content before parsing. */
+/**
+ * Unicode Byte Order Mark code point, stripped from file content before parsing.
+ */
 const BOM = 0xFE_FF;
 
 /**
@@ -55,7 +59,9 @@ function parseFrontmatter(raw: string,): {
   content: string;
 } {
   /* Strip optional leading BOM. */
-  /** BOM-trimmed input used for every subsequent index computation. */
+  /**
+   * BOM-trimmed input used for every subsequent index computation.
+   */
   const str = raw.codePointAt(0,)
     === BOM ? raw.slice(1,) : raw;
 
@@ -67,7 +73,9 @@ function parseFrontmatter(raw: string,): {
   }
 
   /* Skip past the opening `---` and its trailing newline. */
-  /** Index of the first newline after the opening fence, or `-1` when malformed. */
+  /**
+   * Index of the first newline after the opening fence, or `-1` when malformed.
+   */
   const afterOpen = str.indexOf(
     '\n',
     FRONTMATTER_OPEN.length,
@@ -83,9 +91,13 @@ function parseFrontmatter(raw: string,): {
    * Scan for the closing `---` that sits at the start of a line.
    * Start searching from the character right after the first newline.
    */
-  /** Starting offset for the closing-fence scan; first character after the opening newline. */
+  /**
+   * Starting offset for the closing-fence scan; first character after the opening newline.
+   */
   const searchFrom = afterOpen + 1;
-  /** Cursor advanced through the loop while hunting for a column-zero closing fence. */
+  /**
+   * Cursor advanced through the loop while hunting for a column-zero closing fence.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser cursor advanced across multiple loop iterations
   let closeStart = searchFrom;
 
@@ -104,7 +116,9 @@ function parseFrontmatter(raw: string,): {
     /* The delimiter must be at column 0 or immediately after a newline. */
     if ((idx === 0) || (str[idx - 1]
       === '\n')) {
-      /** Offset just past the closing fence; the next char must be newline or EOF for a valid close. */
+      /**
+       * Offset just past the closing fence; the next char must be newline or EOF for a valid close.
+       */
       const afterDelim = idx + FRONTMATTER_OPEN
         .length;
 
@@ -117,12 +131,16 @@ function parseFrontmatter(raw: string,): {
           || (str[afterDelim]
             === '\r')
       ) {
-        /** YAML body between the opening and closing fences fed to parseYaml. */
+        /**
+         * YAML body between the opening and closing fences fed to parseYaml.
+         */
         const yamlBlock = str.slice(
           searchFrom,
           idx,
         );
-        /** Body start cursor advanced past CR/LF so the post body excludes the closing fence. */
+        /**
+         * Body start cursor advanced past CR/LF so the post body excludes the closing fence.
+         */
         let bodyStart = afterDelim;
         if (str[bodyStart]
           === '\r')
@@ -218,7 +236,9 @@ export const postFrontmatterSchema: v.GenericSchema<
 
 //region Types
 
-/** Fully-resolved frontmatter as carried by `Post.data`. */
+/**
+ * Fully-resolved frontmatter as carried by `Post.data`.
+ */
 export type PostFrontmatter = {
   readonly title: string;
   readonly description: string;
@@ -235,37 +255,63 @@ export type PostFrontmatter = {
  * `Post` objects built by `attachDates` after git dates are derived.
  */
 export type LoadedPost = {
-  /** Two-letter language code derived from parent directory name, validated against known locales. */
+  /**
+   * Two-letter language code derived from parent directory name, validated against known locales.
+   */
   readonly lang: Locales;
-  /** Post slug derived from filename without extension. */
+  /**
+   * Post slug derived from filename without extension.
+   */
   readonly name: string;
-  /** Validated author-written frontmatter (title, description, tags). */
+  /**
+   * Validated author-written frontmatter (title, description, tags).
+   */
   readonly fileData: {
     readonly title: string;
     readonly description: string;
     readonly tags: readonly string[];
   };
-  /** Raw MDX body content (frontmatter stripped). */
+  /**
+   * Raw MDX body content (frontmatter stripped).
+   */
   readonly body: string;
-  /** Absolute path to the source MDX file. */
+  /**
+   * Absolute path to the source MDX file.
+   */
   readonly filePath: string;
-  /** SHA-256 hex digest of the raw file contents, computed during loading. */
+  /**
+   * SHA-256 hex digest of the raw file contents, computed during loading.
+   */
   readonly contentHash: string;
 };
 
-/** Blog post with fully-resolved frontmatter (author-written + git-derived dates). */
+/**
+ * Blog post with fully-resolved frontmatter (author-written + git-derived dates).
+ */
 export type Post = {
-  /** Two-letter language code derived from parent directory name, validated against known locales. */
+  /**
+   * Two-letter language code derived from parent directory name, validated against known locales.
+   */
   readonly lang: Locales;
-  /** Post slug derived from filename without extension. */
+  /**
+   * Post slug derived from filename without extension.
+   */
   readonly name: string;
-  /** Fully-resolved frontmatter data. */
+  /**
+   * Fully-resolved frontmatter data.
+   */
   readonly data: PostFrontmatter;
-  /** Raw MDX body content (frontmatter stripped). */
+  /**
+   * Raw MDX body content (frontmatter stripped).
+   */
   readonly body: string;
-  /** Absolute path to the source MDX file. */
+  /**
+   * Absolute path to the source MDX file.
+   */
   readonly filePath: string;
-  /** SHA-256 hex digest of the raw file contents, computed during loading. */
+  /**
+   * SHA-256 hex digest of the raw file contents, computed during loading.
+   */
   readonly contentHash: string;
 };
 
@@ -293,40 +339,58 @@ export type Post = {
  * ```
  */
 export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
-  /** Glob expansion result; `.files` holds the matched paths used downstream. */
+  /**
+   * Glob expansion result; `.files` holds the matched paths used downstream.
+   */
   const result = await readdir(`${contentDir}/**/*.mdx`,);
-  /** MDX file paths feeding the per-file parse fan-out. */
+  /**
+   * MDX file paths feeding the per-file parse fan-out.
+   */
   const filePaths = result.files;
 
   return Promise.all(
     filePaths.map(async function parsePost(filePath,) {
-      /** Raw file text used for both hashing and frontmatter parsing. */
+      /**
+       * Raw file text used for both hashing and frontmatter parsing.
+       */
       const raw = await readFile(
         filePath,
         'utf8',
       );
-      /** Content-addressed hash used as the cache invalidation key. */
+      /**
+       * Content-addressed hash used as the cache invalidation key.
+       */
       const contentHash = sha256(raw,);
-      /** Destructured parse result; renamed fields disambiguate from outer post data. */
+      /**
+       * Destructured parse result; renamed fields disambiguate from outer post data.
+       */
       const {
         data: rawData,
         content: body,
       } = parseFrontmatter(raw,);
-      /** Schema-validated frontmatter fields authored in the MDX file. */
+      /**
+       * Schema-validated frontmatter fields authored in the MDX file.
+       */
       const fileData = v.parse(
         postFileFrontmatterSchema,
         rawData,
       );
-      /** Locale segment of the file path before narrowing to the `Locales` type. */
+      /**
+       * Locale segment of the file path before narrowing to the `Locales` type.
+       */
       const rawLang = basename(dirname(filePath,),);
       if (!isLocale(rawLang,)) {
         throw new Error(
           `Unknown locale "${rawLang}" for ${filePath}. Expected one of the configured locales.`,
         );
       }
-      /** Narrowed locale used as the post `lang`. */
+      /**
+       * Narrowed locale used as the post `lang`.
+       */
       const lang: Locales = rawLang;
-      /** Slug name derived from the filename minus the `.mdx` extension. */
+      /**
+       * Slug name derived from the filename minus the `.mdx` extension.
+       */
       const name = basename(
         filePath,
         '.mdx',
@@ -344,7 +408,9 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
   );
 }
 
-/** Derived dates for one post, keyed by absolute file path in `attachDates`. */
+/**
+ * Derived dates for one post, keyed by absolute file path in `attachDates`.
+ */
 export type ResolvedDates = {
   published: Date;
   updated: Date;
@@ -382,9 +448,13 @@ export function attachDates(
     readonly datesByFilePath: ReadonlyMap<string, ResolvedDates>;
   },
 ): Post[] {
-  /** Hydrated posts assembled before the stable multi-key sort. */
+  /**
+   * Hydrated posts assembled before the stable multi-key sort.
+   */
   const posts: Post[] = loadedPosts.map(function toPost(lp,) {
-    /** Resolved dates for this post; missing entries indicate a caller bug. */
+    /**
+     * Resolved dates for this post; missing entries indicate a caller bug.
+     */
     const dates = datesByFilePath.get(lp.filePath,);
     if (dates === undefined) {
       throw new Error(
@@ -418,7 +488,9 @@ export function attachDates(
     a,
     b,
   ) {
-    /** Primary sort key in milliseconds; descending. */
+    /**
+     * Primary sort key in milliseconds; descending.
+     */
     const updatedDelta = b.data
       .updated
       .getTime()
@@ -428,7 +500,9 @@ export function attachDates(
       .getTime();
     if (updatedDelta !== 0)
       return updatedDelta;
-    /** Tie-break used when many posts share the same updated timestamp. */
+    /**
+     * Tie-break used when many posts share the same updated timestamp.
+     */
     const publishedDelta = b.data
       .published
       .getTime()

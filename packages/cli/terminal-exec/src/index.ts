@@ -23,10 +23,14 @@ import { l, } from './log.ts';
 import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
 
-/** Parsed CLI options from process arguments. */
+/**
+ * Parsed CLI options from process arguments.
+ */
 const options = parseArgs({ argv: process.argv
   .slice(2,), },);
-/** Resolved terminal emulator entry, or NO_TERMINAL if none found. */
+/**
+ * Resolved terminal emulator entry, or NO_TERMINAL if none found.
+ */
 const terminal = await resolveTerminal();
 
 if (terminal === NO_TERMINAL) {
@@ -41,7 +45,9 @@ if (terminal === NO_TERMINAL) {
 
 l.info(`resolved terminal: ${terminal.entryId}`,);
 
-/** Final command array built from resolved terminal and user options. */
+/**
+ * Final command array built from resolved terminal and user options.
+ */
 const command = buildCommand({
   terminal,
   options,

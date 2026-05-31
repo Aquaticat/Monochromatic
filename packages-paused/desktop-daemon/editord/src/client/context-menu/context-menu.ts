@@ -20,9 +20,13 @@ import {
 
 export type { ContextMenuItem, } from './items.ts';
 
-/** Mutable context menu state captured by the factory closure. */
+/**
+ * Mutable context menu state captured by the factory closure.
+ */
 type ContextMenuState = {
-  /** Popover element, or null when hidden. */
+  /**
+   * Popover element, or null when hidden.
+   */
   popup: HTMLDivElement | null;
 };
 
@@ -30,13 +34,17 @@ type ContextMenuState = {
  * Context menu handle returned by {@link createContextMenu}.
  */
 export type ContextMenu = Readonly<{
-  /** Shows menu items at viewport coordinates. */
+  /**
+   * Shows menu items at viewport coordinates.
+   */
   readonly show: (opts: {
     readonly x: number;
     readonly y: number;
     readonly items: readonly ContextMenuItem[];
   },) => void;
-  /** Hides the context menu and cleans up the anchor. */
+  /**
+   * Hides the context menu and cleans up the anchor.
+   */
   readonly hide: () => void;
 }>;
 
@@ -56,12 +64,16 @@ export type ContextMenu = Readonly<{
  * ```
  */
 export function createContextMenu(): ContextMenu {
-  /** Invisible anchor div positioned at the click point. */
+  /**
+   * Invisible anchor div positioned at the click point.
+   */
   const anchor = h({
     tag: 'div',
     class: 'ctx-anchor',
   },);
-  /** Mutable popup slot kept private to this handle. */
+  /**
+   * Mutable popup slot kept private to this handle.
+   */
   const state: ContextMenuState = {
     popup: null,
   };
@@ -75,7 +87,9 @@ export function createContextMenu(): ContextMenu {
     if ((event as ToggleEvent).newState
       === 'closed') {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div */
-      /** Popover element fired the toggle; remove it so the next show creates a fresh one. */
+      /**
+       * Popover element fired the toggle; remove it so the next show creates a fresh one.
+       */
       const popup = event.currentTarget as HTMLDivElement;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       popup.remove();
@@ -85,14 +99,20 @@ export function createContextMenu(): ContextMenu {
     }
   }
 
-  /** Callback fired when the popover is dismissed by the browser. */
+  /**
+   * Callback fired when the popover is dismissed by the browser.
+   */
   const onToggleBound = handlePopoverToggle;
 
-  /** Hides the context menu and cleans up the anchor. */
+  /**
+   * Hides the context menu and cleans up the anchor.
+   */
   function hide(): void {
     if (state.popup
       !== null) {
-      /** Popup captured before clearing state so event callbacks cannot observe a stale handle. */
+      /**
+       * Popup captured before clearing state so event callbacks cannot observe a stale handle.
+       */
       const { popup, } = state;
       state.popup = null;
       popup.hidePopover();
@@ -131,7 +151,9 @@ export function createContextMenu(): ContextMenu {
       action();
     }
 
-    /** Rendered DOM rows for every item; each row is either an input or a button row. */
+    /**
+     * Rendered DOM rows for every item; each row is either an input or a button row.
+     */
     const menuItems = items.map(function renderItem(item,) {
       return item.defaultValue
         !== undefined
@@ -145,7 +167,9 @@ export function createContextMenu(): ContextMenu {
         },);
     },);
 
-    /** Position the invisible anchor at the click point. */
+    /**
+     * Position the invisible anchor at the click point.
+     */
     anchor.style
       .setProperty(
       'inset-inline-start',
@@ -176,7 +200,9 @@ export function createContextMenu(): ContextMenu {
     state.popup
       .showPopover();
 
-    /** First rendered row; focused on open so keyboard users land on a real item, not the dialog. */
+    /**
+     * First rendered row; focused on open so keyboard users land on a real item, not the dialog.
+     */
     const [firstItem,] = menuItems;
     if (firstItem !== undefined)
       firstItem.focus();

@@ -28,7 +28,9 @@ function resolveLocale(): Locales {
     .locale;
 }
 
-/** Translation-accessor cache keyed by locale. */
+/**
+ * Translation-accessor cache keyed by locale.
+ */
 const accessorByLocale = new Map<Locales, TranslationFunctions>();
 
 /**
@@ -61,13 +63,19 @@ export function bootI18n(): void {
  * ```
  */
 export function LL(): TranslationFunctions {
-  /** Active locale code, looked up once so cache check and accessor rebuild agree. */
+  /**
+   * Active locale code, looked up once so cache check and accessor rebuild agree.
+   */
   const locale = resolveLocale();
-  /** Existing accessor for this locale, if any. */
+  /**
+   * Existing accessor for this locale, if any.
+   */
   const existing = accessorByLocale.get(locale,);
   if (existing !== undefined)
     return existing;
-  /** Freshly-built accessor cached for subsequent calls in the same locale. */
+  /**
+   * Freshly-built accessor cached for subsequent calls in the same locale.
+   */
   const fresh = i18nObject(locale,);
   accessorByLocale.set(
     locale,
@@ -95,7 +103,9 @@ export function bcp47(): string {
   } satisfies Record<Locales, string>)[resolveLocale()];
 }
 
-/** Translation keys whose stored value is a plain string. */
+/**
+ * Translation keys whose stored value is a plain string.
+ */
 type StringKey = {
   [K in keyof Translations]: Translations[K] extends string ? K : never;
 }[keyof Translations];
@@ -122,11 +132,17 @@ type StringKey = {
  * ```
  */
 export function rawString(key: StringKey,): string {
-  /** Active locale, captured before the dictionary lookup. */
+  /**
+   * Active locale, captured before the dictionary lookup.
+   */
   const locale = resolveLocale();
-  /** Loaded dictionary for the active locale. */
+  /**
+   * Loaded dictionary for the active locale.
+   */
   const translations = loadedLocales[locale];
-  /** Raw translation entry, expected to be a plain string for this key. */
+  /**
+   * Raw translation entry, expected to be a plain string for this key.
+   */
   const value = translations[key];
   if ((typeof value) !== 'string') {
     throw new Error(

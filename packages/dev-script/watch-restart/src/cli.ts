@@ -223,7 +223,9 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       'No command supplied after "--"; usage: watch-restart -w <dir>... -- <cmd> [<args>...]',
     );
   }
-  /** Positional split: first non-option after `--` is the command; the rest is its argv. */
+  /**
+   * Positional split: first non-option after `--` is the command; the rest is its argv.
+   */
   const [command, ...commandArgs] = args.rest;
   if ((command === undefined) || (command === '')) {
     throw new Error(
@@ -231,14 +233,18 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     );
   }
 
-  /** Flattened, comma-split extension list. */
+  /**
+   * Flattened, comma-split extension list.
+   */
   const extensions: readonly string[] = args.ext
     .flatMap(
     function flattenExt(raw,): string[] {
       return splitCommas(raw,);
     },
   );
-  /** Flattened, comma-split type list mapped to internal entity types. */
+  /**
+   * Flattened, comma-split type list mapped to internal entity types.
+   */
   const types: readonly WatchEntityType[] = args
     .type
     .flatMap(
@@ -262,51 +268,67 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       .map(function mapEventToken(token,): WatchEventKind {
       return cliEventToInternal(token,);
     },);
-  /** Compiled include regex list; throws here if any pattern is invalid. */
+  /**
+   * Compiled include regex list; throws here if any pattern is invalid.
+   */
   const includeRegex: readonly RegExp[] = args.includeRegex
     .map(
     function mapIncludeRegex(pattern,): RegExp {
       return compileRegex(pattern,);
     },
   );
-  /** Compiled exclude regex list; throws here if any pattern is invalid. */
+  /**
+   * Compiled exclude regex list; throws here if any pattern is invalid.
+   */
   const excludeRegex: readonly RegExp[] = args.excludeRegex
     .map(
     function mapExcludeRegex(pattern,): RegExp {
       return compileRegex(pattern,);
     },
   );
-  /** Tri-state hidden toggle; both-passed throws inside resolveBoolPair. */
+  /**
+   * Tri-state hidden toggle; both-passed throws inside resolveBoolPair.
+   */
   const hidden = resolveBoolPair({
     positive: args.hidden,
     negative: args.noHidden,
     flag: 'hidden',
   },);
-  /** Tri-state symlink-follow toggle. */
+  /**
+   * Tri-state symlink-follow toggle.
+   */
   const followSymlinks = resolveBoolPair({
     positive: args.followSymlinks,
     negative: args.noFollowSymlinks,
     flag: 'follow-symlinks',
   },);
-  /** Tri-state gitignore toggle. */
+  /**
+   * Tri-state gitignore toggle.
+   */
   const gitignore = resolveBoolPair({
     positive: args.gitignore,
     negative: args.noGitignore,
     flag: 'gitignore',
   },);
-  /** Tri-state terminal-clear toggle. */
+  /**
+   * Tri-state terminal-clear toggle.
+   */
   const clear = resolveBoolPair({
     positive: args.clear,
     negative: args.noClear,
     flag: 'clear',
   },);
-  /** Tri-state process-group toggle. */
+  /**
+   * Tri-state process-group toggle.
+   */
   const processGroup = resolveBoolPair({
     positive: args.processGroup,
     negative: args.noProcessGroup,
     flag: 'process-group',
   },);
-  /** Validated kill signal (or `undefined` when --signal was not passed). */
+  /**
+   * Validated kill signal (or `undefined` when --signal was not passed).
+   */
   const killSignal = args.signal
     === undefined
     ? undefined
@@ -359,12 +381,18 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
 }
 
 if (import.meta.main) {
-  /** Parsed argv from `process.argv.slice(2)`. */
+  /**
+   * Parsed argv from `process.argv.slice(2)`.
+   */
   const args = parseArgs({ argv: process.argv
     .slice(2,), },);
-  /** Mapped options handed to the orchestrator. */
+  /**
+   * Mapped options handed to the orchestrator.
+   */
   const options = argsToOptions(args,);
-  /** Live handle; both signals route through it during shutdown. */
+  /**
+   * Live handle; both signals route through it during shutdown.
+   */
   const handle = await startWatchRestart(options,);
   installShutdownHandler({
     signal: 'SIGINT',

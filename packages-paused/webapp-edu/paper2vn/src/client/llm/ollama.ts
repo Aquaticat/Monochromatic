@@ -11,29 +11,43 @@ import type {
   Provider,
 } from './types.ts';
 
-/** Default Ollama base URL when not overridden. */
+/**
+ * Default Ollama base URL when not overridden.
+ */
 const DEFAULT_BASE = 'http://localhost:11434';
 
-/** Default sampling temperature when callers do not supply one. */
+/**
+ * Default sampling temperature when callers do not supply one.
+ */
 const DEFAULT_TEMPERATURE = 0.7;
 
-/** Maximum body snippet length included in error messages on non-2xx responses. */
+/**
+ * Maximum body snippet length included in error messages on non-2xx responses.
+ */
 const ERROR_BODY_PREVIEW_CHARS = 500;
 
-/** Subset of Ollama's `/api/chat` non-streaming response. */
+/**
+ * Subset of Ollama's `/api/chat` non-streaming response.
+ */
 type OllamaResponse = {
   message: { content: string; };
 };
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the function never reassigns opts. */
-/** Ollama provider implementation. */
+/**
+ * Ollama provider implementation.
+ */
 export const ollama: Provider = {
   id: 'ollama',
   chat: async function chat(opts: ChatOptions,): Promise<string> {
-    /** Configured base URL falling back to localhost when unset. */
+    /**
+     * Configured base URL falling back to localhost when unset.
+     */
     const base = opts.baseUrl
       === '' ? DEFAULT_BASE : opts.baseUrl;
-    /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
+    /**
+     * Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly.
+     */
     const trimmedBase = base.endsWith('/',)
       ? base.slice(
         0,
@@ -44,7 +58,9 @@ export const ollama: Provider = {
      * Full chat endpoint URL composed from {@link base}.
      */
     const url = `${trimmedBase}/api/chat`;
-    /** Outgoing payload for Ollama's `/api/chat` (model, messages, options). */
+    /**
+     * Outgoing payload for Ollama's `/api/chat` (model, messages, options).
+     */
     const body: Record<string, unknown> = {
       model: opts.model,
       stream: false,
@@ -68,7 +84,9 @@ export const ollama: Provider = {
     if (opts.expectJson
       === true)
       body.format = 'json';
-    /** Raw fetch response so status can gate the JSON read. */
+    /**
+     * Raw fetch response so status can gate the JSON read.
+     */
     const res = await fetch(
       url,
       {
@@ -80,7 +98,9 @@ export const ollama: Provider = {
       },
     );
     if (!res.ok) {
-      /** Best-effort error-body snippet appended to the thrown message. */
+      /**
+       * Best-effort error-body snippet appended to the thrown message.
+       */
       const text = await (async function safeText(): Promise<string> {
         try {
           return await res.text();
@@ -103,7 +123,9 @@ export const ollama: Provider = {
      * Field access is safe under that contract.
      */
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- stable Ollama 0.1+ response shape */
-    /** Parsed Ollama response payload, narrowed to the fields we read. */
+    /**
+     * Parsed Ollama response payload, narrowed to the fields we read.
+     */
     const json = await res.json() as OllamaResponse;
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     return json.message

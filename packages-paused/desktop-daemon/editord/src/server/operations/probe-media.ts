@@ -13,7 +13,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for media probing. */
+/**
+ * Tagged logger for media probing.
+ */
 const probeLog = tagged({
   tag: 'probe-media',
   l,
@@ -41,14 +43,18 @@ const INPUT_LINE_PREFIX = 'Input #';
 function findInputLineStart(text: string,): number {
   if (text.startsWith(INPUT_LINE_PREFIX,))
     return 0;
-  /** Index of the matched prefix when it lives on a non-first line; -1 means none. */
+  /**
+   * Index of the matched prefix when it lives on a non-first line; -1 means none.
+   */
   const idx = text.indexOf(`\n${INPUT_LINE_PREFIX}`,);
   if (idx === (-1))
     return -1;
   return idx + 1;
 }
 
-/** Probe timeout in milliseconds. */
+/**
+ * Probe timeout in milliseconds.
+ */
 const TIMEOUT_MS = 5_000;
 
 /**
@@ -75,14 +81,18 @@ function extractMetadata(
     return null;
   }
 
-  /** Anchor in stderr at which the useful `Input #...` metadata begins; -1 means none. */
+  /**
+   * Anchor in stderr at which the useful `Input #...` metadata begins; -1 means none.
+   */
   const startIdx = findInputLineStart(stderr,);
   if (startIdx === (-1)) {
     probeLog.info(`no Input line found for: ${path}`,);
     return null;
   }
 
-  /** Metadata-only slice, trailing whitespace removed for tidy display. */
+  /**
+   * Metadata-only slice, trailing whitespace removed for tidy display.
+   */
   const trimmed = stderr.slice(startIdx,)
     .trimEnd();
   probeLog.info(`probed: ${path}`,);
@@ -104,7 +114,9 @@ function extractMetadata(
  */
 export async function probeMedia({ path, }: { readonly path: string; },): Promise<string | null> {
   try {
-    /** ffprobe writes metadata to stderr even on success. */
+    /**
+     * ffprobe writes metadata to stderr even on success.
+     */
     const result = await spawn(
       'ffprobe',
       [path,],
@@ -123,7 +135,9 @@ export async function probeMedia({ path, }: { readonly path: string; },): Promis
     if ((error !== null) && ((typeof error) === 'object')
       && ('stderr' in error)) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check */
-      /** Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want. */
+      /**
+       * Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want.
+       */
       const { stderr, } = error as { readonly stderr: string; };
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       return extractMetadata({

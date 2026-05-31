@@ -63,10 +63,14 @@ export {
   type TierTransition,
 } from './composer-tier.ts';
 
-/** Idle delay before tier promotion fires, in milliseconds. */
+/**
+ * Idle delay before tier promotion fires, in milliseconds.
+ */
 const TIER_DEBOUNCE_MS = 500;
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM composer: every entry takes a `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLElement` (or an event), all of which expose mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
@@ -98,17 +102,25 @@ export async function attachComposer({
   form.dataset
     .composerAttached = '1';
 
-  /** Identity select; null aborts the attach so a half-mounted form is not left behind. */
+  /**
+   * Identity select; null aborts the attach so a half-mounted form is not left behind.
+   */
   const select = form.querySelector<HTMLSelectElement>('.composer-identity',);
-  /** Composer body textarea; null aborts the attach. */
+  /**
+   * Composer body textarea; null aborts the attach.
+   */
   const textarea = form.querySelector<HTMLTextAreaElement>('.composer-body',);
-  /** Send button; null aborts the attach. */
+  /**
+   * Send button; null aborts the attach.
+   */
   const sendBtn = form.querySelector<HTMLButtonElement>('.composer-send',);
   if ((select === null) || (textarea === null)
     || (sendBtn === null))
     return;
 
-  /** Identity previously persisted; restored if it still matches one of the select's options. */
+  /**
+   * Identity previously persisted; restored if it still matches one of the select's options.
+   */
   const persisted = loadIdentity(caps.localStorage,);
   if ((persisted !== NO_IDENTITY) && [...select.options,]
     .some(function isPersisted(option,) {
@@ -128,7 +140,9 @@ export async function attachComposer({
     },
   );
 
-  /** Outbox and chunk cache built concurrently; both depend only on `caps`. */
+  /**
+   * Outbox and chunk cache built concurrently; both depend only on `caps`.
+   */
   const [outbox, cache,] = await Promise.all([
     createOutbox({ idbAvailable: caps.idb, },),
     createChunkCache({
@@ -139,10 +153,14 @@ export async function attachComposer({
     },),
   ],);
 
-  /** Parsed edit-mode id; `NEW_MESSAGE` means the composer is in new-message mode and `editMessageId` stays absent. */
+  /**
+   * Parsed edit-mode id; `NEW_MESSAGE` means the composer is in new-message mode and `editMessageId` stays absent.
+   */
   const editId = parseEditId(form.dataset
     .editMessageId,);
-  /** Long-lived composer state; passed to every helper so they share editor, outbox, and tier discriminant. */
+  /**
+   * Long-lived composer state; passed to every helper so they share editor, outbox, and tier discriminant.
+   */
   const state: ComposerState = {
     /* oxlint-disable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion -- tier discriminant cast */
     tier: Number.parseInt(
@@ -160,12 +178,16 @@ export async function attachComposer({
 
   // Mount the metrics overlay before any worker spawns so we don't
   // miss the first compile pass. Only when `?debug=1`.
-  /** URL-flag override that surfaces the per-pipeline metrics overlay. */
+  /**
+   * URL-flag override that surfaces the per-pipeline metrics overlay.
+   */
   const debug = new URLSearchParams(globalThis.location
     .search,).get('debug',)
     === '1';
   if (debug) {
-    /** Overlay handle whose `recordTransition` is captured on state for later metrics. */
+    /**
+     * Overlay handle whose `recordTransition` is captured on state for later metrics.
+     */
     const overlay = attachMetricsOverlay({
       parent: form,
       state,
@@ -176,14 +198,18 @@ export async function attachComposer({
   if ((!caps.localStorage) || (!caps.idb))
     appendVolatileBadge(form,);
 
-  /** Idempotent status element appended below the form; passed to every send and edit helper. */
+  /**
+   * Idempotent status element appended below the form; passed to every send and edit helper.
+   */
   const status = appendStatusElement(form,);
 
   // Custom editor opt-in via `?editor=custom`. The textarea stays in
   // the DOM (visually hidden) so every existing read of
   // `textarea.value` still works; the editor mirrors its text into
   // the textarea on every change.
-  /** Opt-in for the worker-backed editor; the textarea remains in the DOM as the mirrored source-of-truth. */
+  /**
+   * Opt-in for the worker-backed editor; the textarea remains in the DOM as the mirrored source-of-truth.
+   */
   const wantCustom = new URLSearchParams(globalThis.location
     .search,).get('editor',)
     === 'custom';
@@ -265,18 +291,26 @@ async function loadExistingChunksForEdit(
     .editMessageId
     === undefined)
     return;
-  /** Captured under a present name so the branch logic does not re-narrow per access. */
+  /**
+   * Captured under a present name so the branch logic does not re-narrow per access.
+   */
   const messageId = input.state
     .editMessageId;
   if (input.state
     .tier
     // oxlint-disable-next-line eslint/no-magic-numbers -- tier-3 discriminant
     === 3) {
-    /** Total chunk count from the server; needed to render the nav and size the tier-3 state. */
+    /**
+     * Total chunk count from the server; needed to render the nav and size the tier-3 state.
+     */
     const chunkCount = await fetchChunkCount(messageId,);
-    /** Allocated up front so the create-draft POST and the tier-3 state both pick up the same id. */
+    /**
+     * Allocated up front so the create-draft POST and the tier-3 state both pick up the same id.
+     */
     const newDraftId = randomId();
-    /** Head draft for the copy-on-write parent; `NO_PARENT` omits the parent link for the demo. */
+    /**
+     * Head draft for the copy-on-write parent; `NO_PARENT` omits the parent link for the demo.
+     */
     const headDraft = await fetchHeadDraftId(messageId,);
     await postCreateDraft({
       id: newDraftId,
@@ -305,15 +339,21 @@ async function loadExistingChunksForEdit(
     },);
     return;
   }
-  /** Total chunk count from the server; used as the upper bound for the fetch loop. */
+  /**
+   * Total chunk count from the server; used as the upper bound for the fetch loop.
+   */
   const chunkCount = await fetchChunkCount(messageId,);
   // Sequential fetches keep ordering deterministic for streaming
   // assembly; the textarea concatenates parts in seq order.
   /* oxlint-disable no-await-in-loop */
-  /** Accumulator of fetched chunk markdown; joined in seq order before writing the body. */
+  /**
+   * Accumulator of fetched chunk markdown; joined in seq order before writing the body.
+   */
   const parts: string[] = [];
   for (let seq = 0; seq < chunkCount; seq += 1) {
-    /** Per-chunk fetch response; throws on `!ok` so a partial body is never written. */
+    /**
+     * Per-chunk fetch response; throws on `!ok` so a partial body is never written.
+     */
     const response = await fetch(`/m/${String(messageId,)}/c/${String(seq,)}/md`,);
     if (!response.ok)
       throw new Error(`failed to load chunk ${String(seq,)}`,);
@@ -339,7 +379,9 @@ async function loadExistingChunksForEdit(
 const NO_TIMER: unique symbol = Symbol('messages-demo:no-promotion-timer',);
 
 /* oxlint-disable no-restricted-syntax/no-module-root-let -- singleton timer handle: cleared inside `clearTimeout` and reassigned by every `queueTierPromotionCheck` call; wrapping in a Map adds noise without a key to hang state off */
-/** Pending promotion-check timer; `NO_TIMER` when no check is queued. */
+/**
+ * Pending promotion-check timer; `NO_TIMER` when no check is queued.
+ */
 let promotionTimer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 /* oxlint-enable no-restricted-syntax/no-module-root-let */
 
@@ -363,7 +405,9 @@ function queueTierPromotionCheck(
   promotionTimer = setTimeout(
     function onIdle() {
       promotionTimer = NO_TIMER;
-      /** Tier-transition decision computed on the post-idle snapshot of buffer length and state. */
+      /**
+       * Tier-transition decision computed on the post-idle snapshot of buffer length and state.
+       */
       const transition = decideTierTransition({
         tier: input.state
           .tier,
@@ -396,7 +440,9 @@ function queueTierPromotionCheck(
   );
 }
 
-/** Re-export the entry function so the lazy import is type-safe. */
+/**
+ * Re-export the entry function so the lazy import is type-safe.
+ */
 export const init: typeof attachComposer = attachComposer;
 
 /**
@@ -408,11 +454,15 @@ export const init: typeof attachComposer = attachComposer;
  * ```
  */
 export async function bootstrap(): Promise<void> {
-  /** Composer form element; null aborts the bootstrap on pages without a composer. */
+  /**
+   * Composer form element; null aborts the bootstrap on pages without a composer.
+   */
   const form = document.querySelector<HTMLFormElement>('#composer',);
   if (form === null)
     return;
-  /** Storage capability probe results; forwarded to outbox, cache, and identity-store helpers. */
+  /**
+   * Storage capability probe results; forwarded to outbox, cache, and identity-store helpers.
+   */
   const caps = await probeStorage();
   await attachComposer({
     form,

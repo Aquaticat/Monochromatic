@@ -50,7 +50,9 @@ export const HIGHLIGHT_GROUPS: readonly [
   'emphasis',
 ];
 
-/** Union type of all highlight group names. */
+/**
+ * Union type of all highlight group names.
+ */
 export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
 
 /**

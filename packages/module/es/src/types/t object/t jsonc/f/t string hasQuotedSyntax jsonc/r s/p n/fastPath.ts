@@ -118,12 +118,16 @@ function tryContainerFastPath(
     closingChar: ']' | '}';
   },
 ): Jsonc.Value | typeof NO_FAST_PATH {
-  /** Input with trailing whitespace removed so closing-character checks line up against the structural end. */
+  /**
+   * Input with trailing whitespace removed so closing-character checks line up against the structural end.
+   */
   const trimmed = value.trimEnd();
   if (!trimmed.endsWith(closingChar,))
     return NO_FAST_PATH;
 
-  /** Cursor that walks back from the closing character to detect a trailing-comma pattern; cursor state held on an object so the function root stays const-only. */
+  /**
+   * Cursor that walks back from the closing character to detect a trailing-comma pattern; cursor state held on an object so the function root stays const-only.
+   */
   const cursor = { searchIndex: trimmed.length
     - closingChar
     .length, };
@@ -138,14 +142,18 @@ function tryContainerFastPath(
     cursor.searchIndex--;
   }
 
-  /** Local copy of the final cursor position used by the comma/end checks below. */
+  /**
+   * Local copy of the final cursor position used by the comma/end checks below.
+   */
   const { searchIndex, } = cursor;
   // Check if there's a comma before the whitespace
   if ((searchIndex > 0) && (trimmed[searchIndex - 1]
     === ',')) {
     // Found trailing comma pattern like ", ]" or ", }"
     // Check if there's any content between opening character and the comma
-    /** Body between the opening bracket and the trailing comma; empty means malformed container like "[ , ]". */
+    /**
+     * Body between the opening bracket and the trailing comma; empty means malformed container like "[ , ]".
+     */
     const contentBeforeComma = trimmed
       .slice(
         1,
@@ -158,7 +166,9 @@ function tryContainerFastPath(
       return NO_FAST_PATH;
     }
 
-    /** Container with the trailing comma stripped so native `JSON.parse` accepts it. */
+    /**
+     * Container with the trailing comma stripped so native `JSON.parse` accepts it.
+     */
     const repairedJson = trimmed.slice(
       0,
       searchIndex - 1,
@@ -272,7 +282,9 @@ export function validateNoTrailingContent(
     containerType: 'array' | 'object';
   },
 ): void {
-  /** Trailing content after comment-stripping; non-empty means malformed JSONC carried unexpected data past the container. */
+  /**
+   * Trailing content after comment-stripping; non-empty means malformed JSONC carried unexpected data past the container.
+   */
   const tail = startsWithComment({ value: remainingContent as FragmentStringJsonc, },)
     .remainingContent
     .trim();
@@ -344,7 +356,9 @@ export function parseWithFallback({
     },
   ) => { remainingContent: FragmentStringJsonc; } & Jsonc.Value;
 },): Jsonc.Value {
-  /** Outcome of native `JSON.parse` fast-path; symbol value signals the custom parser must take over. */
+  /**
+   * Outcome of native `JSON.parse` fast-path; symbol value signals the custom parser must take over.
+   */
   const fastPathResult = tryFastPathFn({
     value,
     context,
@@ -352,7 +366,9 @@ export function parseWithFallback({
   if ((typeof fastPathResult) !== 'symbol')
     return fastPathResult;
 
-  /** Full custom-parser result including `remainingContent`, which is stripped before returning to the caller. */
+  /**
+   * Full custom-parser result including `remainingContent`, which is stripped before returning to the caller.
+   */
   const out = customParserFn({
     value,
     context,
@@ -361,7 +377,9 @@ export function parseWithFallback({
     remainingContent: out.remainingContent,
     containerType,
   },);
-  /** Parsed value without the internal `remainingContent` cursor, ready to surface as `Jsonc.Value`. */
+  /**
+   * Parsed value without the internal `remainingContent` cursor, ready to surface as `Jsonc.Value`.
+   */
   const {
     remainingContent: _rc,
     ...parsed

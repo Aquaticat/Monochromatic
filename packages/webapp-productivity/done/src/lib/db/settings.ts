@@ -6,7 +6,9 @@
  */
 import db from '../db.ts';
 
-/** Database row shape for the settings table. */
+/**
+ * Database row shape for the settings table.
+ */
 type SettingRow = {
   key: string;
   value: string;
@@ -33,7 +35,9 @@ export const SETTING_ABSENT: unique symbol = Symbol('setting-absent',);
  * ```
  */
 export async function getSetting(key: string,): Promise<string | typeof SETTING_ABSENT> {
-  /** Single-row result from the lookup; nullish when the key is missing. */
+  /**
+   * Single-row result from the lookup; nullish when the key is missing.
+   */
   const row: unknown = await db.prepare('SELECT value FROM settings WHERE key = ?',)
     .get(key,);
   if ((row === undefined) || (row === null))
@@ -84,7 +88,9 @@ export async function setSetting({
  * ```
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
-  /** Captures the run result so the caller can learn whether a row was actually removed. */
+  /**
+   * Captures the run result so the caller can learn whether a row was actually removed.
+   */
   const result = await db.prepare('DELETE FROM settings WHERE key = ?',)
     .run(key,);
   return result.changes
@@ -104,7 +110,9 @@ export async function deleteSetting(key: string,): Promise<boolean> {
  */
 export async function getAllSettings(): Promise<Record<string, string>> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns SettingRow shape */
-  /** Materialises the full settings table so callers receive a single snapshot record. */
+  /**
+   * Materialises the full settings table so callers receive a single snapshot record.
+   */
   const rows = await db
     .prepare('SELECT key, value FROM settings ORDER BY key ASC',)
     .all() as SettingRow[];

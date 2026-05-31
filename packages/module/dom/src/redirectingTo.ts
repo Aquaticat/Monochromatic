@@ -31,7 +31,9 @@
  * ```
  */
 export function onLoadRedirectingTo(delayTime: number = 5_000,): void {
-  /** Anchor opted into auto-redirect via the `redirectingTo` class, or null when none exists. */
+  /**
+   * Anchor opted into auto-redirect via the `redirectingTo` class, or null when none exists.
+   */
   const potentialRedirectingToElement = document
     .querySelector<HTMLAnchorElement>('a.redirectingTo',);
   if (potentialRedirectingToElement) {

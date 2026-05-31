@@ -24,10 +24,14 @@ import type {
 
 //region Sentinels
 
-/** Sentinel for paths whose canonical filesystem target cannot be resolved. */
+/**
+ * Sentinel for paths whose canonical filesystem target cannot be resolved.
+ */
 const REALPATH_UNAVAILABLE = Symbol('realpath-unavailable',);
 
-/** Result from attempting filesystem canonicalisation. */
+/**
+ * Result from attempting filesystem canonicalisation.
+ */
 type RealpathResult = string | typeof REALPATH_UNAVAILABLE;
 
 //endregion Sentinels
@@ -106,7 +110,9 @@ function isExistingPathUnderTrustedAgentTemp(
   if (filePath === '')
     return false;
 
-  /** Canonical target path for command token. */
+  /**
+   * Canonical target path for command token.
+   */
   const canonicalPath = realpathOrUnavailable(resolvePath({
     filePath,
     cwd: ctx.cwd,
@@ -116,7 +122,9 @@ function isExistingPathUnderTrustedAgentTemp(
 
   return trustedAgentTempDirs.some(
     function trustedDirContainsPath(trustedDir,) {
-      /** Canonical trusted root used to block symlink escapes. */
+      /**
+       * Canonical trusted root used to block symlink escapes.
+       */
       const canonicalTrustedDir = realpathOrUnavailable(nodePath.resolve(
         ctx.cwd,
         trustedDir,
@@ -204,7 +212,9 @@ function isExistingProjectDotenvPath(
     readonly ctx: SignalContext;
   },
 ): boolean {
-  /** Canonical source path to ensure missing files fail closed. */
+  /**
+   * Canonical source path to ensure missing files fail closed.
+   */
   const canonicalPath = realpathOrUnavailable(resolvePath({
     filePath,
     cwd: ctx.cwd,
@@ -212,7 +222,9 @@ function isExistingProjectDotenvPath(
   if (canonicalPath === REALPATH_UNAVAILABLE)
     return false;
 
-  /** Canonical project root to keep home dotfiles and sibling repos blocked. */
+  /**
+   * Canonical project root to keep home dotfiles and sibling repos blocked.
+   */
   const canonicalCwd = realpathOrUnavailable(ctx.cwd,);
   if (canonicalCwd === REALPATH_UNAVAILABLE)
     return false;

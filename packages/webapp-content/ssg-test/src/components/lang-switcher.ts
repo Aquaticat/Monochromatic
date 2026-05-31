@@ -37,10 +37,14 @@ import {
 
 //region Constants
 
-/** Globe glyph from Material Symbols Outlined; codepoint U+E894. */
+/**
+ * Globe glyph from Material Symbols Outlined; codepoint U+E894.
+ */
 const LANG_ICON = icon('language',);
 
-/** Minimum menu width in rem; comfortably fits the longest autonym. */
+/**
+ * Minimum menu width in rem; comfortably fits the longest autonym.
+ */
 const MENU_MIN_INLINE_REM = 8;
 
 //endregion Constants
@@ -190,7 +194,9 @@ function resolveHref(
   },
 ): string {
   if (currentName !== undefined) {
-    /** Treats an unset `availableInLangs` as "all locales available" so non-post pages keep deep links. */
+    /**
+     * Treats an unset `availableInLangs` as "all locales available" so non-post pages keep deep links.
+     */
     const hasTarget = (availableInLangs === undefined)
       || availableInLangs
       .includes(targetLang,);
@@ -228,7 +234,9 @@ export function html(
     readonly availableInLangs?: readonly Locales[];
   },
 ): string {
-  /** Locale-bound translator for the switcher's aria-label and menu item text. */
+  /**
+   * Locale-bound translator for the switcher's aria-label and menu item text.
+   */
   const t = i18nObject(currentLang,);
   return h({
     tag: 'lang-switcher',
@@ -252,13 +260,17 @@ export function html(
             tag: 'ul',
             class: 'menu',
             children: locales.map(function renderItem(targetLang,) {
-              /** URL path computed once per locale row before the link element is built. */
+              /**
+               * URL path computed once per locale row before the link element is built.
+               */
               const href = resolveHref({
                 targetLang,
                 ...(currentName !== undefined ? { currentName, } : {}),
                 ...(availableInLangs !== undefined ? { availableInLangs, } : {}),
               },);
-              /** Marks the current-locale item so aria-current renders consistently. */
+              /**
+               * Marks the current-locale item so aria-current renders consistently.
+               */
               const isCurrent = targetLang === currentLang;
               return h({
                 tag: 'li',

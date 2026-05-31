@@ -56,7 +56,9 @@ function isWhitespace(c: string,): boolean {
  * ```
  */
 export function firstWhitespaceToken(line: string,): string {
-  /** First maximal run of non-whitespace characters, accumulated in order and joined once. */
+  /**
+   * First maximal run of non-whitespace characters, accumulated in order and joined once.
+   */
   const tokenChars: string[] = [];
   for (const c of line) {
     if (isWhitespace(c,)) {

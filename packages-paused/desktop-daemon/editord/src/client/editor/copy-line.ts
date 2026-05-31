@@ -83,22 +83,30 @@ export function selectAndCopyLine({
   if (!composedRange.collapsed)
     return false;
 
-  /** Line div at the cursor's line index; undefined when the document has fewer lines than expected. */
+  /**
+   * Line div at the cursor's line index; undefined when the document has fewer lines than expected.
+   */
   const lineDiv = editor.children[line];
   if (lineDiv === undefined)
     return false;
 
-  /** Document selection; absent when the platform denies access (e.g. detached document). */
+  /**
+   * Document selection; absent when the platform denies access (e.g. detached document).
+   */
   const selection = document.getSelection();
   if (selection === null)
     return false;
 
-  /** Walker over the line's text nodes; used to find the first and last text node for setBaseAndExtent. */
+  /**
+   * Walker over the line's text nodes; used to find the first and last text node for setBaseAndExtent.
+   */
   const walker = document.createTreeWalker(
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
-  /** First text node within the line; selection anchor goes here at offset 0. */
+  /**
+   * First text node within the line; selection anchor goes here at offset 0.
+   */
   const firstText = walker.nextNode();
   if (firstText === null)
     return false;
@@ -111,7 +119,9 @@ export function selectAndCopyLine({
     firstText,
   },);
 
-  /** Length of the last text node so the focus offset lands at the very end of the line. */
+  /**
+   * Length of the last text node so the focus offset lands at the very end of the line.
+   */
   const lastLen = lastText.textContent
     ?.length
     ?? 0;
@@ -122,7 +132,9 @@ export function selectAndCopyLine({
     lastLen,
   );
 
-  /** Raw line text, including any leading whitespace; empty lines are represented as `\n`. */
+  /**
+   * Raw line text, including any leading whitespace; empty lines are represented as `\n`.
+   */
   const raw = lineDiv.textContent;
   void navigator.clipboard
     .writeText(`${raw === '\n' ? '' : raw}\n`,);

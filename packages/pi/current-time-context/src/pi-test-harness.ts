@@ -16,16 +16,26 @@ import {
 
 //region Types
 
-/** Minimal handler signature for `before_agent_start` checks. */
+/**
+ * Minimal handler signature for `before_agent_start` checks.
+ */
 type BeforeAgentStartHandler = ExtensionHandler<BeforeAgentStartEvent, BeforeAgentStartEventResult>;
 
-/** Fake API harness recording registrations and captured handlers. */
+/**
+ * Fake API harness recording registrations and captured handlers.
+ */
 type FakePiApiHarness = {
-  /** Mock pi extension API. */
+  /**
+   * Mock pi extension API.
+   */
   api: ExtensionAPI;
-  /** Registration calls observed through fake Pi API. */
+  /**
+   * Registration calls observed through fake Pi API.
+   */
   registrations: string[];
-  /** Captured before-agent-start handlers. */
+  /**
+   * Captured before-agent-start handlers.
+   */
   handlers: BeforeAgentStartHandler[];
 };
 
@@ -44,12 +54,18 @@ type FakePiApiHarness = {
  * ```
  */
 function fakePiApi(): FakePiApiHarness {
-  /** Registration calls observed through fake Pi API. */
+  /**
+   * Registration calls observed through fake Pi API.
+   */
   const registrations: string[] = [];
-  /** Captured before-agent-start handlers. */
+  /**
+   * Captured before-agent-start handlers.
+   */
   const handlers: BeforeAgentStartHandler[] = [];
 
-  /** Mock pi API implementing the full surface with inert methods. */
+  /**
+   * Mock pi API implementing the full surface with inert methods.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Fake API records extension calls for tests; method implementations below cover the extension surface exercised here.
   const api = {
     on(
@@ -168,7 +184,9 @@ function fakePiApi(): FakePiApiHarness {
 function getBeforeAgentStartHandler(
   handlers: readonly BeforeAgentStartHandler[],
 ): BeforeAgentStartHandler {
-  /** First registered `before_agent_start` handler. */
+  /**
+   * First registered `before_agent_start` handler.
+   */
   const [handler,] = handlers;
   if (handler === undefined)
     throw new Error('No handler registered for before_agent_start',);

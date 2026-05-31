@@ -19,31 +19,45 @@ import { writeFileSync, } from 'node:fs';
 import { resolve, } from 'node:path';
 import { firstWhitespaceToken, } from './registry-parse.ts';
 
-/** Container image name for the repology-updater environment. */
+/**
+ * Container image name for the repology-updater environment.
+ */
 const IMAGE_NAME = 'repology-updater';
 
-/** Podman volume names for persistent state across incremental runs. */
+/**
+ * Podman volume names for persistent state across incremental runs.
+ */
 const STATE_VOLUME = 'repology-state';
-/** Podman volume for parsed repository data. */
+/**
+ * Podman volume for parsed repository data.
+ */
 const PARSED_VOLUME = 'repology-parsed';
-/** Podman volume for PostgreSQL data directory. */
+/**
+ * Podman volume for PostgreSQL data directory.
+ */
 const PG_VOLUME = 'repology-pgdata';
 
-/** Package directory containing the generator/ subdirectory. */
+/**
+ * Package directory containing the generator/ subdirectory.
+ */
 const PKG_DIR = resolve(
   import.meta.dirname,
   '..',
   '..',
 );
 
-/** Output path for the generated TypeScript file. */
+/**
+ * Output path for the generated TypeScript file.
+ */
 const OUTPUT_PATH = resolve(
   PKG_DIR,
   'data',
   'packages.generated.ts',
 );
 
-/** Generator context directory containing Containerfile, SQL, config. */
+/**
+ * Generator context directory containing Containerfile, SQL, config.
+ */
 const GENERATOR_DIR = resolve(
   PKG_DIR,
   'generator',
@@ -73,21 +87,27 @@ const SUPPORTED_MANAGERS = new Set([
  */
 async function ensureImage(): Promise<void> {
   console.log('[generate-index] building container image...',);
-  /** GitHub token from either env var; empty string when neither is set. */
+  /**
+   * GitHub token from either env var; empty string when neither is set.
+   */
   const token = process.env
     .MISE_GITHUB_TOKEN
     ?? process
     .env
     .GITHUB_TOKEN
     ?? '';
-  /** `--secret` args for podman; empty when no token, so unauthenticated clones run instead. */
+  /**
+   * `--secret` args for podman; empty when no token, so unauthenticated clones run instead.
+   */
   const secretArgs = token !== ''
     ? [
       '--secret',
       `id=github_token,env=GITHUB_TOKEN`,
     ]
     : [];
-  /** Subprocess env; injects `GITHUB_TOKEN` only when a token was found, so podman picks it up via `--secret`. */
+  /**
+   * Subprocess env; injects `GITHUB_TOKEN` only when a token was found, so podman picks it up via `--secret`.
+   */
   const env = token !== ''
     ? {
       ...process.env,
@@ -160,7 +180,9 @@ async function ensureVolumes(): Promise<void> {
  * @returns Captured stdout
  */
 async function runContainer(args: readonly string[],): Promise<string> {
-  /** Spawn result; stdout is returned to the caller, stderr is mirrored to the console for visibility. */
+  /**
+   * Spawn result; stdout is returned to the caller, stderr is mirrored to the console for visibility.
+   */
   const result = await spawn(
     'podman',
     [
@@ -195,16 +217,22 @@ async function runContainer(args: readonly string[],): Promise<string> {
  * @returns Set of mise-installable tool names (lowercase)
  */
 async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
-  /** Spawn result; only `stdout` is parsed for tool names. */
+  /**
+   * Spawn result; only `stdout` is parsed for tool names.
+   */
   const result = await spawn(
     'mise',
     ['registry',],
   );
-  /** Set of mise-registry tool names; lowercase for case-insensitive matching downstream. */
+  /**
+   * Set of mise-registry tool names; lowercase for case-insensitive matching downstream.
+   */
   const names = new Set<string>();
   for (const line of result.stdout
     .split('\n',)) {
-    /** First whitespace-separated token of `line`; tool name on `mise registry` output. */
+    /**
+     * First whitespace-separated token of `line`; tool name on `mise registry` output.
+     */
     const name = firstWhitespaceToken(line,);
     if (name !== '')
       names.add(name.toLowerCase(),);
@@ -280,10 +308,14 @@ type RepologyProject = {
  * @returns TypeScript source code
  */
 function generateTypeScript(projects: readonly RepologyProject[],): string {
-  /** Date portion of the current ISO timestamp; used in the generated file header. */
+  /**
+   * Date portion of the current ISO timestamp; used in the generated file header.
+   */
   const [today,] = new Date().toISOString()
     .split('T',);
-  /** Output buffer: header + entries + closing token, joined with newlines at the end. */
+  /**
+   * Output buffer: header + entries + closing token, joined with newlines at the end.
+   */
   const lines: string[] = [
     '/**',
     ' * Auto-generated from Repology package metadata.',
@@ -300,7 +332,9 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
   ];
 
   for (const project of projects) {
-    /** Generated `p(...)` call string for this project; appended verbatim into the output array. */
+    /**
+     * Generated `p(...)` call string for this project; appended verbatim into the output array.
+     */
     const entry = buildPCall(project,);
     lines.push(`  ${entry},`,);
   }
@@ -320,14 +354,18 @@ function generateTypeScript(projects: readonly RepologyProject[],): string {
  * @returns TypeScript expression string like `p('curl')` or `p({ effname: '...', yes: [...] })`
  */
 function buildPCall(project: RepologyProject,): string {
-  /** Per-manager entries from Repology filtered down to managers we generate code for. */
+  /**
+   * Per-manager entries from Repology filtered down to managers we generate code for.
+   */
   const managers = Object
     .entries(project.repos,)
     .filter(function isSupported([manager,],): boolean {
       return SUPPORTED_MANAGERS.has(manager,);
     },);
 
-  /** Check if all managers use the effname as package name */
+  /**
+   * Check if all managers use the effname as package name
+   */
   const allSameName = managers.every(
     function matchesEffname([, pkgname,],): boolean {
       return pkgname === project
@@ -335,13 +373,17 @@ function buildPCall(project: RepologyProject,): string {
     },
   );
 
-  /** Check if available in ALL supported managers with same name */
+  /**
+   * Check if available in ALL supported managers with same name
+   */
   if (allSameName && (managers.length
     === SUPPORTED_MANAGERS
     .size))
     return `p('${escapeString(project.effname,)}',)`;
 
-  /** Build yes array entries */
+  /**
+   * Build yes array entries
+   */
   const yesEntries = managers.map(
     function formatEntry([manager, pkgname,],): string {
       if (pkgname === project
@@ -381,14 +423,20 @@ function escapeString(value: string,): string {
 
 console.log('[generate-index] starting package index generation',);
 
-/** Step 1: Load mise registry for filtering */
+/**
+ * Step 1: Load mise registry for filtering
+ */
 const miseTools = await loadMiseRegistry();
 
-/** Step 2: Build container and ensure volumes */
+/**
+ * Step 2: Build container and ensure volumes
+ */
 await ensureImage();
 await ensureVolumes();
 
-/** Step 3: Fetch and process repos (auto-inits schema on first run) */
+/**
+ * Step 3: Fetch and process repos (auto-inits schema on first run)
+ */
 console.log('[generate-index] fetching and processing repos...',);
 await runContainer([
   '--fetch',
@@ -397,19 +445,29 @@ await runContainer([
   '--database',
 ],);
 
-/** Step 5: Extract package data via SQL */
+/**
+ * Step 5: Extract package data via SQL
+ */
 console.log('[generate-index] extracting package data...',);
-/** Raw JSON output from the repology-updater extract step. */
+/**
+ * Raw JSON output from the repology-updater extract step.
+ */
 const rawJson = await runContainer(['--extract',],);
-/** Unparsed JSON for type-safe narrowing from any. */
+/**
+ * Unparsed JSON for type-safe narrowing from any.
+ */
 const rawParsed: unknown = JSON.parse(rawJson.trim(),);
 /* oxlint-disable typescript/no-unsafe-type-assertion -- shape validated by upstream SQL output format */
-/** Parsed Repology project entries with per-manager package names. */
+/**
+ * Parsed Repology project entries with per-manager package names.
+ */
 const projects = rawParsed as RepologyProject[];
 /* oxlint-enable typescript/no-unsafe-type-assertion */
 console.log(`[generate-index] extracted ${projects.length} projects from Repology`,);
 
-/** Step 6: Filter out mise-installable packages */
+/**
+ * Step 6: Filter out mise-installable packages
+ */
 const filtered = projects.filter(
   function notMiseInstallable(project,): boolean {
     if (miseTools.has(project.effname
@@ -420,7 +478,9 @@ const filtered = projects.filter(
     return true;
   },
 );
-/** Number of packages filtered out because mise can install them directly. */
+/**
+ * Number of packages filtered out because mise can install them directly.
+ */
 const removedCount = projects.length
   - filtered
   .length;
@@ -429,7 +489,9 @@ console.log(
 );
 console.log(`[generate-index] ${filtered.length} packages remaining`,);
 
-/** Step 7: Generate and write TypeScript */
+/**
+ * Step 7: Generate and write TypeScript
+ */
 const source = generateTypeScript(filtered,);
 writeFileSync(
   OUTPUT_PATH,

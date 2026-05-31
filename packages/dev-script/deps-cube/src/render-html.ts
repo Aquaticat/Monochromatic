@@ -82,7 +82,9 @@ const stylesCss = await readFile(
   'utf8',
 );
 
-/** Document `<title>` for the generated HTML. */
+/**
+ * Document `<title>` for the generated HTML.
+ */
 const PAGE_TITLE = 'deps-cube; catalog dependency audit';
 
 //endregion Constants
@@ -99,7 +101,9 @@ const PAGE_TITLE = 'deps-cube; catalog dependency audit';
  *   the error message so the CLI surfaces them.
  */
 async function bundleController(): Promise<string> {
-  /** Bundle handle from Bun's bundler; carries either the IIFE output or diagnostic logs. */
+  /**
+   * Bundle handle from Bun's bundler; carries either the IIFE output or diagnostic logs.
+   */
   const result = await Bun.build({
     entrypoints: [
       CONTROLLER_ENTRY_PATH,
@@ -109,7 +113,9 @@ async function bundleController(): Promise<string> {
     target: 'browser',
   },);
   if (!result.success) {
-    /** Newline-joined bundler diagnostic messages; surfaced in the thrown error so the CLI can print them. */
+    /**
+     * Newline-joined bundler diagnostic messages; surfaced in the thrown error so the CLI can print them.
+     */
     const messages = result
       .logs
       .map(function describeLog(log,) {
@@ -118,7 +124,9 @@ async function bundleController(): Promise<string> {
       .join('\n',);
     throw new Error(`Failed to bundle controller for HTML inlining:\n${messages}`,);
   }
-  /** First (and only) output artifact from the single-entrypoint build; further `outputs[0..n]` are unused. */
+  /**
+   * First (and only) output artifact from the single-entrypoint build; further `outputs[0..n]` are unused.
+   */
   const [output,] = result.outputs;
   if (output === undefined)
     throw new Error('Bun.build returned no outputs for controller entry point',);
@@ -175,18 +183,26 @@ export async function renderHtml(
     readonly probes: readonly PackageProbe[];
   },
 ): Promise<string> {
-  /** Initial controller state used to seed the control-panel markup; the browser-side controller re-derives its state from this. */
+  /**
+   * Initial controller state used to seed the control-panel markup; the browser-side controller re-derives its state from this.
+   */
   const initialState = defaultState({
     probes,
   },);
-  /** Pre-rendered control panel HTML, spliced into `<main>` below so the page is usable before JS executes. */
+  /**
+   * Pre-rendered control panel HTML, spliced into `<main>` below so the page is usable before JS executes.
+   */
   const controlsHtml = renderControls({
     probes,
     state: initialState,
   },);
-  /** Minified IIFE JS for the browser-side controller; built once per `renderHtml` call. */
+  /**
+   * Minified IIFE JS for the browser-side controller; built once per `renderHtml` call.
+   */
   const bundleJs = await bundleController();
-  /** Probe array serialised for inlining as `window.__PROBES__`; escaped below to neutralise `</script>` sequences. */
+  /**
+   * Probe array serialised for inlining as `window.__PROBES__`; escaped below to neutralise `</script>` sequences.
+   */
   const probesJson = JSON.stringify(probes,);
   return `<!doctype html>
 <html lang="en">

@@ -56,7 +56,9 @@ export function registerPackages(entries: readonly PackageEntry[],): void {
  * @returns Map from binary name to package entry
  */
 function buildIndex(): ReadonlyMap<string, PackageEntry> {
-  /** Lookup map from binary name to package entry; returned read-only after the loop. */
+  /**
+   * Lookup map from binary name to package entry; returned read-only after the loop.
+   */
   const map = new Map<string, PackageEntry>();
   for (const entry of registered) {
     map.set(
@@ -153,11 +155,15 @@ export async function ensurePackage(binary: string,): Promise<void> {
    * Lazily-built lookup index; reuses prior build when {@link registerPackages} hasn't cleared it.
    */
   const index = (function getOrBuildIndex(): ReadonlyMap<string, PackageEntry> {
-    /** Existing build, or `undefined` when the cache is empty. */
+    /**
+     * Existing build, or `undefined` when the cache is empty.
+     */
     const cached = indexCache.get('index',);
     if (cached !== undefined)
       return cached;
-    /** Freshly-built lookup; stored before return so subsequent calls short-circuit. */
+    /**
+     * Freshly-built lookup; stored before return so subsequent calls short-circuit.
+     */
     const fresh = buildIndex();
     indexCache.set(
       'index',
@@ -166,9 +172,13 @@ export async function ensurePackage(binary: string,): Promise<void> {
     return fresh;
   })();
 
-  /** Registered entry for `binary`, or `undefined` when the caller never declared it. */
+  /**
+   * Registered entry for `binary`, or `undefined` when the caller never declared it.
+   */
   const entry = index.get(binary,);
-  /** Entry actually used downstream; falls back to a self-named default for unregistered binaries. */
+  /**
+   * Entry actually used downstream; falls back to a self-named default for unregistered binaries.
+   */
   const effectiveEntry: PackageEntry = entry ?? {
     bin: binary,
     check: '--version',
@@ -176,7 +186,9 @@ export async function ensurePackage(binary: string,): Promise<void> {
     overrides: Object.freeze({},),
   };
 
-  /** Whether the binary already responds to its existence check; short-circuits the install path. */
+  /**
+   * Whether the binary already responds to its existence check; short-circuits the install path.
+   */
   const alreadyInstalled = await binaryExists({
     binary,
     checkFlag: effectiveEntry.check,
@@ -184,12 +196,16 @@ export async function ensurePackage(binary: string,): Promise<void> {
   if (alreadyInstalled)
     return;
 
-  /** Detected manager on this host, or NO_MANAGER when nothing supported is installed. */
+  /**
+   * Detected manager on this host, or NO_MANAGER when nothing supported is installed.
+   */
   const manager = await detectManager();
   if (manager === NO_MANAGER)
     throw new NoManagerError(binary,);
 
-  /** Manager-specific package name; PACKAGE_UNAVAILABLE when Repology says this manager cannot supply it. */
+  /**
+   * Manager-specific package name; PACKAGE_UNAVAILABLE when Repology says this manager cannot supply it.
+   */
   const packageName = resolvePackageName({
     entry: effectiveEntry,
     manager,
@@ -203,7 +219,9 @@ export async function ensurePackage(binary: string,): Promise<void> {
     );
   }
 
-  /** Live confirmation from the manager's search command that the package is installable now. */
+  /**
+   * Live confirmation from the manager's search command that the package is installable now.
+   */
   const available = await canProvide({
     manager,
     packageName,
@@ -216,7 +234,9 @@ export async function ensurePackage(binary: string,): Promise<void> {
     );
   }
 
-  /** Function-scoped logger tagged with the call site for traceable install logs. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable install logs.
+   */
   const rl = tagged({
     tag: ensurePackage.name,
     l,
@@ -227,7 +247,9 @@ export async function ensurePackage(binary: string,): Promise<void> {
     packageName,
   },);
 
-  /** Post-install existence check; non-true here means the package failed to provide the binary. */
+  /**
+   * Post-install existence check; non-true here means the package failed to provide the binary.
+   */
   const verified = await binaryExists({
     binary,
     checkFlag: effectiveEntry.check,

@@ -67,7 +67,9 @@ export function findPackageDir({
   | string
   | typeof PACKAGE_NOT_FOUND
 {
-  /** Candidate node_modules/<pkg> directory */
+  /**
+   * Candidate node_modules/<pkg> directory
+   */
   const candidate = join(
     [
       startDir,
@@ -78,7 +80,9 @@ export function findPackageDir({
   if (existsSync(candidate,))
     return candidate;
 
-  /** Parent directory */
+  /**
+   * Parent directory
+   */
   const parent = dirname(startDir,);
   // Reached filesystem root
   if (parent === startDir)
@@ -104,7 +108,9 @@ export function findPackageDir({
 export function readPackageJson(
   packageDir: string,
 ): Record<string, unknown> | typeof PACKAGE_JSON_ABSENT {
-  /** Path to package.json */
+  /**
+   * Path to package.json
+   */
   const packageJsonPath = join(
     [
       packageDir,
@@ -112,7 +118,9 @@ export function readPackageJson(
     ],
   );
   try {
-    /** Raw JSON text */
+    /**
+     * Raw JSON text
+     */
     const raw = readCssFileSync(packageJsonPath,);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; package.json shape is Record<string, unknown>
     return JSON.parse(raw,) as Record<string, unknown>;
@@ -150,10 +158,14 @@ export function resolveExports({
   if (((typeof exports) !== 'object') || (exports === null))
     return NO_EXPORT_MATCH;
 
-  /** Exports object keyed by subpath pattern */
+  /**
+   * Exports object keyed by subpath pattern
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for property access
   const exportsMap = exports as Record<string, unknown>;
-  /** Value for the requested subpath */
+  /**
+   * Value for the requested subpath
+   */
   const entry = exportsMap[subpath];
 
   if ((typeof entry) === 'string')
@@ -161,7 +173,9 @@ export function resolveExports({
 
   // Condition object: check style -> import -> default
   if (((typeof entry) === 'object') && (entry !== null)) {
-    /** Condition map for this subpath */
+    /**
+     * Condition map for this subpath
+     */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for condition access
     const conditions = entry as Record<string, unknown>;
     for (const key of [
@@ -205,9 +219,13 @@ export function resolvePackage({
   readonly specifier: string;
   readonly fromDir: string;
 },): string {
-  /** Split decouples package directory lookup from sub-path resolution. */
+  /**
+   * Split decouples package directory lookup from sub-path resolution.
+   */
   const [packageName, subpath,] = splitPackageSpecifier(specifier,);
-  /** Absolute path to the package directory in node_modules */
+  /**
+   * Absolute path to the package directory in node_modules
+   */
   const packageDir = findPackageDir({
     startDir: fromDir,
     packageName,
@@ -216,20 +234,26 @@ export function resolvePackage({
   if (packageDir === PACKAGE_NOT_FOUND)
     throw new Error(`Cannot find package '${packageName}' from '${fromDir}'`,);
 
-  /** Parsed package.json for exports/main/style lookup */
+  /**
+   * Parsed package.json for exports/main/style lookup
+   */
   const packageJson = readPackageJson(packageDir,);
 
   if (packageJson !== PACKAGE_JSON_ABSENT) {
     // Try exports field
     if (packageJson.exports
       !== undefined) {
-      /** Resolved path from exports map */
+      /**
+       * Resolved path from exports map
+       */
       const resolved = resolveExports({
         exports: packageJson.exports,
         subpath,
       },);
       if (resolved !== NO_EXPORT_MATCH) {
-        /** Absolute path from exports resolution */
+        /**
+         * Absolute path from exports resolution
+         */
         const absolutePath = resolve(
           [
             packageDir,
@@ -247,10 +271,14 @@ export function resolvePackage({
         'style',
         'main',
       ]) {
-        /** Field value from package.json */
+        /**
+         * Field value from package.json
+         */
         const value = packageJson[field];
         if ((typeof value) === 'string') {
-          /** Absolute path from style/main field */
+          /**
+           * Absolute path from style/main field
+           */
           const absolutePath = resolve(
             [
               packageDir,
@@ -267,9 +295,13 @@ export function resolvePackage({
   // Direct file path fallback: resolve subpath relative to package directory
   if (subpath !== '.') {
     // subpath starts with './': strip it for join
-    /** Relative portion after stripping leading ./ */
+    /**
+     * Relative portion after stripping leading ./
+     */
     const relativePart = subpath.startsWith('./',) ? subpath.slice(2,) : subpath;
-    /** Absolute path from direct file reference */
+    /**
+     * Absolute path from direct file reference
+     */
     const directPath = join(
       [
         packageDir,

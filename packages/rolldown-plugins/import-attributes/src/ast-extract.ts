@@ -99,7 +99,9 @@ export function extractTypeFromAttributes(
   attributes: readonly ESTree.ImportAttribute[],
 ): string | typeof NO_ATTR_TYPE {
   for (const attr of attributes) {
-    /** Resolved attribute key name covering both identifier and string-literal AST forms. */
+    /**
+     * Resolved attribute key name covering both identifier and string-literal AST forms.
+     */
     const key = attr.key
       .type
       === 'Identifier'
@@ -144,7 +146,9 @@ export function extractTypeFromOptions(
       !== 'Property')
       continue;
 
-    /** Outer property name; only the `with` clause is relevant. */
+    /**
+     * Outer property name; only the `with` clause is relevant.
+     */
     const key = getPropertyKeyName(prop.key,);
     if ((key !== 'with') || (prop.value
       .type
@@ -157,9 +161,13 @@ export function extractTypeFromOptions(
         !== 'Property')
         continue;
 
-      /** Inner property name; narrowed to `type` below. */
+      /**
+       * Inner property name; narrowed to `type` below.
+       */
       const innerKey = getPropertyKeyName(innerProp.key,);
-      /** String value paired with the `type` entry. */
+      /**
+       * String value paired with the `type` entry.
+       */
       const innerValue = getStringLiteralValue(innerProp.value,);
       if ((innerKey === 'type')
         && (innerValue !== NON_STRING_NODE)

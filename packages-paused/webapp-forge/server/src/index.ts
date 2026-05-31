@@ -45,16 +45,22 @@ import {
   writeBuffer,
 } from './server/runtime.ts';
 
-/** Tagged logger for the server boot. */
+/**
+ * Tagged logger for the server boot.
+ */
 const l = tagged({
   tag: 'server',
   l: logger,
 },);
 
-/** Default listen port when not overridden. */
+/**
+ * Default listen port when not overridden.
+ */
 const DEFAULT_PORT = 3_000;
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -63,16 +69,24 @@ const DECIMAL_RADIX = 10;
  * @returns parsed port
  */
 function resolvePort(): number {
-  /** `--port=N` CLI argument when supplied; highest priority source. */
+  /**
+   * `--port=N` CLI argument when supplied; highest priority source.
+   */
   const argumentPort = getArgumentValue('port',);
-  /** `PORT` environment variable; second priority source. */
+  /**
+   * `PORT` environment variable; second priority source.
+   */
   const environmentPort = process.env
     .PORT;
-  /** Selected raw string; `undefined` falls through to the compile-time default. */
+  /**
+   * Selected raw string; `undefined` falls through to the compile-time default.
+   */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
-  /** Parsed integer; NaN falls back to `DEFAULT_PORT`. */
+  /**
+   * Parsed integer; NaN falls back to `DEFAULT_PORT`.
+   */
   const parsedPort = Number.parseInt(
     rawPort,
     DECIMAL_RADIX,
@@ -80,7 +94,9 @@ function resolvePort(): number {
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
-/** h3 application instance routing HTTP requests to handlers. */
+/**
+ * h3 application instance routing HTTP requests to handlers.
+ */
 const app = new H3();
 
 //region Read routes
@@ -157,7 +173,9 @@ app.get(
 // in-memory, so a freshly booted server starts with empty storage even
 // if the database already has many events from a prior `forge:seed` run.
 l.info('warming fragment cache from event log',);
-/** Highest `events.id` processed during the boot-time warm-up pass. */
+/**
+ * Highest `events.id` processed during the boot-time warm-up pass.
+ */
 const warmCursor = await dispatchAndFlush({
   afterEventId: getEventCursor(),
   storage,
@@ -166,7 +184,9 @@ const warmCursor = await dispatchAndFlush({
 setEventCursor(warmCursor,);
 l.info(`fragment cache warmed; highest event id: ${String(warmCursor,)}`,);
 
-/** Resolved listen port, taken from `--port=` argv, `PORT` env, or the default. */
+/**
+ * Resolved listen port, taken from `--port=` argv, `PORT` env, or the default.
+ */
 const port = resolvePort();
 serve(
   app,

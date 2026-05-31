@@ -97,7 +97,9 @@ export function tomlSet(
     );
   }
 
-  /** Direct AST lookup so the setter can branch on the resolution kind. */
+  /**
+   * Direct AST lookup so the setter can branch on the resolution kind.
+   */
   const resolved = resolveByPath({
     edit,
     path,
@@ -105,7 +107,9 @@ export function tomlSet(
 
   if (resolved.kind
     === 'keyvalue') {
-    /** Encoded replacement text for an existing key-value's value. */
+    /**
+     * Encoded replacement text for an existing key-value's value.
+     */
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
@@ -127,7 +131,9 @@ export function tomlSet(
 
   if (resolved.kind
     === 'value') {
-    /** Encoded replacement text for an array element or inline-table value. */
+    /**
+     * Encoded replacement text for an array element or inline-table value.
+     */
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
@@ -202,21 +208,29 @@ function doTableReplace(
     );
   }
 
-  /** Existing body key-values so they can be marked for deletion. */
+  /**
+   * Existing body key-values so they can be marked for deletion.
+   */
   const bodyKvs = container.body
     .filter(function isKv(child,): child is AST.TOMLKeyValue {
     return child.type
       === 'TOMLKeyValue';
   },);
 
-  /** Anchor placing new insertions inside the table body. */
+  /**
+   * Anchor placing new insertions inside the table body.
+   */
   const anchor: AnchorKind = anchorForTableReplace({ container, },);
 
-  /** One `Insertion` per replacement entry so the splice engine can emit them in order. */
+  /**
+   * One `Insertion` per replacement entry so the splice engine can emit them in order.
+   */
   const newInsertions: Insertion[] = Object
     .entries(value,)
     .map(function each([k, v,],) {
-    /** Encoded `key = value\n` line. */
+    /**
+     * Encoded `key = value\n` line.
+     */
     const text = `${encodeKey({ key: k, },)} = ${
       jsValueToTomlText({
         input: v,
@@ -273,7 +287,9 @@ function anchorForTableReplace(
       atEnd: true,
     };
   }
-  /** First `[foo]` header after the top-level body so insertions land before it. */
+  /**
+   * First `[foo]` header after the top-level body so insertions land before it.
+   */
   const firstTable = container.body
     .find(
     function isTable(child,): child is AST.TOMLTable {

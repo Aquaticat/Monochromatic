@@ -144,7 +144,9 @@ function isWhitespace(c: string,): boolean {
  * ```
  */
 function splitWhitespace(s: string,): string[] {
-  /** Emitted tokens; each is sliced out whole, so no per-character copy accumulates. */
+  /**
+   * Emitted tokens; each is sliced out whole, so no per-character copy accumulates.
+   */
   const tokens: string[] = [];
   // Single forward pass; whitespace advances one char, a non-whitespace run is
   // sliced out in one piece. `idx` jumps over each token, so the stride varies.
@@ -154,9 +156,13 @@ function splitWhitespace(s: string,): string[] {
       idx += 1;
       continue;
     }
-    /** Inclusive start of the current non-whitespace token. */
+    /**
+     * Inclusive start of the current non-whitespace token.
+     */
     const start = idx;
-    /** Exclusive end of the token, advanced to the next whitespace or end of input. */
+    /**
+     * Exclusive end of the token, advanced to the next whitespace or end of input.
+     */
     let end = idx + 1;
     while ((end < s
       .length) && (!isWhitespace(s.charAt(end,),))) {
@@ -207,28 +213,42 @@ function boundariesSatisfied(
     readonly index: number;
   },
 ): boolean {
-  /** Character immediately before the candidate occurrence; empty string when at the start of `haystack`. */
+  /**
+   * Character immediately before the candidate occurrence; empty string when at the start of `haystack`.
+   */
   const before = (index === 0)
     ? ''
     : haystack.charAt(index - 1,);
-  /** Position one past the candidate phrase's last character. */
+  /**
+   * Position one past the candidate phrase's last character.
+   */
   const afterIdx = index + phrase
     .length;
-  /** Character immediately after the candidate occurrence; empty string when at the end of `haystack`. */
+  /**
+   * Character immediately after the candidate occurrence; empty string when at the end of `haystack`.
+   */
   const after = (afterIdx >= haystack
     .length)
     ? ''
     : haystack.charAt(afterIdx,);
-  /** First character of `phrase`; empty string is impossible here because callers guard length. */
+  /**
+   * First character of `phrase`; empty string is impossible here because callers guard length.
+   */
   const firstChar = phrase.charAt(0,);
-  /** Last character of `phrase`; equal to `firstChar` for length-1 phrases. */
+  /**
+   * Last character of `phrase`; equal to `firstChar` for length-1 phrases.
+   */
   const lastChar = phrase.at(-1,)
     ?? '';
-  /** Whether the start boundary holds (phrase starts with a word char, neighbour is not a word char). */
+  /**
+   * Whether the start boundary holds (phrase starts with a word char, neighbour is not a word char).
+   */
   const startBoundaryOk = isWordChar(firstChar,)
     ? ((before === '') || (!isWordChar(before,)))
     : true;
-  /** Whether the end boundary holds (phrase ends with a word char, neighbour is not a word char). */
+  /**
+   * Whether the end boundary holds (phrase ends with a word char, neighbour is not a word char).
+   */
   const endBoundaryOk = isWordChar(lastChar,)
     ? ((after === '') || (!isWordChar(after,)))
     : true;
@@ -264,9 +284,13 @@ function containsWordBoundedPhrase(
   if (phrase.length
     === 0)
     return false;
-  /** Lower-cased haystack for case-insensitive lookup. */
+  /**
+   * Lower-cased haystack for case-insensitive lookup.
+   */
   const lowerHay = haystack.toLowerCase();
-  /** Lower-cased phrase for case-insensitive lookup. */
+  /**
+   * Lower-cased phrase for case-insensitive lookup.
+   */
   const lowerPhrase = phrase.toLowerCase();
 
   // Walk every `indexOf` match in order; the cursor advances by one past each
@@ -386,9 +410,13 @@ function stripBetweenDelims(
     readonly disallowedInside?: string;
   },
 ): string {
-  /** Output segments, joined once at the end so the accumulator is never recopied per span. */
+  /**
+   * Output segments, joined once at the end so the accumulator is never recopied per span.
+   */
   const parts: string[] = [];
-  /** Cursor; advances monotonically past each emitted or stripped span. */
+  /**
+   * Cursor; advances monotonically past each emitted or stripped span.
+   */
   let idx = 0;
   // Walk each opener in order. The remainder from `idx` is flushed once after
   // the loop, covering both terminal cases: no further opener, and an unmatched
@@ -404,17 +432,23 @@ function stripBetweenDelims(
       idx,
     )
   ) {
-    /** Search start for the matching close delimiter (must skip the entire opener). */
+    /**
+     * Search start for the matching close delimiter (must skip the entire opener).
+     */
     const closeSearchStart = openIdx + openDelim
       .length;
-    /** Index of the closing delimiter, or `-1` when the opener is unmatched. */
+    /**
+     * Index of the closing delimiter, or `-1` when the opener is unmatched.
+     */
     const closeIdx = text.indexOf(
       closeDelim,
       closeSearchStart,
     );
     if (closeIdx === (-1))
       break;
-    /** Span between the delimiters (exclusive of both ends). */
+    /**
+     * Span between the delimiters (exclusive of both ends).
+     */
     const inside = text.slice(
       closeSearchStart,
       closeIdx,
@@ -440,7 +474,9 @@ function stripBetweenDelims(
     }
   }
   parts.push(text.slice(idx,),);
-  /** Joined output; bound to a name so the helper-function shape suppresses the root `let idx`. */
+  /**
+   * Joined output; bound to a name so the helper-function shape suppresses the root `let idx`.
+   */
   const result = parts.join('',);
   return result;
 }

@@ -29,11 +29,17 @@ import type {
  * ```
  */
 type HandleRunFailureOptions = {
-  /** Caught error from the runner */
+  /**
+   * Caught error from the runner
+   */
   readonly error: unknown;
-  /** Merged runner configuration */
+  /**
+   * Merged runner configuration
+   */
   readonly mergedConfig: RunnerConfig;
-  /** Authoritative server timestamp for artifact naming */
+  /**
+   * Authoritative server timestamp for artifact naming
+   */
   readonly timestamp: ISOTimestamp;
 };
 
@@ -62,12 +68,16 @@ export async function handleRunFailure({
   mergedConfig,
   timestamp,
 }: HandleRunFailureOptions,): Promise<CanaryReport> {
-  /** Model-specific logger for failure messages. */
+  /**
+   * Model-specific logger for failure messages.
+   */
   const rl = tagged({
     tag: mergedConfig.label,
     l,
   },);
-  /** Caught value normalised to a string; preserves `error.message` when available, otherwise coerces via `String(error)`. */
+  /**
+   * Caught value normalised to a string; preserves `error.message` when available, otherwise coerces via `String(error)`.
+   */
   const message = error instanceof Error ? error.message : String(error,);
   rl.error(`FAILED: ${message}`,);
 

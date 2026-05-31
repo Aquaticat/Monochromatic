@@ -16,7 +16,9 @@ import toHtmlTable from './to-html-table.ts';
 const DETAIL = 'Markdown pipe tables force each row onto one line; prefer headings or lists. '
   + '`mise run format:markdownlint` autofixes to an HTML table as a fallback.';
 
-/** Message for the continuation lines a pipe table occupies after its first. */
+/**
+ * Message for the continuation lines a pipe table occupies after its first.
+ */
 const DETAIL_CONTINUATION = 'Part of a banned Markdown pipe table.';
 
 /**
@@ -30,12 +32,18 @@ const DETAIL_CONTINUATION = 'Part of a banned Markdown pipe table.';
  * @returns every `table` token, including nested ones
  */
 function collectTables(rootTokens: readonly ReadonlyToken[],): ReadonlyToken[] {
-  /** Tables found so far. */
+  /**
+   * Tables found so far.
+   */
   const tables: ReadonlyToken[] = [];
-  /** Work-stack of tokens still to inspect; seeded with the roots. */
+  /**
+   * Work-stack of tokens still to inspect; seeded with the roots.
+   */
   const stack: ReadonlyToken[] = [...rootTokens,];
   while (stack.length > 0) {
-    /** Token currently being inspected, popped from the work-stack. */
+    /**
+     * Token currently being inspected, popped from the work-stack.
+     */
     const token = stack.pop();
     if (token === undefined) {
       continue;
@@ -55,13 +63,21 @@ function collectTables(rootTokens: readonly ReadonlyToken[],): ReadonlyToken[] {
  * Parameters for {@link reportTable}.
  */
 type ReportTableParams = {
-  /** Table token to report. */
+  /**
+   * Table token to report.
+   */
   readonly table: ReadonlyToken;
-  /** Source lines, for error context and the replaced first-line length. */
+  /**
+   * Source lines, for error context and the replaced first-line length.
+   */
   readonly lines: readonly string[];
-  /** markdownlint error callback. */
+  /**
+   * markdownlint error callback.
+   */
   readonly onError: RuleOnError;
-  /** Whether a fix is safe to emit (top-level, unindented). */
+  /**
+   * Whether a fix is safe to emit (top-level, unindented).
+   */
   readonly fixable: boolean;
 };
 
@@ -86,7 +102,9 @@ function reportTable({
   onError,
   fixable,
 }: ReportTableParams,): void {
-  /** Source text of the table's first line; replaced wholesale by the fix. */
+  /**
+   * Source text of the table's first line; replaced wholesale by the fix.
+   */
   const firstLine = nonNullishOrThrow(lines[table.startLine - 1],);
 
   if (!fixable) {
@@ -141,11 +159,15 @@ const noPipeTables: Rule = {
     // 'table'` does not depend on the gfm-table `TokenTypeMap` augmentation; the
     // `rootTokens` name differs from the property, so `prefer-destructuring`
     // leaves the annotation intact.
-    /** Top-level micromark tokens, viewed read-only. */
+    /**
+     * Top-level micromark tokens, viewed read-only.
+     */
     const rootTokens: readonly ReadonlyToken[] = params.parsers
       .micromark
       .tokens;
-    /** Tables that are direct children of the document root. */
+    /**
+     * Tables that are direct children of the document root.
+     */
     const topLevel = new Set<ReadonlyToken>();
     for (const token of rootTokens) {
       if (token.type === 'table') {

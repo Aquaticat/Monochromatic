@@ -15,7 +15,9 @@ import { l as parentLogger, } from './log.ts';
 
 export type { ItemWDate, } from './item-type.ts';
 
-/** Tagged logger for the item module. */
+/**
+ * Tagged logger for the item module.
+ */
 const l = tagged({
   tag: 'item',
   l: parentLogger,
@@ -36,18 +38,26 @@ const l = tagged({
  * ```
  */
 export function getSortedItems(feeds: readonly FeedWOutline[],): ItemWDate[] {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: getSortedItems.name,
     l,
   },);
-  /** Flat per-feed items before format normalization. */
+  /**
+   * Flat per-feed items before format normalization.
+   */
   const items = extractItems(feeds,);
-  /** Format-normalized items so downstream code works on one shape. */
+  /**
+   * Format-normalized items so downstream code works on one shape.
+   */
   const normalized = items.map(function normalize(feedItem,) {
     return getNormalizedItem(feedItem,);
   },);
-  /** Items decorated with parsed Date instances so sorting compares Dates not strings. */
+  /**
+   * Items decorated with parsed Date instances so sorting compares Dates not strings.
+   */
   const dated = normalized.map(function addDate(item,) {
     return {
       ...item,
@@ -69,7 +79,9 @@ export function getSortedItems(feeds: readonly FeedWOutline[],): ItemWDate[] {
       ),
     };
   },);
-  /** Date-sorted copy returned, preserving the input array's identity for callers. */
+  /**
+   * Date-sorted copy returned, preserving the input array's identity for callers.
+   */
   const result = dated.toSorted(function byDate(
     itemA,
     itemB,
@@ -92,12 +104,16 @@ export function getSortedItems(feeds: readonly FeedWOutline[],): ItemWDate[] {
  * @returns Flat array of items with parent feed metadata
  */
 function extractItems(feeds: readonly FeedWOutline[],): Item[] {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: extractItems.name,
     l,
   },);
-  /** Flat-mapped items from every feed so the caller gets one homogeneous array. */
+  /**
+   * Flat-mapped items from every feed so the caller gets one homogeneous array.
+   */
   const result: Item[] = feeds.flatMap(
     function extractFeedItems({
       feed,
@@ -106,10 +122,14 @@ function extractItems(feeds: readonly FeedWOutline[],): Item[] {
       if (outline.type
         === 'atom') {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type */
-        /** Narrowed Atom feed so the entries split below reads typed fields. */
+        /**
+         * Narrowed Atom feed so the entries split below reads typed fields.
+         */
         const atomFeed = feed as Atom.Feed<string>;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
-        /** Destructured to separate entries from feed metadata reused per item. */
+        /**
+         * Destructured to separate entries from feed metadata reused per item.
+         */
         const {
           entries,
           ...feedWithoutEntries
@@ -129,10 +149,14 @@ function extractItems(feeds: readonly FeedWOutline[],): Item[] {
         },);
       }
       /* oxlint-disable typescript/no-unsafe-type-assertion -- non-atom feeds are RSS */
-      /** Narrowed RSS feed so the items split below reads typed fields. */
+      /**
+       * Narrowed RSS feed so the items split below reads typed fields.
+       */
       const rssFeed = feed as Rss.Feed<string>;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      /** Destructured to separate items from feed metadata reused per item. */
+      /**
+       * Destructured to separate items from feed metadata reused per item.
+       */
       const {
         items,
         ...feedWithoutItems
@@ -173,27 +197,39 @@ function getNormalizedItem(item: Item,): NormalizedItem {
   }
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type === 'atom' narrows the item */
-  /** Narrowed atom item so the per-field copy below reads typed fields. */
+  /**
+   * Narrowed atom item so the per-field copy below reads typed fields.
+   */
   const atomItem = item as AtomItem;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Destructured feed metadata so each optional field can be copied conditionally. */
+  /**
+   * Destructured feed metadata so each optional field can be copied conditionally.
+   */
   const {
     title,
     subtitle,
   } = atomItem.feed;
-  /** Output feed object built up incrementally to preserve only defined fields. */
+  /**
+   * Output feed object built up incrementally to preserve only defined fields.
+   */
   const newFeed: Record<string, string> = {};
   if (title !== undefined)
     newFeed.title = title.value;
   if (subtitle !== undefined)
     newFeed.subtitle = subtitle.value;
 
-  /** Source atom entry held as the read base for the RSS-shaped output. */
+  /**
+   * Source atom entry held as the read base for the RSS-shaped output.
+   */
   const atomEntry = atomItem.item;
-  /** First link if present so the output `link` field stays a single value, not an array. */
+  /**
+   * First link if present so the output `link` field stays a single value, not an array.
+   */
   const link = atomEntry.links
     ?.at(0,);
-  /** Output item object built up incrementally to preserve only defined fields. */
+  /**
+   * Output item object built up incrementally to preserve only defined fields.
+   */
   const newItem: Record<string, string | Atom.Link<string> | Atom.Category[]> = {};
   if (atomEntry.title
     !== undefined)
@@ -206,7 +242,9 @@ function getNormalizedItem(item: Item,): NormalizedItem {
   if (atomEntry.categories
     !== undefined)
     newItem.categories = atomEntry.categories;
-  /** Preferred timestamp falling back to `published` so feeds without `updated` still sort. */
+  /**
+   * Preferred timestamp falling back to `published` so feeds without `updated` still sort.
+   */
   const pubDate = atomEntry.updated
     ?? atomEntry
     .published;

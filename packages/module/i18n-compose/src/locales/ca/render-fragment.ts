@@ -106,7 +106,9 @@ export function makeCatalanFragmentRenderer<
 >(
   deps: FragmentDeps<L, S, V, N>,
 ): (fragment: Fragment<L, S, V, N>,) => string {
-  /** Destructured locale dependencies captured for use across every sub-renderer below. */
+  /**
+   * Destructured locale dependencies captured for use across every sub-renderer below.
+   */
   const {
     labels,
     verbs,
@@ -125,22 +127,30 @@ export function makeCatalanFragmentRenderer<
   function renderVerbPhraseFragment(
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
-    /** Verb entry referenced by every non-finite branch. */
+    /**
+     * Verb entry referenced by every non-finite branch.
+     */
     const entry = verbs[fragment.phrase
       .verb];
-    /** Non-finite surface for the requested form. */
+    /**
+     * Non-finite surface for the requested form.
+     */
     const head = nonFiniteSurface({
       entry,
       form: fragment.form,
     },);
-    /** Rendered object surface; empty string when absent. */
+    /**
+     * Rendered object surface; empty string when absent.
+     */
     const object = fragment.phrase
       .object
       === undefined
       ? ''
       : renderNounPhrase(fragment.phrase
         .object,);
-    /** Rendered infinitive complement; empty string when absent. */
+    /**
+     * Rendered infinitive complement; empty string when absent.
+     */
     const complement = fragment.phrase
       .complement
       === undefined
@@ -148,10 +158,14 @@ export function makeCatalanFragmentRenderer<
       : renderVerbPhrase(fragment.phrase
         .complement
         .phrase,);
-    /** Rendered adverbial cluster; empty string when none. */
+    /**
+     * Rendered adverbial cluster; empty string when none.
+     */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
-    /** Joined surface before capitalization fixup. */
+    /**
+     * Joined surface before capitalization fixup.
+     */
     const body = joinTokens([
       head,
       object,
@@ -203,7 +217,9 @@ export function makeCatalanFragmentRenderer<
     if (fragment.kind
       === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
-    /** Rendered sequence parts space-joined. */
+    /**
+     * Rendered sequence parts space-joined.
+     */
     const joined = fragment
       .parts
       .map(function mapPart(part,): string {

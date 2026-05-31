@@ -1,4 +1,6 @@
-/** HTML rendering for RSS feed pages, filtering out ignored entries. */
+/**
+ * HTML rendering for RSS feed pages, filtering out ignored entries.
+ */
 
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -10,16 +12,22 @@ import {
 import type { ItemWDate, } from './item-type.ts';
 import { l as parentLogger, } from './log.ts';
 
-/** Tagged logger for the html module. */
+/**
+ * Tagged logger for the html module.
+ */
 const l = tagged({
   tag: 'html',
   l: parentLogger,
 },);
 
-/** Maximum number of items rendered on a single page. */
+/**
+ * Maximum number of items rendered on a single page.
+ */
 const LIMIT = 100;
 
-/** Closing HTML fragment appended after the rendered feed body. */
+/**
+ * Closing HTML fragment appended after the rendered feed body.
+ */
 export const INDEX_HTML_END = '</body></html>';
 
 /**
@@ -37,19 +45,29 @@ export const INDEX_HTML_END = '</body></html>';
 export async function getIndexHtmlBody(
   options: { readonly items: readonly ItemWDate[]; },
 ): Promise<string> {
-  /** Destructured items so the loop body reads without `options.` prefix. */
+  /**
+   * Destructured items so the loop body reads without `options.` prefix.
+   */
   const { items, } = options;
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: getIndexHtmlBody.name,
     l,
   },);
 
-  /** Raw JSONL content read once so parse runs over a stable snapshot. */
+  /**
+   * Raw JSONL content read once so parse runs over a stable snapshot.
+   */
   const ignoreContent = await getIgnoreContent();
-  /** Link set used as the membership predicate for filtering. */
+  /**
+   * Link set used as the membership predicate for filtering.
+   */
   const ignoredLinks = parseIgnoredLinks(ignoreContent,);
-  /** Items remaining after the ignore-link filter, before the page limit slice. */
+  /**
+   * Items remaining after the ignore-link filter, before the page limit slice.
+   */
   const filteredItems = items.filter(function notIgnored(item,) {
     if ((item.item
       .link

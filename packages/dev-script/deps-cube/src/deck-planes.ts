@@ -33,7 +33,9 @@ import type { DimMapping, } from './scripts/filter.ts';
 
 //region Types
 
-/** Data shape for the PolygonLayer (coordinate planes); mutable arrays per deck.gl typings. */
+/**
+ * Data shape for the PolygonLayer (coordinate planes); mutable arrays per deck.gl typings.
+ */
 type PolygonDatum = {
   polygon: [
     number,
@@ -42,7 +44,9 @@ type PolygonDatum = {
   ][];
 };
 
-/** Data shape for the PathLayer (threshold guides); mutable arrays per deck.gl typings. */
+/**
+ * Data shape for the PathLayer (threshold guides); mutable arrays per deck.gl typings.
+ */
 type PathDatum = {
   path: [
     number,
@@ -55,17 +59,29 @@ type PathDatum = {
 
 //region Constants
 
-/** Source-bytes value at the "300 SLOC" boundary; log10'd below. */
+/**
+ * Source-bytes value at the "300 SLOC" boundary; log10'd below.
+ */
 const SOURCE_BYTES_AT_300_SLOC = 10_000;
-/** Days-since-commit value at the "1 year stale" boundary. */
+/**
+ * Days-since-commit value at the "1 year stale" boundary.
+ */
 const DAYS_STALE_AT_ONE_YEAR = 365;
-/** Install-size value at the "100KB soft boundary"; log10'd below. */
+/**
+ * Install-size value at the "100KB soft boundary"; log10'd below.
+ */
 const INSTALL_BYTES_AT_100KB = 100_000;
-/** Source-bytes threshold (~ "300 SLOC" boundary), on log10. */
+/**
+ * Source-bytes threshold (~ "300 SLOC" boundary), on log10.
+ */
 const SOURCE_BYTES_THRESHOLD = Math.log10(SOURCE_BYTES_AT_300_SLOC,);
-/** Days-since-commit threshold (1 year), on log10. */
+/**
+ * Days-since-commit threshold (1 year), on log10.
+ */
 const DAYS_STALE_THRESHOLD = Math.log10(DAYS_STALE_AT_ONE_YEAR,);
-/** Install-size threshold (~100KB soft boundary), on log10. */
+/**
+ * Install-size threshold (~100KB soft boundary), on log10.
+ */
 const INSTALL_SIZE_THRESHOLD = Math.log10(INSTALL_BYTES_AT_100KB,);
 
 /**
@@ -88,7 +104,9 @@ const COORDINATE_PLANE_COLOR: readonly [
   60,
 ];
 
-/** Threshold-line colour: muted brown so the line reads as a heuristic guide, not part of the axes. */
+/**
+ * Threshold-line colour: muted brown so the line reads as a heuristic guide, not part of the axes.
+ */
 const THRESHOLD_LINE_COLOR: readonly [
   number,
   number,
@@ -101,9 +119,13 @@ const THRESHOLD_LINE_COLOR: readonly [
   200,
 ];
 
-/** Plane margin past the data box on the +axis side, as a fraction of the axis extent. */
+/**
+ * Plane margin past the data box on the +axis side, as a fraction of the axis extent.
+ */
 const PLANE_MARGIN_FRACTION = 0.05;
-/** Threshold-guide line width in pixels. */
+/**
+ * Threshold-guide line width in pixels.
+ */
 const THRESHOLD_LINE_WIDTH = 1.5;
 /* oxlint-enable eslint/no-magic-numbers */
 
@@ -168,34 +190,54 @@ function getPathAccessor(d: PathDatum,): PathDatum['path'] {
 export function buildCoordinatePlaneLayers(
   { bounds, }: { readonly bounds: SceneBounds; },
 ): readonly Layer[] {
-  /** X-axis min and max destructured from `bounds.x` for polygon corner math. */
+  /**
+   * X-axis min and max destructured from `bounds.x` for polygon corner math.
+   */
   const [
     xMin,
     xMax,
   ] = bounds.x;
-  /** Y-axis min and max destructured from `bounds.y` for polygon corner math. */
+  /**
+   * Y-axis min and max destructured from `bounds.y` for polygon corner math.
+   */
   const [
     yMin,
     yMax,
   ] = bounds.y;
-  /** Z-axis min and max destructured from `bounds.z` for polygon corner math. */
+  /**
+   * Z-axis min and max destructured from `bounds.z` for polygon corner math.
+   */
   const [
     zMin,
     zMax,
   ] = bounds.z;
-  /** X-axis total extent; basis for the X margin. */
+  /**
+   * X-axis total extent; basis for the X margin.
+   */
   const dx = xMax - xMin;
-  /** Y-axis total extent; basis for the Y margin. */
+  /**
+   * Y-axis total extent; basis for the Y margin.
+   */
   const dy = yMax - yMin;
-  /** Z-axis total extent; basis for the Z margin. */
+  /**
+   * Z-axis total extent; basis for the Z margin.
+   */
   const dz = zMax - zMin;
-  /** Outward X margin so planes overhang the data box on the +/- X faces. */
+  /**
+   * Outward X margin so planes overhang the data box on the +/- X faces.
+   */
   const mx = dx * PLANE_MARGIN_FRACTION;
-  /** Outward Y margin so planes overhang the data box on the +/- Y faces. */
+  /**
+   * Outward Y margin so planes overhang the data box on the +/- Y faces.
+   */
   const my = dy * PLANE_MARGIN_FRACTION;
-  /** Outward Z margin so planes overhang the data box on the +/- Z faces. */
+  /**
+   * Outward Z margin so planes overhang the data box on the +/- Z faces.
+   */
   const mz = dz * PLANE_MARGIN_FRACTION;
-  /** Floor polygon (XZ plane at `yMin`); first of the three coordinate walls. */
+  /**
+   * Floor polygon (XZ plane at `yMin`); first of the three coordinate walls.
+   */
   const floor: PolygonDatum = {
     polygon: [
       [
@@ -220,7 +262,9 @@ export function buildCoordinatePlaneLayers(
       ],
     ],
   };
-  /** Back polygon (XY plane at `zMin`); second of the three coordinate walls. */
+  /**
+   * Back polygon (XY plane at `zMin`); second of the three coordinate walls.
+   */
   const back: PolygonDatum = {
     polygon: [
       [
@@ -245,7 +289,9 @@ export function buildCoordinatePlaneLayers(
       ],
     ],
   };
-  /** Side polygon (YZ plane at `xMin`); third of the three coordinate walls. */
+  /**
+   * Side polygon (YZ plane at `xMin`); third of the three coordinate walls.
+   */
   const side: PolygonDatum = {
     polygon: [
       [
@@ -344,21 +390,29 @@ export function buildThresholdLineLayer(
     readonly dimMapping: DimMapping;
   },
 ): Layer | typeof NO_THRESHOLD_LAYER {
-  /** X-axis min and max destructured from `bounds.x` for guide-line endpoints. */
+  /**
+   * X-axis min and max destructured from `bounds.x` for guide-line endpoints.
+   */
   const [
     xMin,
     xMax,
   ] = bounds.x;
-  /** Y-axis min and max destructured from `bounds.y` for guide-line endpoints. */
+  /**
+   * Y-axis min and max destructured from `bounds.y` for guide-line endpoints.
+   */
   const [
     yMin,
     yMax,
   ] = bounds.y;
-  /** Z-axis minimum; guides sit on the back wall at `zMin`. */
+  /**
+   * Z-axis minimum; guides sit on the back wall at `zMin`.
+   */
   const [
     zMin,
   ] = bounds.z;
-  /** Accumulator for guide-line paths; one entry per threshold whose dim is mapped and within bounds. */
+  /**
+   * Accumulator for guide-line paths; one entry per threshold whose dim is mapped and within bounds.
+   */
   const segments: PathDatum[] = [];
   if (
     (dimMapping.x

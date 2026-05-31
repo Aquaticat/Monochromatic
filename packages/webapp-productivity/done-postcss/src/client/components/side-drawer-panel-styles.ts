@@ -5,10 +5,14 @@
  * and the drawer container. Interpolated into the main styles.
  */
 
-/** Z-index for the popover panel overlay. */
+/**
+ * Z-index for the popover panel overlay.
+ */
 const PANEL_Z_INDEX = 100;
 
-/** CSS for the popover panel portion of `\<side-drawer\>`. */
+/**
+ * CSS for the popover panel portion of `\<side-drawer\>`.
+ */
 export const SIDE_DRAWER_PANEL_STYLES: string = `
   .panel {
     position: fixed;

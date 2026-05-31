@@ -32,15 +32,21 @@ import './components/fab-button.ts';
 injectCSS(globalStyles,);
 injectCSS(inboxStyles,);
 
-/** Deserialized page data containing suggested and all inbox tasks. */
+/**
+ * Deserialized page data containing suggested and all inbox tasks.
+ */
 const pageData = readPageData<InboxPageData>();
 
-/** Raw DOM element for the `#app` container. */
+/**
+ * Raw DOM element for the `#app` container.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Validated `#app` container element. */
+/**
+ * Validated `#app` container element.
+ */
 const app = appElement;
 
 /**
@@ -86,7 +92,9 @@ app.append(h({
 
 //region All section
 
-/** Collapsible section heading for the "All" tasks block. */
+/**
+ * Collapsible section heading for the "All" tasks block.
+ */
 const allSection = h({
   tag: 'section-heading',
   attrs: {
@@ -95,7 +103,9 @@ const allSection = h({
   },
 },);
 
-/** Content container for the all tasks section. */
+/**
+ * Content container for the all tasks section.
+ */
 const allContent = h({
   tag: 'div',
   style: {
@@ -128,7 +138,9 @@ app.append(allSection,);
 
 //region New-task dialog (FAB opens a modal <dialog> with task-detail in create mode)
 
-/** New-task dialog panel and trigger FAB button. */
+/**
+ * New-task dialog panel and trigger FAB button.
+ */
 const {
   panel: newTaskPanel,
   fab: newTaskFab,

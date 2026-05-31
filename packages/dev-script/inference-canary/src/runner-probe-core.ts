@@ -46,13 +46,21 @@ import type {
  * ```
  */
 type RunProbeCoreOptions = {
-  /** Canary probe to execute */
+  /**
+   * Canary probe to execute
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** Authoritative server timestamp for artifact naming */
+  /**
+   * Authoritative server timestamp for artifact naming
+   */
   readonly timestamp: string;
-  /** Abort signal from the timeout controller; cancels HTTP streams and containers */
+  /**
+   * Abort signal from the timeout controller; cancels HTTP streams and containers
+   */
   readonly signal: AbortSignal;
 };
 
@@ -85,7 +93,9 @@ export async function runProbeCore({
   timestamp,
   signal,
 }: RunProbeCoreOptions,): Promise<ProbeResult> {
-  /** Probe-specific logger for run progress and error messages. */
+  /**
+   * Probe-specific logger for run progress and error messages.
+   */
   const rl = tagged({
     tag: probe.name,
     l: tagged({
@@ -93,26 +103,34 @@ export async function runProbeCore({
       l,
     },),
   },);
-  /** Shared OpenAI client used for every consistency run; reuse keeps connection pooling intact. */
+  /**
+   * Shared OpenAI client used for every consistency run; reuse keeps connection pooling intact.
+   */
   const client = createProbeClient(config,);
   // Consistency runs must be sequential (rate limits) and each run's score is
   // logged immediately. scores uses push because each run appends in the loop;
   // functional reduce/map would require pre-running all turns before collecting.
-  /** Per-run scores collected in iteration order; later reduced to mean and consistency check. */
+  /**
+   * Per-run scores collected in iteration order; later reduced to mean and consistency check.
+   */
   const scores: number[] = [];
   /**
    * Per-run completions collected in iteration order; parallel to {@link scores} by index, so the last entry is the most recent run and the entry at the min-score index is the worst run.
    */
   const completions: CompletionResult[] = [];
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: flag for failure handler to avoid double-writing artifact */
-  /** Whether the initial-pass artifact has been written; failure handler avoids double-writing. */
+  /**
+   * Whether the initial-pass artifact has been written; failure handler avoids double-writing.
+   */
   let enrichedInitial = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   try {
     for (const runIndex of Array.from({ length: config.consistencyRuns, },)
       .keys()) {
-      /** Raw model completion for this consistency run; pushed to `completions`, then scored. */
+      /**
+       * Raw model completion for this consistency run; pushed to `completions`, then scored.
+       */
       // oxlint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
       const completion = await executeProbe({
         probe,
@@ -121,14 +139,18 @@ export async function runProbeCore({
         signal,
       },);
       completions.push(completion,);
-      /** Context handed to the probe's scorer; identifies this initial-pass run for artifact naming. */
+      /**
+       * Context handed to the probe's scorer; identifies this initial-pass run for artifact naming.
+       */
       const scoreContext: ScoreContext = {
         label: config.label,
         pass: 'initial',
         timestamp,
         signal,
       };
-      /** Numeric score from this run; appended to `scores` parallel to its completion. */
+      /**
+       * Numeric score from this run; appended to `scores` parallel to its completion.
+       */
       // oxlint-disable-next-line no-await-in-loop -- score may involve container execution
       const runScore = await probe.score(
         completion.text,
@@ -142,9 +164,13 @@ export async function runProbeCore({
       );
     }
 
-    /** Completion of the most recent consistency run, absent when zero runs completed. */
+    /**
+     * Completion of the most recent consistency run, absent when zero runs completed.
+     */
     const lastCompletion = completions.at(-1,);
-    /** Score of the most recent run; written into the initial-pass artifact metadata. */
+    /**
+     * Score of the most recent run; written into the initial-pass artifact metadata.
+     */
     const lastScore = scores.at(-1,)
       ?? 0;
 
@@ -161,9 +187,13 @@ export async function runProbeCore({
       enrichedInitial = true;
     }
 
-    /** Arithmetic mean of run scores; the headline metric returned to the caller. */
+    /**
+     * Arithmetic mean of run scores; the headline metric returned to the caller.
+     */
     const meanScore = mean(scores,);
-    /** True when every consistency run produced the same score; useful for flakiness reporting. */
+    /**
+     * True when every consistency run produced the same score; useful for flakiness reporting.
+     */
     const consistent = scores.every(function sameScore(score,): boolean {
       return score === scores[0];
     },);
@@ -172,9 +202,13 @@ export async function runProbeCore({
     // gets a chance to fix code that actually has problems. Using the last run
     // would skip the fix when the last run happened to be perfect but earlier
     // runs were not.
-    /** Completion of the lowest-scoring run; the fix pass repairs the model's worst output, not a coincidentally-perfect last run. */
+    /**
+     * Completion of the lowest-scoring run; the fix pass repairs the model's worst output, not a coincidentally-perfect last run.
+     */
     const worstCompletion = completions[scores.indexOf(Math.min(...scores,),)];
-    /** Completion fed into the fix pass: prefer worst-scoring run; fall back to the last run if scoring failed. */
+    /**
+     * Completion fed into the fix pass: prefer worst-scoring run; fall back to the last run if scoring failed.
+     */
     const fixCompletion = worstCompletion ?? lastCompletion;
     /**
      * Score after the second-pass fix; {@link FIX_PASS_SKIPPED} when the probe declines a fix pass.
@@ -190,9 +224,13 @@ export async function runProbeCore({
       meanScore,
     },);
 
-    /** Timing of the last consistency run, present once at least one run completed. */
+    /**
+     * Timing of the last consistency run, present once at least one run completed.
+     */
     const lastTiming = lastCompletion?.timing;
-    /** Token usage of the last consistency run, present when the API reported it. */
+    /**
+     * Token usage of the last consistency run, present when the API reported it.
+     */
     const lastUsage = lastCompletion?.usage;
     return {
       name: probe.name,
@@ -215,9 +253,13 @@ export async function runProbeCore({
      * Partial stream payload recovered from a {@link PartialCompletionError}, or {@link NO_PARTIAL}.
      */
     const partialCompletion = extractPartialCompletion(error,);
-    /** Completion of the most recent run before failure, absent when none completed. */
+    /**
+     * Completion of the most recent run before failure, absent when none completed.
+     */
     const lastCompletion = completions.at(-1,);
-    /** Score of the most recent run before failure. */
+    /**
+     * Score of the most recent run before failure.
+     */
     const lastScore = scores.at(-1,)
       ?? 0;
     // Save whatever data we collected before the failure. Uses a separate try/catch

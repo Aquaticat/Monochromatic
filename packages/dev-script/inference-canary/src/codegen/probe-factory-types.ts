@@ -25,11 +25,17 @@ import type { ContainerResult, } from '../container.ts';
  * and optional performance testing. Probes only supply what varies.
  */
 export type CodeGenProbeConfig = {
-  /** Human-readable probe name for reporting and log prefixes */
+  /**
+   * Human-readable probe name for reporting and log prefixes
+   */
   readonly name: string;
-  /** User message that forms the probe prompt */
+  /**
+   * User message that forms the probe prompt
+   */
   readonly prompt: string;
-  /** Stdin data piped to the generated program in the container */
+  /**
+   * Stdin data piped to the generated program in the container
+   */
   readonly testInput: string;
   /**
    * Verifies container output and returns a correctness fraction.
@@ -38,7 +44,9 @@ export type CodeGenProbeConfig = {
    * @returns correctness score between 0 and 1
    */
   readonly verify: (result: ContainerResult,) => VerifyResult;
-  /** Whether this probe involves long-running execution */
+  /**
+   * Whether this probe involves long-running execution
+   */
   readonly slow?: boolean;
   /**
    * Optional performance test configuration. When provided, the factory runs a
@@ -90,15 +98,25 @@ export type CodeGenProbeConfig = {
  * and passed as a single object rather than individual parameters.
  */
 export type ProbeFactoryCaches = {
-  /** Per-model lint result cache, populated by score() and read by buildFixPrompt() */
+  /**
+   * Per-model lint result cache, populated by score() and read by buildFixPrompt()
+   */
   readonly lint: Map<string, LintResult>;
-  /** Per-model main container result cache */
+  /**
+   * Per-model main container result cache
+   */
   readonly container: Map<string, ContainerResult>;
-  /** Per-model perf container result cache */
+  /**
+   * Per-model perf container result cache
+   */
   readonly perf: Map<string, TimedContainerResult>;
-  /** Per-additional-run container result caches, indexed by run position */
+  /**
+   * Per-additional-run container result caches, indexed by run position
+   */
   readonly additionalContainers: Map<string, ContainerResult>[];
-  /** Per-additional-run verification result caches, indexed by run position */
+  /**
+   * Per-additional-run verification result caches, indexed by run position
+   */
   readonly additionalVerify: Map<string, VerifyResult>[];
 };
 
@@ -120,15 +138,25 @@ export type WritableCache<K, V> = ReadonlyMap<K, V> & {
  * the parameter stays deeply readonly without forbidding `.set`.
  */
 export type WritableProbeFactoryCaches = {
-  /** Per-model lint result cache */
+  /**
+   * Per-model lint result cache
+   */
   readonly lint: WritableCache<string, LintResult>;
-  /** Per-model main container result cache */
+  /**
+   * Per-model main container result cache
+   */
   readonly container: WritableCache<string, ContainerResult>;
-  /** Per-model perf container result cache */
+  /**
+   * Per-model perf container result cache
+   */
   readonly perf: WritableCache<string, TimedContainerResult>;
-  /** Per-additional-run container result caches, indexed by run position */
+  /**
+   * Per-additional-run container result caches, indexed by run position
+   */
   readonly additionalContainers: readonly WritableCache<string, ContainerResult>[];
-  /** Per-additional-run verification result caches, indexed by run position */
+  /**
+   * Per-additional-run verification result caches, indexed by run position
+   */
   readonly additionalVerify: readonly WritableCache<string, VerifyResult>[];
 };
 
@@ -138,14 +166,24 @@ export type WritableProbeFactoryCaches = {
  * structurally assignable to this, keeping the parameter deeply readonly.
  */
 export type ReadonlyProbeFactoryCaches = {
-  /** Per-model lint result cache (read-only) */
+  /**
+   * Per-model lint result cache (read-only)
+   */
   readonly lint: ReadonlyMap<string, LintResult>;
-  /** Per-model main container result cache (read-only) */
+  /**
+   * Per-model main container result cache (read-only)
+   */
   readonly container: ReadonlyMap<string, ContainerResult>;
-  /** Per-model perf container result cache (read-only) */
+  /**
+   * Per-model perf container result cache (read-only)
+   */
   readonly perf: ReadonlyMap<string, TimedContainerResult>;
-  /** Per-additional-run container result caches (read-only) */
+  /**
+   * Per-additional-run container result caches (read-only)
+   */
   readonly additionalContainers: readonly ReadonlyMap<string, ContainerResult>[];
-  /** Per-additional-run verification result caches (read-only) */
+  /**
+   * Per-additional-run verification result caches (read-only)
+   */
   readonly additionalVerify: readonly ReadonlyMap<string, VerifyResult>[];
 };

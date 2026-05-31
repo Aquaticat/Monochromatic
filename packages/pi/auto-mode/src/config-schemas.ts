@@ -10,7 +10,9 @@ import * as v from 'valibot';
 
 //region Strategy enum
 
-/** Strategy literal values for the judge-model selection strategy. */
+/**
+ * Strategy literal values for the judge-model selection strategy.
+ */
 const STRATEGY_VALUES = [
   'same-provider',
   'any-provider',
@@ -21,7 +23,9 @@ const STRATEGY_VALUES = [
  */
 type Strategy = (typeof STRATEGY_VALUES)[number];
 
-/** Record form retained for backwards-compatible callers that key by strategy name. */
+/**
+ * Record form retained for backwards-compatible callers that key by strategy name.
+ */
 const STRATEGY_ENUM = {
   'same-provider': 'same-provider',
   'any-provider': 'any-provider',
@@ -31,13 +35,17 @@ const STRATEGY_ENUM = {
 
 //region Schemas
 
-/** Auth shape for a model override. */
+/**
+ * Auth shape for a model override.
+ */
 type AuthShape = {
   apiKey?: string;
   headers?: Record<string, string>;
 };
 
-/** Model override shape: either a model name string, or `{model, auth}`. */
+/**
+ * Model override shape: either a model name string, or `{model, auth}`.
+ */
 type ModelOverride =
   | string
   | {
@@ -45,7 +53,9 @@ type ModelOverride =
     auth: AuthShape;
   };
 
-/** Judge model configuration shape. */
+/**
+ * Judge model configuration shape.
+ */
 type JudgeModel = {
   modelOverride?: ModelOverride;
   strategy: Strategy;
@@ -53,7 +63,9 @@ type JudgeModel = {
   majorVersions: number;
 };
 
-/** Auto-mode global configuration shape. */
+/**
+ * Auto-mode global configuration shape.
+ */
 type AutoModeConfig = {
   commands: (string | string[])[];
   patterns: string[];
@@ -72,13 +84,17 @@ type ProjectConfig = {
   instructions?: string;
 };
 
-/** Command matcher schema: either a literal command or an array of arguments. */
+/**
+ * Command matcher schema: either a literal command or an array of arguments.
+ */
 const CommandMatcherSchema: v.GenericSchema<string | string[]> = v.union([
   v.string(),
   v.array(v.string(),),
 ],);
 
-/** Auth schema for model override. */
+/**
+ * Auth schema for model override.
+ */
 const AuthSchema: v.GenericSchema<AuthShape> = v.object({
   apiKey: v.exactOptional(v.string(),),
   headers: v.exactOptional(
@@ -89,7 +105,9 @@ const AuthSchema: v.GenericSchema<AuthShape> = v.object({
   ),
 },);
 
-/** Model override schema. */
+/**
+ * Model override schema.
+ */
 const ModelOverrideSchema: v.GenericSchema<ModelOverride> = v.union([
   v.string(),
   v.object({
@@ -98,7 +116,9 @@ const ModelOverrideSchema: v.GenericSchema<ModelOverride> = v.union([
   },),
 ],);
 
-/** Judge model configuration schema. */
+/**
+ * Judge model configuration schema.
+ */
 const JudgeModelSchema: v.GenericSchema<JudgeModel> = v.object({
   modelOverride: v.exactOptional(ModelOverrideSchema,),
   strategy: v.picklist(STRATEGY_VALUES,),
@@ -106,7 +126,9 @@ const JudgeModelSchema: v.GenericSchema<JudgeModel> = v.object({
   majorVersions: v.number(),
 },);
 
-/** Global config schema. */
+/**
+ * Global config schema.
+ */
 const AutoModeConfigSchema: v.GenericSchema<AutoModeConfig> = v.object({
   commands: v.array(CommandMatcherSchema,),
   patterns: v.array(v.string(),),
@@ -116,7 +138,9 @@ const AutoModeConfigSchema: v.GenericSchema<AutoModeConfig> = v.object({
   judgeTimeoutMs: v.number(),
 },);
 
-/** Project config schema. */
+/**
+ * Project config schema.
+ */
 const ProjectConfigSchema: v.GenericSchema<ProjectConfig> = v.object({
   commands: v.array(CommandMatcherSchema,),
   patterns: v.array(v.string(),),

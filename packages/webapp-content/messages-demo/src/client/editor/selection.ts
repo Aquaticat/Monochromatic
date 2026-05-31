@@ -29,9 +29,13 @@
  */
 export const NO_SELECTION: unique symbol = Symbol('messages-demo:no-selection',);
 
-/** Public selection handle returned by `mountSelection`. */
+/**
+ * Public selection handle returned by `mountSelection`.
+ */
 export type Selection = {
-  /** Read the current selection, or `NO_SELECTION` if not in this surface. */
+  /**
+   * Read the current selection, or `NO_SELECTION` if not in this surface.
+   */
   get(): {
     readonly from: number;
     readonly to: number;
@@ -45,7 +49,9 @@ export type Selection = {
     readonly from: number;
     readonly to: number;
   },): void;
-  /** Detach event listeners and clear pending state. */
+  /**
+   * Detach event listeners and clear pending state.
+   */
   destroy(): void;
 };
 
@@ -64,7 +70,9 @@ export type Selection = {
  */
 function findEnclosingLine(start: Node,): HTMLElement | typeof NO_SELECTION {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor: `runner` advances up the parent chain until the `.ce-line` host is found or the walk reaches the document root */
-  /** Walks parent chain looking for the enclosing `.ce-line` element. */
+  /**
+   * Walks parent chain looking for the enclosing `.ce-line` element.
+   */
   let runner: Node = start;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   while (true) {
@@ -76,7 +84,9 @@ function findEnclosingLine(start: Node,): HTMLElement | typeof NO_SELECTION {
     ) {
       return runner;
     }
-    /** Next ancestor; DOM `parentNode` yields `null` at the document root. */
+    /**
+     * Next ancestor; DOM `parentNode` yields `null` at the document root.
+     */
     const parent = runner.parentNode;
     if (parent === null)
       return NO_SELECTION;
@@ -120,11 +130,15 @@ export function mountSelection(
       offset: number;
     },
   ): number | typeof NO_SELECTION {
-    /** Enclosing `.ce-line` element; `NO_SELECTION` exits early to leave the selection unresolved. */
+    /**
+     * Enclosing `.ce-line` element; `NO_SELECTION` exits early to leave the selection unresolved.
+     */
     const line = findEnclosingLine(domInput.node,);
     if (line === NO_SELECTION)
       return NO_SELECTION;
-    /** Parsed line index from the enclosing element's `data-line` attribute. */
+    /**
+     * Parsed line index from the enclosing element's `data-line` attribute.
+     */
     const lineIndex = Number.parseInt(
       line.dataset
         .line
@@ -137,18 +151,24 @@ export function mountSelection(
     // each) plus the offset within the current line. We use the
     // surface's textContent to recover line lengths since the line's
     // textContent matches the buffer slice the viewport rendered.
-    /** Materialised line list so the walk can compare indices and break early. */
+    /**
+     * Materialised line list so the walk can compare indices and break early.
+     */
     const lines = [
       ...input.surface
         .querySelectorAll<HTMLElement>('.ce-line',),
     ];
-    /** Sum of preceding-line lengths plus newlines; runs over `lines` and stops at `lineIndex`. */
+    /**
+     * Sum of preceding-line lengths plus newlines; runs over `lines` and stops at `lineIndex`.
+     */
     const absolute = lines.reduce(
       function sumPrecedingLineLengths(
         acc,
         candidate,
       ) {
-        /** Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop. */
+        /**
+         * Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop.
+         */
         const candidateIndex = Number.parseInt(
           candidate.dataset
             .line
@@ -175,9 +195,13 @@ export function mountSelection(
      * @returns running tally inside the target line
      */
     function tallyWithinLine(root: HTMLElement,): number {
-      /** Running tally inside the target line; finalised when the DFS hits the target node. */
+      /**
+       * Running tally inside the target line; finalised when the DFS hits the target node.
+       */
       let withinLine = 0;
-      /** DFS sentinel; flipped once the target node is reached so later nodes are skipped. */
+      /**
+       * DFS sentinel; flipped once the target node is reached so later nodes are skipped.
+       */
       let foundTarget = false;
       /**
        * Recursive DFS that tallies code-unit lengths of text nodes
@@ -212,7 +236,9 @@ export function mountSelection(
   }
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- coordinator cache: `cached` is recomputed by the `selectionchange` listener and read by `getRange()` so consumers see the latest translation without paying for an inner-walk per read */
-  /** Cache of the most recent selection in surface-local offsets. */
+  /**
+   * Cache of the most recent selection in surface-local offsets.
+   */
   let cached: {
     from: number;
     to: number;
@@ -225,26 +251,34 @@ export function mountSelection(
    * selection is not inside the editor surface.
    */
   function refresh(): void {
-    /** Browser-managed selection; null when no selection or no document scope. */
+    /**
+     * Browser-managed selection; null when no selection or no document scope.
+     */
     const sel = document.getSelection();
     if ((sel === null) || (sel.rangeCount
       === 0)) {
       cached = NO_SELECTION;
       return;
     }
-    /** First range; the editor uses single-range selections only. */
+    /**
+     * First range; the editor uses single-range selections only.
+     */
     const range = sel.getRangeAt(0,);
     if (!input.surface
       .contains(range.startContainer,)) {
       cached = NO_SELECTION;
       return;
     }
-    /** Start offset translated from DOM coordinates. */
+    /**
+     * Start offset translated from DOM coordinates.
+     */
     const from = domToOffset({
       node: range.startContainer,
       offset: range.startOffset,
     },);
-    /** End offset translated from DOM coordinates. */
+    /**
+     * End offset translated from DOM coordinates.
+     */
     const to = domToOffset({
       node: range.endContainer,
       offset: range.endOffset,
@@ -285,24 +319,34 @@ export function mountSelection(
     node: Node;
     offset: number;
   } | typeof NO_SELECTION {
-    /** Materialised line list so the walk can break out as soon as the target is bracketed. */
+    /**
+     * Materialised line list so the walk can break out as soon as the target is bracketed.
+     */
     const lines = [
       ...input.surface
         .querySelectorAll<HTMLElement>('.ce-line',),
     ];
     /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor: `cursor` is the running buffer offset advanced by line-length + 1 per iteration and read inside the loop body to decide whether the target falls in the current line */
-    /** Running buffer offset; advances by line length + 1 (newline) per iteration. */
+    /**
+     * Running buffer offset; advances by line length + 1 (newline) per iteration.
+     */
     let cursor = 0;
     /* oxlint-enable no-restricted-syntax/no-function-root-let */
     for (const line of lines) {
-      /** Current line's character length, derived from its rendered text content. */
+      /**
+       * Current line's character length, derived from its rendered text content.
+       */
       const lineLength = (line.textContent
         ?? '').length;
-      /** Buffer offset where this line ends (exclusive of trailing newline). */
+      /**
+       * Buffer offset where this line ends (exclusive of trailing newline).
+       */
       const lineEnd = cursor + lineLength;
       if (target.offset
         <= lineEnd) {
-        /** First child as the preferred text node; falls back to the line element when missing. */
+        /**
+         * First child as the preferred text node; falls back to the line element when missing.
+         */
         const text = line.firstChild;
         if ((text !== null) && (text.nodeType
           === Node
@@ -333,17 +377,25 @@ export function mountSelection(
       return cached;
     },
     set(target,) {
-      /** Resolved DOM start position; `NO_SELECTION` aborts the set so a stale Range is not written. */
+      /**
+       * Resolved DOM start position; `NO_SELECTION` aborts the set so a stale Range is not written.
+       */
       const start = offsetToDom({ offset: target.from, },);
-      /** Resolved DOM end position; `NO_SELECTION` aborts the set so a stale Range is not written. */
+      /**
+       * Resolved DOM end position; `NO_SELECTION` aborts the set so a stale Range is not written.
+       */
       const end = offsetToDom({ offset: target.to, },);
       if ((start === NO_SELECTION) || (end === NO_SELECTION))
         return;
-      /** Browser-managed selection; null aborts the set when no document scope is available. */
+      /**
+       * Browser-managed selection; null aborts the set when no document scope is available.
+       */
       const sel = document.getSelection();
       if (sel === null)
         return;
-      /** Fresh Range covering the resolved start and end; replaces the existing selection. */
+      /**
+       * Fresh Range covering the resolved start and end; replaces the existing selection.
+       */
       const range = document.createRange();
       range.setStart(
         start.node,

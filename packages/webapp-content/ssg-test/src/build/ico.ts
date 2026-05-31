@@ -5,34 +5,54 @@
  */
 
 //region ICO binary format constants
-/** ICO file header size in bytes (reserved + type + image count fields). */
+/**
+ * ICO file header size in bytes (reserved + type + image count fields).
+ */
 const ICO_HEADER_SIZE = 6;
 
-/** ICO directory entry size in bytes per the ICO specification. */
+/**
+ * ICO directory entry size in bytes per the ICO specification.
+ */
 const ICO_ENTRY_SIZE = 16;
 
-/** ICO favicon dimensions in pixels (width and height). */
+/**
+ * ICO favicon dimensions in pixels (width and height).
+ */
 const ICO_DIMENSION = 32;
 
-/** Bits per pixel for RGBA color depth in ICO directory entries. */
+/**
+ * Bits per pixel for RGBA color depth in ICO directory entries.
+ */
 const ICO_BITS_PER_PIXEL = 32;
 
-/** Byte offset of image count within the ICO header. */
+/**
+ * Byte offset of image count within the ICO header.
+ */
 const ICO_HEADER_COUNT_OFFSET = 4;
 
-/** Byte offset of color planes within an ICO directory entry. */
+/**
+ * Byte offset of color planes within an ICO directory entry.
+ */
 const ICO_ENTRY_PLANES_OFFSET = 4;
 
-/** Byte offset of bits-per-pixel within an ICO directory entry. */
+/**
+ * Byte offset of bits-per-pixel within an ICO directory entry.
+ */
 const ICO_ENTRY_BPP_OFFSET = 6;
 
-/** Byte offset of image data size within an ICO directory entry. */
+/**
+ * Byte offset of image data size within an ICO directory entry.
+ */
 const ICO_ENTRY_DATASIZE_OFFSET = 8;
 
-/** Byte offset of data pointer within an ICO directory entry. */
+/**
+ * Byte offset of data pointer within an ICO directory entry.
+ */
 const ICO_ENTRY_DATAPTR_OFFSET = 12;
 
-/** Absolute byte offset where image data begins (header + one directory entry). */
+/**
+ * Absolute byte offset where image data begins (header + one directory entry).
+ */
 const ICO_DATA_OFFSET = 22;
 //endregion
 
@@ -49,7 +69,9 @@ const ICO_DATA_OFFSET = 22;
  * ```
  */
 export function createIco({ pngData, }: { readonly pngData: Uint8Array; },): Buffer {
-  /** ICONDIR header preceding the image directory entries per the ICO spec. */
+  /**
+   * ICONDIR header preceding the image directory entries per the ICO spec.
+   */
   const header = Buffer.alloc(ICO_HEADER_SIZE,);
   header.writeUInt16LE(
     1,
@@ -60,7 +82,9 @@ export function createIco({ pngData, }: { readonly pngData: Uint8Array; },): Buf
     ICO_HEADER_COUNT_OFFSET,
   ); // image count
 
-  /** ICONDIRENTRY describing the single embedded PNG image. */
+  /**
+   * ICONDIRENTRY describing the single embedded PNG image.
+   */
   const entry = Buffer.alloc(ICO_ENTRY_SIZE,);
   entry.writeUInt8(
     ICO_DIMENSION,

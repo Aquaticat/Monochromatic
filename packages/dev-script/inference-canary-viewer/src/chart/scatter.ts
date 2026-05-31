@@ -20,27 +20,49 @@ import {
 import { renderPointElements, } from './scatter-point.ts';
 import { renderThresholdLine, } from './threshold-line.ts';
 
-/** Single data point for the scatter plot */
+/**
+ * Single data point for the scatter plot
+ */
 export type ScatterPoint = {
-  /** Unique identifier for the run (used in fragment link) */
+  /**
+   * Unique identifier for the run (used in fragment link)
+   */
   readonly runId: string;
-  /** 0-based index on the X axis */
+  /**
+   * 0-based index on the X axis
+   */
   readonly index: number;
-  /** ISO timestamp for X axis label */
+  /**
+   * ISO timestamp for X axis label
+   */
   readonly timestamp: string;
-  /** Score value (0-1) for Y axis */
+  /**
+   * Score value (0-1) for Y axis
+   */
   readonly score: number;
-  /** Optional pass-2 (fix) score overlaid at same X */
+  /**
+   * Optional pass-2 (fix) score overlaid at same X
+   */
   readonly pass2Score?: number;
-  /** CSS color for this point */
+  /**
+   * CSS color for this point
+   */
   readonly color: string;
-  /** Tooltip text */
+  /**
+   * Tooltip text
+   */
   readonly title: string;
-  /** Whether this run failed */
+  /**
+   * Whether this run failed
+   */
   readonly failed: boolean;
-  /** Raw SVG icon to render inside the chart point (when available) */
+  /**
+   * Raw SVG icon to render inside the chart point (when available)
+   */
   readonly icon?: string;
-  /** Metadata for the backing table */
+  /**
+   * Metadata for the backing table
+   */
   readonly tableRow: TableRow;
 };
 
@@ -90,15 +112,21 @@ export function renderScatterChart({
     },);
   }
 
-  /** Positioned `<button>` markup for every point; rendered once and embedded inside the plot area. */
+  /**
+   * Positioned `<button>` markup for every point; rendered once and embedded inside the plot area.
+   */
   const pointElements = renderPointElements(points,);
 
-  /** Ordered timestamps extracted for the X-axis label renderer. */
+  /**
+   * Ordered timestamps extracted for the X-axis label renderer.
+   */
   const timestamps = points.map(function getTimestamp(point,) {
     return point.timestamp;
   },);
 
-  /** Backing data table HTML; suppressed entirely when the caller opts out via `hideTable`. */
+  /**
+   * Backing data table HTML; suppressed entirely when the caller opts out via `hideTable`.
+   */
   const tableHtml = hideTable === true
     ? ''
     : renderDataTable({

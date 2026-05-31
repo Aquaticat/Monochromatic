@@ -35,16 +35,22 @@ export async function shutdownPoolForPath({
   readonly path: string;
   readonly l: Logger;
 },): Promise<void> {
-  /** Collect matching entries for concurrent shutdown. */
+  /**
+   * Collect matching entries for concurrent shutdown.
+   */
   const toRemove: string[] = [];
-  /** Pool entries whose root contains `path`; each gets its own concurrent shutdown. */
+  /**
+   * Pool entries whose root contains `path`; each gets its own concurrent shutdown.
+   */
   const matching: {
     readonly key: string;
     readonly promise: Promise<LspClient | null>;
   }[] = [];
 
   for (const [key, promise,] of pool.entries()) {
-    /** Project root extracted from the composite pool key. */
+    /**
+     * Project root extracted from the composite pool key.
+     */
     const root = rootFromPoolKey({ key, },);
     if (isWithinRoot({
       root,
@@ -58,14 +64,18 @@ export async function shutdownPoolForPath({
     }
   }
 
-  /** Without parallel awaits: independent LSP servers would shut down sequentially, delaying the file operation. */
+  /**
+   * Without parallel awaits: independent LSP servers would shut down sequentially, delaying the file operation.
+   */
   await Promise.all(
     matching.map(async function shutdownEntry({
       key,
       promise,
     },): Promise<void> {
       try {
-        /** Resolved client; null when the spawn never succeeded. */
+        /**
+         * Resolved client; null when the spawn never succeeded.
+         */
         const client = await promise;
         if (client !== null)
           await client.shutdown();
@@ -99,11 +109,15 @@ export async function shutdownAllPooled({
   readonly pool: ReadonlyMap<string, Promise<LspClient | null>>;
   readonly l: Logger;
 },): Promise<void> {
-  /** Without parallel awaits: independent LSP servers would shut down sequentially, delaying signal-handler completion. */
+  /**
+   * Without parallel awaits: independent LSP servers would shut down sequentially, delaying signal-handler completion.
+   */
   await Promise.all(
     [...pool.values(),].map(async function shutdownClient(promise,): Promise<void> {
       try {
-        /** Resolved client; null when the spawn never succeeded. */
+        /**
+         * Resolved client; null when the spawn never succeeded.
+         */
         const c = await promise;
         if (c !== null)
           await c.shutdown();

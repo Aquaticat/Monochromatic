@@ -62,7 +62,9 @@ const PACKAGE_ROOT = await findPackageRootCached({
 
 //region Helpers
 
-/** Length of the `YYYY-MM-DDTHH:MM:SS` prefix in an ISO 8601 UTC timestamp; drops `.sssZ`. */
+/**
+ * Length of the `YYYY-MM-DDTHH:MM:SS` prefix in an ISO 8601 UTC timestamp; drops `.sssZ`.
+ */
 const ISO_SECONDS_PREFIX_LENGTH = 19;
 
 /**
@@ -96,7 +98,9 @@ function currentRunOutputFilename(): string {
     0,
     ISO_SECONDS_PREFIX_LENGTH,
   );
-  /** Filesystem-safe form: every `:` becomes `-`. */
+  /**
+   * Filesystem-safe form: every `:` becomes `-`.
+   */
   const stem = seconds.replaceAll(
     ':',
     '-',
@@ -108,19 +112,27 @@ function currentRunOutputFilename(): string {
 
 //region Entry
 
-/** Catalog entries parsed from `pnpm-workspace.yaml` upward from cwd. */
+/**
+ * Catalog entries parsed from `pnpm-workspace.yaml` upward from cwd.
+ */
 const entries = await readCatalog();
 
-/** Shared per-package JSON file cache rooted at `~/.cache/monochromatic/deps-cube`. */
+/**
+ * Shared per-package JSON file cache rooted at `~/.cache/monochromatic/deps-cube`.
+ */
 const cache = createCache();
 
-/** Resolved attribute vector for every catalog entry. */
+/**
+ * Resolved attribute vector for every catalog entry.
+ */
 const probes = await probeAll({
   entries,
   cache,
 },);
 
-/** Composed self-contained HTML report. */
+/**
+ * Composed self-contained HTML report.
+ */
 const html = await renderHtml({
   probes,
 },);
@@ -138,7 +150,9 @@ await mkdir(
   { recursive: true, },
 );
 
-/** Absolute path of today's output file under `<package>/dist/`. */
+/**
+ * Absolute path of today's output file under `<package>/dist/`.
+ */
 const absPath = resolvePath(
   distDir,
   currentRunOutputFilename(),

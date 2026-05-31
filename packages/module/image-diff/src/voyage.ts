@@ -44,24 +44,32 @@ async function voyageEmbed({
   readonly input: ImageInput;
   readonly config: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: voyageEmbed.name,
     l,
   },);
   rl.debug('computing single image embedding via Voyage',);
 
-  /** Resolved Voyage credential; pulled here once and forwarded into the API call. */
+  /**
+   * Resolved Voyage credential; pulled here once and forwarded into the API call.
+   */
   const apiKey = resolveVoyageApiKey(config.apiKey,);
   /**
    * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
   const model = (config.model
     ?? DEFAULT_VOYAGE_MODEL) as VoyageModel;
-  /** Voyage-shaped content payload converted from the caller's image input. */
+  /**
+   * Voyage-shaped content payload converted from the caller's image input.
+   */
   const contentItem = await toVoyageContentItem(input,);
 
-  /** Single-input request body wrapping the content item in Voyage's nested `inputs[].content[]` shape. */
+  /**
+   * Single-input request body wrapping the content item in Voyage's nested `inputs[].content[]` shape.
+   */
   const request: VoyageApiRequest = {
     inputs: [{ content: [contentItem,], },],
     model,
@@ -69,12 +77,16 @@ async function voyageEmbed({
     truncation: true,
   };
 
-  /** Voyage API response; contains the embedding plus usage counters. */
+  /**
+   * Voyage API response; contains the embedding plus usage counters.
+   */
   const response = await callVoyageApi({
     requestBody: request,
     apiKey,
   },);
-  /** First (and only) data entry; guarded by the empty-array check below before use. */
+  /**
+   * First (and only) data entry; guarded by the empty-array check below before use.
+   */
   const firstData = response.data[0];
   if (firstData === undefined)
     throw new Error('Voyage API returned empty data array',);
@@ -116,7 +128,9 @@ async function voyageEmbedBatch({
   readonly inputs: readonly ImageInput[];
   readonly config: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: voyageEmbedBatch.name,
     l,
@@ -125,7 +139,9 @@ async function voyageEmbedBatch({
     `computing batch embeddings via Voyage for ${String(inputs.length,)} image(s)`,
   );
 
-  /** Resolved Voyage credential; pulled here once and forwarded into the API call. */
+  /**
+   * Resolved Voyage credential; pulled here once and forwarded into the API call.
+   */
   const apiKey = resolveVoyageApiKey(config.apiKey,);
   /**
    * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
@@ -133,14 +149,18 @@ async function voyageEmbedBatch({
   const model = (config.model
     ?? DEFAULT_VOYAGE_MODEL) as VoyageModel;
 
-  /** Voyage-shaped content payloads converted from each caller image, in input order. */
+  /**
+   * Voyage-shaped content payloads converted from each caller image, in input order.
+   */
   const contentItems = await Promise.all(
     inputs.map(function convertInput(input,) {
       return toVoyageContentItem(input,);
     },),
   );
 
-  /** Batched request body wrapping each content item in its own `inputs[]` entry. */
+  /**
+   * Batched request body wrapping each content item in its own `inputs[]` entry.
+   */
   const request: VoyageApiRequest = {
     inputs: contentItems.map(function wrapContent(item,) {
       return { content: [item,], };
@@ -150,13 +170,17 @@ async function voyageEmbedBatch({
     truncation: true,
   };
 
-  /** Voyage API response; data entries may arrive out of order and need re-sorting below. */
+  /**
+   * Voyage API response; data entries may arrive out of order and need re-sorting below.
+   */
   const response = await callVoyageApi({
     requestBody: request,
     apiKey,
   },);
 
-  /** Sort by index to guarantee input order. */
+  /**
+   * Sort by index to guarantee input order.
+   */
   const sorted = [...response.data,].toSorted(function byIndex(
     a,
     b,

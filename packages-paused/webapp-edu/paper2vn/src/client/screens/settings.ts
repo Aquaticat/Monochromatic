@@ -143,7 +143,9 @@ function saveAck(value: boolean,): void {
   updateProvider({ acknowledgedAnthropicWarning: value, },);
 }
 
-/** Navigation handler for the back button: routes back to the menu. */
+/**
+ * Navigation handler for the back button: routes back to the menu.
+ */
 function goBackToMenu(): void {
   navigate('menu',);
 }
@@ -154,20 +156,30 @@ function goBackToMenu(): void {
  * @param root - host element the screen mounts into
  */
 function mount(root: HTMLElement,): void {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  /** Settings snapshot used to seed every control. */
+  /**
+   * Settings snapshot used to seed every control.
+   */
   const settings = getSettings();
-  /** Provider config snapshot used to seed provider-specific controls. */
+  /**
+   * Provider config snapshot used to seed provider-specific controls.
+   */
   const provider = getProvider();
 
-  /** Language `<select>` whose change event writes the new locale to settings. */
+  /**
+   * Language `<select>` whose change event writes the new locale to settings.
+   */
   const langSelect = languageSelect(settings.locale,);
   langSelect.addEventListener(
     'change',
     function onChange(): void {
-      /** Newly chosen locale, coerced back to the union to drop unknown values. */
+      /**
+       * Newly chosen locale, coerced back to the union to drop unknown values.
+       */
       const next = coerceLocale({
         value: langSelect.value,
         fallback: settings.locale,
@@ -184,7 +196,9 @@ function mount(root: HTMLElement,): void {
     },
   );
 
-  /** Font-scale slider feeding `--font-scale` for live preview. */
+  /**
+   * Font-scale slider feeding `--font-scale` for live preview.
+   */
   const fontInput = range({
     min: FONT_SCALE_MIN,
     max: FONT_SCALE_MAX,
@@ -192,7 +206,9 @@ function mount(root: HTMLElement,): void {
     initial: settings.fontScale,
     onValue: saveFontScale,
   },);
-  /** Text-speed slider controlling the lecture screen's typing cadence. */
+  /**
+   * Text-speed slider controlling the lecture screen's typing cadence.
+   */
   const speedInput = range({
     min: TEXT_SPEED_MIN,
     max: TEXT_SPEED_MAX,
@@ -200,7 +216,9 @@ function mount(root: HTMLElement,): void {
     initial: settings.textSpeed,
     onValue: saveTextSpeed,
   },);
-  /** Voice-volume slider piped into the speech utterance. */
+  /**
+   * Voice-volume slider piped into the speech utterance.
+   */
   const voiceVolInput = range({
     min: 0,
     max: 1,
@@ -208,7 +226,9 @@ function mount(root: HTMLElement,): void {
     initial: settings.voiceVolume,
     onValue: saveVoiceVolume,
   },);
-  /** BGM-volume slider (background music level, reserved for future audio). */
+  /**
+   * BGM-volume slider (background music level, reserved for future audio).
+   */
   const bgmVolInput = range({
     min: 0,
     max: 1,
@@ -216,7 +236,9 @@ function mount(root: HTMLElement,): void {
     initial: settings.bgmVolume,
     onValue: saveBgmVolume,
   },);
-  /** Auto-advance delay slider used by the lecture screen between beats. */
+  /**
+   * Auto-advance delay slider used by the lecture screen between beats.
+   */
   const autoDelayInput = range({
     min: 0,
     max: AUTO_DELAY_MAX_MS,
@@ -225,13 +247,17 @@ function mount(root: HTMLElement,): void {
     onValue: saveAutoAdvanceDelay,
   },);
 
-  /** Voice-enabled checkbox; change event writes back to settings. */
+  /**
+   * Voice-enabled checkbox; change event writes back to settings.
+   */
   const voiceToggle = checkbox({
     initial: settings.voiceEnabled,
     onChange: saveVoiceEnabled,
   },);
 
-  /** Provider `<select>` whose change event swaps the active provider id. */
+  /**
+   * Provider `<select>` whose change event swaps the active provider id.
+   */
   const providerSelectEl = providerSelect({
     activeProvider: provider.id,
     labels: {
@@ -244,7 +270,9 @@ function mount(root: HTMLElement,): void {
   providerSelectEl.addEventListener(
     'change',
     function onChange(): void {
-      /** Newly chosen provider id, coerced back to the union to drop unknowns. */
+      /**
+       * Newly chosen provider id, coerced back to the union to drop unknowns.
+       */
       const next = coerceProviderId({
         value: providerSelectEl.value,
         fallback: provider.id,
@@ -254,7 +282,9 @@ function mount(root: HTMLElement,): void {
     },
   );
 
-  /** Model text input; input event writes the new model name to provider state. */
+  /**
+   * Model text input; input event writes the new model name to provider state.
+   */
   const modelInput = providerInput({
     type: 'text',
     initial: provider.model,
@@ -262,7 +292,9 @@ function mount(root: HTMLElement,): void {
     onValue: saveModel,
   },);
 
-  /** API-key password input; input event writes the new key to provider state. */
+  /**
+   * API-key password input; input event writes the new key to provider state.
+   */
   const apiKeyInput = providerInput({
     type: 'password',
     initial: provider.apiKey,
@@ -270,7 +302,9 @@ function mount(root: HTMLElement,): void {
     onValue: saveApiKey,
   },);
 
-  /** Base-URL text input; input event writes the new URL to provider state. */
+  /**
+   * Base-URL text input; input event writes the new URL to provider state.
+   */
   const baseUrlInput = providerInput({
     type: 'text',
     initial: provider.baseUrl,
@@ -278,7 +312,9 @@ function mount(root: HTMLElement,): void {
     onValue: saveBaseUrl,
   },);
 
-  /** Anthropic-specific opt-in nodes, populated only when that provider is active. */
+  /**
+   * Anthropic-specific opt-in nodes, populated only when that provider is active.
+   */
   const anthropicWarningChildren = anthropicWarningNodes({
     provider,
     warningText: ll.anthropicWarning(),
@@ -286,7 +322,9 @@ function mount(root: HTMLElement,): void {
     onAcknowledge: saveAck,
   },);
 
-  /** Outer screen container assembling header, fields, and provider section. */
+  /**
+   * Outer screen container assembling header, fields, and provider section.
+   */
   const screen = el({
     tag: 'section',
     attrs: {

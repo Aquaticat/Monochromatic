@@ -24,17 +24,27 @@ import type {
  * ```
  */
 export function formatHintLabel({ hint, }: { readonly hint: InlayHint; },): string {
-  /** Leading whitespace requested by the hint metadata; empty string when no padding is requested. */
+  /**
+   * Leading whitespace requested by the hint metadata; empty string when no padding is requested.
+   */
   const padLeft = hint.paddingLeft
     === true ? ' ' : '';
-  /** Trailing whitespace requested by the hint metadata; empty string when no padding is requested. */
+  /**
+   * Trailing whitespace requested by the hint metadata; empty string when no padding is requested.
+   */
   const padRight = hint.paddingRight
     === true ? ' ' : '';
-  /** Parameter hints (kind=2) have a trailing colon that adds noise. */
+  /**
+   * Parameter hints (kind=2) have a trailing colon that adds noise.
+   */
   const PARAMETER_KIND = 2;
-  /** Type hints (kind=1) carry a leading ` : ` prefix that duplicates the padding. */
+  /**
+   * Type hints (kind=1) carry a leading ` : ` prefix that duplicates the padding.
+   */
   const TYPE_KIND = 1;
-  /** Leading `': '` prefix stripped from type hints so the duplicated padding is removed. */
+  /**
+   * Leading `': '` prefix stripped from type hints so the duplicated padding is removed.
+   */
   const TYPE_HINT_PREFIX = ': ';
   /**
    * Strips kind-specific decoration from the raw inlay label.
@@ -66,7 +76,9 @@ export function formatHintLabel({ hint, }: { readonly hint: InlayHint; },): stri
     }
     return hint.label;
   }
-  /** Label after kind-specific decoration is removed. */
+  /**
+   * Label after kind-specific decoration is removed.
+   */
   const label = strippedLabel();
   return `${padLeft}${label}${padRight}`;
 }
@@ -95,7 +107,9 @@ export function formatHintLabel({ hint, }: { readonly hint: InlayHint; },): stri
 export function formatDiagnosticLabel(
   { diagnostic, }: { readonly diagnostic: Diagnostic; },
 ): string {
-  /** Severity-with-source tag rendered ahead of the message; falls back to bare severity when the source is empty. */
+  /**
+   * Severity-with-source tag rendered ahead of the message; falls back to bare severity when the source is empty.
+   */
   const prefix = diagnostic.source
     !== ''
     ? `${diagnostic.severity}(${diagnostic.source})`
@@ -103,7 +117,9 @@ export function formatDiagnosticLabel(
   return `${prefix}: ${diagnostic.message}`;
 }
 
-/** Maps severity names to priority values (lower is more severe). */
+/**
+ * Maps severity names to priority values (lower is more severe).
+ */
 const SEVERITY_PRIORITY: Record<string, number> = {
   error: 0,
   warning: 1,
@@ -111,7 +127,9 @@ const SEVERITY_PRIORITY: Record<string, number> = {
   hint: 3,
 };
 
-/** Highest priority value (least severe). */
+/**
+ * Highest priority value (least severe).
+ */
 const LOWEST_PRIORITY = 4;
 
 /**
@@ -129,13 +147,19 @@ const LOWEST_PRIORITY = 4;
 export function findWorstSeverity(
   { diagnostics, }: { readonly diagnostics: readonly Diagnostic[]; },
 ): string {
-  /** Severity string of the worst diagnostic seen so far; empty until the first match. */
+  /**
+   * Severity string of the worst diagnostic seen so far; empty until the first match.
+   */
   let worst = '';
-  /** Priority value of the worst diagnostic so far; starts at the lowest so any seen severity wins. */
+  /**
+   * Priority value of the worst diagnostic so far; starts at the lowest so any seen severity wins.
+   */
   let worstPriority = LOWEST_PRIORITY;
 
   for (const diag of diagnostics) {
-    /** Numeric priority for this diagnostic; unknown severities fall back to the lowest priority. */
+    /**
+     * Numeric priority for this diagnostic; unknown severities fall back to the lowest priority.
+     */
     const priority = SEVERITY_PRIORITY[diag.severity]
       ?? LOWEST_PRIORITY;
     if (priority < worstPriority) {

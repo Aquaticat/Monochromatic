@@ -31,7 +31,9 @@ import {
 function isFileLockError(error: unknown,): boolean {
   if (((typeof error) !== 'object') || (error === null))
     return false;
-  /** Node `errno` code lifted off the caught error so the lock-error check stays local. */
+  /**
+   * Node `errno` code lifted off the caught error so the lock-error check stays local.
+   */
   const { code, } = error as { readonly code?: string; };
   return (code === 'EBUSY') || (code === 'EPERM');
 }
@@ -134,7 +136,9 @@ export async function dispatchFsMessage({
 },): Promise<boolean> {
   if (parsed.type
     === 'deleteEntry') {
-    /** Resolved absolute path of the deleted entry; required to suppress watcher echoes. */
+    /**
+     * Resolved absolute path of the deleted entry; required to suppress watcher echoes.
+     */
     const absolutePath = await retryOnFileLock({
       operation: function del() {
         return deleteEntry({
@@ -155,7 +159,9 @@ export async function dispatchFsMessage({
   }
   if (parsed.type
     === 'copyEntry') {
-    /** Resolved absolute destination path; required to suppress watcher echoes for the new entry. */
+    /**
+     * Resolved absolute destination path; required to suppress watcher echoes for the new entry.
+     */
     const absoluteDest = await copyEntry({
       rootDir,
       path: parsed.path,
@@ -171,7 +177,9 @@ export async function dispatchFsMessage({
   }
   if (parsed.type
     === 'moveEntry') {
-    /** Resolved source and destination paths from the move; both feed into watcher suppression. */
+    /**
+     * Resolved source and destination paths from the move; both feed into watcher suppression.
+     */
     const {
       source,
       dest,
@@ -198,7 +206,9 @@ export async function dispatchFsMessage({
   }
   if (parsed.type
     === 'newEntry') {
-    /** Resolved absolute path of the new entry; needed to suppress watcher echoes for the creation. */
+    /**
+     * Resolved absolute path of the new entry; needed to suppress watcher echoes for the creation.
+     */
     const absolutePath = await newEntry({
       rootDir,
       parentPath: parsed.parentPath,

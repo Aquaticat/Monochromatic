@@ -16,31 +16,51 @@ const NO_SETTINGS_FILE: unique symbol = Symbol('model-selection/no-settings-file
 
 //region Types and schemas
 
-/** Pi settings subset needed for model-scope reconstruction. */
+/**
+ * Pi settings subset needed for model-scope reconstruction.
+ */
 export type PiSettingsFile = {
-  /** Pi model-cycle patterns. */
+  /**
+   * Pi model-cycle patterns.
+   */
   readonly enabledModels?: readonly string[];
 };
 
-/** Options for reading pi settings files. */
+/**
+ * Options for reading pi settings files.
+ */
 export type LoadSettingsScopeOptions = {
-  /** Current working directory for project settings lookup. */
+  /**
+   * Current working directory for project settings lookup.
+   */
   readonly cwd: string;
-  /** Home directory override for tests. */
+  /**
+   * Home directory override for tests.
+   */
   readonly home?: string;
-  /** Error prefix used by the consuming extension. */
+  /**
+   * Error prefix used by the consuming extension.
+   */
   readonly errorPrefix?: string;
 };
 
-/** Reconstructed enabled-model patterns from pi settings. */
+/**
+ * Reconstructed enabled-model patterns from pi settings.
+ */
 export type SettingsScopePatterns = {
-  /** Effective enabled-model patterns, omitted when unrestricted. */
+  /**
+   * Effective enabled-model patterns, omitted when unrestricted.
+   */
   readonly patterns?: readonly string[];
-  /** Settings file path that supplied effective patterns. */
+  /**
+   * Settings file path that supplied effective patterns.
+   */
   readonly sourcePath?: string;
 };
 
-/** Pi settings subset schema. */
+/**
+ * Pi settings subset schema.
+ */
 export const PiSettingsFileSchema: v.GenericSchema<PiSettingsFile> = v.object({
   enabledModels: v.exactOptional(
     v.array(v.string(),),
@@ -68,18 +88,26 @@ export const PiSettingsFileSchema: v.GenericSchema<PiSettingsFile> = v.object({
 export function loadSettingsScopePatterns(
   options: LoadSettingsScopeOptions,
 ): SettingsScopePatterns {
-  /** Paths checked for pi settings. */
+  /**
+   * Paths checked for pi settings.
+   */
   const paths = getSettingsPaths(options,);
-  /** Error prefix for thrown messages. */
+  /**
+   * Error prefix for thrown messages.
+   */
   const errorPrefix = options.errorPrefix
     ?? 'model selection';
-  /** Global settings subset. */
+  /**
+   * Global settings subset.
+   */
   const global = loadSettingsFile({
     path: paths.globalPath,
     label: 'global',
     errorPrefix,
   },);
-  /** Project settings subset. */
+  /**
+   * Project settings subset.
+   */
   const project = loadSettingsFile({
     path: paths.projectPath,
     label: 'project',
@@ -123,11 +151,17 @@ export function getSettingsPaths(
   readonly globalPath: string;
   readonly projectPath: string;
 } {
-  /** Process environment variables. */
+  /**
+   * Process environment variables.
+   */
   const { env, } = process;
-  /** HOME environment variable value, when present. */
+  /**
+   * HOME environment variable value, when present.
+   */
   const { HOME: envHome, } = env;
-  /** Home directory used by pi for global settings. */
+  /**
+   * Home directory used by pi for global settings.
+   */
   const home = options.home
     ?? envHome
     ?? '~';
@@ -172,7 +206,9 @@ function loadSettingsFile(
     readonly errorPrefix: string;
   },
 ): PiSettingsFile | typeof NO_SETTINGS_FILE {
-  /** Raw parsed JSON object, or `undefined` when absent. */
+  /**
+   * Raw parsed JSON object, or `undefined` when absent.
+   */
   const raw = readJsonFile({
     path,
     label,
@@ -181,7 +217,9 @@ function loadSettingsFile(
   if (raw === undefined)
     return NO_SETTINGS_FILE;
 
-  /** Valibot validation result for settings subset. */
+  /**
+   * Valibot validation result for settings subset.
+   */
   const result = v.safeParse(
     PiSettingsFileSchema,
     raw,

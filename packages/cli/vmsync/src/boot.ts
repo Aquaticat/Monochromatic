@@ -66,13 +66,17 @@ const OVMF_SEARCH_PATHS: readonly string[] = [
  * ```
  */
 async function findOvmf(): Promise<string> {
-  /** Tagged logger so OVMF-discovery entries are scoped to `findOvmf` in the output. */
+  /**
+   * Tagged logger so OVMF-discovery entries are scoped to `findOvmf` in the output.
+   */
   const rl = tagged({
     tag: findOvmf.name,
     l,
   },);
 
-  /** Check all candidates concurrently and return the first accessible one. */
+  /**
+   * Check all candidates concurrently and return the first accessible one.
+   */
   const results = await Promise.all(
     OVMF_SEARCH_PATHS.map(
       async function checkCandidate(candidate,) {
@@ -88,7 +92,9 @@ async function findOvmf(): Promise<string> {
     ),
   );
 
-  /** First accessible firmware path. */
+  /**
+   * First accessible firmware path.
+   */
   const found = results.find(
     function isFound(r,) {
       return r !== undefined;
@@ -127,22 +133,32 @@ async function findOvmf(): Promise<string> {
  * ```
  */
 async function bootKvm(name: string,): Promise<void> {
-  /** Tagged logger so KVM-boot entries are scoped to `bootKvm` in the output. */
+  /**
+   * Tagged logger so KVM-boot entries are scoped to `bootKvm` in the output.
+   */
   const rl = tagged({
     tag: bootKvm.name,
     l,
   },);
 
-  /** VM directory. */
+  /**
+   * VM directory.
+   */
   const dir = vmDir(name,);
-  /** Current configuration for boot parameters. */
+  /**
+   * Current configuration for boot parameters.
+   */
   const config = await readConfig(name,);
-  /** Path to the qcow2 base image. */
+  /**
+   * Path to the qcow2 base image.
+   */
   const qcow2Path = join(
     dir,
     QCOW2_FILENAME,
   );
-  /** Path for the transient overlay. */
+  /**
+   * Path for the transient overlay.
+   */
   const overlayPath = join(
     dir,
     OVERLAY_FILENAME,
@@ -154,10 +170,14 @@ async function bootKvm(name: string,): Promise<void> {
     backingPath: qcow2Path,
   },);
 
-  /** Path to the OVMF UEFI firmware. */
+  /**
+   * Path to the OVMF UEFI firmware.
+   */
   const ovmfPath = await findOvmf();
 
-  /** QEMU launch arguments: UEFI, KVM acceleration, virtio devices, NAT. */
+  /**
+   * QEMU launch arguments: UEFI, KVM acceleration, virtio devices, NAT.
+   */
   const qemuArgs: readonly string[] = [
     '-enable-kvm',
     '-m',
@@ -234,32 +254,46 @@ async function bootKvm(name: string,): Promise<void> {
  * ```
  */
 async function bootHyperv(name: string,): Promise<void> {
-  /** Tagged logger so Hyper-V-boot entries are scoped to `bootHyperv` in the output. */
+  /**
+   * Tagged logger so Hyper-V-boot entries are scoped to `bootHyperv` in the output.
+   */
   const rl = tagged({
     tag: bootHyperv.name,
     l,
   },);
 
-  /** VM directory. */
+  /**
+   * VM directory.
+   */
   const dir = vmDir(name,);
-  /** Current configuration. */
+  /**
+   * Current configuration.
+   */
   const config = await readConfig(name,);
-  /** Path to the vhdx disk image. */
+  /**
+   * Path to the vhdx disk image.
+   */
   const vhdxPath = join(
     dir,
     VHDX_FILENAME,
   );
 
-  /** Hyper-V VM name prefixed to avoid collisions. */
+  /**
+   * Hyper-V VM name prefixed to avoid collisions.
+   */
   const hvName = `vmsync-${name}`;
 
-  /** Memory in bytes for Hyper-V. */
+  /**
+   * Memory in bytes for Hyper-V.
+   */
   const memoryBytes = parseMemoryToBytes(config.boot
     .memory,);
 
   rl.info(`creating Hyper-V VM "${hvName}"`,);
 
-  /** PowerShell script that creates, configures, boots, waits, and cleans up the VM. */
+  /**
+   * PowerShell script that creates, configures, boots, waits, and cleans up the VM.
+   */
   const psScript = [
     `New-VM -Name "${hvName}" -MemoryStartupBytes ${
       String(memoryBytes,)
@@ -322,7 +356,9 @@ async function bootHyperv(name: string,): Promise<void> {
  * ```
  */
 export function parseMemoryToBytes(memory: string,): number {
-  /** Decimal base for `Number.parseInt`. */
+  /**
+   * Decimal base for `Number.parseInt`.
+   */
   const DECIMAL_RADIX = 10;
   /**
    * Reports a malformed input with the same message shape the old regex
@@ -353,11 +389,15 @@ export function parseMemoryToBytes(memory: string,): number {
    * ```
    */
   function findDigitsEnd(idx: number,): number {
-    /** Scan cursor; starts at `idx` and advances past each leading ASCII digit in one linear pass. */
+    /**
+     * Scan cursor; starts at `idx` and advances past each leading ASCII digit in one linear pass.
+     */
     let cursor = idx;
     while (cursor < memory
       .length) {
-      /** Char under the cursor; stops the scan when non-digit. */
+      /**
+       * Char under the cursor; stops the scan when non-digit.
+       */
       const c = memory.charAt(cursor,);
       if ((c < '0') || (c > '9'))
         break;
@@ -378,11 +418,15 @@ export function parseMemoryToBytes(memory: string,): number {
    * ```
    */
   function skipWhitespace(idx: number,): number {
-    /** Scan cursor; starts at `idx` and advances past each space or tab in one linear pass. */
+    /**
+     * Scan cursor; starts at `idx` and advances past each space or tab in one linear pass.
+     */
     let cursor = idx;
     while (cursor < memory
       .length) {
-      /** Char under the cursor; stops the skip when non-whitespace. */
+      /**
+       * Char under the cursor; stops the skip when non-whitespace.
+       */
       const c = memory.charAt(cursor,);
       if ((c !== ' ') && (c !== '\t'))
         break;
@@ -390,27 +434,39 @@ export function parseMemoryToBytes(memory: string,): number {
     }
     return cursor;
   }
-  /** Exclusive end of the leading digit run; `0` means no digits were present. */
+  /**
+   * Exclusive end of the leading digit run; `0` means no digits were present.
+   */
   const digitsEnd = findDigitsEnd(0,);
   if (digitsEnd === 0)
     fail();
-  /** Digit substring used as the numeric portion. */
+  /**
+   * Digit substring used as the numeric portion.
+   */
   const digitsPart = memory.slice(
     0,
     digitsEnd,
   );
-  /** Cursor positioned at the unit token after any inter-token whitespace. */
+  /**
+   * Cursor positioned at the unit token after any inter-token whitespace.
+   */
   const unitStart = skipWhitespace(digitsEnd,);
-  /** Unit portion of the input; must be exactly one character. */
+  /**
+   * Unit portion of the input; must be exactly one character.
+   */
   const unitPart = memory.slice(unitStart,);
   if (unitPart.length
     !== 1)
     fail();
-  /** Unit suffix, normalized to uppercase. */
+  /**
+   * Unit suffix, normalized to uppercase.
+   */
   const unit = unitPart.toUpperCase();
   if ((unit !== 'G') && (unit !== 'M'))
     fail();
-  /** Numeric part of the memory string. */
+  /**
+   * Numeric part of the memory string.
+   */
   const value = Number.parseInt(
     digitsPart,
     DECIMAL_RADIX,
@@ -440,13 +496,17 @@ export function parseMemoryToBytes(memory: string,): number {
  * ```
  */
 export async function bootVm(name: string,): Promise<void> {
-  /** Tagged logger so VM-boot entries are scoped to `bootVm` in the output. */
+  /**
+   * Tagged logger so VM-boot entries are scoped to `bootVm` in the output.
+   */
   const rl = tagged({
     tag: bootVm.name,
     l,
   },);
 
-  /** Detected hypervisor for the current platform. */
+  /**
+   * Detected hypervisor for the current platform.
+   */
   const hypervisor = detectHypervisor();
   rl.info(`detected hypervisor: ${hypervisor}`,);
 

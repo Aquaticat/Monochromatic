@@ -15,7 +15,9 @@ import { showFixedToast, } from '../toast/toast.ts';
 
 import type { EditorWsClientHandle, } from './types.ts';
 
-/** Tagged logger for the context-actions dispatcher. */
+/**
+ * Tagged logger for the context-actions dispatcher.
+ */
 const contextLog = tagged({
   tag: 'context-actions',
   l,
@@ -70,10 +72,14 @@ export async function dispatchFsAction({
   }
   else if (action.kind
     === 'new') {
-    /** Trailing slash in the user-entered name signals a directory creation. */
+    /**
+     * Trailing slash in the user-entered name signals a directory creation.
+     */
     const isDirectory = action.name
       .endsWith('/',);
-    /** Entry name without the trailing slash; the protocol carries the directory bit separately. */
+    /**
+     * Entry name without the trailing slash; the protocol carries the directory bit separately.
+     */
     const name = isDirectory
       ? action.name
         .slice(

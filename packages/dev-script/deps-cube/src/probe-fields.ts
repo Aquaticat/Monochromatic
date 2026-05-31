@@ -43,13 +43,21 @@ export type {
 
 //region Constants
 
-/** Days of validity for fields that can change with upstream activity. */
+/**
+ * Days of validity for fields that can change with upstream activity.
+ */
 const TTL_DAYS = 30;
-/** TTL in ms for fields that can change with upstream activity. */
+/**
+ * TTL in ms for fields that can change with upstream activity.
+ */
 const TTL_MS = TTL_DAYS * MS_PER_DAY;
-/** HTTP timeout in seconds; lets `gh api` complete on slow links without hanging an audit. */
+/**
+ * HTTP timeout in seconds; lets `gh api` complete on slow links without hanging an audit.
+ */
 const HTTP_TIMEOUT_SECONDS = 30;
-/** Per-HTTP-request timeout in ms. */
+/**
+ * Per-HTTP-request timeout in ms.
+ */
 const HTTP_TIMEOUT_MS = HTTP_TIMEOUT_SECONDS * MS_PER_SECOND;
 
 //endregion Constants
@@ -66,7 +74,9 @@ const HTTP_TIMEOUT_MS = HTTP_TIMEOUT_SECONDS * MS_PER_SECOND;
  * @throws When request times out, network errors, or HTTP status is not 2xx.
  */
 async function fetchJson<T,>(url: string,): Promise<T> {
-  /** HTTP response from `fetch`; aborted if it doesn't complete within `HTTP_TIMEOUT_MS`. */
+  /**
+   * HTTP response from `fetch`; aborted if it doesn't complete within `HTTP_TIMEOUT_MS`.
+   */
   const response = await fetch(
     url,
     {
@@ -90,7 +100,9 @@ async function fetchJson<T,>(url: string,): Promise<T> {
  * @throws When `gh` exits non-zero due to rate limit, auth failure, or not found.
  */
 async function ghApi<T,>(path: string,): Promise<T> {
-  /** `gh api` subprocess result; `stdout` holds the JSON payload, throws on non-zero exit. */
+  /**
+   * `gh api` subprocess result; `stdout` holds the JSON payload, throws on non-zero exit.
+   */
   const result = await spawn(
     'gh',
     [
@@ -151,7 +163,9 @@ export async function probePackageManifest(
     '%40',
     '@',
   );
-  /** Fresh manifest from npm registry; written to cache below before return. */
+  /**
+   * Fresh manifest from npm registry; written to cache below before return.
+   */
   const fetched = await fetchJson<NpmPackage>(
     `https://registry.npmjs.org/${encodedName}`,
   );
@@ -187,7 +201,9 @@ export async function probeDownloads(
     readonly cache: Cache;
   },
 ): Promise<number> {
-  /** Cached downloads payload from a prior run, if still within TTL. */
+  /**
+   * Cached downloads payload from a prior run, if still within TTL.
+   */
   const cached = await cache.read<{ downloads: number; }>({
     name: npmName,
     version: '_pkg',
@@ -205,7 +221,9 @@ export async function probeDownloads(
       '%40',
       '@',
     );
-    /** Fresh downloads payload from npm; outer try swallows transient failures. */
+    /**
+     * Fresh downloads payload from npm; outer try swallows transient failures.
+     */
     const fetched = await fetchJson<{ downloads: number; }>(
       `https://api.npmjs.org/downloads/point/last-week/${encodedName}`,
     );
@@ -262,10 +280,14 @@ export async function probeLanguages(
     readonly cache: Cache;
   },
 ): Promise<Record<string, number> | typeof LANGUAGES_UNKNOWN> {
-  /** Cache key for languages probe; `<owner>/<repo>` prevents repo collisions. */
+  /**
+   * Cache key for languages probe; `<owner>/<repo>` prevents repo collisions.
+   */
   const key = `${owner}/${repo}`;
   // Language data is immutable per published version, so `ttlMs` is omitted (never expires).
-  /** Cached Linguist response if previously fetched. */
+  /**
+   * Cached Linguist response if previously fetched.
+   */
   const cached = await cache.read<Record<string, number>>({
     name: key,
     version: '_repo',
@@ -337,11 +359,17 @@ export async function probeLastCommit(
     readonly cache: Cache;
   },
 ): Promise<string | typeof LAST_COMMIT_UNKNOWN> {
-  /** Cache key shared by whole-repo and path-scoped variants; `field` discriminates. */
+  /**
+   * Cache key shared by whole-repo and path-scoped variants; `field` discriminates.
+   */
   const key = `${owner}/${repo}`;
-  /** Cache field tag distinguishing whole-repo `pushed_at` from per-directory commits. */
+  /**
+   * Cache field tag distinguishing whole-repo `pushed_at` from per-directory commits.
+   */
   const field = directory === undefined ? 'pushed_at' : `commits:${directory}`;
-  /** Cached ISO date string from a prior probe of same `key`/`field`. */
+  /**
+   * Cached ISO date string from a prior probe of same `key`/`field`.
+   */
   const cached = await cache.read<string>({
     name: key,
     version: '_repo',
@@ -353,7 +381,9 @@ export async function probeLastCommit(
 
   try {
     if (directory === undefined) {
-      /** Whole-repo metadata; `pushed_at` is cheap proxy for any commit anywhere. */
+      /**
+       * Whole-repo metadata; `pushed_at` is cheap proxy for any commit anywhere.
+       */
       const repoMeta = await ghApi<{ pushed_at: string; }>(`repos/${owner}/${repo}`,);
       await cache.write({
         name: key,
@@ -363,13 +393,17 @@ export async function probeLastCommit(
       },);
       return repoMeta.pushed_at;
     }
-    /** Path-scoped commit list, most-recent first; only first author's date is consumed. */
+    /**
+     * Path-scoped commit list, most-recent first; only first author's date is consumed.
+     */
     const commits = await ghApi<
       readonly { commit?: { author?: { date?: string; }; }; }[]
     >(
       `repos/${owner}/${repo}/commits?path=${encodeURIComponent(directory,)}&per_page=1`,
     );
-    /** Author date of most-recent path-scoped commit; `undefined` means unexpected shape. */
+    /**
+     * Author date of most-recent path-scoped commit; `undefined` means unexpected shape.
+     */
     const date = commits[0]
       ?.commit
       ?.author

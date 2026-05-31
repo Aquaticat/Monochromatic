@@ -18,7 +18,9 @@ import type {
 type UserPromptSubmitInput = HookInputBase & {
   hook_event_name: 'UserPromptSubmit';
 
-  /** Text the user submitted. */
+  /**
+   * Text the user submitted.
+   */
   prompt: string;
 };
 
@@ -27,16 +29,22 @@ type UserPromptSubmitInput = HookInputBase & {
  * Can block the prompt or add context.
  */
 type UserPromptSubmitOutput = HookOutputBase & {
-  /** `"block"` prevents the prompt from being processed and erases it from context. */
+  /**
+   * `"block"` prevents the prompt from being processed and erases it from context.
+   */
   decision?: 'block';
 
-  /** Shown to the user when `decision` is `"block"`. Not added to context. */
+  /**
+   * Shown to the user when `decision` is `"block"`. Not added to context.
+   */
   reason?: string;
 
   hookSpecificOutput?: {
     hookEventName: 'UserPromptSubmit';
 
-    /** Context added to Claude's conversation. */
+    /**
+     * Context added to Claude's conversation.
+     */
     additionalContext?: string;
   };
 };
@@ -61,13 +69,19 @@ type NotificationType =
 type NotificationInput = HookInputBase & {
   hook_event_name: 'Notification';
 
-  /** Notification text. */
+  /**
+   * Notification text.
+   */
   message: string;
 
-  /** Notification heading. */
+  /**
+   * Notification heading.
+   */
   title?: string;
 
-  /** Which notification type fired. */
+  /**
+   * Which notification type fired.
+   */
   notification_type: NotificationType;
 };
 
@@ -97,10 +111,14 @@ type PreCompactTrigger = 'manual' | 'auto';
 type PreCompactInput = HookInputBase & {
   hook_event_name: 'PreCompact';
 
-  /** Whether compaction was triggered manually or automatically. */
+  /**
+   * Whether compaction was triggered manually or automatically.
+   */
   trigger: PreCompactTrigger;
 
-  /** User instructions passed to `/compact`. Empty for `auto`. */
+  /**
+   * User instructions passed to `/compact`. Empty for `auto`.
+   */
   custom_instructions: string;
 };
 
@@ -122,7 +140,9 @@ type PreCompactOutput = HookOutputBase;
 type WorktreeCreateInput = HookInputBase & {
   hook_event_name: 'WorktreeCreate';
 
-  /** Slug identifier for the new worktree (e.g. `"bold-oak-a3f2"`). */
+  /**
+   * Slug identifier for the new worktree (e.g. `"bold-oak-a3f2"`).
+   */
   name: string;
 };
 
@@ -139,7 +159,9 @@ type WorktreeCreateInput = HookInputBase & {
 type WorktreeRemoveInput = HookInputBase & {
   hook_event_name: 'WorktreeRemove';
 
-  /** Absolute path to the worktree being removed. */
+  /**
+   * Absolute path to the worktree being removed.
+   */
   worktree_path: string;
 };
 

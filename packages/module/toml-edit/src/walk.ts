@@ -79,7 +79,9 @@ function walkArray(
     readonly consumed: number;
   },
 ): ResolveResult {
-  /** Current segment so the walker can branch on numeric vs string. */
+  /**
+   * Current segment so the walker can branch on numeric vs string.
+   */
   const segment = nonNullishOrThrow(segments[0],);
   if ((typeof segment) !== 'number') {
     return {
@@ -88,7 +90,9 @@ function walkArray(
       consumed,
     };
   }
-  /** Array element at the numeric index, or `undefined` for an out-of-bounds miss. */
+  /**
+   * Array element at the numeric index, or `undefined` for an out-of-bounds miss.
+   */
   const element = container.elements[segment];
   if (element === undefined) {
     return {
@@ -146,13 +150,17 @@ function walkTable(
       `walkTable: expected table container, got ${container.type}`,
     );
   }
-  /** First-pass key-value lookup so a direct hit short-circuits the table walk. */
+  /**
+   * First-pass key-value lookup so a direct hit short-circuits the table walk.
+   */
   const directKeyValue = findKeyValueByPrefix({
     container,
     segments,
   },);
   if (directKeyValue !== KEYVALUE_NOT_FOUND) {
-    /** Destructure so the matched key-value and its key-chain length read by name. */
+    /**
+     * Destructure so the matched key-value and its key-chain length read by name.
+     */
     const {
       node,
       matchedLen,
@@ -164,7 +172,9 @@ function walkTable(
         node,
       };
     }
-    /** Remaining segments after the matched key chain; drives recursion into the value. */
+    /**
+     * Remaining segments after the matched key chain; drives recursion into the value.
+     */
     const rest = segments.slice(matchedLen,);
     if ((node.value
       .type
@@ -193,7 +203,9 @@ function walkTable(
     };
   }
 
-  /** Tables whose header is a prefix of `segments`; candidates to descend into. */
+  /**
+   * Tables whose header is a prefix of `segments`; candidates to descend into.
+   */
   const descendable = container
     .body
     .filter(
@@ -201,7 +213,9 @@ function walkTable(
       if (child.type
         !== 'TOMLTable')
         return false;
-      /** Sibling's resolved key so prefix checks reuse one binding. */
+      /**
+       * Sibling's resolved key so prefix checks reuse one binding.
+       */
       const rk = child.resolvedKey;
       if (rk.length
         > segments
@@ -219,7 +233,9 @@ function walkTable(
 
   if (descendable.length
     > 0) {
-    /** Longest-prefix candidate so the most specific table wins. */
+    /**
+     * Longest-prefix candidate so the most specific table wins.
+     */
     const best = nonNullishOrThrow(
       descendable
         .toSorted(function byPrefixLenDesc(
@@ -233,7 +249,9 @@ function walkTable(
             .length;
         },)[0],
     );
-    /** Header length so the walker can skip already-matched segments. */
+    /**
+     * Header length so the walker can skip already-matched segments.
+     */
     const prefixLen = best.resolvedKey
       .length;
     if (segments.length
@@ -250,7 +268,9 @@ function walkTable(
     },);
   }
 
-  /** Tables nested strictly under `segments`; populate the array-of-tables result. */
+  /**
+   * Tables nested strictly under `segments`; populate the array-of-tables result.
+   */
   const tablesUnder = container
     .body
     .filter(
@@ -258,7 +278,9 @@ function walkTable(
       if (child.type
         !== 'TOMLTable')
         return false;
-      /** Sibling's resolved key so prefix checks reuse one binding. */
+      /**
+       * Sibling's resolved key so prefix checks reuse one binding.
+       */
       const rk = child.resolvedKey;
       if (rk.length
         <= segments
@@ -320,13 +342,17 @@ function findKeyValueByPrefix(
     if (child.type
       !== 'TOMLKeyValue')
       continue;
-    /** All key segments of this entry so the prefix check can compare directly. */
+    /**
+     * All key segments of this entry so the prefix check can compare directly.
+     */
     const keys = keysOf({ key: child.key, },);
     if (keys.length
       > segments
       .length)
       continue;
-    /** True when every key segment matches the corresponding `segments` entry. */
+    /**
+     * True when every key segment matches the corresponding `segments` entry.
+     */
     const allMatch = keys.every(function eq(
       k,
       i,

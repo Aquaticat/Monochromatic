@@ -37,15 +37,25 @@ type AtRuleDeclsMap = {
  */
 type TypedAtRuleOptions = {
   [K in keyof AtRuleDeclsMap]: {
-    /** At-rule name: narrows `decls` to the matching descriptor type */
+    /**
+     * At-rule name: narrows `decls` to the matching descriptor type
+     */
     at: K;
-    /** At-rule prelude/parameters (e.g. `'--color-fg'` for `@property`) */
+    /**
+     * At-rule prelude/parameters (e.g. `'--color-fg'` for `@property`)
+     */
     params?: string;
-    /** At-rule descriptors with editor intellisense per at-rule type */
+    /**
+     * At-rule descriptors with editor intellisense per at-rule type
+     */
     decls?: AtRuleDeclsMap[K];
-    /** Raw CSS string to inject inside the block (NOT escaped; caller responsible) */
+    /**
+     * Raw CSS string to inject inside the block (NOT escaped; caller responsible)
+     */
     raw?: string;
-    /** Nested rules or at-rules inside this block */
+    /**
+     * Nested rules or at-rules inside this block
+     */
     children?: readonly string[];
   };
 }[keyof AtRuleDeclsMap];
@@ -63,15 +73,25 @@ type UntypedAtRuleName = Exclude<StrictAtRuleName, keyof AtRuleDeclsMap>;
  * and `(string & {})` as an escape hatch for non-standard at-rule names.
  */
 type UntypedAtRuleOptions = {
-  /** At-rule name: standard names get autocomplete, arbitrary strings accepted via `(string & {})` */
+  /**
+   * At-rule name: standard names get autocomplete, arbitrary strings accepted via `(string & {})`
+   */
   at: UntypedAtRuleName | (string & {});
-  /** At-rule prelude/parameters (e.g. `'(prefers-color-scheme: dark)'` for `@media`) */
+  /**
+   * At-rule prelude/parameters (e.g. `'(prefers-color-scheme: dark)'` for `@media`)
+   */
   params?: string;
-  /** At-rule descriptor declarations (untyped for at-rules without csstype descriptors) */
+  /**
+   * At-rule descriptor declarations (untyped for at-rules without csstype descriptors)
+   */
   decls?: Record<string, string>;
-  /** Raw CSS string to inject inside the block (NOT escaped; caller responsible) */
+  /**
+   * Raw CSS string to inject inside the block (NOT escaped; caller responsible)
+   */
   raw?: string;
-  /** Nested rules or at-rules inside this block */
+  /**
+   * Nested rules or at-rules inside this block
+   */
   children?: readonly string[];
 };
 
@@ -103,13 +123,21 @@ export type AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions;
  * Produces `selector { declarations; children }`.
  */
 export type RuleOptions = {
-  /** CSS selector (e.g. `'.card'`, `'&:hover'`, `':root'`) */
+  /**
+   * CSS selector (e.g. `'.card'`, `'&:hover'`, `':root'`)
+   */
   rule: string;
-  /** CSS declarations: strict property names, strict values, custom properties */
+  /**
+   * CSS declarations: strict property names, strict values, custom properties
+   */
   decls?: StrictCssDeclarations;
-  /** Raw CSS string to inject inside the block (NOT escaped; caller responsible) */
+  /**
+   * Raw CSS string to inject inside the block (NOT escaped; caller responsible)
+   */
   raw?: string;
-  /** Nested rules or at-rules inside this block */
+  /**
+   * Nested rules or at-rules inside this block
+   */
   children?: readonly string[];
 };
 

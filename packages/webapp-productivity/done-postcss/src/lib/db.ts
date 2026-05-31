@@ -21,7 +21,9 @@ import {
 } from './args.ts';
 import { runMigrations, } from './db/migrations.ts';
 
-/** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
+/**
+ * Default database file path when neither `--db=` nor `DB_PATH` env var is provided.
+ */
 const DEFAULT_DATABASE_PATH = './data/done.db';
 
 /**
@@ -45,12 +47,18 @@ function normalizeDatabasePath(value: string,): string {
  * @returns Resolved database path
  */
 function resolveDatabasePath(): string {
-  /** Path supplied via `--db=` CLI flag, if present. */
+  /**
+   * Path supplied via `--db=` CLI flag, if present.
+   */
   const argumentPath = getArgumentValue('db',);
-  /** Path from `DB_PATH` environment variable, used when no CLI flag is given. */
+  /**
+   * Path from `DB_PATH` environment variable, used when no CLI flag is given.
+   */
   const environmentPath = process.env
     .DB_PATH;
-  /** First defined source in priority order, falling back to the default path. */
+  /**
+   * First defined source in priority order, falling back to the default path.
+   */
   const rawPath = argumentPath === ARGUMENT_ABSENT
     ? (environmentPath ?? DEFAULT_DATABASE_PATH)
     : argumentPath;
@@ -67,7 +75,9 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   if (databasePath === ':memory:')
     return;
 
-  /** Parent directory of the database file; ensured via `mkdirSync({ recursive: true })`. */
+  /**
+   * Parent directory of the database file; ensured via `mkdirSync({ recursive: true })`.
+   */
   const directoryPath = dirname(databasePath,);
   mkdirSync(
     directoryPath,
@@ -75,11 +85,15 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   );
 }
 
-/** Resolved filesystem path for the SQLite database file. */
+/**
+ * Resolved filesystem path for the SQLite database file.
+ */
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
-/** Open Turso database connection used by all data-access modules. */
+/**
+ * Open Turso database connection used by all data-access modules.
+ */
 const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },

@@ -33,7 +33,9 @@ export function buildSuggestedSection({
   readonly onOpen: (taskId: string,) => void;
   readonly onComplete: (taskId: string,) => Promise<void>;
 },): HTMLElement {
-  /** Collapsible section heading for the suggested tasks block. */
+  /**
+   * Collapsible section heading for the suggested tasks block.
+   */
   const suggestedSection = h({
     tag: 'section-heading',
     attrs: {
@@ -42,7 +44,9 @@ export function buildSuggestedSection({
     },
   },);
 
-  /** Content container for the suggested tasks section. */
+  /**
+   * Content container for the suggested tasks section.
+   */
   const suggestedContent = h({
     tag: 'div',
     style: {

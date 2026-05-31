@@ -41,7 +41,9 @@ import type {
   LspWorkspaceEdit,
 } from './types.ts';
 
-/** Tagged logger for the LSP manager request subsystem. */
+/**
+ * Tagged logger for the LSP manager request subsystem.
+ */
 const l = tagged({
   tag: 'lsp-manager-requests',
   l: rootLogger,
@@ -79,7 +81,9 @@ async function withClient<T,>({
   readonly fallback: T;
   readonly request: (client: LspClient,) => Promise<T>;
 },): Promise<T> {
-  /** Pool-resolved LSP client; `null` when no server is available for this file. */
+  /**
+   * Pool-resolved LSP client; `null` when no server is available for this file.
+   */
   const c = await pool.resolve({
     type: serverType,
     filePath: path,
@@ -90,7 +94,9 @@ async function withClient<T,>({
     return await request(c,);
   }
   catch (error) {
-    /** Whether the error message contains the LSP request timeout marker; already logged by LspClient. */
+    /**
+     * Whether the error message contains the LSP request timeout marker; already logged by LspClient.
+     */
     const isTimeout = (error instanceof Error)
       && error
       .message

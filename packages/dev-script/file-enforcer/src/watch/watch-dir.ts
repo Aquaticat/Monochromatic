@@ -8,7 +8,9 @@ import {
   type EventKind,
 } from './watch-filter.ts';
 
-/** Minimum delay between re-runs to avoid overlapping executions from rapid saves */
+/**
+ * Minimum delay between re-runs to avoid overlapping executions from rapid saves
+ */
 export const DEBOUNCE_MS = 100;
 
 /**
@@ -55,13 +57,17 @@ export async function watchDirectory(
     ) => void;
   },
 ): Promise<void> {
-  /** Function-scoped logger tagged with the call site for traceable watcher logs. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable watcher logs.
+   */
   const rl = tagged({
     tag: watchDirectory.name,
     l,
   },);
   try {
-    /** Async iterator yielding filesystem events in this directory */
+    /**
+     * Async iterator yielding filesystem events in this directory
+     */
     const watcher = watch(
       dir,
       { signal, },
@@ -72,7 +78,9 @@ export async function watchDirectory(
       if (event.filename
         === null)
         continue;
-      /** Classification determines whether this event triggers action */
+      /**
+       * Classification determines whether this event triggers action
+       */
       const kind = await classifyEvent({
         filename: event.filename,
         watchedDir: dir,

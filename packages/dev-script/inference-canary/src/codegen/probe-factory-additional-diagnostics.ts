@@ -10,7 +10,9 @@ import type {
   VerifyResult,
 } from './additional-run-types.ts';
 
-/** Maximum characters of additional run output to include in fix prompts */
+/**
+ * Maximum characters of additional run output to include in fix prompts
+ */
 const MAX_ADDITIONAL_OUTPUT = 500;
 
 /**
@@ -28,15 +30,25 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  * ```
  */
 type AppendAdditionalRunDiagnosticsOptions = {
-  /** Base fix prompt from buildCodeGenFixPrompt (empty string when no base diagnostics) */
+  /**
+   * Base fix prompt from buildCodeGenFixPrompt (empty string when no base diagnostics)
+   */
   readonly base: string;
-  /** Additional run configurations (empty when the probe defines none) */
+  /**
+   * Additional run configurations (empty when the probe defines none)
+   */
   readonly runs: readonly AdditionalRun[];
-  /** Per-run container result caches (read-only here) */
+  /**
+   * Per-run container result caches (read-only here)
+   */
   readonly containerCaches: readonly ReadonlyMap<string, ContainerResult>[];
-  /** Per-run verification result caches (read-only here) */
+  /**
+   * Per-run verification result caches (read-only here)
+   */
   readonly verifyCaches: readonly ReadonlyMap<string, VerifyResult>[];
-  /** Model label for cache lookups */
+  /**
+   * Model label for cache lookups
+   */
   readonly label: string;
 };
 
@@ -74,13 +86,17 @@ export function appendAdditionalRunDiagnostics({
     === 0)
     return base;
 
-  /** Diagnostic text sections for runs that failed or produced incorrect output; passing runs contribute no entry. */
+  /**
+   * Diagnostic text sections for runs that failed or produced incorrect output; passing runs contribute no entry.
+   */
   const diagSections = runs
     .flatMap(function buildDiagSection(
       run,
       index,
     ): readonly string[] {
-      /** Cached container result for this run and model */
+      /**
+       * Cached container result for this run and model
+       */
       const container = containerCaches[index]
         ?.get(label,);
       if (container === undefined)
@@ -97,7 +113,9 @@ export function appendAdditionalRunDiagnostics({
           )
         }`,];
       }
-      /** Cached verification result for this run and model */
+      /**
+       * Cached verification result for this run and model
+       */
       const verify = verifyCaches[index]
         ?.get(label,);
       if ((verify !== undefined) && (verify.correctness
@@ -116,7 +134,9 @@ export function appendAdditionalRunDiagnostics({
   if (diagSections.length
     === 0)
     return base;
-  /** Combined diagnostic text from all failing additional runs */
+  /**
+   * Combined diagnostic text from all failing additional runs
+   */
   const combined = diagSections.join('\n\n',);
   if (base !== '')
     return `${base}\n\n${combined}`;

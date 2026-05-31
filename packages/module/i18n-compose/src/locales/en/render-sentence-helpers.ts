@@ -97,7 +97,9 @@ export function renderOptionalComplement<S extends string, V extends string, N e
   if (predicate.complement
     === undefined)
     return '';
-  /** Rendered nested verb phrase before complement marker selection. */
+  /**
+   * Rendered nested verb phrase before complement marker selection.
+   */
   const rendered = renderVerbPhrase(predicate.complement
     .phrase,);
   return form === 'bare' ? rendered : `to ${rendered}`;

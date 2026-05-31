@@ -5,7 +5,9 @@
  * Interpolated into the main task-detail styles.
  */
 
-/** CSS for task-detail action buttons. */
+/**
+ * CSS for task-detail action buttons.
+ */
 export const TASK_DETAIL_BUTTON_STYLES = `
   .btn-row {
     @apply --flex-row;

@@ -70,7 +70,9 @@ function buildSystemPrompt(
     readonly projectInstructions?: string;
   },
 ): string {
-  /** Accumulator seeded with the base prompt; conditional `push` calls below append optional sections before joining. */
+  /**
+   * Accumulator seeded with the base prompt; conditional `push` calls below append optional sections before joining.
+   */
   const parts = [BASE_SYSTEM_PROMPT,];
 
   if (

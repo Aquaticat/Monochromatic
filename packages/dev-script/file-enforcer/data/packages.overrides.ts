@@ -20,7 +20,9 @@
 
 import { p, } from '../src/package/p.ts';
 
-/** Package entries with hand-maintained binary names and check flags that Repology cannot infer. */
+/**
+ * Package entries with hand-maintained binary names and check flags that Repology cannot infer.
+ */
 export const overrides = [
   //region Binary name differs from effname
   p({

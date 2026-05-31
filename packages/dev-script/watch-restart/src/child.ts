@@ -76,9 +76,13 @@ export type ExitListener = (
  * `waitForExit` / `tagExited` reuse it instead of re-spelling it.
  */
 export type ExitResult = {
-  /** Exit status code; `null` when the child was terminated by a signal. */
+  /**
+   * Exit status code; `null` when the child was terminated by a signal.
+   */
   readonly code: number | null;
-  /** Terminating signal name; `null` when the child exited normally. */
+  /**
+   * Terminating signal name; `null` when the child exited normally.
+   */
   readonly signal: NodeJS.Signals | null;
 };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
@@ -101,20 +105,32 @@ export type ExitResult = {
  * ```
  */
 export type SpawnedChildHandle = {
-  /** OS process id; absent (`pid?`) only if the spawn failed before assignment, matching `ChildProcess.pid`. */
+  /**
+   * OS process id; absent (`pid?`) only if the spawn failed before assignment, matching `ChildProcess.pid`.
+   */
   readonly pid?: number | undefined;
-  /** Exit code once the process has exited; `null` while still running. */
+  /**
+   * Exit code once the process has exited; `null` while still running.
+   */
   readonly exitCode: number | null;
-  /** Whether `kill()` has been called against this handle. */
+  /**
+   * Whether `kill()` has been called against this handle.
+   */
   readonly killed: boolean;
-  /** Sends a signal to the child; mirrors `ChildProcess.kill`. */
+  /**
+   * Sends a signal to the child; mirrors `ChildProcess.kill`.
+   */
   kill(signal?: NodeJS.Signals | number,): boolean;
-  /** Registers a one-shot exit listener; mirrors `ChildProcess.once('exit', ...)`. */
+  /**
+   * Registers a one-shot exit listener; mirrors `ChildProcess.once('exit', ...)`.
+   */
   once(
     event: 'exit',
     listener: ExitListener,
   ): void;
-  /** Removes a previously-registered exit listener; mirrors `ChildProcess.off`. */
+  /**
+   * Removes a previously-registered exit listener; mirrors `ChildProcess.off`.
+   */
   off(
     event: 'exit',
     listener: ExitListener,
@@ -188,11 +204,17 @@ export type WriteClearFn = () => void;
  * Construction options for {@link Child}.
  */
 export type ChildOptions = {
-  /** Command to spawn (e.g. `'bun'`). */
+  /**
+   * Command to spawn (e.g. `'bun'`).
+   */
   readonly command: string;
-  /** Argument list passed verbatim to the spawn factory. Defaults to empty. */
+  /**
+   * Argument list passed verbatim to the spawn factory. Defaults to empty.
+   */
   readonly args?: readonly string[];
-  /** SIGTERM-to-SIGKILL grace period (ms); defaults to {@link DEFAULT_STOP_TIMEOUT_MS}. */
+  /**
+   * SIGTERM-to-SIGKILL grace period (ms); defaults to {@link DEFAULT_STOP_TIMEOUT_MS}.
+   */
   readonly stopTimeout?: number;
   /**
    * Signal sent first when stopping or restarting the child; SIGKILL is
@@ -227,9 +249,13 @@ export type ChildOptions = {
    * polluting stdout. Defaults to writing `\x1b[2J\x1b[H` to `process.stdout`.
    */
   readonly writeClear?: WriteClearFn;
-  /** Spawn factory; defaults to wrapping `node:child_process.spawn` with `stdio: 'inherit'`. */
+  /**
+   * Spawn factory; defaults to wrapping `node:child_process.spawn` with `stdio: 'inherit'`.
+   */
   readonly spawn?: SpawnFn;
-  /** Parent logger; the child composes a `Child` tag on top. */
+  /**
+   * Parent logger; the child composes a `Child` tag on top.
+   */
   readonly logger?: Logger;
 };
 
@@ -433,13 +459,21 @@ async function tagTimeout(ms: number,): Promise<'timeout'> {
  * ```
  */
 export class Child {
-  /** Captured command string; immutable for the lifetime of the manager. */
+  /**
+   * Captured command string; immutable for the lifetime of the manager.
+   */
   readonly #command: string;
-  /** Captured argument list; immutable for the lifetime of the manager. */
+  /**
+   * Captured argument list; immutable for the lifetime of the manager.
+   */
   readonly #args: readonly string[];
-  /** SIGTERM-to-SIGKILL grace period (ms); frozen at construction. */
+  /**
+   * SIGTERM-to-SIGKILL grace period (ms); frozen at construction.
+   */
   readonly #stopTimeout: number;
-  /** First signal sent on stop/restart; SIGKILL still escalates regardless. */
+  /**
+   * First signal sent on stop/restart; SIGKILL still escalates regardless.
+   */
   readonly #killSignal: NodeJS.Signals;
   /**
    * When `true`, spawn detached and signal `-pid`; see
@@ -450,16 +484,22 @@ export class Child {
    * When `true`, run the configured `writeClear` sink before every spawn.
    */
   readonly #clear: boolean;
-  /** Process-signal sink; default forwards to `process.kill`. */
+  /**
+   * Process-signal sink; default forwards to `process.kill`.
+   */
   readonly #processSignal: ProcessSignalFn;
-  /** Terminal-clear sink; default writes ANSI escape to `process.stdout`. */
+  /**
+   * Terminal-clear sink; default writes ANSI escape to `process.stdout`.
+   */
   readonly #writeClear: WriteClearFn;
   /**
    * Spawn factory; defaults to the detached-aware wrapper produced by
    * a local `makeDefaultSpawn` factory.
    */
   readonly #spawn: SpawnFn;
-  /** Tagged logger; composed with `Child.name` on top of the parent. */
+  /**
+   * Tagged logger; composed with `Child.name` on top of the parent.
+   */
   readonly #logger: Logger;
   /**
    * Mutable state field backing the {@link state} getter; transitions documented at {@link ChildState}.
@@ -619,7 +659,9 @@ export class Child {
   #spawnAndTrack(): void {
     if (this.#clear)
       this.#writeClear();
-    /** Freshly spawned process handle; stored on `#current` so subsequent stops can address it. */
+    /**
+     * Freshly spawned process handle; stored on `#current` so subsequent stops can address it.
+     */
     const handle = this.#spawn({
       command: this.#command,
       args: this.#args,
@@ -632,7 +674,9 @@ export class Child {
         ?? '?',)} command=${this.#command}`,
     );
 
-    /** Captured for the sync exit listener that needs class state. */
+    /**
+     * Captured for the sync exit listener that needs class state.
+     */
     const self = this;
 
     handle.once(
@@ -714,7 +758,9 @@ export class Child {
         '#stopRunning called with no tracked child; precondition is state === "running"',
       );
     }
-    /** Active child handle narrowed from `#current` by the NO_CHILD guard above. */
+    /**
+     * Active child handle narrowed from `#current` by the NO_CHILD guard above.
+     */
     const handle = this.#current;
     this.#state = 'stopping';
     this.#logger
@@ -723,14 +769,18 @@ export class Child {
         ?? '?',)} (${this.#killSignal})`,
     );
 
-    /** Listener registered BEFORE kill so a synchronous-exit fake cannot lose the event. */
+    /**
+     * Listener registered BEFORE kill so a synchronous-exit fake cannot lose the event.
+     */
     const exited = waitForExit(handle,);
     this.#sendSignal(
       handle,
       this.#killSignal,
     );
 
-    /** Race winner tag: `'exited'` means the child stopped within grace, `'timeout'` triggers SIGKILL escalation. */
+    /**
+     * Race winner tag: `'exited'` means the child stopped within grace, `'timeout'` triggers SIGKILL escalation.
+     */
     const result = await Promise.race([
       tagExited(exited,),
       tagTimeout(this.#stopTimeout,),

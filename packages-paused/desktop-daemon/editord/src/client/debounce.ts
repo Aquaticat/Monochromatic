@@ -27,11 +27,17 @@
  * Return value of {@link createDebounced}.
  */
 export type DebouncedHandle = {
-  /** Debounced wrapper; each call resets the delay timer. */
+  /**
+   * Debounced wrapper; each call resets the delay timer.
+   */
   readonly debounced: () => void;
-  /** Executes the function immediately and cancels any pending timer. */
+  /**
+   * Executes the function immediately and cancels any pending timer.
+   */
   readonly flush: () => void;
-  /** Cancels any pending timer without executing the function. */
+  /**
+   * Cancels any pending timer without executing the function.
+   */
   readonly cancel: () => void;
 };
 

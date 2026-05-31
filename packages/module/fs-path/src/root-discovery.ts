@@ -13,59 +13,93 @@ import { dirnameFallback, } from './fallbacks.ts';
 
 //region Types
 
-/** Filesystem operations needed by upward root discovery. */
+/**
+ * Filesystem operations needed by upward root discovery.
+ */
 export type RootFilesystem = {
-  /** Reads UTF-8 text, returning {@link ABSENT} when path is absent. */
+  /**
+   * Reads UTF-8 text, returning {@link ABSENT} when path is absent.
+   */
   readonly readTextFile: (path: string,) => Promise<string | typeof ABSENT>;
 
-  /** Checks whether path exists as any filesystem entry kind. */
+  /**
+   * Checks whether path exists as any filesystem entry kind.
+   */
   readonly exists: (path: string,) => Promise<boolean>;
 };
 
-/** Arguments supplied to a candidate-root matcher. */
+/**
+ * Arguments supplied to a candidate-root matcher.
+ */
 export type RootMatcherArgs = {
-  /** Directory currently being tested as root candidate. */
+  /**
+   * Directory currently being tested as root candidate.
+   */
   readonly dir: string;
 
-  /** Filesystem backend resolved for current runtime. */
+  /**
+   * Filesystem backend resolved for current runtime.
+   */
   readonly fs: RootFilesystem;
 };
 
-/** Predicate that decides whether a directory is a root. */
+/**
+ * Predicate that decides whether a directory is a root.
+ */
 export type RootMatcher = (args: RootMatcherArgs,) => Promise<boolean>;
 
 /**
  * Options for {@link findRootByWalkingUp}.
  */
 export type FindRootByWalkingUpOptions = {
-  /** Starting directory. Defaults to current process working directory. */
+  /**
+   * Starting directory. Defaults to current process working directory.
+   */
   readonly cwd?: string;
 
-  /** Candidate-root predicate applied at each ancestor. */
+  /**
+   * Candidate-root predicate applied at each ancestor.
+   */
   readonly matches: RootMatcher;
 
-  /** Error message used when no ancestor matches. */
+  /**
+   * Error message used when no ancestor matches.
+   */
   readonly missingMessage: string;
 };
 
-/** Options for the internal upward walk. */
+/**
+ * Options for the internal upward walk.
+ */
 type WalkUpRootOptions = {
-  /** Directory currently being tested. */
+  /**
+   * Directory currently being tested.
+   */
   readonly dir: string;
 
-  /** Filesystem backend shared by every recursion level. */
+  /**
+   * Filesystem backend shared by every recursion level.
+   */
   readonly fs: RootFilesystem;
 
-  /** Candidate-root predicate applied at each ancestor. */
+  /**
+   * Candidate-root predicate applied at each ancestor.
+   */
   readonly matches: RootMatcher;
 
-  /** Error message thrown when the filesystem root is reached without a match. */
+  /**
+   * Error message thrown when the filesystem root is reached without a match.
+   */
   readonly missingMessage: string;
 };
 
-/** Cache shape for the lazily resolved filesystem backend. */
+/**
+ * Cache shape for the lazily resolved filesystem backend.
+ */
 type RootFilesystemCache = {
-  /** Filesystem backend promise result reused after first resolution. */
+  /**
+   * Filesystem backend promise result reused after first resolution.
+   */
   fs?: RootFilesystem;
 };
 
@@ -80,28 +114,42 @@ type RootFilesystemCache = {
  */
 export const ABSENT: unique symbol = Symbol('absent',);
 
-/** Tagged logger for root discovery diagnostics. */
+/**
+ * Tagged logger for root discovery diagnostics.
+ */
 const rootDiscoveryLogger = tagged({ tag: 'rootDiscovery', },);
 
-/** Filesystem backend cache, stored in a const container for module-root state. */
+/**
+ * Filesystem backend cache, stored in a const container for module-root state.
+ */
 const backendCache: RootFilesystemCache = {};
 
-/** Error codes that mean a candidate path is absent for discovery purposes. */
+/**
+ * Error codes that mean a candidate path is absent for discovery purposes.
+ */
 const NO_ENTRY_ERROR_CODES: ReadonlySet<string> = new Set([
   'ENOENT',
   'ENOTDIR',
 ],);
 
-/** Home symlink root used on Fedora ostree systems. */
+/**
+ * Home symlink root used on Fedora ostree systems.
+ */
 const HOME_ROOT = '/home';
 
-/** Home symlink prefix used on Fedora ostree systems. */
+/**
+ * Home symlink prefix used on Fedora ostree systems.
+ */
 const HOME_PREFIX = `${HOME_ROOT}/`;
 
-/** Canonical home root used on Fedora ostree systems. */
+/**
+ * Canonical home root used on Fedora ostree systems.
+ */
 const VAR_HOME_ROOT = '/var/home';
 
-/** Canonical home prefix used on Fedora ostree systems. */
+/**
+ * Canonical home prefix used on Fedora ostree systems.
+ */
 const VAR_HOME_PREFIX = `${VAR_HOME_ROOT}/`;
 
 //endregion Constants
@@ -143,7 +191,9 @@ function isNoEntryError(error: unknown,): boolean {
  * ```
  */
 async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
-  /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
+  /**
+   * Dynamic import keeps `node:fs/promises` out of browser bundles.
+   */
   const {
     lstat,
     readFile,
@@ -191,7 +241,9 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
  * ```
  */
 async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
-  /** Dynamic import keeps `happy-opfs` out of Node bundles where OPFS is unavailable. */
+  /**
+   * Dynamic import keeps `happy-opfs` out of Node bundles where OPFS is unavailable.
+   */
   const {
     exists: opfsExists,
     readTextFile,
@@ -204,7 +256,9 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
     readTextFile: async function opfsReadTextFile(
       path: string,
     ): Promise<string | typeof ABSENT> {
-      /** `AsyncIOResult` from `happy-opfs`; errors map to absent files. */
+      /**
+       * `AsyncIOResult` from `happy-opfs`; errors map to absent files.
+       */
       const result = await readTextFile(path,);
       if (result.isOk())
         return result.unwrap();
@@ -212,7 +266,9 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
     },
 
     exists: async function opfsPathExists(path: string,): Promise<boolean> {
-      /** `AsyncIOResult` from `happy-opfs`; errors map to absent marker paths. */
+      /**
+       * `AsyncIOResult` from `happy-opfs`; errors map to absent marker paths.
+       */
       const result = await opfsExists(path,);
       if (result.isOk())
         return result.unwrap();
@@ -301,7 +357,9 @@ export async function resolveRootFilesystem(): Promise<RootFilesystem> {
   }
 
   try {
-    /** Dynamic import so the OPFS probe runs only when no Node fs is available. */
+    /**
+     * Dynamic import so the OPFS probe runs only when no Node fs is available.
+     */
     const { isOPFSSupported, } = await import('happy-opfs');
     if (isOPFSSupported()) {
       backendCache.fs = await resolveOpfsRootFilesystem();
@@ -397,7 +455,9 @@ async function walkUpRoot({
   },))
     return dir;
 
-  /** Parent directory inspected after current candidate misses. */
+  /**
+   * Parent directory inspected after current candidate misses.
+   */
   const parent = dirnameFallback(dir,);
   if (parent === dir)
     throw new Error(missingMessage,);
@@ -436,13 +496,19 @@ export async function findRootByWalkingUp({
   matches,
   missingMessage,
 }: FindRootByWalkingUpOptions,): Promise<string> {
-  /** Directory where upward search starts. */
+  /**
+   * Directory where upward search starts.
+   */
   const startDir = cwd ?? defaultRootSearchCwd();
   rootDiscoveryLogger.debug(`starting root discovery from ${startDir}`,);
 
-  /** Filesystem backend resolved once per walk. */
+  /**
+   * Filesystem backend resolved once per walk.
+   */
   const fs = await resolveRootFilesystem();
-  /** Raw root before Fedora ostree home normalization. */
+  /**
+   * Raw root before Fedora ostree home normalization.
+   */
   const rawRoot = await walkUpRoot({
     dir: startDir,
     fs,
@@ -450,7 +516,9 @@ export async function findRootByWalkingUp({
     missingMessage,
   },);
 
-  /** Root path after Fedora ostree home normalization. */
+  /**
+   * Root path after Fedora ostree home normalization.
+   */
   const normalizedRoot = normalizeHomeRoot(rawRoot,);
   rootDiscoveryLogger.debug(`resolved root discovery result ${normalizedRoot}`,);
   return normalizedRoot;

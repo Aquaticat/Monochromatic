@@ -18,7 +18,9 @@ import {
 
 //region Lifecycle tools: VM listing and template updates
 
-/** MCP tool: list all managed VMs and their state. */
+/**
+ * MCP tool: list all managed VMs and their state.
+ */
 export const listTool: ToolEntry = defineTool({
   name: 'list_vms',
   entry: {
@@ -26,12 +28,16 @@ export const listTool: ToolEntry = defineTool({
       'Lists all managed VMs with their current state (running, shut off, etc.).',
     handler: async function handleListVms() {
       try {
-        /** All managed VMs queried from libvirt. */
+        /**
+         * All managed VMs queried from libvirt.
+         */
         const vms = await list();
         if (vms.length
           === 0)
           return textResponse('No VMs found.',);
-        /** One `name: state` line per VM, joined with newlines into the response body below. */
+        /**
+         * One `name: state` line per VM, joined with newlines into the response body below.
+         */
         const lines = vms.map(function formatVmLine(vm,) {
           return `${vm.name}: ${vm.state}`;
         },);
@@ -47,7 +53,9 @@ export const listTool: ToolEntry = defineTool({
   },
 },);
 
-/** MCP tool: re-download and rebuild all template images. */
+/**
+ * MCP tool: re-download and rebuild all template images.
+ */
 export const updateTool: ToolEntry = defineTool({
   name: 'update_templates',
   entry: {

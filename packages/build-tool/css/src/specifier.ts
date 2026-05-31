@@ -22,17 +22,23 @@
  * ```
  */
 export function stripImportSpecifier(raw: string,): string {
-  /** Trimmed input for consistent handling */
+  /**
+   * Trimmed input for consistent handling
+   */
   const trimmed = raw.trim();
 
-  /** Length of the "url(" prefix. */
+  /**
+   * Length of the "url(" prefix.
+   */
   const URL_PREFIX_LENGTH = 4;
 
   // url(...) wrapper
   if (trimmed.startsWith('url(',)
     && trimmed
     .endsWith(')',)) {
-    /** Inner content of url() */
+    /**
+     * Inner content of url()
+     */
     const inner = trimmed
       .slice(
         URL_PREFIX_LENGTH,
@@ -133,7 +139,9 @@ export function splitPackageSpecifier(specifier: string,): [
   }
 
   // Unscoped: pkg or pkg/sub/path.css
-  /** Index of the first slash */
+  /**
+   * Index of the first slash
+   */
   const firstSlash = specifier.indexOf('/',);
   if (firstSlash === (-1)) {
     return [

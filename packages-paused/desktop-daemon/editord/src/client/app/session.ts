@@ -56,7 +56,9 @@ export async function restoreSession(
   readonly filePath: string | null;
   readonly recentFiles: readonly string[];
 }> {
-  /** Saved session state from a previous visit, if any. */
+  /**
+   * Saved session state from a previous visit, if any.
+   */
   const saved = restoreSessionState({
     fsId: ws.fsId,
     rootDir: ws.rootDir,
@@ -75,13 +77,17 @@ export async function restoreSession(
 
   await fileTree.expandRoot(ws.rootDir,);
 
-  /** Restore expanded directories from saved state after the root has been rendered. */
+  /**
+   * Restore expanded directories from saved state after the root has been rendered.
+   */
   if ((saved !== null) && (saved.expandedDirs
     .length
     > 0))
     await fileTree.restoreExpansion({ dirs: saved.expandedDirs, },);
 
-  /** Restore cursor and scroll position after file and tree are loaded. */
+  /**
+   * Restore cursor and scroll position after file and tree are loaded.
+   */
   if ((saved !== null) && (bootFilePath !== null)
     && (bootFilePath === saved
       .filePath)) {

@@ -10,7 +10,9 @@
 import { getCursorPosition, } from './cursor.ts';
 import { INDENT_UNIT, } from './text-resolve.ts';
 
-/** Characters that trigger an extra indent level on the next line. */
+/**
+ * Characters that trigger an extra indent level on the next line.
+ */
 const OPENING_BRACKETS = new Set([
   '{',
   '(',
@@ -37,7 +39,9 @@ export function leadingSpaces(s: string,): string {
    * (no recursion: O(n) time, O(1) stack on long space runs).
    */
   const end = (function scanSpaces(): number {
-    /** Forward-only cursor; stops at the first non-space or the string end. */
+    /**
+     * Forward-only cursor; stops at the first non-space or the string end.
+     */
     let idx = 0;
     while ((idx < s
       .length) && (s.charAt(idx,)
@@ -70,11 +74,17 @@ export function leadingSpaces(s: string,): string {
  * ```
  */
 export function computeIndent({ lineText, }: { readonly lineText: string; },): string {
-  /** Whitespace at the start of the previous line; carried over to align the new line. */
+  /**
+   * Whitespace at the start of the previous line; carried over to align the new line.
+   */
   const baseIndent = leadingSpaces(lineText,);
-  /** Line text with trailing whitespace stripped; needed to inspect the meaningful last char. */
+  /**
+   * Line text with trailing whitespace stripped; needed to inspect the meaningful last char.
+   */
   const trimmed = lineText.trimEnd();
-  /** Final non-whitespace char of the previous line; decides whether to add a deeper indent. */
+  /**
+   * Final non-whitespace char of the previous line; decides whether to add a deeper indent.
+   */
   const lastChar = trimmed.at(-1,)
     ?? '';
   if (OPENING_BRACKETS.has(lastChar,))
@@ -115,7 +125,9 @@ export function createAutoIndentHandler({
       !== 'insertParagraph')
       return;
 
-    /** Resolve cursor position inside the shadow DOM. */
+    /**
+     * Resolve cursor position inside the shadow DOM.
+     */
     const pos = getCursorPosition({
       editor,
       shadow,
@@ -124,18 +136,26 @@ export function createAutoIndentHandler({
       === 0))
       return;
 
-    /** Previous line div contains the text that was before the cursor. */
+    /**
+     * Previous line div contains the text that was before the cursor.
+     */
     const prevDiv = editor.children[pos.line
       - 1];
     if (prevDiv === undefined)
       return;
 
-    /** Raw text content of the previous line div; empty string when missing. */
+    /**
+     * Raw text content of the previous line div; empty string when missing.
+     */
     const prevText = prevDiv.textContent
       ?? '';
-    /** Empty lines store `'\n'` as a height-preserving marker. */
+    /**
+     * Empty lines store `'\n'` as a height-preserving marker.
+     */
     const lineText = prevText === '\n' ? '' : prevText;
-    /** Whitespace string to prepend so the new line aligns with (or under) the previous line. */
+    /**
+     * Whitespace string to prepend so the new line aligns with (or under) the previous line.
+     */
     const indent = computeIndent({ lineText, },);
 
     if (indent !== '') {

@@ -12,17 +12,23 @@ import {
 } from '../router.ts';
 import { getCharacterPose, } from '../sprite-pack.ts';
 
-/** Navigation handler for the Start button: routes to topic selection. */
+/**
+ * Navigation handler for the Start button: routes to topic selection.
+ */
 function goToSelectTopic(): void {
   navigate('select-topic',);
 }
 
-/** Navigation handler for the Saves button: routes to save list. */
+/**
+ * Navigation handler for the Saves button: routes to save list.
+ */
 function goToSaves(): void {
   navigate('saves',);
 }
 
-/** Navigation handler for the Settings button: routes to settings screen. */
+/**
+ * Navigation handler for the Settings button: routes to settings screen.
+ */
 function goToSettings(): void {
   navigate('settings',);
 }
@@ -33,10 +39,14 @@ function goToSettings(): void {
  * @param root - host element the screen mounts into
  */
 function mount(root: HTMLElement,): void {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  /** Left-rail navigation block with start, saves, and settings entries. */
+  /**
+   * Left-rail navigation block with start, saves, and settings entries.
+   */
   const menu = el({
     tag: 'nav',
     attrs: { class: 'menu', },
@@ -70,7 +80,9 @@ function mount(root: HTMLElement,): void {
       },),
     ],
   },);
-  /** Ruka portrait shown alongside the menu so the landing screen has a face. */
+  /**
+   * Ruka portrait shown alongside the menu so the landing screen has a face.
+   */
   const portrait = el({
     tag: 'img',
     attrs: {
@@ -82,7 +94,9 @@ function mount(root: HTMLElement,): void {
       style: 'block-size: min(70dvb, 30rem); inline-size: auto; align-self: center;',
     },
   },);
-  /** Outer screen container the router toggles via the `data-screen` selector. */
+  /**
+   * Outer screen container the router toggles via the `data-screen` selector.
+   */
   const screen = el({
     tag: 'section',
     attrs: {

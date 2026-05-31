@@ -1,6 +1,8 @@
 import type { BaseTranslation, } from '../i18n-types.ts';
 
-/** English (base locale) translations. */
+/**
+ * English (base locale) translations.
+ */
 const en = {
   appName: 'paper2vn',
   start: 'Start',

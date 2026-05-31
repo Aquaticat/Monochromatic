@@ -1,4 +1,6 @@
-/** Generic record type alias for objects with any key type. */
+/**
+ * Generic record type alias for objects with any key type.
+ */
 import type { $ as Record$, } from '../../../../t/index.ts';
 
 import {
@@ -48,20 +50,26 @@ import {
     strict?: boolean;
   },
 ): Pick<TObject, TKeys> {
-  /** Accumulator for properties in the pick list. */
+  /**
+   * Accumulator for properties in the pick list.
+   */
   const result: Record<string | number | symbol, unknown> = {};
 
   // WARNING: Iterate toPick, not original's keys. When picking few properties from a large object,
   // iterating the pick set is O(M) vs O(N) for iterating all keys. This matters when M << N.
   // Build a normalized set of original keys that includes both string and numeric representations.
   // Reflect.ownKeys returns numeric keys as strings (e.g., '1' not 1), but users may pass numbers in toPick.
-  /** Original keys widened with numeric duals so user-supplied numeric keys still match. */
+  /**
+   * Original keys widened with numeric duals so user-supplied numeric keys still match.
+   */
   const normalizedOriginalKeys = new Set<string | number | symbol>();
   for (const key of Reflect.ownKeys(original,)) {
     normalizedOriginalKeys.add(key,);
     // Add numeric representation for string keys that are valid numbers so they match user-provided numeric keys.
     if ((typeof key) === 'string') {
-      /** Numeric dual added so user-supplied numeric keys match the string ownKey. */
+      /**
+       * Numeric dual added so user-supplied numeric keys match the string ownKey.
+       */
       const numericKey = Number(key,);
       if (!Number.isNaN(numericKey,))
         normalizedOriginalKeys.add(numericKey,);

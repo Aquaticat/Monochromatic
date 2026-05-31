@@ -77,12 +77,16 @@ export function memoize<
 >(
   options: MemoizeNamedOptions<TArgs, TReturn>,
 ): MemoizedFunction<TArgs, TReturn> {
-  /** Function and key derivation destructured for repeated use inside the wrapper. */
+  /**
+   * Function and key derivation destructured for repeated use inside the wrapper.
+   */
   const {
     fn,
     keyFn,
   } = options;
-  /** Backing cache, supplied by caller or freshly created with the default LRU policy. */
+  /**
+   * Backing cache, supplied by caller or freshly created with the default LRU policy.
+   */
   const store: SyncStore = options.store
     ?? createSyncStore({
       storeId: `memoize-${crypto.randomUUID()}`,
@@ -108,18 +112,24 @@ export function memoize<
       salt,
     }: MemoizedCallOptions<TArgs>,
   ): TReturn {
-    /** Salted cache key combining the keyFn output with the per-call salt. */
+    /**
+     * Salted cache key combining the keyFn output with the per-call salt.
+     */
     const cacheKey = buildCacheKey({
       argKey: keyFn(...args,),
       salt,
     },);
 
-    /** Previously memoized return value, or `ABSENT` when not yet stored (a miss). */
+    /**
+     * Previously memoized return value, or `ABSENT` when not yet stored (a miss).
+     */
     const cached = store.get<TReturn>(cacheKey,);
     if (cached !== ABSENT)
       return cached;
 
-    /** Freshly computed return value persisted into the store for future calls. */
+    /**
+     * Freshly computed return value persisted into the store for future calls.
+     */
     const result = fn(...args,);
     store.set(
       cacheKey,

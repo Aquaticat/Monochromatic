@@ -41,5 +41,7 @@ export function $<const MyValue,>(
     === '[object Set]';
 }
 
-/** Compile-time test: function satisfies the type guard interface. */
+/**
+ * Compile-time test: function satisfies the type guard interface.
+ */
 const _$: Is = $;

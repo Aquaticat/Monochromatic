@@ -6,7 +6,9 @@
  * rendered as the dropdown's first option.
  */
 
-/** localStorage key holding the persisted identity. */
+/**
+ * localStorage key holding the persisted identity.
+ */
 const IDENTITY_KEY = 'messages-demo:identity';
 
 /**
@@ -34,7 +36,9 @@ export function loadIdentity(available: boolean,): string | typeof NO_IDENTITY {
   if (!available)
     return NO_IDENTITY;
   try {
-    /** Raw Web Storage read; `getItem` yields `null` for an absent key, mapped to the sentinel. */
+    /**
+     * Raw Web Storage read; `getItem` yields `null` for an absent key, mapped to the sentinel.
+     */
     const stored = localStorage.getItem(IDENTITY_KEY,);
     if (stored === null)
       return NO_IDENTITY;

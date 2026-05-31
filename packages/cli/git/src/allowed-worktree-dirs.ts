@@ -22,9 +22,13 @@ import {
  */
 const PARENT_DIR_SEGMENT = '..';
 
-/** Options for resolving uv's git cache directory. */
+/**
+ * Options for resolving uv's git cache directory.
+ */
 type ResolveUvCacheDirOptions = {
-  /** Environment read for uv cache hints; defaults to the process environment, injectable for tests. */
+  /**
+   * Environment read for uv cache hints; defaults to the process environment, injectable for tests.
+   */
   readonly env?: NodeJS.ProcessEnv;
 };
 
@@ -49,14 +53,20 @@ type ResolveUvCacheDirOptions = {
 export function resolveUvCacheDir({
   env = process.env,
 }: ResolveUvCacheDirOptions = {},): string {
-  /** uv's explicit cache override; wins when set to a non-empty value. */
+  /**
+   * uv's explicit cache override; wins when set to a non-empty value.
+   */
   const uvCacheDir = env.UV_CACHE_DIR;
   if ((uvCacheDir !== undefined) && (uvCacheDir !== ''))
     return uvCacheDir;
 
-  /** XDG cache root; uv nests its cache under `<xdg>/uv` when this is set. */
+  /**
+   * XDG cache root; uv nests its cache under `<xdg>/uv` when this is set.
+   */
   const xdgCacheHome = env.XDG_CACHE_HOME;
-  /** Cache root the uv cache derives from when no explicit override exists. */
+  /**
+   * Cache root the uv cache derives from when no explicit override exists.
+   */
   const cacheHome = ((xdgCacheHome !== undefined) && (xdgCacheHome !== ''))
     ? xdgCacheHome
     : join(
@@ -87,11 +97,17 @@ export const DEFAULT_ALLOWED_WORKTREE_DIRS: readonly string[] = [
 
 //region Path containment
 
-/** Options for testing whether one path is contained within another. */
+/**
+ * Options for testing whether one path is contained within another.
+ */
 type IsPathUnderOptions = {
-  /** Ancestor directory the child is tested against. */
+  /**
+   * Ancestor directory the child is tested against.
+   */
   readonly parent: string;
-  /** Candidate descendant path. */
+  /**
+   * Candidate descendant path.
+   */
   readonly child: string;
 };
 
@@ -121,7 +137,9 @@ export function isPathUnder({
   parent,
   child,
 }: IsPathUnderOptions,): boolean {
-  /** Path from parent to child; `''` when equal, `..`-led when child escapes. */
+  /**
+   * Path from parent to child; `''` when equal, `..`-led when child escapes.
+   */
   const rel = relative(
     parent,
     child,
@@ -148,11 +166,17 @@ export function isPathUnder({
  */
 const REALPATH_ABSENT = Symbol('realpath-absent',);
 
-/** Options for the worktree allowlist membership test. */
+/**
+ * Options for the worktree allowlist membership test.
+ */
 type IsAllowedWorktreeDirOptions = {
-  /** Realpath-resolved git-dir of the repository the command targets. */
+  /**
+   * Realpath-resolved git-dir of the repository the command targets.
+   */
   readonly candidatePath: string;
-  /** Allowed directory roots; non-existent entries are skipped. */
+  /**
+   * Allowed directory roots; non-existent entries are skipped.
+   */
   readonly allowedDirs: readonly string[];
 };
 
@@ -207,16 +231,22 @@ export async function isAllowedWorktreeDir({
   candidatePath,
   allowedDirs,
 }: IsAllowedWorktreeDirOptions,): Promise<boolean> {
-  /** Tagged logger for allowlist membership. */
+  /**
+   * Tagged logger for allowlist membership.
+   */
   const rl = tagged({
     tag: isAllowedWorktreeDir.name,
     l,
   },);
 
-  /** Allowed roots resolved through realpath; REALPATH_ABSENT marks a dropped entry. */
+  /**
+   * Allowed roots resolved through realpath; REALPATH_ABSENT marks a dropped entry.
+   */
   const resolvedAllowed = await Promise.all(
     allowedDirs.map(async function resolveAllowedDir(dir,): Promise<string | typeof REALPATH_ABSENT> {
-      /** Realpath of one allowed entry, or REALPATH_ABSENT when it does not exist. */
+      /**
+       * Realpath of one allowed entry, or REALPATH_ABSENT when it does not exist.
+       */
       const resolved = await safeRealpath(dir,);
       if (resolved === REALPATH_ABSENT)
         rl.debug(`skipping allowed dir that could not be resolved: ${dir}`,);

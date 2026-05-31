@@ -20,10 +20,14 @@ import type { Probe, } from './probes.ts';
 import type { RunnerConfig, } from './runner-config.ts';
 import type { ProbeResult, } from './runner-types.ts';
 
-/** Minutes before a probe is considered timed out */
+/**
+ * Minutes before a probe is considered timed out
+ */
 const PROBE_TIMEOUT_MINUTES = 5;
 
-/** 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable */
+/**
+ * 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable
+ */
 const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE
   * MS_PER_SECOND;
 
@@ -39,9 +43,13 @@ const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE
  * ```
  */
 type CreateDisposableTimeoutOptions = {
-  /** Function to execute when the timeout fires */
+  /**
+   * Function to execute when the timeout fires
+   */
   readonly callback: () => void;
-  /** Timeout duration in milliseconds */
+  /**
+   * Timeout duration in milliseconds
+   */
   readonly ms: number;
 };
 
@@ -64,7 +72,9 @@ function createDisposableTimeout({
   callback,
   ms,
 }: CreateDisposableTimeoutOptions,): Disposable {
-  /** Node timer handle retained so `clearTimeout` can run from the dispose hook. */
+  /**
+   * Node timer handle retained so `clearTimeout` can run from the dispose hook.
+   */
   const id = setTimeout(
     callback,
     ms,
@@ -88,11 +98,17 @@ function createDisposableTimeout({
  * ```
  */
 type RunProbeOptions = {
-  /** Canary probe to execute */
+  /**
+   * Canary probe to execute
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** Authoritative server timestamp for artifact naming */
+  /**
+   * Authoritative server timestamp for artifact naming
+   */
   readonly timestamp: string;
 };
 
@@ -126,9 +142,13 @@ export async function runProbe({
   config,
   timestamp,
 }: RunProbeOptions,): Promise<ProbeResult> {
-  /** Signals cancellation to in-flight HTTP streams and container processes when the timeout fires. */
+  /**
+   * Signals cancellation to in-flight HTTP streams and container processes when the timeout fires.
+   */
   const controller = new AbortController();
-  /** Live probe execution; settled by either success, failure, or `controller.abort()`. */
+  /**
+   * Live probe execution; settled by either success, failure, or `controller.abort()`.
+   */
   const corePromise = runProbeCore({
     probe,
     config,
@@ -180,11 +200,15 @@ export async function runProbe({
     ProbeResult
   >();
 
-  /** Disposable timeout handle; auto-clears via `Symbol.dispose` when the function returns. */
+  /**
+   * Disposable timeout handle; auto-clears via `Symbol.dispose` when the function returns.
+   */
   using _timer = createDisposableTimeout({
     callback: function onTimeout(): void {
       controller.abort();
-      /** Probe-specific logger for timeout message. */
+      /**
+       * Probe-specific logger for timeout message.
+       */
       const rl = tagged({
         tag: probe.name,
         l: tagged({

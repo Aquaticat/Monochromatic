@@ -6,17 +6,27 @@
 
 import type { LspClient, } from './lsp-client.ts';
 
-/** State tracked per open document. */
+/**
+ * State tracked per open document.
+ */
 export type DocumentState = {
-  /** Monotonically increasing version number. */
+  /**
+   * Monotonically increasing version number.
+   */
   version: number;
-  /** LSP language identifier. */
+  /**
+   * LSP language identifier.
+   */
   languageId: string;
-  /** Latest full document text. */
+  /**
+   * Latest full document text.
+   */
   text: string;
 };
 
-/** Three LSP server slots passed to sync functions. */
+/**
+ * Three LSP server slots passed to sync functions.
+ */
 export type ServerSlots = {
   readonly oxlint: LspClient | null;
   readonly tsgo: LspClient | null;

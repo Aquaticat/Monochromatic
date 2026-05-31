@@ -86,7 +86,9 @@ export function effectiveAt(
     readonly path: TomlPath;
   },
 ): EffectiveResult {
-  /** Exact-path pending insertion wins before any walk, per the resolution policy. */
+  /**
+   * Exact-path pending insertion wins before any walk, per the resolution policy.
+   */
   const exactInsertion = edit.insertions
     .find(function matchesPath(ins,) {
     return (ins.path
@@ -102,7 +104,9 @@ export function effectiveAt(
     };
   }
 
-  /** Longest-prefix walk so a covering ancestor edit shows through. */
+  /**
+   * Longest-prefix walk so a covering ancestor edit shows through.
+   */
   const prefixProjection = projectPendingAtPrefix({
     edit,
     path,
@@ -110,7 +114,9 @@ export function effectiveAt(
   if (prefixProjection !== NO_PROJECTION)
     return prefixProjection;
 
-  /** Sub-tree synthesis merges pending descendants for intermediate-level reads. */
+  /**
+   * Sub-tree synthesis merges pending descendants for intermediate-level reads.
+   */
   const subtree = synthesiseSubtree({
     edit,
     path,
@@ -165,15 +171,21 @@ function projectPendingAtPrefix(
   },
 ): EffectiveResult | typeof NO_PROJECTION {
   for (let prefixLen = path.length; prefixLen >= 1; prefixLen--) {
-    /** Candidate ancestor path being probed at this iteration. */
+    /**
+     * Candidate ancestor path being probed at this iteration.
+     */
     const prefix = path.slice(
       0,
       prefixLen,
     );
-    /** Remaining segments to navigate inside the matched JS value. */
+    /**
+     * Remaining segments to navigate inside the matched JS value.
+     */
     const rest = path.slice(prefixLen,);
 
-    /** Pending insertion that covers this prefix exactly, if any. */
+    /**
+     * Pending insertion that covers this prefix exactly, if any.
+     */
     const matchingIns = edit.insertions
       .find(function matches(ins,) {
       return (ins.path
@@ -190,7 +202,9 @@ function projectPendingAtPrefix(
       },);
     }
 
-    /** AST resolution at the prefix so a pending edit can be looked up. */
+    /**
+     * AST resolution at the prefix so a pending edit can be looked up.
+     */
     const baseAtPrefix = resolveByPath({
       edit,
       path: prefix,
@@ -215,7 +229,9 @@ function projectPendingAtPrefix(
       if (edit.deletions
         .has(pendingNode,))
         return { kind: 'deleted', };
-      /** Pending edit's jsValue is the surface to navigate. */
+      /**
+       * Pending edit's jsValue is the surface to navigate.
+       */
       const pendingEdit = edit.edits
         .get(pendingNode,);
       if ((pendingEdit !== undefined) && (pendingEdit.jsValue
@@ -249,10 +265,14 @@ function synthesiseSubtree(
     readonly path: TomlPath;
   },
 ): Record<string, unknown> | typeof SUBTREE_ABSENT {
-  /** Lazy accumulator so an empty pending set returns `SUBTREE_ABSENT` instead of `{}`. */
+  /**
+   * Lazy accumulator so an empty pending set returns `SUBTREE_ABSENT` instead of `{}`.
+   */
   let acc: Record<string, unknown> | typeof SUBTREE_ABSENT = SUBTREE_ABSENT;
   for (const ins of edit.insertions) {
-    /** Path field is optional; skip insertions without a path. */
+    /**
+     * Path field is optional; skip insertions without a path.
+     */
     const insPath = ins.path;
     if (insPath === undefined)
       continue;
@@ -260,7 +280,9 @@ function synthesiseSubtree(
       <= path
       .length)
       continue;
-    /** True when `path` is a strict prefix of `insPath`. */
+    /**
+     * True when `path` is a strict prefix of `insPath`.
+     */
     const matches = path.every(function eq(
       seg,
       i,
@@ -269,9 +291,13 @@ function synthesiseSubtree(
     },);
     if (!matches)
       continue;
-    /** Segments after the prefix; describes where to merge `jsValue`. */
+    /**
+     * Segments after the prefix; describes where to merge `jsValue`.
+     */
     const rest = insPath.slice(path.length,);
-    /** Numeric segments rule out merging into a plain object. */
+    /**
+     * Numeric segments rule out merging into a plain object.
+     */
     const restStrings = asStringPath({ segs: rest, },);
     if (restStrings === PATH_HAS_NUMERIC)
       continue;
@@ -312,7 +338,9 @@ function navigateJsValue(
       value,
     };
   }
-  /** Current segment so each recursion step navigates one level deeper. */
+  /**
+   * Current segment so each recursion step navigates one level deeper.
+   */
   const [head, ...remaining] = rest;
   if (head === undefined)
     return missingFor({ edit, },);
@@ -348,7 +376,9 @@ function resolveAst(
     readonly path: TomlPath;
   },
 ): EffectiveResult {
-  /** AST-only resolution so deletion and edit lookups can be keyed by node identity. */
+  /**
+   * AST-only resolution so deletion and edit lookups can be keyed by node identity.
+   */
   const base = resolveByPath({
     edit,
     path,
@@ -358,7 +388,9 @@ function resolveAst(
     if (edit.deletions
       .has(base.node,))
       return { kind: 'deleted', };
-    /** Pending replace-value edit on this keyvalue, if any. */
+    /**
+     * Pending replace-value edit on this keyvalue, if any.
+     */
     const pending = edit.edits
       .get(base.node,);
     if (pending !== undefined) {
@@ -370,7 +402,9 @@ function resolveAst(
   }
   if (base.kind
     === 'value') {
-    /** Pending element edit on this content node, if any. */
+    /**
+     * Pending element edit on this content node, if any.
+     */
     const pending = edit.edits
       .get(base.node,);
     if (pending !== undefined) {

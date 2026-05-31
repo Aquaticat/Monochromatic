@@ -8,7 +8,9 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { renderDataGrid, } from './data-grid.ts';
 
-/** Single data point for the table */
+/**
+ * Single data point for the table
+ */
 export type TableRow = {
   readonly timestamp: string;
   readonly model: string;
@@ -16,7 +18,9 @@ export type TableRow = {
   readonly score: number;
   readonly pass2Score?: number;
   readonly failed: boolean;
-  /** Run ID for linking to the detail overlay (used in grid mode) */
+  /**
+   * Run ID for linking to the detail overlay (used in grid mode)
+   */
   readonly runId?: string;
 };
 
@@ -25,9 +29,13 @@ export type TableRow = {
  * Columns default to visible when the option is omitted.
  */
 export type TableDisplayOptions = {
-  /** Whether to show the Model column (hide when context is per-model) */
+  /**
+   * Whether to show the Model column (hide when context is per-model)
+   */
   readonly showModel?: boolean;
-  /** Whether to show the Probe column (hide when context is per-probe) */
+  /**
+   * Whether to show the Probe column (hide when context is per-probe)
+   */
   readonly showProbe?: boolean;
 };
 
@@ -129,14 +137,20 @@ export function renderDataTable({
   readonly caption: string;
   readonly options?: TableDisplayOptions;
 },): string {
-  /** Resolved Model-column visibility; defaults to visible when option is omitted. */
+  /**
+   * Resolved Model-column visibility; defaults to visible when option is omitted.
+   */
   const showModel = options.showModel
     ?? true;
-  /** Resolved Probe-column visibility; defaults to visible when option is omitted. */
+  /**
+   * Resolved Probe-column visibility; defaults to visible when option is omitted.
+   */
   const showProbe = options.showProbe
     ?? true;
 
-  /** When only timestamp + score remain, render as a compact grid instead of a table */
+  /**
+   * When only timestamp + score remain, render as a compact grid instead of a table
+   */
   if ((!showModel) && (!showProbe)) {
     return renderDataGrid({
       rows,
@@ -144,13 +158,17 @@ export function renderDataTable({
     },);
   }
 
-  /** Only show the fix score column when at least one row has pass2 data */
+  /**
+   * Only show the fix score column when at least one row has pass2 data
+   */
   const hasFixScores = rows.some(function hasPass2(row,) {
     return row.pass2Score
       !== undefined;
   },);
 
-  /** Table header row built once and reused; column set depends on resolved visibility flags. */
+  /**
+   * Table header row built once and reused; column set depends on resolved visibility flags.
+   */
   const headerRow = h({
     tag: 'tr',
     children: [
@@ -188,10 +206,14 @@ export function renderDataTable({
     ],
   },);
 
-  /** Rendered `<tr>` strings joined into the table body; each row mirrors the visibility flags from the header. */
+  /**
+   * Rendered `<tr>` strings joined into the table body; each row mirrors the visibility flags from the header.
+   */
   const bodyRows = rows
     .map(function renderRow(row,) {
-      /** Timestamp cell with inline "(timeout)" for failed runs */
+      /**
+       * Timestamp cell with inline "(timeout)" for failed runs
+       */
       const timestampTd = row.failed
         ? h({
           tag: 'td',
@@ -214,7 +236,9 @@ export function renderDataTable({
           text: row.timestamp,
         },);
 
-      /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
+      /**
+       * Fix score cell: present, "(not run)" for failed, or "(data error)"
+       */
       const fixScoreTd = fixScoreCell({
         hasFixScores,
         row,

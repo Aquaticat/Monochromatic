@@ -65,13 +65,19 @@ export function $(
     trimmer: Global;
   },
 ): string {
-  /** All regex matches as an iterator; consumed once below into an array for reverse traversal. */
+  /**
+   * All regex matches as an iterator; consumed once below into an array for reverse traversal.
+   */
   const matches = str.matchAll(trimmer,);
 
-  /** Matches reversed so the scan walks inward from the string's end. */
+  /**
+   * Matches reversed so the scan walks inward from the string's end.
+   */
   const matchArray = [...matches,].toReversed();
 
-  /** Running count of characters to strip from the end as consecutive trailing matches are confirmed; held on an object so the function root stays const-only. */
+  /**
+   * Running count of characters to strip from the end as consecutive trailing matches are confirmed; held on an object so the function root stays const-only.
+   */
   const trimState = { totalTrimLength: 0, };
 
   // Process matches in reverse order to find consecutive trailing matches
@@ -79,15 +85,23 @@ export function $(
     // Index 0: the full matched text
     // Index 1+: captured groups (parentheses parts)
     // Extra properties: index (position), input (original string)
-    /** Start offset of this match in the original string. */
+    /**
+     * Start offset of this match in the original string.
+     */
     const matchIndex = match.index;
-    /** Length of the matched substring; added to `trimState.totalTrimLength` when the match abuts the current trim boundary. */
+    /**
+     * Length of the matched substring; added to `trimState.totalTrimLength` when the match abuts the current trim boundary.
+     */
     const matchLength = match[0]
       .length;
 
-    /** Exclusive end offset of this match; used to detect whether it abuts the current trim boundary. */
+    /**
+     * Exclusive end offset of this match; used to detect whether it abuts the current trim boundary.
+     */
     const matchEndsAt = matchIndex + matchLength;
-    /** Current trim boundary; matches must end exactly here to count as consecutive trailing matches. */
+    /**
+     * Current trim boundary; matches must end exactly here to count as consecutive trailing matches.
+     */
     const currentBoundary = str.length
       - trimState
       .totalTrimLength;

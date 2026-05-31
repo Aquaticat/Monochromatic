@@ -18,7 +18,9 @@ import {
 } from '../styles/tokens.ts';
 import { MEDIA_STYLES, } from './media.styles.ts';
 
-/** Shadow DOM styles for the binary viewer. */
+/**
+ * Shadow DOM styles for the binary viewer.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

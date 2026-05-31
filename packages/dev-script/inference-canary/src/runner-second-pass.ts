@@ -25,13 +25,21 @@ import type {
  */
 export const FIX_PASS_SKIPPED: unique symbol = Symbol('fix-pass-skipped',);
 
-/** Result from a second-pass fix attempt, bundling score with completion data and the prompt used */
+/**
+ * Result from a second-pass fix attempt, bundling score with completion data and the prompt used
+ */
 export type SecondPassResult = {
-  /** Score after the fix pass */
+  /**
+   * Score after the fix pass
+   */
   readonly score: number;
-  /** Full completion result from the fix turn */
+  /**
+   * Full completion result from the fix turn
+   */
   readonly completion: CompletionResult;
-  /** Diagnostic prompt sent to the model for this fix attempt */
+  /**
+   * Diagnostic prompt sent to the model for this fix attempt
+   */
   readonly fixPrompt: string;
 };
 
@@ -50,15 +58,25 @@ export type SecondPassResult = {
  * ```
  */
 type RunSecondPassOptions = {
-  /** Probe that produced the first-pass response */
+  /**
+   * Probe that produced the first-pass response
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** OpenAI SDK client (reused from first pass; narrow readonly view) */
+  /**
+   * OpenAI SDK client (reused from first pass; narrow readonly view)
+   */
   readonly client: ChatClient;
-  /** Raw model output from the first pass */
+  /**
+   * Raw model output from the first pass
+   */
   readonly lastCompletionText: string;
-  /** Score context for artifact organization (includes abort signal) */
+  /**
+   * Score context for artifact organization (includes abort signal)
+   */
   readonly fixContext: ScoreContext;
 };
 
@@ -95,7 +113,9 @@ export async function runSecondPass({
     === undefined)
     return FIX_PASS_SKIPPED;
 
-  /** Probe-specific logger for pass2 messages. */
+  /**
+   * Probe-specific logger for pass2 messages.
+   */
   const rl = tagged({
     tag: probe.name,
     l: tagged({
@@ -103,7 +123,9 @@ export async function runSecondPass({
       l,
     },),
   },);
-  /** Diagnostic-only follow-up prompt; empty string when the probe decides no fix turn is warranted. */
+  /**
+   * Diagnostic-only follow-up prompt; empty string when the probe decides no fix turn is warranted.
+   */
   const fixPrompt = await probe.buildFixPrompt(
     lastCompletionText,
     fixContext,
@@ -115,7 +137,9 @@ export async function runSecondPass({
 
   rl.info('pass2: sending fix prompt...',);
 
-  /** Conversation echoed back to the model: system, original prompt, first response, then the fix instruction. */
+  /**
+   * Conversation echoed back to the model: system, original prompt, first response, then the fix instruction.
+   */
   const messages: ChatMessage[] = [
     {
       role: 'system',
@@ -134,11 +158,15 @@ export async function runSecondPass({
       content: fixPrompt,
     },
   ];
-  /** Abort signal from the fix context; spread into the stream call only when present. */
+  /**
+   * Abort signal from the fix context; spread into the stream call only when present.
+   */
   const {
     signal,
   } = fixContext;
-  /** Streamed completion for the fix turn; carries the model's revised source plus usage and timing data. */
+  /**
+   * Streamed completion for the fix turn; carries the model's revised source plus usage and timing data.
+   */
   const completion = await streamCompletion({
     client,
     messages,
@@ -146,7 +174,9 @@ export async function runSecondPass({
     probeName: `${probe.name}:fix`,
     ...(signal !== undefined ? { signal, } : {}),
   },);
-  /** Fix-pass score; combined with the completion data in the returned `SecondPassResult`. */
+  /**
+   * Fix-pass score; combined with the completion data in the returned `SecondPassResult`.
+   */
   const score = await probe.score(
     completion.text,
     fixContext,

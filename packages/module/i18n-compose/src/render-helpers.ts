@@ -29,15 +29,23 @@ type ApplyCapitalizationOptions = Readonly<{
   readonly caseInvariants: ReadonlySet<string>;
 }>;
 
-/** Inclusive Unicode code-point range used for CJK boundary detection. */
+/**
+ * Inclusive Unicode code-point range used for CJK boundary detection.
+ */
 type CodePointRange = Readonly<{
-  /** First code point included in the range. */
+  /**
+   * First code point included in the range.
+   */
   readonly start: number;
-  /** Last code point included in the range. */
+  /**
+   * Last code point included in the range.
+   */
   readonly end: number;
 }>;
 
-/** CJK ranges whose adjacent token boundaries should not receive ASCII spaces. */
+/**
+ * CJK ranges whose adjacent token boundaries should not receive ASCII spaces.
+ */
 const CJK_CODE_POINT_RANGES: readonly CodePointRange[] = [
   {
     start: 0x4E_00,
@@ -77,7 +85,9 @@ function isCjkCodePoint(
     readonly codePoint: number;
   },
 ): boolean {
-  /** Code point tested against every configured CJK range. */
+  /**
+   * Code point tested against every configured CJK range.
+   */
   const { codePoint, } = options;
   return CJK_CODE_POINT_RANGES.some(function rangeContainsCodePoint(
     range,
@@ -100,9 +110,13 @@ function firstCodePointOf(
     readonly token: string;
   },
 ): number {
-  /** Token whose first code point is read. */
+  /**
+   * Token whose first code point is read.
+   */
   const { token, } = options;
-  /** First code point from token. */
+  /**
+   * First code point from token.
+   */
   const codePoint = token.codePointAt(0,);
   if (codePoint === undefined)
     throw new Error('Cannot read first code point from empty token.',);
@@ -123,16 +137,24 @@ function lastCodePointOf(
     readonly token: string;
   },
 ): number {
-  /** Token whose last code point is read. */
+  /**
+   * Token whose last code point is read.
+   */
   const { token, } = options;
-  /** Token split into Unicode code-point strings so astral CJK ranges stay intact. */
+  /**
+   * Token split into Unicode code-point strings so astral CJK ranges stay intact.
+   */
   // oxlint-disable-next-line unicorn/prefer-spread -- CJK ranges are code-point ranges; string spread is blocked.
   const characters = Array.from(token,);
-  /** Final character string from token. */
+  /**
+   * Final character string from token.
+   */
   const finalCharacter = characters.at(-1,);
   if (finalCharacter === undefined)
     throw new Error('Cannot read last code point from empty token.',);
-  /** Code point for final character. */
+  /**
+   * Code point for final character.
+   */
   const codePoint = finalCharacter.codePointAt(0,);
   if (codePoint === undefined)
     throw new Error('Cannot read code point from final token character.',);
@@ -152,9 +174,13 @@ function separatorForBoundary(
     readonly rightToken: string;
   },
 ): '' | ' ' {
-  /** Code point at end of left token. */
+  /**
+   * Code point at end of left token.
+   */
   const leftCodePoint = lastCodePointOf({ token: options.leftToken, },);
-  /** Code point at start of right token. */
+  /**
+   * Code point at start of right token.
+   */
   const rightCodePoint = firstCodePointOf({ token: options.rightToken, },);
   if (isCjkCodePoint({ codePoint: leftCodePoint, },)
     && isCjkCodePoint({ codePoint: rightCodePoint, },))
@@ -182,7 +208,9 @@ function separatorForBoundary(
 export function applyCapitalization(
   options: ApplyCapitalizationOptions,
 ): string {
-  /** Options destructured once so the branch logic reads like the rendered operation. */
+  /**
+   * Options destructured once so the branch logic reads like the rendered operation.
+   */
   const {
     text,
     mode,
@@ -193,16 +221,22 @@ export function applyCapitalization(
   if (text.length
     === 0)
     return text;
-  /** First whitespace-delimited token, used to consult `caseInvariants`. */
+  /**
+   * First whitespace-delimited token, used to consult `caseInvariants`.
+   */
   const firstSpace = text.indexOf(' ',);
-  /** Substring covering the first token only. */
+  /**
+   * Substring covering the first token only.
+   */
   const firstToken = firstSpace === (-1) ? text : text.slice(
     0,
     firstSpace,
   );
   if (caseInvariants.has(firstToken,))
     return text;
-  /** First Unicode code point of the rendered text. */
+  /**
+   * First Unicode code point of the rendered text.
+   */
   const firstChar = text.charAt(0,);
   return firstChar.toUpperCase()
     + text
@@ -230,18 +264,24 @@ export function applyCapitalization(
  * ```
  */
 export function joinTokens(tokens: readonly string[],): string {
-  /** Tokens that render visible content and participate in boundary decisions. */
+  /**
+   * Tokens that render visible content and participate in boundary decisions.
+   */
   const presentTokens = tokens.filter(function isPresent(token: string,): boolean {
     return token !== '';
   },);
-  /** Per-token segments prefixed with boundary separators after the first token. */
+  /**
+   * Per-token segments prefixed with boundary separators after the first token.
+   */
   const segments = presentTokens.map(function tokenSegment(
     token: string,
     tokenIndex: number,
   ): string {
     if (tokenIndex === 0)
       return token;
-    /** Previous non-empty token, required because the current token is not first. */
+    /**
+     * Previous non-empty token, required because the current token is not first.
+     */
     const previousToken = presentTokens.at(tokenIndex - 1,);
     if (previousToken === undefined)
       throw new Error('Cannot join token without previous boundary token.',);

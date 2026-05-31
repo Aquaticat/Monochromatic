@@ -58,9 +58,13 @@ export function leadingWhitespace(s: string,): string {
  * Parameters for {@link baseIndentAt}.
  */
 export type BaseIndentAtParams = {
-  /** Full file source text. */
+  /**
+   * Full file source text.
+   */
   readonly sourceText: string;
-  /** Byte offset on the line whose indentation is wanted. */
+  /**
+   * Byte offset on the line whose indentation is wanted.
+   */
   readonly offset: number;
 };
 
@@ -81,13 +85,17 @@ export function baseIndentAt({
   sourceText,
   offset,
 }: BaseIndentAtParams,): string {
-  /** Byte offset of the first character on the line containing `offset`. */
+  /**
+   * Byte offset of the first character on the line containing `offset`.
+   */
   const lineStart = sourceText.lastIndexOf(
     '\n',
     offset - 1,
   )
     + 1;
-  /** Substring from line start to `offset`; the helper returns just its leading whitespace. */
+  /**
+   * Substring from line start to `offset`; the helper returns just its leading whitespace.
+   */
   const linePrefix = sourceText.slice(
     lineStart,
     offset,

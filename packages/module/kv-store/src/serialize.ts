@@ -5,7 +5,9 @@ import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/ts';
 import { hasCycle, } from './has-cycle.ts';
 import type { Serializer, } from './types.ts';
 
-/** Max characters for value previews in log messages. */
+/**
+ * Max characters for value previews in log messages.
+ */
 const DEFAULT_LOG_LIMIT = 100;
 
 /**
@@ -21,9 +23,13 @@ const DEFAULT_LOG_LIMIT = 100;
  * ```
  */
 export type SerializeOptions = {
-  /** Input data to serialize. */
+  /**
+   * Input data to serialize.
+   */
   readonly value: unknown;
-  /** Serialization function that converts a value to a string. */
+  /**
+   * Serialization function that converts a value to a string.
+   */
   readonly serializer: Serializer;
   /**
    * When `true`, cyclic graphs are decycled and persisted lossy
@@ -85,7 +91,9 @@ export type SerializeOptions = {
  * ```
  */
 export function serializeValue(options: SerializeOptions,): string {
-  /** Inputs destructured from options for direct use inside the function body. */
+  /**
+   * Inputs destructured from options for direct use inside the function body.
+   */
   const {
     value,
     serializer,
@@ -94,10 +102,14 @@ export function serializeValue(options: SerializeOptions,): string {
 
   if (hasCycle(value,)) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- hasCycle verified value is an object with cycles */
-    /** Cycle-stripped copy of value used so the serializer cannot blow the stack. */
+    /**
+     * Cycle-stripped copy of value used so the serializer cannot blow the stack.
+     */
     const decycled = decircular(value as object,);
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    /** Serialised representation of the decycled value. */
+    /**
+     * Serialised representation of the decycled value.
+     */
     const serialized = serializer(decycled,);
     if (!lossyForCircular) {
       throw new TypeError(

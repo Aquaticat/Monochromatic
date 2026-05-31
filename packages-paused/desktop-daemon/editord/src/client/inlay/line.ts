@@ -66,11 +66,15 @@ export function applyLineAnnotation({
   readonly lineDiags: readonly Diagnostic[] | undefined;
   readonly spaceRatio: number;
 },): void {
-  /** Accumulator for the inlay rows joined into the dataset attribute below. */
+  /**
+   * Accumulator for the inlay rows joined into the dataset attribute below.
+   */
   const rows: string[] = [];
 
   if (lineHints !== undefined) {
-    /** Without toSorted: no-array-sort lint error since sort() mutates in place. */
+    /**
+     * Without toSorted: no-array-sort lint error since sort() mutates in place.
+     */
     const sorted = lineHints.toSorted(
       function byChar(
         left,
@@ -95,7 +99,9 @@ export function applyLineAnnotation({
     let cursor = 0;
 
     for (const hint of sorted) {
-      /** Rendered hint string; used for both row append and cursor advance. */
+      /**
+       * Rendered hint string; used for both row append and cursor advance.
+       */
       const label = formatHintLabel({ hint, },);
       /**
        * Column the hint anchors to; compared against {@link cursor} for overlap.
@@ -119,7 +125,9 @@ export function applyLineAnnotation({
           + label;
       }
       else {
-        /** Overlaps previous hint; flush current row and start fresh. */
+        /**
+         * Overlaps previous hint; flush current row and start fresh.
+         */
         rows.push(rowText,);
         /**
          * Approximates the column offset using {@link spaceRatio} from canvas measurement.

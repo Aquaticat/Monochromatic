@@ -28,10 +28,14 @@ import type {
 
 //region Compression ratio constants
 
-/** Maximum query length sent to Morph (avoids oversized prompts). */
+/**
+ * Maximum query length sent to Morph (avoids oversized prompts).
+ */
 const MAX_QUERY_LENGTH = 500;
 
-/** Default compaction timeout in milliseconds. */
+/**
+ * Default compaction timeout in milliseconds.
+ */
 const COMPACTION_TIMEOUT_MS = 120_000;
 
 /**
@@ -59,10 +63,14 @@ const RATIO_HIGH = 0.4;
  */
 const RATIO_MODERATE = 0.5;
 
-/** Context usage threshold for critical compression. */
+/**
+ * Context usage threshold for critical compression.
+ */
 const THRESHOLD_CRITICAL = 0.8;
 
-/** Context usage threshold for high compression. */
+/**
+ * Context usage threshold for high compression.
+ */
 const THRESHOLD_HIGH = 0.6;
 
 //endregion
@@ -89,7 +97,9 @@ export function chooseCompressionRatio(
   if ((contextUsage === undefined) || (contextUsage.tokens
     === null))
     return RATIO_HIGH;
-  /** Pressure proxy chosen for adaptive ratio selection. */
+  /**
+   * Pressure proxy chosen for adaptive ratio selection.
+   */
   const fraction = contextUsage.tokens
     / contextUsage
     .contextWindow;
@@ -138,14 +148,18 @@ export async function attemptMorphCompaction({
   readonly contextUsage?: Readonly<ContextUsage>;
   readonly apiKey: string;
 },): Promise<MorphCompactionAttempt> {
-  /** Destructured event surface used throughout the attempt body. */
+  /**
+   * Destructured event surface used throughout the attempt body.
+   */
   const {
     preparation,
     branchEntries,
     customInstructions,
     signal,
   } = event;
-  /** Preparation slice carries the message ranges and prior summary. */
+  /**
+   * Preparation slice carries the message ranges and prior summary.
+   */
   const {
     messagesToSummarize,
     turnPrefixMessages,
@@ -155,7 +169,9 @@ export async function attemptMorphCompaction({
     fileOps,
   } = preparation;
 
-  /** Combined message list fed to Morph; order reflects branch order. */
+  /**
+   * Combined message list fed to Morph; order reflects branch order.
+   */
   const allMessages = [
     ...messagesToSummarize,
     ...turnPrefixMessages,
@@ -168,12 +184,16 @@ export async function attemptMorphCompaction({
     === 0) && (previousSummary === undefined))
     return { kind: 'fallback', };
 
-  /** Serialized conversation used as Morph input; empty when re-compressing summary alone. */
+  /**
+   * Serialized conversation used as Morph input; empty when re-compressing summary alone.
+   */
   const conversationText = allMessages.length
     > 0
     ? serializeConversation(convertToLlm(allMessages,),)
     : '';
-  /** Final prompt body sent to Morph; merges prior summary with new content. */
+  /**
+   * Final prompt body sent to Morph; merges prior summary with new content.
+   */
   const input = buildMorphInput({
     serializedConversation: conversationText,
     ...((previousSummary !== undefined) ? { previousSummary, } : {}),
@@ -182,7 +202,9 @@ export async function attemptMorphCompaction({
     === '')
     return { kind: 'fallback', };
 
-  /** Latest user intent forwarded to Morph for relevance ranking. */
+  /**
+   * Latest user intent forwarded to Morph for relevance ranking.
+   */
   const query = extractLatestQuery({
     branchEntries,
     ...((customInstructions !== undefined) ? { customInstructions, } : {}),
@@ -191,24 +213,32 @@ export async function attemptMorphCompaction({
       0,
       MAX_QUERY_LENGTH,
     );
-  /** Adaptive compression ratio derived from current context pressure. */
+  /**
+   * Adaptive compression ratio derived from current context pressure.
+   */
   const ratio = chooseCompressionRatio(contextUsage,);
 
   if (signal.aborted)
     return { kind: 'fallback', };
 
   // Combined signal: respects user cancel + hard timeout
-  /** Cancellation signal merging user abort with hard timeout. */
+  /**
+   * Cancellation signal merging user abort with hard timeout.
+   */
   const combinedSignal = AbortSignal.any([
     signal,
     AbortSignal.timeout(COMPACTION_TIMEOUT_MS,),
   ],);
 
-  /** Per-call client constructed with the resolved API key. */
+  /**
+   * Per-call client constructed with the resolved API key.
+   */
   const client = createMorphCompactClient({
     morphApiKey: apiKey,
   },);
-  /** Network response payload from Morph Compact. */
+  /**
+   * Network response payload from Morph Compact.
+   */
   const result = await client.compact({
     input,
     query,
@@ -219,18 +249,24 @@ export async function attemptMorphCompaction({
     signal: combinedSignal,
   },);
 
-  /** Trimmed compacted body; empty payload triggers fallback. */
+  /**
+   * Trimmed compacted body; empty payload triggers fallback.
+   */
   const output = result.output
     ?.trim();
   if ((output === undefined) || (output === ''))
     return { kind: 'fallback', };
 
-  /** Read vs modified split appended after Morph's summary. */
+  /**
+   * Read vs modified split appended after Morph's summary.
+   */
   const {
     readFiles,
     modifiedFiles,
   } = computeFileLists(fileOps,);
-  /** Final summary string surfaced to pi as compaction output. */
+  /**
+   * Final summary string surfaced to pi as compaction output.
+   */
   const summary = `${wrapMorphOutput(output,)}${
     formatFileOperations({
       readFiles,
@@ -238,7 +274,9 @@ export async function attemptMorphCompaction({
     },)
   }`;
 
-  /** Optional Morph telemetry rolled into details for the UI panel. */
+  /**
+   * Optional Morph telemetry rolled into details for the UI panel.
+   */
   const morphUsage = result.usage
     !== undefined
     ? {
@@ -253,7 +291,9 @@ export async function attemptMorphCompaction({
     }
     : undefined;
 
-  /** Backend-specific payload pi stores alongside the summary. */
+  /**
+   * Backend-specific payload pi stores alongside the summary.
+   */
   const details: MorphCompactionDetails = {
     backend: 'morph',
     version: 1,
@@ -267,7 +307,9 @@ export async function attemptMorphCompaction({
     modifiedFiles,
   };
 
-  /** Final pi-shaped compaction record returned to the caller. */
+  /**
+   * Final pi-shaped compaction record returned to the caller.
+   */
   const compactionResult: CompactionResult<MorphCompactionDetails> = {
     summary,
     firstKeptEntryId,

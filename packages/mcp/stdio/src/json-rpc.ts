@@ -5,7 +5,9 @@
 
 //region JSON-RPC 2.0 base types: foundation for all MCP message exchange
 
-/** Unique request identifier. MCP uses integer or string ids per JSON-RPC 2.0. */
+/**
+ * Unique request identifier. MCP uses integer or string ids per JSON-RPC 2.0.
+ */
 export type JsonRpcId = number | string;
 
 /**
@@ -101,26 +103,38 @@ export type JsonRpcErrorResponse = {
   readonly error: JsonRpcErrorDetail;
 };
 
-/** Any message the server may send back over stdout. */
+/**
+ * Any message the server may send back over stdout.
+ */
 export type JsonRpcOutbound = JsonRpcResponse | JsonRpcErrorResponse;
 
-/** Any message the server may receive over stdin. */
+/**
+ * Any message the server may receive over stdin.
+ */
 export type JsonRpcInbound = JsonRpcRequest | JsonRpcNotification;
 
 //endregion
 
 //region Standard JSON-RPC error codes: used for protocol-level failures
 
-/** Method does not exist or is not available. */
+/**
+ * Method does not exist or is not available.
+ */
 export const JSON_RPC_METHOD_NOT_FOUND = -32_601;
 
-/** Invalid method parameters. */
+/**
+ * Invalid method parameters.
+ */
 export const JSON_RPC_INVALID_PARAMS = -32_602;
 
-/** Internal server error. */
+/**
+ * Internal server error.
+ */
 export const JSON_RPC_INTERNAL_ERROR = -32_603;
 
-/** Failed to parse JSON. */
+/**
+ * Failed to parse JSON.
+ */
 export const JSON_RPC_PARSE_ERROR = -32_700;
 
 //endregion
@@ -146,7 +160,9 @@ export const JSON_RPC_PARSE_ERROR = -32_700;
 export function isJsonRpcMessage(value: unknown,): value is JsonRpcInbound {
   if (((typeof value) !== 'object') || (value === null))
     return false;
-  /** Narrowed view of `value` so the `jsonrpc` and `method` keys can be probed without further casts. */
+  /**
+   * Narrowed view of `value` so the `jsonrpc` and `method` keys can be probed without further casts.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to object above
   const candidate = value as Record<string, unknown>;
   return (candidate.jsonrpc

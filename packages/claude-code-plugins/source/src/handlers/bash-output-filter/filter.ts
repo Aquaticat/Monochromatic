@@ -55,27 +55,43 @@ function filterOutput(input: string,): string {
  * ```
  */
 function collapseLines(lines: readonly string[],): string[] {
-  /** Output buffer that receives each line (or `(xN)` marker) once duplicates are flushed. */
+  /**
+   * Output buffer that receives each line (or `(xN)` marker) once duplicates are flushed.
+   */
   const result: string[] = [];
-  /** Last line emitted, compared against the next line to detect runs of duplicates. */
+  /**
+   * Last line emitted, compared against the next line to detect runs of duplicates.
+   */
   let prevLine = '';
-  /** Number of consecutive occurrences of `prevLine` so far in the current run. */
+  /**
+   * Number of consecutive occurrences of `prevLine` so far in the current run.
+   */
   let repeatCount = 0;
 
   for (const rawLine of lines) {
-    /** Line with trailing whitespace removed before pattern checks and pipeline transforms. */
+    /**
+     * Line with trailing whitespace removed before pattern checks and pipeline transforms.
+     */
     const trimmed = rawLine.trimEnd();
 
     if (shouldStripLine(trimmed,))
       continue;
 
-    /** Trimmed line after runs of identical characters are collapsed. */
+    /**
+     * Trimmed line after runs of identical characters are collapsed.
+     */
     const collapsed = collapseRepeatedChars(trimmed,);
-    /** Same line with absolute paths under the cwd rewritten as relative paths. */
+    /**
+     * Same line with absolute paths under the cwd rewritten as relative paths.
+     */
     const relative = collapseCwdPaths(collapsed,);
-    /** Same line with paths under the user's home rewritten as `~/...`. */
+    /**
+     * Same line with paths under the user's home rewritten as `~/...`.
+     */
     const shortened = collapseHomePaths(relative,);
-    /** Fully-processed line, possibly truncated when too long to display. */
+    /**
+     * Fully-processed line, possibly truncated when too long to display.
+     */
     const processed = truncateLine(shortened,);
 
     if ((processed === prevLine) && (repeatCount > 0))
@@ -115,16 +131,22 @@ function collapseLines(lines: readonly string[],): string[] {
  */
 async function runFilter(): Promise<void> {
   try {
-    /** Full stdin payload from the Bash tool, awaited to EOF before transforms run. */
+    /**
+     * Full stdin payload from the Bash tool, awaited to EOF before transforms run.
+     */
     const input = await text(process.stdin,);
-    /** Filtered text written back to stdout in the happy path. */
+    /**
+     * Filtered text written back to stdout in the happy path.
+     */
     const filtered = filterOutput(input,);
     process.stdout
       .write(filtered,);
   }
   catch {
     try {
-      /** Original stdin payload re-read after a filter failure; preserves output rather than losing it. */
+      /**
+       * Original stdin payload re-read after a filter failure; preserves output rather than losing it.
+       */
       const fallback = await text(process.stdin,);
       process.stdout
         .write(fallback,);

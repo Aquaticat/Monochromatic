@@ -36,25 +36,39 @@ export type {
  * Dispatches `reference-select` CustomEvent when a location is accepted.
  */
 export class ReferencesPopup extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
-  /** Container for the list items. */
+  /**
+   * Container for the list items.
+   */
   #list: HTMLDivElement | null = null;
-  /** Currently displayed locations. */
+  /**
+   * Currently displayed locations.
+   */
   #locations: readonly ReferenceLocation[] = [];
-  /** Index of the selected item (-1 = none). */
+  /**
+   * Index of the selected item (-1 = none).
+   */
   #selectedIndex = -1;
-  /** Invisible anchor div positioned at the editor cursor. */
+  /**
+   * Invisible anchor div positioned at the editor cursor.
+   */
   readonly #anchor: HTMLDivElement;
 
-  /** Initializes the shadow root and creates the anchor div. */
+  /**
+   * Initializes the shadow root and creates the anchor div.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
     this.#anchor = createReferenceAnchor();
   }
 
-  /** Renders the container and sets up popover behavior. */
+  /**
+   * Renders the container and sets up popover behavior.
+   */
   connectedCallback(): void {
     this.#list = h({
       tag: 'div',
@@ -73,7 +87,9 @@ export class ReferencesPopup extends HTMLElement {
       'auto',
     );
 
-    /** Clean up anchor div when popover is light-dismissed. */
+    /**
+     * Clean up anchor div when popover is light-dismissed.
+     */
     const popup = this;
     this.addEventListener(
       'toggle',
@@ -131,14 +147,18 @@ export class ReferencesPopup extends HTMLElement {
       .replaceChildren(...renderReferenceItems({ locations, },),);
   }
 
-  /** Hides the popup and removes the anchor div. */
+  /**
+   * Hides the popup and removes the anchor div.
+   */
   hide(): void {
     if (this.matches(':popover-open',))
       this.hidePopover();
     this.#cleanup();
   }
 
-  /** Resets internal state and removes the anchor element. */
+  /**
+   * Resets internal state and removes the anchor element.
+   */
   #cleanup(): void {
     this.#anchor
       .remove();
@@ -155,7 +175,9 @@ export class ReferencesPopup extends HTMLElement {
     return this.matches(':popover-open',);
   }
 
-  /** Moves the selection up or down. */
+  /**
+   * Moves the selection up or down.
+   */
   navigate({ direction, }: { readonly direction: 'up' | 'down'; },): void {
     if ((this.#locations
       .length
@@ -187,7 +209,9 @@ export class ReferencesPopup extends HTMLElement {
    * ```
    */
   selectReference(location: ReferenceLocation,): ReferenceSelectDetail {
-    /** Public event detail; line is converted to 1-based to match editor convention. */
+    /**
+     * Public event detail; line is converted to 1-based to match editor convention.
+     */
     const detail: ReferenceSelectDetail = {
       path: location.path,
       line: location.line
@@ -219,7 +243,9 @@ export class ReferencesPopup extends HTMLElement {
         .#locations
         .length))
       return null;
-    /** Currently highlighted reference entry; bounds-checked above. */
+    /**
+     * Currently highlighted reference entry; bounds-checked above.
+     */
     const loc = this.#locations[this.#selectedIndex];
     if (loc === undefined)
       return null;

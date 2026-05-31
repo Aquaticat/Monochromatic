@@ -34,7 +34,9 @@ import {
   HTTP_OK,
 } from '../../lib/http.ts';
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -56,7 +58,9 @@ const MISSING: unique symbol = Symbol('messages-demo:field-missing',);
  */
 export const createDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleCreateDraft(event,) {
-    /** Decoded body; defaulted so an absent body still flows through the shape check. */
+    /**
+     * Decoded body; defaulted so an absent body still flows through the shape check.
+     */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
       throw new HTTPError({
@@ -64,17 +68,23 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
         message: 'invalid body',
       },);
     }
-    /** Client-supplied draft id; required so cross-tab races over the same draft collide on the same row. */
+    /**
+     * Client-supplied draft id; required so cross-tab races over the same draft collide on the same row.
+     */
     const id = stringField({
       body,
       key: 'id',
     },);
-    /** Owning user; cross-checked against the draft row by later endpoints. */
+    /**
+     * Owning user; cross-checked against the draft row by later endpoints.
+     */
     const userId = stringField({
       body,
       key: 'user_id',
     },);
-    /** Parent draft id for copy-on-write edits; `MISSING` (omitted below) for fresh messages. */
+    /**
+     * Parent draft id for copy-on-write edits; `MISSING` (omitted below) for fresh messages.
+     */
     const parentId = stringField({
       body,
       key: 'parent_id',
@@ -113,19 +123,25 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
  */
 export const putChunkHandler: EventHandlerWithFetch = defineHandler(
   async function handlePutChunk(event,) {
-    /** Required `:id` path param; bails to 400 when missing. */
+    /**
+     * Required `:id` path param; bails to 400 when missing.
+     */
     const draftId = requirePathParam({
       ...paramsInput(event.context
         .params,),
       name: 'id',
     },);
-    /** Raw `:seq` path param; parsed as decimal below. */
+    /**
+     * Raw `:seq` path param; parsed as decimal below.
+     */
     const seqRaw = requirePathParam({
       ...paramsInput(event.context
         .params,),
       name: 'seq',
     },);
-    /** Parsed seq; non-negative integer or the request is rejected. */
+    /**
+     * Parsed seq; non-negative integer or the request is rejected.
+     */
     const seq = Number.parseInt(
       seqRaw,
       DECIMAL_RADIX,
@@ -137,7 +153,9 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
-    /** Decoded body; defaulted so an absent body still flows through the shape check. */
+    /**
+     * Decoded body; defaulted so an absent body still flows through the shape check.
+     */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
       throw new HTTPError({
@@ -145,17 +163,23 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
         message: 'invalid body',
       },);
     }
-    /** Markdown payload; required, written to chunks.md. */
+    /**
+     * Markdown payload; required, written to chunks.md.
+     */
     const md = stringField({
       body,
       key: 'md',
     },);
-    /** Rendered HTML payload; required, written to chunks.html. */
+    /**
+     * Rendered HTML payload; required, written to chunks.html.
+     */
     const html = stringField({
       body,
       key: 'html',
     },);
-    /** Raw `char_count` value; narrowed to number below before the upsert. */
+    /**
+     * Raw `char_count` value; narrowed to number below before the upsert.
+     */
     const charCountRaw = body.char_count;
     if ((md === MISSING) || (html === MISSING)
       || ((typeof charCountRaw) !== 'number')) {
@@ -175,7 +199,9 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
       },
     },);
 
-    /** Highest contiguous seq already on disk; the client uses this to drop acknowledged outbox entries. */
+    /**
+     * Highest contiguous seq already on disk; the client uses this to drop acknowledged outbox entries.
+     */
     const ack = await highestContiguousSeq(draftId,);
     return Response.json(
       { ack, },
@@ -199,13 +225,17 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
  */
 export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleFinalizeDraft(event,) {
-    /** Required `:id` path param; bails to 400 when missing. */
+    /**
+     * Required `:id` path param; bails to 400 when missing.
+     */
     const draftId = requirePathParam({
       ...paramsInput(event.context
         .params,),
       name: 'id',
     },);
-    /** Decoded body; defaulted so an absent body still flows through the shape check. */
+    /**
+     * Decoded body; defaulted so an absent body still flows through the shape check.
+     */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
       throw new HTTPError({
@@ -213,19 +243,27 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
         message: 'invalid body',
       },);
     }
-    /** Identity claimed by the finalize call; cross-checked against the draft row. */
+    /**
+     * Identity claimed by the finalize call; cross-checked against the draft row.
+     */
     const userId = stringField({
       body,
       key: 'user_id',
     },);
-    /** Preview snippet copied into messages.preview for the index page. */
+    /**
+     * Preview snippet copied into messages.preview for the index page.
+     */
     const preview = stringField({
       body,
       key: 'preview',
     },);
-    /** Raw `char_count`; narrowed to number below before the finalize. */
+    /**
+     * Raw `char_count`; narrowed to number below before the finalize.
+     */
     const charCount = body.char_count;
-    /** Raw `chunk_count`; narrowed to number below before the finalize. */
+    /**
+     * Raw `chunk_count`; narrowed to number below before the finalize.
+     */
     const chunkCount = body.chunk_count;
     if (
       (userId === MISSING)
@@ -239,7 +277,9 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
-    /** Newly-allocated messages.id; `REJECTED` when the draft is empty, missing, or owned by another user. */
+    /**
+     * Newly-allocated messages.id; `REJECTED` when the draft is empty, missing, or owned by another user.
+     */
     const messageId = await finalizeDraft({
       draftId,
       userId,
@@ -281,7 +321,9 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
  */
 export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleCancelDraft(event,) {
-    /** Required `:id` path param; bails to 400 when missing. */
+    /**
+     * Required `:id` path param; bails to 400 when missing.
+     */
     const draftId = requirePathParam({
       ...paramsInput(event.context
         .params,),
@@ -302,7 +344,9 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
         return {};
       }
     }
-    /** Best-effort body read; cancel tolerates absent body and reads identity from the JSON below. */
+    /**
+     * Best-effort body read; cancel tolerates absent body and reads identity from the JSON below.
+     */
     const body = await readBodyOrEmpty();
     if (!isRecord(body,)) {
       throw new HTTPError({
@@ -310,7 +354,9 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
         message: 'invalid body',
       },);
     }
-    /** Identity claimed by the cancel call; cross-checked against the draft row. */
+    /**
+     * Identity claimed by the cancel call; cross-checked against the draft row.
+     */
     const userId = stringField({
       body,
       key: 'user_id',
@@ -322,7 +368,9 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
-    /** True when the cancel deleted a draft; false signals not-found or ownership mismatch. */
+    /**
+     * True when the cancel deleted a draft; false signals not-found or ownership mismatch.
+     */
     const removed = await cancelDraft({
       draftId,
       userId,
@@ -375,7 +423,9 @@ function stringField({
   readonly body: Readonly<Record<string, unknown>>;
   readonly key: string;
 },): string | typeof MISSING {
-  /** Indexed once so the typeof narrow and the return both reference the same value. */
+  /**
+   * Indexed once so the typeof narrow and the return both reference the same value.
+   */
   const value = body[key];
   return (typeof value) === 'string' ? value : MISSING;
 }
@@ -421,7 +471,9 @@ function requirePathParam({
   readonly params?: Readonly<Record<string, string>>;
   readonly name: string;
 },): string {
-  /** Indexed once so the empty-string check and the return both reference the same value. */
+  /**
+   * Indexed once so the empty-string check and the return both reference the same value.
+   */
   const value = params?.[name];
   if ((value === undefined) || (value === '')) {
     throw new HTTPError({

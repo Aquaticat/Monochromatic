@@ -21,7 +21,9 @@ import type { AppState, } from './scripts/state.ts';
 
 //region Types
 
-/** Probe + its original index in the source array; preserved through partitioning so visibility lookups stay accurate. */
+/**
+ * Probe + its original index in the source array; preserved through partitioning so visibility lookups stay accurate.
+ */
 export type ScatterDatum = Readonly<{
   probe: PackageProbe;
   originalIndex: number;
@@ -31,7 +33,9 @@ export type ScatterDatum = Readonly<{
 
 //region Constants
 
-/** Maximum number of probes that receive baked-name textures under `nameLabels === 'topN'`. */
+/**
+ * Maximum number of probes that receive baked-name textures under `nameLabels === 'topN'`.
+ */
 const TOP_N_NAMES = 10;
 
 //endregion Constants
@@ -67,11 +71,17 @@ export function partitionProbes(
   nonLeaf: readonly ScatterDatum[];
   unknown: readonly ScatterDatum[];
 } {
-  /** Leaf-package bucket (no transitive deps, drawn as filled spheres). */
+  /**
+   * Leaf-package bucket (no transitive deps, drawn as filled spheres).
+   */
   const leaf: ScatterDatum[] = [];
-  /** Non-leaf bucket (has transitive deps, drawn as octahedra). */
+  /**
+   * Non-leaf bucket (has transitive deps, drawn as octahedra).
+   */
   const nonLeaf: ScatterDatum[] = [];
-  /** Unknown bucket (missing dim values or flagged via `unknownReason`); drawn at the +max corner. */
+  /**
+   * Unknown bucket (missing dim values or flagged via `unknownReason`); drawn at the +max corner.
+   */
   const unknown: ScatterDatum[] = [];
   probes.forEach(function bucket(
     probe,

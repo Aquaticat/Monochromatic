@@ -45,7 +45,9 @@ export function findAncestorWithFile(
     filename: string;
   },
 ): string | null {
-  /** Walking cursor; advances toward the filesystem root each iteration until the file is found or the root is reached. */
+  /**
+   * Walking cursor; advances toward the filesystem root each iteration until the file is found or the root is reached.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- filesystem walking cursor advances toward root each iteration
   let current = startDir;
   while (true) {
@@ -55,7 +57,9 @@ export function findAncestorWithFile(
     ),)) {
       return current;
     }
-    /** Directory one level above `current`; equal to `current` only at the filesystem root, which terminates the walk. */
+    /**
+     * Directory one level above `current`; equal to `current` only at the filesystem root, which terminates the walk.
+     */
     const parent = dirname(current,);
     if (parent === current)
       return null;
@@ -92,29 +96,39 @@ export function parseOxlintOutput(
     cwd: string;
   },
 ): Map<string, Diagnostic[]> {
-  /** Output accumulator keyed by absolute path; populated below as diagnostics are converted entry by entry. */
+  /**
+   * Output accumulator keyed by absolute path; populated below as diagnostics are converted entry by entry.
+   */
   const result = new Map<string, Diagnostic[]>();
 
   for (const entry of output.diagnostics) {
-    /** First label span; supplies the line/column for this diagnostic, or `undefined` when oxlint omitted it. */
+    /**
+     * First label span; supplies the line/column for this diagnostic, or `undefined` when oxlint omitted it.
+     */
     const span = entry.labels[0]
       ?.span;
     if (span === undefined)
       continue;
 
-    /** Absolute path of the file the diagnostic belongs to; resolved against `cwd` so callers can key off it directly. */
+    /**
+     * Absolute path of the file the diagnostic belongs to; resolved against `cwd` so callers can key off it directly.
+     */
     const absolutePath = resolve(
       cwd,
       entry.filename,
     );
-    /** Final diagnostic text; appends the optional `help:` block when oxlint provided one. */
+    /**
+     * Final diagnostic text; appends the optional `help:` block when oxlint provided one.
+     */
     const message = ((entry.help
       !== undefined) && (entry.help
         .length
         > 0))
       ? `${entry.message} (help: ${entry.help})`
       : entry.message;
-    /** Diagnostic record in the shape consumed by the rest of the pipeline. */
+    /**
+     * Diagnostic record in the shape consumed by the rest of the pipeline.
+     */
     const diagnostic: Diagnostic = {
       severity: OXLINT_SEVERITY_MAP[entry.severity]
         ?? `UNKNOWN(${entry.severity})`,
@@ -127,7 +141,9 @@ export function parseOxlintOutput(
       code: entry.code,
     };
 
-    /** Diagnostics already accumulated for this path; extended in place when present to avoid an extra Map write. */
+    /**
+     * Diagnostics already accumulated for this path; extended in place when present to avoid an extra Map write.
+     */
     const existing = result.get(absolutePath,);
     if (existing !== undefined)
       existing.push(diagnostic,);

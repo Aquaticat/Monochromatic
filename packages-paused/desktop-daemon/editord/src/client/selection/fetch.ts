@@ -39,7 +39,9 @@ export async function fetchChain({
   readonly line: number;
   readonly character: number;
 },): Promise<readonly SelectionRange[]> {
-  /** Server response: one chain per requested position; only the first is used here. */
+  /**
+   * Server response: one chain per requested position; only the first is used here.
+   */
   const { ranges, } = await ws.request({
     type: 'selectionRange',
     path,
@@ -48,7 +50,9 @@ export async function fetchChain({
       character,
     },],
   },);
-  /** Innermost selection range; subsequent `parent` pointers form the chain. */
+  /**
+   * Innermost selection range; subsequent `parent` pointers form the chain.
+   */
   const [first,] = ranges;
   if (first === undefined)
     return [];

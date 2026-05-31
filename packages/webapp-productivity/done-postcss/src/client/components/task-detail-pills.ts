@@ -12,11 +12,17 @@ import type {
 import { formatRunningTrackedTime, } from '../lib/format-tracked-time.ts';
 import { METADATA_UNSET, } from './task-detail-types.ts';
 
-/** Single pill descriptor with a field identifier and display text. */
+/**
+ * Single pill descriptor with a field identifier and display text.
+ */
 export type PillDatum = {
-  /** Metadata field this pill represents. */
+  /**
+   * Metadata field this pill represents.
+   */
   readonly field: string;
-  /** Display text shown inside the pill. */
+  /**
+   * Display text shown inside the pill.
+   */
   readonly text: string;
 };
 
@@ -134,7 +140,9 @@ export function buildPillElements(
 ): HTMLElement[] {
   return pills.map(
     function buildPill(pill,): HTMLElement {
-      /** Span captured so loading and autofilled data attributes can be set conditionally. */
+      /**
+       * Span captured so loading and autofilled data attributes can be set conditionally.
+       */
       const element = h({
         tag: 'span',
         class: 'pill',

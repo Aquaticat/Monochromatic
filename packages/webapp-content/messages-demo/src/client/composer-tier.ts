@@ -8,19 +8,29 @@
 
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 
-/** Tier-2 threshold in kibibytes. */
+/**
+ * Tier-2 threshold in kibibytes.
+ */
 const TIER_2_THRESHOLD_KIB = 8;
 
-/** Tier-3 threshold in kibibytes. */
+/**
+ * Tier-3 threshold in kibibytes.
+ */
 const TIER_3_THRESHOLD_KIB = 1_024;
 
-/** Body-size threshold (chars) to promote from tier 1 to tier 2. */
+/**
+ * Body-size threshold (chars) to promote from tier 1 to tier 2.
+ */
 export const TIER_2_THRESHOLD: number = TIER_2_THRESHOLD_KIB * BYTES_PER_KIB;
 
-/** Body-size threshold (chars) to promote from tier 2 to tier 3. */
+/**
+ * Body-size threshold (chars) to promote from tier 2 to tier 3.
+ */
 export const TIER_3_THRESHOLD: number = TIER_3_THRESHOLD_KIB * BYTES_PER_KIB;
 
-/** Outcome of a single tier-promotion check. */
+/**
+ * Outcome of a single tier-promotion check.
+ */
 export type TierTransition =
   | { readonly kind: 'none'; }
   | { readonly kind: 'to-tier-2'; }

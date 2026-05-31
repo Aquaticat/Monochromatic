@@ -18,12 +18,16 @@ import { pathToFileURL, } from 'node:url';
 import type { Page, } from '@playwright/test';
 
 declare global {
-  /** Bundled module-dom helpers exposed on `globalThis` by the test harness. */
+  /**
+   * Bundled module-dom helpers exposed on `globalThis` by the test harness.
+   */
   // oxlint-disable-next-line typescript-eslint/consistent-type-imports -- typeof import() cannot use import type syntax
   var moduleDom: typeof import('./index.ts');
 }
 
-/** Absolute file URL to the test harness HTML (empty body, no scripts). */
+/**
+ * Absolute file URL to the test harness HTML (empty body, no scripts).
+ */
 export const HARNESS_URL: string = pathToFileURL(
   join(
     import.meta.dirname,
@@ -139,14 +143,18 @@ function parseTrailingExportClause(source: string,): {
   namedExports: string;
   clauseStart: number;
 } | typeof NO_CLAUSE {
-  /** Last non-whitespace position; `-1` means the source is empty/whitespace-only. */
+  /**
+   * Last non-whitespace position; `-1` means the source is empty/whitespace-only.
+   */
   const lastIdx = lastNonWhitespaceIndex({
     s: source,
     end: source.length,
   },);
   if (lastIdx === (-1))
     return NO_CLAUSE;
-  /** Position of the closing `}`; the semicolon is optional in the original regex. */
+  /**
+   * Position of the closing `}`; the semicolon is optional in the original regex.
+   */
   const closeBrace = (source.charAt(lastIdx,)
     === ';')
     ? lastNonWhitespaceIndex({
@@ -157,24 +165,32 @@ function parseTrailingExportClause(source: string,): {
   if ((closeBrace === (-1)) || (source.charAt(closeBrace,)
     !== '}'))
     return NO_CLAUSE;
-  /** Position of the matching `{`; the original regex requires `[^}]+` between, so the last `{` before `}` is correct. */
+  /**
+   * Position of the matching `{`; the original regex requires `[^}]+` between, so the last `{` before `}` is correct.
+   */
   const openBrace = source.lastIndexOf(
     '{',
     closeBrace - 1,
   );
   if (openBrace === (-1))
     return NO_CLAUSE;
-  /** Position immediately before `{`, skipping intervening whitespace; the `export` keyword should end here. */
+  /**
+   * Position immediately before `{`, skipping intervening whitespace; the `export` keyword should end here.
+   */
   const beforeOpen = lastNonWhitespaceIndex({
     s: source,
     end: openBrace,
   },);
-  /** Literal keyword the clause must lead with. */
+  /**
+   * Literal keyword the clause must lead with.
+   */
   const EXPORT = 'export';
   if (beforeOpen < (EXPORT.length
     - 1))
     return NO_CLAUSE;
-  /** Inclusive start of the `export` keyword candidate; the byte before it must not be a word char. */
+  /**
+   * Inclusive start of the `export` keyword candidate; the byte before it must not be a word char.
+   */
   const wordStart = (beforeOpen - EXPORT
     .length) + 1;
   if (
@@ -217,17 +233,23 @@ function parseTrailingExportClause(source: string,): {
  * ```
  */
 async function bundleAsGlobalAssignment(): Promise<string> {
-  /** Previously-computed rewritten bundle; reused across calls in the same Playwright run. */
+  /**
+   * Previously-computed rewritten bundle; reused across calls in the same Playwright run.
+   */
   const cached = bundleSourceCache.get(BUNDLE_PATH,);
   if (cached !== undefined)
     return cached;
 
-  /** Raw bundle contents read from disk before the trailing `export { ... }` rewrite. */
+  /**
+   * Raw bundle contents read from disk before the trailing `export { ... }` rewrite.
+   */
   const source = await readFile(
     BUNDLE_PATH,
     'utf8',
   );
-  /** Parsed trailing `export { ... }` clause; throws when the bundle shape is unexpected. */
+  /**
+   * Parsed trailing `export { ... }` clause; throws when the bundle shape is unexpected.
+   */
   const clause = parseTrailingExportClause(source,);
   if (clause === NO_CLAUSE) {
     throw new Error(
@@ -235,12 +257,16 @@ async function bundleAsGlobalAssignment(): Promise<string> {
     );
   }
 
-  /** Bundle text with the trailing `export { ... }` removed; ready for global rewrite. */
+  /**
+   * Bundle text with the trailing `export { ... }` removed; ready for global rewrite.
+   */
   const stripped = source.slice(
     0,
     clause.clauseStart,
   );
-  /** Final bundle text where the named exports are assigned to `globalThis.moduleDom` for inline-script consumption. */
+  /**
+   * Final bundle text where the named exports are assigned to `globalThis.moduleDom` for inline-script consumption.
+   */
   const rewritten = `${stripped}globalThis.moduleDom = { ${clause.namedExports} };`;
   bundleSourceCache.set(
     BUNDLE_PATH,
@@ -257,13 +283,19 @@ async function bundleAsGlobalAssignment(): Promise<string> {
  * immutable yet a real `Page` satisfies it structurally at every call site.
  */
 type HarnessPage = Readonly<{
-  /** Navigates to the harness URL. */
+  /**
+   * Navigates to the harness URL.
+   */
   goto: Page['goto'];
 
-  /** Injects the bundled helpers as an inline module script. */
+  /**
+   * Injects the bundled helpers as an inline module script.
+   */
   addScriptTag: Page['addScriptTag'];
 
-  /** Polls until `globalThis.moduleDom` is set. */
+  /**
+   * Polls until `globalThis.moduleDom` is set.
+   */
   waitForFunction: Page['waitForFunction'];
 }>;
 
@@ -293,13 +325,17 @@ export async function loadHarness(
     query?: string;
   }>,
 ): Promise<void> {
-  /** Harness URL with the optional query string normalised to a leading `?`. */
+  /**
+   * Harness URL with the optional query string normalised to a leading `?`.
+   */
   const url = (query === undefined) || (query === '')
     ? HARNESS_URL
     : `${HARNESS_URL}${query.startsWith('?',) ? query : `?${query}`}`;
   await page.goto(url,);
 
-  /** Bundle text where the named exports are rewritten as a `globalThis.moduleDom` assignment for inline injection. */
+  /**
+   * Bundle text where the named exports are rewritten as a `globalThis.moduleDom` assignment for inline injection.
+   */
   const content = await bundleAsGlobalAssignment();
   await page.addScriptTag({
     content,

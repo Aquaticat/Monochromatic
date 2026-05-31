@@ -33,13 +33,17 @@ import type { Probe, } from '../probes.ts';
  * @returns concatenated interpreter source
  */
 async function readInterpreterSource(): Promise<string> {
-  /** Interpreter source files in dependency order; concatenation flows top-down for the model. */
+  /**
+   * Interpreter source files in dependency order; concatenation flows top-down for the model.
+   */
   const files = [
     '../stak/interpreter-jumps.ts',
     '../stak/interpreter-ops.ts',
     '../stak/interpreter.ts',
   ] as const;
-  /** Raw file contents fetched in parallel; joined below into the embedded prompt block. */
+  /**
+   * Raw file contents fetched in parallel; joined below into the embedded prompt block.
+   */
   const sources = await Promise.all(
     files.map(function readSourceFile(relativePath,): Promise<string> {
       return readFile(
@@ -54,7 +58,9 @@ async function readInterpreterSource(): Promise<string> {
   return sources.join('\n',);
 }
 
-/** Interpreter TypeScript source, read at module load time and embedded in every probe invocation */
+/**
+ * Interpreter TypeScript source, read at module load time and embedded in every probe invocation
+ */
 const INTERPRETER_SOURCE = await readInterpreterSource();
 
 /**
@@ -63,13 +69,17 @@ const INTERPRETER_SOURCE = await readInterpreterSource();
  * @returns formatted prompt string
  */
 function buildSimulationPrompt(): string {
-  /** One formatted block per simulation case; spliced into the prompt below. */
+  /**
+   * One formatted block per simulation case; spliced into the prompt below.
+   */
   const programBlocks = SIMULATION_CASES.map(
     function formatCase(
       testCase,
       index,
     ): string {
-      /** Lines composing one program block: header, fence open, program body, fence close. */
+      /**
+       * Lines composing one program block: header, fence open, program body, fence close.
+       */
       const lines = [
         `Program ${String(index + 1,)}:`,
         '```',
@@ -112,7 +122,9 @@ function buildSimulationPrompt(): string {
  * @returns array of trimmed output sections, one per program
  */
 function parseSections(response: string,): readonly string[] {
-  /** Response with `---` separators forced onto their own line so the split below stays uniform. */
+  /**
+   * Response with `---` separators forced onto their own line so the split below stays uniform.
+   */
   const normalized = forceDashSeparatorsToOwnLine(response,);
   return splitOnDashOnlyLines(normalized,)
     .map(function trimSection(section,): string {
@@ -141,22 +153,34 @@ function parseSections(response: string,): readonly string[] {
  * ```
  */
 export function forceDashSeparatorsToOwnLine(s: string,): string {
-  /** Length of the `---` separator literal; used as the cursor step. */
+  /**
+   * Length of the `---` separator literal; used as the cursor step.
+   */
   const DASH_SEPARATOR_LENGTH = '---'.length;
   return (function build(): string {
-    /** Output fragments in order; joined once so the accumulator is never rebuilt per match (O(n), no recursion). */
+    /**
+     * Output fragments in order; joined once so the accumulator is never rebuilt per match (O(n), no recursion).
+     */
     const out: string[] = [];
-    /** Start of the not-yet-emitted text; advances three chars past each `---`. */
+    /**
+     * Start of the not-yet-emitted text; advances three chars past each `---`.
+     */
     let from = 0;
-    /** Position of the next `---` at or after `from`; `-1` ends the scan. */
+    /**
+     * Position of the next `---` at or after `from`; `-1` ends the scan.
+     */
     let idx = s.indexOf(
       '---',
       from,
     );
     while (idx !== (-1)) {
-      /** Char immediately before the match (or `'\n'` for start-of-string). */
+      /**
+       * Char immediately before the match (or `'\n'` for start-of-string).
+       */
       const prev = idx === 0 ? '\n' : s.charAt(idx - 1,);
-      /** Synthetic newline inserted unless the match already opens a line. */
+      /**
+       * Synthetic newline inserted unless the match already opens a line.
+       */
       const insertion = prev === '\n' ? '' : '\n';
       out.push(
         s.slice(
@@ -192,11 +216,17 @@ export function forceDashSeparatorsToOwnLine(s: string,): string {
  * ```
  */
 export function splitOnDashOnlyLines(s: string,): string[] {
-  /** Lines after a primary `\n` split; separator lines are exactly `---`. */
+  /**
+   * Lines after a primary `\n` split; separator lines are exactly `---`.
+   */
   const lines = s.split('\n',);
-  /** Completed sections in order; a separator line (and the final line) always flushes one, even when empty, so consecutive and edge separators yield empty sections. */
+  /**
+   * Completed sections in order; a separator line (and the final line) always flushes one, even when empty, so consecutive and edge separators yield empty sections.
+   */
   const sections: string[] = [];
-  /** Lines since the last separator; flushed into `sections` and cleared on each separator so the accumulator is never copied (O(n) total). */
+  /**
+   * Lines since the last separator; flushed into `sections` and cleared on each separator so the accumulator is never copied (O(n) total).
+   */
   const current: string[] = [];
 
   for (const line of lines) {
@@ -230,7 +260,9 @@ export const stakSimulation: Probe = {
      * Per-program output sections parsed from the response; positional alignment with {@link SIMULATION_CASES}.
      */
     const sections = parseSections(response,);
-    /** Probe-specific logger for simulation case mismatch messages. */
+    /**
+     * Probe-specific logger for simulation case mismatch messages.
+     */
     const rl = tagged({
       tag: 'stak-simulation',
       l: tagged({
@@ -238,15 +270,21 @@ export const stakSimulation: Probe = {
         l,
       },),
     },);
-    /** Per-case match flags; logged on mismatch and reduced to the overall pass/fail score. */
+    /**
+     * Per-case match flags; logged on mismatch and reduced to the overall pass/fail score.
+     */
     const matches = SIMULATION_CASES.map(function checkCase(
       testCase,
       index,
     ): boolean {
-      /** Section text for this case; empty string when the response had fewer sections than cases. */
+      /**
+       * Section text for this case; empty string when the response had fewer sections than cases.
+       */
       const section = sections[index]
         ?? '';
-      /** Whether this case's output matches its expectation exactly (whitespace-trimmed). */
+      /**
+       * Whether this case's output matches its expectation exactly (whitespace-trimmed).
+       */
       const match = section === testCase
         .expected;
       if (!match) {

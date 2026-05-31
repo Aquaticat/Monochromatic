@@ -63,7 +63,9 @@ function hasFlag(
   },
 ): boolean {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- latched mid-iteration after seeing `--`; pulling into reduce hurts readability without changing behaviour */
-  /** Latch flipped on `--`; subsequent args are treated as positional and ignored by the matcher. */
+  /**
+   * Latch flipped on `--`; subsequent args are treated as positional and ignored by the matcher.
+   */
   let pastEndOfOptions = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   return args.some(
@@ -109,7 +111,9 @@ function hasFlag(
 function hasRootTarget(
   cmd: Pick<CommandInfo, 'args' | 'redirectTargets'>,
 ): boolean {
-  /** Every positional and redirect target as a flat list; each is tested for `/` or `/*`. */
+  /**
+   * Every positional and redirect target as a flat list; each is tested for `/` or `/*`.
+   */
   const allTargets = [
     ...cmd.args,
     ...cmd.redirectTargets,
@@ -139,7 +143,9 @@ function hasInlineCode(
     readonly args: readonly string[];
   },
 ): boolean {
-  /** Inline-code flags registered for this interpreter; `undefined` for non-interpreters. */
+  /**
+   * Inline-code flags registered for this interpreter; `undefined` for non-interpreters.
+   */
   const flags = INTERPRETER_INLINE_FLAGS[name];
   if (flags === undefined)
     return false;

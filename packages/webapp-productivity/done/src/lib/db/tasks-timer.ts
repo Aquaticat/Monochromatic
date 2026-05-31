@@ -33,7 +33,9 @@ import {
  * ```
  */
 export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
-  /** Captured once so both the `started_at` and `updated_at` columns share the value. */
+  /**
+   * Captured once so both the `started_at` and `updated_at` columns share the value.
+   */
   const timestamp = nowIso();
   await db.prepare(SQL_START_TIMER,)
     .run(
@@ -58,12 +60,16 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
  * ```
  */
 export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
-  /** Pre-update snapshot used to compute the elapsed delta. */
+  /**
+   * Pre-update snapshot used to compute the elapsed delta.
+   */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND)
     return TASK_NOT_FOUND;
 
-  /** Live seconds between `timerStartedAt` and now; zero when no timer was running. */
+  /**
+   * Live seconds between `timerStartedAt` and now; zero when no timer was running.
+   */
   const elapsedSeconds = currentTask.timerStartedAt
     === undefined
     ? 0
@@ -75,10 +81,14 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
           .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
-  /** Accumulated total persisted to the row's `tracked_time` column. */
+  /**
+   * Accumulated total persisted to the row's `tracked_time` column.
+   */
   const updatedTrackedTime = currentTask.trackedTime
     + elapsedSeconds;
-  /** Captured once so the `updated_at` column carries the same value as the calculation. */
+  /**
+   * Captured once so the `updated_at` column carries the same value as the calculation.
+   */
   const timestamp = nowIso();
 
   await db.prepare(SQL_STOP_TIMER,)
@@ -105,7 +115,9 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
  * ```
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
-  /** Snapshot needed for the timer-stop branch below; the sentinel distinguishes not-found. */
+  /**
+   * Snapshot needed for the timer-stop branch below; the sentinel distinguishes not-found.
+   */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND) {
     return {
@@ -116,7 +128,9 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   }
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns blocker join columns */
-  /** Rows of unresolved blockers; empty allows completion. */
+  /**
+   * Rows of unresolved blockers; empty allows completion.
+   */
   const blockingRows = await db
     .prepare(SQL_SELECT_BLOCKERS,)
     .all(id,) as {
@@ -125,7 +139,9 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
     }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-  /** Reshaped blocker summaries returned to the API caller for UI rendering. */
+  /**
+   * Reshaped blocker summaries returned to the API caller for UI rendering.
+   */
   const blockedBy = blockingRows.map(function toBlockerSummary(row,) {
     return {
       blockerId: row.blocker_id,

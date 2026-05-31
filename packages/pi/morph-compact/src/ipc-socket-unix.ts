@@ -20,10 +20,14 @@ import { join, } from 'node:path';
 
 //region Constants
 
-/** Milliseconds before the server auto-closes if no client connects. */
+/**
+ * Milliseconds before the server auto-closes if no client connects.
+ */
 const SERVER_IDLE_TIMEOUT_MS = 30_000;
 
-/** Milliseconds before a client read attempt times out. */
+/**
+ * Milliseconds before a client read attempt times out.
+ */
 const CLIENT_READ_TIMEOUT_MS = 10_000;
 
 //endregion
@@ -34,9 +38,13 @@ const CLIENT_READ_TIMEOUT_MS = 10_000;
  * Result of creating a one-shot socket server.
  */
 export type OneShotSocketServerResult = {
-  /** Filesystem path of the Unix domain socket. */
+  /**
+   * Filesystem path of the Unix domain socket.
+   */
   socketPath: string;
-  /** Unlinks the socket file and closes the server. */
+  /**
+   * Unlinks the socket file and closes the server.
+   */
   cleanup: () => void;
 };
 
@@ -68,7 +76,9 @@ export type OneShotSocketServerResult = {
 export function createOneShotSocketServer(
   text: string,
 ): OneShotSocketServerResult {
-  /** Unique socket path under the system tmpdir for this one-shot run. */
+  /**
+   * Unique socket path under the system tmpdir for this one-shot run.
+   */
   const socketPath = join(
     tmpdir(),
     `morph-compact-${randomUUID()}.sock`,
@@ -84,11 +94,15 @@ export function createOneShotSocketServer(
     server?: Server;
     idleTimer?: ReturnType<typeof setTimeout>;
   } = {};
-  /** Guards against re-entry when multiple clients race to connect. */
+  /**
+   * Guards against re-entry when multiple clients race to connect.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch for racing client connections
   let served = false;
 
-  /** Close the server and unlink the socket file. */
+  /**
+   * Close the server and unlink the socket file.
+   */
   function close(): void {
     if (handles.idleTimer
       !== undefined) {
@@ -190,9 +204,13 @@ export function readFromUnixSocket(
       resolve,
       reject,
     ): void {
-      /** Captured data buffers concatenated when the server ends the stream. */
+      /**
+       * Captured data buffers concatenated when the server ends the stream.
+       */
       const chunks: Buffer[] = [];
-      /** Latch ensuring resolve/reject is called exactly once. */
+      /**
+       * Latch ensuring resolve/reject is called exactly once.
+       */
       // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch shared between data/end/error handlers and the timeout
       let settled = false;
 
@@ -220,7 +238,9 @@ export function readFromUnixSocket(
           resolve(result ?? '',);
       }
 
-      /** Outbound connection whose event handlers feed the promise lifecycle. */
+      /**
+       * Outbound connection whose event handlers feed the promise lifecycle.
+       */
       const socket = createConnection(
         { path: socketPath, },
         function onConnect(): void {

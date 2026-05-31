@@ -16,7 +16,9 @@
  */
 import type { Locales, } from './i18n-types.ts';
 
-/** Autonym for each supported locale; never translated. */
+/**
+ * Autonym for each supported locale; never translated.
+ */
 export const LANG_NAMES: Record<Locales, string> = {
   ca: 'Català',
   en: 'English',

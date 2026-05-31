@@ -11,7 +11,9 @@ import { resolveGit, } from './resolve-git.ts';
 //region Effective target classification
 
 /* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile even though execFile also returns a ChildProcess handle; this wrapper only consumes the promise result. */
-/** Promisified child_process.execFile used for read-only git queries. */
+/**
+ * Promisified child_process.execFile used for read-only git queries.
+ */
 const execFileAsync = promisify(execFile,);
 /* oxlint-enable typescript/strict-void-return */
 
@@ -26,19 +28,31 @@ export type EffectiveTarget =
   | 'linked-worktree'
   | 'allowlisted';
 
-/** Options for classifying the effective target git would operate on. */
+/**
+ * Options for classifying the effective target git would operate on.
+ */
 type ClassifyEffectiveTargetOptions = {
-  /** Pre-subcommand region of the wrapper invocation (global git options). */
+  /**
+   * Pre-subcommand region of the wrapper invocation (global git options).
+   */
   readonly preSubcommandArgs: readonly string[];
-  /** Effective cwd after `-C` chaining; supplied so query starts in the same place. */
+  /**
+   * Effective cwd after `-C` chaining; supplied so query starts in the same place.
+   */
   readonly effectiveCwd: string;
-  /** Tool-cache roots whose repositories bypass enforcement; injectable for tests, defaults to the baked-in list. */
+  /**
+   * Tool-cache roots whose repositories bypass enforcement; injectable for tests, defaults to the baked-in list.
+   */
   readonly allowedWorktreeDirs?: readonly string[];
 };
 
-/** child_process.execFile error carrying subprocess exit code. */
+/**
+ * child_process.execFile error carrying subprocess exit code.
+ */
 type ExecFileExitError = Error & {
-  /** Numeric exit status returned by child process. */
+  /**
+   * Numeric exit status returned by child process.
+   */
   readonly code: number;
 };
 
@@ -98,13 +112,21 @@ function stripTrailingLineBreak(output: string,): string {
  */
 const OUTSIDE_WORKTREE = Symbol('outside-worktree',);
 
-/** Options for the read-only worktree metadata query. */
+/**
+ * Options for the read-only worktree metadata query.
+ */
 type ReadGitWorktreeMetadataOptions = {
-  /** Absolute path to real git binary. */
+  /**
+   * Absolute path to real git binary.
+   */
   readonly gitPath: string;
-  /** Pre-subcommand region carried verbatim into the query so repo-selection options apply. */
+  /**
+   * Pre-subcommand region carried verbatim into the query so repo-selection options apply.
+   */
   readonly preSubcommandArgs: readonly string[];
-  /** Effective cwd anchored via `-C` so relative `-C` chains resolve from this point. */
+  /**
+   * Effective cwd anchored via `-C` so relative `-C` chains resolve from this point.
+   */
   readonly effectiveCwd: string;
 };
 
@@ -139,7 +161,9 @@ async function readGitWorktreeMetadata({
   preSubcommandArgs,
   effectiveCwd,
 }: ReadGitWorktreeMetadataOptions,): Promise<string | typeof OUTSIDE_WORKTREE> {
-  /** Argv that mirrors caller's repo selection while running a read-only rev-parse. */
+  /**
+   * Argv that mirrors caller's repo selection while running a read-only rev-parse.
+   */
   const queryArgs: readonly string[] = [
     ...preSubcommandArgs,
     '-C',
@@ -152,7 +176,9 @@ async function readGitWorktreeMetadata({
   ];
 
   try {
-    /** Result of read-only git rev-parse using caller repo selection. */
+    /**
+     * Result of read-only git rev-parse using caller repo selection.
+     */
     const result = await execFileAsync(
       gitPath,
       [...queryArgs,],
@@ -204,10 +230,14 @@ export async function classifyEffectiveTarget({
   effectiveCwd,
   allowedWorktreeDirs = DEFAULT_ALLOWED_WORKTREE_DIRS,
 }: ClassifyEffectiveTargetOptions,): Promise<EffectiveTarget> {
-  /** Absolute path to real git binary used for read-only worktree query. */
+  /**
+   * Absolute path to real git binary used for read-only worktree query.
+   */
   const gitPath = await resolveGit();
 
-  /** Raw git metadata output, or OUTSIDE_WORKTREE when caller selection points outside any worktree. */
+  /**
+   * Raw git metadata output, or OUTSIDE_WORKTREE when caller selection points outside any worktree.
+   */
   const metadata = await readGitWorktreeMetadata({
     gitPath,
     preSubcommandArgs,
@@ -217,16 +247,22 @@ export async function classifyEffectiveTarget({
   if (metadata === OUTSIDE_WORKTREE)
     return 'outside-worktree';
 
-  /** Output lines: inside-worktree flag, absolute git-dir, absolute common-dir. */
+  /**
+   * Output lines: inside-worktree flag, absolute git-dir, absolute common-dir.
+   */
   const outputLines = stripTrailingLineBreak(metadata,)
     .split('\n',);
-  /** Rev-parse metadata fields in output order. */
+  /**
+   * Rev-parse metadata fields in output order.
+   */
   const [
     isInsideWorktreeOutput,
     gitDir,
     gitCommonDir,
   ] = outputLines;
-  /** Whether git reports caller selection lands inside a worktree. */
+  /**
+   * Whether git reports caller selection lands inside a worktree.
+   */
   const isInsideWorktree = isInsideWorktreeOutput === 'true';
 
   if (!isInsideWorktree)
@@ -238,7 +274,9 @@ export async function classifyEffectiveTarget({
     );
   }
 
-  /** Real filesystem paths for git-dir and common git dir, used for symlink-stable comparison. */
+  /**
+   * Real filesystem paths for git-dir and common git dir, used for symlink-stable comparison.
+   */
   const [
     resolvedGitDir,
     resolvedGitCommonDir,

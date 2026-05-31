@@ -14,10 +14,14 @@ import {
 } from './formatter-utils.ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
-/** Prefix prepended to every terminal title for visual identification. */
+/**
+ * Prefix prepended to every terminal title for visual identification.
+ */
 const TITLE_PREFIX = 'π';
 
-/** Maximum total title length including prefix. */
+/**
+ * Maximum total title length including prefix.
+ */
 const MAX_TITLE_LENGTH = 60;
 
 /**
@@ -69,7 +73,9 @@ function titleForTool(
     tense: 'pre' | 'post';
   }>,
 ): string {
-  /** Lookup entry for the tool; `undefined` triggers the generic Running/Ran fallback below. */
+  /**
+   * Lookup entry for the tool; `undefined` triggers the generic Running/Ran fallback below.
+   */
   const entry = TOOL_TITLES[toolName];
   if (entry !== undefined) {
     /**
@@ -85,7 +91,9 @@ function titleForTool(
     return entry.fallback[tense];
   }
 
-  /** Tense-appropriate verb for the generic fallback used by tools without a dedicated entry. */
+  /**
+   * Tense-appropriate verb for the generic fallback used by tools without a dedicated entry.
+   */
   // Custom/MCP tool fallback
   const verb = tense === 'pre' ? 'Running' : 'Ran';
   return `${verb} ${toolName}`;
@@ -127,7 +135,9 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
     return 'Stopped';
   },
   before_agent_start(data,) {
-    /** Pending user prompt sourced from the event; empty string when absent so truncate stays defined. */
+    /**
+     * Pending user prompt sourced from the event; empty string when absent so truncate stays defined.
+     */
     const prompt = data.prompt
       ?? '';
     return truncate({
@@ -139,7 +149,9 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
   },
 };
 
-/** Data bag for event-specific fields passed to title builders. */
+/**
+ * Data bag for event-specific fields passed to title builders.
+ */
 type EventData = {
   readonly toolName?: string;
   readonly args?: ToolArgs;
@@ -185,11 +197,17 @@ function titleForEvent(
     data: EventData;
   }>,
 ): string {
-  /** Body-text builder selected by event type; produces the user-visible payload before the prefix. */
+  /**
+   * Body-text builder selected by event type; produces the user-visible payload before the prefix.
+   */
   const builder = EVENT_BODY_BUILDERS[eventType];
-  /** Event-specific body text (e.g. tool description, session reason) before the title prefix. */
+  /**
+   * Event-specific body text (e.g. tool description, session reason) before the title prefix.
+   */
   const body = builder(data,);
-  /** Prefixed title before truncation; the truncate call below enforces the terminal-friendly cap. */
+  /**
+   * Prefixed title before truncation; the truncate call below enforces the terminal-friendly cap.
+   */
   const title = `${TITLE_PREFIX} ${body}`;
   return truncate({
     value: title,

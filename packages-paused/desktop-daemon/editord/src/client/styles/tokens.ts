@@ -13,53 +13,93 @@ import {
   type CssValue,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Shared popup border declaration object shape. */
+/**
+ * Shared popup border declaration object shape.
+ */
 export type PopupBorderDecls = {
-  /** Border width on block axis. */
+  /**
+   * Border width on block axis.
+   */
   readonly 'border-block-width': CssValue;
-  /** Border style on block axis. */
+  /**
+   * Border style on block axis.
+   */
   readonly 'border-block-style': 'solid';
-  /** Border color on block axis. */
+  /**
+   * Border color on block axis.
+   */
   readonly 'border-block-color': CssValue;
-  /** Border width on inline axis. */
+  /**
+   * Border width on inline axis.
+   */
   readonly 'border-inline-width': CssValue;
-  /** Border style on inline axis. */
+  /**
+   * Border style on inline axis.
+   */
   readonly 'border-inline-style': 'solid';
-  /** Border color on inline axis. */
+  /**
+   * Border color on inline axis.
+   */
   readonly 'border-inline-color': CssValue;
 };
 
-/** Shared popup host declaration object shape. */
+/**
+ * Shared popup host declaration object shape.
+ */
 export type PopupHostDecls = PopupBorderDecls & {
-  /** Popover default inset reset. */
+  /**
+   * Popover default inset reset.
+   */
   readonly inset: 'auto';
-  /** Popover default margin reset. */
+  /**
+   * Popover default margin reset.
+   */
   readonly margin: CssValue;
-  /** Popup background token. */
+  /**
+   * Popup background token.
+   */
   readonly 'background-color': CssValue;
-  /** Popup foreground token. */
+  /**
+   * Popup foreground token.
+   */
   readonly color: CssValue;
-  /** Popup border radius token. */
+  /**
+   * Popup border radius token.
+   */
   readonly 'border-radius': CssValue;
-  /** Popup monospace font stack. */
+  /**
+   * Popup monospace font stack.
+   */
   readonly 'font-family': CssValue;
-  /** Popup font size token. */
+  /**
+   * Popup font size token.
+   */
   readonly 'font-size': CssValue;
-  /** Popup line-height token. */
+  /**
+   * Popup line-height token.
+   */
   readonly 'line-height': CssValue;
 };
 
-/** Font size in rem: 13/16. */
+/**
+ * Font size in rem: 13/16.
+ */
 export const POPUP_FONT_SIZE: number = (16 - 2
   - 1) / 16;
 
-/** Line height multiplier: 3/2. */
+/**
+ * Line height multiplier: 3/2.
+ */
 export const CODE_LINE_HEIGHT: number = (2 + 1) / 2;
 
-/** Border radius in rem: 1/4. */
+/**
+ * Border radius in rem: 1/4.
+ */
 export const POPUP_BORDER_RADIUS: number = 1 / (2 * 2);
 
-/** Monospace font stack for editor components. */
+/**
+ * Monospace font stack for editor components.
+ */
 export const MONO_FONT_FAMILY: CssValue = cssCommaList([
   "'JetBrains Mono'",
   'monospace',

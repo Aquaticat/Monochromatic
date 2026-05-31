@@ -28,7 +28,9 @@ export const HIGHLIGHT_GROUPS = [
   'property',
 ] as const;
 
-/** Union type of all highlight group names. */
+/**
+ * Union type of all highlight group names.
+ */
 export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
 
 /**

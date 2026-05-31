@@ -6,7 +6,9 @@
  */
 import db from '../db.ts';
 
-/** Raw database row shape for the settings table. */
+/**
+ * Raw database row shape for the settings table.
+ */
 type SettingRow = {
   key: string;
   value: string;
@@ -33,7 +35,9 @@ export const SETTING_ABSENT: unique symbol = Symbol('setting-absent',);
  * ```
  */
 export async function getSetting(key: string,): Promise<string | typeof SETTING_ABSENT> {
-  /** Single-row result from the lookup; nullish when the key is missing. */
+  /**
+   * Single-row result from the lookup; nullish when the key is missing.
+   */
   const row: unknown = await db.prepare('SELECT value FROM settings WHERE key = ?',)
     .get(key,);
   if ((row === undefined) || (row === null))
@@ -86,7 +90,9 @@ export async function setSetting(
  * ```
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
-  /** Run result whose `.changes` distinguishes a successful delete from a no-op. */
+  /**
+   * Run result whose `.changes` distinguishes a successful delete from a no-op.
+   */
   const result = await db.prepare('DELETE FROM settings WHERE key = ?',)
     .run(key,);
   return result.changes
@@ -105,7 +111,9 @@ export async function deleteSetting(key: string,): Promise<boolean> {
  */
 export async function getAllSettings(): Promise<Record<string, string>> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns SettingRow shape */
-  /** All settings rows in alphabetical key order, converted to a plain object below. */
+  /**
+   * All settings rows in alphabetical key order, converted to a plain object below.
+   */
   const rows = await db
     .prepare('SELECT key, value FROM settings ORDER BY key ASC',)
     .all() as SettingRow[];

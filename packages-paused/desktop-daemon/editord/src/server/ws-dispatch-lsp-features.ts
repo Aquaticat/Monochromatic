@@ -70,7 +70,9 @@ export async function dispatchLspFeatureMessage(
         },
       },);
     }
-    /** Definition target reported by the LSP, or null when no symbol resolves at the position. */
+    /**
+     * Definition target reported by the LSP, or null when no symbol resolves at the position.
+     */
     const def = await lspManager.gotoDefinition({
       path: parsed.path,
       line: parsed.line,
@@ -113,7 +115,9 @@ export async function dispatchLspFeatureMessage(
         },
       },);
     }
-    /** Reference sites returned to the requesting peer. */
+    /**
+     * Reference sites returned to the requesting peer.
+     */
     const locations = await lspManager.references({
       path: parsed.path,
       line: parsed.line,
@@ -141,12 +145,16 @@ export async function dispatchLspFeatureMessage(
         },
       },);
     }
-    /** Server-shape ranges converted to wire shape on the next line. */
+    /**
+     * Server-shape ranges converted to wire shape on the next line.
+     */
     const lspRanges = await lspManager.selectionRange({
       path: parsed.path,
       positions: parsed.positions,
     },);
-    /** Wire-shape ranges sent to the client. */
+    /**
+     * Wire-shape ranges sent to the client.
+     */
     const ranges = lspRanges.map(function convertRange(r,) {
       return toWireSelectionRange({ lspRange: r, },);
     },);
@@ -172,7 +180,9 @@ export async function dispatchLspFeatureMessage(
         },
       },);
     }
-    /** Eligibility / placeholder; null means the symbol is not renamable. */
+    /**
+     * Eligibility / placeholder; null means the symbol is not renamable.
+     */
     const result = await lspManager.prepareRename({
       path: parsed.path,
       line: parsed.line,
@@ -213,7 +223,9 @@ export async function dispatchLspFeatureMessage(
         },
       },);
     }
-    /** WorkspaceEdit shape from LSP; null means rename produced no edits. */
+    /**
+     * WorkspaceEdit shape from LSP; null means rename produced no edits.
+     */
     const workspaceEdit = await lspManager.rename({
       path: parsed.path,
       line: parsed.line,
@@ -231,7 +243,9 @@ export async function dispatchLspFeatureMessage(
       },);
       return true;
     }
-    /** Per-file edit groups returned to the client for display and confirmation. */
+    /**
+     * Per-file edit groups returned to the client for display and confirmation.
+     */
     const fileEdits = await applyWorkspaceEdit({
       workspaceEdit,
       currentFilePath: parsed.path,

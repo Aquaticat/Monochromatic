@@ -19,16 +19,24 @@ import { SIDE_DRAWER_STYLES, } from './side-drawer-styles.ts';
  * Toggle the popover via the `open` attribute (set by the top-nav hamburger).
  */
 class SideDrawer extends HTMLElement {
-  /** Attributes that trigger `attributeChangedCallback`. */
+  /**
+   * Attributes that trigger `attributeChangedCallback`.
+   */
   static observedAttributes = ['open',];
 
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Reference to the popover panel element; absent before first render. */
+  /**
+   * Reference to the popover panel element; absent before first render.
+   */
   #panel?: HTMLDivElement;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -60,21 +68,29 @@ class SideDrawer extends HTMLElement {
     }
   }
 
-  /** Closes the drawer by removing the open attribute. */
+  /**
+   * Closes the drawer by removing the open attribute.
+   */
   #closeDrawer(): void {
     this.open = false;
   }
 
-  /** Renders content, sets up panel reference, and wires event listeners. */
+  /**
+   * Renders content, sets up panel reference, and wires event listeners.
+   */
   connectedCallback(): void {
     this.#render();
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the `.panel` div rendered unconditionally above
     this.#panel = this.#shadow
       .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
-    /** Pre-bound closer so the inline listeners keep `this` after handoff. */
+    /**
+     * Pre-bound closer so the inline listeners keep `this` after handoff.
+     */
     const closeFn = this.#closeDrawer
       .bind(this,);
-    /** Local alias used by the backdrop listener to compare against the click target. */
+    /**
+     * Local alias used by the backdrop listener to compare against the click target.
+     */
     const panel = this.#panel;
 
     this.#shadow
@@ -97,7 +113,9 @@ class SideDrawer extends HTMLElement {
     );
   }
 
-  /** Syncs the popover visibility when the `open` attribute changes. */
+  /**
+   * Syncs the popover visibility when the `open` attribute changes.
+   */
   attributeChangedCallback(): void {
     if (this.#panel
       === undefined)
@@ -111,9 +129,13 @@ class SideDrawer extends HTMLElement {
         .hidePopover();
   }
 
-  /** Renders the inline sidebar and popover panel into the shadow root. */
+  /**
+   * Renders the inline sidebar and popover panel into the shadow root.
+   */
   #render(): void {
-    /** Reused close button, tagged with `.panel-close` so the listener can find it. */
+    /**
+     * Reused close button, tagged with `.panel-close` so the listener can find it.
+     */
     const panelClose = buildCloseButton('Close menu',);
     panelClose.classList
       .add('panel-close',);

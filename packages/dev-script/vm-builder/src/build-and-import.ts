@@ -36,16 +36,24 @@ import {
 
 import { generateDomainXml, } from './domain-xml.ts';
 
-/** OCI image tag produced by the podman build step. */
+/**
+ * OCI image tag produced by the podman build step.
+ */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
 
-/** Libvirt domain name used for virsh define. */
+/**
+ * Libvirt domain name used for virsh define.
+ */
 const VM_NAME = 'monochromatic-dev';
 
-/** VM memory in MiB (16 GiB). */
+/**
+ * VM memory in MiB (16 GiB).
+ */
 const VM_MEMORY_MIB = '16384';
 
-/** Virtual CPU count. */
+/**
+ * Virtual CPU count.
+ */
 const VM_VCPUS = '8';
 
 /**
@@ -56,7 +64,9 @@ const packageJson = await findUp('package.json',);
 if (packageJson === undefined)
   throw new Error('could not find package.json for vm-builder',);
 
-/** Resolved absolute path to the vm-builder package directory. */
+/**
+ * Resolved absolute path to the vm-builder package directory.
+ */
 const PACKAGE_DIR = resolve(dirname(packageJson,),);
 
 /**
@@ -76,7 +86,9 @@ const OUTPUT_DIR = join(
   'output',
 );
 
-/** Path to the qcow2 disk image produced by bootc-image-builder. */
+/**
+ * Path to the qcow2 disk image produced by bootc-image-builder.
+ */
 const BUILD_QCOW2_PATH = join(
   OUTPUT_DIR,
   'qcow2',
@@ -90,18 +102,24 @@ const BUILD_QCOW2_PATH = join(
  */
 const LIBVIRT_IMAGES_DIR = '/var/lib/libvirt/images';
 
-/** Final qcow2 path under the libvirt images directory for QEMU access. */
+/**
+ * Final qcow2 path under the libvirt images directory for QEMU access.
+ */
 const QCOW2_PATH = join(
   LIBVIRT_IMAGES_DIR,
   'monochromatic-dev.qcow2',
 );
 
-/** Current user login name; used to restore ownership after the privileged build step. */
+/**
+ * Current user login name; used to restore ownership after the privileged build step.
+ */
 const CURRENT_USER = process.env
   .USER
   ?? 'user';
 
-/** libvirt session URI: connects to the user's QEMU/KVM daemon (no sudo needed). */
+/**
+ * libvirt session URI: connects to the user's QEMU/KVM daemon (no sudo needed).
+ */
 const LIBVIRT_URI = 'qemu:///session';
 
 //region Streaming process runner
@@ -131,7 +149,9 @@ async function run(
     readonly args: readonly string[];
   },
 ): Promise<void> {
-  /** Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code. */
+  /**
+   * Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
+   */
   const child = nodeSpawn(
     cmd,
     [...args,],
@@ -197,7 +217,9 @@ async function convertToQcow2(): Promise<void> {
     OUTPUT_DIR,
     { recursive: true, },
   );
-  /** Host path mounted into the bootc-image-builder container at `/config` for `--config /config/disk.toml`. */
+  /**
+   * Host path mounted into the bootc-image-builder container at `/config` for `--config /config/disk.toml`.
+   */
   const diskConfigDir = join(
     PACKAGE_DIR,
     'disk_config',

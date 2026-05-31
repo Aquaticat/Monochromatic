@@ -15,7 +15,9 @@ import type {
 
 //region Constants
 
-/** Channel keys, fixed order. */
+/**
+ * Channel keys, fixed order.
+ */
 export const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
   'y',
@@ -25,7 +27,9 @@ export const CHANNEL_KEYS: readonly ChannelKey[] = [
   'size',
 ];
 
-/** Valid data-dim keys for dropdown-value validation. */
+/**
+ * Valid data-dim keys for dropdown-value validation.
+ */
 export const DIM_KEYS: readonly DataDimKey[] = [
   'logSourceBytes',
   'logDaysStale',
@@ -39,7 +43,9 @@ export const DIM_KEYS: readonly DataDimKey[] = [
   'licenseClassNumeric',
 ];
 
-/** Valid toggle values for radio-input validation. */
+/**
+ * Valid toggle values for radio-input validation.
+ */
 export const TOGGLE_VALUES: readonly ToggleValue[] = [
   'any',
   'yes',

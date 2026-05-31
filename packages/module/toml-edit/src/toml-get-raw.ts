@@ -56,7 +56,9 @@ export function tomlGetRaw(
       `tomlGetRaw requires splice mode; current state is canonical`,
     );
   }
-  /** Direct AST lookup so the slice maps to parse-time source bytes. */
+  /**
+   * Direct AST lookup so the slice maps to parse-time source bytes.
+   */
   const result = resolveByPath({
     edit,
     path,
@@ -100,9 +102,13 @@ export function tomlGetRaw(
         .range[1],
     );
   }
-  /** Span the slice over the first and last AoT element so every entry is captured. */
+  /**
+   * Span the slice over the first and last AoT element so every entry is captured.
+   */
   const first = nonNullishOrThrow(result.nodes[0],);
-  /** Pair with `first` to cover the full AoT extent in source order. */
+  /**
+   * Pair with `first` to cover the full AoT extent in source order.
+   */
   const last = nonNullishOrThrow(result.nodes
     .at(-1,),);
   return edit.source

@@ -30,15 +30,25 @@ import {
  * ```
  */
 export type VmMeta = {
-  /** Registry image identifier (e.g. `ubuntu`, `windows`, or custom name). */
+  /**
+   * Registry image identifier (e.g. `ubuntu`, `windows`, or custom name).
+   */
   image: string;
-  /** OS family discriminant for exec shell and domain XML dispatch. */
+  /**
+   * OS family discriminant for exec shell and domain XML dispatch.
+   */
   osFamily: OsFamily;
-  /** Shell executable path or name for guest-exec commands. */
+  /**
+   * Shell executable path or name for guest-exec commands.
+   */
   shell: string;
-  /** Default login user for this guest OS. */
+  /**
+   * Default login user for this guest OS.
+   */
   defaultUser: string;
-  /** ISO 8601 timestamp of VM creation. */
+  /**
+   * ISO 8601 timestamp of VM creation.
+   */
   createdAt: string;
 };
 
@@ -77,12 +87,16 @@ export async function writeVmMeta({
   readonly image: string;
   readonly vmDir: string;
 },): Promise<void> {
-  /** Logger scoped to this writer so legacy-file fallbacks log with context. */
+  /**
+   * Logger scoped to this writer so legacy-file fallbacks log with context.
+   */
   const rl = tagged({
     tag: writeVmMeta.name,
     l,
   },);
-  /** Metadata record persisted to `meta.json`; captures the guest config snapshot at creation time. */
+  /**
+   * Metadata record persisted to `meta.json`; captures the guest config snapshot at creation time.
+   */
   const meta: VmMeta = {
     createdAt: new Date().toISOString(),
     defaultUser: guest.defaultUser,
@@ -91,7 +105,9 @@ export async function writeVmMeta({
     shell: guest.shell,
   };
 
-  /** Path of the metadata file inside the VM directory; chosen once and reused in the debug log. */
+  /**
+   * Path of the metadata file inside the VM directory; chosen once and reused in the debug log.
+   */
   const metaPath = join(
     vmDir,
     'meta.json',
@@ -139,7 +155,9 @@ export async function writeVmMeta({
  * ```
  */
 export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
-  /** Logger scoped to this reader so legacy-fallback messages are namespaced. */
+  /**
+   * Logger scoped to this reader so legacy-fallback messages are namespaced.
+   */
   const rl = tagged({
     tag: readVmMeta.name,
     l,
@@ -147,7 +165,9 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
 
   // Try meta.json first
   try {
-    /** Raw `meta.json` contents read from disk; parsed as `VmMeta` below. */
+    /**
+     * Raw `meta.json` contents read from disk; parsed as `VmMeta` below.
+     */
     const content = await readFile(
       join(
         vmDir,
@@ -173,7 +193,9 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
    */
   const image = await (async function readLegacyImage(): Promise<string> {
     try {
-      /** Raw legacy file contents; trimmed because old writers added a trailing newline. */
+      /**
+       * Raw legacy file contents; trimmed because old writers added a trailing newline.
+       */
       const content = await readFile(
         join(
           vmDir,
@@ -189,9 +211,13 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
     }
   })();
 
-  /** Image record resolved from the legacy identifier; registry or custom. */
+  /**
+   * Image record resolved from the legacy identifier; registry or custom.
+   */
   const resolved = resolveImage(image,);
-  /** Guest config used to fill the synthetic `VmMeta`; defaults for custom images. */
+  /**
+   * Guest config used to fill the synthetic `VmMeta`; defaults for custom images.
+   */
   const guest = resolved.kind
     === 'registry'
     ? resolved.spec

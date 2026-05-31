@@ -22,7 +22,9 @@ import { filterPnpmOutput, } from './pnpm-output-filter.ts';
 
 //region Main execution
 
-/** Arguments forwarded to pnpm. */
+/**
+ * Arguments forwarded to pnpm.
+ */
 const pnpmArgs = process.argv
   .slice(2,);
 
@@ -38,9 +40,13 @@ const pnpmArgs = process.argv
  * ```
  */
 type WriteFilteredOptions = {
-  /** Raw pnpm output */
+  /**
+   * Raw pnpm output
+   */
   readonly raw: string;
-  /** Target writable stream */
+  /**
+   * Target writable stream
+   */
   readonly stream: NodeJS.WriteStream;
 };
 
@@ -64,7 +70,9 @@ function writeFiltered({
   if (raw.length
     === 0)
     return;
-  /** Output with allowed pnpm cycle warnings stripped; may be empty if every line was a known-benign warning. */
+  /**
+   * Output with allowed pnpm cycle warnings stripped; may be empty if every line was a known-benign warning.
+   */
   const filtered = filterPnpmOutput(raw,);
   if (filtered.length
     > 0)
@@ -73,7 +81,9 @@ function writeFiltered({
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 try {
-  /** Captured pnpm subprocess result; both streams are filtered before forwarding to the parent process. */
+  /**
+   * Captured pnpm subprocess result; both streams are filtered before forwarding to the parent process.
+   */
   const result = await spawn(
     'pnpm',
     [...pnpmArgs,],
@@ -92,7 +102,9 @@ catch (error) {
   if ((error !== null) && ((typeof error) === 'object')
     && ('exitCode' in error)) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
-    /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be forwarded after filtering. */
+    /**
+     * Re-typed thrown error so its captured stdout, stderr, and exit fields can be forwarded after filtering.
+     */
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;

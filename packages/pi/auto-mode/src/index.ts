@@ -46,7 +46,9 @@ import type {
   SignalContext,
 } from './types.ts';
 
-/** Tagged logger for the auto-mode entry point. */
+/**
+ * Tagged logger for the auto-mode entry point.
+ */
 const l = tagged({
   tag: 'index',
   l: parentLogger,
@@ -63,11 +65,17 @@ const l = tagged({
  * ```
  */
 type SkillPromptEvent = {
-  /** Structured prompt options containing loaded skill metadata. */
+  /**
+   * Structured prompt options containing loaded skill metadata.
+   */
   readonly systemPromptOptions: {
-    /** Skills visible to the model in the current prompt. */
+    /**
+     * Skills visible to the model in the current prompt.
+     */
     readonly skills?: readonly {
-      /** Absolute skill root directory. */
+      /**
+       * Absolute skill root directory.
+       */
       readonly baseDir: string;
     }[];
   };
@@ -90,12 +98,16 @@ type SkillPromptEvent = {
 export default function autoMode(
   pi: ExtensionAPI,
 ): void {
-  /** Per-call sub-logger so registration log lines carry the entry-point name as a tag. */
+  /**
+   * Per-call sub-logger so registration log lines carry the entry-point name as a tag.
+   */
   const innerL = tagged({
     tag: autoMode.name,
     l,
   },);
-  /** Resolved configuration; downstream handlers and the system prompt are derived from this. */
+  /**
+   * Resolved configuration; downstream handlers and the system prompt are derived from this.
+   */
   const config = loadMergedConfig(process.cwd(),);
 
   if (!config.enabled) {
@@ -104,7 +116,9 @@ export default function autoMode(
   }
 
   innerL.info('auto-mode active; registering handlers',);
-  /** Static judge system prompt; recomputed at startup so config edits take effect on relaunch. */
+  /**
+   * Static judge system prompt; recomputed at startup so config edits take effect on relaunch.
+   */
   const systemPrompt = buildSystemPrompt(config,);
 
   //region /guard command
@@ -122,19 +136,29 @@ export default function autoMode(
   //region Turn-level tracking
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- handler closure state for turn, skill, and bypass latches */
-  /** Batch siblings accumulated during the current agent turn; surfaced to the judge for context. */
+  /**
+   * Batch siblings accumulated during the current agent turn; surfaced to the judge for context.
+   */
   let currentTurnBatch: BatchEntry[] = [];
-  /** True once any tool call in this turn is denied; latched until the next `turn_start`. */
+  /**
+   * True once any tool call in this turn is denied; latched until the next `turn_start`.
+   */
   let denialInCurrentTurn = false;
-  /** Copy of the previous turn's denial flag; raises sensitivity for the very next turn. */
+  /**
+   * Copy of the previous turn's denial flag; raises sensitivity for the very next turn.
+   */
   let denialInPreviousTurn = false;
-  /** Per-flow verdict log surfaced in the widget; reset on `agent_start` and `agent_end`. */
+  /**
+   * Per-flow verdict log surfaced in the widget; reset on `agent_start` and `agent_end`.
+   */
   let flowVerdicts: {
     action: string;
     verdict: string;
     reason: string;
   }[] = [];
-  /** Skill base directories visible in the current prompt; read-tool access bypasses path prompts. */
+  /**
+   * Skill base directories visible in the current prompt; read-tool access bypasses path prompts.
+   */
   let currentSkillReadDirs: readonly string[] = [];
   /**
    * Runtime bypass state, restored from session entries and toggled by
@@ -207,9 +231,13 @@ export default function autoMode(
     function handleBeforeAgentStart(
       event: SkillPromptEvent,
     ) {
-      /** Prompt options carrying the loaded skill catalog for this turn. */
+      /**
+       * Prompt options carrying the loaded skill catalog for this turn.
+       */
       const { systemPromptOptions, } = event;
-      /** Skills visible in the current system prompt; empty when no skills are loaded. */
+      /**
+       * Skills visible in the current system prompt; empty when no skills are loaded.
+       */
       const skills = systemPromptOptions
         .skills
         ?? [];
@@ -275,7 +303,9 @@ export default function autoMode(
       ctx: ExtensionContext,
     ) {
       if (bypassEnabled) {
-        /** Human-readable rendering of the tool call allowed without guardrail evaluation. */
+        /**
+         * Human-readable rendering of the tool call allowed without guardrail evaluation.
+         */
         const action = describeAction(event,);
         innerL.warn(`bypass allow: ${action}`,);
         appendBypassAllowEntry({
@@ -285,16 +315,22 @@ export default function autoMode(
         return undefined;
       }
 
-      /** Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`. */
+      /**
+       * Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`.
+       */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
         home: process.env
           .HOME
           ?? '/home',
       };
-      /** Private agent temp roots shared by structured reads and trusted bash helper execution. */
+      /**
+       * Private agent temp roots shared by structured reads and trusted bash helper execution.
+       */
       const trustedAgentTempDirs = agentTempAllowlistedDirs();
-      /** Read-only roots whose existing non-secret contents bypass location prompts. */
+      /**
+       * Read-only roots whose existing non-secret contents bypass location prompts.
+       */
       const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
         ? [
           ...trustedAgentTempDirs,
@@ -302,12 +338,16 @@ export default function autoMode(
           ...currentSkillReadDirs,
         ]
         : [];
-      /** Bash roots whose existing non-secret helper paths bypass location prompts. */
+      /**
+       * Bash roots whose existing non-secret helper paths bypass location prompts.
+       */
       const bashAllowlistedDirs: readonly string[] = event.toolName === 'bash'
         ? trustedAgentTempDirs
         : [];
 
-      /** True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up. */
+      /**
+       * True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up.
+       */
       const flagged = shouldFlag({
         event,
         ctx: signalCtx,
@@ -320,14 +360,20 @@ export default function autoMode(
       if (!flagged)
         return undefined;
 
-      /** Human-readable rendering of the tool call shown to the judge and the user. */
+      /**
+       * Human-readable rendering of the tool call shown to the judge and the user.
+       */
       const action = describeAction(event,);
-      /** Stable identity for exact same-session approval reuse. */
+      /**
+       * Stable identity for exact same-session approval reuse.
+       */
       const approvalFingerprint = buildApprovalFingerprint({
         event,
         cwd: ctx.cwd,
       },);
-      /** Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call. */
+      /**
+       * Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call.
+       */
       const batchContext = [...currentTurnBatch,];
 
       return evaluate({
@@ -341,7 +387,9 @@ export default function autoMode(
       },)
         .then(
           function handleResult(result,) {
-            /** Block-or-allow decision and the optional flow verdict the judge produced. */
+            /**
+             * Block-or-allow decision and the optional flow verdict the judge produced.
+             */
             const {
               decision,
               flowVerdict,

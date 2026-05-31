@@ -45,11 +45,17 @@ export {};
  * Result of comparing catalog range against installed version.
  */
 type TightenResult = {
-  /** Package name as it appears in the catalog key. */
+  /**
+   * Package name as it appears in the catalog key.
+   */
   name: string;
-  /** Original catalog range string, e.g. `">=1.2.0"`. */
+  /**
+   * Original catalog range string, e.g. `">=1.2.0"`.
+   */
   oldRange: string;
-  /** New tightened range string, e.g. `">=1.3.0"`. */
+  /**
+   * New tightened range string, e.g. `">=1.3.0"`.
+   */
   newRange: string;
 };
 
@@ -62,9 +68,13 @@ type TightenResult = {
  * optional shape at the `.map` seam below.
  */
 type ProbedCandidate = {
-  /** npm name that was looked up in node_modules. */
+  /**
+   * npm name that was looked up in node_modules.
+   */
   name: string;
-  /** Installed version; omitted when this name did not resolve. */
+  /**
+   * Installed version; omitted when this name did not resolve.
+   */
   version?: string;
 };
 
@@ -72,20 +82,28 @@ type ProbedCandidate = {
 
 //region Main
 
-/** Whether `--dry-run` was passed on the command line. */
+/**
+ * Whether `--dry-run` was passed on the command line.
+ */
 const dryRun = process.argv
   .includes('--dry-run',);
 
-/** Absolute path to the monorepo root (where this script is invoked from). */
+/**
+ * Absolute path to the monorepo root (where this script is invoked from).
+ */
 const monorepoRoot = resolve('.',);
 
-/** Absolute path to pnpm-workspace.yaml. */
+/**
+ * Absolute path to pnpm-workspace.yaml.
+ */
 const workspaceYamlPath = join(
   monorepoRoot,
   'pnpm-workspace.yaml',
 );
 
-/** Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting. */
+/**
+ * Raw content of pnpm-workspace.yaml, preserved for minimal-diff rewriting.
+ */
 const workspaceYamlContent = readFileSync(
   workspaceYamlPath,
   'utf8',
@@ -103,7 +121,9 @@ const workspaceYamlContent = readFileSync(
  */
 function isWhitespaceOnly(s: string,): boolean {
   for (const c of s) {
-    /** Whether the current char satisfies regex `\s`. */
+    /**
+     * Whether the current char satisfies regex `\s`.
+     */
     const ok = (c === ' ')
       || (c === '\t')
       || (c === '\n')
@@ -116,7 +136,9 @@ function isWhitespaceOnly(s: string,): boolean {
   return true;
 }
 
-/** Workspace catalog mapping package names to version ranges. */
+/**
+ * Workspace catalog mapping package names to version ranges.
+ */
 const catalog = parseCatalogFromYaml(workspaceYamlContent,);
 if (Object.keys(catalog,)
   .length
@@ -134,17 +156,27 @@ if (Object.keys(catalog,)
  * module-root `let` bindings.
  */
 type CatalogSummary = {
-  /** Tightening results to write back to `pnpm-workspace.yaml`. */
+  /**
+   * Tightening results to write back to `pnpm-workspace.yaml`.
+   */
   results: TightenResult[];
-  /** Count of entries skipped (not `>=` ranges). */
+  /**
+   * Count of entries skipped (not `>=` ranges).
+   */
   skippedCount: number;
-  /** Count of entries where the installed version matched the catalog range (already tight). */
+  /**
+   * Count of entries where the installed version matched the catalog range (already tight).
+   */
   alreadyTightCount: number;
-  /** Count of entries where the package was not found in node_modules. */
+  /**
+   * Count of entries where the package was not found in node_modules.
+   */
   notFoundCount: number;
 };
 
-/** Initial summary fed into the reduce; every counter starts at zero with an empty result list. */
+/**
+ * Initial summary fed into the reduce; every counter starts at zero with an empty result list.
+ */
 const initialSummary: CatalogSummary = {
   results: [],
   skippedCount: 0,
@@ -152,15 +184,21 @@ const initialSummary: CatalogSummary = {
   notFoundCount: 0,
 };
 
-/** Catalog as `[name, value]` entry pairs, folded into the per-category summary below. */
+/**
+ * Catalog as `[name, value]` entry pairs, folded into the per-category summary below.
+ */
 const catalogEntries = Object.entries(catalog,);
-/** Classifies and processes each catalog entry for tightening. */
+/**
+ * Classifies and processes each catalog entry for tightening.
+ */
 const summary: CatalogSummary = catalogEntries.reduce(
   function processEntry(
     acc,
     [name, value,],
   ): CatalogSummary {
-    /** Parsed range prefix and version, or `NOT_A_RANGE` if not a `>=` range. */
+    /**
+     * Parsed range prefix and version, or `NOT_A_RANGE` if not a `>=` range.
+     */
     const parsed = parseRange(value,);
     if (parsed === NOT_A_RANGE) {
       console.info(`SKIP  ${name}: ${value} (not a >= range)`,);
@@ -168,15 +206,21 @@ const summary: CatalogSummary = catalogEntries.reduce(
       return acc;
     }
 
-    /** Candidate npm package names to probe in node_modules. */
+    /**
+     * Candidate npm package names to probe in node_modules.
+     */
     const npmNames = resolveNpmNames({
       catalogKey: name,
       catalogValue: value,
     },);
-    /** First npm name candidate whose installed version resolves. */
+    /**
+     * First npm name candidate whose installed version resolves.
+     */
     const resolved = npmNames
       .map(function probeCandidate(candidate,): ProbedCandidate {
-        /** Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve. */
+        /**
+         * Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve.
+         */
         const installed = readInstalledVersion({
           npmName: candidate,
           monorepoRoot,
@@ -213,7 +257,9 @@ const summary: CatalogSummary = catalogEntries.reduce(
       return acc;
     }
 
-    /** Tightened version range using the installed version as the lower bound. */
+    /**
+     * Tightened version range using the installed version as the lower bound.
+     */
     const newRange = `${parsed.prefix}>=${resolved.version}`;
     console.info(
       `TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,

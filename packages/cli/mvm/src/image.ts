@@ -57,7 +57,9 @@ async function downloadIfMissing({
   readonly tag: string;
   readonly url: string;
 },): Promise<string> {
-  /** Logger scoped to the caller's tag so download progress is attributed to the right caller. */
+  /**
+   * Logger scoped to the caller's tag so download progress is attributed to the right caller.
+   */
   const rl = tagged({
     tag,
     l,
@@ -74,7 +76,9 @@ async function downloadIfMissing({
     { recursive: true, },
   );
 
-  /** HTTP response for the source URL; consumed by `writeWithProgress` to stream the body to disk. */
+  /**
+   * HTTP response for the source URL; consumed by `writeWithProgress` to stream the body to disk.
+   */
   const response = await fetch(url,);
   if (!response.ok) {
     throw new Error(
@@ -146,7 +150,9 @@ export function ensureVirtioWin(): Promise<string> {
   },);
 }
 
-/** Cached filename for the WinFsp MSI under `~/.local/share/mvm/images/`. */
+/**
+ * Cached filename for the WinFsp MSI under `~/.local/share/mvm/images/`.
+ */
 const WINFSP_FILENAME = 'winfsp.msi';
 
 /**
@@ -165,13 +171,17 @@ const WINFSP_FILENAME = 'winfsp.msi';
  * ```
  */
 export async function ensureWinFsp(): Promise<string> {
-  /** Logger scoped to this call so the multi-step WinFsp fetch is namespaced. */
+  /**
+   * Logger scoped to this call so the multi-step WinFsp fetch is namespaced.
+   */
   const rl = tagged({
     tag: ensureWinFsp.name,
     l,
   },);
 
-  /** Cached MSI location; the early-exit short-circuit uses it before any network IO. */
+  /**
+   * Cached MSI location; the early-exit short-circuit uses it before any network IO.
+   */
   const destPath = join(
     IMAGES_DIR,
     WINFSP_FILENAME,
@@ -189,22 +199,30 @@ export async function ensureWinFsp(): Promise<string> {
 
   rl.info('resolving latest WinFsp release...',);
 
-  /** Resolve the latest version tag via GitHub redirect. */
+  /**
+   * Resolve the latest version tag via GitHub redirect.
+   */
   const redirectResponse = await fetch(
     'https://github.com/winfsp/winfsp/releases/latest',
     { redirect: 'manual', },
   );
-  /** Redirect target carrying the resolved version in its `/tag/<version>` suffix. */
+  /**
+   * Redirect target carrying the resolved version in its `/tag/<version>` suffix.
+   */
   const location = redirectResponse.headers
     .get('location',);
   if (location === null)
     throw new Error('failed to resolve latest WinFsp release',);
-  /** Version tag from the redirect URL (e.g. "v2.1"). */
+  /**
+   * Version tag from the redirect URL (e.g. "v2.1").
+   */
   const [, version,] = location.split('/tag/',);
   if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
 
-  /** Fetch release metadata to find the actual MSI asset name (includes build number). */
+  /**
+   * Fetch release metadata to find the actual MSI asset name (includes build number).
+   */
   const releaseResponse = await fetch(
     `https://api.github.com/repos/winfsp/winfsp/releases/tags/${version}`,
     { headers: { Accept: 'application/vnd.github+json', }, },
@@ -214,7 +232,9 @@ export async function ensureWinFsp(): Promise<string> {
       `failed to fetch WinFsp release metadata: ${releaseResponse.status}`,
     );
   }
-  /** Parsed release payload narrowed to the asset list; only `assets` is read. */
+  /**
+   * Parsed release payload narrowed to the asset list; only `assets` is read.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GitHub API response
   const release = await releaseResponse.json() as {
     assets: {
@@ -222,7 +242,9 @@ export async function ensureWinFsp(): Promise<string> {
       browser_download_url: string;
     }[];
   };
-  /** Matching MSI asset; the released zip carries a per-build filename so it cannot be hard-coded. */
+  /**
+   * Matching MSI asset; the released zip carries a per-build filename so it cannot be hard-coded.
+   */
   const msiAsset = release.assets
     .find(function findMsi(a,) {
     return (a.name
@@ -235,7 +257,9 @@ export async function ensureWinFsp(): Promise<string> {
 
   rl.info(`downloading ${msiAsset.browser_download_url}`,);
 
-  /** HTTP response for the MSI asset; body is buffered into memory then written to disk. */
+  /**
+   * HTTP response for the MSI asset; body is buffered into memory then written to disk.
+   */
   const msiResponse = await fetch(msiAsset.browser_download_url,);
   if (!msiResponse.ok) {
     throw new Error(
@@ -270,13 +294,17 @@ export async function ensureWinFsp(): Promise<string> {
  * ```
  */
 export async function ensureMiseWindows(): Promise<string> {
-  /** Logger scoped to this call so the multi-step mise fetch is namespaced. */
+  /**
+   * Logger scoped to this call so the multi-step mise fetch is namespaced.
+   */
   const rl = tagged({
     tag: ensureMiseWindows.name,
     l,
   },);
 
-  /** Cached mise.exe location; the early-exit short-circuit uses it before any network IO. */
+  /**
+   * Cached mise.exe location; the early-exit short-circuit uses it before any network IO.
+   */
   const destPath = join(
     IMAGES_DIR,
     'mise.exe',
@@ -294,27 +322,37 @@ export async function ensureMiseWindows(): Promise<string> {
 
   rl.info('resolving latest mise release...',);
 
-  /** Resolve the latest version tag via GitHub redirect. */
+  /**
+   * Resolve the latest version tag via GitHub redirect.
+   */
   const redirectResponse = await fetch(
     'https://github.com/jdx/mise/releases/latest',
     { redirect: 'manual', },
   );
-  /** Redirect target carrying the resolved version in its `/tag/<version>` suffix. */
+  /**
+   * Redirect target carrying the resolved version in its `/tag/<version>` suffix.
+   */
   const location = redirectResponse.headers
     .get('location',);
   if (location === null)
     throw new Error('failed to resolve latest mise release',);
-  /** Version tag from the redirect URL (e.g. "v2026.3.17"). */
+  /**
+   * Version tag from the redirect URL (e.g. "v2026.3.17").
+   */
   const [, version,] = location.split('/tag/',);
   if (version === undefined)
     throw new Error(`unexpected redirect URL: ${location}`,);
 
-  /** Download URL for the Windows x64 zip. */
+  /**
+   * Download URL for the Windows x64 zip.
+   */
   const zipUrl =
     `https://github.com/jdx/mise/releases/download/${version}/mise-${version}-windows-x64.zip`;
   rl.info(`downloading ${zipUrl}`,);
 
-  /** HTTP response for the mise zip; body is buffered into memory then written to disk for unzip. */
+  /**
+   * HTTP response for the mise zip; body is buffered into memory then written to disk for unzip.
+   */
   const zipResponse = await fetch(zipUrl,);
   if (!zipResponse.ok) {
     throw new Error(
@@ -322,7 +360,9 @@ export async function ensureMiseWindows(): Promise<string> {
     );
   }
 
-  /** Write zip to disk, extract mise.exe, clean up the zip. */
+  /**
+   * Write zip to disk, extract mise.exe, clean up the zip.
+   */
   const zipPath = join(
     IMAGES_DIR,
     'mise-windows-x64.zip',

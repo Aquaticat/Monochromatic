@@ -20,10 +20,14 @@ import {
   parseStringArray,
 } from './tasks-parse.ts';
 
-/** Recognized priority/complexity values for input validation. */
+/**
+ * Recognized priority/complexity values for input validation.
+ */
 const priorities = new Set<string>(TASK_PRIORITIES,);
 
-/** Recognized status values for input validation. */
+/**
+ * Recognized status values for input validation.
+ */
 const statuses = new Set<string>(TASK_STATUSES,);
 
 /**
@@ -61,7 +65,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   if (!isRecord(value,))
     return INVALID;
 
-  /** Accumulator: each field block validates the input and adds the parsed value here. Mutable mirror of the readonly `TaskUpdateInput`, restored to readonly on return. */
+  /**
+   * Accumulator: each field block validates the input and adds the parsed value here. Mutable mirror of the readonly `TaskUpdateInput`, restored to readonly on return.
+   */
   const taskUpdateInput: { -readonly [K in keyof TaskUpdateInput]: TaskUpdateInput[K]; } = {};
 
   if ('title' in value) {
@@ -79,7 +85,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   }
 
   if ('tags' in value) {
-    /** Parsed `tags` array; `INVALID` aborts the parse. */
+    /**
+     * Parsed `tags` array; `INVALID` aborts the parse.
+     */
     const tags = parseStringArray(value.tags,);
     if (tags === INVALID)
       return INVALID;
@@ -87,7 +95,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   }
 
   if ('locations' in value) {
-    /** Parsed `locations` array; `INVALID` aborts the parse. */
+    /**
+     * Parsed `locations` array; `INVALID` aborts the parse.
+     */
     const locations = parseStringArray(value.locations,);
     if (locations === INVALID)
       return INVALID;
@@ -95,7 +105,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   }
 
   if ('blockedBy' in value) {
-    /** Parsed `blockedBy` array; `INVALID` aborts the parse. */
+    /**
+     * Parsed `blockedBy` array; `INVALID` aborts the parse.
+     */
     const blockedBy = parseStringArray(value.blockedBy,);
     if (blockedBy === INVALID)
       return INVALID;
@@ -103,7 +115,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   }
 
   if ('reminders' in value) {
-    /** Parsed `reminders` array; `INVALID` aborts the parse. */
+    /**
+     * Parsed `reminders` array; `INVALID` aborts the parse.
+     */
     const reminders = parseStringArray(value.reminders,);
     if (reminders === INVALID)
       return INVALID;
@@ -112,7 +126,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if (('priority' in value) && (value.priority
     !== null)) {
-    /** Enum-validated priority; `INVALID` signals an unrecognised value and aborts the parse. */
+    /**
+     * Enum-validated priority; `INVALID` signals an unrecognised value and aborts the parse.
+     */
     const priority = parseEnumValue({
       value: value.priority,
       validValues: priorities,
@@ -125,7 +141,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
 
   if (('complexity' in value) && (value.complexity
     !== null)) {
-    /** Enum-validated complexity; `INVALID` signals an unrecognised value and aborts the parse. */
+    /**
+     * Enum-validated complexity; `INVALID` signals an unrecognised value and aborts the parse.
+     */
     const complexity = parseEnumValue({
       value: value.complexity,
       validValues: priorities,
@@ -145,7 +163,9 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | typeof 
   }
 
   if ('status' in value) {
-    /** Validated status string; `INVALID` aborts the parse. */
+    /**
+     * Validated status string; `INVALID` aborts the parse.
+     */
     const status = parseStatus(value.status,);
     if (status === INVALID)
       return INVALID;

@@ -4,7 +4,9 @@
  * Centralizes ignore logic so the watcher module stays under the line limit.
  */
 
-/** Entry names always ignored (VCS dirs, OS metadata). */
+/**
+ * Entry names always ignored (VCS dirs, OS metadata).
+ */
 const IGNORED_NAMES = new Set([
   '.git',
   'node_modules',
@@ -12,10 +14,14 @@ const IGNORED_NAMES = new Set([
   'Thumbs.db',
 ],);
 
-/** Vim's atomic-save sentinel filename; ignored verbatim. */
+/**
+ * Vim's atomic-save sentinel filename; ignored verbatim.
+ */
 const VIM_SENTINEL = '4913';
 
-/** Minimum length for the legacy emacs `#name#` lock-file shape. */
+/**
+ * Minimum length for the legacy emacs `#name#` lock-file shape.
+ */
 const EMACS_LOCK_MIN_LENGTH = 2;
 
 /**
@@ -91,7 +97,9 @@ export const AWAIT_WRITE_FINISH_POLL_MS = 25;
  */
 export const SUPPRESS_MS = 500;
 
-/** Substring marking the boundary between basename and hex token in editord temps. */
+/**
+ * Substring marking the boundary between basename and hex token in editord temps.
+ */
 const EDITORD_TAG = '.editord.';
 
 /**
@@ -124,14 +132,20 @@ export function isEditordTempFile(name: string,): boolean {
     return false;
   if (!name.endsWith('~',))
     return false;
-  /** Right-most occurrence of the tag; chosen so embedded `.editord.` substrings do not throw off the hex span. */
+  /**
+   * Right-most occurrence of the tag; chosen so embedded `.editord.` substrings do not throw off the hex span.
+   */
   const tagIdx = name.lastIndexOf(EDITORD_TAG,);
   if (tagIdx === (-1))
     return false;
-  /** First index of the hex span; immediately after the trailing `.` of the tag. */
+  /**
+   * First index of the hex span; immediately after the trailing `.` of the tag.
+   */
   const hexStart = tagIdx + EDITORD_TAG
     .length;
-  /** Exclusive end of the hex span; immediately before the trailing `~`. */
+  /**
+   * Exclusive end of the hex span; immediately before the trailing `~`.
+   */
   const hexEnd = name.length
     - 1;
   if (hexEnd <= hexStart)

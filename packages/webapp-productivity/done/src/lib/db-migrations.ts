@@ -7,7 +7,9 @@ import type { Database, } from '@tursodatabase/database';
 
 //region Migration SQL: separated for readability; executed once at startup
 
-/** Core tables, indexes, and CHECK constraints. */
+/**
+ * Core tables, indexes, and CHECK constraints.
+ */
 const MIGRATION_TABLES_AND_INDEXES = `
   CREATE TABLE IF NOT EXISTS tasks (
     id TEXT PRIMARY KEY,
@@ -51,7 +53,9 @@ const MIGRATION_TABLES_AND_INDEXES = `
   CREATE INDEX IF NOT EXISTS idx_attachments_task_id ON attachments(task_id);
 `;
 
-/** FTS5 virtual table and triggers that keep the index in sync with the tasks table. */
+/**
+ * FTS5 virtual table and triggers that keep the index in sync with the tasks table.
+ */
 const MIGRATION_FTS_AND_TRIGGERS = `
   CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(
     title,
@@ -79,7 +83,9 @@ const MIGRATION_FTS_AND_TRIGGERS = `
   END;
 `;
 
-/** Backfills FTS index for any rows that were inserted before triggers existed. */
+/**
+ * Backfills FTS index for any rows that were inserted before triggers existed.
+ */
 const MIGRATION_FTS_BACKFILL = `
   INSERT INTO tasks_fts(rowid, title, description, tags)
   SELECT tasks.rowid, tasks.title, tasks.description, tasks.tags

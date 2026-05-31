@@ -12,7 +12,9 @@ import {
   DOT_ENV_PATH,
 } from './opmls.ts';
 
-/** Tagged logger for the opml-text module. */
+/**
+ * Tagged logger for the opml-text module.
+ */
 const l = tagged({
   tag: 'opml-text',
   l: parentLogger,
@@ -36,20 +38,28 @@ const l = tagged({
 export async function getOPMLTexts(
   opmls: readonly string[],
 ): Promise<string[]> {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: getOPMLTexts.name,
     l,
   },);
-  /** Unique sentinel returned for fetch/read failures so the filter step can drop them. */
+  /**
+   * Unique sentinel returned for fetch/read failures so the filter step can drop them.
+   */
   const DISCARD = Symbol('discard',);
-  /** Successfully fetched OPML texts left after dropping DISCARD entries. */
+  /**
+   * Successfully fetched OPML texts left after dropping DISCARD entries.
+   */
   const result = (await mapIterableAsync({
     fn: async function fetchOpml(
       opmlLink: string,
     ): Promise<string | typeof DISCARD> {
       if (opmlLink.startsWith('http',)) {
-        /** Single Response held so status check and text read share one network round trip. */
+        /**
+         * Single Response held so status check and text read share one network round trip.
+         */
         const response = await fetch(opmlLink,);
         if (!response.ok) {
           innerL.warn(`${opmlLink} responded ${String(response.status,)}`,);
@@ -82,7 +92,9 @@ export async function getOPMLTexts(
           throw new Error(
             'cannot resolve relative file:// OPML path without a discoverable .env',
           );
-        /** Relative file path resolved against the .env directory so config-local paths work. */
+        /**
+         * Relative file path resolved against the .env directory so config-local paths work.
+         */
         const absPath = resolve(
           dirname(DOT_ENV_PATH,),
           opmlLink

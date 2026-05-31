@@ -21,7 +21,9 @@ import {
 } from './args.ts';
 import { runMigrations, } from './db-migrations.ts';
 
-/** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
+/**
+ * Default database file path when neither `--db=` nor `DB_PATH` env var is provided.
+ */
 const DEFAULT_DATABASE_PATH = './data/done.db';
 
 /**
@@ -44,12 +46,18 @@ function normalizeDatabasePath(value: string,): string {
  * @returns Resolved filesystem path to the database file
  */
 function resolveDatabasePath(): string {
-  /** Highest-priority source: explicit `--db=` flag. */
+  /**
+   * Highest-priority source: explicit `--db=` flag.
+   */
   const argumentPath = getArgumentValue('db',);
-  /** Mid-priority source: `DB_PATH` env var when no flag is given. */
+  /**
+   * Mid-priority source: `DB_PATH` env var when no flag is given.
+   */
   const environmentPath = process.env
     .DB_PATH;
-  /** Falls back to the default constant when neither source supplies a value. */
+  /**
+   * Falls back to the default constant when neither source supplies a value.
+   */
   const rawPath = argumentPath === ARGUMENT_ABSENT
     ? (environmentPath ?? DEFAULT_DATABASE_PATH)
     : argumentPath;
@@ -70,7 +78,9 @@ function resolveDatabasePath(): string {
 function ensureDatabaseDirectoryExists(databasePath: string,): void {
   if (databasePath === ':memory:')
     return;
-  /** Parent directory of the database file, created recursively below. */
+  /**
+   * Parent directory of the database file, created recursively below.
+   */
   const directoryPath = dirname(databasePath,);
   mkdirSync(
     directoryPath,
@@ -78,11 +88,15 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   );
 }
 
-/** Resolved database file path. */
+/**
+ * Resolved database file path.
+ */
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
-/** Open SQLite database connection with WAL mode and foreign keys. */
+/**
+ * Open SQLite database connection with WAL mode and foreign keys.
+ */
 const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },

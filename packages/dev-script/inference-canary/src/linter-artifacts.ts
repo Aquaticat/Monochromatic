@@ -21,7 +21,9 @@ import type {
 
 export { PACKAGE_DIR, } from './paths.ts';
 
-/** Root directory for all lint artifacts, gitignored via the package .gitignore. */
+/**
+ * Root directory for all lint artifacts, gitignored via the package .gitignore.
+ */
 export const LINT_DIR: string = join(
   PACKAGE_DIR,
   'src',
@@ -30,10 +32,14 @@ export const LINT_DIR: string = join(
 
 //region Artifact writing: writes generated source and meta.json sidecar for oxlint/tsgo to consume
 
-/** Metadata written alongside each generated canary.ts for traceability */
+/**
+ * Metadata written alongside each generated canary.ts for traceability
+ */
 export type ArtifactMeta = {
   readonly model: string;
-  /** Human-readable model label, used for directory naming and dedup */
+  /**
+   * Human-readable model label, used for directory naming and dedup
+   */
   readonly label: string;
   readonly probe: string;
   readonly pass: 'initial' | 'fix';
@@ -46,23 +52,41 @@ export type ArtifactMeta = {
  * from the completion result and scoring pipeline.
  */
 export type EnrichedArtifactMeta = ArtifactMeta & {
-  /** Probe score for this specific artifact (per-run score for initial, pass2 score for fix) */
+  /**
+   * Probe score for this specific artifact (per-run score for initial, pass2 score for fix)
+   */
   readonly score: number;
-  /** Model's reasoning/thinking trace, empty string when the model produced none */
+  /**
+   * Model's reasoning/thinking trace, empty string when the model produced none
+   */
   readonly reasoning: string;
-  /** Per-chunk timing breakdown for the API call that produced this artifact */
+  /**
+   * Per-chunk timing breakdown for the API call that produced this artifact
+   */
   readonly timing: StreamTiming;
-  /** Token usage from the API, absent when the API did not report usage */
+  /**
+   * Token usage from the API, absent when the API did not report usage
+   */
   readonly usage?: StreamUsage;
-  /** Why generation stopped (e.g. "stop", "length"), absent when not reported */
+  /**
+   * Why generation stopped (e.g. "stop", "length"), absent when not reported
+   */
   readonly finishReason?: string;
-  /** Runner configuration snapshot for reproducibility */
+  /**
+   * Runner configuration snapshot for reproducibility
+   */
   readonly config: ConfigSnapshot;
-  /** Diagnostic prompt sent to the model (fix pass only), absent for initial pass */
+  /**
+   * Diagnostic prompt sent to the model (fix pass only), absent for initial pass
+   */
   readonly fixPrompt?: string;
-  /** True when this artifact contains partial data from an aborted or failed run */
+  /**
+   * True when this artifact contains partial data from an aborted or failed run
+   */
   readonly partial?: boolean;
-  /** Error message when the run failed or was aborted */
+  /**
+   * Error message when the run failed or was aborted
+   */
   readonly error?: string;
 };
 
@@ -72,7 +96,9 @@ export type EnrichedArtifactMeta = ArtifactMeta & {
  */
 export type FailureArtifactMeta = {
   readonly model: string;
-  /** Human-readable model label, used for directory naming */
+  /**
+   * Human-readable model label, used for directory naming
+   */
   readonly label: string;
   readonly timestamp: string;
   readonly failed: true;
@@ -90,9 +116,13 @@ export type FailureArtifactMeta = {
  * the no-optional-escape rule bans for reopening strict-optional holes.
  */
 export type StoredFailureArtifactMeta = {
-  /** Model label recorded at write time; absent in legacy artifacts, so callers fall back to the directory name. */
+  /**
+   * Model label recorded at write time; absent in legacy artifacts, so callers fall back to the directory name.
+   */
   readonly label?: string;
-  /** Whole-model failure marker; absent or non-true on entries that are not failures. */
+  /**
+   * Whole-model failure marker; absent or non-true on entries that are not failures.
+   */
   readonly failed?: boolean;
 };
 
@@ -106,9 +136,13 @@ export type StoredFailureArtifactMeta = {
  * no-optional-escape rule bans for reopening strict-optional holes.
  */
 export type StoredArtifactMeta = {
-  /** Model label recorded at write time; absent in legacy artifacts, so callers fall back to the directory name. */
+  /**
+   * Model label recorded at write time; absent in legacy artifacts, so callers fall back to the directory name.
+   */
   readonly label?: string;
-  /** Probe name recorded at write time; runs whose meta omit it are skipped. */
+  /**
+   * Probe name recorded at write time; runs whose meta omit it are skipped.
+   */
   readonly probe?: string;
 };
 
@@ -151,7 +185,9 @@ export function artifactDir(meta: ArtifactMeta,): string {
       `ArtifactMeta.label must be a string, got ${typeof meta.label} (model=${meta.model}, probe=${meta.probe})`,
     );
   }
-  /** Timestamp slug with colons rewritten to hyphens so it is filesystem-safe across platforms. */
+  /**
+   * Timestamp slug with colons rewritten to hyphens so it is filesystem-safe across platforms.
+   */
   const safeTs = timestampSlug(meta.timestamp,);
   return join(
     LINT_DIR,
@@ -172,9 +208,13 @@ export function artifactDir(meta: ArtifactMeta,): string {
  * ```
  */
 type WriteLintFileOptions = {
-  /** TypeScript source to analyze */
+  /**
+   * TypeScript source to analyze
+   */
   readonly source: string;
-  /** Artifact metadata (model, probe, pass, timestamp) */
+  /**
+   * Artifact metadata (model, probe, pass, timestamp)
+   */
   readonly meta: ArtifactMeta;
 };
 
@@ -212,7 +252,9 @@ export async function writeLintFile({
     lintDir,
     { recursive: true, },
   );
-  /** Absolute path of the generated `canary.ts`, the file oxlint and tsgo consume downstream. */
+  /**
+   * Absolute path of the generated `canary.ts`, the file oxlint and tsgo consume downstream.
+   */
   const filePath = join(
     lintDir,
     'canary.ts',
@@ -254,9 +296,13 @@ export async function writeLintFile({
  * ```
  */
 type WriteEnrichedArtifactOptions = {
-  /** Full enriched metadata including score and completion data */
+  /**
+   * Full enriched metadata including score and completion data
+   */
   readonly enriched: EnrichedArtifactMeta;
-  /** Raw model output text */
+  /**
+   * Raw model output text
+   */
   readonly rawResponse: string;
 };
 
@@ -283,7 +329,9 @@ export async function writeEnrichedArtifact({
   enriched,
   rawResponse,
 }: WriteEnrichedArtifactOptions,): Promise<void> {
-  /** Existing artifact directory; reused so the basic meta.json gets overwritten in place. */
+  /**
+   * Existing artifact directory; reused so the basic meta.json gets overwritten in place.
+   */
   const dir = artifactDir(enriched,);
   await mkdir(
     dir,
@@ -331,7 +379,9 @@ export async function writeFailureArtifact(meta: FailureArtifactMeta,): Promise<
    * Filesystem-safe timestamp slug; same encoding as {@link artifactDir} for consistency.
    */
   const safeTs = timestampSlug(meta.timestamp,);
-  /** Failure-specific directory path under the model label, separate from per-probe directories. */
+  /**
+   * Failure-specific directory path under the model label, separate from per-probe directories.
+   */
   const dir = join(
     LINT_DIR,
     meta.label,

@@ -41,7 +41,9 @@ export function wireContentSync({
     'contentchange',
     createDebounced({
       fn: function syncContent() {
-        /** Path of the currently open file; `null` means no file is open, so the change is dropped. */
+        /**
+         * Path of the currently open file; `null` means no file is open, so the change is dropped.
+         */
         const path = getCurrentFilePath();
         if (path === null)
           return;

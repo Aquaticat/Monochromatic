@@ -73,7 +73,9 @@ function articleFor(
     readonly number: GrammaticalNumber;
   },
 ): string {
-  /** Article subtable for the requested definiteness. */
+  /**
+   * Article subtable for the requested definiteness.
+   */
   const sub = entry.articles?.[kind];
   if (sub === undefined)
     return kind === 'definite' ? 'el' : 'un';
@@ -100,7 +102,9 @@ function articlePhrase(
     readonly surface: string;
   },
 ): string {
-  /** Article surface and noun surface for elision-aware joining. */
+  /**
+   * Article surface and noun surface for elision-aware joining.
+   */
   const {
     article,
     surface,
@@ -162,13 +166,17 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
         .surface;
     if (phrase.kind
       === 'noun.counted') {
-      /** Resolved noun entry validated before numeric rendering. */
+      /**
+       * Resolved noun entry validated before numeric rendering.
+       */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
         entry,
         noun: phrase.noun,
       },);
-      /** Plural surface when count is not 1, singular otherwise. */
+      /**
+       * Plural surface when count is not 1, singular otherwise.
+       */
       const surface = phrase.count
         === 1
         ? entry.surface
@@ -180,7 +188,9 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
     }
     if (phrase.kind
       === 'noun.definite') {
-      /** Resolved noun entry. */
+      /**
+       * Resolved noun entry.
+       */
       const entry = nouns[phrase.noun];
       return articlePhrase({
         article: articleFor({
@@ -193,7 +203,9 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
     }
     if (phrase.kind
       === 'noun.indefinite') {
-      /** Resolved noun entry. */
+      /**
+       * Resolved noun entry.
+       */
       const entry = nouns[phrase.noun];
       return articlePhrase({
         article: articleFor({

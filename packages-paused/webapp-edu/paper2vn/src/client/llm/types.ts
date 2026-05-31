@@ -6,45 +6,73 @@
  * lean.
  */
 
-/** Chat role. */
+/**
+ * Chat role.
+ */
 export type Role = 'system' | 'user' | 'assistant';
 
-/** A single chat message. */
+/**
+ * A single chat message.
+ */
 export type Message = {
-  /** Sender role. */
+  /**
+   * Sender role.
+   */
   role: Role;
 
-  /** Plain-text content. */
+  /**
+   * Plain-text content.
+   */
   content: string;
 };
 
-/** Provider configuration handed to a chat call. */
+/**
+ * Provider configuration handed to a chat call.
+ */
 export type ChatOptions = {
-  /** Messages in turn order. */
+  /**
+   * Messages in turn order.
+   */
   messages: readonly Message[];
 
-  /** Model identifier (provider-specific). */
+  /**
+   * Model identifier (provider-specific).
+   */
   model: string;
 
-  /** API key, or empty for keyless providers like Ollama. */
+  /**
+   * API key, or empty for keyless providers like Ollama.
+   */
   apiKey: string;
 
-  /** Base URL override; empty means provider default. */
+  /**
+   * Base URL override; empty means provider default.
+   */
   baseUrl: string;
 
-  /** Optional abort signal for cancellation. Undefined means uncancellable. */
+  /**
+   * Optional abort signal for cancellation. Undefined means uncancellable.
+   */
   signal: AbortSignal | undefined;
 
-  /** Sampling temperature (0-2). */
+  /**
+   * Sampling temperature (0-2).
+   */
   temperature: number | undefined;
 
-  /** Hint to the model that the response should be valid JSON. */
+  /**
+   * Hint to the model that the response should be valid JSON.
+   */
   expectJson: boolean | undefined;
 };
 
-/** Concrete provider implementation. */
+/**
+ * Concrete provider implementation.
+ */
 export type Provider = {
-  /** Stable provider id matching {@link import('../types.ts').ProviderId}. */
+  /**
+   * Stable provider id matching {@link import('../types.ts').ProviderId}.
+   */
   id: string;
 
   /* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` (browser SDK with mutating methods) so deep-readonly cannot apply; the function never reassigns or mutates the opts object. */

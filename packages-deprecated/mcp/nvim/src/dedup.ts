@@ -44,10 +44,14 @@ export function dedupKey(diagnostic: Diagnostic,): string {
  * ```
  */
 export function uniqueDiagnostics(diagnostics: readonly Diagnostic[],): Diagnostic[] {
-  /** Keys observed during the walk; lets the filter drop every duplicate after the first. */
+  /**
+   * Keys observed during the walk; lets the filter drop every duplicate after the first.
+   */
   const seen = new Set<string>();
   return diagnostics.filter(function isFirstOccurrence(diagnostic,) {
-    /** Identity key for this diagnostic; collisions mean the entry is a duplicate of an earlier occurrence. */
+    /**
+     * Identity key for this diagnostic; collisions mean the entry is a duplicate of an earlier occurrence.
+     */
     const key = dedupKey(diagnostic,);
     if (seen.has(key,))
       return false;
@@ -84,11 +88,15 @@ export function dedupDiagnostics({
   editor: readonly Diagnostic[];
   lint: readonly Diagnostic[];
 },): Diagnostic[] {
-  /** Dedup keys for editor diagnostics; precomputed so each lint entry can be matched in O(1). */
+  /**
+   * Dedup keys for editor diagnostics; precomputed so each lint entry can be matched in O(1).
+   */
   const editorKeys = new Set(editor.map(function buildKey(d,) {
     return dedupKey(d,);
   },),);
-  /** Lint diagnostics that have no editor counterpart; appended after editor entries to keep editor positions authoritative. */
+  /**
+   * Lint diagnostics that have no editor counterpart; appended after editor entries to keep editor positions authoritative.
+   */
   const lintOnly = lint.filter(function isNotDuplicate(diagnostic,) {
     return !editorKeys.has(dedupKey(diagnostic,),);
   },);

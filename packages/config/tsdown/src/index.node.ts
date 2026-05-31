@@ -5,7 +5,9 @@ import {
 
 import { browserslistTargets, } from './browserslist-targets.ts';
 
-/** Resolved Browserslist targets shared by Node builds. */
+/**
+ * Resolved Browserslist targets shared by Node builds.
+ */
 const target = await browserslistTargets({ runtime: 'node', },);
 
 /**

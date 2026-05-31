@@ -22,10 +22,14 @@ import {
 } from '../state.ts';
 import type { SaveData, } from '../types.ts';
 
-/** Maximum random suffix used by the timestamp-derived save-id fallback. */
+/**
+ * Maximum random suffix used by the timestamp-derived save-id fallback.
+ */
 const FALLBACK_ID_SUFFIX_RANGE = 1_000_000;
 
-/** Navigation handler for the back button: routes back to the menu. */
+/**
+ * Navigation handler for the back button: routes back to the menu.
+ */
 function goBackToMenu(): void {
   navigate('menu',);
 }
@@ -53,10 +57,14 @@ function newSaveId(): string {
  * @param root - host element the screen mounts into
  */
 function mount(root: HTMLElement,): void {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  /** File picker accepting the locale-tuned accept string. */
+  /**
+   * File picker accepting the locale-tuned accept string.
+   */
   const fileInput = el({
     tag: 'input',
     attrs: {
@@ -64,33 +72,43 @@ function mount(root: HTMLElement,): void {
       accept: ll.uploadAccept(),
     },
   },);
-  /** Plain-text alternative input when the user pastes instead of uploading. */
+  /**
+   * Plain-text alternative input when the user pastes instead of uploading.
+   */
   const textarea = el({
     tag: 'textarea',
     attrs: { placeholder: ll.pasteTextPlaceholder(), },
   },);
-  /** Inline status paragraph used for hints and error messages. */
+  /**
+   * Inline status paragraph used for hints and error messages.
+   */
   const status = el({
     tag: 'p',
     attrs: { class: 'muted', },
     children: [ll.selectTopicHint(),],
   },);
 
-  /** Click handler for the primary action: parse input, generate, navigate. */
+  /**
+   * Click handler for the primary action: parse input, generate, navigate.
+   */
   async function start(): Promise<void> {
     if (!isProviderReady()) {
       status.textContent = ll.apiKeyMissing();
       status.className = 'error';
       return;
     }
-    /** First selected file from the picker, when the upload path is chosen. */
+    /**
+     * First selected file from the picker, when the upload path is chosen.
+     */
     const file = fileInput.files?.[0];
     try {
       if (file !== undefined) {
         status.textContent = `${ll.generating()} (${file.name})`;
         status.className = 'muted';
       }
-      /** Paper body either extracted from the upload or read from the textarea. */
+      /**
+       * Paper body either extracted from the upload or read from the textarea.
+       */
       const paperText = file !== undefined
         ? await extractPaperText(file,)
         : textarea.value;
@@ -103,12 +121,16 @@ function mount(root: HTMLElement,): void {
       }
       status.textContent = ll.generating();
       status.className = 'muted';
-      /** LLM-generated title and chapters for the parsed paper text. */
+      /**
+       * LLM-generated title and chapters for the parsed paper text.
+       */
       const generation = await generateChapters({
         paperText,
         signal: undefined,
       },);
-      /** Fresh save record stored before navigating to the lecture screen. */
+      /**
+       * Fresh save record stored before navigating to the lecture screen.
+       */
       const save: SaveData = {
         id: newSaveId(),
         label: generation.title,
@@ -125,7 +147,9 @@ function mount(root: HTMLElement,): void {
       navigate('lecture',);
     }
     catch (err) {
-      /** Normalised error message shown to the user in the status paragraph. */
+      /**
+       * Normalised error message shown to the user in the status paragraph.
+       */
       const message = err instanceof Error ? err.message : String(err,);
       console.error(
         '[select-topic] start failed',
@@ -150,7 +174,9 @@ function mount(root: HTMLElement,): void {
     children: [ll.startLecture(),],
   },);
 
-  /** Outer screen container with header, upload, paste, status, and start button. */
+  /**
+   * Outer screen container with header, upload, paste, status, and start button.
+   */
   const screen = el({
     tag: 'section',
     attrs: {

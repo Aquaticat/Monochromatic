@@ -4,7 +4,9 @@ import type {
   PackageSpec,
 } from './types.ts';
 
-/** Default flag used for binary existence checks when no custom check is specified. */
+/**
+ * Default flag used for binary existence checks when no custom check is specified.
+ */
 export const DEFAULT_CHECK = '--version';
 
 //region p() builder
@@ -66,7 +68,9 @@ function buildFromShorthand(name: string,): PackageEntry {
  * @returns Immutable package entry
  */
 function buildFromSpec(spec: PackageSpec,): PackageEntry {
-  /** Destructured spec fields; pulled out so the return literal stays compact. */
+  /**
+   * Destructured spec fields; pulled out so the return literal stays compact.
+   */
   const {
     bin,
     check,
@@ -82,7 +86,9 @@ function buildFromSpec(spec: PackageSpec,): PackageEntry {
       overrides: Object.freeze({},),
     };
 
-  /** Availability set and per-manager overrides parsed from the supplied `yes` array. */
+  /**
+   * Availability set and per-manager overrides parsed from the supplied `yes` array.
+   */
   const {
     available,
     overrides,
@@ -113,15 +119,21 @@ function parseYes(
   readonly available: ReadonlySet<PackageManager>;
   readonly overrides: Readonly<Record<string, string>>;
 } {
-  /** Managers that can supply this package; populated as the `yes` array is walked. */
+  /**
+   * Managers that can supply this package; populated as the `yes` array is walked.
+   */
   const available = new Set<PackageManager>();
-  /** Per-manager package-name overrides extracted from `[manager, packageName]` tuples. */
+  /**
+   * Per-manager package-name overrides extracted from `[manager, packageName]` tuples.
+   */
   const overrides: Record<string, string> = {};
   for (const entry of yes) {
     if ((typeof entry) === 'string')
       available.add(entry,);
     else {
-      /** Tuple split: explicit manager plus its custom package name. */
+      /**
+       * Tuple split: explicit manager plus its custom package name.
+       */
       const [manager, packageName,] = entry;
       available.add(manager,);
       overrides[manager] = packageName;

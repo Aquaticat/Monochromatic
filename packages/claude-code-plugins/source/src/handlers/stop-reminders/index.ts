@@ -54,17 +54,27 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   if (event.stop_hook_active)
     return {};
 
-  /** Final assistant message with code blocks, inline code, and quotes stripped before scanning. */
+  /**
+   * Final assistant message with code blocks, inline code, and quotes stripped before scanning.
+   */
   const prose = stripNonProseRegions(event.last_assistant_message
     ?? '',);
-  /** First hedging-phrase hit, or `NO_MATCH`; populates the uncertainty reminder when matched. */
+  /**
+   * First hedging-phrase hit, or `NO_MATCH`; populates the uncertainty reminder when matched.
+   */
   const match = findUncertainty(prose,);
-  /** First uncited categorical-dismissal hit, or `NO_MATCH`; populates the dismissal reminder when matched. */
+  /**
+   * First uncited categorical-dismissal hit, or `NO_MATCH`; populates the dismissal reminder when matched.
+   */
   const dismissal = findCategoricalDismissal(prose,);
-  /** Trailing user-directed question hit, or `NO_MATCH`; populates the AskUserQuestion reminder when matched. */
+  /**
+   * Trailing user-directed question hit, or `NO_MATCH`; populates the AskUserQuestion reminder when matched.
+   */
   const question = findTrailingQuestion(prose,);
 
-  /** Reminder lines accumulated across the three detectors; joined into the final block reason. */
+  /**
+   * Reminder lines accumulated across the three detectors; joined into the final block reason.
+   */
   const reasons: string[] = [];
 
   if (match !== NO_MATCH) {

@@ -28,7 +28,9 @@ import { formatNumber, } from './overlay-meta.ts';
  * ```
  */
 export function renderCollapsibles(detail: ProbeDetail,): string {
-  /** Accumulates only the `<details>` blocks whose source data is present. */
+  /**
+   * Accumulates only the `<details>` blocks whose source data is present.
+   */
   const sections: string[] = [];
 
   if ((detail.reasoning

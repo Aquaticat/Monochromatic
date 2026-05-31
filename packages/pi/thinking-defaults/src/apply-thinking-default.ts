@@ -11,17 +11,27 @@ import {
 
 //region Types
 
-/** Minimal model shape needed to choose a thinking default. */
+/**
+ * Minimal model shape needed to choose a thinking default.
+ */
 type ModelWithId = {
-  /** Model identifier as passed through pi. */
+  /**
+   * Model identifier as passed through pi.
+   */
   readonly id: string;
 };
 
-/** Result returned after applying, or skipping, a thinking default. */
+/**
+ * Result returned after applying, or skipping, a thinking default.
+ */
 export type ApplyThinkingDefaultResult = {
-  /** Whether `setThinkingLevel` was called. */
+  /**
+   * Whether `setThinkingLevel` was called.
+   */
   changed: boolean;
-  /** Target level derived from the model, absent when no model is available. */
+  /**
+   * Target level derived from the model, absent when no model is available.
+   */
   target?: ThinkingDefaultLevel;
 };
 
@@ -29,11 +39,17 @@ export type ApplyThinkingDefaultResult = {
  * Dependencies needed by {@link applyThinkingDefault}.
  */
 type ApplyThinkingDefaultOptions = {
-  /** Current model; absent when pi has not selected one yet. */
+  /**
+   * Current model; absent when pi has not selected one yet.
+   */
   readonly model?: ModelWithId;
-  /** Reads pi's current thinking level. */
+  /**
+   * Reads pi's current thinking level.
+   */
   readonly getThinkingLevel: () => string;
-  /** Sets pi's current thinking level. */
+  /**
+   * Sets pi's current thinking level.
+   */
   readonly setThinkingLevel: (level: ThinkingDefaultLevel,) => void;
 };
 
@@ -64,14 +80,20 @@ type ApplyThinkingDefaultOptions = {
 export function applyThinkingDefault(
   options: ApplyThinkingDefaultOptions,
 ): ApplyThinkingDefaultResult {
-  /** Model selected in pi at the event boundary. */
+  /**
+   * Model selected in pi at the event boundary.
+   */
   const { model, } = options;
   if (model === undefined)
     return { changed: false, };
 
-  /** Target level selected by model-id policy. */
+  /**
+   * Target level selected by model-id policy.
+   */
   const target = getThinkingDefaultForModel({ model, },);
-  /** Current level read from pi before deciding whether to write. */
+  /**
+   * Current level read from pi before deciding whether to write.
+   */
   const current = options.getThinkingLevel();
   if (current === target) {
     return {

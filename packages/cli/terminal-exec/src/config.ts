@@ -11,7 +11,9 @@ import {
   tagged,
 } from './log.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'config',
   l: parentLogger,
@@ -28,11 +30,17 @@ const MALFORMED_DIRECTIVE: unique symbol = Symbol('terminal-exec/malformed-direc
  * Result of parsing all config files.
  */
 export type ConfigResult = {
-  /** Explicitly listed entry IDs in priority order. */
+  /**
+   * Explicitly listed entry IDs in priority order.
+   */
   readonly entryIds: readonly string[];
-  /** Entry IDs excluded from fallback scanning. */
+  /**
+   * Entry IDs excluded from fallback scanning.
+   */
   readonly excludedIds: ReadonlySet<string>;
-  /** Default TerminalArgExec values keyed by entry ID. */
+  /**
+   * Default TerminalArgExec values keyed by entry ID.
+   */
   readonly execArgDefaults: ReadonlyMap<string, string>;
 };
 
@@ -56,17 +64,27 @@ export type ConfigResult = {
 export async function parseConfigFiles(
   { paths, }: { readonly paths: readonly string[]; },
 ): Promise<ConfigResult> {
-  /** Mutable accumulator of explicit entry preferences in priority order. */
+  /**
+   * Mutable accumulator of explicit entry preferences in priority order.
+   */
   const entryIds: string[] = [];
-  /** Ids removed from fallback unless overridden by a later `+`. */
+  /**
+   * Ids removed from fallback unless overridden by a later `+`.
+   */
   const excludedIds = new Set<string>();
-  /** Tracks IDs that have been explicitly included via `+`, preventing later `-` from excluding them. */
+  /**
+   * Tracks IDs that have been explicitly included via `+`, preventing later `-` from excluding them.
+   */
   const includedIds = new Set<string>();
-  /** Per-id execarg defaults from `/execarg_default:` directives. */
+  /**
+   * Per-id execarg defaults from `/execarg_default:` directives.
+   */
   const execArgDefaults = new Map<string, string>();
 
   for (const path of paths) {
-    /** Empty default lets the catch path continue to the next config file without restructuring. */
+    /**
+     * Empty default lets the catch path continue to the next config file without restructuring.
+     */
     let text = '';
     try {
       /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
@@ -82,7 +100,9 @@ export async function parseConfigFiles(
     l.debug(`reading config '${path}'`,);
 
     for (const rawLine of text.split('\n',)) {
-      /** Whitespace tolerance before prefix-character dispatch. */
+      /**
+       * Whitespace tolerance before prefix-character dispatch.
+       */
       const line = rawLine.trim();
       if ((line.length
         === 0) || line
@@ -90,10 +110,14 @@ export async function parseConfigFiles(
         continue;
 
       if (line.startsWith('/',)) {
-        /** Parsed execarg-default entry; MALFORMED_DIRECTIVE for non-matching or malformed directives. */
+        /**
+         * Parsed execarg-default entry; MALFORMED_DIRECTIVE for non-matching or malformed directives.
+         */
         const directive = parseDirective({ line, },);
         if (directive !== MALFORMED_DIRECTIVE) {
-          /** Entry id and default arg from the matched directive. */
+          /**
+           * Entry id and default arg from the matched directive.
+           */
           const [entryId, defaultArg,] = directive;
           execArgDefaults.set(
             entryId,
@@ -105,7 +129,9 @@ export async function parseConfigFiles(
       }
 
       if (line.startsWith('-',)) {
-        /** Entry id without the leading `-` exclusion marker. */
+        /**
+         * Entry id without the leading `-` exclusion marker.
+         */
         const id = line.slice(1,);
         if (!includedIds.has(id,)) {
           excludedIds.add(id,);
@@ -115,7 +141,9 @@ export async function parseConfigFiles(
       }
 
       if (line.startsWith('+',)) {
-        /** Entry id without the leading `+` inclusion marker. */
+        /**
+         * Entry id without the leading `+` inclusion marker.
+         */
         const id = line.slice(1,);
         includedIds.add(id,);
         excludedIds.delete(id,);
@@ -153,24 +181,34 @@ function parseDirective(
   string,
   string,
 ] | typeof MALFORMED_DIRECTIVE {
-  /** Directive prefix lifted to a name for the slice math below. */
+  /**
+   * Directive prefix lifted to a name for the slice math below.
+   */
   const EXECARG_PREFIX = '/execarg_default:';
   if (!line.startsWith(EXECARG_PREFIX,))
     return MALFORMED_DIRECTIVE;
 
-  /** Directive payload; format is `<entryId>:<defaultArg>`. */
+  /**
+   * Directive payload; format is `<entryId>:<defaultArg>`.
+   */
   const rest = line.slice(EXECARG_PREFIX.length,);
-  /** Separator between entry id and default arg; -1 means malformed and skipped. */
+  /**
+   * Separator between entry id and default arg; -1 means malformed and skipped.
+   */
   const colonIdx = rest.indexOf(':',);
   if (colonIdx === (-1))
     return MALFORMED_DIRECTIVE;
 
-  /** Target entry id for the default. */
+  /**
+   * Target entry id for the default.
+   */
   const entryId = rest.slice(
     0,
     colonIdx,
   );
-  /** Default execarg value associated with the entry id. */
+  /**
+   * Default execarg value associated with the entry id.
+   */
   const defaultArg = rest.slice(colonIdx + 1,);
   return [
     entryId,

@@ -17,10 +17,14 @@ import {
 
 import { MONO_FONT_FAMILY, } from './tokens.ts';
 
-/** Full dimension as percentage. */
+/**
+ * Full dimension as percentage.
+ */
 const FULL = 100;
 
-/** Global reset and base layout rules. */
+/**
+ * Global reset and base layout rules.
+ */
 export const STYLES: string = [
   $({
     rule: '*',

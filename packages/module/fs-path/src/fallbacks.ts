@@ -23,19 +23,29 @@ export function normalize(filePath: string,): string {
   if (filePath === '')
     return '.';
 
-  /** Unicode code point for `/` */
+  /**
+   * Unicode code point for `/`
+   */
   const SLASH_CODE_POINT = 47;
-  /** Whether the input is rooted */
+  /**
+   * Whether the input is rooted
+   */
   const isRoot = filePath.codePointAt(0,)
     === SLASH_CODE_POINT;
-  /** Whether the input ends with a trailing slash */
+  /**
+   * Whether the input ends with a trailing slash
+   */
   const trailingSlash = filePath.codePointAt(filePath.length
     - 1,)
     === SLASH_CODE_POINT;
 
-  /** Path segments split on `/` */
+  /**
+   * Path segments split on `/`
+   */
   const parts = filePath.split('/',);
-  /** Stack of resolved segments built by walking the input */
+  /**
+   * Stack of resolved segments built by walking the input
+   */
   const resolved: string[] = [];
 
   for (const part of parts) {
@@ -55,7 +65,9 @@ export function normalize(filePath: string,): string {
     }
   }
 
-  /** Joined result without root prefix */
+  /**
+   * Joined result without root prefix
+   */
   let result = resolved.join('/',);
 
   if (isRoot)
@@ -89,9 +101,13 @@ export function dirnameFallback(filePath: string,): string {
   if (filePath === '')
     return '.';
 
-  /** Unicode code point for `/` */
+  /**
+   * Unicode code point for `/`
+   */
   const SLASH_CODE_POINT = 47;
-  /** Whether the input path is rooted */
+  /**
+   * Whether the input path is rooted
+   */
   const isRoot = filePath.codePointAt(0,)
     === SLASH_CODE_POINT;
   /**
@@ -108,7 +124,9 @@ export function dirnameFallback(filePath: string,): string {
       - 2
     : filePath.length
       - 1;
-  /** Index of the last meaningful slash, or -1 when none exists. */
+  /**
+   * Index of the last meaningful slash, or -1 when none exists.
+   */
   const lastSlash = filePath.lastIndexOf(
     '/',
     searchEnd,
@@ -146,7 +164,9 @@ export function joinFallback(segments: readonly string[],): string {
   if (segments.length
     === 0)
     return '.';
-  /** Raw concatenation of all non-empty segments */
+  /**
+   * Raw concatenation of all non-empty segments
+   */
   const joined = segments
     .filter(function isNonEmpty(segment,) {
       return segment !== '';
@@ -175,7 +195,9 @@ export function joinFallback(segments: readonly string[],): string {
  * ```
  */
 export function resolveFallback(segments: readonly string[],): string {
-  /** Unicode code point for `/` */
+  /**
+   * Unicode code point for `/`
+   */
   const SLASH_CODE_POINT = 47;
 
   /**
@@ -189,23 +211,33 @@ export function resolveFallback(segments: readonly string[],): string {
       === SLASH_CODE_POINT);
   },);
 
-  /** Segments from the rightmost absolute (or start when none) to end. */
+  /**
+   * Segments from the rightmost absolute (or start when none) to end.
+   */
   const relevantSegments = segments.slice(absoluteIndex === (-1) ? 0 : absoluteIndex,);
-  /** Joined path built from the relevant segments, dropping empty entries. */
+  /**
+   * Joined path built from the relevant segments, dropping empty entries.
+   */
   const partial = relevantSegments
     .filter(function isNonEmpty(segment,) {
       return segment !== '';
     },)
     .join('/',);
 
-  /** Current working directory (falls back to `/` in browser) */
+  /**
+   * Current working directory (falls back to `/` in browser)
+   */
   const cwd =
     (((typeof process) !== 'undefined') && ((typeof process.cwd) === 'function'))
       ? process.cwd()
       : '/';
-  /** Absolute composition: prepend cwd when no segment supplied a root. */
+  /**
+   * Absolute composition: prepend cwd when no segment supplied a root.
+   */
   const composed = absoluteIndex === (-1) ? `${cwd}/${partial}` : partial;
-  /** Normalized absolute path */
+  /**
+   * Normalized absolute path
+   */
   const normalized = normalize(composed,);
 
   if (

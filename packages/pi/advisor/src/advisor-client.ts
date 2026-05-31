@@ -23,17 +23,29 @@ import type {
 
 //region Types
 
-/** Options for invoking the selected Advisor model. */
+/**
+ * Options for invoking the selected Advisor model.
+ */
 export type CompleteAdvisorOptions = {
-  /** Pi extension context, used for auth lookup. */
+  /**
+   * Pi extension context, used for auth lookup.
+   */
   readonly ctx: ReadonlyDeep<ExtensionContext>;
-  /** Selected Advisor model. */
+  /**
+   * Selected Advisor model.
+   */
   readonly model: AdvisorReadonlyModel;
-  /** Runtime Advisor config. */
+  /**
+   * Runtime Advisor config.
+   */
   readonly config: AdvisorConfig;
-  /** Serialized Advisor context. */
+  /**
+   * Serialized Advisor context.
+   */
   readonly advisorContext: AdvisorContext;
-  /** Abort signal from tool or command mode. */
+  /**
+   * Abort signal from tool or command mode.
+   */
   readonly signal?: ReadonlyDeep<AbortSignal>;
 };
 
@@ -59,10 +71,14 @@ export async function completeAdvisor(
   options: CompleteAdvisorOptions,
 ): Promise<AssistantMessage> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai APIs require non-readonly Model; prefer-readonly-parameter-types forces our parent type to be deep-readonly. */
-  /** Mutable view of the advisor model for external pi-ai API calls. */
+  /**
+   * Mutable view of the advisor model for external pi-ai API calls.
+   */
   const mutableModel = options.model as Model<Api>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Request auth resolved through pi's model registry. */
+  /**
+   * Request auth resolved through pi's model registry.
+   */
   const auth = await options
     .ctx
     .modelRegistry
@@ -75,7 +91,9 @@ export async function completeAdvisor(
     );
   }
 
-  /** Secondary user message containing serialized evidence. */
+  /**
+   * Secondary user message containing serialized evidence.
+   */
   const userMessage: Message = {
     role: 'user',
     content: [{
@@ -86,7 +104,9 @@ export async function completeAdvisor(
     timestamp: Date.now(),
   };
 
-  /** Provider options built field-by-field for exact optional property types. */
+  /**
+   * Provider options built field-by-field for exact optional property types.
+   */
   const providerOptions: ProviderStreamOptions = {
     signal: combinedSignal({
       ...(options.signal
@@ -198,7 +218,9 @@ function combinedSignal(
     readonly timeoutMs: number;
   },
 ): AbortSignal {
-  /** Timeout signal for this Advisor call. */
+  /**
+   * Timeout signal for this Advisor call.
+   */
   const timeoutSignal = AbortSignal.timeout(timeoutMs,);
   return signal === undefined
     ? timeoutSignal

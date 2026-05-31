@@ -16,13 +16,19 @@ import {
   POPUP_FONT_SIZE,
 } from '../styles/tokens.ts';
 
-/** Padding inside the input field in rem. */
+/**
+ * Padding inside the input field in rem.
+ */
 const INPUT_PADDING = 1 / (2 * 2);
 
-/** Z-index for the rename input overlay, above other fixed-position elements. */
+/**
+ * Z-index for the rename input overlay, above other fixed-position elements.
+ */
 const OVERLAY_Z_INDEX = 1_000;
 
-/** Shadow DOM styles for the rename input. */
+/**
+ * Shadow DOM styles for the rename input.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

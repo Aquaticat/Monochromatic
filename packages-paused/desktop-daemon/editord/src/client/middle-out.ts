@@ -10,7 +10,9 @@
  * - Match in the middle: truncate both sides around the match
  */
 
-/** Unicode horizontal ellipsis character. */
+/**
+ * Unicode horizontal ellipsis character.
+ */
 const ELLIPSIS = '\u2026';
 
 /**
@@ -45,7 +47,9 @@ export function middleOut({
     <= budget)
     return text;
 
-  /** Case-folded indexOf so queries find matches regardless of case. */
+  /**
+   * Case-folded indexOf so queries find matches regardless of case.
+   */
   const matchStart = text.toLowerCase()
     .indexOf(query.toLowerCase(),);
 
@@ -57,7 +61,9 @@ export function middleOut({
       + ELLIPSIS;
   }
 
-  /** End offset of the matched substring; bounds the truncation decisions below. */
+  /**
+   * End offset of the matched substring; bounds the truncation decisions below.
+   */
   const matchEnd = matchStart + query
     .length;
 
@@ -78,13 +84,19 @@ export function middleOut({
         - budget) + 1,);
 
   // Match in the middle: truncate both sides, center on the match
-  /** Remaining budget after reserving space for the query and two ellipses. */
+  /**
+   * Remaining budget after reserving space for the query and two ellipses.
+   */
   const contextBudget = budget - query
     .length
     - 2;
-  /** Half the context budget rounded down, allocated to the prefix. */
+  /**
+   * Half the context budget rounded down, allocated to the prefix.
+   */
   const before = Math.floor(contextBudget / 2,);
-  /** Remaining context budget allocated to the suffix; absorbs the rounding. */
+  /**
+   * Remaining context budget allocated to the suffix; absorbs the rounding.
+   */
   const after = contextBudget - before;
 
   return ELLIPSIS + text

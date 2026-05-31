@@ -23,9 +23,13 @@
  * ```
  */
 export type CompactedRange = {
-  /** First line in range (1-indexed, inclusive). */
+  /**
+   * First line in range (1-indexed, inclusive).
+   */
   start: number;
-  /** Last line in range (1-indexed, inclusive). */
+  /**
+   * Last line in range (1-indexed, inclusive).
+   */
   end: number;
 };
 
@@ -43,15 +47,25 @@ export type CompactedRange = {
  * ```
  */
 export type CompactMessage = {
-  /** Role of message ("user", "assistant", etc.). */
+  /**
+   * Role of message ("user", "assistant", etc.).
+   */
   role: string;
-  /** Compressed message body. */
+  /**
+   * Compressed message body.
+   */
   content: string;
-  /** Optional message name as supplied in request. */
+  /**
+   * Optional message name as supplied in request.
+   */
   name?: string;
-  /** Line ranges removed during compaction. */
+  /**
+   * Line ranges removed during compaction.
+   */
   compacted_line_ranges: CompactedRange[];
-  /** Line ranges force-preserved via `<keepContext>` tags. */
+  /**
+   * Line ranges force-preserved via `<keepContext>` tags.
+   */
   kept_line_ranges: CompactedRange[];
 };
 
@@ -64,11 +78,17 @@ export type CompactMessage = {
  * ```
  */
 export type CompactInputMessage = {
-  /** Role of message ("user", "assistant", etc.). */
+  /**
+   * Role of message ("user", "assistant", etc.).
+   */
   readonly role: string;
-  /** Raw message body. */
+  /**
+   * Raw message body.
+   */
   readonly content: string;
-  /** Optional message name forwarded to API. */
+  /**
+   * Optional message name forwarded to API.
+   */
   readonly name?: string;
 };
 
@@ -84,23 +104,41 @@ export type CompactInputMessage = {
  * ```
  */
 export type CompactInput = {
-  /** String input or array of messages; ignored when `messages` is set. */
+  /**
+   * String input or array of messages; ignored when `messages` is set.
+   */
   readonly input?: string | readonly CompactInputMessage[];
-  /** Array of messages to compact; takes priority over `input`. */
+  /**
+   * Array of messages to compact; takes priority over `input`.
+   */
   readonly messages?: readonly CompactInputMessage[];
-  /** Query the compactor conditions on; auto-detected from last user message when omitted. */
+  /**
+   * Query the compactor conditions on; auto-detected from last user message when omitted.
+   */
   readonly query?: string;
-  /** Fraction of content to keep (0.05 to 1.0); default 0.5. */
+  /**
+   * Fraction of content to keep (0.05 to 1.0); default 0.5.
+   */
   readonly compressionRatio?: number;
-  /** Number of recent messages to keep uncompressed; default 2. */
+  /**
+   * Number of recent messages to keep uncompressed; default 2.
+   */
   readonly preserveRecent?: number;
-  /** Whether to include `compacted_line_ranges` in response; default `true`. */
+  /**
+   * Whether to include `compacted_line_ranges` in response; default `true`.
+   */
   readonly includeLineRanges?: boolean;
-  /** Whether to include "(filtered N lines)" markers; default `true`. */
+  /**
+   * Whether to include "(filtered N lines)" markers; default `true`.
+   */
   readonly includeMarkers?: boolean;
-  /** Compactor model identifier; default "morph-compactor". */
+  /**
+   * Compactor model identifier; default "morph-compactor".
+   */
   readonly model?: string;
-  /** Optional cancellation signal forwarded to `fetch`; combined with the configured timeout. */
+  /**
+   * Optional cancellation signal forwarded to `fetch`; combined with the configured timeout.
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -113,24 +151,42 @@ export type CompactInput = {
  * ```
  */
 export type CompactResult = {
-  /** Response identifier from Morph API. */
+  /**
+   * Response identifier from Morph API.
+   */
   id: string;
-  /** All compacted messages joined by newline. */
+  /**
+   * All compacted messages joined by newline.
+   */
   output: string;
-  /** Per-message compaction metadata. */
+  /**
+   * Per-message compaction metadata.
+   */
   messages: CompactMessage[];
-  /** Token usage and compression statistics. */
+  /**
+   * Token usage and compression statistics.
+   */
   usage: {
-    /** Tokens in input payload. */
+    /**
+     * Tokens in input payload.
+     */
     input_tokens: number;
-    /** Tokens in compressed output. */
+    /**
+     * Tokens in compressed output.
+     */
     output_tokens: number;
-    /** Realized compression ratio (output/input). */
+    /**
+     * Realized compression ratio (output/input).
+     */
     compression_ratio: number;
-    /** Server-side processing time in milliseconds. */
+    /**
+     * Server-side processing time in milliseconds.
+     */
     processing_time_ms: number;
   };
-  /** Compactor model that produced response. */
+  /**
+   * Compactor model that produced response.
+   */
   model: string;
 };
 
@@ -143,11 +199,17 @@ export type CompactResult = {
  * ```
  */
 export type CompactConfig = {
-  /** Morph API key; falls back to `MORPH_API_KEY` env var when undefined. */
+  /**
+   * Morph API key; falls back to `MORPH_API_KEY` env var when undefined.
+   */
   readonly morphApiKey?: string;
-  /** Override base URL (e.g. for staging or proxies). */
+  /**
+   * Override base URL (e.g. for staging or proxies).
+   */
   readonly morphApiUrl?: string;
-  /** Per-request timeout in milliseconds; default 120000. */
+  /**
+   * Per-request timeout in milliseconds; default 120000.
+   */
   readonly timeout?: number;
 };
 
@@ -155,19 +217,29 @@ export type CompactConfig = {
 
 //region Constants
 
-/** Default Morph API base URL. */
+/**
+ * Default Morph API base URL.
+ */
 export const DEFAULT_API_URL = 'https://api.morphllm.com';
 
-/** Default per-request timeout in milliseconds. */
+/**
+ * Default per-request timeout in milliseconds.
+ */
 export const DEFAULT_TIMEOUT_MS = 120_000;
 
-/** Default compactor model identifier. */
+/**
+ * Default compactor model identifier.
+ */
 export const DEFAULT_MODEL = 'morph-compactor';
 
-/** Default compression ratio (fraction of content to keep). */
+/**
+ * Default compression ratio (fraction of content to keep).
+ */
 export const DEFAULT_COMPRESSION_RATIO = 0.5;
 
-/** Default number of recent messages preserved uncompressed. */
+/**
+ * Default number of recent messages preserved uncompressed.
+ */
 export const DEFAULT_PRESERVE_RECENT = 2;
 
 //endregion
@@ -183,7 +255,9 @@ export const DEFAULT_PRESERVE_RECENT = 2;
  * ```
  */
 export class MorphApiKeyMissingError extends Error {
-  /** Build error with fixed user-facing message. */
+  /**
+   * Build error with fixed user-facing message.
+   */
   constructor() {
     super(
       'Morph API key not found. Set MORPH_API_KEY environment variable or pass morphApiKey in config.',
@@ -201,9 +275,13 @@ export class MorphApiKeyMissingError extends Error {
  * ```
  */
 export class MorphApiError extends Error {
-  /** HTTP status from response. */
+  /**
+   * HTTP status from response.
+   */
   readonly status: number;
-  /** Raw response body returned by API. */
+  /**
+   * Raw response body returned by API.
+   */
   readonly body: string;
 
   /**
@@ -232,7 +310,9 @@ export class MorphApiError extends Error {
  * ```
  */
 export class MorphInvalidInputError extends Error {
-  /** Build error with fixed user-facing message. */
+  /**
+   * Build error with fixed user-facing message.
+   */
   constructor() {
     super("Either 'input' or 'messages' must be provided",);
     this.name = 'MorphInvalidInputError';
@@ -260,7 +340,9 @@ export class MorphInvalidInputError extends Error {
 function resolveApiKey(explicit?: string,): string {
   if ((explicit !== undefined) && (explicit !== ''))
     return explicit;
-  /** Browser-safe fallback to process env when the runtime exposes one. */
+  /**
+   * Browser-safe fallback to process env when the runtime exposes one.
+   */
   const envKey = ((typeof process) !== 'undefined')
     ? process.env
       .MORPH_API_KEY
@@ -285,7 +367,9 @@ function resolveApiKey(explicit?: string,): string {
  * ```
  */
 function buildRequestBody(input: CompactInput,): Record<string, unknown> {
-  /** Mutable accumulator filled with API-shape keys; one of input/messages added below. */
+  /**
+   * Mutable accumulator filled with API-shape keys; one of input/messages added below.
+   */
   const body: Record<string, unknown> = {
     compression_ratio: input.compressionRatio
       ?? DEFAULT_COMPRESSION_RATIO,
@@ -339,7 +423,9 @@ function buildSignal({
   readonly caller?: AbortSignal;
   readonly timeoutMs: number;
 },): AbortSignal {
-  /** Hard ceiling so a hung request cannot block compaction indefinitely. */
+  /**
+   * Hard ceiling so a hung request cannot block compaction indefinitely.
+   */
   const timeout = AbortSignal.timeout(timeoutMs,);
   if (caller === undefined)
     return timeout;
@@ -359,7 +445,9 @@ function buildSignal({
  * no-class rule.
  */
 export type MorphCompactClient = {
-  /** Compact messages or text via `POST {apiUrl}/v1/compact`. */
+  /**
+   * Compact messages or text via `POST {apiUrl}/v1/compact`.
+   */
   readonly compact: (input: CompactInput,) => Promise<CompactResult>;
 };
 
@@ -392,30 +480,46 @@ export type MorphCompactClient = {
 export function createMorphCompactClient(
   config: Readonly<CompactConfig> = {},
 ): MorphCompactClient {
-  /** Resolved base URL; falls back to the public Morph endpoint. */
+  /**
+   * Resolved base URL; falls back to the public Morph endpoint.
+   */
   const morphApiUrl = config.morphApiUrl
     ?? DEFAULT_API_URL;
-  /** Resolved per-request timeout in milliseconds. */
+  /**
+   * Resolved per-request timeout in milliseconds.
+   */
   const timeout = config.timeout
     ?? DEFAULT_TIMEOUT_MS;
-  /** Explicit key override resolved late so env overrides still surface. */
+  /**
+   * Explicit key override resolved late so env overrides still surface.
+   */
   const explicitKey = config.morphApiKey;
 
   return Object.freeze({
     async compact(input: CompactInput,): Promise<CompactResult> {
-      /** Late-bound key resolution so env overrides can surface per call. */
+      /**
+       * Late-bound key resolution so env overrides can surface per call.
+       */
       const apiKey = resolveApiKey(explicitKey,);
-      /** Fully qualified compact endpoint resolved against the configured base URL. */
+      /**
+       * Fully qualified compact endpoint resolved against the configured base URL.
+       */
       const url = `${morphApiUrl}/v1/compact`;
-      /** Wire-shape JSON payload built from caller input. */
+      /**
+       * Wire-shape JSON payload built from caller input.
+       */
       const body = buildRequestBody(input,);
-      /** Composite signal so either caller-cancel or timeout aborts fetch. */
+      /**
+       * Composite signal so either caller-cancel or timeout aborts fetch.
+       */
       const signal = buildSignal({
         ...((input.signal
           !== undefined) ? { caller: input.signal, } : {}),
         timeoutMs: timeout,
       },);
-      /** Raw fetch response inspected for status and parsed below. */
+      /**
+       * Raw fetch response inspected for status and parsed below.
+       */
       const response = await fetch(
         url,
         {
@@ -429,7 +533,9 @@ export function createMorphCompactClient(
         },
       );
       if (!response.ok) {
-        /** Captured error body forwarded into MorphApiError for diagnostics. */
+        /**
+         * Captured error body forwarded into MorphApiError for diagnostics.
+         */
         const text = await response.text();
         throw new MorphApiError({
           status: response.status,

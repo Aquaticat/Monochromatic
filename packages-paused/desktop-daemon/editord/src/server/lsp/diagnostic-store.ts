@@ -10,7 +10,9 @@ import type { Range, } from '../../protocol.ts';
 import type { LspDiagnostic, } from './types.ts';
 import { uriToPath, } from './uri.ts';
 
-/** Severity number to wire severity string mapping. */
+/**
+ * Severity number to wire severity string mapping.
+ */
 const SEVERITY_MAP: Record<number, 'error' | 'warning' | 'info' | 'hint'> = {
   1: 'error',
   2: 'warning',
@@ -18,19 +20,31 @@ const SEVERITY_MAP: Record<number, 'error' | 'warning' | 'info' | 'hint'> = {
   4: 'hint',
 };
 
-/** Diagnostic in wire format (ready for WebSocket transport to client). */
+/**
+ * Diagnostic in wire format (ready for WebSocket transport to client).
+ */
 export type WireDiagnostic = {
-  /** Text range for the diagnostic. */
+  /**
+   * Text range for the diagnostic.
+   */
   readonly range: Range;
-  /** Severity level. */
+  /**
+   * Severity level.
+   */
   readonly severity: 'error' | 'warning' | 'info' | 'hint';
-  /** Human-readable message. */
+  /**
+   * Human-readable message.
+   */
   readonly message: string;
-  /** Source tool name. */
+  /**
+   * Source tool name.
+   */
   readonly source: string;
 };
 
-/** Callback signature for pushing merged diagnostics to the client. */
+/**
+ * Callback signature for pushing merged diagnostics to the client.
+ */
 export type DiagnosticsHandler = (
   event: {
     readonly path: string;
@@ -42,19 +56,31 @@ export type DiagnosticsHandler = (
  * Diagnostic update payload accepted by {@link DiagnosticStore.update}.
  */
 type DiagnosticUpdate = {
-  /** Server name that produced these diagnostics. */
+  /**
+   * Server name that produced these diagnostics.
+   */
   readonly source: string;
-  /** Document URI. */
+  /**
+   * Document URI.
+   */
   readonly uri: string;
-  /** Diagnostics from this source, replacing previous source diagnostics. */
+  /**
+   * Diagnostics from this source, replacing previous source diagnostics.
+   */
   readonly diagnostics: readonly LspDiagnostic[];
 };
 
-/** Stores diagnostics from multiple LSP sources and merges them per URI. */
+/**
+ * Stores diagnostics from multiple LSP sources and merges them per URI.
+ */
 export type DiagnosticStore = Readonly<{
-  /** Stores diagnostics from one source and pushes the merged set to the client. */
+  /**
+   * Stores diagnostics from one source and pushes the merged set to the client.
+   */
   readonly update: (event: DiagnosticUpdate,) => void;
-  /** Removes all stored diagnostics for a URI. */
+  /**
+   * Removes all stored diagnostics for a URI.
+   */
   readonly delete: (event: { readonly uri: string; },) => void;
 }>;
 
@@ -75,7 +101,9 @@ export type DiagnosticStore = Readonly<{
 export function createDiagnosticStore(
   { onDiagnostics, }: { readonly onDiagnostics: DiagnosticsHandler; },
 ): DiagnosticStore {
-  /** Diagnostics keyed by URI, then by source name. */
+  /**
+   * Diagnostics keyed by URI, then by source name.
+   */
   const store = new Map<string, Map<string, readonly LspDiagnostic[]>>();
 
   /**
@@ -100,12 +128,16 @@ export function createDiagnosticStore(
         new Map(),
       );
     }
-    /** URI-keyed inner map; guaranteed by the `set` above but typed as optional. */
+    /**
+     * URI-keyed inner map; guaranteed by the `set` above but typed as optional.
+     */
     const sourceMap = store.get(uri,);
     if (sourceMap === undefined)
       return;
 
-    /** Skip merge and broadcast when this source's diagnostics are unchanged. */
+    /**
+     * Skip merge and broadcast when this source's diagnostics are unchanged.
+     */
     const previous = sourceMap.get(source,);
     if ((previous !== undefined)
       && (previous.length
@@ -115,7 +147,9 @@ export function createDiagnosticStore(
         prev,
         i,
       ) {
-        /** Counterpart in the new array; undefined on length mismatch (handled above). */
+        /**
+         * Counterpart in the new array; undefined on length mismatch (handled above).
+         */
         const next = diagnostics[i];
         if (next === undefined)
           return false;
@@ -166,7 +200,9 @@ export function createDiagnosticStore(
       diagnostics,
     );
 
-    /** Merge diagnostics from all sources for this URI. */
+    /**
+     * Merge diagnostics from all sources for this URI.
+     */
     const merged: readonly WireDiagnostic[] = Array.from(
       sourceMap.entries(),
       function mergeSourceDiagnostics([sourceName, sourceDiags,],) {
@@ -187,7 +223,9 @@ export function createDiagnosticStore(
     )
       .flat();
 
-    /** Filesystem path returned to the broadcast handler; the wire form was URI. */
+    /**
+     * Filesystem path returned to the broadcast handler; the wire form was URI.
+     */
     const path = uriToPath({ uri, },);
     onDiagnostics({
       path,

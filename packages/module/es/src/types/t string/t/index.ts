@@ -1,2 +1,4 @@
-/** Branded type alias for `string`. */
+/**
+ * Branded type alias for `string`.
+ */
 export type $ = string;

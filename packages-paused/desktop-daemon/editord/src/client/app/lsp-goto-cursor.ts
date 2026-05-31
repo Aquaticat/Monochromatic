@@ -21,7 +21,9 @@ import type {
   ReferencesPopupHandle,
 } from './types.ts';
 
-/** Tagged logger for goto-definition-at-cursor. */
+/**
+ * Tagged logger for goto-definition-at-cursor.
+ */
 const cursorLog = tagged({
   tag: 'lsp-goto-cursor',
   l,
@@ -67,9 +69,13 @@ export function performGotoAtCursor(
   },
 ): void {
   hoverPopup.hide();
-  /** Cursor coords sent to LSP definition/references requests. */
+  /**
+   * Cursor coords sent to LSP definition/references requests.
+   */
   const pos = editorPane.getCursorPosition();
-  /** Screen rect anchors the toast and references popup. */
+  /**
+   * Screen rect anchors the toast and references popup.
+   */
   const rect = editorPane.getCursorRect();
   if ((pos === null) || (rect === null)) {
     cursorLog.info('could not resolve editor cursor position',);
@@ -122,7 +128,9 @@ async function navigateOrFindReferences({
   readonly character: number;
   readonly rect: DOMRect;
 },): Promise<void> {
-  /** Outcome literal driving the branch chain below. */
+  /**
+   * Outcome literal driving the branch chain below.
+   */
   const result = await doGotoDefinition({
     ws,
     getCurrentFilePath,

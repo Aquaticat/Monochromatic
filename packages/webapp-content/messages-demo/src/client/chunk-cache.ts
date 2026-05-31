@@ -31,19 +31,29 @@ import {
   idbTransactionDone,
 } from './idb-helpers.ts';
 
-/** OPFS directory name where the cache files live. */
+/**
+ * OPFS directory name where the cache files live.
+ */
 const OPFS_DIRECTORY = 'messages-demo-chunk-cache';
 
-/** IndexedDB database name used when OPFS is unavailable. */
+/**
+ * IndexedDB database name used when OPFS is unavailable.
+ */
 const IDB_DB_NAME = 'messages-demo:chunk-cache';
 
-/** Object-store name inside the IDB database. */
+/**
+ * Object-store name inside the IDB database.
+ */
 const IDB_STORE = 'chunks';
 
-/** IDB schema version; bump when the record shape changes. */
+/**
+ * IDB schema version; bump when the record shape changes.
+ */
 const IDB_VERSION = 1;
 
-/** Key triple identifying a single cached chunk. */
+/**
+ * Key triple identifying a single cached chunk.
+ */
 export type ChunkCacheKey = {
   readonly messageId: number;
   readonly revision: number;
@@ -57,7 +67,9 @@ export type ChunkCacheKey = {
  */
 export const CACHE_MISS: unique symbol = Symbol('messages-demo:cache-miss',);
 
-/** Cache public surface. All implementations honour the same contract. */
+/**
+ * Cache public surface. All implementations honour the same contract.
+ */
 export type ChunkCache = {
   /**
    * Returns the cached HTML for `(messageId, revision, idx)`, or
@@ -66,16 +78,22 @@ export type ChunkCache = {
    * older entries before returning.
    */
   get: (key: ChunkCacheKey,) => Promise<string | typeof CACHE_MISS>;
-  /** Writes `html` for `key`. Overwrites a same-key entry. */
+  /**
+   * Writes `html` for `key`. Overwrites a same-key entry.
+   */
   put: (
     key: ChunkCacheKey,
     html: string,
   ) => Promise<void>;
-  /** Detaches resources (closes IDB if open). */
+  /**
+   * Detaches resources (closes IDB if open).
+   */
   destroy: () => void;
 };
 
-/** Probe results consulted to select the backend. */
+/**
+ * Probe results consulted to select the backend.
+ */
 export type ChunkCacheCaps = {
   readonly opfs: boolean;
   readonly idb: boolean;
@@ -130,10 +148,14 @@ export async function createChunkCache(
  * @returns OPFS-backed cache
  */
 async function createOpfsCache(): Promise<ChunkCache> {
-  /** OPFS root acquired once and reused by the per-message subdirectory. */
+  /**
+   * OPFS root acquired once and reused by the per-message subdirectory.
+   */
   const root = await navigator.storage
     .getDirectory();
-  /** Per-package cache directory created on first call; reused across reads and writes. */
+  /**
+   * Per-package cache directory created on first call; reused across reads and writes.
+   */
   const directory = await root.getDirectoryHandle(
     OPFS_DIRECTORY,
     { create: true, },
@@ -145,9 +167,13 @@ async function createOpfsCache(): Promise<ChunkCache> {
           directory,
           key,
         },);
-        /** File handle for the keyed entry; throws when absent so the catch falls through to null. */
+        /**
+         * File handle for the keyed entry; throws when absent so the catch falls through to null.
+         */
         const handle = await directory.getFileHandle(opfsName(key,),);
-        /** Snapshot the handle's file so its body can be read as text. */
+        /**
+         * Snapshot the handle's file so its body can be read as text.
+         */
         const file = await handle.getFile();
         return await file.text();
       }
@@ -160,12 +186,16 @@ async function createOpfsCache(): Promise<ChunkCache> {
       html,
     ) {
       try {
-        /** File handle, created on first write so puts establish the slot lazily. */
+        /**
+         * File handle, created on first write so puts establish the slot lazily.
+         */
         const handle = await directory.getFileHandle(
           opfsName(key,),
           { create: true, },
         );
-        /** Writable stream; written once and immediately closed below. */
+        /**
+         * Writable stream; written once and immediately closed below.
+         */
         const writable = await handle.createWritable();
         await writable.write(html,);
         await writable.close();
@@ -190,7 +220,9 @@ async function createOpfsCache(): Promise<ChunkCache> {
  * @returns IDB-backed cache
  */
 async function createIdbCache(): Promise<ChunkCache> {
-  /** IDB connection opened once and reused by every get/put/destroy call returned from this factory. */
+  /**
+   * IDB connection opened once and reused by every get/put/destroy call returned from this factory.
+   */
   const db = await openCacheDb();
   return {
     async get(key,) {
@@ -250,7 +282,9 @@ function createNoopCache(): ChunkCache {
 //region IDB helpers
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose methods (`transaction`, etc.) mutate connection state by design */
-/** 9 007 199 254 740 991 (`Number.MAX_SAFE_INTEGER`); ceiling for revision/idx in the messageId-only key range. */
+/**
+ * 9 007 199 254 740 991 (`Number.MAX_SAFE_INTEGER`); ceiling for revision/idx in the messageId-only key range.
+ */
 const HUGE_KEY_CEILING = Number.MAX_SAFE_INTEGER;
 
 /**
@@ -308,15 +342,21 @@ function idbGet(
     resolve,
     reject,
   ) {
-    /** Read-only transaction scoped to the chunk store; closes on success callback. */
+    /**
+     * Read-only transaction scoped to the chunk store; closes on success callback.
+     */
     const tx = input.db
       .transaction(
       IDB_STORE,
       'readonly',
     );
-    /** Store handle from the transaction; reused for the keyed get. */
+    /**
+     * Store handle from the transaction; reused for the keyed get.
+     */
     const store = tx.objectStore(IDB_STORE,);
-    /** Keyed get request; resolves to the row or `undefined` on miss. */
+    /**
+     * Keyed get request; resolves to the row or `undefined` on miss.
+     */
     const request = store.get([
       input.key
         .messageId,
@@ -328,14 +368,18 @@ function idbGet(
     request.addEventListener(
       'success',
       function onSuccess(): void {
-        /** Widened from `any` so the shape narrowing below stays type-safe. */
+        /**
+         * Widened from `any` so the shape narrowing below stays type-safe.
+         */
         const raw: unknown = request.result;
         if ((raw === null) || ((typeof raw) !== 'object')
           || (!('html' in raw))) {
           resolve(CACHE_MISS,);
           return;
         }
-        /** Destructured after narrowing; required to satisfy the rule. */
+        /**
+         * Destructured after narrowing; required to satisfy the rule.
+         */
         const { html, } = raw;
         resolve((typeof html) === 'string' ? html : CACHE_MISS,);
       },
@@ -367,7 +411,9 @@ async function idbPut(
     html: string;
   },
 ): Promise<void> {
-  /** Read-write transaction held until `idbTransactionDone` resolves below. */
+  /**
+   * Read-write transaction held until `idbTransactionDone` resolves below.
+   */
   const tx = input.db
     .transaction(
     IDB_STORE,
@@ -404,17 +450,23 @@ async function evictIdbStale(
     key: ChunkCacheKey;
   },
 ): Promise<void> {
-  /** Read-write transaction held until `idbTransactionDone` resolves below. */
+  /**
+   * Read-write transaction held until `idbTransactionDone` resolves below.
+   */
   const tx = input.db
     .transaction(
     IDB_STORE,
     'readwrite',
   );
-  /** Store handle reused by the cursor open below. */
+  /**
+   * Store handle reused by the cursor open below.
+   */
   const store = tx.objectStore(IDB_STORE,);
   // Composite primary key is [messageId, revision, idx]; bound the
   // cursor to messageId by setting revision/idx to 0..HUGE_KEY_CEILING.
-  /** Lower-bound to upper-bound composite key range scoping the cursor to one message. */
+  /**
+   * Lower-bound to upper-bound composite key range scoping the cursor to one message.
+   */
   const range = IDBKeyRange.bound(
     [
       input.key
@@ -431,12 +483,16 @@ async function evictIdbStale(
     false,
     false,
   );
-  /** Cursor request opened against `range`; success callback fires per cursor advance. */
+  /**
+   * Cursor request opened against `range`; success callback fires per cursor advance.
+   */
   const cursorRequest = store.openCursor(range,);
   cursorRequest.addEventListener(
     'success',
     function onCursor(): void {
-      /** Snapshot of `cursorRequest.result` so each callback reads a stable cursor reference. */
+      /**
+       * Snapshot of `cursorRequest.result` so each callback reads a stable cursor reference.
+       */
       const cursor = cursorRequest.result;
       if (cursor === null)
         return;
@@ -444,12 +500,16 @@ async function evictIdbStale(
       // for safe narrowing. Object destructuring would inherit the any
       // type and trip no-unsafe-assignment.
       /* oxlint-disable eslint/prefer-destructuring -- explicit unknown widening */
-      /** Widened to `unknown` so the shape check can narrow the row before reading fields. */
+      /**
+       * Widened to `unknown` so the shape check can narrow the row before reading fields.
+       */
       const value: unknown = cursor.value;
       /* oxlint-enable eslint/prefer-destructuring */
       if ((value !== null) && ((typeof value) === 'object')
         && ('revision' in value)) {
-        /** Destructured after narrowing; the revision compare decides whether to delete this row. */
+        /**
+         * Destructured after narrowing; the revision compare decides whether to delete this row.
+         */
         const { revision, } = value;
         if (((typeof revision) === 'number') && (revision
           !== input

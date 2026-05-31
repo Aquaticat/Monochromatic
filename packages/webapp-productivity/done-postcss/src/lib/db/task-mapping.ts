@@ -35,7 +35,9 @@ export function nowIso(): string {
  */
 export function parseStringArray(value: string,): string[] {
   try {
-    /** Raw JSON.parse output typed as `unknown` until the array shape check runs. */
+    /**
+     * Raw JSON.parse output typed as `unknown` until the array shape check runs.
+     */
     const parsed = JSON.parse(value,) as unknown;
     if (!Array.isArray(parsed,))
       return [];
@@ -88,7 +90,9 @@ export function normalizeStringArray(values?: readonly string[],): string[] {
  * ```
  */
 export function mapTask(row: Readonly<TaskRow>,): Task {
-  /** Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field. */
+  /**
+   * Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field.
+   */
   const task: { -readonly [K in keyof Task]: Task[K]; } = {
     id: row.id,
     title: row.title,

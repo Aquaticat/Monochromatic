@@ -36,31 +36,41 @@ import type {
  * ```
  */
 export function $(value: Jsonc,): value is HasNoTrailingCommas {
-  /** Every comma-then-closer match across the input considered for trailing-comma classification. */
+  /**
+   * Every comma-then-closer match across the input considered for trailing-comma classification.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- finds every `,<ws>(}|])` substring; the inQuotes lookup downstream filters out commas inside strings, so this is the wide-net first pass. Input is bounded JSONC source; no nested quantifiers means linear matching.
   const potentialTrailingCommas = value.matchAll(/,\s{0,}[\}\]]/gv,);
 
   for (const potentialTrailingComma of potentialTrailingCommas) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing regex match index to branded Int type */
-    /** Match start offset narrowed into the branded Int domain. */
+    /**
+     * Match start offset narrowed into the branded Int domain.
+     */
     const startInclusive = potentialTrailingComma.index as Int;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing computed end index to branded Int type */
-    /** Match end offset narrowed into the branded Int domain. */
+    /**
+     * Match end offset narrowed into the branded Int domain.
+     */
     const endInclusive = (potentialTrailingComma
       .index
       + potentialTrailingComma[0]
       .length) as Int;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /* oxlint-disable typescript/no-unsafe-type-assertion -- constructing branded RangeInt from verified Int values */
-    /** Range covering the candidate trailing-comma run for in-quotes lookup. */
+    /**
+     * Range covering the candidate trailing-comma run for in-quotes lookup.
+     */
     const rangeInt = {
       startInclusive,
       endInclusive,
     } as RangeInt;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-    /** Range annotated with per-string in-quotes membership for the candidate run. */
+    /**
+     * Range annotated with per-string in-quotes membership for the candidate run.
+     */
     const rangeIntWInQuotesInfo = inQuotes({
       value: rangeInt,
       strs: [value,],

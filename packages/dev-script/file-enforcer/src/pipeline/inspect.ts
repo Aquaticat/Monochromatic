@@ -3,7 +3,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Maximum preview length for inspect output */
+/**
+ * Maximum preview length for inspect output
+ */
 const INSPECT_PREVIEW_LENGTH = 200;
 
 /**
@@ -21,12 +23,16 @@ const INSPECT_PREVIEW_LENGTH = 200;
  * ```
  */
 export function inspect<const TValue,>(value: TValue,): TValue {
-  /** Function-scoped logger tagged with the call site for traceable pipeline inspection. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable pipeline inspection.
+   */
   const rl = tagged({
     tag: inspect.name,
     l,
   },);
-  /** Stringified representation for logging */
+  /**
+   * Stringified representation for logging
+   */
   const preview = ((typeof value) === 'string')
     ? value
     : JSON.stringify(

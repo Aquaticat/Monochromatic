@@ -3,7 +3,9 @@ import { css, } from '../css.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the toggle-switch custom element
 import './toggle-switch.ts';
 
-/** Shadow DOM styles for the `\<setting-group\>` component. */
+/**
+ * Shadow DOM styles for the `\<setting-group\>` component.
+ */
 const STYLES = css(`
   :host {
     @apply --flex-column;
@@ -38,30 +40,46 @@ const STYLES = css(`
  * and an action control (toggle switch or button) determined by the `mode` attribute.
  */
 class SettingGroup extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the setting group with label, optional description, and action control. */
+  /**
+   * Renders the setting group with label, optional description, and action control.
+   */
   connectedCallback(): void {
-    /** Row title from the `label` attribute. */
+    /**
+     * Row title from the `label` attribute.
+     */
     const label = this.getAttribute('label',)
       ?? '';
-    /** Optional secondary description rendered as a `<p>` when non-empty. */
+    /**
+     * Optional secondary description rendered as a `<p>` when non-empty.
+     */
     const description = this.getAttribute('description',)
       ?? '';
-    /** Either `'button'` or `'toggle'`; chooses which control sits in the action slot. */
+    /**
+     * Either `'button'` or `'toggle'`; chooses which control sits in the action slot.
+     */
     const mode = this.getAttribute('mode',)
       ?? 'toggle';
-    /** Initial on state for `mode === 'toggle'`, derived from presence of the `on` attribute. */
+    /**
+     * Initial on state for `mode === 'toggle'`, derived from presence of the `on` attribute.
+     */
     const on = this.hasAttribute('on',);
 
-    /** Either a button or a `<toggle-switch>` depending on `mode`. */
+    /**
+     * Either a button or a `<toggle-switch>` depending on `mode`.
+     */
     const actionElement = mode === 'button'
       ? h({
         tag: 'button',
@@ -79,7 +97,9 @@ class SettingGroup extends HTMLElement {
         attrs: on ? { on: '', } : {},
       },);
 
-    /** Builds incrementally so the optional description can be pushed only when present. */
+    /**
+     * Builds incrementally so the optional description can be pushed only when present.
+     */
     const children: (HTMLElement)[] = [
       h({
         tag: 'style',

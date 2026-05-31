@@ -60,7 +60,9 @@ export async function promoteToTier3(
   // re-entrant debounce firing during the worker compile or draft
   // create can't spawn a second promotion (which would create an
   // orphan draft on the server).
-  /** Allocated up front so the reserved tier-3 slot can capture the id before any await yields control. */
+  /**
+   * Allocated up front so the reserved tier-3 slot can capture the id before any await yields control.
+   */
   const newDraftId = randomId();
   input.state
     .tier = 3;
@@ -75,9 +77,13 @@ export async function promoteToTier3(
     status: input.status,
     message: 'tier 3 promotion: chunking...',
   },);
-  /** Captured pre-compile so the metrics hook can report the full surface-swap latency. */
+  /**
+   * Captured pre-compile so the metrics hook can report the full surface-swap latency.
+   */
   const transitionStart = performance.now();
-  /** Holds the worker-produced chunks; consumed twice (length check, then map+writeBody). */
+  /**
+   * Holds the worker-produced chunks; consumed twice (length check, then map+writeBody).
+   */
   const compiled = await compileViaWorker({
     body: input.textarea
       .value,
@@ -103,7 +109,9 @@ export async function promoteToTier3(
     },);
     return;
   }
-  /** Resolved once so the create-draft POST and any subsequent outbox PUTs share the same identity. */
+  /**
+   * Resolved once so the create-draft POST and any subsequent outbox PUTs share the same identity.
+   */
   const userId = getIdentity(input.form,);
   await postCreateDraft({
     id: newDraftId,

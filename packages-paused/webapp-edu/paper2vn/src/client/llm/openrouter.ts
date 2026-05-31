@@ -10,11 +10,15 @@ import type {
   Provider,
 } from './types.ts';
 
-/** Default OpenRouter API base. */
+/**
+ * Default OpenRouter API base.
+ */
 const DEFAULT_BASE = 'https://openrouter.ai/api/v1';
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the call delegates without mutation. */
-/** OpenRouter provider implementation. */
+/**
+ * OpenRouter provider implementation.
+ */
 export const openrouter: Provider = {
   id: 'openrouter',
   chat: function chat(opts: ChatOptions,): Promise<string> {

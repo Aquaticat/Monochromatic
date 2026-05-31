@@ -24,16 +24,24 @@ import type { PackageProbe, } from '../probe.ts';
 
 //region Constants
 
-/** Decimal places for continuous-dim values in tooltips. */
+/**
+ * Decimal places for continuous-dim values in tooltips.
+ */
 const TOOLTIP_DECIMALS = 2;
 
-/** Pinned tooltip's outer element id. */
+/**
+ * Pinned tooltip's outer element id.
+ */
 const PINNED_ID = 'pinned-tooltip';
 
-/** Pinned tooltip's content wrapper class. */
+/**
+ * Pinned tooltip's content wrapper class.
+ */
 const PINNED_CONTENT_CLASS = 'pinned-tooltip-content';
 
-/** Pinned tooltip's close-button class. */
+/**
+ * Pinned tooltip's close-button class.
+ */
 const PINNED_CLOSE_CLASS = 'pinned-tooltip-close';
 
 //endregion Constants
@@ -147,18 +155,28 @@ function formatBool(value?: boolean,): string {
 export function formatTooltipHtml(
   { probe, }: { readonly probe: PackageProbe; },
 ): string {
-  /** Escaped npm name so the header is injection-safe. */
+  /**
+   * Escaped npm name so the header is injection-safe.
+   */
   const name = escapeHtml(probe.npmName,);
-  /** Escaped resolved version paired with the name in the tooltip header. */
+  /**
+   * Escaped resolved version paired with the name in the tooltip header.
+   */
   const version = escapeHtml(probe.resolvedVersion,);
-  /** Escaped license-class label rendered in the table. */
+  /**
+   * Escaped license-class label rendered in the table.
+   */
   const license = escapeHtml(probe.licenseClass,);
-  /** Escaped repository URL, or the literal `"unknown"` when the probe lacks a repo. */
+  /**
+   * Escaped repository URL, or the literal `"unknown"` when the probe lacks a repo.
+   */
   const repo = probe.repositoryUrlOrNull
     === undefined
     ? 'unknown'
     : escapeHtml(probe.repositoryUrlOrNull,);
-  /** Optional unknown-reason banner; empty string when the probe has no unknowns to report. */
+  /**
+   * Optional unknown-reason banner; empty string when the probe has no unknowns to report.
+   */
   const unknown = probe.unknownReason
     === undefined
     ? ''
@@ -196,15 +214,21 @@ export function formatTooltipHtml(
  * @returns The `<aside>` element used for pinned tooltips.
  */
 function ensurePinElement(): HTMLElement {
-  /** Existing pinned-tooltip element from a previous `ensurePinElement` call, or `null` on first use. */
+  /**
+   * Existing pinned-tooltip element from a previous `ensurePinElement` call, or `null` on first use.
+   */
   const existing = document.querySelector<HTMLElement>(`#${PINNED_ID}`,);
   if (existing !== null)
     return existing;
-  /** Fresh outer `<aside>` element that owns the pinned-tooltip surface. */
+  /**
+   * Fresh outer `<aside>` element that owns the pinned-tooltip surface.
+   */
   const aside = document.createElement('aside',);
   aside.id = PINNED_ID;
   aside.hidden = true;
-  /** Close button child whose click handler hides the pinned tooltip. */
+  /**
+   * Close button child whose click handler hides the pinned tooltip.
+   */
   const close = document.createElement('button',);
   close.type = 'button';
   close.className = PINNED_CLOSE_CLASS;
@@ -215,7 +239,9 @@ function ensurePinElement(): HTMLElement {
       unpinTooltip();
     },
   );
-  /** Inner content wrapper whose `innerHTML` is replaced on every pin. */
+  /**
+   * Inner content wrapper whose `innerHTML` is replaced on every pin.
+   */
   const content = document.createElement('div',);
   content.className = PINNED_CONTENT_CLASS;
   aside.append(
@@ -240,9 +266,13 @@ function ensurePinElement(): HTMLElement {
 export function pinTooltip(
   { probe, }: { readonly probe: PackageProbe; },
 ): void {
-  /** Pinned-tooltip `<aside>`, created on first use. */
+  /**
+   * Pinned-tooltip `<aside>`, created on first use.
+   */
   const aside = ensurePinElement();
-  /** Content wrapper inside the aside; `null` only if the DOM was tampered with externally. */
+  /**
+   * Content wrapper inside the aside; `null` only if the DOM was tampered with externally.
+   */
   const content = aside.querySelector<HTMLDivElement>(`.${PINNED_CONTENT_CLASS}`,);
   if (content === null)
     return;
@@ -261,7 +291,9 @@ export function pinTooltip(
  * ```
  */
 export function unpinTooltip(): void {
-  /** Pinned-tooltip element, if it was ever created; missing element is a no-op. */
+  /**
+   * Pinned-tooltip element, if it was ever created; missing element is a no-op.
+   */
   const aside = document.querySelector<HTMLElement>(`#${PINNED_ID}`,);
   if (aside === null)
     return;

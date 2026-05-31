@@ -14,36 +14,58 @@ import type { ThinkingDefaultLevel, } from './model-policy.ts';
 
 //region Constants
 
-/** Persisted scalar default kept for non-GPT startup paths. */
+/**
+ * Persisted scalar default kept for non-GPT startup paths.
+ */
 export const PERSISTED_DEFAULT_THINKING_LEVEL: ThinkingDefaultLevel = 'high';
 
-/** Global pi settings file name. */
+/**
+ * Global pi settings file name.
+ */
 const SETTINGS_FILE_NAME = 'settings.json';
 
 //endregion Constants
 
 //region Types
 
-/** JSON object shape used after parsing settings. */
+/**
+ * JSON object shape used after parsing settings.
+ */
 type JsonRecord = Record<string, unknown>;
 
-/** Inputs needed to write settings text to disk. */
+/**
+ * Inputs needed to write settings text to disk.
+ */
 type WriteSettingsFileOptions = {
-  /** Settings file path. */
+  /**
+   * Settings file path.
+   */
   readonly path: string;
-  /** Settings JSON text to persist. */
+  /**
+   * Settings JSON text to persist.
+   */
   readonly content: string;
 };
 
-/** Dependencies for reading and writing global pi settings. */
+/**
+ * Dependencies for reading and writing global pi settings.
+ */
 type RestoreGlobalDefaultOptions = {
-  /** Desired persisted scalar default. */
+  /**
+   * Desired persisted scalar default.
+   */
   readonly defaultLevel?: ThinkingDefaultLevel;
-  /** Settings path to read and write. */
+  /**
+   * Settings path to read and write.
+   */
   readonly settingsPath?: string;
-  /** Reads a settings file as UTF-8 text. */
+  /**
+   * Reads a settings file as UTF-8 text.
+   */
   readonly readSettingsFile?: (path: string,) => string;
-  /** Writes UTF-8 settings text. */
+  /**
+   * Writes UTF-8 settings text.
+   */
   readonly writeSettingsFile?: (options: WriteSettingsFileOptions,) => void;
 };
 
@@ -114,7 +136,9 @@ function defaultWriteSettingsFile(
 function isJsonRecord(value: unknown,): value is JsonRecord {
   if (value === null)
     return false;
-  /** Whether parsed value has object runtime type. */
+  /**
+   * Whether parsed value has object runtime type.
+   */
   const isObject = (typeof value) === 'object';
   if (!isObject)
     return false;
@@ -175,9 +199,13 @@ export function restoreGlobalDefaultThinkingLevel(
     writeSettingsFile = defaultWriteSettingsFile,
   }: RestoreGlobalDefaultOptions = {},
 ): boolean {
-  /** Raw JSON settings text. */
+  /**
+   * Raw JSON settings text.
+   */
   const rawSettings = readSettingsFile(settingsPath,);
-  /** Parsed settings value before object validation. */
+  /**
+   * Parsed settings value before object validation.
+   */
   const parsedSettings: unknown = JSON.parse(rawSettings,);
   if (!isJsonRecord(parsedSettings,))
     throw new Error('Global pi settings JSON must be an object.',);
@@ -187,7 +215,9 @@ export function restoreGlobalDefaultThinkingLevel(
     return false;
 
   parsedSettings.defaultThinkingLevel = defaultLevel;
-  /** Pretty-printed settings JSON written back to disk. */
+  /**
+   * Pretty-printed settings JSON written back to disk.
+   */
   const nextSettings = `${
     JSON.stringify(
       parsedSettings,

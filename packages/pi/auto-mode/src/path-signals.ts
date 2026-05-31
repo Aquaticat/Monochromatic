@@ -74,31 +74,45 @@ function pathSignals(
   }: {
     readonly filePath: string;
     readonly ctx: SignalContext;
-    /** Directories whose contents should not trip location-based signals for this call. */
+    /**
+     * Directories whose contents should not trip location-based signals for this call.
+     */
     readonly allowlistedDirs?: readonly string[];
   },
 ): boolean {
-  /** Cached lexical resolution shared by cwd containment, allowlist, dotfile, and secret checks. */
+  /**
+   * Cached lexical resolution shared by cwd containment, allowlist, dotfile, and secret checks.
+   */
   const resolved = resolvePath({
     filePath,
     cwd: ctx.cwd,
   },);
-  /** Canonical target path when `filePath` exists; missing paths fall back to lexical checks. */
+  /**
+   * Canonical target path when `filePath` exists; missing paths fall back to lexical checks.
+   */
   const canonicalResolved = tryRealpath(resolved,);
-  /** Path used for location checks; canonical targets prevent symlink escape bypasses. */
+  /**
+   * Path used for location checks; canonical targets prevent symlink escape bypasses.
+   */
   const signalPath = canonicalResolved === REALPATH_UNAVAILABLE
     ? resolved
     : canonicalResolved;
-  /** Cwd used for containment checks; canonicalised when the target was canonicalised too. */
+  /**
+   * Cwd used for containment checks; canonicalised when the target was canonicalised too.
+   */
   const signalCwd = canonicalResolved === REALPATH_UNAVAILABLE
     ? ctx.cwd
     : realpathOrLexical(ctx.cwd,);
-  /** Home used for dotfile checks; canonicalised when the target was canonicalised too. */
+  /**
+   * Home used for dotfile checks; canonicalised when the target was canonicalised too.
+   */
   const signalHome = canonicalResolved === REALPATH_UNAVAILABLE
     ? ctx.home
     : realpathOrLexical(ctx.home,);
 
-  /** Whether this call targets a per-call allowlisted directory such as a loaded skill root. */
+  /**
+   * Whether this call targets a per-call allowlisted directory such as a loaded skill root.
+   */
   const allowlisted = isAllowlistedPath({
     canonicalResolved,
     cwd: ctx.cwd,
@@ -167,7 +181,9 @@ function isAllowlistedPath(
     return false;
   return allowlistedDirs.some(
     function allowlistedDirContainsCanonicalPath(dir,) {
-      /** Canonical allowlisted root; missing roots fail closed. */
+      /**
+       * Canonical allowlisted root; missing roots fail closed.
+       */
       const canonicalDir = tryRealpath(nodePath.resolve(
         cwd,
         dir,
@@ -212,7 +228,9 @@ function hasSecretPathSignal(
     readonly canonicalResolved: RealpathResult;
   },
 ): boolean {
-  /** Path spellings tested so symlinks cannot hide secret-looking target names. */
+  /**
+   * Path spellings tested so symlinks cannot hide secret-looking target names.
+   */
   const candidates = [
     filePath,
     resolved,
@@ -263,7 +281,9 @@ function tryRealpath(
 function realpathOrLexical(
   path: string,
 ): string {
-  /** Result from realpath probe before sentinel fallback. */
+  /**
+   * Result from realpath probe before sentinel fallback.
+   */
   const result = tryRealpath(path,);
   if (result === REALPATH_UNAVAILABLE)
     return path;
@@ -326,7 +346,9 @@ function isUnder(
     readonly dir: string;
   },
 ): boolean {
-  /** Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`. */
+  /**
+   * Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`.
+   */
   const norm = dir.endsWith('/',) ? dir : `${dir}/`;
   return (resolved === dir) || resolved
     .startsWith(norm,);
@@ -358,13 +380,19 @@ function isHomeDotfile(
   },)) {
     return false;
   }
-  /** Slice of `resolved` after the home prefix; the leading `/` (if any) is consumed below. */
+  /**
+   * Slice of `resolved` after the home prefix; the leading `/` (if any) is consumed below.
+   */
   const afterHome = resolved.slice(home.length,);
-  /** Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`. */
+  /**
+   * Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`.
+   */
   const relative = afterHome.startsWith('/',)
     ? afterHome.slice(1,)
     : afterHome;
-  /** Default `''` covers the empty-relative case (path equals home directory). */
+  /**
+   * Default `''` covers the empty-relative case (path equals home directory).
+   */
   const [first = '',] = relative.split('/',);
   return first.startsWith('.',);
 }

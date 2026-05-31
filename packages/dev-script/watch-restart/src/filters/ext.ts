@@ -23,7 +23,9 @@ import type {
  * ```
  */
 function normalizeExt(ext: string,): string {
-  /** Dot-prefixed form so `'ts'` and `'.ts'` collapse to the same canonical key before lowercasing. */
+  /**
+   * Dot-prefixed form so `'ts'` and `'.ts'` collapse to the same canonical key before lowercasing.
+   */
   const withDot = ext.startsWith('.',) ? ext : `.${ext}`;
   return withDot.toLowerCase();
 }

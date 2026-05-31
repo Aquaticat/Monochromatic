@@ -53,26 +53,40 @@ export type S3FetchClient = {
  * Options accepted by {@link createS3Storage}.
  */
 export type S3StorageOptions = {
-  /** Signed-fetch client (typically `new AwsClient(...)` from `aws4fetch`). */
+  /**
+   * Signed-fetch client (typically `new AwsClient(...)` from `aws4fetch`).
+   */
   readonly client: S3FetchClient;
 
-  /** S3 endpoint base URL, no trailing slash. */
+  /**
+   * S3 endpoint base URL, no trailing slash.
+   */
   readonly endpoint: string;
 
-  /** S3 bucket name. Path-style URL: `${endpoint}/${bucket}/${key}`. */
+  /**
+   * S3 bucket name. Path-style URL: `${endpoint}/${bucket}/${key}`.
+   */
   readonly bucket: string;
 
-  /** Concurrency limit for `putBatch`. Defaults to 64. */
+  /**
+   * Concurrency limit for `putBatch`. Defaults to 64.
+   */
   readonly putBatchConcurrency?: number;
 };
 
-/** Default concurrency for `putBatch` parallel writes. */
+/**
+ * Default concurrency for `putBatch` parallel writes.
+ */
 const DEFAULT_PUT_BATCH_CONCURRENCY = 64;
 
-/** ListObjectsV2 page size cap (S3 max). */
+/**
+ * ListObjectsV2 page size cap (S3 max).
+ */
 const LIST_PAGE_SIZE = 1_000;
 
-/** HTTP status code: redirect threshold (300 and above). */
+/**
+ * HTTP status code: redirect threshold (300 and above).
+ */
 const HTTP_REDIRECT = 300;
 
 /**
@@ -140,10 +154,14 @@ function objectUrl(row: {
  * ```
  */
 function parseKeys(xml: string,): string[] {
-  /** Accumulator for the matched `<Key>` values in document order. */
+  /**
+   * Accumulator for the matched `<Key>` values in document order.
+   */
   const keys: string[] = [];
   /* oxlint-disable no-restricted-syntax/no-regex -- Streaming XML extractor over an S3 ListObjectsV2 response body bounded by `maxKeys`; non-greedy quantifier with no alternation prevents catastrophic backtracking. */
-  /** Pattern matching `<Key>...</Key>` non-greedily so adjacent tags do not merge. */
+  /**
+   * Pattern matching `<Key>...</Key>` non-greedily so adjacent tags do not merge.
+   */
   const pattern = /<Key>(.+?)<\/Key>/gu;
   /* oxlint-enable no-restricted-syntax/no-regex */
   for (const match of xml.matchAll(pattern,)) {
@@ -169,14 +187,18 @@ function parseKeys(xml: string,): string[] {
  */
 function parseContinuationToken(xml: string,): string | undefined {
   /* oxlint-disable no-restricted-syntax/no-regex -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
-  /** IsTruncated flag; absent or false means the response is the final page. */
+  /**
+   * IsTruncated flag; absent or false means the response is the final page.
+   */
   const truncated = /<IsTruncated>(.+?)<\/IsTruncated>/u.exec(xml,);
   /* oxlint-enable no-restricted-syntax/no-regex */
   if (truncated?.[1]
     !== 'true')
     return undefined;
   /* oxlint-disable no-restricted-syntax/no-regex -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
-  /** Raw continuation token; XML-escaped values are decoded before returning. */
+  /**
+   * Raw continuation token; XML-escaped values are decoded before returning.
+   */
   const token = /<NextContinuationToken>(.+?)<\/NextContinuationToken>/u.exec(xml,);
   /* oxlint-enable no-restricted-syntax/no-regex */
   return token?.[1]
@@ -241,7 +263,9 @@ async function throwOnError(row: {
       .status
       < HTTP_REDIRECT))
     return;
-  /** Response body included verbatim in the thrown error for diagnostics. */
+  /**
+   * Response body included verbatim in the thrown error for diagnostics.
+   */
   const body = await row.response
     .text();
   throw new Error(
@@ -282,7 +306,9 @@ async function listOnePage(row: {
   keys: string[];
   nextToken: string | undefined;
 }> {
-  /** ListObjectsV2 query parameters built into the request URL below. */
+  /**
+   * ListObjectsV2 query parameters built into the request URL below.
+   */
   const params = new URLSearchParams();
   params.set(
     'list-type',
@@ -303,9 +329,13 @@ async function listOnePage(row: {
       row.continuationToken,
     );
   }
-  /** Fully qualified ListObjectsV2 URL with all query parameters set. */
+  /**
+   * Fully qualified ListObjectsV2 URL with all query parameters set.
+   */
   const url = `${row.endpoint}/${row.bucket}?${params.toString()}`;
-  /** Signed HTTP response with the raw XML page body. */
+  /**
+   * Signed HTTP response with the raw XML page body.
+   */
   const response = await row.client
     .fetch(
     url,
@@ -316,7 +346,9 @@ async function listOnePage(row: {
     operation: 'list',
     key: row.prefix,
   },);
-  /** Response body parsed below by `parseKeys`/`parseContinuationToken`. */
+  /**
+   * Response body parsed below by `parseKeys`/`parseContinuationToken`.
+   */
   const xml = await response.text();
   return {
     keys: parseKeys(xml,),
@@ -352,7 +384,9 @@ async function listOnePage(row: {
  * ```
  */
 export function createS3Storage(options: S3StorageOptions,): Storage {
-  /** Concurrency limiter shared across every batch operation on the adapter. */
+  /**
+   * Concurrency limiter shared across every batch operation on the adapter.
+   */
   const limit = pLimit(options.putBatchConcurrency
     ?? DEFAULT_PUT_BATCH_CONCURRENCY,);
 
@@ -377,15 +411,21 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       readonly body: Uint8Array;
     },
   ): Promise<void> {
-    /** Fully qualified S3 object URL for the PUT request. */
+    /**
+     * Fully qualified S3 object URL for the PUT request.
+     */
     const url = objectUrl({
       endpoint: options.endpoint,
       bucket: options.bucket,
       key,
     },);
-    /** Fresh buffer copy ensures the body satisfies `Uint8Array<ArrayBuffer>`. */
+    /**
+     * Fresh buffer copy ensures the body satisfies `Uint8Array<ArrayBuffer>`.
+     */
     const reqBody = new Uint8Array(body,);
-    /** Signed HTTP response from the PUT operation. */
+    /**
+     * Signed HTTP response from the PUT operation.
+     */
     const response = await options.client
       .fetch(
       url,
@@ -437,13 +477,17 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function get(key: string,): Promise<Uint8Array | undefined> {
-    /** Fully qualified S3 object URL for the GET request. */
+    /**
+     * Fully qualified S3 object URL for the GET request.
+     */
     const url = objectUrl({
       endpoint: options.endpoint,
       bucket: options.bucket,
       key,
     },);
-    /** Signed HTTP response from the GET operation. */
+    /**
+     * Signed HTTP response from the GET operation.
+     */
     const response = await options.client
       .fetch(
       url,
@@ -460,7 +504,9 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       operation: 'get',
       key,
     },);
-    /** ArrayBuffer body returned wrapped in a Uint8Array view. */
+    /**
+     * ArrayBuffer body returned wrapped in a Uint8Array view.
+     */
     const buffer = await response.arrayBuffer();
     return new Uint8Array(buffer,);
   }
@@ -476,13 +522,17 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function deleteFn(key: string,): Promise<void> {
-    /** Fully qualified S3 object URL for the DELETE request. */
+    /**
+     * Fully qualified S3 object URL for the DELETE request.
+     */
     const url = objectUrl({
       endpoint: options.endpoint,
       bucket: options.bucket,
       key,
     },);
-    /** Signed HTTP response from the DELETE operation. */
+    /**
+     * Signed HTTP response from the DELETE operation.
+     */
     const response = await options.client
       .fetch(
       url,
@@ -514,15 +564,23 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
    * ```
    */
   async function list(prefix: string,): Promise<string[]> {
-    /** Keys accumulated across pages; scoped to an IIFE so the pagination cursor stays inside the loop. */
+    /**
+     * Keys accumulated across pages; scoped to an IIFE so the pagination cursor stays inside the loop.
+     */
     const accumulated = await (async function paginate(): Promise<string[]> {
-      /** Keys accumulated across pages; sorted before returning. */
+      /**
+       * Keys accumulated across pages; sorted before returning.
+       */
       const acc: string[] = [];
-      /** Continuation token threaded through pagination; undefined ends the loop. */
+      /**
+       * Continuation token threaded through pagination; undefined ends the loop.
+       */
       let continuationToken: string | undefined = undefined;
       do {
         /* oxlint-disable no-await-in-loop -- pagination requires the previous token to fetch the next page */
-        /** Next ListObjectsV2 page: keys and the continuation token for the page after. */
+        /**
+         * Next ListObjectsV2 page: keys and the continuation token for the page after.
+         */
         const page = await listOnePage({
           client: options.client,
           endpoint: options.endpoint,

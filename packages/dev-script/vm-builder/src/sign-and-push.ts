@@ -19,16 +19,24 @@ import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import { join, } from 'node:path';
 
-/** Local image tag to push. */
+/**
+ * Local image tag to push.
+ */
 const IMAGE_TAG = 'localhost/monochromatic-dev:latest';
 
-/** GHCR image reference. Change this to match your GitHub username/org. */
+/**
+ * GHCR image reference. Change this to match your GitHub username/org.
+ */
 const GHCR_TAG = 'ghcr.io/aquaticat/monochromatic-dev:latest';
 
-/** Absolute path to the monorepo root. */
+/**
+ * Absolute path to the monorepo root.
+ */
 const MONOREPO_ROOT = await findMiseMonorepoRootCached();
 
-/** Path to the cosign private key for image signing. */
+/**
+ * Path to the cosign private key for image signing.
+ */
 const COSIGN_KEY = join(
   MONOREPO_ROOT,
   'packages',
@@ -60,7 +68,9 @@ async function run(
     readonly args: readonly string[];
   },
 ): Promise<void> {
-  /** Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code. */
+  /**
+   * Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
+   */
   const child = nodeSpawn(
     cmd,
     [...args,],

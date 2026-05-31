@@ -15,22 +15,32 @@ import { isTimeContextContent, } from './time-context-shape.ts';
 
 //region Constants
 
-/** Built extension path consumed by Pi. */
+/**
+ * Built extension path consumed by Pi.
+ */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
-/** Expected event registration from the extension entry point. */
+/**
+ * Expected event registration from the extension entry point.
+ */
 const EXPECTED_REGISTRATION = 'event:before_agent_start';
 
-/** Expected custom message type emitted by the extension. */
+/**
+ * Expected custom message type emitted by the extension.
+ */
 const EXPECTED_CUSTOM_TYPE = 'current-time-context';
 
 //endregion Constants
 
 //region Types
 
-/** Built current-time-context extension module shape. */
+/**
+ * Built current-time-context extension module shape.
+ */
 type CurrentTimeContextExtensionModule = {
-  /** Pi extension factory. */
+  /**
+   * Pi extension factory.
+   */
   default: ExtensionFactory;
 };
 
@@ -51,7 +61,9 @@ type CurrentTimeContextExtensionModule = {
  * ```
  */
 async function verifyBuiltExtension(): Promise<string> {
-  /** Built extension module imported through package output. */
+  /**
+   * Built extension module imported through package output.
+   */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isCurrentTimeContextExtensionModule(mod,)) {
     throw new Error(
@@ -59,7 +71,9 @@ async function verifyBuiltExtension(): Promise<string> {
     );
   }
 
-  /** Fake Pi API harness for registration and handler verification. */
+  /**
+   * Fake Pi API harness for registration and handler verification.
+   */
   const harness = fakePiApi();
   await mod.default(harness.api,);
 
@@ -70,10 +84,14 @@ async function verifyBuiltExtension(): Promise<string> {
     );
   }
 
-  /** Captured before-agent-start handler. */
+  /**
+   * Captured before-agent-start handler.
+   */
   const handler = getBeforeAgentStartHandler(harness.handlers,);
 
-  /** Handler result emitted by the built extension. */
+  /**
+   * Handler result emitted by the built extension.
+   */
   const result = await handler(
     createBeforeAgentStartEvent(),
     createExtensionContext(),
@@ -81,7 +99,9 @@ async function verifyBuiltExtension(): Promise<string> {
   if (result === undefined)
     throw new Error('before_agent_start handler returned no result',);
 
-  /** Custom message returned by the extension. */
+  /**
+   * Custom message returned by the extension.
+   */
   const { message, } = result;
   if (message === undefined)
     throw new Error('current-time-context handler returned no message',);

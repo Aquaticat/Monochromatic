@@ -15,15 +15,25 @@ import {
  * Single review row in {@link ReviewThreadData.reviews}.
  */
 export type ReviewRowData = {
-  /** Review id. */
+  /**
+   * Review id.
+   */
   readonly id: string;
-  /** Reviewer login. */
+  /**
+   * Reviewer login.
+   */
   readonly reviewerLogin: string;
-  /** Review state: `approved` | `changes_requested` | `commented`. */
+  /**
+   * Review state: `approved` | `changes_requested` | `commented`.
+   */
   readonly state: string;
-  /** Review body text. */
+  /**
+   * Review body text.
+   */
   readonly body: string;
-  /** ISO timestamp of submission. */
+  /**
+   * ISO timestamp of submission.
+   */
   readonly createdAt: string;
 };
 
@@ -31,13 +41,21 @@ export type ReviewRowData = {
  * View-model fed to the {@link renderReviewThread} renderer.
  */
 export type ReviewThreadData = {
-  /** Repo owner login. */
+  /**
+   * Repo owner login.
+   */
   readonly ownerLogin: string;
-  /** Repo name. */
+  /**
+   * Repo name.
+   */
   readonly repoName: string;
-  /** PR number. */
+  /**
+   * PR number.
+   */
   readonly prNumber: number;
-  /** Reviews in chronological order. */
+  /**
+   * Reviews in chronological order.
+   */
   readonly reviews: readonly ReviewRowData[];
 };
 
@@ -121,7 +139,9 @@ function reviewBlock(props: ReviewRowData,): SafeHtml {
  * ```
  */
 export function renderReviewThread(data: ReviewThreadData,): SafeHtml {
-  /** Per-review HTML blocks composing the rendered thread. */
+  /**
+   * Per-review HTML blocks composing the rendered thread.
+   */
   const blocks = data.reviews
     .map(function eachReview(review,) {
     return reviewBlock(review,);

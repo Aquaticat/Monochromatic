@@ -4,7 +4,9 @@ import {
   type UserConfig,
 } from 'tsdown';
 
-/** Build configuration for bash-output-filter, including both the hook entry and the filter script. */
+/**
+ * Build configuration for bash-output-filter, including both the hook entry and the filter script.
+ */
 const config: UserConfig = defineConfig({
   ...base,
   entry: [

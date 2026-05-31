@@ -24,13 +24,19 @@ import {
 
 import { generateDomainXml, } from './domain-xml.ts';
 
-/** Libvirt domain name. */
+/**
+ * Libvirt domain name.
+ */
 const VM_NAME = 'monochromatic-dev';
 
-/** VM memory in MiB (16 GiB). */
+/**
+ * VM memory in MiB (16 GiB).
+ */
 const VM_MEMORY_MIB = '16384';
 
-/** Virtual CPU count. */
+/**
+ * Virtual CPU count.
+ */
 const VM_VCPUS = '8';
 
 /**
@@ -41,16 +47,22 @@ const packageJson = await findUp('package.json',);
 if (packageJson === undefined)
   throw new Error('could not find package.json for vm-builder',);
 
-/** Resolved absolute path to the vm-builder package directory. */
+/**
+ * Resolved absolute path to the vm-builder package directory.
+ */
 const PACKAGE_DIR = resolve(dirname(packageJson,),);
 
-/** Directory where bootc-image-builder wrote its output. */
+/**
+ * Directory where bootc-image-builder wrote its output.
+ */
 const OUTPUT_DIR = join(
   PACKAGE_DIR,
   'output',
 );
 
-/** Path to the qcow2 disk image built by bootc-image-builder. */
+/**
+ * Path to the qcow2 disk image built by bootc-image-builder.
+ */
 const BUILD_QCOW2_PATH = join(
   OUTPUT_DIR,
   'qcow2',
@@ -65,13 +77,17 @@ const BUILD_QCOW2_PATH = join(
  */
 const LIBVIRT_IMAGES_DIR = '/var/lib/libvirt/images';
 
-/** Final qcow2 path under the libvirt images directory for QEMU access. */
+/**
+ * Final qcow2 path under the libvirt images directory for QEMU access.
+ */
 const QCOW2_PATH = join(
   LIBVIRT_IMAGES_DIR,
   'monochromatic-dev.qcow2',
 );
 
-/** libvirt session URI: no sudo needed. */
+/**
+ * libvirt session URI: no sudo needed.
+ */
 const LIBVIRT_URI = 'qemu:///session';
 
 /**
@@ -92,7 +108,9 @@ async function run(
     readonly args: readonly string[];
   },
 ): Promise<void> {
-  /** Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code. */
+  /**
+   * Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code.
+   */
   const child = nodeSpawn(
     cmd,
     [...args,],
@@ -249,7 +267,9 @@ async function copyToLibvirtImages(): Promise<void> {
       QCOW2_PATH,
     ],
   },);
-  /** Login name used to restore ownership of the qcow2 after the root-owned `sudo cp`. */
+  /**
+   * Login name used to restore ownership of the qcow2 after the root-owned `sudo cp`.
+   */
   const currentUser = process.env
     .USER
     ?? 'user';

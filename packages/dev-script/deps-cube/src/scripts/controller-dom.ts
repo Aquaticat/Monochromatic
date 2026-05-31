@@ -29,7 +29,9 @@ import {
 
 //region Constants
 
-/** Channel keys, fixed order. */
+/**
+ * Channel keys, fixed order.
+ */
 const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
   'y',
@@ -60,7 +62,9 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
  * ```
  */
 export function el(id: string,): HTMLElement {
-  /** Raw `querySelector` result, validated below so the caller receives a non-null element. */
+  /**
+   * Raw `querySelector` result, validated below so the caller receives a non-null element.
+   */
   const node = document.querySelector<HTMLElement>(`#${id}`,);
   if (node === null)
     throw new Error(`Control element #${id} missing from DOM`,);
@@ -140,7 +144,9 @@ export function syncDomFromState(
   CHANNEL_KEYS.forEach(function syncDim(channel,) {
     elSelect(`dim-${channel}`,)
       .value = state.dimMapping[channel];
-    /** Range slider bounds for this channel: lower (`lo`) and upper (`hi`) ends pushed into the two number inputs below. */
+    /**
+     * Range slider bounds for this channel: lower (`lo`) and upper (`hi`) ends pushed into the two number inputs below.
+     */
     const [
       lo,
       hi,
@@ -151,9 +157,13 @@ export function syncDomFromState(
       .value = hi.toString();
   },);
   TOGGLE_KEYS.forEach(function syncToggle(key: ToggleKey,) {
-    /** Current 3-state toggle value (`'any'`/`'yes'`/`'no'`) used to pick the matching radio below. */
+    /**
+     * Current 3-state toggle value (`'any'`/`'yes'`/`'no'`) used to pick the matching radio below.
+     */
     const value = state.toggles[key];
-    /** Radio input matching the current toggle value; absent radios are silently skipped (the toggle is read-only on that frame). */
+    /**
+     * Radio input matching the current toggle value; absent radios are silently skipped (the toggle is read-only on that frame).
+     */
     const radio = document.querySelector<HTMLInputElement>(
       `input[name="toggle-${key}"][value="${value}"]`,
     );

@@ -3,10 +3,14 @@
  */
 import type { CanaryReport, } from './runner-types.ts';
 
-/** Score thresholds for text labels */
+/**
+ * Score thresholds for text labels
+ */
 const GOOD_THRESHOLD = 0.9;
 
-/** Score threshold below which a WARN label is shown */
+/**
+ * Score threshold below which a WARN label is shown
+ */
 const WARN_THRESHOLD = 0.7;
 
 /**
@@ -66,14 +70,20 @@ export function formatModelReport(report: CanaryReport,): string {
     return `  [FAIL] ${report.label}: ${report.error
       ?? 'unknown error'}`;
 
-  /** PASS/WARN/FAIL label derived from the overall score; shown in the header. */
+  /**
+   * PASS/WARN/FAIL label derived from the overall score; shown in the header.
+   */
   const scoreStatus = scoreLabel(report.overallScore,);
-  /** Indented header line carrying status, model label, and aggregate score. */
+  /**
+   * Indented header line carrying status, model label, and aggregate score.
+   */
   const header = `  [${scoreStatus}] ${report.label}: ${report.overallScore
     .toFixed(2,)}`;
 
   // Align probe name column to the longest name for easier score scanning
-  /** Width used to pad probe names so the score column aligns vertically. */
+  /**
+   * Width used to pad probe names so the score column aligns vertically.
+   */
   const maxNameLen = report.results
     .length
     > 0
@@ -84,19 +94,29 @@ export function formatModelReport(report: CanaryReport,): string {
     },),)
     : 0;
 
-  /** Per-probe results, destructured so the `.map` below is a two-step chain rather than a flagged longer one. */
+  /**
+   * Per-probe results, destructured so the `.map` below is a two-step chain rather than a flagged longer one.
+   */
   const {
     results,
   } = report;
-  /** One pre-formatted line per probe result; concatenated under the header. */
+  /**
+   * One pre-formatted line per probe result; concatenated under the header.
+   */
   const probeLines = results.map(function formatResult(result,): string {
-    /** Probe name right-padded to `maxNameLen` so the trailing columns line up. */
+    /**
+     * Probe name right-padded to `maxNameLen` so the trailing columns line up.
+     */
     const paddedName = result.name
       .padEnd(maxNameLen,);
-    /** "(timed out)" tag appended when the probe never completed; empty otherwise. */
+    /**
+     * "(timed out)" tag appended when the probe never completed; empty otherwise.
+     */
     const timedOutAnnotation = result.timedOut
       === true ? ' (timed out)' : '';
-    /** Optional fix-pass score column with signed delta against the initial mean. */
+    /**
+     * Optional fix-pass score column with signed delta against the initial mean.
+     */
     const pass2 = result.pass2Score
       !== undefined
       ? `   fix: ${result.pass2Score

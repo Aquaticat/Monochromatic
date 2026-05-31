@@ -42,7 +42,9 @@ export async function createDraft(
     readonly parentId?: string;
   },
 ): Promise<void> {
-  /** Captured once so created_at and updated_at start as the same value. */
+  /**
+   * Captured once so created_at and updated_at start as the same value.
+   */
   const now = Date.now();
   await run({
     sql:
@@ -76,7 +78,9 @@ export async function putChunk(
     readonly chunk: RenderedChunk;
   },
 ): Promise<void> {
-  /** Captured before the upsert so the chunks write and the drafts-update see the same timestamp. */
+  /**
+   * Captured before the upsert so the chunks write and the drafts-update see the same timestamp.
+   */
   const now = Date.now();
   // Drop the row first so the upsert path uses a single CONFLICT-free
   // INSERT. Turso's prepared-statement planner handles this well; the
@@ -127,12 +131,16 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
   // Turso/libSQL does not implement window functions, so we materialise
   // the seq list and walk it in JS. A draft is capped at 100k chunks
   // by upstream limits; even at the maximum this scan is < 5 ms.
-  /** All seqs in ascending order; walked once in JS because libSQL has no window functions. */
+  /**
+   * All seqs in ascending order; walked once in JS because libSQL has no window functions.
+   */
   const rows = await all<{ seq: number; }>({
     sql: 'SELECT seq FROM chunks WHERE draft_id = ? ORDER BY seq ASC',
     params: [draftId,],
   },);
-  /** Running tally; `-1` represents an empty draft per the function's contract. */
+  /**
+   * Running tally; `-1` represents an empty draft per the function's contract.
+   */
   let highest = -1;
   for (const row of rows) {
     if (row.seq
@@ -158,7 +166,9 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
  * ```
  */
 export async function hasChunks(draftId: string,): Promise<boolean> {
-  /** Single-row EXISTS probe; a no-row result reads as "no chunks". */
+  /**
+   * Single-row EXISTS probe; a no-row result reads as "no chunks".
+   */
   const row = await get<{ exists: number; }>({
     sql: 'SELECT EXISTS(SELECT 1 FROM chunks WHERE draft_id = ? LIMIT 1) AS "exists"',
     params: [draftId,],
@@ -195,7 +205,9 @@ export async function finalizeDraft(
     readonly preview: string;
   },
 ): Promise<number | typeof REJECTED> {
-  /** Owner row used to cross-check identity before doing any write. */
+  /**
+   * Owner row used to cross-check identity before doing any write.
+   */
   const draft = await get<{ user_id: string; }>({
     sql: 'SELECT user_id FROM drafts WHERE id = ?',
     params: [input.draftId,],
@@ -207,11 +219,15 @@ export async function finalizeDraft(
   if (!(await hasChunks(input.draftId,)))
     return REJECTED;
 
-  /** Captured once so messages.created_at and messages.updated_at start as the same value. */
+  /**
+   * Captured once so messages.created_at and messages.updated_at start as the same value.
+   */
   const now = Date.now();
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    /** Insert result; `lastInsertRowid` is the new messages.id returned to the handler. */
+    /**
+     * Insert result; `lastInsertRowid` is the new messages.id returned to the handler.
+     */
     const insert = await run({
       sql: `INSERT INTO messages(draft_id, user_id, created_at, updated_at,
                             revision, char_count, chunk_count, preview)
@@ -259,7 +275,9 @@ export async function cancelDraft(
     readonly userId: string;
   },
 ): Promise<boolean> {
-  /** Delete result; `changes > 0` indicates a draft row was actually removed. */
+  /**
+   * Delete result; `changes > 0` indicates a draft row was actually removed.
+   */
   const result = await run({
     sql: 'DELETE FROM drafts WHERE id = ? AND user_id = ? AND finalized = 0',
     params: [

@@ -15,7 +15,9 @@ import {
 } from './styles-tokens.ts';
 import { utilities, } from './styles-utilities.ts';
 
-/** Complete global stylesheet string. */
+/**
+ * Complete global stylesheet string.
+ */
 export const globalStyles: string = [
   primitiveTokens,
   semanticTokens,

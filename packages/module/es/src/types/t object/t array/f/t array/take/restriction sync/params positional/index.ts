@@ -84,7 +84,9 @@
   if (count === 0)
     return [];
 
-  /** Accumulator of taken elements up to the requested count. */
+  /**
+   * Accumulator of taken elements up to the requested count.
+   */
   const result: T[] = [];
 
   for (const element of iterable) {

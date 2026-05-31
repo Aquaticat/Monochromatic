@@ -6,10 +6,14 @@
  */
 import sharp from 'sharp';
 
-/** Path to the SVG favicon source file. */
+/**
+ * Path to the SVG favicon source file.
+ */
 const SVG_SOURCE = 'public/favicon.svg';
 
-/** Background color for apple-touch-icon and maskable icon (dark purple). */
+/**
+ * Background color for apple-touch-icon and maskable icon (dark purple).
+ */
 const BACKGROUND = {
   r: 45,
   g: 27,
@@ -17,7 +21,9 @@ const BACKGROUND = {
   alpha: 1,
 };
 
-/** SVG render density for high-quality rasterization. */
+/**
+ * SVG render density for high-quality rasterization.
+ */
 const RENDER_DENSITY = 384;
 
 /**
@@ -68,7 +74,9 @@ export async function renderPadded(
     readonly canvasSize: number;
   },
 ): Promise<Buffer> {
-  /** Inner glyph rendered first so the padded outer canvas can centre-composite it. */
+  /**
+   * Inner glyph rendered first so the padded outer canvas can centre-composite it.
+   */
   const content = await renderPng({ size: contentSize, },);
   return sharp({
     create: {

@@ -7,7 +7,9 @@ import {
   serve,
 } from 'h3';
 
-/** Map file extensions to MIME types for browser test assets. */
+/**
+ * Map file extensions to MIME types for browser test assets.
+ */
 const mimeTypes: Record<string, string> = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -17,13 +19,17 @@ const mimeTypes: Record<string, string> = {
   '.map': 'application/json',
 };
 
-/** Test-harness HTTP server; routes serve the harness HTML and built dist assets to Playwright. */
+/**
+ * Test-harness HTTP server; routes serve the harness HTML and built dist assets to Playwright.
+ */
 const app = new H3();
 
 app.all(
   '/**',
   defineHandler(async function serveTestHarness(event,) {
-    /** Request URL path; routed below by prefix match. */
+    /**
+     * Request URL path; routed below by prefix match.
+     */
     const { pathname, } = event.url;
 
     if ((pathname === '/') || (pathname === '/test-harness.html')) {
@@ -36,7 +42,9 @@ app.all(
     }
 
     if (pathname.startsWith('/dist/module-logger/',)) {
-      /** Resolved MIME type for the requested asset; falls back to a safe binary type. */
+      /**
+       * Resolved MIME type for the requested asset; falls back to a safe binary type.
+       */
       const contentType = mimeTypes[extname(pathname,)]
         ?? 'application/octet-stream';
       return new Response(
@@ -50,7 +58,9 @@ app.all(
     }
 
     if (pathname.startsWith('/dist/',)) {
-      /** Resolved MIME type for the requested asset; falls back to a safe binary type. */
+      /**
+       * Resolved MIME type for the requested asset; falls back to a safe binary type.
+       */
       const contentType = mimeTypes[extname(pathname,)]
         ?? 'application/octet-stream';
       return new Response(

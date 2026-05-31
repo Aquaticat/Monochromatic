@@ -10,10 +10,14 @@
  * ```
  */
 
-/** Number of leading characters encoded into the order value. */
+/**
+ * Number of leading characters encoded into the order value.
+ */
 const ORDER_CHARS = 4;
 
-/** Base for character encoding (7-bit ASCII covers all printable chars). */
+/**
+ * Base for character encoding (7-bit ASCII covers all printable chars).
+ */
 const ORDER_BASE = 128;
 
 /**
@@ -33,9 +37,13 @@ const ORDER_BASE = 128;
  * ```
  */
 export function nameToOrder({ name, }: { readonly name: string; },): number {
-  /** Case-folded copy keeps mixed-case sibling files sorted alphabetically. */
+  /**
+   * Case-folded copy keeps mixed-case sibling files sorted alphabetically.
+   */
   const lower = name.toLowerCase();
-  /** Capped iteration count keeps the accumulator below Number.MAX_SAFE_INTEGER. */
+  /**
+   * Capped iteration count keeps the accumulator below Number.MAX_SAFE_INTEGER.
+   */
   const limit = Math.min(
     lower.length,
     ORDER_CHARS,

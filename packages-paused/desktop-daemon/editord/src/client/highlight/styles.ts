@@ -10,7 +10,9 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** CSS rules for syntax highlighting and diagnostic highlights. */
+/**
+ * CSS rules for syntax highlighting and diagnostic highlights.
+ */
 export const HIGHLIGHT_STYLES: string = [
   $({
     rule: '::highlight(hl-keyword)',

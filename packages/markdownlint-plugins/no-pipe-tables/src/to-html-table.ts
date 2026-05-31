@@ -19,9 +19,13 @@ type Alignment = 'left' | 'right' | 'center' | '';
  * Parameters for {@link childrenOfType}.
  */
 type ChildrenOfTypeParams = {
-  /** Parent token whose direct children are scanned. */
+  /**
+   * Parent token whose direct children are scanned.
+   */
   readonly parent: ReadonlyToken;
-  /** Accepted micromark types. */
+  /**
+   * Accepted micromark types.
+   */
   readonly types: readonly string[];
 };
 
@@ -40,7 +44,9 @@ function childrenOfType({
   parent,
   types,
 }: ChildrenOfTypeParams,): ReadonlyToken[] {
-  /** Children collected so far, in document order. */
+  /**
+   * Children collected so far, in document order.
+   */
   const matches: ReadonlyToken[] = [];
   for (const child of parent.children) {
     if (types.includes(child.type,)) {
@@ -96,11 +102,17 @@ function alignmentOf(delimiterText: string,): Alignment {
  * Parameters for {@link cellLine}.
  */
 type CellLineParams = {
-  /** Element name. */
+  /**
+   * Element name.
+   */
   readonly tag: 'th' | 'td';
-  /** Cell text. */
+  /**
+   * Cell text.
+   */
   readonly text: string;
-  /** Column alignment. */
+  /**
+   * Column alignment.
+   */
   readonly align: Alignment;
 };
 
@@ -137,7 +149,9 @@ function cellLine({
  * @returns alignment per column, empty when the table has no header
  */
 function columnAlignments(table: ReadonlyToken,): Alignment[] {
-  /** Alignment per column, indexed left to right. */
+  /**
+   * Alignment per column, indexed left to right.
+   */
   const alignments: Alignment[] = [];
   for (const head of childrenOfType({
     parent: table,
@@ -164,11 +178,17 @@ function columnAlignments(table: ReadonlyToken,): Alignment[] {
  * Parameters for {@link rowCellLines}.
  */
 type RowCellLinesParams = {
-  /** Row token whose content cells are rendered. */
+  /**
+   * Row token whose content cells are rendered.
+   */
   readonly row: ReadonlyToken;
-  /** Cell element name. */
+  /**
+   * Cell element name.
+   */
   readonly tag: 'th' | 'td';
-  /** Per-column alignment. */
+  /**
+   * Per-column alignment.
+   */
   readonly alignments: readonly Alignment[];
 };
 
@@ -188,12 +208,16 @@ function rowCellLines({
   tag,
   alignments,
 }: RowCellLinesParams,): string[] {
-  /** Content cells of this row, in column order. */
+  /**
+   * Content cells of this row, in column order.
+   */
   const cells = childrenOfType({
     parent: row,
     types: CONTENT_CELL_TYPES,
   },);
-  /** Rendered cell lines, one per content cell. */
+  /**
+   * Rendered cell lines, one per content cell.
+   */
   const lines: string[] = [];
   for (const [column, cell,] of cells.entries()) {
     lines.push(
@@ -211,9 +235,13 @@ function rowCellLines({
  * Parameters shared by {@link headerLines} and {@link bodyLines}.
  */
 type SectionParams = {
-  /** Token of type `table`. */
+  /**
+   * Token of type `table`.
+   */
   readonly table: ReadonlyToken;
-  /** Per-column alignment, shared by header and body cells. */
+  /**
+   * Per-column alignment, shared by header and body cells.
+   */
   readonly alignments: readonly Alignment[];
 };
 
@@ -230,7 +258,9 @@ function headerLines({
   table,
   alignments,
 }: SectionParams,): string[] {
-  /** Header block lines accumulated across the (single) header row. */
+  /**
+   * Header block lines accumulated across the (single) header row.
+   */
   const lines: string[] = [];
   for (const head of childrenOfType({
     parent: table,
@@ -270,7 +300,9 @@ function bodyLines({
   table,
   alignments,
 }: SectionParams,): string[] {
-  /** Row lines, before the `<tbody>` wrapper is decided. */
+  /**
+   * Row lines, before the `<tbody>` wrapper is decided.
+   */
   const rows: string[] = [];
   for (const body of childrenOfType({
     parent: table,
@@ -318,7 +350,9 @@ function bodyLines({
  * ```
  */
 export default function toHtmlTable(table: ReadonlyToken,): string[] {
-  /** Per-column alignment, computed once and shared by both sections. */
+  /**
+   * Per-column alignment, computed once and shared by both sections.
+   */
   const alignments = columnAlignments(table,);
   return [
     '<table>',

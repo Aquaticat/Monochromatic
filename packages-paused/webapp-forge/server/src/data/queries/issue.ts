@@ -70,12 +70,16 @@ export async function createIssueWithEvent(row: {
         row.createdAt,
       ],
     },);
-    /** Per-resource monotonic sequence captured before the event row insert. */
+    /**
+     * Per-resource monotonic sequence captured before the event row insert.
+     */
     const sequenceNumber = await nextSequence({
       resourceType: 'issue',
       resourceId: row.id,
     },);
-    /** Generated `events.id` returned to callers for cursor tracking. */
+    /**
+     * Generated `events.id` returned to callers for cursor tracking.
+     */
     const eventId = await insertEvent({
       resourceType: 'issue',
       resourceId: row.id,
@@ -131,12 +135,16 @@ export async function labelIssueWithEvent(row: {
         row.issueId,
       ],
     },);
-    /** Per-resource monotonic sequence captured before the event row insert. */
+    /**
+     * Per-resource monotonic sequence captured before the event row insert.
+     */
     const sequenceNumber = await nextSequence({
       resourceType: 'issue',
       resourceId: row.issueId,
     },);
-    /** Generated `events.id` returned to callers for cursor tracking. */
+    /**
+     * Generated `events.id` returned to callers for cursor tracking.
+     */
     const eventId = await insertEvent({
       resourceType: 'issue',
       resourceId: row.issueId,
@@ -200,12 +208,16 @@ export async function createCommentWithEvent(row: {
         row.issueId,
       ],
     },);
-    /** Per-resource monotonic sequence captured before the event row insert. */
+    /**
+     * Per-resource monotonic sequence captured before the event row insert.
+     */
     const sequenceNumber = await nextSequence({
       resourceType: 'issue',
       resourceId: row.issueId,
     },);
-    /** Generated `events.id` returned to callers for cursor tracking. */
+    /**
+     * Generated `events.id` returned to callers for cursor tracking.
+     */
     const eventId = await insertEvent({
       resourceType: 'issue',
       resourceId: row.issueId,

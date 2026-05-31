@@ -9,7 +9,9 @@ import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
 
-/** Milliseconds in one second for duration formatting. */
+/**
+ * Milliseconds in one second for duration formatting.
+ */
 const MILLISECONDS_PER_SECOND = 1_000;
 
 //region Public helpers
@@ -45,7 +47,9 @@ export function renderAdvisorSummary(
     readonly theme: ReadonlyDeep<Theme>;
   },
 ): string {
-  /** Header line with model and duration metadata. */
+  /**
+   * Header line with model and duration metadata.
+   */
   const header = formatHeader({
     details,
     theme,
@@ -53,9 +57,13 @@ export function renderAdvisorSummary(
   if (expanded)
     return `${header}\n\n${text}`;
 
-  /** First advisory line for collapsed rendering. */
+  /**
+   * First advisory line for collapsed rendering.
+   */
   const firstLine = firstAdvisoryLine(text,);
-  /** Styled first advisory line. */
+  /**
+   * Styled first advisory line.
+   */
   const styledFirstLine = theme.fg(
     'toolOutput',
     firstLine,
@@ -176,17 +184,23 @@ function formatHeader(
     readonly theme: ReadonlyDeep<Theme>;
   },
 ): string {
-  /** Styled tool name. */
+  /**
+   * Styled tool name.
+   */
   const title = theme.fg(
     'toolTitle',
     theme.bold(ADVISOR_TOOL_NAME,),
   );
-  /** Styled selected model. */
+  /**
+   * Styled selected model.
+   */
   const model = theme.fg(
     'accent',
     details.selectedSlug,
   );
-  /** Styled metadata. */
+  /**
+   * Styled metadata.
+   */
   const metadata = theme.fg(
     'dim',
     `${formatDuration(details.durationMs,)} ${formatContext(details,)}`,
@@ -219,7 +233,9 @@ function formatDuration(
 function formatContext(
   details: AdvisorDetails,
 ): string {
-  /** Truncation marker for concise output. */
+  /**
+   * Truncation marker for concise output.
+   */
   const truncated = details.truncated ? 'truncated' : 'full';
   return [
     `${details.provider} ${details.contextChars}/${details.contextBudgetChars} chars`,

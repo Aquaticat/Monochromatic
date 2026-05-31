@@ -7,11 +7,17 @@
 
 import type { SearchResult, } from '../../../protocol.ts';
 
-/** Detail payload for the `result-select` custom event. */
+/**
+ * Detail payload for the `result-select` custom event.
+ */
 export type ResultSelectDetail = {
-  /** Absolute file path to open. */
+  /**
+   * Absolute file path to open.
+   */
   readonly path: string;
-  /** 1-based line number to scroll to, present for content matches. */
+  /**
+   * 1-based line number to scroll to, present for content matches.
+   */
   readonly line: number | undefined;
 };
 
@@ -89,9 +95,13 @@ export function moveSearchSelection({
     === 0)
     return selectedIndex;
 
-  /** Live collection of rendered result rows. */
+  /**
+   * Live collection of rendered result rows.
+   */
   const { children, } = container;
-  /** Currently-selected row whose dataset flag must be cleared before reassignment. */
+  /**
+   * Currently-selected row whose dataset flag must be cleared before reassignment.
+   */
   const previous = children[selectedIndex];
   if (previous !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
@@ -99,13 +109,17 @@ export function moveSearchSelection({
       .selected;
   }
 
-  /** Wraps the new index modulo length so navigation cycles. */
+  /**
+   * Wraps the new index modulo length so navigation cycles.
+   */
   const newIndex = (selectedIndex + delta
     + results
     .length) % results
     .length;
 
-  /** Newly-selected row receiving the `data-selected` flag and viewport scroll. */
+  /**
+   * Newly-selected row receiving the `data-selected` flag and viewport scroll.
+   */
   const current = children[newIndex];
   if (current !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
@@ -139,7 +153,9 @@ export function buildResultDetail({
   readonly index: number;
   readonly results: readonly SearchResult[];
 },): ResultSelectDetail | null {
-  /** Out-of-range index returns null instead of throwing. */
+  /**
+   * Out-of-range index returns null instead of throwing.
+   */
   const result = results[index];
   if (result === undefined)
     return null;

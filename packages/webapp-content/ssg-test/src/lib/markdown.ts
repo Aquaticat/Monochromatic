@@ -54,7 +54,9 @@ import rehypeHighlight from './rehype-highlight.ts';
  * ```
  */
 export async function renderMdx(body: string,): Promise<string> {
-  /** Default-exported MDX component returned by `evaluate` is the JSX entry point. */
+  /**
+   * Default-exported MDX component returned by `evaluate` is the JSX entry point.
+   */
   const { default: MDXContent, } = await evaluate(
     body,
     {
@@ -87,7 +89,9 @@ export async function renderMdx(body: string,): Promise<string> {
   );
 
   /* oxlint-disable new-cap, no-unsafe-type-assertion -- `MDXContent` is named by `@mdx-js/mdx` evaluate (we don't control the name); its return type is the library's untyped component value, so the assertion narrows it to the runtime-known `SafeHtml` shape produced by our JSX runtime. */
-  /** Invocation of the evaluated MDX component produces the SafeHtml payload consumed by callers. */
+  /**
+   * Invocation of the evaluated MDX component produces the SafeHtml payload consumed by callers.
+   */
   const result = MDXContent({},) as SafeHtml;
   /* oxlint-enable new-cap, no-unsafe-type-assertion */
   return result.html;

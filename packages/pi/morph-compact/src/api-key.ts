@@ -9,7 +9,9 @@ import { readFile, } from 'node:fs/promises';
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
-/** Path to pi's MCP configuration file. */
+/**
+ * Path to pi's MCP configuration file.
+ */
 const MCP_CONFIG_PATH = join(
   homedir(),
   '.pi',
@@ -61,26 +63,38 @@ const apiKeyCache = new Map<'value', string | typeof NO_MORPH_KEY>();
  */
 async function readKeyFromMcpConfig(): Promise<string | typeof NO_MORPH_KEY> {
   try {
-    /** Raw JSON bytes from the user's mcp.json; parsed below. */
+    /**
+     * Raw JSON bytes from the user's mcp.json; parsed below.
+     */
     const contents = await readFile(
       MCP_CONFIG_PATH,
       'utf8',
     );
-    /** Parsed mcp.json payload before structural validation. */
+    /**
+     * Parsed mcp.json payload before structural validation.
+     */
     const config: unknown = JSON.parse(contents,);
     if (((typeof config) !== 'object') || (config === null))
       return NO_MORPH_KEY;
-    /** MCP server entries that may carry the Morph key under env. */
+    /**
+     * MCP server entries that may carry the Morph key under env.
+     */
     const servers = (config as McpConfig).mcpServers;
     if (servers === undefined)
       return NO_MORPH_KEY;
 
-    /** Iteration keys for walking each configured server entry. */
+    /**
+     * Iteration keys for walking each configured server entry.
+     */
     const serverNames = Object.keys(servers,);
     for (const serverName of serverNames) {
-      /** Current server entry; may be missing env block. */
+      /**
+       * Current server entry; may be missing env block.
+       */
       const server = servers[serverName];
-      /** First env-stored key encountered short-circuits the walk. */
+      /**
+       * First env-stored key encountered short-circuits the walk.
+       */
       const key = server?.env
         ?.MORPH_API_KEY;
       if ((key !== undefined) && (key !== ''))
@@ -112,7 +126,9 @@ async function readKeyFromMcpConfig(): Promise<string | typeof NO_MORPH_KEY> {
  */
 export async function resolveMorphApiKey(): Promise<string | typeof NO_MORPH_KEY> {
   // Check env var first
-  /** Direct env override takes precedence over mcp.json. */
+  /**
+   * Direct env override takes precedence over mcp.json.
+   */
   const envKey = process.env
     .MORPH_API_KEY;
   if ((envKey !== undefined) && (envKey !== ''))
@@ -124,7 +140,9 @@ export async function resolveMorphApiKey(): Promise<string | typeof NO_MORPH_KEY
       ?? NO_MORPH_KEY;
 
   // Read from mcp.json and cache
-  /** Resolved key from mcp.json; NO_MORPH_KEY when no Morph entry exists. */
+  /**
+   * Resolved key from mcp.json; NO_MORPH_KEY when no Morph entry exists.
+   */
   const resolved = await readKeyFromMcpConfig();
   apiKeyCache.set(
     'value',

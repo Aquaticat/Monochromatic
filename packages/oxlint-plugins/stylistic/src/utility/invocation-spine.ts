@@ -16,23 +16,41 @@ import { at, } from './range.ts';
  * `null` guard, keeping the view free of the banned `T | null` union.
  */
 export type SpineNode = Span & {
-  /** AST node-type discriminant, for example `'CallExpression'`. */
+  /**
+   * AST node-type discriminant, for example `'CallExpression'`.
+   */
   readonly type: string;
-  /** `CallExpression`/`NewExpression` callee; the rule descends arguments, never this. */
+  /**
+   * `CallExpression`/`NewExpression` callee; the rule descends arguments, never this.
+   */
   readonly callee?: SpineNode;
-  /** Type-argument span (`a<T>(x)`); anchors the opening-paren search past `>`. */
+  /**
+   * Type-argument span (`a<T>(x)`); anchors the opening-paren search past `>`.
+   */
   readonly typeArguments?: Span;
-  /** `CallExpression`/`NewExpression` argument list; the spine continues only when length is 1. */
+  /**
+   * `CallExpression`/`NewExpression` argument list; the spine continues only when length is 1.
+   */
   readonly arguments?: readonly SpineNode[];
-  /** `ImportExpression.source`: the dynamic-import specifier operand. */
+  /**
+   * `ImportExpression.source`: the dynamic-import specifier operand.
+   */
   readonly source?: SpineNode;
-  /** `ImportExpression.options`: the second argument; a present value stops the import spine. */
+  /**
+   * `ImportExpression.options`: the second argument; a present value stops the import spine.
+   */
   readonly options?: SpineNode;
-  /** Inner expression of a `ChainExpression` or TypeScript wrapper (`!`, `as`, `satisfies`, `<...>`, type-assertion). */
+  /**
+   * Inner expression of a `ChainExpression` or TypeScript wrapper (`!`, `as`, `satisfies`, `<...>`, type-assertion).
+   */
   readonly expression?: SpineNode;
-  /** Operand of an `await`, unary, `yield`, or spread wrapper. */
+  /**
+   * Operand of an `await`, unary, `yield`, or spread wrapper.
+   */
   readonly argument?: SpineNode;
-  /** Parent link surfaced on every node by oxlint's visitor walker. */
+  /**
+   * Parent link surfaced on every node by oxlint's visitor walker.
+   */
   readonly parent?: SpineNode;
 };
 
@@ -140,7 +158,9 @@ function descendWrappers(node: SpineNode,): SpineNode | typeof STOP {
   for (let cursor: SpineNode = node;;) {
     if (!isTransparentWrapper(cursor.type,))
       return cursor;
-    /** Inner expression of the current wrapper; `STOP` ends the descent. */
+    /**
+     * Inner expression of the current wrapper; `STOP` ends the descent.
+     */
     const inner = transparentInner(cursor,);
     if (inner === STOP)
       return STOP;
@@ -166,7 +186,9 @@ function operandOf(node: SpineNode,): SpineNode | typeof STOP {
     === 'CallExpression')
     || (node.type
       === 'NewExpression')) {
-    /** Argument list; a single argument is the spine operand. */
+    /**
+     * Argument list; a single argument is the spine operand.
+     */
     const args = node.arguments;
     if ((args === undefined) || (args.length
       !== 1))
@@ -178,7 +200,9 @@ function operandOf(node: SpineNode,): SpineNode | typeof STOP {
   }
   if (node.type
     === 'ImportExpression') {
-    /** Second dynamic-import argument; a present value stops the source spine. */
+    /**
+     * Second dynamic-import argument; a present value stops the source spine.
+     */
     const { options, } = node;
     // oxlint emits `null` (not absence) for `import(x)`; a real node means two arguments.
     if ((options !== null) && (options !== undefined))
@@ -208,7 +232,9 @@ function operandOf(node: SpineNode,): SpineNode | typeof STOP {
  * ```
  */
 export function operandOrThrow(node: SpineNode,): SpineNode {
-  /** Raw single operand or the stop sentinel. */
+  /**
+   * Raw single operand or the stop sentinel.
+   */
   const operand = operandOf(node,);
   if (operand === STOP) {
     throw new Error('counted invocation has no single operand to split',);
@@ -229,11 +255,15 @@ export function operandOrThrow(node: SpineNode,): SpineNode {
  * @returns next counted invocation on the spine, or `STOP`
  */
 function nextSpineNode(node: SpineNode,): SpineNode | typeof STOP {
-  /** Raw single operand; `STOP` when arity or import options break the spine. */
+  /**
+   * Raw single operand; `STOP` when arity or import options break the spine.
+   */
   const operand = operandOf(node,);
   if (operand === STOP)
     return STOP;
-  /** Operand past any transparent wrappers. */
+  /**
+   * Operand past any transparent wrappers.
+   */
   const descended = descendWrappers(operand,);
   if ((descended !== STOP) && isCounted(descended,))
     return descended;
@@ -253,7 +283,9 @@ function nextSpineNode(node: SpineNode,): SpineNode | typeof STOP {
  */
 function wrapperTop(node: SpineNode,): SpineNode {
   for (let top: SpineNode = node;;) {
-    /** Parent link; absent at program scope. */
+    /**
+     * Parent link; absent at program scope.
+     */
     const { parent, } = top;
     if (parent === undefined)
       return top;
@@ -287,9 +319,13 @@ function wrapperTop(node: SpineNode,): SpineNode {
  * ```
  */
 export function isSpineRoot(node: SpineNode,): boolean {
-  /** Outermost transparent wrapper around the node; its parent decides absorption. */
+  /**
+   * Outermost transparent wrapper around the node; its parent decides absorption.
+   */
   const top = wrapperTop(node,);
-  /** Effective parent: the first ancestor that is not a transparent wrapper. */
+  /**
+   * Effective parent: the first ancestor that is not a transparent wrapper.
+   */
   const { parent, } = top;
   if (parent === undefined)
     return true;
@@ -318,7 +354,9 @@ export function isSpineRoot(node: SpineNode,): boolean {
  * ```
  */
 export function collectSpine(root: SpineNode,): readonly SpineNode[] {
-  /** Spine accumulator seeded with the root; later invocations push on. */
+  /**
+   * Spine accumulator seeded with the root; later invocations push on.
+   */
   const spine: SpineNode[] = [root,];
   for (
     let cursor = nextSpineNode(root,);

@@ -21,10 +21,14 @@ import type {
 
 //region Custom entry types
 
-/** Discriminator for trust-directive session entries. */
+/**
+ * Discriminator for trust-directive session entries.
+ */
 const TRUST_ENTRY_TYPE = 'auto-mode:trust';
 
-/** Discriminator for verdict session entries. */
+/**
+ * Discriminator for verdict session entries.
+ */
 const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
 
 //endregion
@@ -38,20 +42,30 @@ const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
  * propose_trust for user-initiated overrides.
  */
 type VerdictData = {
-  /** Human-readable description of the action. */
+  /**
+   * Human-readable description of the action.
+   */
   readonly action: string;
-  /** Stable fingerprint of the exact tool call approved or denied. */
+  /**
+   * Stable fingerprint of the exact tool call approved or denied.
+   */
   readonly approvalFingerprint?: string;
-  /** Original approval verdict when this entry was produced by reuse. */
+  /**
+   * Original approval verdict when this entry was produced by reuse.
+   */
   readonly reusedFromVerdict?: 'approve' | 'user-approve';
-  /** Judge or user decision. */
+  /**
+   * Judge or user decision.
+   */
   readonly verdict:
     | 'approve'
     | 'deny'
     | 'ask'
     | 'user-approve'
     | 'user-deny';
-  /** Reasoning or context. */
+  /**
+   * Reasoning or context.
+   */
   readonly reason: string;
 };
 
@@ -64,7 +78,9 @@ type VerdictData = {
 type Verdict = {
   readonly verdict: 'approve' | 'deny' | 'ask';
   readonly reason: string;
-  /** Guidance sent to the agent on deny. */
+  /**
+   * Guidance sent to the agent on deny.
+   */
   readonly guidance: string;
 };
 
@@ -102,7 +118,9 @@ function isTrustEntry(
   // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- external boundary: trust-directive session entries persist `data` as `string | null` via pi.appendEntry, where `null` is the protocol's clear-all-directives signal; the predicate mirrors that stored shape.
   data: string | null;
 } {
-  /** Whether entry carries Pi's custom-entry discriminator for trust directives. */
+  /**
+   * Whether entry carries Pi's custom-entry discriminator for trust directives.
+   */
   const hasTrustCustomType = (entry.type === 'custom')
     && (entry.customType === TRUST_ENTRY_TYPE);
   if (!hasTrustCustomType)
@@ -140,7 +158,9 @@ function isVerdictEntry(
   customType: typeof VERDICT_ENTRY_TYPE;
   data: VerdictData;
 } {
-  /** Whether entry carries Pi's custom-entry discriminator for verdict data. */
+  /**
+   * Whether entry carries Pi's custom-entry discriminator for verdict data.
+   */
   const hasVerdictCustomType = (entry.type === 'custom')
     && (entry.customType === VERDICT_ENTRY_TYPE);
   if (!hasVerdictCustomType)
@@ -275,11 +295,17 @@ function isRecord(
 
 //region Signal types
 
-/** Context needed by signal functions. */
+/**
+ * Context needed by signal functions.
+ */
 type SignalContext = {
-  /** Working directory of the agent session. */
+  /**
+   * Working directory of the agent session.
+   */
   readonly cwd: string;
-  /** Home directory of the current user. */
+  /**
+   * Home directory of the current user.
+   */
   readonly home: string;
 };
 
@@ -287,25 +313,43 @@ type SignalContext = {
 
 //region Command types
 
-/** Environment assignment prefix parsed before shell command name. */
+/**
+ * Environment assignment prefix parsed before shell command name.
+ */
 type EnvAssignment = {
-  /** Variable name receiving assignment. */
+  /**
+   * Variable name receiving assignment.
+   */
   readonly name: string;
-  /** Value text after `=`, after shell-quote processing. */
+  /**
+   * Value text after `=`, after shell-quote processing.
+   */
   readonly value: string;
 };
 
-/** Parsed command from shell-quote. */
+/**
+ * Parsed command from shell-quote.
+ */
 type CommandInfo = {
-  /** Command name (e.g. "rm", "sudo"). */
+  /**
+   * Command name (e.g. "rm", "sudo").
+   */
   readonly name: string;
-  /** Environment assignments that prefix command invocation. */
+  /**
+   * Environment assignments that prefix command invocation.
+   */
   readonly envAssignments: readonly EnvAssignment[];
-  /** Positional arguments and flags. */
+  /**
+   * Positional arguments and flags.
+   */
   readonly args: readonly string[];
-  /** Redirect targets (files after > or >>). */
+  /**
+   * Redirect targets (files after > or >>).
+   */
   readonly redirectTargets: readonly string[];
-  /** Pre-scanned variable references from the raw command. */
+  /**
+   * Pre-scanned variable references from the raw command.
+   */
   readonly paramRefs: readonly string[];
 };
 
@@ -315,15 +359,25 @@ type CommandInfo = {
  * Produced by `analyzeBashCommand` in command-parser.ts.
  */
 type BashAnalysis = {
-  /** Whether the command could be parsed. */
+  /**
+   * Whether the command could be parsed.
+   */
   readonly parsed: boolean;
-  /** Individual commands in the pipeline. */
+  /**
+   * Individual commands in the pipeline.
+   */
   readonly commands: readonly CommandInfo[];
-  /** Whether the command is a pipeline (uses |). */
+  /**
+   * Whether the command is a pipeline (uses |).
+   */
   readonly isPipeline: boolean;
-  /** All environment variable references across commands. */
+  /**
+   * All environment variable references across commands.
+   */
   readonly allParamRefs: readonly string[];
-  /** All file-like arguments across commands. */
+  /**
+   * All file-like arguments across commands.
+   */
   readonly allFiles: readonly string[];
 };
 
@@ -331,13 +385,19 @@ type BashAnalysis = {
 
 //region Budget model types
 
-/** A selected budget model with pi-ai model shape. */
+/**
+ * A selected budget model with pi-ai model shape.
+ */
 type BudgetModel = SharedBudgetModel<Model<Api>>;
 
-/** Strategy for finding a budget model. */
+/**
+ * Strategy for finding a budget model.
+ */
 type ModelStrategy = BudgetModelStrategy;
 
-/** Pinned-model override for the judge. */
+/**
+ * Pinned-model override for the judge.
+ */
 type ModelOverride = BudgetModelOverride;
 
 /**
@@ -350,13 +410,19 @@ type ModelOverride = BudgetModelOverride;
 type JudgeModelConfig = {
   readonly modelOverride?: ModelOverride;
   readonly strategy: ModelStrategy;
-  /** Maximum cost ratio vs active model (0-1). */
+  /**
+   * Maximum cost ratio vs active model (0-1).
+   */
   readonly costRatio: number;
-  /** How many major version families to search. */
+  /**
+   * How many major version families to search.
+   */
   readonly majorVersions: number;
 };
 
-/** Budget-model find options (shape used by `findBudgetModel`). */
+/**
+ * Budget-model find options (shape used by `findBudgetModel`).
+ */
 type BudgetModelOptions = JudgeModelConfig;
 
 //endregion
@@ -370,9 +436,13 @@ type BudgetModelOptions = JudgeModelConfig;
  * for circumvention detection across a single turn.
  */
 type BatchEntry = {
-  /** Human-readable action description. */
+  /**
+   * Human-readable action description.
+   */
   readonly action: string;
-  /** Verdict: "approve" or "deny". */
+  /**
+   * Verdict: "approve" or "deny".
+   */
   readonly verdict: string;
 };
 
@@ -392,7 +462,9 @@ type BatchEntry = {
 type GuardDecision =
   | {
     readonly block: true;
-    /** Guidance returned to the agent explaining the block. */
+    /**
+     * Guidance returned to the agent explaining the block.
+     */
     readonly reason: string;
   }
   | { readonly block: false };
@@ -404,11 +476,17 @@ type GuardDecision =
  * resolutions are logged via `pi.appendEntry` instead of the flow widget.
  */
 type FlowVerdict = {
-  /** Human-readable description of the guarded action. */
+  /**
+   * Human-readable description of the guarded action.
+   */
   readonly action: string;
-  /** Widget verdict label: `approved` or `denied`. */
+  /**
+   * Widget verdict label: `approved` or `denied`.
+   */
   readonly verdict: string;
-  /** Judge reasoning for the verdict. */
+  /**
+   * Judge reasoning for the verdict.
+   */
   readonly reason: string;
 };
 
@@ -420,9 +498,13 @@ type FlowVerdict = {
  * own session entry and does not contribute to the flow widget.
  */
 type EvaluateResult = {
-  /** Block-or-allow decision handed back to the host SDK. */
+  /**
+   * Block-or-allow decision handed back to the host SDK.
+   */
   readonly decision: GuardDecision;
-  /** Verdict to append to the flow log, when the judge approved or denied. */
+  /**
+   * Verdict to append to the flow log, when the judge approved or denied.
+   */
   readonly flowVerdict?: FlowVerdict;
 };
 

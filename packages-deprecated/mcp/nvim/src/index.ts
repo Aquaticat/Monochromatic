@@ -8,7 +8,9 @@ import {
 import { handleGetAllDiagnostics, } from './tool-get-all-diagnostics.ts';
 import { handleGetDiagnostics, } from './tool-get-diagnostics.ts';
 
-/** MCP server exposing Neovim diagnostics merged with CLI lint results. */
+/**
+ * MCP server exposing Neovim diagnostics merged with CLI lint results.
+ */
 const server = createMcpServer({
   config: {
     name: 'nvim',

@@ -8,12 +8,18 @@
  */
 import { execBun, } from './container-base.ts';
 
-/** Timeout shared by both oxlint and tsgo runners */
+/**
+ * Timeout shared by both oxlint and tsgo runners
+ */
 export const LINT_TIMEOUT_MS = 15_000;
 
-/** Options for linter exec invocations */
+/**
+ * Options for linter exec invocations
+ */
 type LintExecOptions = {
-  /** Milliseconds before the process is forcibly killed */
+  /**
+   * Milliseconds before the process is forcibly killed
+   */
   readonly timeout?: number;
 };
 
@@ -52,11 +58,17 @@ export function getStdoutFromError(error: unknown,): string {
  * ```
  */
 type ExecPromiseOptions = {
-  /** Lint tool executable */
+  /**
+   * Lint tool executable
+   */
   readonly command: string;
-  /** Tool arguments */
+  /**
+   * Tool arguments
+   */
   readonly args: readonly string[];
-  /** Optional timeout */
+  /**
+   * Optional timeout
+   */
   readonly options?: LintExecOptions;
 };
 
@@ -87,10 +99,14 @@ export async function execPromise({
   args,
   options = {},
 }: ExecPromiseOptions,): Promise<string> {
-  /** Forwarded exec options; the `timeout` key is omitted when undefined so callers can detect the unset state downstream. */
+  /**
+   * Forwarded exec options; the `timeout` key is omitted when undefined so callers can detect the unset state downstream.
+   */
   const execOptions = options.timeout
     !== undefined ? { timeout: options.timeout, } : {};
-  /** Raw exec result; inspected below to surface non-zero exits as thrown errors with stdout/stderr attached. */
+  /**
+   * Raw exec result; inspected below to surface non-zero exits as thrown errors with stdout/stderr attached.
+   */
   const result = await execBun({
     command,
     args,

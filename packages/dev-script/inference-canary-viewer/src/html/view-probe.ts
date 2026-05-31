@@ -36,7 +36,9 @@ import { buildProbeLegend, } from './view-probe-legend.ts';
 export function renderByProbe({ entries, }: {
   readonly entries: readonly ViewerEntry[];
 },): string {
-  /** All unique probe names across all entries */
+  /**
+   * All unique probe names across all entries
+   */
   const probeNames = [...new Set(entries.flatMap(function probeKeys(entry,): string[] {
     return Object.keys(entry.probeScores,);
   },),),];
@@ -51,16 +53,22 @@ export function renderByProbe({ entries, }: {
 
   return probeNames
     .map(function renderProbeSection(probe,): string {
-      /** Scatter points spanning every model for the current probe. */
+      /**
+       * Scatter points spanning every model for the current probe.
+       */
       const points = buildCrossModelPoints({
         entries,
         probe,
       },);
-      /** Color/icon legend rendered above the cross-model chart. */
+      /**
+       * Color/icon legend rendered above the cross-model chart.
+       */
       const legend = buildProbeLegend(entries,);
 
       // Per-model breakdown within this probe
-      /** Unique model labels that recorded a score for the current probe. */
+      /**
+       * Unique model labels that recorded a score for the current probe.
+       */
       const labels = [...new Set(entries
         .filter(function hasProbe(entry,): boolean {
           return probe in entry
@@ -69,23 +77,35 @@ export function renderByProbe({ entries, }: {
         .map(function getLabel(entry,): string {
           return entry.label;
         },),),];
-      /** Joined per-model `<details>` sections beneath the cross-model chart. */
+      /**
+       * Joined per-model `<details>` sections beneath the cross-model chart.
+       */
       const modelBreakdown = labels
         .map(function renderModelSection(label,): string {
-          /** Entries narrowed to the current model label. */
+          /**
+           * Entries narrowed to the current model label.
+           */
           const modelEntries = entries.filter(function matchLabel(entry,): boolean {
             return entry.label
               === label;
           },);
-          /** First entry for this label; always present since `label` came from these entries. */
+          /**
+           * First entry for this label; always present since `label` came from these entries.
+           */
           const [firstEntry,] = modelEntries;
           if (firstEntry === undefined)
             throw new Error(`no entries for model label: ${label}`,);
-          /** OpenRouter model ID from the first entry for vendor icon/color */
+          /**
+           * OpenRouter model ID from the first entry for vendor icon/color
+           */
           const openrouterId = firstEntry.model;
-          /** Vendor-derived accent color reused across this model's points. */
+          /**
+           * Vendor-derived accent color reused across this model's points.
+           */
           const color = vendorColor(openrouterId,);
-          /** Scatter points for this single model within the current probe. */
+          /**
+           * Scatter points for this single model within the current probe.
+           */
           const modelPoints = buildSingleModelPoints({
             entries,
             probe,

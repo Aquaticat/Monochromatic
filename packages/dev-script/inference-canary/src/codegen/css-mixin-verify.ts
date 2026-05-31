@@ -6,13 +6,19 @@
  */
 import type { ContainerResult, } from '../container.ts';
 
-/** Number of correctness checks in the css-mixin scoring function */
+/**
+ * Number of correctness checks in the css-mixin scoring function
+ */
 export const CSS_MIXIN_TOTAL_CHECKS = 11;
 
-/** Minimum number of flex-center expansions expected (into .card, .nav .link, and .hero) */
+/**
+ * Minimum number of flex-center expansions expected (into .card, .nav .link, and .hero)
+ */
 const MIN_FLEX_OCCURRENCES = 3;
 
-/** Maximum consecutive `\n` characters retained when collapsing vertical whitespace. */
+/**
+ * Maximum consecutive `\n` characters retained when collapsing vertical whitespace.
+ */
 const MAX_CONSECUTIVE_NEWLINES = 2;
 
 /**
@@ -32,9 +38,13 @@ const MAX_CONSECUTIVE_NEWLINES = 2;
  */
 export function collapseHorizontalRuns(s: string,): string {
   return (function build(): string {
-    /** Output fragments in order; joined once at the end so the accumulator is never rebuilt per char (O(n), no recursion). */
+    /**
+     * Output fragments in order; joined once at the end so the accumulator is never rebuilt per char (O(n), no recursion).
+     */
     const out: string[] = [];
-    /** Whether the previous char was a space or tab; a run emits a single space at its start only. */
+    /**
+     * Whether the previous char was a space or tab; a run emits a single space at its start only.
+     */
     let inRun = false;
     for (const c of s) {
       if ((c === ' ') || (c === '\t')) {
@@ -67,9 +77,13 @@ export function collapseHorizontalRuns(s: string,): string {
  */
 export function collapseExcessNewlines(s: string,): string {
   return (function build(): string {
-    /** Output fragments in order; joined once at the end so the accumulator is never rebuilt per char (O(n), no recursion). */
+    /**
+     * Output fragments in order; joined once at the end so the accumulator is never rebuilt per char (O(n), no recursion).
+     */
     const out: string[] = [];
-    /** Consecutive `\n` chars already seen in the current run; only the first `MAX_CONSECUTIVE_NEWLINES` are emitted. */
+    /**
+     * Consecutive `\n` chars already seen in the current run; only the first `MAX_CONSECUTIVE_NEWLINES` are emitted.
+     */
     let runLength = 0;
     for (const c of s) {
       if (c === '\n') {
@@ -104,21 +118,29 @@ export function collapseExcessNewlines(s: string,): string {
  * ```
  */
 function verifyOverrideTest(output: string,): boolean {
-  /** Byte offset where the `.override-test` selector begins in the transpiled output. */
+  /**
+   * Byte offset where the `.override-test` selector begins in the transpiled output.
+   */
   const start = output.indexOf('.override-test',);
   if (start === (-1))
     return false;
-  /** Byte offset of the closing brace that terminates the `.override-test` rule. */
+  /**
+   * Byte offset of the closing brace that terminates the `.override-test` rule.
+   */
   const blockEnd = output.indexOf(
     '}',
     start,
   );
-  /** Slice covering the `.override-test` rule body from selector to closing brace. */
+  /**
+   * Slice covering the `.override-test` rule body from selector to closing brace.
+   */
   const block = output.slice(
     start,
     blockEnd,
   );
-  /** Offset of the last `display:` declaration in the block, used to identify the cascade winner. */
+  /**
+   * Offset of the last `display:` declaration in the block, used to identify the cascade winner.
+   */
   const lastDisplay = block.lastIndexOf('display:',);
   return (lastDisplay !== (-1))
     && block
@@ -143,10 +165,14 @@ function verifyOverrideTest(output: string,): boolean {
  * ```
  */
 export function verifyCssMixin(result: ContainerResult,): { correctness: number; } {
-  /** Stdout with whitespace normalised so cosmetic formatting differences do not affect scoring. */
+  /**
+   * Stdout with whitespace normalised so cosmetic formatting differences do not affect scoring.
+   */
   const output = collapseExcessNewlines(collapseHorizontalRuns(result.stdout,),);
 
-  /** Count of `display: flex` declarations; the mixin must expand into three call sites. */
+  /**
+   * Count of `display: flex` declarations; the mixin must expand into three call sites.
+   */
   const flexOccurrences = output.split('display: flex',)
     .length
     - 1;

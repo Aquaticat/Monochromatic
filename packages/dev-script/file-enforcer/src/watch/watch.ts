@@ -32,19 +32,27 @@ import {
  * ```
  */
 export function startWatching(configPath: string,): Promise<never> {
-  /** Function-scoped logger tagged with the call site for traceable watch-mode logs. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable watch-mode logs.
+   */
   const rl = tagged({
     tag: startWatching.name,
     l,
   },);
-  /** Absolute config path for reliable comparisons */
+  /**
+   * Absolute config path for reliable comparisons
+   */
   const absoluteConfig = resolve(configPath,);
   rl.info('watch mode started',);
 
-  /** Active AbortControllers for each watched directory, keyed by dir path */
+  /**
+   * Active AbortControllers for each watched directory, keyed by dir path
+   */
   const controllers = new Map<string, AbortController>();
 
-  /** Tears down all active watchers for re-creation after a re-run. */
+  /**
+   * Tears down all active watchers for re-creation after a re-run.
+   */
   function closeAllWatchers(): void {
     controllers.forEach(function abortController(controller,): void {
       controller.abort();
@@ -52,9 +60,13 @@ export function startWatching(configPath: string,): Promise<never> {
     controllers.clear();
   }
 
-  /** Paths accumulated during the debounce window, invalidated together on re-run */
+  /**
+   * Paths accumulated during the debounce window, invalidated together on re-run
+   */
   const pendingPaths: Set<string> = new Set<string>();
-  /** Protected paths that need notification, accumulated during the debounce window */
+  /**
+   * Protected paths that need notification, accumulated during the debounce window
+   */
   const pendingProtected: Set<string> = new Set<string>();
   /**
    * Single-key holder for the active debounce timer.
@@ -108,7 +120,9 @@ export function startWatching(configPath: string,): Promise<never> {
       readonly dir: string;
     },
   ): void {
-    /** Absolute path of the file that triggered this event */
+    /**
+     * Absolute path of the file that triggered this event
+     */
     const changedPath = resolve(join(
       dir,
       filename,
@@ -116,7 +130,9 @@ export function startWatching(configPath: string,): Promise<never> {
     pendingPaths.add(changedPath,);
     if (kind === 'protected')
       pendingProtected.add(changedPath,);
-    /** Active debounce timer handle, or `undefined` between bursts. */
+    /**
+     * Active debounce timer handle, or `undefined` between bursts.
+     */
     const previousTimer = debounceTimerHolder.get('timer',);
     if (previousTimer !== undefined)
       clearTimeout(previousTimer,);
@@ -124,9 +140,13 @@ export function startWatching(configPath: string,): Promise<never> {
       'timer',
       setTimeout(
         function debouncedRerun(): void {
-          /** Snapshot accumulated state before clearing */
+          /**
+           * Snapshot accumulated state before clearing
+           */
           const paths = [...pendingPaths,];
-          /** Snapshot of paths that need write-protection notifications, paired with `paths`. */
+          /**
+           * Snapshot of paths that need write-protection notifications, paired with `paths`.
+           */
           const protectedPaths = [...pendingProtected,];
           pendingPaths.clear();
           pendingProtected.clear();
@@ -145,14 +165,20 @@ export function startWatching(configPath: string,): Promise<never> {
     );
   }
 
-  /** Creates watchers for every directory derived from tracked reads and writes. */
+  /**
+   * Creates watchers for every directory derived from tracked reads and writes.
+   */
   function setupWatchers(): void {
-    /** Directories to watch, derived from current tracked reads + writes */
+    /**
+     * Directories to watch, derived from current tracked reads + writes
+     */
     const dirs = watchDirs(absoluteConfig,);
     rl.info(`watching ${String(dirs.size,)} directories`,);
 
     dirs.forEach(function setupDir(dir,): void {
-      /** Per-directory abort controller for teardown */
+      /**
+       * Per-directory abort controller for teardown
+       */
       const controller = new AbortController();
       controllers.set(
         dir,

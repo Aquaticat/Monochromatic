@@ -27,7 +27,9 @@ import {
   sendJson,
 } from './ws-send.ts';
 
-/** Tagged logger for the WebSocket subsystem. */
+/**
+ * Tagged logger for the WebSocket subsystem.
+ */
 const l = tagged({
   tag: 'ws',
   l: rootLogger,
@@ -95,12 +97,16 @@ export function createWsHandler(
   },
 ): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {
-    /** Parsed URL; the host portion is irrelevant since `event.url` is request-relative. */
+    /**
+     * Parsed URL; the host portion is irrelevant since `event.url` is request-relative.
+     */
     const url = new URL(
       event.url,
       'http://localhost',
     );
-    /** Token from the query string; compared against `authToken` to gate the connection. */
+    /**
+     * Token from the query string; compared against `authToken` to gate the connection.
+     */
     const token = url.searchParams
       .get('token',);
 
@@ -137,7 +143,9 @@ export function createWsHandler(
         catch (error) {
           // Only reached for pre-parse errors (malformed JSON) where no request id exists.
           // Handler-level errors are caught inside dispatchMessage with proper id correlation.
-          /** Human-readable extraction so the peer sees a stable shape instead of `[object Object]`. */
+          /**
+           * Human-readable extraction so the peer sees a stable shape instead of `[object Object]`.
+           */
           const msg = extractErrorMessage({ error, },);
           l.error(`message handler failed: ${msg}`,);
           sendJson({

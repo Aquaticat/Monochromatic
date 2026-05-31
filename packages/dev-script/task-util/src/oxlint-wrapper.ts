@@ -59,7 +59,9 @@ const hasExplicitFormat = process.argv
       || arg.startsWith('-f=',);
   },);
 
-/** Arguments forwarded to oxlint. */
+/**
+ * Arguments forwarded to oxlint.
+ */
 const oxlintArgs = [
   ...(((threadOverride !== undefined) && (threadOverride !== ''))
     ? [
@@ -73,7 +75,9 @@ const oxlintArgs = [
 ];
 
 try {
-  /** Captured oxlint subprocess result; stdout is augmented with extra guidance before being forwarded. */
+  /**
+   * Captured oxlint subprocess result; stdout is augmented with extra guidance before being forwarded.
+   */
   const result = await spawn(
     'oxlint',
     [...oxlintArgs,],
@@ -95,7 +99,9 @@ catch (error) {
   if ((error !== null) && ((typeof error) === 'object')
     && ('exitCode' in error)) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
-    /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be augmented and forwarded. */
+    /**
+     * Re-typed thrown error so its captured stdout, stderr, and exit fields can be augmented and forwarded.
+     */
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;
@@ -104,13 +110,17 @@ catch (error) {
     };
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-    /** oxlint diagnostics with known false-positive blocks dropped and the summary recomputed. */
+    /**
+     * oxlint diagnostics with known false-positive blocks dropped and the summary recomputed.
+     */
     const suppressed = filterOxlintOutput({
       output: subprocessError.stdout
         ?? '',
     },);
 
-    /** oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout. */
+    /**
+     * oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout.
+     */
     const augmentedStdout = augmentOxlintOutput(suppressed.filtered,);
 
     if (augmentedStdout.length
@@ -134,10 +144,14 @@ catch (error) {
           .write('\n',);
     }
 
-    /** Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands. */
+    /**
+     * Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands.
+     */
     const totalSuppressed = suppressed.suppressedWarnings
       + suppressed.suppressedErrors;
-    /** oxlint's reported exit code; absent (e.g. signal termination) never qualifies as a forced success. */
+    /**
+     * oxlint's reported exit code; absent (e.g. signal termination) never qualifies as a forced success.
+     */
     const { exitCode, } = subprocessError;
     /**
      * Whether to convert oxlint's non-zero exit into success.

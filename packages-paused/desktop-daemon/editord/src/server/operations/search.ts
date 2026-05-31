@@ -16,23 +16,33 @@ import {
 } from '../log.ts';
 import { streamRg, } from './stream-rg.ts';
 
-/** Tagged logger for the search subsystem. */
+/**
+ * Tagged logger for the search subsystem.
+ */
 const l = tagged({
   tag: 'search',
   l: rootLogger,
 },);
 
-/** Maximum number of file-path results returned. */
+/**
+ * Maximum number of file-path results returned.
+ */
 const MAX_FILE_RESULTS = 20;
 
-/** Maximum number of content-match results returned. */
+/**
+ * Maximum number of content-match results returned.
+ */
 const MAX_CONTENT_RESULTS = 30;
 
 //region Types
 
-/** Result of a search operation. */
+/**
+ * Result of a search operation.
+ */
 type SearchOperationResult = {
-  /** Combined search results (file-path matches first, then content matches). */
+  /**
+   * Combined search results (file-path matches first, then content matches).
+   */
   readonly results: readonly SearchResult[];
 };
 
@@ -92,9 +102,13 @@ function searchFiles({
   readonly query: string;
   readonly signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
-  /** Smart-case: an uppercase character in the query enables case sensitivity. */
+  /**
+   * Smart-case: an uppercase character in the query enables case sensitivity.
+   */
   const caseSensitive = hasUpperCase({ query, },);
-  /** Pre-folded query so the per-line filter does not re-lowercase repeatedly. */
+  /**
+   * Pre-folded query so the per-line filter does not re-lowercase repeatedly.
+   */
   const normalizedQuery = caseSensitive ? query : query.toLowerCase();
 
   return streamRg({
@@ -105,7 +119,9 @@ function searchFiles({
     maxResults: MAX_FILE_RESULTS,
     signal,
     processLine: function matchFilePath(line,) {
-      /** Relative form keeps the include-test scoped to the project tree, not the absolute path. */
+      /**
+       * Relative form keeps the include-test scoped to the project tree, not the absolute path.
+       */
       const relativePath = relative(
         rootDir,
         line,
@@ -163,7 +179,9 @@ function searchContents({
     processLine: function matchContent(line,) {
       try {
         /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- rg --json output is typed; we only process 'match' entries */
-        /** Untyped intermediate so the discriminant can be checked before narrowing. */
+        /**
+         * Untyped intermediate so the discriminant can be checked before narrowing.
+         */
         const parsed = JSON.parse(line,) as RgJsonMatch | { readonly type: string; };
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         if (parsed.type
@@ -171,7 +189,9 @@ function searchContents({
           return null;
 
         /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guarded by type check above */
-        /** Narrowed view used to read the rg `data` payload. */
+        /**
+         * Narrowed view used to read the rg `data` payload.
+         */
         const match = parsed as RgJsonMatch;
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return {
@@ -235,7 +255,9 @@ export async function search({
 },): Promise<SearchOperationResult> {
   l.info(`searching for "${query}"`,);
 
-  /** File-path search runs concurrently with the content search to halve wall time. */
+  /**
+   * File-path search runs concurrently with the content search to halve wall time.
+   */
   const [files, contents,] = await Promise.all([
     searchFiles({
       rootDir,

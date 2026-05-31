@@ -130,13 +130,17 @@ export function wireLsp(
     loadFileSafe,
   },);
 
-  /** Inlay-hint subsystem state; exposes the manual `refresh` action below. */
+  /**
+   * Inlay-hint subsystem state; exposes the manual `refresh` action below.
+   */
   const inlayState = wireInlayHints({
     ws,
     editorPane,
     getCurrentFilePath,
   },);
-  /** Selection-range commands wired into the returned action surface. */
+  /**
+   * Selection-range commands wired into the returned action surface.
+   */
   const {
     expandSelection,
     shrinkSelection,
@@ -163,10 +167,14 @@ export function wireLsp(
     'rename-confirm',
     function handleRenameConfirm(event,) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- custom event detail */
-      /** Custom-event detail destructured to capture the user-entered new symbol name. */
+      /**
+       * Custom-event detail destructured to capture the user-entered new symbol name.
+       */
       const { newName, } = (event as CustomEvent<{ readonly newName: string; }>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      /** Cursor position captured at initiation so the rename targets the right symbol. */
+      /**
+       * Cursor position captured at initiation so the rename targets the right symbol.
+       */
       const captured = renamePosition.current;
       if (captured !== null) {
         void performRename({
@@ -212,7 +220,9 @@ export function wireLsp(
       },);
     },
     renameAtCursor: function renameAtCursorAction(): void {
-      /** Captured before opening the input so the eventual confirm targets the right cursor. */
+      /**
+       * Captured before opening the input so the eventual confirm targets the right cursor.
+       */
       const pos = editorPane.getCursorPosition();
       if (pos !== null)
         renamePosition.current = pos;

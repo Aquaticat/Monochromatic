@@ -62,12 +62,16 @@ export function canonicalEmit({ edit, }: { readonly edit: TomlEditState; },): st
  * @returns Computed string.
  */
 function canonicalFromEmpty({ edit, }: { readonly edit: TomlEditState; },): string {
-  /** Accumulator so the header block and insertions can be emitted in source order. */
+  /**
+   * Accumulator so the header block and insertions can be emitted in source order.
+   */
   const parts: string[] = [];
   if ((edit.headerComment
     !== undefined) && (edit.headerComment
       !== '')) {
-    /** Header comment is stored joined; split here so each line gets its own `#` prefix. */
+    /**
+     * Header comment is stored joined; split here so each line gets its own `#` prefix.
+     */
     const lines = edit.headerComment
       .split('\n',);
     for (const line of lines)
@@ -76,13 +80,17 @@ function canonicalFromEmpty({ edit, }: { readonly edit: TomlEditState; },): stri
     parts.push(edit.canonical
       .lineBreak,);
   }
-  /** Pending insertions become the body when there is no parsed source. */
+  /**
+   * Pending insertions become the body when there is no parsed source.
+   */
   const insertionTexts = edit.insertions
     .map(function each(ins,) {
     return ins.text;
   },);
   parts.push(...insertionTexts,);
-  /** Single join so callers see a contiguous string instead of array fragments. */
+  /**
+   * Single join so callers see a contiguous string instead of array fragments.
+   */
   const result = parts.join('',);
   if (
     edit.canonical

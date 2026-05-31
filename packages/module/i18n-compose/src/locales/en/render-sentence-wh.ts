@@ -47,40 +47,56 @@ export function renderWhSubject<S extends string, V extends string, N extends st
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     verbs,
     renderNounPhrase,
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Verb entry used for the finite question head. */
+  /**
+   * Verb entry used for the finite question head.
+   */
   const entry = verbs[sentence.predicate
     .verb];
-  /** Wh-subject treated as third-person singular for ordinary finite agreement. */
+  /**
+   * Wh-subject treated as third-person singular for ordinary finite agreement.
+   */
   const verb = subjectQuestionVerbSurface({
     entry,
     tense,
     agreement: WH_SUBJECT_AGREEMENT,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
     form: complementFormForVerb({ entry, },),
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body with `Who` at head. */
+  /**
+   * Sentence body with `Who` at head.
+   */
   const body = joinTokens([
     'Who',
     verb,
@@ -116,34 +132,48 @@ export function renderWhObject<S extends string, V extends string, N extends str
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Question verb parts chosen from the entry's auxiliary strategy. */
+  /**
+   * Question verb parts chosen from the entry's auxiliary strategy.
+   */
   const questionVerb = questionVerbParts({
     entry: verbs[sentence.verb],
     tense,
     agreement,
   },);
-  /** Subject surface placed after the auxiliary. */
+  /**
+   * Subject surface placed after the auxiliary.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.adverbials,);
-  /** Sentence body with `What` at head. */
+  /**
+   * Sentence body with `What` at head.
+   */
   const body = joinTokens([
     'What',
     questionVerb.auxiliary,
@@ -179,7 +209,9 @@ export function renderWhAdverbial<S extends string, V extends string, N extends 
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
@@ -187,43 +219,61 @@ export function renderWhAdverbial<S extends string, V extends string, N extends 
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Question verb parts chosen from the entry's auxiliary strategy. */
+  /**
+   * Question verb parts chosen from the entry's auxiliary strategy.
+   */
   const questionVerb = questionVerbParts({
     entry: verbs[sentence.predicate
       .verb],
     tense,
     agreement,
   },);
-  /** Subject surface placed after the auxiliary. */
+  /**
+   * Subject surface placed after the auxiliary.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
     form: questionVerb.complementForm,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Wh-word capitalized in the head position. */
+  /**
+   * Wh-word capitalized in the head position.
+   */
   const wh = capitalizeWh(sentence.wh,);
-  /** Sentence body with wh-word at head. */
+  /**
+   * Sentence body with wh-word at head.
+   */
   const body = joinTokens([
     wh,
     questionVerb.auxiliary,

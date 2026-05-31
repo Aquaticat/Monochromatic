@@ -34,7 +34,9 @@ import type {
 
 //region Public API
 
-/** Agent message type accepted by pi's LLM conversion helper. */
+/**
+ * Agent message type accepted by pi's LLM conversion helper.
+ */
 type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
 
 /**
@@ -45,27 +47,47 @@ type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
  */
 const MESSAGE_EXCLUDED: unique symbol = Symbol('advisor/message-excluded',);
 
-/** Options for building Advisor context. */
+/**
+ * Options for building Advisor context.
+ */
 export type BuildAdvisorContextOptions = {
-  /** Session branch entries from pi. */
+  /**
+   * Session branch entries from pi.
+   */
   readonly branch: readonly SessionEntry[];
-  /** Runtime Advisor configuration. */
+  /**
+   * Runtime Advisor configuration.
+   */
   readonly config: AdvisorConfig;
-  /** Advisor-model system prompt used for token estimate. */
+  /**
+   * Advisor-model system prompt used for token estimate.
+   */
   readonly advisorSystemPrompt: string;
-  /** Effective serialized-context character budget. */
+  /**
+   * Effective serialized-context character budget.
+   */
   readonly maxContextChars?: number;
-  /** Current tool call id to omit from serialized context. */
+  /**
+   * Current tool call id to omit from serialized context.
+   */
   readonly toolCallId?: string;
 };
 
-/** Options for deriving context budget from selected Advisor model. */
+/**
+ * Options for deriving context budget from selected Advisor model.
+ */
 export type MaxContextCharsForAdvisorModelOptions = {
-  /** Runtime Advisor configuration. */
+  /**
+   * Runtime Advisor configuration.
+   */
   readonly config: AdvisorConfig;
-  /** Selected Advisor model. */
+  /**
+   * Selected Advisor model.
+   */
   readonly model: AdvisorReadonlyModel;
-  /** Advisor-model system prompt used for token reserve estimate. */
+  /**
+   * Advisor-model system prompt used for token reserve estimate.
+   */
   readonly advisorSystemPrompt: string;
 };
 
@@ -84,7 +106,9 @@ export type MaxContextCharsForAdvisorModelOptions = {
 export function buildAdvisorContext(
   options: BuildAdvisorContextOptions,
 ): AdvisorContext {
-  /** Agent messages included in the secondary Advisor request. */
+  /**
+   * Agent messages included in the secondary Advisor request.
+   */
   const messages = options
     .branch
     .map(function mapEntry(entry,) {
@@ -102,27 +126,37 @@ export function buildAdvisorContext(
       return message !== MESSAGE_EXCLUDED;
     },);
 
-  /** Serialized conversation produced by pi's compaction utility. */
+  /**
+   * Serialized conversation produced by pi's compaction utility.
+   */
   const serialized = serializeConversation(convertToLlm(messages,),);
-  /** Effective truncation budget supplied by model-aware caller or config cap. */
+  /**
+   * Effective truncation budget supplied by model-aware caller or config cap.
+   */
   const maxContextChars = options.maxContextChars
     ?? options
     .config
     .maxContextChars
     ?? Number
     .MAX_SAFE_INTEGER;
-  /** Truncated serialized conversation and metadata. */
+  /**
+   * Truncated serialized conversation and metadata.
+   */
   const truncation = truncateContext({
     text: serialized,
     maxChars: maxContextChars,
   },);
-  /** Estimated request input tokens. */
+  /**
+   * Estimated request input tokens.
+   */
   const estimatedInputTokens = estimateAdvisorInputTokens({
     systemPrompt: options.advisorSystemPrompt,
     contextText: truncation.text,
   },);
 
-  /** Latest user prompt excerpt, omitted when no user prompt exists. */
+  /**
+   * Latest user prompt excerpt, omitted when no user prompt exists.
+   */
   const latestExcerpt = latestUserPromptExcerpt(options.branch,);
 
   return {
@@ -153,13 +187,17 @@ export function buildAdvisorContext(
 export function maxContextCharsForAdvisorModel(
   options: MaxContextCharsForAdvisorModelOptions,
 ): number {
-  /** Input tokens consumed before serialized conversation content. */
+  /**
+   * Input tokens consumed before serialized conversation content.
+   */
   const reservedInputTokens = estimateAdvisorInputTokens({
     systemPrompt: options.advisorSystemPrompt,
     contextText: '',
   },)
     + DEFAULT_CONTEXT_OVERHEAD_TOKENS;
-  /** Input tokens left for serialized conversation content. */
+  /**
+   * Input tokens left for serialized conversation content.
+   */
   const availableContextTokens = Math.max(
     1,
     options.model
@@ -169,7 +207,9 @@ export function maxContextCharsForAdvisorModel(
       .maxAdvisorOutputTokens
       - reservedInputTokens,
   );
-  /** Model-derived serialized conversation character budget. */
+  /**
+   * Model-derived serialized conversation character budget.
+   */
   const modelContextChars = Math.max(
     1,
     availableContextTokens * TOKEN_ESTIMATE_CHARS_PER_TOKEN,
@@ -217,18 +257,26 @@ export function truncateContext(
     };
   }
 
-  /** Character budget left after the omission marker. */
+  /**
+   * Character budget left after the omission marker.
+   */
   const remainingChars = Math.max(
     0,
     maxChars - CONTEXT_TRUNCATION_MARKER
       .length,
   );
-  /** Head segment length. */
+  /**
+   * Head segment length.
+   */
   const headChars = Math.ceil(remainingChars / 2,);
-  /** Tail segment length. */
+  /**
+   * Tail segment length.
+   */
   const tailChars = remainingChars - headChars;
 
-  /** Tail text, empty when no tail budget remains. */
+  /**
+   * Tail text, empty when no tail budget remains.
+   */
   const tailText = tailChars === 0 ? '' : text.slice(-tailChars,);
 
   return {
@@ -352,7 +400,9 @@ function filterMessage(
     !== 'assistant')
     return message;
 
-  /** Assistant content with current Advisor placeholder tool call omitted. */
+  /**
+   * Assistant content with current Advisor placeholder tool call omitted.
+   */
   const content = message.content
     .filter(function keepContentBlock(block,) {
     return !(

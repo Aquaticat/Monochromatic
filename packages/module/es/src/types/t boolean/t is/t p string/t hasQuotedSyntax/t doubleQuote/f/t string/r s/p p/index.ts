@@ -26,7 +26,9 @@ import type {
  */
 export function $(value: string,): value is DoubleQuotedSyntax {
   // get first effective (unescaped) quote
-  /** First unescaped quote, distinguishing double quote from other quote kinds. */
+  /**
+   * First unescaped quote, distinguishing double quote from other quote kinds.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- canonical first-unescaped-quote scan; the lookbehind `(?<!\\)(?:\\\\)*` matches a quote not preceded by an odd number of backslashes — expressing the escape-counting rule via index walk is significantly more code and equally bounded. Input length bounds runtime linearly; no nested quantifiers means no backtracking.
   const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 

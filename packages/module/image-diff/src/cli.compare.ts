@@ -41,7 +41,9 @@ export async function handleCompare({
   readonly provider?: Provider;
   readonly model?: EmbeddingModel;
 },): Promise<void> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: handleCompare.name,
     l,
@@ -57,12 +59,16 @@ export async function handleCompare({
 
   if (provider !== undefined) {
     rl.debug(`comparing via ${provider}`,);
-    /** Single-provider config; only includes `model` when the caller passed an override. */
+    /**
+     * Single-provider config; only includes `model` when the caller passed an override.
+     */
     const config = {
       provider,
       ...(model !== undefined ? { model, } : {}),
     };
-    /** Comparison result for the single requested provider; printed as JSON below. */
+    /**
+     * Comparison result for the single requested provider; printed as JSON below.
+     */
     const result = await compare({
       imageA: inputA,
       imageB: inputB,
@@ -84,7 +90,9 @@ export async function handleCompare({
   }
   else {
     rl.debug('comparing via all providers',);
-    /** Per-provider comparison entries from the multi-provider dispatch; printed as JSON below. */
+    /**
+     * Per-provider comparison entries from the multi-provider dispatch; printed as JSON below.
+     */
     const results = await compareAll({
       imageA: inputA,
       imageB: inputB,

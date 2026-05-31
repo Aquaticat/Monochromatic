@@ -10,7 +10,9 @@ import {
   writeTimestamps,
 } from '../tracker.ts';
 
-/** Possible outcomes when classifying a filesystem event */
+/**
+ * Possible outcomes when classifying a filesystem event
+ */
 export type EventKind = 'source' | 'protected' | 'ignore';
 
 /**
@@ -28,7 +30,9 @@ export type EventKind = 'source' | 'protected' | 'ignore';
  * ```
  */
 export function watchDirs(configPath: string,): Set<string> {
-  /** All paths that need monitoring: reads, writes, and the config */
+  /**
+   * All paths that need monitoring: reads, writes, and the config
+   */
   const allPaths = [
     ...reads,
     ...writes,
@@ -76,14 +80,18 @@ export async function classifyEvent(
     readonly configPath: string;
   },
 ): Promise<EventKind> {
-  /** Absolute path of the changed file */
+  /**
+   * Absolute path of the changed file
+   */
   const absolutePath = resolve(join(
     watchedDir,
     filename,
   ),);
 
   if (writes.has(absolutePath,)) {
-    /** Timestamp of our last actual write, if any */
+    /**
+     * Timestamp of our last actual write, if any
+     */
     const ourWriteTime = writeTimestamps.get(absolutePath,);
     if (ourWriteTime === undefined) {
       // We registered the dest but never actually wrote (content was unchanged).
@@ -91,7 +99,9 @@ export async function classifyEvent(
       return 'protected';
     }
     try {
-      /** File metadata for mtime comparison */
+      /**
+       * File metadata for mtime comparison
+       */
       const fileStat = await stat(absolutePath,);
       // External edit: file was modified after our last write.
       // Floor mtimeMs because stat() returns sub-ms precision (float)
@@ -109,7 +119,9 @@ export async function classifyEvent(
     return 'ignore';
   }
 
-  /** Resolved config path for comparison */
+  /**
+   * Resolved config path for comparison
+   */
   const resolvedConfig = resolve(configPath,);
 
   if (reads.has(absolutePath,)

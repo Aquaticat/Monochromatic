@@ -42,13 +42,21 @@ export type InitSystem = 'openrc' | 'systemd';
  * ```
  */
 export type LinuxGuestConfig = {
-  /** Discriminant identifying this as a Linux guest. */
+  /**
+   * Discriminant identifying this as a Linux guest.
+   */
   readonly osFamily: 'linux';
-  /** Default login user created by cloud-init for this distro. */
+  /**
+   * Default login user created by cloud-init for this distro.
+   */
   readonly defaultUser: string;
-  /** Init system for service management (systemd or openrc). */
+  /**
+   * Init system for service management (systemd or openrc).
+   */
   readonly initSystem: InitSystem;
-  /** Login shell path for the default user. */
+  /**
+   * Login shell path for the default user.
+   */
   readonly shell: string;
 };
 
@@ -68,11 +76,17 @@ export type LinuxGuestConfig = {
  * ```
  */
 export type WindowsGuestConfig = {
-  /** Discriminant identifying this as a Windows guest. */
+  /**
+   * Discriminant identifying this as a Windows guest.
+   */
   readonly osFamily: 'windows';
-  /** Default admin user created during unattended install. */
+  /**
+   * Default admin user created during unattended install.
+   */
   readonly defaultUser: string;
-  /** Shell executable for guest-exec commands (powershell.exe or cmd.exe). */
+  /**
+   * Shell executable for guest-exec commands (powershell.exe or cmd.exe).
+   */
   readonly shell: string;
 };
 
@@ -107,11 +121,17 @@ export type GuestConfig = LinuxGuestConfig | WindowsGuestConfig;
  * ```
  */
 export type LinuxImageSpec = LinuxGuestConfig & {
-  /** Cached qcow2 cloud image filename under `~/.local/share/mvm/images/`. */
+  /**
+   * Cached qcow2 cloud image filename under `~/.local/share/mvm/images/`.
+   */
   readonly fileName: string;
-  /** Template filename derived from this image (e.g. `template-ubuntu.qcow2`). */
+  /**
+   * Template filename derived from this image (e.g. `template-ubuntu.qcow2`).
+   */
   readonly templateFileName: string;
-  /** Remote URL to download the cloud image from. */
+  /**
+   * Remote URL to download the cloud image from.
+   */
   readonly url: string;
 };
 
@@ -127,13 +147,21 @@ export type LinuxImageSpec = LinuxGuestConfig & {
  * ```
  */
 export type WindowsImageSpec = WindowsGuestConfig & {
-  /** Cached ISO filename under `~/.local/share/mvm/images/`. */
+  /**
+   * Cached ISO filename under `~/.local/share/mvm/images/`.
+   */
   readonly fileName: string;
-  /** Template filename derived from this image (e.g. `template-windows.qcow2`). */
+  /**
+   * Template filename derived from this image (e.g. `template-windows.qcow2`).
+   */
   readonly templateFileName: string;
-  /** Remote URL to download the evaluation ISO from. */
+  /**
+   * Remote URL to download the evaluation ISO from.
+   */
   readonly url: string;
-  /** WIM image index for unattended install (1-based, selects the OS edition). */
+  /**
+   * WIM image index for unattended install (1-based, selects the OS edition).
+   */
   readonly imageIndex: number;
 };
 
@@ -164,7 +192,9 @@ export type ImageSpec = LinuxImageSpec | WindowsImageSpec;
 export const VIRTIO_WIN_URL =
   'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso';
 
-/** Cached filename for the virtio-win ISO under `~/.local/share/mvm/images/`. */
+/**
+ * Cached filename for the virtio-win ISO under `~/.local/share/mvm/images/`.
+ */
 export const VIRTIO_WIN_FILENAME = 'virtio-win.iso';
 
 //endregion Virtio-win shared resource
@@ -224,7 +254,9 @@ export const IMAGES: Readonly<Record<string, ImageSpec>> = {
   },
 };
 
-/** Default image shorthand when `--image` is not specified. */
+/**
+ * Default image shorthand when `--image` is not specified.
+ */
 export const DEFAULT_IMAGE = 'ubuntu';
 
 /**
@@ -271,7 +303,9 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
  * ```
  */
 export function resolveImage(identifier: string,): ResolvedImage {
-  /** Registry lookup; primary resolution path before the custom-template fallback. */
+  /**
+   * Registry lookup; primary resolution path before the custom-template fallback.
+   */
   const spec = IMAGES[identifier];
   if (spec !== undefined) {
     return {
@@ -280,7 +314,9 @@ export function resolveImage(identifier: string,): ResolvedImage {
     };
   }
 
-  /** Candidate path for a user-supplied template under the images directory. */
+  /**
+   * Candidate path for a user-supplied template under the images directory.
+   */
   const customPath = join(
     IMAGES_DIR,
     `${identifier}.qcow2`,
@@ -292,7 +328,9 @@ export function resolveImage(identifier: string,): ResolvedImage {
     };
   }
 
-  /** Listed in the error message so an unknown identifier shows the valid choices. */
+  /**
+   * Listed in the error message so an unknown identifier shows the valid choices.
+   */
   const available = Object.keys(IMAGES,)
     .join(', ',);
   throw new Error(

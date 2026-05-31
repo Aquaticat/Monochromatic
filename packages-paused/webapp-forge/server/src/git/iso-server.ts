@@ -37,10 +37,14 @@ import {
 export { buildInfoRefsAdvertisement, } from './iso-server-advertisement.ts';
 export { ensureRepoExists, } from './iso-server-refs.ts';
 
-/** Length of the OID hex prefix used for git's loose-object directory layout. */
+/**
+ * Length of the OID hex prefix used for git's loose-object directory layout.
+ */
 const HEX_PREFIX_LEN = 2;
 
-/** Argument bundle for repo identification. */
+/**
+ * Argument bundle for repo identification.
+ */
 type RepoArgs = {
   readonly owner: string;
   readonly repo: string;
@@ -52,9 +56,13 @@ type RepoArgs = {
  * update.
  */
 export type ReceivePackOutcome = {
-  /** Bytes to write back to the client. */
+  /**
+   * Bytes to write back to the client.
+   */
   readonly body: Uint8Array;
-  /** Successfully applied (oldOid, newOid, refName) triplets. */
+  /**
+   * Successfully applied (oldOid, newOid, refName) triplets.
+   */
   readonly applied: readonly RefUpdateTriplet[];
 };
 
@@ -73,30 +81,44 @@ export type ReceivePackOutcome = {
 export async function handleUploadPack(
   row: RepoArgs & { readonly body: Uint8Array; },
 ): Promise<Uint8Array> {
-  /** Resolved gitdir for the requested repo. */
+  /**
+   * Resolved gitdir for the requested repo.
+   */
   const gitdir = await ensureRepoExists(row,);
-  /** Parsed upload-pack request driving the rest of the handler. */
+  /**
+   * Parsed upload-pack request driving the rest of the handler.
+   */
   const request = parseUploadPackBody(row.body,);
-  /** Client opted into 64k side-band frames; checked before generic side-band. */
+  /**
+   * Client opted into 64k side-band frames; checked before generic side-band.
+   */
   const useSideBand64k = request.capabilities
     .includes('side-band-64k',);
-  /** Either form of side-band selects the multiplexed response shape. */
+  /**
+   * Either form of side-band selects the multiplexed response shape.
+   */
   const useSideBand = useSideBand64k
     || request
     .capabilities
     .includes('side-band',);
-  /** Object ids the server still needs to send after subtracting client haves. */
+  /**
+   * Object ids the server still needs to send after subtracting client haves.
+   */
   const oids = await collectReachable({
     gitdir,
     wants: request.wants,
     haves: request.haves,
   },);
-  /** Packfile bytes; populated from packObjects only when the want set is non-empty. */
+  /**
+   * Packfile bytes; populated from packObjects only when the want set is non-empty.
+   */
   const packfile = await (async function buildPackfile(): Promise<Uint8Array> {
     if (oids.length
       === 0)
       return new Uint8Array(0,);
-    /** Pack-generation result; `packfile` is undefined for empty packs. */
+    /**
+     * Pack-generation result; `packfile` is undefined for empty packs.
+     */
     const result = await git.packObjects({
       fs: nodeFs,
       gitdir,
@@ -108,7 +130,9 @@ export async function handleUploadPack(
       return new Uint8Array(0,);
     return new Uint8Array(result.packfile,);
   })();
-  /** Wire chunks framing the packfile plus protocol scaffolding. */
+  /**
+   * Wire chunks framing the packfile plus protocol scaffolding.
+   */
   const chunks = writeUploadPackResponse({
     packfile,
     useSideBand,
@@ -133,14 +157,22 @@ export async function handleUploadPack(
 export async function handleReceivePack(
   row: RepoArgs & { readonly body: Uint8Array; },
 ): Promise<ReceivePackOutcome> {
-  /** Resolved gitdir for the requested repo. */
+  /**
+   * Resolved gitdir for the requested repo.
+   */
   const gitdir = await ensureRepoExists(row,);
-  /** Parsed receive-pack request: triplets, packfile, capabilities. */
+  /**
+   * Parsed receive-pack request: triplets, packfile, capabilities.
+   */
   const request = parseReceivePackBody(row.body,);
-  /** Client opted into 64k side-band frames; checked before generic side-band. */
+  /**
+   * Client opted into 64k side-band frames; checked before generic side-band.
+   */
   const useSideBand64k = request.capabilities
     .includes('side-band-64k',);
-  /** Either form of side-band selects the multiplexed response shape. */
+  /**
+   * Either form of side-band selects the multiplexed response shape.
+   */
   const useSideBand = useSideBand64k
     || request
     .capabilities
@@ -158,7 +190,9 @@ export async function handleReceivePack(
       applied: [],
     };
   }
-  /** Indexing outcome; isolated so the try/catch state stays scoped to the inner IIFE. */
+  /**
+   * Indexing outcome; isolated so the try/catch state stays scoped to the inner IIFE.
+   */
   const {
     unpackOk,
     unpackError,
@@ -191,18 +225,24 @@ export async function handleReceivePack(
       };
     }
   })();
-  /** Per-ref outcomes mirrored back into the receive-pack response body. */
+  /**
+   * Per-ref outcomes mirrored back into the receive-pack response body.
+   */
   const refResults: {
     refName: string;
     ok: boolean;
     error?: string;
   }[] = [];
-  /** Successfully applied triplets surfaced to the dispatcher for events. */
+  /**
+   * Successfully applied triplets surfaced to the dispatcher for events.
+   */
   const applied: RefUpdateTriplet[] = [];
   if (unpackOk) {
     for (const triplet of request.triplets) {
       /* oxlint-disable no-await-in-loop -- ref updates are atomic per ref; sequential is correct */
-      /** Per-ref apply result; sequential because each touches one ref atomically. */
+      /**
+       * Per-ref apply result; sequential because each touches one ref atomically.
+       */
       const result = await applyRefUpdate({
         gitdir,
         triplet,
@@ -232,7 +272,9 @@ export async function handleReceivePack(
       },);
     }
   }
-  /** Final response bytes; shape depends on whether indexing surfaced an error. */
+  /**
+   * Final response bytes; shape depends on whether indexing surfaced an error.
+   */
   const body = concatChunks(writeReceivePackResponse(unpackError === undefined
     ? {
       unpackOk,
@@ -269,7 +311,9 @@ export async function handleReceivePack(
 export async function getRef(
   row: RepoArgs & { readonly ref: string; },
 ): Promise<string | undefined> {
-  /** Resolved gitdir; created on demand by `ensureRepoExists`. */
+  /**
+   * Resolved gitdir; created on demand by `ensureRepoExists`.
+   */
   const gitdir = await ensureRepoExists(row,);
   try {
     return await git.resolveRef({
@@ -298,7 +342,9 @@ export async function getRef(
 export async function listRefs(
   row: RepoArgs & { readonly filepath: string; },
 ): Promise<readonly string[]> {
-  /** Resolved gitdir; created on demand by `ensureRepoExists`. */
+  /**
+   * Resolved gitdir; created on demand by `ensureRepoExists`.
+   */
   const gitdir = await ensureRepoExists(row,);
   return git.listRefs({
     fs: nodeFs,
@@ -323,9 +369,13 @@ export async function listRefs(
 export async function readLooseObjectBytes(
   row: RepoArgs & { readonly oid: string; },
 ): Promise<Uint8Array> {
-  /** Resolved gitdir; created on demand by `ensureRepoExists`. */
+  /**
+   * Resolved gitdir; created on demand by `ensureRepoExists`.
+   */
   const gitdir = await ensureRepoExists(row,);
-  /** Loose-object path follows git's `xx/yyy...` two-char prefix layout. */
+  /**
+   * Loose-object path follows git's `xx/yyy...` two-char prefix layout.
+   */
   const path = join(
     gitdir,
     'objects',
@@ -353,13 +403,19 @@ export async function readLooseObjectBytes(
  * ```
  */
 function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
-  /** Running sum of every chunk's byte length to size the output buffer. */
+  /**
+   * Running sum of every chunk's byte length to size the output buffer.
+   */
   let total = 0;
   for (const chunk of chunks)
     total += chunk.byteLength;
-  /** Destination buffer sized exactly to the total chunk length. */
+  /**
+   * Destination buffer sized exactly to the total chunk length.
+   */
   const out = new Uint8Array(total,);
-  /** Write position advancing through `out` as each chunk is copied. */
+  /**
+   * Write position advancing through `out` as each chunk is copied.
+   */
   let cursor = 0;
   for (const chunk of chunks) {
     out.set(

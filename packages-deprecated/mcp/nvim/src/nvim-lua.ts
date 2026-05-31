@@ -34,19 +34,33 @@ export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
    * Raw severity index from Neovim; falls back to 0 so {@link SEVERITY_MAP} produces an `UNKNOWN` label.
    */
   const severity = ((typeof d.severity) === 'number') ? d.severity : 0;
-  /** Raw 0-indexed line; bumped by 1 below to match the 1-indexed coordinate scheme. */
+  /**
+   * Raw 0-indexed line; bumped by 1 below to match the 1-indexed coordinate scheme.
+   */
   const lnum = ((typeof d.lnum) === 'number') ? d.lnum : 0;
-  /** Raw 0-indexed column; bumped by 1 below to match the 1-indexed coordinate scheme. */
+  /**
+   * Raw 0-indexed column; bumped by 1 below to match the 1-indexed coordinate scheme.
+   */
   const col = ((typeof d.col) === 'number') ? d.col : 0;
-  /** Raw 0-indexed end line; bumped by 1 below to match the 1-indexed coordinate scheme. */
+  /**
+   * Raw 0-indexed end line; bumped by 1 below to match the 1-indexed coordinate scheme.
+   */
   const endLnum = ((typeof d.end_lnum) === 'number') ? d.end_lnum : 0;
-  /** Raw 0-indexed end column; bumped by 1 below to match the 1-indexed coordinate scheme. */
+  /**
+   * Raw 0-indexed end column; bumped by 1 below to match the 1-indexed coordinate scheme.
+   */
   const endCol = ((typeof d.end_col) === 'number') ? d.end_col : 0;
-  /** Raw diagnostic text; coerced to empty string when Lua returns a non-string. */
+  /**
+   * Raw diagnostic text; coerced to empty string when Lua returns a non-string.
+   */
   const message = ((typeof d.message) === 'string') ? d.message : '';
-  /** Diagnostic source identifier (e.g. `'typescript'`); `null` when absent so downstream formatters can drop the suffix. */
+  /**
+   * Diagnostic source identifier (e.g. `'typescript'`); `null` when absent so downstream formatters can drop the suffix.
+   */
   const source = ((typeof d.source) === 'string') ? d.source : null;
-  /** Diagnostic code (rule id or numeric error code); `null` when absent so downstream formatters can drop the suffix. */
+  /**
+   * Diagnostic code (rule id or numeric error code); `null` when absent so downstream formatters can drop the suffix.
+   */
   const code = (((typeof d.code) === 'string') || ((typeof d.code) === 'number'))
     ? d.code
     : null;
@@ -68,7 +82,9 @@ export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
 
 //region Lua snippets: shared Lua code executed via nvim_exec_lua
 
-/** Lua code that returns diagnostics for the current buffer. */
+/**
+ * Lua code that returns diagnostics for the current buffer.
+ */
 export const LUA_GET_CURRENT_BUF_DIAGNOSTICS = `
 local buf = vim.api.nvim_get_current_buf()
 local diags = vim.diagnostic.get(buf)
@@ -88,7 +104,9 @@ end
 return result
 `;
 
-/** Lua code that returns diagnostics across all buffers, grouped by buffer. */
+/**
+ * Lua code that returns diagnostics across all buffers, grouped by buffer.
+ */
 export const LUA_GET_ALL_DIAGNOSTICS = `
 local diags = vim.diagnostic.get()
 local by_buf = {}
@@ -116,7 +134,9 @@ end
 return result
 `;
 
-/** Lua code that returns metadata about the current buffer. */
+/**
+ * Lua code that returns metadata about the current buffer.
+ */
 export const LUA_GET_CURRENT_FILE = `
 local buf = vim.api.nvim_get_current_buf()
 return {

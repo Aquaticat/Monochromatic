@@ -88,7 +88,9 @@ export function doAotReplace(
     readonly nodes: readonly AST.TOMLTable[];
   },
 ): TomlEditState {
-  /** True when every node is a `[[foo]]` instance rather than a sibling standard table. */
+  /**
+   * True when every node is a `[[foo]]` instance rather than a sibling standard table.
+   */
   const allAot = nodes.every(function isAot(n,) {
     return n.kind
       === 'array';
@@ -110,10 +112,14 @@ export function doAotReplace(
     );
   }
 
-  /** Aliased so the iteration site reads as `elements` not `value`. */
+  /**
+   * Aliased so the iteration site reads as `elements` not `value`.
+   */
   const elements: readonly unknown[] = value;
 
-  /** Encoded dotted header so each `[[a.b]]` line shares one spelling. */
+  /**
+   * Encoded dotted header so each `[[a.b]]` line shares one spelling.
+   */
   const encodedHeader = path
     .map(function each(seg,) {
       if ((typeof seg) !== 'string') {
@@ -127,9 +133,13 @@ export function doAotReplace(
     },)
     .join('.',);
 
-  /** Destructure so the first existing AOT instance can anchor the new insertions. */
+  /**
+   * Destructure so the first existing AOT instance can anchor the new insertions.
+   */
   const [firstNode,] = nodes;
-  /** Anchor in front of the first existing instance, or EOF when there are none. */
+  /**
+   * Anchor in front of the first existing instance, or EOF when there are none.
+   */
   const anchor: AnchorKind = firstNode === undefined
     ? 'eof'
     : {
@@ -137,7 +147,9 @@ export function doAotReplace(
       node: firstNode,
     };
 
-  /** One insertion per AOT element so the splice engine can emit each `[[a.b]]` block in order. */
+  /**
+   * One insertion per AOT element so the splice engine can emit each `[[a.b]]` block in order.
+   */
   const newInsertions: Insertion[] = elements.map(function each(
     el,
     i,
@@ -150,7 +162,9 @@ export function doAotReplace(
           + `element at index ${i} is ${describeNonObject({ value: el, },)}.`,
       );
     }
-    /** Encoded body lines for this AOT element. */
+    /**
+     * Encoded body lines for this AOT element.
+     */
     const bodyText = Object
       .entries(el,)
       .map(function eachEntry([k, v,],) {

@@ -60,7 +60,9 @@ function jsonResponse({
  * ```
  */
 export async function handleStartTimer(id: string,): Promise<Response> {
-  /** Updated row; the not-found sentinel distinguishes a missing task from a successful start. */
+  /**
+   * Updated row; the not-found sentinel distinguishes a missing task from a successful start.
+   */
   const task = await startTaskTimer(id,);
   if (task === TASK_NOT_FOUND) {
     return jsonResponse({
@@ -85,7 +87,9 @@ export async function handleStartTimer(id: string,): Promise<Response> {
  * ```
  */
 export async function handleStopTimer(id: string,): Promise<Response> {
-  /** Updated row; the not-found sentinel distinguishes a missing task from a successful stop. */
+  /**
+   * Updated row; the not-found sentinel distinguishes a missing task from a successful stop.
+   */
   const task = await stopTaskTimer(id,);
   if (task === TASK_NOT_FOUND) {
     return jsonResponse({
@@ -110,7 +114,9 @@ export async function handleStopTimer(id: string,): Promise<Response> {
  * ```
  */
 export async function handleCompleteTask(id: string,): Promise<Response> {
-  /** Discriminated outcome distinguishing completion, missing row, and blocker errors. */
+  /**
+   * Discriminated outcome distinguishing completion, missing row, and blocker errors.
+   */
   const result = await completeTask(id,);
   if (result.notFound) {
     return jsonResponse({

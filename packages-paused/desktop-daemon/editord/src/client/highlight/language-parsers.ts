@@ -19,13 +19,19 @@ import { json5Parser, } from './json5-parser.ts';
 
 //region JavaScript and TypeScript dialect configuration
 
-/** TypeScript parser (JavaScript parser configured with TypeScript dialect). */
+/**
+ * TypeScript parser (JavaScript parser configured with TypeScript dialect).
+ */
 const tsParser = jsParser.configure({ dialect: 'ts', },);
 
-/** TypeScript + JSX parser. */
+/**
+ * TypeScript + JSX parser.
+ */
 const tsxParser = jsParser.configure({ dialect: 'ts jsx', },);
 
-/** JavaScript + JSX parser. */
+/**
+ * JavaScript + JSX parser.
+ */
 const jsxParser = jsParser.configure({ dialect: 'jsx', },);
 
 //endregion JavaScript and TypeScript dialect configuration

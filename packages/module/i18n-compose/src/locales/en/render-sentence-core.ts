@@ -46,7 +46,9 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
@@ -54,45 +56,65 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata extracted from the subject reference. */
+  /**
+   * Agreement metadata extracted from the subject reference.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Subject surface used in the leading position. */
+  /**
+   * Subject surface used in the leading position.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Verb entry used for finite surface and complement attachment. */
+  /**
+   * Verb entry used for finite surface and complement attachment.
+   */
   const entry = verbs[sentence.predicate
     .verb];
-  /** Finite verb surface for this subject + tense. */
+  /**
+   * Finite verb surface for this subject + tense.
+   */
   const finite = declarativeVerbSurface({
     entry,
     tense,
     agreement,
   },);
-  /** Future tense wraps the base in `will`. */
+  /**
+   * Future tense wraps the base in `will`.
+   */
   const verb = tense === 'future' ? `will ${finite}` : finite;
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
     form: complementFormForVerb({ entry, },),
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body before terminator. */
+  /**
+   * Sentence body before terminator.
+   */
   const body = joinTokens([
     subj,
     verb,
@@ -128,7 +150,9 @@ export function renderYesNo<S extends string, V extends string, N extends string
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
@@ -136,41 +160,57 @@ export function renderYesNo<S extends string, V extends string, N extends string
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Question verb parts chosen from the entry's auxiliary strategy. */
+  /**
+   * Question verb parts chosen from the entry's auxiliary strategy.
+   */
   const questionVerb = questionVerbParts({
     entry: verbs[sentence.predicate
       .verb],
     tense,
     agreement,
   },);
-  /** Subject surface placed after the auxiliary. */
+  /**
+   * Subject surface placed after the auxiliary.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive or bare complement. */
+  /**
+   * Rendered infinitive or bare complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
     form: questionVerb.complementForm,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body before sentence-case fixup. */
+  /**
+   * Sentence body before sentence-case fixup.
+   */
   const body = joinTokens([
     questionVerb.auxiliary,
     subj,
@@ -207,35 +247,49 @@ export function renderImperative<S extends string, V extends string, N extends s
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     verbs,
     renderNounPhrase,
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Imperative surface, defaulting to `base` when no dedicated form is supplied. */
+  /**
+   * Imperative surface, defaulting to `base` when no dedicated form is supplied.
+   */
   const entry = verbs[sentence.predicate
     .verb];
-  /** Verb surface used in the imperative head slot. */
+  /**
+   * Verb surface used in the imperative head slot.
+   */
   const verb = entry.imperative
     ?? entry
     .base;
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive or bare complement. */
+  /**
+   * Rendered infinitive or bare complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
     form: complementFormForVerb({ entry, },),
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body before sentence-case fixup. */
+  /**
+   * Sentence body before sentence-case fixup.
+   */
   const body = joinTokens([
     verb,
     object,

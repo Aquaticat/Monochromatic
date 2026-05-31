@@ -35,21 +35,37 @@ export type {
  */
 export type ViewerEntry = {
   readonly timestamp: string;
-  /** OpenRouter model ID for vendor color/icon resolution */
+  /**
+   * OpenRouter model ID for vendor color/icon resolution
+   */
   readonly model: string;
-  /** Human-readable model label for display and grouping */
+  /**
+   * Human-readable model label for display and grouping
+   */
   readonly label: string;
-  /** Mean of per-probe pass-1 scores, 0 for failed runs */
+  /**
+   * Mean of per-probe pass-1 scores, 0 for failed runs
+   */
   readonly overallScore: number;
-  /** Per-probe pass-1 scores keyed by probe name */
+  /**
+   * Per-probe pass-1 scores keyed by probe name
+   */
   readonly probeScores: Readonly<Record<string, number>>;
-  /** Per-probe pass-2 (fix) scores, absent for probes without a fix pass */
+  /**
+   * Per-probe pass-2 (fix) scores, absent for probes without a fix pass
+   */
   readonly pass2Scores?: Readonly<Record<string, number>>;
-  /** Whether this run was a whole-model failure (no probes executed) */
+  /**
+   * Whether this run was a whole-model failure (no probes executed)
+   */
   readonly failed: boolean;
-  /** Error message for failed runs */
+  /**
+   * Error message for failed runs
+   */
   readonly error?: string;
-  /** Runner configuration snapshot, present for enriched artifacts */
+  /**
+   * Runner configuration snapshot, present for enriched artifacts
+   */
   readonly config?: ConfigSnapshot;
 };
 
@@ -70,45 +86,85 @@ export type ViewerEntry = {
  * ```
  */
 export type ProbeDetail = {
-  /** Probe score, undefined for old artifacts without enrichment */
+  /**
+   * Probe score, undefined for old artifacts without enrichment
+   */
   readonly score?: number;
-  /** Fix-pass score */
+  /**
+   * Fix-pass score
+   */
   readonly pass2Score?: number;
-  /** Model reasoning/thinking trace from initial pass */
+  /**
+   * Model reasoning/thinking trace from initial pass
+   */
   readonly reasoning?: string;
-  /** Timing breakdown from initial pass */
+  /**
+   * Timing breakdown from initial pass
+   */
   readonly timing?: StreamTiming;
-  /** Token usage from initial pass */
+  /**
+   * Token usage from initial pass
+   */
   readonly usage?: StreamUsage;
-  /** Why generation stopped on initial pass */
+  /**
+   * Why generation stopped on initial pass
+   */
   readonly finishReason?: string;
-  /** Runner configuration snapshot */
+  /**
+   * Runner configuration snapshot
+   */
   readonly config?: ConfigSnapshot;
-  /** Diagnostic prompt sent for the fix pass */
+  /**
+   * Diagnostic prompt sent for the fix pass
+   */
   readonly fixPrompt?: string;
-  /** Model reasoning/thinking trace from fix pass */
+  /**
+   * Model reasoning/thinking trace from fix pass
+   */
   readonly fixReasoning?: string;
-  /** Timing breakdown from fix pass */
+  /**
+   * Timing breakdown from fix pass
+   */
   readonly fixTiming?: StreamTiming;
-  /** Token usage from fix pass */
+  /**
+   * Token usage from fix pass
+   */
   readonly fixUsage?: StreamUsage;
-  /** Why generation stopped on fix pass */
+  /**
+   * Why generation stopped on fix pass
+   */
   readonly fixFinishReason?: string;
-  /** Raw model response from initial pass response.txt */
+  /**
+   * Raw model response from initial pass response.txt
+   */
   readonly initialResponse?: string;
-  /** Raw model response from fix pass response.txt */
+  /**
+   * Raw model response from fix pass response.txt
+   */
   readonly fixResponse?: string;
-  /** TypeScript source from initial pass canary.ts */
+  /**
+   * TypeScript source from initial pass canary.ts
+   */
   readonly initialSource?: string;
-  /** TypeScript source from fix pass canary.ts */
+  /**
+   * TypeScript source from fix pass canary.ts
+   */
   readonly fixSource?: string;
-  /** Absolute path to initial pass artifact directory */
+  /**
+   * Absolute path to initial pass artifact directory
+   */
   readonly initialDir: string;
-  /** Absolute path to fix pass artifact directory */
+  /**
+   * Absolute path to fix pass artifact directory
+   */
   readonly fixDir?: string;
-  /** True when initial pass was partial/aborted */
+  /**
+   * True when initial pass was partial/aborted
+   */
   readonly partial?: boolean;
-  /** Error message from initial pass */
+  /**
+   * Error message from initial pass
+   */
   readonly error?: string;
 };
 
@@ -134,10 +190,16 @@ export function hasMultipleProbes(entry: ViewerEntry,): boolean {
     >= 2;
 }
 
-/** Result of reading all artifacts */
+/**
+ * Result of reading all artifacts
+ */
 export type ArtifactData = {
-  /** Run entries suitable for charts and tables */
+  /**
+   * Run entries suitable for charts and tables
+   */
   readonly entries: readonly ViewerEntry[];
-  /** Per-probe detail data keyed by `model::probe::timestamp` */
+  /**
+   * Per-probe detail data keyed by `model::probe::timestamp`
+   */
   readonly probeDetails: ReadonlyMap<string, ProbeDetail>;
 };

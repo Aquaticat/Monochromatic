@@ -87,15 +87,21 @@ export async function runHost({
 }: {
   readonly combination: Combination;
 },): Promise<string> {
-  /** Resolved binary name on PATH; the host backend assumes a pre-installed runtime. */
+  /**
+   * Resolved binary name on PATH; the host backend assumes a pre-installed runtime.
+   */
   const bin = RUNTIME_HOST_BIN[combination.runtime];
-  /** Argument array built once so the spawn call below stays declarative. */
+  /**
+   * Argument array built once so the spawn call below stays declarative.
+   */
   const args = runtimeArgs({
     runtime: combination.runtime,
     filePath: combination.file,
   },);
 
-  /** Spawn result kept in a binding so stderr can be forwarded before returning stdout. */
+  /**
+   * Spawn result kept in a binding so stderr can be forwarded before returning stdout.
+   */
   const result = await spawn(
     bin,
     [...args,],

@@ -10,7 +10,9 @@
 import type { Diagnostic, } from '../../../protocol.ts';
 import { createDiagnosticRange, } from './range.ts';
 
-/** Severity names that map to CSS highlight names. */
+/**
+ * Severity names that map to CSS highlight names.
+ */
 const SEVERITY_LEVELS = [
   'error',
   'warning',
@@ -39,7 +41,9 @@ export function applyDiagnosticHighlights({
   readonly editor: HTMLElement;
   readonly diagnostics: readonly Diagnostic[];
 },): void {
-  /** Group diagnostics by severity. */
+  /**
+   * Group diagnostics by severity.
+   */
   const bySeverity = new Map<string, globalThis.Range[]>();
   for (const level of SEVERITY_LEVELS) {
     bySeverity.set(
@@ -49,7 +53,9 @@ export function applyDiagnosticHighlights({
   }
 
   for (const diagnostic of diagnostics) {
-    /** DOM Range for the diagnostic; null when the position is out of bounds. */
+    /**
+     * DOM Range for the diagnostic; null when the position is out of bounds.
+     */
     const range = createDiagnosticRange({
       editor,
       diagnostic,
@@ -59,11 +65,17 @@ export function applyDiagnosticHighlights({
         ?.push(range,);
   }
 
-  /** Register or remove highlights for each severity level. */
+  /**
+   * Register or remove highlights for each severity level.
+   */
   for (const level of SEVERITY_LEVELS) {
-    /** CSS highlight registry key per severity level. */
+    /**
+     * CSS highlight registry key per severity level.
+     */
     const highlightName = `diag-${level}`;
-    /** Per-level range list; undefined was filled in the loop above. */
+    /**
+     * Per-level range list; undefined was filled in the loop above.
+     */
     const ranges = bySeverity.get(level,);
     if (ranges === undefined)
       continue;

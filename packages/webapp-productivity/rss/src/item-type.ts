@@ -38,5 +38,7 @@ export type AtomItem = DeepReadonly<{
   item: Atom.Entry<string>;
 }>;
 
-/** Normalized item with an extracted publication date for sorting. */
+/**
+ * Normalized item with an extracted publication date for sorting.
+ */
 export type ItemWDate = NormalizedItem & { readonly pubDateDate: Date; };

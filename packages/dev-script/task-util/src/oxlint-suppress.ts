@@ -35,7 +35,9 @@ import {
  * not dropped.
  */
 export type OxlintSuppression = {
-  /** Exact oxlint rule name (without plugin prefix), e.g. `prefer-readonly-parameter-types`. */
+  /**
+   * Exact oxlint rule name (without plugin prefix), e.g. `prefer-readonly-parameter-types`.
+   */
   readonly rule: string;
   /**
    * Substring that must appear in the diagnostic block (header, source snippet, or both).
@@ -45,9 +47,13 @@ export type OxlintSuppression = {
    * `'CssValue'` also matches `'CssValueHelper'`.
    */
   readonly snippetIncludes: string;
-  /** Optional substring that must appear in the block, typically a file path fragment to scope the match. */
+  /**
+   * Optional substring that must appear in the block, typically a file path fragment to scope the match.
+   */
   readonly pathIncludes?: string;
-  /** Why this diagnostic is a false positive the linter cannot be configured to ignore. */
+  /**
+   * Why this diagnostic is a false positive the linter cannot be configured to ignore.
+   */
   readonly reason: string;
 };
 
@@ -135,12 +141,16 @@ export function classifyHeader(line: string,): {
   readonly rule: string;
   readonly severity: 'warning' | 'error';
 } | typeof NOT_DIAGNOSTIC_HEADER {
-  /** Rule name when `line` is a diagnostic header; a missing name rejects non-headers before severity is read. */
+  /**
+   * Rule name when `line` is a diagnostic header; a missing name rejects non-headers before severity is read.
+   */
   const rule = extractRuleName(line,);
   if (rule === NO_RULE)
     return NOT_DIAGNOSTIC_HEADER;
 
-  /** ANSI-stripped, left-trimmed copy whose first char is the `!`/`x` severity marker. */
+  /**
+   * ANSI-stripped, left-trimmed copy whose first char is the `!`/`x` severity marker.
+   */
   const marker = stripAnsi(line,)
     .trimStart();
   return {
@@ -206,7 +216,9 @@ function blockIsSuppressed({
   readonly rule: string;
   readonly suppressions: readonly OxlintSuppression[];
 },): boolean {
-  /** ANSI-stripped block text, so snippet and path substrings match the visible source. */
+  /**
+   * ANSI-stripped block text, so snippet and path substrings match the visible source.
+   */
   const blockText = block
     .map(function strip(line,) {
       return stripAnsi(line,);
@@ -225,7 +237,9 @@ function blockIsSuppressed({
 
 //region Summary recomputation
 
-/** Literal prefix of oxlint's diagnostic summary line. */
+/**
+ * Literal prefix of oxlint's diagnostic summary line.
+ */
 const SUMMARY_PREFIX = 'Found ';
 
 /**
@@ -242,7 +256,9 @@ const SUMMARY_PREFIX = 'Found ';
  * ```
  */
 function isSummaryLine(line: string,): boolean {
-  /** ANSI-stripped, left-trimmed copy; the summary always opens with `Found ` then counts. */
+  /**
+   * ANSI-stripped, left-trimmed copy; the summary always opens with `Found ` then counts.
+   */
   const text = stripAnsi(line,)
     .trimStart();
   return text.startsWith(SUMMARY_PREFIX,)
@@ -332,15 +348,25 @@ function rewriteSummary({
 
 //region Output filtering
 
-/** Result of filtering oxlint output through the suppression registry. */
+/**
+ * Result of filtering oxlint output through the suppression registry.
+ */
 export type OxlintFilterResult = {
-  /** Output with suppressed diagnostic blocks removed and the summary recomputed. */
+  /**
+   * Output with suppressed diagnostic blocks removed and the summary recomputed.
+   */
   readonly filtered: string;
-  /** Count of suppressed warning blocks. */
+  /**
+   * Count of suppressed warning blocks.
+   */
   readonly suppressedWarnings: number;
-  /** Count of suppressed error blocks. */
+  /**
+   * Count of suppressed error blocks.
+   */
   readonly suppressedErrors: number;
-  /** Whether any non-suppressed diagnostic block remains (drives the wrapper's exit code). */
+  /**
+   * Whether any non-suppressed diagnostic block remains (drives the wrapper's exit code).
+   */
   readonly hasRemainingDiagnostics: boolean;
 };
 
@@ -382,26 +408,42 @@ export function filterOxlintOutput({
     };
   }
 
-  /** Source split per line so each block's header and context can be classified individually. */
+  /**
+   * Source split per line so each block's header and context can be classified individually.
+   */
   const lines = output.split('\n',);
-  /** Lines retained after filtering, before the summary is recomputed. */
+  /**
+   * Lines retained after filtering, before the summary is recomputed.
+   */
   const kept: string[] = [];
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: four counters are mutated across the block scan with side effects on `kept`. */
-  /** Suppressed warning-block tally, fed into the recomputed summary. */
+  /**
+   * Suppressed warning-block tally, fed into the recomputed summary.
+   */
   let suppressedWarnings = 0;
-  /** Suppressed error-block tally, fed into the recomputed summary. */
+  /**
+   * Suppressed error-block tally, fed into the recomputed summary.
+   */
   let suppressedErrors = 0;
-  /** Surviving warning-block tally, used to regenerate the summary count. */
+  /**
+   * Surviving warning-block tally, used to regenerate the summary count.
+   */
   let remainingWarnings = 0;
-  /** Surviving error-block tally, used to regenerate the summary count. */
+  /**
+   * Surviving error-block tally, used to regenerate the summary count.
+   */
   let remainingErrors = 0;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   // Index loop: `idx` jumps by whole blocks when one is dropped, so the stride is variable.
   for (let idx = 0; idx < lines.length;) {
-    /** Current line; only a header opens a diagnostic block. */
+    /**
+     * Current line; only a header opens a diagnostic block.
+     */
     const line = lines[idx] ?? '';
-    /** Header classification, or the sentinel for blank/context/summary lines that pass through unchanged. */
+    /**
+     * Header classification, or the sentinel for blank/context/summary lines that pass through unchanged.
+     */
     const header = classifyHeader(line,);
     if (header === NOT_DIAGNOSTIC_HEADER) {
       kept.push(line,);
@@ -409,12 +451,16 @@ export function filterOxlintOutput({
       continue;
     }
 
-    /** Exclusive end of this diagnostic block (first blank line or EOF). */
+    /**
+     * Exclusive end of this diagnostic block (first blank line or EOF).
+     */
     const end = blockEndIndex({
       lines,
       start: idx,
     },);
-    /** This block's lines, header through last context line. */
+    /**
+     * This block's lines, header through last context line.
+     */
     const block = lines.slice(
       idx,
       end,

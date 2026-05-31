@@ -19,13 +19,21 @@ export type BlockedTasksByBlocker = Readonly<
   Record<string, readonly BlockedTaskLink[]>
 >;
 
-/** Shape of the JSON blob embedded in the inbox page by the server. */
+/**
+ * Shape of the JSON blob embedded in the inbox page by the server.
+ */
 export type InboxPageData = {
-  /** AI-prioritized suggested tasks for the current context. */
+  /**
+   * AI-prioritized suggested tasks for the current context.
+   */
   readonly suggestedTasks: readonly Task[];
-  /** All inbox tasks. */
+  /**
+   * All inbox tasks.
+   */
   readonly allTasks: readonly Task[];
-  /** Map of blocker task ID to the tasks it blocks. */
+  /**
+   * Map of blocker task ID to the tasks it blocks.
+   */
   readonly blockedTasksByBlocker: BlockedTasksByBlocker;
 };
 
@@ -53,7 +61,9 @@ export function buildTaskList(
     readonly onToggleComplete: (taskId: string,) => Promise<void>;
   },
 ): HTMLUListElement {
-  /** Top-level list mutated in-place as the loop appends cards and child branches. */
+  /**
+   * Top-level list mutated in-place as the loop appends cards and child branches.
+   */
   const list = h({
     tag: 'ul',
     class: 'task-list',
@@ -68,7 +78,9 @@ export function buildTaskList(
       },
     },),);
 
-    /** Tasks blocked by `task`; empty when nothing depends on it. */
+    /**
+     * Tasks blocked by `task`; empty when nothing depends on it.
+     */
     const childLinks = blockedTasksByBlocker[task.id]
       ?? [];
     if (childLinks.length

@@ -15,7 +15,9 @@ import {
 } from './log.ts';
 import type { ResolvedTerminal, } from './resolve.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'windows',
   l: parentLogger,
@@ -36,16 +38,24 @@ const EXECUTABLE_NOT_ON_PATH: unique symbol = Symbol('terminal-exec/executable-n
  * @returns Absolute path if found, or {@link EXECUTABLE_NOT_ON_PATH}.
  */
 async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_PATH> {
-  /** Dynamic import keeps the Windows-only path cold on other platforms. */
+  /**
+   * Dynamic import keeps the Windows-only path cold on other platforms.
+   */
   const { access, } = await import('node:fs/promises');
-  /** Empty PATH fallback yields an empty dirs list, which returns null cleanly. */
+  /**
+   * Empty PATH fallback yields an empty dirs list, which returns null cleanly.
+   */
   const pathEnv = process.env
     .PATH
     ?? '';
-  /** Per-platform PATH delimiter; semicolon on Windows. */
+  /**
+   * Per-platform PATH delimiter; semicolon on Windows.
+   */
   const dirs = pathEnv.split(delimiter,);
   for (const dir of dirs) {
-    /** Absolute path candidate to access-check inside the loop. */
+    /**
+     * Absolute path candidate to access-check inside the loop.
+     */
     const candidate = resolve(
       dir,
       name,

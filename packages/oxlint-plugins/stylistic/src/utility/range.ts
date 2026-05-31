@@ -26,9 +26,13 @@ export function rangeOf(node: Span,): [
  * Parameters for {@link at}.
  */
 export type AtParams<T,> = {
-  /** Source array. */
+  /**
+   * Source array.
+   */
   readonly arr: readonly T[];
-  /** Numeric index. */
+  /**
+   * Numeric index.
+   */
   readonly index: number;
 };
 
@@ -50,7 +54,9 @@ export function at<T,>({
   arr,
   index,
 }: AtParams<T>,): T {
-  /** Lookup captured into a const so the undefined branch can throw before returning. */
+  /**
+   * Lookup captured into a const so the undefined branch can throw before returning.
+   */
   const value = arr[index];
   if (value === undefined) {
     throw new Error(

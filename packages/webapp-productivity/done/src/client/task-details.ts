@@ -17,20 +17,26 @@ import type { TaskDetail, } from './components/task-detail.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/task-detail.ts';
 
-/** Minimal task info shown in the blocker picker dropdown. */
+/**
+ * Minimal task info shown in the blocker picker dropdown.
+ */
 type BlockerCandidate = {
   id: string;
   title: string;
 };
 
-/** Summary of a task that blocks the current task (shown as a chip/badge). */
+/**
+ * Summary of a task that blocks the current task (shown as a chip/badge).
+ */
 type BlockerSummary = {
   id: string;
   title: string;
   status: string;
 };
 
-/** Shape of the JSON blob embedded in the task detail page by the server. */
+/**
+ * Shape of the JSON blob embedded in the task detail page by the server.
+ */
 type TaskDetailsPageData = {
   task: Task;
   blockerCandidates: BlockerCandidate[];
@@ -39,21 +45,31 @@ type TaskDetailsPageData = {
 
 injectCSS(globalStyles,);
 
-/** Deserialized page data containing task, blocker candidates, and summaries. */
+/**
+ * Deserialized page data containing task, blocker candidates, and summaries.
+ */
 const pageData = readPageData<TaskDetailsPageData>();
 
-/** Task record from the deserialized page data. */
+/**
+ * Task record from the deserialized page data.
+ */
 const { task, } = pageData;
 
-/** Raw DOM element for the `#app` container. */
+/**
+ * Raw DOM element for the `#app` container.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Validated `#app` container element. */
+/**
+ * Validated `#app` container element.
+ */
 const app = appElement;
 
-/** Task detail web component configured with server-provided data. */
+/**
+ * Task detail web component configured with server-provided data.
+ */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
 const detail = document.createElement('task-detail',) as TaskDetail;
 detail.configure({
@@ -67,7 +83,9 @@ detail.addEventListener(
     if (!(event instanceof CustomEvent))
       throw new TypeError("Expected CustomEvent for 'action' listener",);
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component */
-    /** Destructured action payload dispatched by the embedded `<task-detail>`. */
+    /**
+     * Destructured action payload dispatched by the embedded `<task-detail>`.
+     */
     const {
       action,
       title,
@@ -83,9 +101,13 @@ detail.addEventListener(
       globalThis.location
         .href = '/';
     else if (action === 'save') {
-      /** Snapshot of the autofill/manual metadata fields captured before the request body is built. */
+      /**
+       * Snapshot of the autofill/manual metadata fields captured before the request body is built.
+       */
       const metadata = detail.getMetadata();
-      /** Body forwarded to the PUT endpoint; merges metadata with the unchanged base task fields. */
+      /**
+       * Body forwarded to the PUT endpoint; merges metadata with the unchanged base task fields.
+       */
       const payload = {
         title,
         description: description.length

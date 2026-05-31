@@ -8,11 +8,17 @@
 
 import { resolveJumpTarget, } from './interpreter-jumps.ts';
 
-/** Result of executing a single Stak instruction */
+/**
+ * Result of executing a single Stak instruction
+ */
 export type ExecutionStep = {
-  /** When set, the instruction pointer jumps to this position instead of incrementing */
+  /**
+   * When set, the instruction pointer jumps to this position instead of incrementing
+   */
   readonly jumpTo?: number;
-  /** Text to append to the output buffer (from PRINT / PRINTC) */
+  /**
+   * Text to append to the output buffer (from PRINT / PRINTC)
+   */
   readonly output?: string;
 };
 
@@ -29,9 +35,13 @@ export type ExecutionStep = {
  * {@link runStak}'s call sites need no change.
  */
 export type WritableStack = readonly number[] & {
-  /** In-place top-of-stack push; same signature as the built-in `Array.push`. */
+  /**
+   * In-place top-of-stack push; same signature as the built-in `Array.push`.
+   */
   readonly push: number[]['push'];
-  /** In-place top-of-stack pop; same signature as the built-in `Array.pop`. */
+  /**
+   * In-place top-of-stack pop; same signature as the built-in `Array.pop`.
+   */
   readonly pop: number[]['pop'];
 };
 
@@ -43,7 +53,9 @@ export type WritableStack = readonly number[] & {
  * counts as deeply readonly; a real `Map` stays structurally assignable.
  */
 export type WritableEnv = ReadonlyMap<string, number> & {
-  /** In-place variable binding; same signature as the built-in `Map.set`. */
+  /**
+   * In-place variable binding; same signature as the built-in `Map.set`.
+   */
   readonly set: Map<string, number>['set'];
 };
 
@@ -60,14 +72,18 @@ function pop(stack: WritableStack,): number {
   if (stack.length
     === 0)
     throw new Error('stack underflow',);
-  /** Popped top-of-stack value; the explicit undefined check is for `noUncheckedIndexedAccess`. */
+  /**
+   * Popped top-of-stack value; the explicit undefined check is for `noUncheckedIndexedAccess`.
+   */
   const value = stack.pop();
   if (value === undefined)
     throw new Error('stack underflow (unreachable)',);
   return value;
 }
 
-/** Binary arithmetic operations that pop two values and push a result */
+/**
+ * Binary arithmetic operations that pop two values and push a result
+ */
 const BINARY_OPS: Record<string, (
   a: number,
   b: number,
@@ -119,15 +135,25 @@ const BINARY_OPS: Record<string, (
  * ```
  */
 export type ExecuteOpOptions = {
-  /** Opcode string (e.g. "ADD", "JUMP", or a numeric literal) */
+  /**
+   * Opcode string (e.g. "ADD", "JUMP", or a numeric literal)
+   */
   readonly op: string;
-  /** Optional argument (variable or label name) */
+  /**
+   * Optional argument (variable or label name)
+   */
   readonly arg?: string;
-  /** Operand stack mutated in place via push/pop; {@link WritableStack} keeps the param deeply readonly. */
+  /**
+   * Operand stack mutated in place via push/pop; {@link WritableStack} keeps the param deeply readonly.
+   */
   readonly stack: WritableStack;
-  /** Variable environment mutated in place via set; {@link WritableEnv} keeps the param deeply readonly. */
+  /**
+   * Variable environment mutated in place via set; {@link WritableEnv} keeps the param deeply readonly.
+   */
   readonly env: WritableEnv;
-  /** Label-to-position mapping from the indexing pass */
+  /**
+   * Label-to-position mapping from the indexing pass
+   */
   readonly labels: ReadonlyMap<string, number>;
 };
 
@@ -143,7 +169,9 @@ function isIntegerLiteral(op: string,): boolean {
   if (op.length
     === 0)
     return false;
-  /** Cursor: skip a leading `-` so the rest is checked for digits only. */
+  /**
+   * Cursor: skip a leading `-` so the rest is checked for digits only.
+   */
   const start = op.startsWith('-',) ? 1 : 0;
   if (start >= op
     .length)
@@ -193,12 +221,18 @@ export function executeOp({
     return {};
   }
 
-  /** Binary arithmetic implementation for `op`, or undefined when the op is non-arithmetic. */
+  /**
+   * Binary arithmetic implementation for `op`, or undefined when the op is non-arithmetic.
+   */
   const binaryOp = BINARY_OPS[op];
   if (binaryOp !== undefined) {
-    /** Right-hand operand; popped first because Stak pushes in left-to-right order. */
+    /**
+     * Right-hand operand; popped first because Stak pushes in left-to-right order.
+     */
     const b = pop(stack,);
-    /** Left-hand operand; popped after `b` to restore the original operand order. */
+    /**
+     * Left-hand operand; popped after `b` to restore the original operand order.
+     */
     const a = pop(stack,);
     stack.push(binaryOp(
       a,
@@ -206,16 +240,22 @@ export function executeOp({
     ),);
   }
   else if (op === 'DUP') {
-    /** Current top of stack; duplicated without consuming, hence `at(-1)` rather than `pop`. */
+    /**
+     * Current top of stack; duplicated without consuming, hence `at(-1)` rather than `pop`.
+     */
     const top = stack.at(-1,);
     if (top === undefined)
       throw new Error('stack underflow',);
     stack.push(top,);
   }
   else if (op === 'SWAP') {
-    /** Top operand before swap; re-pushed second so it lands below `a`. */
+    /**
+     * Top operand before swap; re-pushed second so it lands below `a`.
+     */
     const b = pop(stack,);
-    /** Second operand before swap; re-pushed last so it lands on top. */
+    /**
+     * Second operand before swap; re-pushed last so it lands on top.
+     */
     const a = pop(stack,);
     stack.push(b,);
     stack.push(a,);
@@ -237,7 +277,9 @@ export function executeOp({
   else if (op === 'LOAD') {
     if (arg === undefined)
       throw new Error('LOAD missing name',);
-    /** Value bound to `arg` in the environment; undefined means the variable was never STOREd. */
+    /**
+     * Value bound to `arg` in the environment; undefined means the variable was never STOREd.
+     */
     const val = env.get(arg,);
     if (val === undefined)
       throw new Error(`undefined: ${arg}`,);
@@ -254,7 +296,9 @@ export function executeOp({
     },);
   }
   else if (op === 'JUMPZ') {
-    /** Popped predicate; conditionally jumps when zero, otherwise falls through. */
+    /**
+     * Popped predicate; conditionally jumps when zero, otherwise falls through.
+     */
     const val = pop(stack,);
     if (val === 0) {
       return resolveJumpTarget({

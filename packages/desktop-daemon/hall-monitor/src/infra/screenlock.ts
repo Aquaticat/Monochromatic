@@ -14,7 +14,9 @@ import spawn from 'nano-spawn';
  * ```
  */
 export async function isScreenLocked(): Promise<boolean> {
-  /** Standard output from `gdbus`; parsed below for the boolean returned by the GetActive method. */
+  /**
+   * Standard output from `gdbus`; parsed below for the boolean returned by the GetActive method.
+   */
   const { stdout, } = await spawn(
     'gdbus',
     [

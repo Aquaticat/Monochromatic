@@ -118,13 +118,21 @@ export type ExcludeEntry = {
  * Represents one execution: one file, one OS, one user context, one runtime.
  */
 export type Combination = {
-  /** Absolute path to the test file on the host. */
+  /**
+   * Absolute path to the test file on the host.
+   */
   readonly file: string;
-  /** OS specification with protocol prefix (e.g. `container:ubuntu`). */
+  /**
+   * OS specification with protocol prefix (e.g. `container:ubuntu`).
+   */
   readonly os: string;
-  /** User context inside the container. */
+  /**
+   * User context inside the container.
+   */
   readonly user: UserContext;
-  /** JS runtime to execute the file with. */
+  /**
+   * JS runtime to execute the file with.
+   */
   readonly runtime: Runtime;
 };
 
@@ -141,8 +149,12 @@ export type PackageManager = 'apt' | 'dnf' | 'apk' | 'pacman';
  * Parsed OS specification, split into protocol and distro name.
  */
 export type ParsedOs = {
-  /** Backend protocol: `'container'` (podman), `'host'` (direct execution), or `'vm'` (mvm, not implemented). */
+  /**
+   * Backend protocol: `'container'` (podman), `'host'` (direct execution), or `'vm'` (mvm, not implemented).
+   */
   readonly protocol: 'container' | 'host' | 'vm';
-  /** Distro name used as the container image tag (e.g. `'ubuntu'`, `'fedora'`). Empty string for `host:`. */
+  /**
+   * Distro name used as the container image tag (e.g. `'ubuntu'`, `'fedora'`). Empty string for `host:`.
+   */
   readonly distro: string;
 };

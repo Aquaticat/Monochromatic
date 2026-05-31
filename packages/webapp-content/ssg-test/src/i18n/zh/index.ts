@@ -1,6 +1,8 @@
 import type { Translation, } from '../i18n-types.ts';
 
-/** Chinese translations. */
+/**
+ * Chinese translations.
+ */
 const zh = {
   siteName: 'Aquaticat',
   siteDescription: '用设计改变世界',

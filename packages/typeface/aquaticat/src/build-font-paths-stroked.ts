@@ -49,13 +49,21 @@ export function addStrokedPath({
   readonly cellX: number;
   readonly xShift: number;
 },): void {
-  /** Half the stroke width, the signed distance each side is shifted from the centreline. */
+  /**
+   * Half the stroke width, the signed distance each side is shifted from the centreline.
+   */
   const halfWidth = strokeWidth / 2;
-  /** Absolute coordinates of the stroke centreline, with H/V already expanded. */
+  /**
+   * Absolute coordinates of the stroke centreline, with H/V already expanded.
+   */
   const points = resolveAbsolutePoints(commands,);
-  /** First and last centreline points, extracted so the explicit closing vertex can be detected. */
+  /**
+   * First and last centreline points, extracted so the explicit closing vertex can be detected.
+   */
   const [first,] = points;
-  /** Trailing centreline point, paired with `first` to detect an explicit close. */
+  /**
+   * Trailing centreline point, paired with `first` to detect an explicit close.
+   */
   const last = points.at(-1,);
   /**
    * Centreline polygon used for offsetting.
@@ -80,12 +88,16 @@ export function addStrokedPath({
     )
     : points;
 
-  /** Outer contour: centreline expanded outward by `halfWidth`. */
+  /**
+   * Outer contour: centreline expanded outward by `halfWidth`.
+   */
   const outerVerts = offsetPolygon({
     vertices,
     offset: halfWidth,
   },);
-  /** Inner contour: centreline shrunk inward by `halfWidth`, traced in reverse to form a hole. */
+  /**
+   * Inner contour: centreline shrunk inward by `halfWidth`, traced in reverse to form a hole.
+   */
   const innerVerts = offsetPolygon({
     vertices,
     offset: -halfWidth,
@@ -104,7 +116,9 @@ export function addStrokedPath({
       vert,
       vertIndex,
     ) {
-      /** Glyph-space X: vertex shifted from SVG coords into the glyph's local origin. */
+      /**
+       * Glyph-space X: vertex shifted from SVG coords into the glyph's local origin.
+       */
       const fx = (vert[0]
         - cellX) + xShift;
       /**

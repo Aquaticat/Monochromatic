@@ -27,41 +27,71 @@ const NO_LIVE_SCOPE: unique symbol = Symbol('model-selection/no-live-scope',);
 
 //region Types
 
-/** Model registry surface needed for effective scope resolution. */
+/**
+ * Model registry surface needed for effective scope resolution.
+ */
 export type ModelScopeRegistry<TModel extends ReadonlyModel = ReadonlyModel,> = {
-  /** Return models with configured auth. */
+  /**
+   * Return models with configured auth.
+   */
   getAvailable(): readonly TModel[];
 };
 
-/** Narrow context surface needed for effective scope resolution. */
+/**
+ * Narrow context surface needed for effective scope resolution.
+ */
 export type ResolveEffectiveScopeContext<TModel extends ReadonlyModel = ReadonlyModel,> = {
-  /** Current working directory. */
+  /**
+   * Current working directory.
+   */
   readonly cwd: string;
-  /** Registry exposing available models. */
+  /**
+   * Registry exposing available models.
+   */
   readonly modelRegistry: ModelScopeRegistry<TModel>;
-  /** Optional live-scope getter from pi runtime. */
+  /**
+   * Optional live-scope getter from pi runtime.
+   */
   readonly getScopedModels?: () => unknown;
-  /** Optional live-scope property from pi runtime. */
+  /**
+   * Optional live-scope property from pi runtime.
+   */
   readonly scopedModels?: unknown;
 };
 
-/** Options for resolving effective model scope. */
+/**
+ * Options for resolving effective model scope.
+ */
 export type ResolveEffectiveScopeOptions<TModel extends ReadonlyModel = ReadonlyModel,> = {
-  /** Narrow pi extension context. */
+  /**
+   * Narrow pi extension context.
+   */
   readonly ctx: ResolveEffectiveScopeContext<TModel>;
-  /** Process argv override for tests. */
+  /**
+   * Process argv override for tests.
+   */
   readonly argv?: readonly string[];
-  /** Home directory override for tests. */
+  /**
+   * Home directory override for tests.
+   */
   readonly home?: string;
-  /** Error prefix used by settings validation. */
+  /**
+   * Error prefix used by settings validation.
+   */
   readonly errorPrefix?: string;
 };
 
-/** Raw live scope item shapes accepted by the detector. */
+/**
+ * Raw live scope item shapes accepted by the detector.
+ */
 type RawLiveScopeItem<TModel extends ReadonlyModel = ReadonlyModel,> = TModel | {
-  /** Pi model object. */
+  /**
+   * Pi model object.
+   */
   readonly model: TModel;
-  /** Optional thinking level carried by pi. */
+  /**
+   * Optional thinking level carried by pi.
+   */
   readonly thinkingLevel?: ScopedThinkingLevel;
 };
 
@@ -99,7 +129,9 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
     errorPrefix,
   }: ResolveEffectiveScopeOptions<TModel>,
 ): EffectiveModelScope<TModel> {
-  /** Live model scope exposed by current or future pi APIs. */
+  /**
+   * Live model scope exposed by current or future pi APIs.
+   */
   const liveScope = readLiveScope<TModel>(ctx,);
   if (liveScope !== NO_LIVE_SCOPE) {
     return {
@@ -108,7 +140,9 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
     };
   }
 
-  /** Patterns from pi's startup `--models` flag. */
+  /**
+   * Patterns from pi's startup `--models` flag.
+   */
   const argvPatterns = parseArgvModelPatterns({
     argv: argv
       ?? process
@@ -127,7 +161,9 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
     };
   }
 
-  /** Patterns from merged pi settings. */
+  /**
+   * Patterns from merged pi settings.
+   */
   const settingsScope = loadSettingsScopePatterns({
     cwd: ctx.cwd,
     ...(home === undefined ? {} : { home, }),
@@ -178,7 +214,9 @@ function readLiveScope<TModel extends ReadonlyModel,>(
     scopedModels,
   }: Pick<ResolveEffectiveScopeContext<TModel>, 'getScopedModels' | 'scopedModels'>,
 ): ScopedModel<TModel>[] | typeof NO_LIVE_SCOPE {
-  /** Raw live scope value from method or property. */
+  /**
+   * Raw live scope value from method or property.
+   */
   const rawScope = getScopedModels === undefined
     ? scopedModels
     : getScopedModels();

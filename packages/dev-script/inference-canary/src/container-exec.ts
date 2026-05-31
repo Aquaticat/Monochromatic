@@ -15,15 +15,25 @@ import {
   tagged,
 } from './log.ts';
 
-/** Result of running generated code in a container */
+/**
+ * Result of running generated code in a container
+ */
 export type ContainerResult = {
-  /** Combined stdout output */
+  /**
+   * Combined stdout output
+   */
   readonly stdout: string;
-  /** Combined stderr output */
+  /**
+   * Combined stderr output
+   */
   readonly stderr: string;
-  /** Process exit code (0 = success) */
+  /**
+   * Process exit code (0 = success)
+   */
   readonly exitCode: number;
-  /** Whether the container was killed due to timeout */
+  /**
+   * Whether the container was killed due to timeout
+   */
   readonly timedOut: boolean;
 };
 
@@ -39,9 +49,13 @@ export type ContainerResult = {
  * ```
  */
 type ExecContainerOptions = {
-  /** Fully-formed arguments for the container runtime binary */
+  /**
+   * Fully-formed arguments for the container runtime binary
+   */
   readonly containerArgs: readonly string[];
-  /** Abort signal; kills the container process immediately on abort, or absent to disable */
+  /**
+   * Abort signal; kills the container process immediately on abort, or absent to disable
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -66,9 +80,13 @@ export async function execContainer({
   containerArgs,
   signal,
 }: ExecContainerOptions,): Promise<ContainerResult> {
-  /** Maximum stderr characters to include in error log */
+  /**
+   * Maximum stderr characters to include in error log
+   */
   const STDERR_PREVIEW_LENGTH = 200;
-  /** Total host-side timeout: container limit plus a buffer for startup/teardown */
+  /**
+   * Total host-side timeout: container limit plus a buffer for startup/teardown
+   */
   const timeoutMs = (CONTAINER_TIMEOUT_SECONDS + HOST_TIMEOUT_BUFFER_SECONDS)
     * MS_PER_SECOND;
   /**
@@ -86,7 +104,9 @@ export async function execContainer({
   if ((result.exitCode
     !== 0) || result
     .killed) {
-    /** Container-specific logger for execution failure messages. */
+    /**
+     * Container-specific logger for execution failure messages.
+     */
     const rl = tagged({
       tag: 'container',
       l,

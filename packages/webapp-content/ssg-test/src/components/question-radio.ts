@@ -45,13 +45,19 @@ import {
  * One answer choice in a {@link QuestionRadio}.
  */
 export type QuestionOption = {
-  /** Visible text on the radio's label; full MDX/JSX supported. */
+  /**
+   * Visible text on the radio's label; full MDX/JSX supported.
+   */
   readonly label: SafeHtml | string;
 
-  /** Per-option explanation shown when this option is chosen; full MDX/JSX supported. */
+  /**
+   * Per-option explanation shown when this option is chosen; full MDX/JSX supported.
+   */
   readonly explanation: SafeHtml | string;
 
-  /** Marks the correct answer; exactly one option per question must set this. */
+  /**
+   * Marks the correct answer; exactly one option per question must set this.
+   */
   readonly correct?: boolean;
 };
 
@@ -59,10 +65,14 @@ export type QuestionOption = {
  * Props for {@link QuestionRadio}.
  */
 type QuestionProps = {
-  /** Scenario prose shown above the options; full MDX/JSX supported. */
+  /**
+   * Scenario prose shown above the options; full MDX/JSX supported.
+   */
   readonly scenario: SafeHtml | string;
 
-  /** Answer choices; must contain at least two entries with exactly one marked correct. */
+  /**
+   * Answer choices; must contain at least two entries with exactly one marked correct.
+   */
   readonly options: readonly QuestionOption[];
 };
 
@@ -70,16 +80,24 @@ type QuestionProps = {
 
 //region ID derivation
 
-/** FNV-1a 32-bit hash offset basis. */
+/**
+ * FNV-1a 32-bit hash offset basis.
+ */
 const FNV_OFFSET_32 = 0x81_1C_9D_C5;
 
-/** FNV-1a 32-bit hash prime. */
+/**
+ * FNV-1a 32-bit hash prime.
+ */
 const FNV_PRIME_32 = 0x01_00_01_93;
 
-/** Hex digit count for a 32-bit hash (padded representation). */
+/**
+ * Hex digit count for a 32-bit hash (padded representation).
+ */
 const HEX_DIGITS_32 = 8;
 
-/** Hex radix for Number.prototype.toString. */
+/**
+ * Hex radix for Number.prototype.toString.
+ */
 const HEX_RADIX = 16;
 
 /**
@@ -95,7 +113,9 @@ const HEX_RADIX = 16;
  * ```
  */
 function fnv1a32(input: string,): string {
-  /** Running hash accumulator; intermediate state must be mutable per the FNV-1a algorithm. */
+  /**
+   * Running hash accumulator; intermediate state must be mutable per the FNV-1a algorithm.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- FNV-1a algorithm requires in-place XOR/multiply across the loop
   let hash = FNV_OFFSET_32;
   for (let i = 0; i < input
@@ -137,7 +157,9 @@ function toHtmlString(value: SafeHtml | string,): string {
  * @returns 8-digit hex ID suitable for `name="q-{id}"` input grouping
  */
 function deriveQuestionId(props: QuestionProps,): string {
-  /** Hash input fragments joined with NUL to keep field boundaries unambiguous. */
+  /**
+   * Hash input fragments joined with NUL to keep field boundaries unambiguous.
+   */
   const parts = [toHtmlString(props.scenario,),];
   for (const opt of props.options) {
     parts.push(toHtmlString(opt.label,),);
@@ -151,10 +173,14 @@ function deriveQuestionId(props: QuestionProps,): string {
 
 //region Validation
 
-/** Minimum option count for a meaningful multiple-choice question. */
+/**
+ * Minimum option count for a meaningful multiple-choice question.
+ */
 const MIN_OPTIONS = 2;
 
-/** Required count of options with `correct: true`. */
+/**
+ * Required count of options with `correct: true`.
+ */
 const REQUIRED_CORRECT_COUNT = 1;
 
 /**
@@ -173,7 +199,9 @@ function validate(props: QuestionProps,): void {
         .length}.`,
     );
   }
-  /** Number of options marked correct; must equal REQUIRED_CORRECT_COUNT for radio questions. */
+  /**
+   * Number of options marked correct; must equal REQUIRED_CORRECT_COUNT for radio questions.
+   */
   const correctCount = props
     .options
     .filter(function isCorrect(o,) {
@@ -214,9 +242,13 @@ function renderOption(
     readonly opt: QuestionOption;
   },
 ): SafeHtml {
-  /** Unique input identifier; linked from the sibling label's htmlFor. */
+  /**
+   * Unique input identifier; linked from the sibling label's htmlFor.
+   */
   const inputId = `q-${qId}-${idx}`;
-  /** Built incrementally so the `data-correct` attribute is set only when applicable. */
+  /**
+   * Built incrementally so the `data-correct` attribute is set only when applicable.
+   */
   const inputProps: Record<string, unknown> = {
     type: 'radio',
     name: `q-${qId}`,
@@ -275,7 +307,9 @@ function renderOption(
  */
 export function QuestionRadio(props: QuestionProps,): SafeHtml {
   validate(props,);
-  /** Derived stable id grouping all option inputs of this question. */
+  /**
+   * Derived stable id grouping all option inputs of this question.
+   */
   const qId = deriveQuestionId(props,);
   return jsx(
     'question-radio',
@@ -314,7 +348,9 @@ export function QuestionRadio(props: QuestionProps,): SafeHtml {
 
 //region CSS
 
-/** Mix ratio for deriving ok/err colors from existing link tokens (percentage toward fg). */
+/**
+ * Mix ratio for deriving ok/err colors from existing link tokens (percentage toward fg).
+ */
 const COLOR_MIX_RATIO = '65%';
 
 /**
@@ -325,10 +361,14 @@ const COLOR_MIX_RATIO = '65%';
  */
 const EMPHASIS_WEIGHT = 600;
 
-/** Slight font-size reduction for the per-option explanation text, in em. */
+/**
+ * Slight font-size reduction for the per-option explanation text, in em.
+ */
 const EXPLANATION_FONT_SIZE_EM = 0.95;
 
-/** Percent multiplier for the flex-basis that forces the explanation onto its own row. */
+/**
+ * Percent multiplier for the flex-basis that forces the explanation onto its own row.
+ */
 const FULL_ROW = 100;
 
 /**

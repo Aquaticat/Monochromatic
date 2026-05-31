@@ -9,13 +9,19 @@
  * payload is opaque to the client; the server is the only consumer.
  */
 
-/** One page of feed results contains this many messages. */
+/**
+ * One page of feed results contains this many messages.
+ */
 export const FEED_PAGE_SIZE = 20;
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
-/** Base64 group size; padding aligns the input to a multiple of this. */
+/**
+ * Base64 group size; padding aligns the input to a multiple of this.
+ */
 const BASE64_GROUP_SIZE = 4;
 
 /**
@@ -40,7 +46,9 @@ export type Cursor = {
  * ```
  */
 export function encodeCursor(cursor: Cursor,): string {
-  /** ASCII-only pre-encoded form fed to the base64 helper. */
+  /**
+   * ASCII-only pre-encoded form fed to the base64 helper.
+   */
   const raw = `${String(cursor.createdAt,)}:${String(cursor.id,)}`;
   return base64UrlEncode(raw,);
 }
@@ -61,13 +69,19 @@ export function encodeCursor(cursor: Cursor,): string {
  * ```
  */
 export function decodeCursor(token: string,): Cursor {
-  /** Decoded `<int>:<int>` pair fed to the colon-split below. */
+  /**
+   * Decoded `<int>:<int>` pair fed to the colon-split below.
+   */
   const raw = base64UrlDecode(token,);
-  /** Colon offset separating the two integers; `-1` signals malformed input. */
+  /**
+   * Colon offset separating the two integers; `-1` signals malformed input.
+   */
   const colon = raw.indexOf(':',);
   if (colon === (-1))
     throw new Error(`malformed cursor: ${token}`,);
-  /** Created-at half parsed as an integer. */
+  /**
+   * Created-at half parsed as an integer.
+   */
   const createdAt = Number.parseInt(
     raw.slice(
       0,
@@ -75,7 +89,9 @@ export function decodeCursor(token: string,): Cursor {
     ),
     DECIMAL_RADIX,
   );
-  /** Id half parsed as an integer. */
+  /**
+   * Id half parsed as an integer.
+   */
   const id = Number.parseInt(
     raw.slice(colon + 1,),
     DECIMAL_RADIX,
@@ -99,9 +115,13 @@ export function decodeCursor(token: string,): Cursor {
 function base64UrlEncode(value: string,): string {
   // btoa requires a Latin-1 string; we encode UTF-8 bytes first to
   // support non-ASCII safely, even though cursors are ASCII today.
-  /** UTF-8 byte view of `value`; iterated below into a Latin-1 string for `btoa`. */
+  /**
+   * UTF-8 byte view of `value`; iterated below into a Latin-1 string for `btoa`.
+   */
   const bytes = new TextEncoder().encode(value,);
-  /** Latin-1 representation of the UTF-8 bytes; safe input for `btoa`. */
+  /**
+   * Latin-1 representation of the UTF-8 bytes; safe input for `btoa`.
+   */
   const binary = Array
     .from(
       bytes,
@@ -136,7 +156,9 @@ function base64UrlEncode(value: string,): string {
  * @returns decoded UTF-8 string
  */
 function base64UrlDecode(value: string,): string {
-  /** URL-safe input with `-_` mapped back to `+/`; padded below to a 4-group boundary. */
+  /**
+   * URL-safe input with `-_` mapped back to `+/`; padded below to a 4-group boundary.
+   */
   const unpadded = value
     .replaceAll(
       '-',
@@ -146,16 +168,24 @@ function base64UrlDecode(value: string,): string {
       '_',
       '/',
     );
-  /** Number of `=` characters needed to reach the next 4-group boundary. */
+  /**
+   * Number of `=` characters needed to reach the next 4-group boundary.
+   */
   const padLength = (BASE64_GROUP_SIZE - (unpadded.length
     % BASE64_GROUP_SIZE))
     % BASE64_GROUP_SIZE;
-  /** Base64 input ready for `atob`; trailing `=` restored to a 4-group boundary. */
+  /**
+   * Base64 input ready for `atob`; trailing `=` restored to a 4-group boundary.
+   */
   const padded = unpadded + '='
     .repeat(padLength,);
-  /** Latin-1 string of decoded bytes; rewrapped into a Uint8Array below for `TextDecoder`. */
+  /**
+   * Latin-1 string of decoded bytes; rewrapped into a Uint8Array below for `TextDecoder`.
+   */
   const binary = globalThis.atob(padded,);
-  /** Byte buffer copied from `binary`; decoded back to UTF-8 below. */
+  /**
+   * Byte buffer copied from `binary`; decoded back to UTF-8 below.
+   */
   const bytes = new Uint8Array(binary.length,);
   for (let index = 0; index < binary
     .length; index += 1)

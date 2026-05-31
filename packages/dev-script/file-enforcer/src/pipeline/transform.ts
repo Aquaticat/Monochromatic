@@ -50,9 +50,13 @@ export function getJsonProperty(
     readonly content: string;
   },
 ): string {
-  /** Parsed JSON value */
+  /**
+   * Parsed JSON value
+   */
   const parsed: unknown = JSON.parse(content,);
-  /** Extracted value at the array-path; dot-prop v10 accepts arrays natively */
+  /**
+   * Extracted value at the array-path; dot-prop v10 accepts arrays natively
+   */
   const extracted: unknown = dotPropGet(
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown, dot-prop requires Record
     parsed as Record<string, unknown>,

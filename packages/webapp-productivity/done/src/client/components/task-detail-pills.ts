@@ -31,7 +31,9 @@ export function buildPillElements({
   readonly autofillLoading: boolean;
   readonly autofilled: ReadonlySet<string>;
 },): HTMLElement[] {
-  /** Ordered pill descriptors; field names align with the autofilled set lookup below. */
+  /**
+   * Ordered pill descriptors; field names align with the autofilled set lookup below.
+   */
   const pillData = [
     {
       field: 'tags',
@@ -92,7 +94,9 @@ export function buildPillElements({
   ];
 
   return pillData.map(function toPillElement(pill,) {
-    /** Built once so the conditional data attributes below can be appended in place. */
+    /**
+     * Built once so the conditional data attributes below can be appended in place.
+     */
     const element = h({
       tag: 'span',
       class: 'pill',

@@ -30,7 +30,9 @@ import { stripNonProseRegions, } from './uncertainty-strip.ts';
  * Result of scanning text for uncertainty markers.
  */
 type UncertaintyMatch = {
-  /** First matched uncertain phrase. */
+  /**
+   * First matched uncertain phrase.
+   */
   phrase: string;
 };
 
@@ -38,7 +40,9 @@ type UncertaintyMatch = {
  * Result of scanning text for trailing questions directed at the user.
  */
 type QuestionMatch = {
-  /** Sentence ending with `?` that was detected. */
+  /**
+   * Sentence ending with `?` that was detected.
+   */
   sentence: string;
 };
 
@@ -83,7 +87,9 @@ function findUncertainty(prose: string,): UncertaintyMatch | typeof NO_MATCH {
   if (phraseHit !== PHRASE_NOT_FOUND)
     return { phrase: phraseHit.phrase, };
   if (containsErThanMost(prose,)) {
-    /** Recovered comparative fragment for the diagnostic ("bigger than most" etc.). */
+    /**
+     * Recovered comparative fragment for the diagnostic ("bigger than most" etc.).
+     */
     const fragment = findErThanMost(prose,);
     return { phrase: fragment === ER_NOT_FOUND ? 'er than most' : fragment, };
   }
@@ -121,14 +127,20 @@ function findUncertainty(prose: string,): UncertaintyMatch | typeof NO_MATCH {
  * ```
  */
 function findCategoricalDismissal(prose: string,): UncertaintyMatch | typeof NO_MATCH {
-  /** Prose split per-line so each dismissal check is scoped to its own citation context. */
+  /**
+   * Prose split per-line so each dismissal check is scoped to its own citation context.
+   */
   const lines = prose.split('\n',);
   for (const line of lines) {
     if (lineHasCitation(line,))
       continue;
-    /** Normalised line that folds curly apostrophes to ASCII so phrase entries match either shape. */
+    /**
+     * Normalised line that folds curly apostrophes to ASCII so phrase entries match either shape.
+     */
     const normalised = normaliseApostrophes(line,);
-    /** First dismissal-phrase hit, or `PHRASE_NOT_FOUND`; populates the returned match. */
+    /**
+     * First dismissal-phrase hit, or `PHRASE_NOT_FOUND`; populates the returned match.
+     */
     const hit = containsAnyOfWordBounded({
       haystack: normalised,
       phrases: DISMISSAL_PHRASES,
@@ -143,13 +155,19 @@ function findCategoricalDismissal(prose: string,): UncertaintyMatch | typeof NO_
 
 //region Trailing-question detection
 
-/** Maximum characters from the end of the message to scan for trailing questions. */
+/**
+ * Maximum characters from the end of the message to scan for trailing questions.
+ */
 const TRAILING_QUESTION_SCAN_LENGTH = 500;
 
-/** Sentence-terminator characters used to find the start of the trailing sentence. */
+/**
+ * Sentence-terminator characters used to find the start of the trailing sentence.
+ */
 const SENTENCE_TERMINATORS = '.!?';
 
-/** Lowercase prefixes that mark a question as rhetorical/conditional and thus benign. */
+/**
+ * Lowercase prefixes that mark a question as rhetorical/conditional and thus benign.
+ */
 const RHETORICAL_PREFIXES: readonly string[] = [
   'what if',
   'why does',
@@ -190,7 +208,9 @@ function startsWithWordBounded(
     === prefix
     .length)
     return true;
-  /** Character immediately after the prefix; must not be alphanumeric to mark a boundary. */
+  /**
+   * Character immediately after the prefix; must not be alphanumeric to mark a boundary.
+   */
   const next = s.charAt(prefix.length,);
   return ((next < 'a') || (next > 'z'))
     && ((next < 'A') || (next > 'Z'))
@@ -227,7 +247,9 @@ function findLastSentenceStart(text: string,): number {
    * ```
    */
   function skipWs(idx: number,): number {
-    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    /**
+     * Cursor advanced over the whitespace run; returned as the helper-shape binding.
+     */
     let at = idx;
     while ((at < text
       .length) && isWhitespace(text.charAt(at,),)) {
@@ -252,7 +274,9 @@ function findLastSentenceStart(text: string,): number {
     // Walk backward from `at`; the first terminator-then-whitespace boundary
     // marks the start of the trailing sentence (after its leading whitespace).
     for (let cursor = at; cursor > 0; cursor -= 1) {
-      /** Character just before the cursor; checked for sentence-terminator membership. */
+      /**
+       * Character just before the cursor; checked for sentence-terminator membership.
+       */
       const prev = text.charAt(cursor - 1,);
       if (SENTENCE_TERMINATORS.includes(prev,)
         && isWhitespace(text.charAt(cursor,),))
@@ -286,24 +310,36 @@ function findLastSentenceStart(text: string,): number {
  * ```
  */
 function findTrailingQuestion(prose: string,): QuestionMatch | typeof NO_MATCH {
-  /** Last `TRAILING_QUESTION_SCAN_LENGTH` chars; trailing questions live at the end of a turn. */
+  /**
+   * Last `TRAILING_QUESTION_SCAN_LENGTH` chars; trailing questions live at the end of a turn.
+   */
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
-  /** Tail trimmed of trailing whitespace; the trailing `?` lives at the very end after this. */
+  /**
+   * Tail trimmed of trailing whitespace; the trailing `?` lives at the very end after this.
+   */
   const trimmed = tail.trimEnd();
   if (!trimmed.endsWith('?',))
     return NO_MATCH;
-  /** Inclusive start index of the trailing sentence within `trimmed`. */
+  /**
+   * Inclusive start index of the trailing sentence within `trimmed`.
+   */
   const sentenceStart = findLastSentenceStart(trimmed,);
-  /** Trailing sentence text including the terminating `?`. */
+  /**
+   * Trailing sentence text including the terminating `?`.
+   */
   const sentence = trimmed.slice(sentenceStart,);
   if (sentence.length
     === 0)
     return NO_MATCH;
-  /** Sentence-leading character; must be an uppercase ASCII letter to qualify. */
+  /**
+   * Sentence-leading character; must be an uppercase ASCII letter to qualify.
+   */
   const firstChar = sentence.charAt(0,);
   if ((firstChar < 'A') || (firstChar > 'Z'))
     return NO_MATCH;
-  /** Lower-cased sentence used for rhetorical-prefix matching. */
+  /**
+   * Lower-cased sentence used for rhetorical-prefix matching.
+   */
   const lower = sentence.toLowerCase();
   for (const prefix of RHETORICAL_PREFIXES) {
     if (startsWithWordBounded({

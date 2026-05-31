@@ -16,13 +16,19 @@ import {
   minTouchTarget,
 } from './mixins.ts';
 
-/** Button gap and padding in rem (1/2). */
+/**
+ * Button gap and padding in rem (1/2).
+ */
 const BTN_PADDING = 1 / 2;
 
-/** Sticky bar height in rem. */
+/**
+ * Sticky bar height in rem.
+ */
 const BAR_HEIGHT = 3;
 
-/** Z-index for sticky navigation bars. */
+/**
+ * Z-index for sticky navigation bars.
+ */
 const Z_INDEX_STICKY = 10;
 
 /**

@@ -18,17 +18,29 @@ import type {
  * after `did` instead of using the base.
  */
 export type EnglishVerbEntry = {
-  /** Base form, e.g. `save`. Used by imperatives, infinitives, and post-auxiliary positions. */
+  /**
+   * Base form, e.g. `save`. Used by imperatives, infinitives, and post-auxiliary positions.
+   */
   readonly base: string;
-  /** Third-person singular present finite form, e.g. `saves`. Falls back to `base + s`. */
+  /**
+   * Third-person singular present finite form, e.g. `saves`. Falls back to `base + s`.
+   */
   readonly present3s?: string;
-  /** Simple past form, e.g. `saved`. Falls back to `base + ed`. */
+  /**
+   * Simple past form, e.g. `saved`. Falls back to `base + ed`.
+   */
   readonly past?: string;
-  /** Past participle, e.g. `saved`. Falls back to `past` if unset. */
+  /**
+   * Past participle, e.g. `saved`. Falls back to `past` if unset.
+   */
   readonly pastParticiple?: string;
-  /** Gerund form, e.g. `saving`. Falls back to `base + ing`. */
+  /**
+   * Gerund form, e.g. `saving`. Falls back to `base + ing`.
+   */
   readonly gerund?: string;
-  /** Imperative surface; defaults to `base`. */
+  /**
+   * Imperative surface; defaults to `base`.
+   */
   readonly imperative?: string;
   /**
    * Strategy for question and complement construction.
@@ -55,15 +67,25 @@ export type DefineEnglishLocaleInput<
   Verb extends string,
   Noun extends string,
 > = {
-  /** Static UI label table keyed by the consumer's `Label` union. */
+  /**
+   * Static UI label table keyed by the consumer's `Label` union.
+   */
   readonly labels: Readonly<Record<Label, string>>;
-  /** Subject vocabulary keyed by the consumer's `Subject` union. */
+  /**
+   * Subject vocabulary keyed by the consumer's `Subject` union.
+   */
   readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
-  /** Noun vocabulary keyed by the consumer's `Noun` union. */
+  /**
+   * Noun vocabulary keyed by the consumer's `Noun` union.
+   */
   readonly nouns: Readonly<Record<Noun, NounEntry>>;
-  /** Verb vocabulary keyed by the consumer's `Verb` union. */
+  /**
+   * Verb vocabulary keyed by the consumer's `Verb` union.
+   */
   readonly verbs: Readonly<Record<Verb, EnglishVerbEntry>>;
 };
 
-/** Tokens never recased by sentence-case fixup; English `I` is the canonical case. */
+/**
+ * Tokens never recased by sentence-case fixup; English `I` is the canonical case.
+ */
 export const EN_CASE_INVARIANTS: ReadonlySet<string> = new Set(['I',],);

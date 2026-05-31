@@ -90,7 +90,9 @@ export function parseTomlEdit(
     tomlVersion,
   }: TomlEditOptions,
 ): TomlEditState {
-  /** Single parse so the AST is captured once and shared across the state's lifetime. */
+  /**
+   * Single parse so the AST is captured once and shared across the state's lifetime.
+   */
   const program = safeParse({
     source,
     tomlVersion,

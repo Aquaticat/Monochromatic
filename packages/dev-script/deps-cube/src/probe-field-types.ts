@@ -45,7 +45,9 @@ export type RepositoryInfo = {
   readonly owner: string;
   readonly repo: string;
   readonly directory?: string;
-  /** Raw URL parsed, useful for the tooltip. */
+  /**
+   * Raw URL parsed, useful for the tooltip.
+   */
   readonly url: string;
 };
 

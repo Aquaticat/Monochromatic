@@ -1,6 +1,8 @@
 import type { Translation, } from '../i18n-types.ts';
 
-/** Japanese translations. */
+/**
+ * Japanese translations.
+ */
 const ja: Translation = {
   appName: 'paper2vn',
   start: 'スタート',

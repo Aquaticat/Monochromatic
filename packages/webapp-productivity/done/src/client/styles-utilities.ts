@@ -9,10 +9,14 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from './css.ts';
 
-/** Full percentage for divider inline-size. */
+/**
+ * Full percentage for divider inline-size.
+ */
 const FULL_PERCENT = 100;
 
-/** Task list, divider, and empty-state utility styles. */
+/**
+ * Task list, divider, and empty-state utility styles.
+ */
 export const utilities: string = [
   css({
     rule: '.task-list',

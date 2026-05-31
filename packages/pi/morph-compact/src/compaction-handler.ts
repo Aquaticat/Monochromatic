@@ -68,7 +68,9 @@ export async function handleBeforeCompact({
   readonly event: SessionBeforeCompactEvent;
   readonly ctx: ExtensionContext;
 },): Promise<MorphBeforeCompactOutcome> {
-  /** Resolved Morph key; sentinel disables the integration for this event. */
+  /**
+   * Resolved Morph key; sentinel disables the integration for this event.
+   */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === NO_MORPH_KEY) {
     if (!warnedFlags.has('missingKey',)) {
@@ -90,14 +92,18 @@ export async function handleBeforeCompact({
     .aborted)
     return { kind: 'fallthrough', };
 
-  /** Preparation slices read for the pre-flight emptiness check. */
+  /**
+   * Preparation slices read for the pre-flight emptiness check.
+   */
   const {
     messagesToSummarize,
     turnPrefixMessages,
     previousSummary,
   } = event.preparation;
 
-  /** True when either pending list has at least one message. */
+  /**
+   * True when either pending list has at least one message.
+   */
   const hasMessages = (messagesToSummarize.length
     > 0)
     || (turnPrefixMessages.length
@@ -111,7 +117,9 @@ export async function handleBeforeCompact({
     return { kind: 'cancel', };
   }
 
-  /** Total messages slated for compaction; surfaced in the status notify. */
+  /**
+   * Total messages slated for compaction; surfaced in the status notify.
+   */
   const msgCount = messagesToSummarize.length
     + turnPrefixMessages
     .length;
@@ -123,11 +131,15 @@ export async function handleBeforeCompact({
     'info',
   );
 
-  /** Current context pressure snapshot; absent when pi cannot report usage. */
+  /**
+   * Current context pressure snapshot; absent when pi cannot report usage.
+   */
   const contextUsage = ctx.getContextUsage();
 
   try {
-    /** Outcome of the Morph attempt; success surfaces a CompactionResult. */
+    /**
+     * Outcome of the Morph attempt; success surfaces a CompactionResult.
+     */
     const attempt = await attemptMorphCompaction({
       event,
       ...((contextUsage !== undefined) ? { contextUsage, } : {}),
@@ -138,15 +150,21 @@ export async function handleBeforeCompact({
       === 'fallback')
       return { kind: 'fallthrough', };
 
-    /** Extracted CompactionResult forwarded back to pi after the notify. */
+    /**
+     * Extracted CompactionResult forwarded back to pi after the notify.
+     */
     const { result, } = attempt;
 
     if (!event.signal
       .aborted) {
-      /** Telemetry block stored on result.details; absent when the API omitted usage. */
+      /**
+       * Telemetry block stored on result.details; absent when the API omitted usage.
+       */
       const morphUsage = result.details
         ?.morphUsage;
-      /** Whole-percent reduction reported to the UI; zero when ratio unavailable. */
+      /**
+       * Whole-percent reduction reported to the UI; zero when ratio unavailable.
+       */
       const reductionPct = ((morphUsage?.compressionRatio
         !== undefined)
           && (morphUsage.compressionRatio
@@ -156,15 +174,21 @@ export async function handleBeforeCompact({
             .compressionRatio) * 100,
         )
         : 0;
-      /** Input token count rendered with locale separators for the notify. */
+      /**
+       * Input token count rendered with locale separators for the notify.
+       */
       const inTokens = morphUsage?.inputTokens
         ?.toLocaleString()
         ?? '?';
-      /** Output token count rendered with locale separators for the notify. */
+      /**
+       * Output token count rendered with locale separators for the notify.
+       */
       const outTokens = morphUsage?.outputTokens
         ?.toLocaleString()
         ?? '?';
-      /** Processing time string rendered for the notify line. */
+      /**
+       * Processing time string rendered for the notify line.
+       */
       const ms = morphUsage?.processingTimeMs
         ?.toLocaleString()
         ?? '?';
@@ -185,7 +209,9 @@ export async function handleBeforeCompact({
       .aborted)
       return { kind: 'fallthrough', };
 
-    /** Best-effort diagnostic forwarded into the UI notify body. */
+    /**
+     * Best-effort diagnostic forwarded into the UI notify body.
+     */
     const message = error instanceof Error
       ? error.message
       : 'Unknown Morph compaction error';

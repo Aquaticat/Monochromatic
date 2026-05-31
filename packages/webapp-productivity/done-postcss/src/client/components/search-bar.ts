@@ -1,7 +1,9 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
-/** Shadow DOM styles for the `\<search-bar\>` component. */
+/**
+ * Shadow DOM styles for the `\<search-bar\>` component.
+ */
 const STYLES = css(`
   :host {
     @apply --sticky-bar;
@@ -41,10 +43,14 @@ const STYLES = css(`
   }
 `,);
 
-/** Debounce delay for search input in milliseconds. */
+/**
+ * Debounce delay for search input in milliseconds.
+ */
 const SEARCH_DEBOUNCE_MS = 300;
 
-/** Navigates back one entry in browser history. */
+/**
+ * Navigates back one entry in browser history.
+ */
 function onBackClick(): void {
   history.back();
 }
@@ -54,10 +60,14 @@ function onBackClick(): void {
  * Dispatches a `search` event with `\{ query \}` after the debounce delay.
  */
 class SearchBar extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -69,7 +79,9 @@ class SearchBar extends HTMLElement {
    * @returns Text content of the input, or empty string if not rendered
    */
   get value(): string {
-    /** Input element from the rendered shadow tree; `null` before `connectedCallback`. */
+    /**
+     * Input element from the rendered shadow tree; `null` before `connectedCallback`.
+     */
     const input = this.#shadow
       .querySelector<HTMLInputElement>('input',);
     return input?.value
@@ -82,22 +94,30 @@ class SearchBar extends HTMLElement {
    * @param text - New input value
    */
   set value(text: string,) {
-    /** Input element from the rendered shadow tree; assignment is skipped when not yet rendered. */
+    /**
+     * Input element from the rendered shadow tree; assignment is skipped when not yet rendered.
+     */
     const input = this.#shadow
       .querySelector<HTMLInputElement>('input',);
     if (input !== null)
       input.value = text;
   }
 
-  /** Renders the search bar with back button and debounced input. */
+  /**
+   * Renders the search bar with back button and debounced input.
+   */
   connectedCallback(): void {
-    /** Pre-filled query from the `value` attribute, defaulting to empty when absent. */
+    /**
+     * Pre-filled query from the `value` attribute, defaulting to empty when absent.
+     */
     const query = this.getAttribute('value',)
       ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
     // HTMLElement creation; SVG elements require the SVG namespace.
-    /** Back button captured so innerHTML can be set with the SVG payload below. */
+    /**
+     * Back button captured so innerHTML can be set with the SVG payload below.
+     */
     const backButton = h({
       tag: 'button',
       class: 'back',
@@ -107,7 +127,9 @@ class SearchBar extends HTMLElement {
     backButton.innerHTML =
       `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
 
-    /** Search input captured so the debounce closure can read its current value. */
+    /**
+     * Search input captured so the debounce closure can read its current value.
+     */
     const input = h({
       tag: 'input',
       attrs: {
@@ -119,10 +141,14 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
-    /** Captured so the debounce closures reach this component without `this`-bound functions. */
+    /**
+     * Captured so the debounce closures reach this component without `this`-bound functions.
+     */
     const self = this;
     /* oxlint-disable no-restricted-syntax/no-function-root-let -- debounce timer handle mutated on each keystroke; closed over by the input listener */
-    /** Mutable timer handle replaced on each keystroke to debounce dispatch. */
+    /**
+     * Mutable timer handle replaced on each keystroke to debounce dispatch.
+     */
     let timeout: ReturnType<typeof setTimeout> = setTimeout(
       function noop() {/* initial */},
       0,

@@ -12,10 +12,14 @@ import type {
 
 //region Geometry
 
-/** LSP position, aliased from the shared wire protocol type. */
+/**
+ * LSP position, aliased from the shared wire protocol type.
+ */
 export type LspPosition = Position;
 
-/** LSP range, aliased from the shared wire protocol type. */
+/**
+ * LSP range, aliased from the shared wire protocol type.
+ */
 export type LspRange = Range;
 
 //endregion Geometry
@@ -28,17 +32,29 @@ export type LspRange = Range;
  */
 export type DiagnosticSeverity = 1 | 2 | 3 | 4;
 
-/** Diagnostic message from an LSP server. */
+/**
+ * Diagnostic message from an LSP server.
+ */
 export type LspDiagnostic = {
-  /** Text range where the diagnostic applies. */
+  /**
+   * Text range where the diagnostic applies.
+   */
   readonly range: LspRange;
-  /** Severity level (1=Error, 2=Warning, 3=Info, 4=Hint). */
+  /**
+   * Severity level (1=Error, 2=Warning, 3=Info, 4=Hint).
+   */
   readonly severity?: DiagnosticSeverity;
-  /** Source tool name (e.g. "oxlint", "typescript"). */
+  /**
+   * Source tool name (e.g. "oxlint", "typescript").
+   */
   readonly source?: string;
-  /** Human-readable diagnostic message. */
+  /**
+   * Human-readable diagnostic message.
+   */
   readonly message: string;
-  /** Diagnostic code from the source tool. */
+  /**
+   * Diagnostic code from the source tool.
+   */
   readonly code?: number | string;
 };
 
@@ -46,19 +62,31 @@ export type LspDiagnostic = {
 
 //region Hover
 
-/** Markup content with explicit kind indicator. */
+/**
+ * Markup content with explicit kind indicator.
+ */
 export type LspMarkupContent = {
-  /** Content format: "plaintext" or "markdown". */
+  /**
+   * Content format: "plaintext" or "markdown".
+   */
   readonly kind: 'plaintext' | 'markdown';
-  /** Content value. */
+  /**
+   * Content value.
+   */
   readonly value: string;
 };
 
-/** Hover result from an LSP server. */
+/**
+ * Hover result from an LSP server.
+ */
 export type LspHover = {
-  /** Hover content as structured markup or plain string. */
+  /**
+   * Hover content as structured markup or plain string.
+   */
   readonly contents: LspMarkupContent | string;
-  /** Range of text the hover applies to. */
+  /**
+   * Range of text the hover applies to.
+   */
   readonly range?: LspRange;
 };
 
@@ -66,15 +94,25 @@ export type LspHover = {
 
 //region Completion
 
-/** Completion item from an LSP server. */
+/**
+ * Completion item from an LSP server.
+ */
 export type LspCompletionItem = {
-  /** Display label for the completion. */
+  /**
+   * Display label for the completion.
+   */
   readonly label: string;
-  /** Kind of completion item (1=Text, 2=Method, 3=Function, etc.). */
+  /**
+   * Kind of completion item (1=Text, 2=Method, 3=Function, etc.).
+   */
   readonly kind?: number;
-  /** Additional detail string shown alongside the label. */
+  /**
+   * Additional detail string shown alongside the label.
+   */
   readonly detail?: string;
-  /** Text to insert when the completion is accepted (defaults to label). */
+  /**
+   * Text to insert when the completion is accepted (defaults to label).
+   */
   readonly insertText?: string;
 };
 
@@ -82,11 +120,17 @@ export type LspCompletionItem = {
 
 //region Text edits
 
-/** Text edit returned by formatting or other operations. */
+/**
+ * Text edit returned by formatting or other operations.
+ */
 export type LspTextEdit = {
-  /** Range to replace. */
+  /**
+   * Range to replace.
+   */
   readonly range: LspRange;
-  /** New text to insert at the range. */
+  /**
+   * New text to insert at the range.
+   */
   readonly newText: string;
 };
 
@@ -99,7 +143,9 @@ export type LspTextEdit = {
  * Maps file URIs to arrays of text edits that should be applied.
  */
 export type LspWorkspaceEdit = {
-  /** Text edits keyed by document URI. */
+  /**
+   * Text edits keyed by document URI.
+   */
   readonly changes?: Readonly<Record<string, readonly LspTextEdit[]>>;
 };
 

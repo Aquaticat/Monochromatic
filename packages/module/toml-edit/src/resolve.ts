@@ -21,7 +21,9 @@ import { walk, } from './walk.ts';
 /**
  * The kind of node a path resolved to.
  */
-/** Discriminated union of `resolveByPath` outcomes. */
+/**
+ * Discriminated union of `resolveByPath` outcomes.
+ */
 export type ResolveResult =
   | {
     readonly kind: 'top-level';
@@ -75,7 +77,9 @@ export function resolveByPath(
     readonly path: TomlPath;
   },
 ): ResolveResult {
-  /** Root container so the walker can descend without re-indexing every call. */
+  /**
+   * Root container so the walker can descend without re-indexing every call.
+   */
   const [root,] = edit.program
     .body;
   if (path.length

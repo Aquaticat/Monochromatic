@@ -16,7 +16,9 @@ import { extractCode, } from './extract-code.ts';
 import type { ContainerResult, } from '../container.ts';
 import type { ScoreContext, } from '../probes.ts';
 
-/** Maximum bytes of runtime stderr to include in the fix prompt to avoid token waste */
+/**
+ * Maximum bytes of runtime stderr to include in the fix prompt to avoid token waste
+ */
 const MAX_RUNTIME_STDERR_LENGTH = 500;
 
 /**
@@ -29,13 +31,17 @@ const MAX_RUNTIME_STDERR_LENGTH = 500;
 function buildRuntimeSection(container: ContainerResult,): string {
   if (container.timedOut)
     return '=== runtime error ===\nProcess timed out.';
-  /** First N bytes of stderr; cap keeps the fix prompt within a reasonable token budget. */
+  /**
+   * First N bytes of stderr; cap keeps the fix prompt within a reasonable token budget.
+   */
   const truncated = container.stderr
     .slice(
     0,
     MAX_RUNTIME_STDERR_LENGTH,
   );
-  /** "...(truncated)" tail when the cap kicked in; empty otherwise. */
+  /**
+   * "...(truncated)" tail when the cap kicked in; empty otherwise.
+   */
   const suffix = container.stderr
     .length
     > MAX_RUNTIME_STDERR_LENGTH
@@ -60,13 +66,21 @@ function buildRuntimeSection(container: ContainerResult,): string {
  * ```
  */
 type BuildCodeGenFixPromptOptions = {
-  /** Raw model output from the first pass (used to extract source for linting) */
+  /**
+   * Raw model output from the first pass (used to extract source for linting)
+   */
   readonly response: string;
-  /** Model identity and pass for artifact organization */
+  /**
+   * Model identity and pass for artifact organization
+   */
   readonly context: ScoreContext;
-  /** Lint result already computed by score(); omit to re-lint */
+  /**
+   * Lint result already computed by score(); omit to re-lint
+   */
   readonly priorLint?: LintResult;
-  /** Container result already computed by score(); runtime errors are included when present, omit to skip */
+  /**
+   * Container result already computed by score(); runtime errors are included when present, omit to skip
+   */
   readonly priorContainer?: ContainerResult;
 };
 
@@ -99,11 +113,15 @@ export async function buildCodeGenFixPrompt({
   priorLint,
   priorContainer,
 }: BuildCodeGenFixPromptOptions,): Promise<string> {
-  /** Source extracted from the model's first-pass response; fed to the linter for fix-time diagnostics. */
+  /**
+   * Source extracted from the model's first-pass response; fed to the linter for fix-time diagnostics.
+   */
   const source = extractCode(response,);
   // Reuse the lint result from score() if available to avoid linting the same code twice.
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
-  /** Lint result reused from the scoring phase, or freshly computed when missing (e.g. in tests). */
+  /**
+   * Lint result reused from the scoring phase, or freshly computed when missing (e.g. in tests).
+   */
   const lint = priorLint ?? await lintSource({
     source,
     meta: {
@@ -116,7 +134,9 @@ export async function buildCodeGenFixPrompt({
   },);
 
   // Narrow to a failed container only when exit was non-zero or process was killed
-  /** Container result restricted to actual failures (non-zero exit or timeout); undefined for clean runs. */
+  /**
+   * Container result restricted to actual failures (non-zero exit or timeout); undefined for clean runs.
+   */
   const failedContainer = (priorContainer !== undefined)
       && ((priorContainer.exitCode
         !== 0) || priorContainer
@@ -124,7 +144,9 @@ export async function buildCodeGenFixPrompt({
     ? priorContainer
     : undefined;
 
-  /** True when lint reported actionable issues with diagnostic text to surface. */
+  /**
+   * True when lint reported actionable issues with diagnostic text to surface.
+   */
   const hasLintDiagnostics = ((lint.violationCount
     + lint
     .typeErrors) > 0)
@@ -134,7 +156,9 @@ export async function buildCodeGenFixPrompt({
   if ((failedContainer === undefined) && (!hasLintDiagnostics))
     return '';
 
-  /** One-line lint summary shown before the diagnostics; undefined when there are zero issues. */
+  /**
+   * One-line lint summary shown before the diagnostics; undefined when there are zero issues.
+   */
   const lintSummary =
     (lint.severity
       .errors
@@ -149,14 +173,18 @@ export async function buildCodeGenFixPrompt({
           .warnings,)
       } lint warnings, and ${String(lint.typeErrors,)} type errors.`
       : undefined;
-  /** One-line runtime summary shown alongside `lintSummary`; undefined when the run did not fail. */
+  /**
+   * One-line runtime summary shown alongside `lintSummary`; undefined when the run did not fail.
+   */
   const runtimeSummary = failedContainer !== undefined
     ? (failedContainer.timedOut
       ? 'It timed out at runtime.'
       : `It crashed at runtime (exit code ${String(failedContainer.exitCode,)}).`)
     : undefined;
 
-  /** Diagnostic blocks (runtime + lint) in display order; empty entries filtered before joining. */
+  /**
+   * Diagnostic blocks (runtime + lint) in display order; empty entries filtered before joining.
+   */
   const diagnosticParts = [
     failedContainer !== undefined ? buildRuntimeSection(failedContainer,) : '',
     lint.rawDiagnostics

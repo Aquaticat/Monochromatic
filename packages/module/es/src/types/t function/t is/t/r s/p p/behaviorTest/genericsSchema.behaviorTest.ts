@@ -23,22 +23,30 @@ import type { Promisable, } from 'type-fest';
 
 //region Real Generic Schema Type Definitions
 
-/** Schema that parses Input to Output, returning synchronously or asynchronously. */
+/**
+ * Schema that parses Input to Output, returning synchronously or asynchronously.
+ */
 type RealSchema<Input = unknown, Output = Input,> = {
   readonly parse: (value: Input,) => Promisable<Output>;
 };
 
-/** Schema that always parses Input to Output synchronously. */
+/**
+ * Schema that always parses Input to Output synchronously.
+ */
 type RealSchemaSync<Input = unknown, Output = Input,> = {
   readonly parse: (value: Input,) => Output;
 };
 
-/** Schema that parses Input to Output via an explicit async method. */
+/**
+ * Schema that parses Input to Output via an explicit async method.
+ */
 type RealSchemaAsync<Input = unknown, Output = Input,> = {
   readonly parseAsync: (value: Input,) => Promisable<Output>;
 };
 
-/** Union of sync and async schema variants for flexible parsing. */
+/**
+ * Union of sync and async schema variants for flexible parsing.
+ */
 type RealMaybeAsyncSchema<Input = unknown, Output = Input,> =
   | RealSchema<Input, Output>
   | RealSchemaAsync<Input, Output>;
@@ -290,64 +298,90 @@ function isRealMaybeAsyncSchema_GenericExtends<
 
 //region Real Generic Test Domain Types
 
-/** Validated user domain object with numeric age. */
+/**
+ * Validated user domain object with numeric age.
+ */
 type User = {
   readonly name: string;
   readonly age: number;
 };
 
-/** Raw user input where age arrives as a string before parsing. */
+/**
+ * Raw user input where age arrives as a string before parsing.
+ */
 type UserInput = {
   readonly name: string;
   readonly age: string; // String input, number output
 };
 
-/** Product domain object with id, price, and category. */
+/**
+ * Product domain object with id, price, and category.
+ */
 type Product = {
   readonly id: string;
   readonly price: number;
   readonly category: string;
 };
 
-/** Schema transforming string input to numeric output. */
+/**
+ * Schema transforming string input to numeric output.
+ */
 type StringToNumberSchema = RealSchema<string, number>;
 
-/** Schema transforming raw UserInput to validated User. */
+/**
+ * Schema transforming raw UserInput to validated User.
+ */
 type UserTransformSchema = RealSchema<UserInput, User>;
 
-/** Synchronous schema validating User objects. */
+/**
+ * Synchronous schema validating User objects.
+ */
 type UserValidationSchema = RealSchemaSync<User, User>;
 
-/** Asynchronous schema transforming UserInput to User. */
+/**
+ * Asynchronous schema transforming UserInput to User.
+ */
 type AsyncUserSchema = RealSchemaAsync<UserInput, User>;
 
-/** Schema parsing unknown input into Product. */
+/**
+ * Schema parsing unknown input into Product.
+ */
 type ProductSchema = RealSchema<unknown, Product>;
 
-/** Schema with additional weight and priority metadata for type preservation testing. */
+/**
+ * Schema with additional weight and priority metadata for type preservation testing.
+ */
 type WeightedStringSchema = RealSchema<string, number> & {
   readonly weight: number;
   readonly priority: 'high' | 'low';
 };
 
-/** Schema with naming metadata for type preservation testing. */
+/**
+ * Schema with naming metadata for type preservation testing.
+ */
 type NamedUserSchema = RealSchema<UserInput, User> & {
   readonly schemaName: string;
   readonly version: number;
 };
 
-/** Schema with versioning metadata for type preservation testing. */
+/**
+ * Schema with versioning metadata for type preservation testing.
+ */
 type VersionedProductSchema = RealSchema<unknown, Product> & {
   readonly apiVersion: string;
   readonly lastUpdated: Date;
 };
 
-/** Schema that brands its output with a `__validated` tag. */
+/**
+ * Schema that brands its output with a `__validated` tag.
+ */
 type BrandedSchema<T,> = RealSchema<T, T & { readonly __validated: true; }> & {
   readonly __brand: 'validated';
 };
 
-/** Conditional schema type that infers different outputs based on string template matching. */
+/**
+ * Conditional schema type that infers different outputs based on string template matching.
+ */
 type ConditionalSchema<T extends string,> = T extends `user-${infer U}` ? RealSchema<T, {
     readonly userId: U;
     readonly type: 'user';
@@ -357,7 +391,9 @@ type ConditionalSchema<T extends string,> = T extends `user-${infer U}` ? RealSc
     readonly type: 'generic';
   }>;
 
-/** Schema with additional validator and transformer methods. */
+/**
+ * Schema with additional validator and transformer methods.
+ */
 type ValidatedTransformSchema<Input, Output,> = RealSchema<Input, Output> & {
   readonly validator: (input: Input,) => boolean;
   readonly transformer: (input: Input,) => Output;
@@ -366,7 +402,9 @@ type ValidatedTransformSchema<Input, Output,> = RealSchema<Input, Output> & {
 
 //region Real Generic Test Values
 
-/** Collection of schema instances with various generic constraints for behavioral testing. */
+/**
+ * Collection of schema instances with various generic constraints for behavioral testing.
+ */
 const realGenericTestValues = {
   // Basic generic schemas with specific Input/Output types
   stringToNumberSchema: {
@@ -547,7 +585,9 @@ const realGenericTestValues = {
  * Reveals complete TypeScript behavior with Input/Output type preservation
  */
 
-/** Tests all guard patterns against StringToNumberSchema with Input/Output preservation. */
+/**
+ * Tests all guard patterns against StringToNumberSchema with Input/Output preservation.
+ */
 const testRealGenericStringToNumber = (function testRealGenericStringToNumber(): void {
   /**
    * Schema under test in this scenario; each pattern below narrows {@link value} and is observed for type preservation.
@@ -559,7 +599,9 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
     // Type narrowed to RealSchema (loses Input/Output specificity)
     value.parse; // Exists but parameter/return types are unknown
     // Should lose Input/Output constraint information
-    /** Parse result under the Unknown narrowing; typed `unknown` because Input/Output were erased. */
+    /**
+     * Parse result under the Unknown narrowing; typed `unknown` because Input/Output were erased.
+     */
     const result = value.parse('test' as any,); // Has to use any due to unknown constraint
   }
 
@@ -567,9 +609,13 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   if (isRealSchema_Generic(value,)) {
     // Should preserve StringToNumberSchema type with Input/Output
     value.parse; // Should maintain (string) => number signature
-    /** String input passed to the Generic-narrowed parse; verifies the Input type survived. */
+    /**
+     * String input passed to the Generic-narrowed parse; verifies the Input type survived.
+     */
     const input: string = 'hello'; // Input type preserved
-    /** Parse output observed under the Generic pattern; should be `number` (or `Promise<number>`) when Output is preserved. */
+    /**
+     * Parse output observed under the Generic pattern; should be `number` (or `Promise<number>`) when Output is preserved.
+     */
     const output = value.parse(input,); // Output should be number (or Promise<number>)
   }
 
@@ -577,7 +623,9 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   if (isRealSchema_Typed(value,)) {
     // Should preserve exact type but requires explicit generic parameters
     value.parse; // Should maintain specific Input/Output types
-    /** Parse result under the Typed pattern; signature kept, so the string argument is accepted directly. */
+    /**
+     * Parse result under the Typed pattern; signature kept, so the string argument is accepted directly.
+     */
     const result = value.parse('test',); // Should work with string input
   }
 
@@ -588,7 +636,9 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   if (isRealSchema_GenericExtends(value as RealSchema & typeof value,)) {
     // Should preserve full StringToNumberSchema type
     value.parse; // Should maintain (string) => number signature
-    /** Parse result under Generic Extends after the explicit cast that bridges the constraint mismatch. */
+    /**
+     * Parse result under Generic Extends after the explicit cast that bridges the constraint mismatch.
+     */
     const result = value.parse('123',); // Type-safe string input
   }
   // If isRealSchema_GenericExtends(value) doesn't compile, don't use ts-expect-error to force it to.
@@ -603,7 +653,9 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   if (isRealSchema_GenericExtendsInfer(value as RealSchema & typeof value,)) {
     // Most sophisticated - should preserve everything with inference
     value.parse; // Should maintain (string) => number signature with full inference
-    /** Parse result under Generic Extends with Inference; full inference chain should keep `(string) => number`. */
+    /**
+     * Parse result under Generic Extends with Inference; full inference chain should keep `(string) => number`.
+     */
     const result = value.parse('456',); // Fully type-safe with inferred constraints
   }
 
@@ -614,14 +666,20 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   if (isRealSchema_GenericExtendsDirect(value as RealSchema & typeof value,)) {
     // Should preserve input type structure without intersection
     value.parse; // Should maintain (string) => number signature with inference but no intersection
-    /** Parse result under Generic Extends Direct; verifies the non-intersection variant retains the Input/Output pair. */
+    /**
+     * Parse result under Generic Extends Direct; verifies the non-intersection variant retains the Input/Output pair.
+     */
     const result = value.parse('789',); // Fully type-safe with inferred constraints, preserves original type
   }
 })();
 
-/** Tests all guard patterns against WeightedStringSchema with additional property preservation. */
+/**
+ * Tests all guard patterns against WeightedStringSchema with additional property preservation.
+ */
 const testRealGenericWeightedString = (function testRealGenericWeightedString(): void {
-  /** Schema under test; carries extra `weight` and `priority` metadata to verify additional-property preservation across patterns. */
+  /**
+   * Schema under test; carries extra `weight` and `priority` metadata to verify additional-property preservation across patterns.
+   */
   const value = realGenericTestValues.weightedStringSchema;
 
   // Unknown Pattern
@@ -638,7 +696,9 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
     value.priority; // Should preserve additional property
 
     // Type-safe usage with preserved constraints
-    /** Parse result under the Generic pattern; verifies `(string) => number` survives alongside extra metadata. */
+    /**
+     * Parse result under the Generic pattern; verifies `(string) => number` survives alongside extra metadata.
+     */
     const result = value.parse('hello',); // string -> number constraint preserved
   }
 
@@ -651,7 +711,9 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
     value.weight; // Additional property preserved through intersection
     value.priority; // Additional property preserved through intersection
 
-    /** Parse result under the Typed pattern with explicit cast; intersection with the original keeps extra props. */
+    /**
+     * Parse result under the Typed pattern with explicit cast; intersection with the original keeps extra props.
+     */
     const result = value.parse('world',); // Type-safe with explicit constraints
   }
 
@@ -664,7 +726,9 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
     value.weight; // Should preserve additional property
     value.priority; // Should preserve additional property
 
-    /** Parse result under Generic Extends; full schema + metadata expected after the cast. */
+    /**
+     * Parse result under Generic Extends; full schema + metadata expected after the cast.
+     */
     const result = value.parse('test',); // Full type preservation
   }
 
@@ -677,7 +741,9 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
     value.weight; // Should preserve with inference
     value.priority; // Should preserve with inference
 
-    /** Parse result under Generic Extends with Inference; verifies inference picks up Input/Output and keeps metadata. */
+    /**
+     * Parse result under Generic Extends with Inference; verifies inference picks up Input/Output and keeps metadata.
+     */
     const result = value.parse('inferred',); // Fully inferred type safety
   }
 
@@ -690,7 +756,9 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
     value.weight; // Should preserve additional property without intersection
     value.priority; // Should preserve additional property without intersection
 
-    /** Parse result under Generic Extends Direct; non-intersection variant should still retain the original metadata. */
+    /**
+     * Parse result under Generic Extends Direct; non-intersection variant should still retain the original metadata.
+     */
     const result = value.parse('non-intersection',); // Type safety with preserved original structure
   }
   // If isRealSchema_GenericExtendsDirect(value) doesn't compile, don't use ts-expect-error to force it to.
@@ -699,9 +767,13 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
   // to demonstrate what happens inside the if block
 })();
 
-/** Tests all guard patterns against NamedUserSchema with transformation and naming metadata. */
+/**
+ * Tests all guard patterns against NamedUserSchema with transformation and naming metadata.
+ */
 const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
-  /** Schema under test; transforms `UserInput` to `User` and carries naming metadata for additional-property assertions. */
+  /**
+   * Schema under test; transforms `UserInput` to `User` and carries naming metadata for additional-property assertions.
+   */
   const value = realGenericTestValues.namedUserSchema;
 
   // Test all patterns against complex generic transformation schema
@@ -717,12 +789,16 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     value.version; // Should preserve additional property
 
     // Type-safe usage with preserved generic constraints
-    /** Sample raw user record used as the Generic-narrowed parse input; matches the `UserInput` shape. */
+    /**
+     * Sample raw user record used as the Generic-narrowed parse input; matches the `UserInput` shape.
+     */
     const userInput: UserInput = {
       name: 'John',
       age: '25',
     };
-    /** Parsed `User` returned by the Generic-narrowed parse; verifies the Output type survived narrowing. */
+    /**
+     * Parsed `User` returned by the Generic-narrowed parse; verifies the Output type survived narrowing.
+     */
     const user = value.parse(userInput,); // Should return User type
   }
 
@@ -735,7 +811,9 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     value.version; // Should preserve additional property
 
     // Full type safety with generic extends
-    /** Parse result under Generic Extends after the explicit cast; verifies the `UserInput -> User` pair survives. */
+    /**
+     * Parse result under Generic Extends after the explicit cast; verifies the `UserInput -> User` pair survives.
+     */
     const result = value.parse({
       name: 'Jane',
       age: '30',
@@ -751,7 +829,9 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     value.version; // Should preserve with inference
 
     // Maximum type safety with inference
-    /** Parse result under Generic Extends with Inference; full inference chain across `UserInput -> User`. */
+    /**
+     * Parse result under Generic Extends with Inference; full inference chain across `UserInput -> User`.
+     */
     const result = value.parse({
       name: 'Bob',
       age: '35',
@@ -767,7 +847,9 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     value.version; // Should preserve with inference, original structure
 
     // Maximum type safety with inference and preserved input structure
-    /** Parse result under Generic Extends Direct; verifies the non-intersection variant retains `UserInput -> User`. */
+    /**
+     * Parse result under Generic Extends Direct; verifies the non-intersection variant retains `UserInput -> User`.
+     */
     const result = value.parse({
       name: 'Charlie',
       age: '42',
@@ -775,9 +857,13 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
   }
 })();
 
-/** Tests async and maybe-async guard patterns against sync and async schema variants. */
+/**
+ * Tests async and maybe-async guard patterns against sync and async schema variants.
+ */
 const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): void {
-  /** Async schema under test; exercises both the `*_Async` guards and the `*MaybeAsyncSchema*` union guards. */
+  /**
+   * Async schema under test; exercises both the `*_Async` guards and the `*MaybeAsyncSchema*` union guards.
+   */
   const asyncSchema = realGenericTestValues.asyncUserSchema;
 
   // Test async schema guards
@@ -790,7 +876,9 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
     asyncSchema.parseAsync; // Should preserve UserInput -> User types
 
     // Type-safe async usage
-    /** Async parse return under the Generic pattern; should be `Promise<User>`/`Promisable<User>` when Output preservation works. */
+    /**
+     * Async parse return under the Generic pattern; should be `Promise<User>`/`Promisable<User>` when Output preservation works.
+     */
     const asyncResult = asyncSchema.parseAsync({
       name: 'Alice',
       age: '28',
@@ -806,7 +894,9 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
   )) {
     asyncSchema.parseAsync; // Full type preservation with extends
 
-    /** Async parse return under Generic Extends; verifies the explicit-cast bridge keeps the async schema typed. */
+    /**
+     * Async parse return under Generic Extends; verifies the explicit-cast bridge keeps the async schema typed.
+     */
     const result = asyncSchema.parseAsync({
       name: 'Charlie',
       age: '40',
@@ -814,7 +904,9 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
   }
 
   // Test MaybeAsyncSchema guards
-  /** Sync schema fed through the `MaybeAsyncSchema*` guards; tests sync handling on the union side of the guard. */
+  /**
+   * Sync schema fed through the `MaybeAsyncSchema*` guards; tests sync handling on the union side of the guard.
+   */
   const flexibleSchema = realGenericTestValues.userTransformSchema;
 
   if (isRealMaybeAsyncSchema_Unknown(flexibleSchema,)) {
@@ -826,7 +918,9 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
     // Should preserve specific types through union
     flexibleSchema.parse; // Available with preserved UserInput -> User types
 
-    /** Parse result through the MaybeAsync Generic guard; should keep `UserInput -> User` despite union narrowing. */
+    /**
+     * Parse result through the MaybeAsync Generic guard; should keep `UserInput -> User` despite union narrowing.
+     */
     const result = flexibleSchema.parse({
       name: 'David',
       age: '45',
@@ -841,7 +935,9 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
   )) {
     flexibleSchema.parse; // Full type preservation through union with extends
 
-    /** Parse result through the MaybeAsync Generic Extends guard; verifies the explicit cast retains sync typing. */
+    /**
+     * Parse result through the MaybeAsync Generic Extends guard; verifies the explicit cast retains sync typing.
+     */
     const result = flexibleSchema.parse({
       name: 'Eve',
       age: '50',
@@ -862,7 +958,9 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
     // Type discrimination needed for union
     asyncSchema.parseAsync; // Available with preserved types
 
-    /** Async parse result through the MaybeAsync Generic guard after the in-operator discrimination. */
+    /**
+     * Async parse result through the MaybeAsync Generic guard after the in-operator discrimination.
+     */
     const result = asyncSchema.parseAsync({
       name: 'Frank',
       age: '55',
@@ -870,10 +968,14 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
   }
 })();
 
-/** Tests guard patterns against edge cases: unknown, any, union, intersection, and invalid inputs. */
+/**
+ * Tests guard patterns against edge cases: unknown, any, union, intersection, and invalid inputs.
+ */
 const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   // Unknown value with schema properties
-  /** `unknown`-typed schema-like value; verifies guards still narrow against the unknown ambient type. */
+  /**
+   * `unknown`-typed schema-like value; verifies guards still narrow against the unknown ambient type.
+   */
   const unknownValue = realGenericTestValues.unknownGenericValue;
 
   if (isRealSchema_Unknown(unknownValue,)) {
@@ -890,7 +992,9 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   }
 
   // Any value with schema properties
-  /** `any`-typed schema-like value; verifies guards interact correctly with the bivariant `any` source type. */
+  /**
+   * `any`-typed schema-like value; verifies guards interact correctly with the bivariant `any` source type.
+   */
   const anyValue = realGenericTestValues.anyGenericValue;
 
   if (isRealSchema_Unknown(anyValue,)) {
@@ -904,12 +1008,16 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
     anyValue.extraData; // Generic pattern preserves any better
 
     // Any input allows any usage patterns
-    /** First parse result demonstrating `any` accepts an arbitrary record argument. */
+    /**
+     * First parse result demonstrating `any` accepts an arbitrary record argument.
+     */
     const result1 = anyValue.parse({
       name: 'Any',
       age: '999',
     },);
-    /** Second parse result demonstrating `any` accepts an arbitrary string argument too. */
+    /**
+     * Second parse result demonstrating `any` accepts an arbitrary string argument too.
+     */
     const result2 = anyValue.parse('anything',);
   }
 
@@ -917,12 +1025,16 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
     anyValue.parse; // Should work with any
     anyValue.extraData; // Should preserve
 
-    /** Parse result under Generic Extends with the `any` source; confirms the pattern degrades gracefully. */
+    /**
+     * Parse result under Generic Extends with the `any` source; confirms the pattern degrades gracefully.
+     */
     const result = anyValue.parse('any input',);
   }
 
   // Union with generic schema
-  /** Union-typed value (`UserTransformSchema | string`); verifies narrowing recovers the schema branch. */
+  /**
+   * Union-typed value (`UserTransformSchema | string`); verifies narrowing recovers the schema branch.
+   */
   const unionValue = realGenericTestValues.unionGenericSchema;
 
   if (isRealSchema_Unknown(unionValue,)) {
@@ -934,7 +1046,9 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
     unionValue.parse; // Should preserve UserInput -> User through union narrowing
 
     // Type-safe usage after union narrowing
-    /** Parse result after the union is narrowed via the Generic guard; should retain `UserInput -> User`. */
+    /**
+     * Parse result after the union is narrowed via the Generic guard; should retain `UserInput -> User`.
+     */
     const result = unionValue.parse({
       name: 'Union',
       age: '123',
@@ -942,7 +1056,9 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   }
 
   // Intersection with generic schema
-  /** Intersection-typed value (`StringToNumberSchema & extras`); verifies extra members survive narrowing. */
+  /**
+   * Intersection-typed value (`StringToNumberSchema & extras`); verifies extra members survive narrowing.
+   */
   const intersectionValue = realGenericTestValues.intersectionGenericSchema;
 
   if (isRealSchema_Unknown(intersectionValue,)) {
@@ -957,12 +1073,16 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
     intersectionValue.metadata; // Should preserve intersection properties
 
     // Full type safety with intersection
-    /** Parse result under the Generic pattern; both `(string) => number` and the intersected extras should remain. */
+    /**
+     * Parse result under the Generic pattern; both `(string) => number` and the intersected extras should remain.
+     */
     const result = intersectionValue.parse('42',);
   }
 
   // Invalid schemas
-  /** Object lacking `parse`; verifies the guards both accept (Unknown) and reject (Generic) malformed shapes. */
+  /**
+   * Object lacking `parse`; verifies the guards both accept (Unknown) and reject (Generic) malformed shapes.
+   */
   const invalidSchema = realGenericTestValues.invalidGenericSchema;
 
   if (isRealSchema_Unknown(invalidSchema,)) {
@@ -976,21 +1096,29 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   }
 })();
 
-/** Tests guard patterns against Promise and Promisable return type schemas. */
+/**
+ * Tests guard patterns against Promise and Promisable return type schemas.
+ */
 const testRealGenericPromisableBehavior =
   (function testRealGenericPromisableBehavior(): void {
     // Promise returning schema
-    /** Schema returning `Promise<number>`; verifies guards preserve Promise-typed Output across patterns. */
+    /**
+     * Schema returning `Promise<number>`; verifies guards preserve Promise-typed Output across patterns.
+     */
     const promiseSchema = realGenericTestValues.promiseReturningSchema;
 
     if (isRealSchema_Unknown(promiseSchema,)) {
-      /** Parse result under Unknown narrowing; Output collapses to `unknown` and the Promise type is lost. */
+      /**
+       * Parse result under Unknown narrowing; Output collapses to `unknown` and the Promise type is lost.
+       */
       const result = promiseSchema.parse('test' as any,); // Loses Input/Output constraints
       // Result type is unknown, loses Promise<number> information
     }
 
     if (isRealSchema_Generic(promiseSchema,)) {
-      /** Parse result under the Generic pattern; should remain `Promise<number>` to confirm Output preservation. */
+      /**
+       * Parse result under the Generic pattern; should remain `Promise<number>` to confirm Output preservation.
+       */
       const result = promiseSchema.parse('test',); // Should be Promise<number>
       // Type-safe promise handling
       // const awaited = await result; // Should be number
@@ -1002,7 +1130,9 @@ const testRealGenericPromisableBehavior =
     if (isRealSchema_GenericExtends(
       promiseSchema as RealSchema & typeof promiseSchema,
     )) {
-      /** Parse result under Generic Extends; verifies the explicit cast retains `Promise<number>`. */
+      /**
+       * Parse result under Generic Extends; verifies the explicit cast retains `Promise<number>`.
+       */
       const result = promiseSchema.parse('extends',); // Full type preservation
       // Result should maintain Promise<number> type
     }
@@ -1013,17 +1143,23 @@ const testRealGenericPromisableBehavior =
     if (isRealSchema_GenericExtendsDirect(
       promiseSchema as RealSchema & typeof promiseSchema,
     )) {
-      /** Parse result under Generic Extends Direct; verifies the non-intersection variant still preserves `Promise<number>`. */
+      /**
+       * Parse result under Generic Extends Direct; verifies the non-intersection variant still preserves `Promise<number>`.
+       */
       const result = promiseSchema.parse('non-intersection',); // Full type preservation without intersection
       // Result should maintain Promise<number> type with original structure preserved
     }
 
     // Promisable returning schema
-    /** Schema returning `Promisable<number>` extracted via destructuring; tests sync/async-union Output preservation. */
+    /**
+     * Schema returning `Promisable<number>` extracted via destructuring; tests sync/async-union Output preservation.
+     */
     const { promisableSchema, } = realGenericTestValues;
 
     if (isRealSchema_Generic(promisableSchema,)) {
-      /** Parse result under the Generic pattern; Output should remain `Promisable<number>` for the runtime branch. */
+      /**
+       * Parse result under the Generic pattern; Output should remain `Promisable<number>` for the runtime branch.
+       */
       const result = promisableSchema.parse('test',); // Should be Promisable<number>
       // Both sync and async handling possible with proper typing
       if (result instanceof Promise) {
@@ -1040,11 +1176,15 @@ const testRealGenericPromisableBehavior =
     if (isRealSchema_GenericExtends(
       promisableSchema as RealSchema & typeof promisableSchema,
     )) {
-      /** Parse result under Generic Extends; verifies the explicit cast retains `Promisable<number>`. */
+      /**
+       * Parse result under Generic Extends; verifies the explicit cast retains `Promisable<number>`.
+       */
       const result = promisableSchema.parse('promisable',); // Full Promisable<number> preservation
 
       // Type-safe conditional handling
-      /** Discriminator that splits the `Promisable<number>` runtime into Promise vs sync branches. */
+      /**
+       * Discriminator that splits the `Promisable<number>` runtime into Promise vs sync branches.
+       */
       const isPromise = result instanceof Promise;
       if (isPromise) {
         // Handle Promise<number>
@@ -1060,11 +1200,15 @@ const testRealGenericPromisableBehavior =
     if (isRealSchema_GenericExtendsDirect(
       promisableSchema as RealSchema & typeof promisableSchema,
     )) {
-      /** Parse result under Generic Extends Direct; verifies the non-intersection variant still preserves `Promisable<number>`. */
+      /**
+       * Parse result under Generic Extends Direct; verifies the non-intersection variant still preserves `Promisable<number>`.
+       */
       const result = promisableSchema.parse('promisable-non-intersection',); // Full Promisable<number> preservation without intersection
 
       // Type-safe conditional handling with preserved input structure
-      /** Discriminator that splits the `Promisable<number>` runtime into Promise vs sync branches. */
+      /**
+       * Discriminator that splits the `Promisable<number>` runtime into Promise vs sync branches.
+       */
       const isPromise = result instanceof Promise;
       if (isPromise) {
         // Handle Promise<number>
@@ -1075,23 +1219,31 @@ const testRealGenericPromisableBehavior =
     }
   })();
 
-/** Tests guard patterns against branded, validated, and versioned schema constraints. */
+/**
+ * Tests guard patterns against branded, validated, and versioned schema constraints.
+ */
 const testRealGenericComplexConstraints =
   (function testRealGenericComplexConstraints(): void {
     // Branded schema testing
-    /** Branded schema returning `T & { __validated: true }`; verifies branded Output survives narrowing. */
+    /**
+     * Branded schema returning `T & { __validated: true }`; verifies branded Output survives narrowing.
+     */
     const brandedSchema = realGenericTestValues.brandedStringSchema;
 
     if (isRealSchema_Generic(brandedSchema,)) {
       brandedSchema.parse; // Should preserve string -> (string & { __validated: true })
       brandedSchema.__brand; // Should preserve brand property
 
-      /** Parse result under the Generic pattern; should remain `string & { __validated: true }`. */
+      /**
+       * Parse result under the Generic pattern; should remain `string & { __validated: true }`.
+       */
       const result = brandedSchema.parse('validate me',); // Complex constraint preserved
     }
 
     // Validated transform schema
-    /** Schema with `parse`, `validator`, and `transformer` members; tests preservation of multiple method shapes. */
+    /**
+     * Schema with `parse`, `validator`, and `transformer` members; tests preservation of multiple method shapes.
+     */
     const validatedSchema = realGenericTestValues.validatedTransformSchema;
 
     if (isRealSchema_Generic(validatedSchema,)) {
@@ -1100,12 +1252,18 @@ const testRealGenericComplexConstraints =
       validatedSchema.transformer; // Should preserve additional method
 
       // Full functionality preserved
-      /** Pre-check before parsing; verifies the `validator` callable survives Generic narrowing. */
+      /**
+       * Pre-check before parsing; verifies the `validator` callable survives Generic narrowing.
+       */
       const isValid = validatedSchema.validator('123',);
       if (isValid) {
-        /** Parse result on the validated input; observed after the `validator` gate. */
+        /**
+         * Parse result on the validated input; observed after the `validator` gate.
+         */
         const result = validatedSchema.parse('123',);
-        /** Transformer result; mirrors `parse` here, used to verify both methods remain typed. */
+        /**
+         * Transformer result; mirrors `parse` here, used to verify both methods remain typed.
+         */
         const transformed = validatedSchema.transformer('123',);
       }
     }
@@ -1121,7 +1279,9 @@ const testRealGenericComplexConstraints =
       validatedSchema.transformer; // Method preserved
 
       // Type-safe complex usage
-      /** Input string fed through validator/parser/transformer; literal kept so the scenario is reproducible. */
+      /**
+       * Input string fed through validator/parser/transformer; literal kept so the scenario is reproducible.
+       */
       const input = '456';
       if (validatedSchema.validator(input,)) {
         /**
@@ -1146,7 +1306,9 @@ const testRealGenericComplexConstraints =
       validatedSchema.transformer; // Method preserved in original structure
 
       // Type-safe complex usage with preserved input structure
-      /** Input string fed through validator/parser/transformer under Generic Extends Direct narrowing. */
+      /**
+       * Input string fed through validator/parser/transformer under Generic Extends Direct narrowing.
+       */
       const input = '789';
       if (validatedSchema.validator(input,)) {
         /**
@@ -1161,7 +1323,9 @@ const testRealGenericComplexConstraints =
     }
 
     // Versioned product schema
-    /** Schema with API version and timestamp metadata; checks property preservation alongside `unknown -> Product`. */
+    /**
+     * Schema with API version and timestamp metadata; checks property preservation alongside `unknown -> Product`.
+     */
     const versionedSchema = realGenericTestValues.versionedProductSchema;
 
     if (isRealSchema_Generic(versionedSchema,)) {
@@ -1169,11 +1333,17 @@ const testRealGenericComplexConstraints =
       versionedSchema.apiVersion; // Should preserve version info
       versionedSchema.lastUpdated; // Should preserve timestamp
 
-      /** Parsed `Product`; verifies Output preservation through the Generic pattern. */
+      /**
+       * Parsed `Product`; verifies Output preservation through the Generic pattern.
+       */
       const product = versionedSchema.parse('some data',);
-      /** Version label read off the schema; verifies the metadata field survives narrowing. */
+      /**
+       * Version label read off the schema; verifies the metadata field survives narrowing.
+       */
       const version = versionedSchema.apiVersion;
-      /** Timestamp read off the schema; verifies the `Date` field survives narrowing. */
+      /**
+       * Timestamp read off the schema; verifies the `Date` field survives narrowing.
+       */
       const updated = versionedSchema.lastUpdated;
     }
   })();

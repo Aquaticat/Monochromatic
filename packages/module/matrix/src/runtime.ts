@@ -69,7 +69,9 @@ export function runtimeExecCommand({
   readonly runtime: Runtime;
   readonly filePath: string;
 },): string {
-  /** Captured for reuse across the deno-specific and default branches below. */
+  /**
+   * Captured for reuse across the deno-specific and default branches below.
+   */
   const bin = RUNTIME_BIN[runtime];
 
   if (runtime === 'deno')

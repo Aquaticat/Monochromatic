@@ -40,7 +40,9 @@ import {
   currentDesktops,
 } from './xdg-paths.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'resolve',
   l: parentLogger,
@@ -50,7 +52,9 @@ const l = tagged({
  * Successful terminal resolution result.
  */
 export type ResolvedTerminal = ValidatedEntry & {
-  /** Desktop entry ID (Linux) or executable name (Windows) that was selected. */
+  /**
+   * Desktop entry ID (Linux) or executable name (Windows) that was selected.
+   */
   readonly entryId: string;
 };
 
@@ -86,26 +90,40 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | typeof NO_TE
  * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
  */
 async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMINAL> {
-  /** Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below. */
+  /**
+   * Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below.
+   */
   const desktops = currentDesktops();
-  /** Ordered config file paths; later parseConfigFiles reads in priority order. */
+  /**
+   * Ordered config file paths; later parseConfigFiles reads in priority order.
+   */
   const configs = configPaths({ desktops, },);
-  /** Merged config across all files; consumed for entry preferences and execarg defaults. */
+  /**
+   * Merged config across all files; consumed for entry preferences and execarg defaults.
+   */
   const config = await parseConfigFiles({ paths: configs, },);
 
-  /** Ascending-priority application directory list. */
+  /**
+   * Ascending-priority application directory list.
+   */
   const dirs = applicationDirs();
-  /** Destructure the scan result: registry maps ids to paths; fallbackIds is the priority-ordered scan list. */
+  /**
+   * Destructure the scan result: registry maps ids to paths; fallbackIds is the priority-ordered scan list.
+   */
   const {
     registry,
     fallbackIds,
   } = await scanEntries({ dirs, },);
 
   //region Build candidate list: explicit entries, then KDE fallback, then fallback scan
-  /** Config preferences, or KDE TerminalService when config has no entries. */
+  /**
+   * Config preferences, or KDE TerminalService when config has no entries.
+   */
   const explicitIds = await resolveExplicitIds({ configEntryIds: config.entryIds, },);
 
-  /** Fallback IDs with exclusions applied. */
+  /**
+   * Fallback IDs with exclusions applied.
+   */
   const filteredFallbackIds = fallbackIds.filter(function notExcluded(id,) {
     return !config.excludedIds
       .has(id,);
@@ -115,7 +133,9 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMIN
   //region Try explicit entries first (bypass OnlyShowIn/NotShowIn)
   for (const entryId of explicitIds) {
     /* oxlint-disable no-await-in-loop -- sequential: first valid entry wins */
-    /** Per-entry validation attempt; first non-null wins. */
+    /**
+     * Per-entry validation attempt; first non-null wins.
+     */
     const result = await tryEntry({
       entryId,
       registry,
@@ -136,7 +156,9 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMIN
   //region Try fallback entries
   for (const entryId of filteredFallbackIds) {
     /* oxlint-disable no-await-in-loop -- sequential: first valid entry wins */
-    /** Per-entry validation attempt against the fallback list; first non-null wins. */
+    /**
+     * Per-entry validation attempt against the fallback list; first non-null wins.
+     */
     const result = await tryEntry({
       entryId,
       registry,
@@ -179,7 +201,9 @@ async function resolveExplicitIds(
     return configEntryIds;
 
   l.debug('no explicit entries in config, checking kdeglobals',);
-  /** KDE fallback used only when explicit entries are empty. */
+  /**
+   * KDE fallback used only when explicit entries are empty.
+   */
   const kdeId = await kdeTerminalService();
   if (kdeId === NO_KDE_TERMINAL)
     return [];
@@ -219,14 +243,18 @@ async function tryEntry({
   readonly isFallback: boolean;
   readonly config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
 },): Promise<ValidatedEntry | typeof NO_TERMINAL> {
-  /** Registry lookup; missing id means we cannot resolve this preference. */
+  /**
+   * Registry lookup; missing id means we cannot resolve this preference.
+   */
   const reg = registry.get(entryId,);
   if (reg === undefined) {
     l.debug(`entry '${entryId}' not found in registry`,);
     return NO_TERMINAL;
   }
 
-  /** Parsed desktop entry contents; DESKTOP_ENTRY_UNREADABLE on read failure. */
+  /**
+   * Parsed desktop entry contents; DESKTOP_ENTRY_UNREADABLE on read failure.
+   */
   const entry = await parseDesktopEntry({ path: reg.path, },);
   if (entry === DESKTOP_ENTRY_UNREADABLE)
     return NO_TERMINAL;

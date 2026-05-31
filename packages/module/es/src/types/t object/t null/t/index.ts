@@ -1,2 +1,4 @@
-/** Type alias for `null`. */
+/**
+ * Type alias for `null`.
+ */
 export type $ = null;

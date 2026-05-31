@@ -84,7 +84,9 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
  */
 async function resolveWorkspacePrefix(): Promise<string> {
   try {
-    /** Captured root so the trailing slash can be appended exactly once before returning. */
+    /**
+     * Captured root so the trailing slash can be appended exactly once before returning.
+     */
     const root = await findMiseMonorepoRootCached();
     return `${root}/`;
   }
@@ -192,7 +194,9 @@ function readProperty({
  * ```
  */
 function readMessage(error: object,): string {
-  /** Defensively-read `.message`; held in a local so the getter fires at most once. */
+  /**
+   * Defensively-read `.message`; held in a local so the getter fires at most once.
+   */
   const message = readProperty({
     source: error,
     key: 'message',
@@ -218,7 +222,9 @@ function readMessage(error: object,): string {
  * ```
  */
 function readErrorLabel(error: object,): string {
-  /** Defensively-read `.name`; held in a local so the getter fires at most once. */
+  /**
+   * Defensively-read `.name`; held in a local so the getter fires at most once.
+   */
   const label = readProperty({
     source: error,
     key: 'name',
@@ -306,14 +312,18 @@ function readStackFrames({
   readonly message: string;
   readonly workspacePrefix: string;
 },): readonly string[] {
-  /** Defensively-read `.stack`; held in a local so the getter fires at most once. */
+  /**
+   * Defensively-read `.stack`; held in a local so the getter fires at most once.
+   */
   const stack = readProperty({
     source: error,
     key: 'stack',
   },);
   if ((typeof stack) !== 'string')
     return [];
-  /** Raw newline-split stack lines, before header-line trimming and per-frame cleanup. */
+  /**
+   * Raw newline-split stack lines, before header-line trimming and per-frame cleanup.
+   */
   const rawLines = stack
     .split('\n',);
   /**
@@ -394,11 +404,17 @@ function formatNode({
 
   visited.add(value,);
 
-  /** Extracted message kept in a local so it can be reused for header construction and stack-header trimming. */
+  /**
+   * Extracted message kept in a local so it can be reused for header construction and stack-header trimming.
+   */
   const message = readMessage(value,);
-  /** Class label rendered ahead of the message; held in a local for the same reason as `message`. */
+  /**
+   * Class label rendered ahead of the message; held in a local for the same reason as `message`.
+   */
   const label = readErrorLabel(value,);
-  /** Cleaned stack frames produced once per node so the cause and aggregate branches both see the same set. */
+  /**
+   * Cleaned stack frames produced once per node so the cause and aggregate branches both see the same set.
+   */
   const frames = readStackFrames({
     error: value,
     message,
@@ -413,15 +429,21 @@ function formatNode({
     > 0
     ? ` ${frames.join(' ',)}`
     : '';
-  /** Composed header-plus-frames string for this node, prepended to the descendants in the return list. */
+  /**
+   * Composed header-plus-frames string for this node, prepended to the descendants in the return list.
+   */
   const line = `${headerPrefix}${label}: ${message}${framesInline}`;
 
-  /** Cause value, defensively read, pulled out so the recursion only runs once when a cause exists. */
+  /**
+   * Cause value, defensively read, pulled out so the recursion only runs once when a cause exists.
+   */
   const causeValue: unknown = readProperty({
     source: value,
     key: 'cause',
   },);
-  /** Recursively rendered cause subtree, kept separate from `errorLines` so cause precedes aggregate members. */
+  /**
+   * Recursively rendered cause subtree, kept separate from `errorLines` so cause precedes aggregate members.
+   */
   const causeLines = causeValue !== undefined
     ? formatNode({
       headerPrefix: 'Caused by: ',
@@ -431,12 +453,16 @@ function formatNode({
     },)
     : [];
 
-  /** `errors` field, defensively read, pulled out so the array check and subsequent iteration both refer to the same captured value. */
+  /**
+   * `errors` field, defensively read, pulled out so the array check and subsequent iteration both refer to the same captured value.
+   */
   const errorsField: unknown = readProperty({
     source: value,
     key: 'errors',
   },);
-  /** Recursively rendered aggregate members, appended after `causeLines` to keep walk order stable. */
+  /**
+   * Recursively rendered aggregate members, appended after `causeLines` to keep walk order stable.
+   */
   const errorLines: readonly string[] = Array.isArray(errorsField,)
     ? errorsField.flatMap(function formatAggregateMember(
       member,
@@ -498,9 +524,13 @@ function formatNode({
  * ```
  */
 export async function formatErrorDeep(value: unknown,): Promise<readonly string[]> {
-  /** Shared cycle-detection set so a self-referential `.cause` does not recurse forever. */
+  /**
+   * Shared cycle-detection set so a self-referential `.cause` does not recurse forever.
+   */
   const visited = new WeakSet<object>();
-  /** Resolved once per top-level walk so all descendants see the same prefix. */
+  /**
+   * Resolved once per top-level walk so all descendants see the same prefix.
+   */
   const workspacePrefix = await resolveWorkspacePrefix();
   return formatNode({
     headerPrefix: '',
@@ -551,12 +581,16 @@ export async function formatFailure({
   readonly summary: string;
   readonly value: unknown;
 },): Promise<string> {
-  /** Walked error chain reused across the empty-check and the summary fusion. */
+  /**
+   * Walked error chain reused across the empty-check and the summary fusion.
+   */
   const lines = await formatErrorDeep(value,);
   if (lines.length
     === 0)
     return summary;
-  /** First line is fused onto the summary so the tagged logger's prefix only renders once. */
+  /**
+   * First line is fused onto the summary so the tagged logger's prefix only renders once.
+   */
   const [first, ...rest] = lines;
   return [
     `${summary} ${first}`,

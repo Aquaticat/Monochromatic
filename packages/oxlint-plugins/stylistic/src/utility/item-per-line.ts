@@ -25,13 +25,21 @@ import { needsPerLineFix, } from './needs-fix.ts';
  * ```
  */
 export type ItemPerLineConfig = {
-  /** Lint context for reporting and source access. */
+  /**
+   * Lint context for reporting and source access.
+   */
   readonly context: Context;
-  /** Container AST node (array literal, object expression, params list, etc.). */
+  /**
+   * Container AST node (array literal, object expression, params list, etc.).
+   */
   readonly container: Span;
-  /** Ordered list of child items that should each appear on their own line. */
+  /**
+   * Ordered list of child items that should each appear on their own line.
+   */
   readonly items: readonly Span[];
-  /** Message ID to use when reporting. */
+  /**
+   * Message ID to use when reporting.
+   */
   readonly messageId: string;
   /**
    * Bracket pair that wraps the items.
@@ -97,7 +105,9 @@ export function checkItemsPerLine({
     < minItems)
     return;
 
-  /** Source text of the entire file. */
+  /**
+   * Source text of the entire file.
+   */
   const sourceText = context.sourceCode
     .getText();
 

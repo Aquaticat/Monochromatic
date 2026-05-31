@@ -7,12 +7,16 @@ import {
   type VisitorWithHooks,
 } from '@oxlint/plugins';
 
-/** Checks whether a node is preceded by a TSDoc block comment. */
+/**
+ * Checks whether a node is preceded by a TSDoc block comment.
+ */
 function hasTsdoc(
   node: Span,
   context: Context,
 ): boolean {
-  /** Comments adjacent to the node; the rule passes when any one is a TSDoc block. */
+  /**
+   * Comments adjacent to the node; the rule passes when any one is a TSDoc block.
+   */
   const comments = context.sourceCode
     .getCommentsBefore(node,);
   return comments.some(comment =>
@@ -24,7 +28,9 @@ function hasTsdoc(
   );
 }
 
-/** Reports a diagnostic when a node lacks a TSDoc comment. */
+/**
+ * Reports a diagnostic when a node lacks a TSDoc comment.
+ */
 function reportTsdoc(
   node: Span,
   context: Context,
@@ -40,7 +46,9 @@ function reportTsdoc(
   }
 }
 
-/** File extensions that should be excluded from the require-tsdoc rule. */
+/**
+ * File extensions that should be excluded from the require-tsdoc rule.
+ */
 const IGNORED_EXTENSIONS = [
   '.test.ts',
   '.spec.ts',

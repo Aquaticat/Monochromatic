@@ -53,21 +53,33 @@ export { defaultConfig, } from './runner-config.ts';
 
 //region Message and timing types: chat message shape and streaming timing breakdown used by runner-stream.ts
 
-/** Chat completions message shape */
+/**
+ * Chat completions message shape
+ */
 export type ChatMessage = {
   readonly role: 'system' | 'user' | 'assistant';
   readonly content: string;
 };
 
-/** Timing breakdown for a single API call */
+/**
+ * Timing breakdown for a single API call
+ */
 export type StreamTiming = {
-  /** Milliseconds from request start to first chunk arriving */
+  /**
+   * Milliseconds from request start to first chunk arriving
+   */
   readonly timeToFirstChunkMs: number;
-  /** Milliseconds between consecutive chunks (for diagnosing stalls) */
+  /**
+   * Milliseconds between consecutive chunks (for diagnosing stalls)
+   */
   readonly interChunkMs: readonly number[];
-  /** Total wall-clock milliseconds for the full response */
+  /**
+   * Total wall-clock milliseconds for the full response
+   */
   readonly totalMs: number;
-  /** Number of chunks received */
+  /**
+   * Number of chunks received
+   */
   readonly chunkCount: number;
 };
 
@@ -76,13 +88,21 @@ export type StreamTiming = {
  * Populated when the API returns usage data (requires `stream_options.include_usage`).
  */
 export type StreamUsage = {
-  /** Tokens in the prompt */
+  /**
+   * Tokens in the prompt
+   */
   readonly promptTokens: number;
-  /** Tokens in the generated completion (includes reasoning tokens) */
+  /**
+   * Tokens in the generated completion (includes reasoning tokens)
+   */
   readonly completionTokens: number;
-  /** Tokens used for internal reasoning, absent when the model does not report them */
+  /**
+   * Tokens used for internal reasoning, absent when the model does not report them
+   */
   readonly reasoningTokens?: number;
-  /** Sum of prompt and completion tokens */
+  /**
+   * Sum of prompt and completion tokens
+   */
   readonly totalTokens: number;
 };
 
@@ -91,15 +111,25 @@ export type StreamUsage = {
  * Captures everything the API returns: text, reasoning trace, timing, usage, and stop reason.
  */
 export type CompletionResult = {
-  /** Concatenated content deltas (the "visible" response) */
+  /**
+   * Concatenated content deltas (the "visible" response)
+   */
   readonly text: string;
-  /** Concatenated reasoning/thinking deltas, empty string when the model produced none */
+  /**
+   * Concatenated reasoning/thinking deltas, empty string when the model produced none
+   */
   readonly reasoning: string;
-  /** Per-chunk timing breakdown */
+  /**
+   * Per-chunk timing breakdown
+   */
   readonly timing: StreamTiming;
-  /** Token usage, absent when the API did not include usage data */
+  /**
+   * Token usage, absent when the API did not include usage data
+   */
   readonly usage?: StreamUsage;
-  /** Why generation stopped (e.g. "stop", "length"), absent when not reported */
+  /**
+   * Why generation stopped (e.g. "stop", "length"), absent when not reported
+   */
   readonly finishReason?: string;
 };
 
@@ -118,15 +148,23 @@ export type ConfigSnapshot = {
 
 //region Probe and report result types: ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
 
-/** Result of a single probe execution */
+/**
+ * Result of a single probe execution
+ */
 export type ProbeResult = {
   readonly name: string;
   readonly category: Probe['category'];
-  /** Scores from each consistency run (length = consistencyRuns) */
+  /**
+   * Scores from each consistency run (length = consistencyRuns)
+   */
   readonly scores: readonly number[];
-  /** Mean score across all runs */
+  /**
+   * Mean score across all runs
+   */
   readonly meanScore: number;
-  /** Whether all runs agreed (high consistency = reliable signal) */
+  /**
+   * Whether all runs agreed (high consistency = reliable signal)
+   */
   readonly consistent: boolean;
   /**
    * Score after a second pass where the model gets its code + diagnostics and fixes them.
@@ -143,26 +181,42 @@ export type ProbeResult = {
    * failing the whole model so partial results can still be recorded in history.
    */
   readonly timedOut?: boolean;
-  /** Timing from the last consistency run */
+  /**
+   * Timing from the last consistency run
+   */
   readonly timing?: StreamTiming;
-  /** Token usage from the last consistency run */
+  /**
+   * Token usage from the last consistency run
+   */
   readonly usage?: StreamUsage;
 };
 
-/** Aggregate report across all probes */
+/**
+ * Aggregate report across all probes
+ */
 export type CanaryReport = {
   readonly model: OpenRouterModelId;
-  /** Human-readable model label for display and grouping */
+  /**
+   * Human-readable model label for display and grouping
+   */
   readonly label: string;
   readonly timestamp: ISOTimestamp;
   readonly results: readonly ProbeResult[];
-  /** Overall health score 0-1 */
+  /**
+   * Overall health score 0-1
+   */
   readonly overallScore: number;
-  /** Per-category scores for targeted diagnosis */
+  /**
+   * Per-category scores for targeted diagnosis
+   */
   readonly categoryScores: Readonly<Record<string, number>>;
-  /** Whether this run failed entirely (API error, timeout, etc.) */
+  /**
+   * Whether this run failed entirely (API error, timeout, etc.)
+   */
   readonly failed: boolean;
-  /** Error message if failed */
+  /**
+   * Error message if failed
+   */
   readonly error?: string;
 };
 

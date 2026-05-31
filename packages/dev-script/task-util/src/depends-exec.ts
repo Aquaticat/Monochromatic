@@ -34,13 +34,21 @@ import spawn from 'nano-spawn';
  * ```
  */
 export type ExecuteOptions = {
-  /** Executable to run */
+  /**
+   * Executable to run
+   */
   readonly command: string;
-  /** Arguments passed to the command */
+  /**
+   * Arguments passed to the command
+   */
   readonly commandArgs: readonly string[];
-  /** Whether to log diagnostic messages */
+  /**
+   * Whether to log diagnostic messages
+   */
   readonly verbose: boolean;
-  /** Whether to suppress command failures (exit 0 regardless) */
+  /**
+   * Whether to suppress command failures (exit 0 regardless)
+   */
   readonly allowFailure: boolean;
 };
 
@@ -112,9 +120,13 @@ export async function executeWithCollapsedOutput({
  * ```
  */
 type DumpAndHandleErrorOptions = {
-  /** Error thrown by nano-spawn (typically SubprocessError) */
+  /**
+   * Error thrown by nano-spawn (typically SubprocessError)
+   */
   readonly error: unknown;
-  /** Whether to suppress the failure */
+  /**
+   * Whether to suppress the failure
+   */
   readonly allowFailure: boolean;
 };
 
@@ -140,7 +152,9 @@ function dumpAndHandleError({
 }: DumpAndHandleErrorOptions,): void {
   // SubprocessError from nano-spawn includes captured stdout/stderr
   if ((error !== null) && ((typeof error) === 'object')) {
-    /** Re-typed thrown error so its captured subprocess fields can be dumped to the parent streams. */
+    /**
+     * Re-typed thrown error so its captured subprocess fields can be dumped to the parent streams.
+     */
     const subprocessError = error as {
       stdout?: string;
       stderr?: string;

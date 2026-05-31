@@ -9,10 +9,14 @@ import { SIDE_DRAWER_NAV_STYLES, } from './side-drawer-styles-nav.ts';
 import { SIDE_DRAWER_PANEL_STYLES, } from './side-drawer-styles-panel.ts';
 import { SIDE_DRAWER_SIDEBAR_STYLES, } from './side-drawer-styles-sidebar.ts';
 
-/** Full percentage for wrapper block-size. */
+/**
+ * Full percentage for wrapper block-size.
+ */
 const FULL_PERCENT = 100;
 
-/** Compiled CSS string for `<side-drawer>` Shadow DOM. */
+/**
+ * Compiled CSS string for `<side-drawer>` Shadow DOM.
+ */
 export const SIDE_DRAWER_STYLES: string = [
   css({
     rule: ':host',

@@ -34,9 +34,13 @@ export function queryAllBackendsSync({
   BackendResult<SyncStorageBackend>,
   ...BackendResult<SyncStorageBackend>[],
 ] {
-  /** Per-backend query results assembled in priority-respecting order. */
+  /**
+   * Per-backend query results assembled in priority-respecting order.
+   */
   const results = backends.map(function queryBackend(backend,) {
-    /** Raw value returned by this backend before nullish normalisation. */
+    /**
+     * Raw value returned by this backend before nullish normalisation.
+     */
     const raw = backend.get(key,);
     return {
       value: raw ?? ABSENT,

@@ -31,24 +31,32 @@ export function buildActionButtonRow(
     readonly isCreate: boolean;
   },
 ): HTMLElement {
-  /** Start button attrs; `disabled` is appended when a timer is already running. */
+  /**
+   * Start button attrs; `disabled` is appended when a timer is already running.
+   */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt
     !== undefined)
     startAttrs.disabled = '';
-  /** Stop button attrs; `disabled` is appended when no timer is running. */
+  /**
+   * Stop button attrs; `disabled` is appended when no timer is running.
+   */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
   if (task.timerStartedAt
     === undefined)
     stopAttrs.disabled = '';
-  /** Complete button attrs; `disabled` is appended when blockers remain. */
+  /**
+   * Complete button attrs; `disabled` is appended when blockers remain.
+   */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
   if (task.blockedBy
     .length
     > 0)
     completeAttrs.disabled = '';
 
-  /** Row captured separately so the create-mode hidden flag can be toggled. */
+  /**
+   * Row captured separately so the create-mode hidden flag can be toggled.
+   */
   const btnRow = h({
     tag: 'div',
     class: 'btn-row',
@@ -119,14 +127,20 @@ export function attachActionHandler(
     'click',
     function onAction(event,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers */
-      /** Click target narrowed to `HTMLElement` so `closest()` can be invoked. */
+      /**
+       * Click target narrowed to `HTMLElement` so `closest()` can be invoked.
+       */
       const target = event.target as HTMLElement;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      /** Nearest `[data-action]` button ancestor, or `null` when the click was outside any action. */
+      /**
+       * Nearest `[data-action]` button ancestor, or `null` when the click was outside any action.
+       */
       const button = target.closest<HTMLElement>('[data-action]',);
       if (button === null)
         return;
-      /** Action name from the button's `data-action` attribute, forwarded to the custom event. */
+      /**
+       * Action name from the button's `data-action` attribute, forwarded to the custom event.
+       */
       const { action, } = (button as HTMLElement).dataset;
 
       host.dispatchEvent(

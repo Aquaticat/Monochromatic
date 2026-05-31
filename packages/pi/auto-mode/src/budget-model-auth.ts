@@ -17,7 +17,9 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { l as parentLogger, } from './log.ts';
 
-/** Tagged logger for budget-model auth adapters. */
+/**
+ * Tagged logger for budget-model auth adapters.
+ */
 const l = tagged({
   tag: 'budget-model-auth',
   l: parentLogger,
@@ -51,12 +53,16 @@ async function resolveBudgetAuth(
   },
 ): Promise<BudgetModelAuth | typeof NO_AUTH> {
   try {
-    /** Registry response carrying `ok` plus optional `apiKey` and `headers`. */
+    /**
+     * Registry response carrying `ok` plus optional `apiKey` and `headers`.
+     */
     const result = await ctx.modelRegistry
       .getApiKeyAndHeaders(model,);
     if (!result.ok)
       return NO_AUTH;
-    /** Output auth object assembled field-by-field so omitted keys stay absent. */
+    /**
+     * Output auth object assembled field-by-field so omitted keys stay absent.
+     */
     const auth: BudgetModelAuth = {};
     if (result.apiKey
       !== undefined)
@@ -72,7 +78,9 @@ async function resolveBudgetAuth(
     return auth;
   }
   catch (error) {
-    /** Per-call sub-logger so lines from this entry point carry function name. */
+    /**
+     * Per-call sub-logger so lines from this entry point carry function name.
+     */
     const innerL = tagged({
       tag: resolveBudgetAuth.name,
       l,
@@ -141,7 +149,9 @@ function findBudgetOverrideModel(
   },
 ): Model<Api> | typeof NO_OVERRIDE_MODEL {
   /* oxlint-disable unicorn/no-array-method-this-argument -- ModelRegistry.find is not Array.find. */
-  /** Registry-resolved model record, when present. */
+  /**
+   * Registry-resolved model record, when present.
+   */
   const model = ctx.modelRegistry
     .find(
       provider,

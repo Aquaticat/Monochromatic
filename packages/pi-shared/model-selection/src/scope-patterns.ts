@@ -42,10 +42,14 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
     readonly availableModels: readonly TModel[];
   },
 ): ScopedModel<TModel>[] {
-  /** Accumulated unique matches across patterns. */
+  /**
+   * Accumulated unique matches across patterns.
+   */
   const accumulator: ScopedModel<TModel>[] = [];
   for (const pattern of patterns) {
-    /** Models matched by current pattern. */
+    /**
+     * Models matched by current pattern.
+     */
     const matches = patternHasGlob(pattern,)
       ? resolveGlobPattern({
         pattern,
@@ -55,7 +59,9 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
         pattern,
         availableModels,
       },);
-    /** Updated accumulator with new unique matches appended. */
+    /**
+     * Updated accumulator with new unique matches appended.
+     */
     const next = appendUniqueMatches({
       accumulator,
       matches,
@@ -88,11 +94,15 @@ function resolveGlobPattern<TModel extends ModelIdentity,>(
     readonly availableModels: readonly TModel[];
   },
 ): ScopedModel<TModel>[] {
-  /** Pattern split into glob body and optional thinking suffix. */
+  /**
+   * Pattern split into glob body and optional thinking suffix.
+   */
   const parsed = splitThinkingSuffix(pattern,);
   return availableModels
     .filter(function matchesModel(model,) {
-      /** Canonical model reference. */
+      /**
+       * Canonical model reference.
+       */
       const fullId = canonicalSlug(model,);
       return minimatch(
         fullId,
@@ -134,7 +144,9 @@ function resolveLiteralPattern<TModel extends ModelIdentity,>(
     readonly availableModels: readonly TModel[];
   },
 ): ScopedModel<TModel>[] {
-  /** Parsed model pattern. */
+  /**
+   * Parsed model pattern.
+   */
   const resolution = parseModelPattern({
     pattern,
     availableModels,
@@ -173,7 +185,9 @@ function appendUniqueMatches<TModel extends ModelIdentity,>(
     readonly matches: readonly ScopedModel<TModel>[];
   },
 ): ScopedModel<TModel>[] {
-  /** Fresh accumulator seeded from input to avoid mutating caller's array. */
+  /**
+   * Fresh accumulator seeded from input to avoid mutating caller's array.
+   */
   const result: ScopedModel<TModel>[] = [...accumulator,];
   for (const match of matches) {
     if (result.some(function alreadyAdded(entry,) {

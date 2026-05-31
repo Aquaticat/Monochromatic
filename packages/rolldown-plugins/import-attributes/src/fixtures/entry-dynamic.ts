@@ -10,7 +10,9 @@
  * ```
  */
 export async function getQuery(): Promise<string> {
-  /** Namespace object so the default export can be returned. */
+  /**
+   * Namespace object so the default export can be returned.
+   */
   const mod = await import('./sample.sql', { with: { type: 'text', }, });
   return mod.default;
 }

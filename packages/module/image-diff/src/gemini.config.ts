@@ -29,12 +29,16 @@ export const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
  * ```
  */
 export function resolveGeminiApiKey(configKey?: string,): string {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: resolveGeminiApiKey.name,
     l,
   },);
-  /** Resolved key from explicit config, then preferred env var, then fallback env var; blank triggers the explicit error. */
+  /**
+   * Resolved key from explicit config, then preferred env var, then fallback env var; blank triggers the explicit error.
+   */
   const key = configKey
     ?? process
     .env

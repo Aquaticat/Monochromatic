@@ -8,7 +8,9 @@
 
 import type { ComposerState, } from './state.ts';
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -58,7 +60,9 @@ export function writeBody(
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/** Range for the random-id fallback when `crypto.randomUUID` is unavailable. */
+/**
+ * Range for the random-id fallback when `crypto.randomUUID` is unavailable.
+ */
 const RANDOM_ID_RANGE = 1e9;
 
 /**
@@ -78,7 +82,9 @@ export async function postCreateDraft(
     readonly parentId?: string;
   },
 ): Promise<void> {
-  /** Awaited so the `!ok` branch can read the body before throwing. */
+  /**
+   * Awaited so the `!ok` branch can read the body before throwing.
+   */
   const response = await fetch(
     '/api/drafts',
     {
@@ -92,7 +98,9 @@ export async function postCreateDraft(
     },
   );
   if (!response.ok) {
-    /** Server-supplied error body folded into the thrown message for the caller's logs. */
+    /**
+     * Server-supplied error body folded into the thrown message for the caller's logs.
+     */
     const message = await response.text();
     throw new Error(`create draft failed: ${message}`,);
   }
@@ -113,15 +121,23 @@ export async function postCreateDraft(
  * ```
  */
 export async function fetchChunkCount(messageId: number,): Promise<number> {
-  /** Awaited before reading the body so the body-read can throw the network error first if any. */
+  /**
+   * Awaited before reading the body so the body-read can throw the network error first if any.
+   */
   const response = await fetch(`/m/${String(messageId,)}/c/0`,);
-  /** Full HTML of the chunk-0 nav, scanned for the chunk-count regex. */
+  /**
+   * Full HTML of the chunk-0 nav, scanned for the chunk-count regex.
+   */
   const text = await response.text();
   /* oxlint-disable no-restricted-syntax/no-regex -- parses "chunk N of M" from server-rendered nav fragment; bounded captures over server-controlled HTML, linear in input length */
-  /** Holds the regex match so the count can be parsed from capture group 1. */
+  /**
+   * Holds the regex match so the count can be parsed from capture group 1.
+   */
   const match = /chunk\s+\d+\s+of\s+(\d+)/u.exec(text,);
   /* oxlint-enable no-restricted-syntax/no-regex */
-  /** Extracted before the undefined check so the call site sees one narrowed string. */
+  /**
+   * Extracted before the undefined check so the call site sees one narrowed string.
+   */
   const captured = match?.[1];
   if (captured === undefined)
     throw new Error('could not determine chunk count',);
@@ -212,7 +228,9 @@ export function getIdentity(form: HTMLFormElement,): string {
 export function parseEditId(raw?: string,): number | typeof NEW_MESSAGE {
   if ((raw === undefined) || (raw === ''))
     return NEW_MESSAGE;
-  /** Parsed once so the finite-and-positive guard and the return can both reference it. */
+  /**
+   * Parsed once so the finite-and-positive guard and the return can both reference it.
+   */
   const value = Number.parseInt(
     raw,
     DECIMAL_RADIX,
@@ -235,11 +253,15 @@ export function parseEditId(raw?: string,): number | typeof NEW_MESSAGE {
  * ```
  */
 export function appendStatusElement(form: HTMLFormElement,): HTMLElement {
-  /** Returned as-is when present so repeated calls do not re-append the same div. */
+  /**
+   * Returned as-is when present so repeated calls do not re-append the same div.
+   */
   const existing = form.querySelector<HTMLElement>('.composer-status',);
   if (existing !== null)
     return existing;
-  /** Lazily created on first call; appended below and returned to the caller. */
+  /**
+   * Lazily created on first call; appended below and returned to the caller.
+   */
   const status = document.createElement('div',);
   status.className = 'composer-status';
   form.append(status,);
@@ -281,7 +303,9 @@ export function setStatus(
  * ```
  */
 export function appendVolatileBadge(form: HTMLFormElement,): void {
-  /** Indicator pinned next to the composer so users notice unsent edits are in-memory only. */
+  /**
+   * Indicator pinned next to the composer so users notice unsent edits are in-memory only.
+   */
   const badge = document.createElement('span',);
   badge.className = 'composer-volatile-badge';
   badge.textContent = 'volatile mode';

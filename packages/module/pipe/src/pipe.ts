@@ -151,7 +151,9 @@ export function pipe(args: DeferredArgs,): (value: unknown,) => unknown {
    * @returns final pipeline output
    */
   function pipeline(value: unknown,): unknown {
-    /** Logger tagged at the deferred public API invocation boundary. */
+    /**
+     * Logger tagged at the deferred public API invocation boundary.
+     */
     const l = tagged(args.l
       === undefined
       ? { tag: pipe.name, }

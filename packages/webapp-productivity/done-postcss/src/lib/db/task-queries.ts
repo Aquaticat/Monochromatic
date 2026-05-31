@@ -37,7 +37,9 @@ import {
  * ```
  */
 export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK_NOT_FOUND> {
-  /** Single-row lookup result; nullish when the ID does not exist. */
+  /**
+   * Single-row lookup result; nullish when the ID does not exist.
+   */
   const taskRow: unknown = await db.prepare(SQL_SELECT_TASK_BY_ID,)
     .get(id,);
   if ((taskRow === undefined) || (taskRow === null))
@@ -59,7 +61,9 @@ export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK
  * ```
  */
 export async function getTaskById(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
-  /** Raw row from `getTaskRowById`; mapped to the application shape when present. */
+  /**
+   * Raw row from `getTaskRowById`; mapped to the application shape when present.
+   */
   const taskRow = await getTaskRowById(id,);
   return taskRow === TASK_NOT_FOUND ? TASK_NOT_FOUND : mapTask(taskRow,);
 }
@@ -76,7 +80,9 @@ export async function getTaskById(id: string,): Promise<Task | typeof TASK_NOT_F
  */
 export async function listInboxUnblockedTasks(): Promise<Task[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
-  /** Raw row list for the unblocked-inbox query; mapped element-wise below. */
+  /**
+   * Raw row list for the unblocked-inbox query; mapped element-wise below.
+   */
   const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,)
     .all() as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -97,7 +103,9 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
  */
 export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow with blocker_id join column */
-  /** Raw row list paired with the join column; rebuilt into blocker links below. */
+  /**
+   * Raw row list paired with the join column; rebuilt into blocker links below.
+   */
   const rows = await db
     .prepare(SQL_SELECT_BLOCKED_INBOX,)
     .all() as (TaskRow & { blocker_id: string; })[];
@@ -122,7 +130,9 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
  */
 export async function listInProgressTasks(): Promise<Task[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
-  /** Raw row list of tasks with active timers; mapped element-wise below. */
+  /**
+   * Raw row list of tasks with active timers; mapped element-wise below.
+   */
   const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,)
     .all() as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -145,7 +155,9 @@ export async function listInProgressTasks(): Promise<Task[]> {
  */
 export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
-  /** Raw candidate rows excluding the current task; mapped element-wise below. */
+  /**
+   * Raw candidate rows excluding the current task; mapped element-wise below.
+   */
   const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,)
     .all(taskId,) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -166,7 +178,9 @@ export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]
  */
 export async function listAllTags(): Promise<string[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns rows with tag column */
-  /** Single-column tag rows; flattened to a string array below. */
+  /**
+   * Single-column tag rows; flattened to a string array below.
+   */
   const rows = await db.prepare(SQL_SELECT_ALL_TAGS,)
     .all() as { tag: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -189,7 +203,9 @@ export async function listAllTags(): Promise<string[]> {
  * ```
  */
 export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
-  /** Whitespace-trimmed query; empty trim short-circuits with no DB call. */
+  /**
+   * Whitespace-trimmed query; empty trim short-circuits with no DB call.
+   */
   const normalizedSearchQuery = searchQuery.trim();
   if (normalizedSearchQuery.length
     === 0)
@@ -197,7 +213,9 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
 
   try {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database FTS query */
-    /** FTS-matched rows joined with the blocked flag; mapped to `SearchTask` below. */
+    /**
+     * FTS-matched rows joined with the blocked flag; mapped to `SearchTask` below.
+     */
     const rows = await db.prepare(SQL_SEARCH_FTS,)
       .all(
       normalizedSearchQuery,
@@ -213,7 +231,9 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
   }
   catch {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database LIKE query */
-    /** Fallback LIKE-match rows used when FTS rejects the query syntax. */
+    /**
+     * Fallback LIKE-match rows used when FTS rejects the query syntax.
+     */
     const rows = await db
       .prepare(SQL_SEARCH_LIKE,)
       .all(

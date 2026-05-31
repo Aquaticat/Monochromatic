@@ -44,7 +44,9 @@ async function copyTreeToDist(
     readonly files: readonly string[];
   },
 ): Promise<void> {
-  /** Deduplicated parent directories pre-created before the per-file copy fan-out. */
+  /**
+   * Deduplicated parent directories pre-created before the per-file copy fan-out.
+   */
   const targetDirs = [...new Set(
     files.map(function targetDir(filePath,) {
       return join(
@@ -115,18 +117,26 @@ export async function generateAssets(
     readonly l: Logger;
   },
 ): Promise<void> {
-  /** Function-scoped logger tagged with the caller name for traceable log lines. */
+  /**
+   * Function-scoped logger tagged with the caller name for traceable log lines.
+   */
   const l = tagged({
     tag: generateAssets.name,
     l: parentLogger,
   },);
 
-  /** Per-language RSS write promises kicked off concurrently. */
+  /**
+   * Per-language RSS write promises kicked off concurrently.
+   */
   const rssWrites = validLangs.map(function writeRss(lang,) {
-    /** Posts narrowed to this locale; absent locales yield an empty feed instead of an error. */
+    /**
+     * Posts narrowed to this locale; absent locales yield an empty feed instead of an error.
+     */
     const langPosts = byLang.get(lang,)
       ?? [];
-    /** Pre-rendered XML body written to `{lang}/rss.xml`. */
+    /**
+     * Pre-rendered XML body written to `{lang}/rss.xml`.
+     */
     const rssXml = generateLanguageRss({
       lang,
       posts: langPosts,
@@ -140,13 +150,17 @@ export async function generateAssets(
 
   // Copies all content files (including MDX source) to dist intentionally,
   // so readers can inspect the original source of any post.
-  /** Directory listings for content and public trees fetched concurrently. */
+  /**
+   * Directory listings for content and public trees fetched concurrently.
+   */
   const [contentResult, publicResult,] = await Promise.all([
     readdir(`${contentDir}/**/*`,),
     readdir('public/**/*',),
   ],);
 
-  /** robots.txt allowing all crawlers with sitemap references. */
+  /**
+   * robots.txt allowing all crawlers with sitemap references.
+   */
   const robotsTxt = [
     'User-agent: *',
     'Allow: /',

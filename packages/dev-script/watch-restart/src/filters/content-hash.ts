@@ -57,12 +57,16 @@ export function contentHashFilter(): WatchFilter {
       return true;
     }
     try {
-      /** Hash computed off the current file bytes; the OVERSIZED sentinel means the file exceeds the size cap. */
+      /**
+       * Hash computed off the current file bytes; the OVERSIZED sentinel means the file exceeds the size cap.
+       */
       const fresh = await ctx.hashCache
         .hashFile(event.path,);
       if (fresh === OVERSIZED)
         return true;
-      /** Previously stored hash for this path; `undefined` when the watcher has never seen the file. */
+      /**
+       * Previously stored hash for this path; `undefined` when the watcher has never seen the file.
+       */
       const prior = ctx.hashCache
         .get(event.path,);
       if (prior === fresh)
@@ -75,7 +79,9 @@ export function contentHashFilter(): WatchFilter {
       return true;
     }
     catch (error) {
-      /** Human-readable error string used in the fire-on-failure warning log. */
+      /**
+       * Human-readable error string used in the fire-on-failure warning log.
+       */
       const message = error instanceof Error ? error.message : String(error,);
       ctx.logger
         .warn(

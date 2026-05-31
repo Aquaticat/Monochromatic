@@ -20,22 +20,30 @@
 
 //region Simplified Type Definitions
 
-/** Base schema with a parse method accepting and returning unknown. */
+/**
+ * Base schema with a parse method accepting and returning unknown.
+ */
 type Schema = {
   readonly parse: (value: unknown,) => unknown;
 };
 
-/** Schema with an additional numeric weight property. */
+/**
+ * Schema with an additional numeric weight property.
+ */
 type SchemaWithWeight = Schema & {
   readonly weight: number;
 };
 
-/** Schema with an additional string name property. */
+/**
+ * Schema with an additional string name property.
+ */
 type NamedSchema = Schema & {
   readonly name: string;
 };
 
-/** Schema combining weight, name, and version properties. */
+/**
+ * Schema combining weight, name, and version properties.
+ */
 type ComplexSchema = SchemaWithWeight & {
   readonly name: string;
   readonly version: number;
@@ -121,7 +129,9 @@ function isSchema_GenericExtends<const T extends Schema = Schema,>(
 
 //region Simplified Test Values
 
-/** Collection of schema instances with various type constraints for behavioral testing. */
+/**
+ * Collection of schema instances with various type constraints for behavioral testing.
+ */
 const simplifiedTestValues = {
   // Properly typed schemas - should preserve properties
   schemaWithWeight: { parse(x: unknown,) {
@@ -209,7 +219,9 @@ const simplifiedTestValues = {
 //endregion Simplified Test Values
 
 //region Simplified Behavioral Tests
-/** Tests all guard patterns against SchemaWithWeight for property preservation. */
+/**
+ * Tests all guard patterns against SchemaWithWeight for property preservation.
+ */
 const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(): void {
   /**
    * `SchemaWithWeight` instance under test; every guard pattern below narrows {@link value} to verify `weight` survives.
@@ -241,9 +253,13 @@ const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(
   }
 })();
 
-/** Tests all guard patterns against NamedSchema for name property preservation. */
+/**
+ * Tests all guard patterns against NamedSchema for name property preservation.
+ */
 const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema(): void {
-  /** `NamedSchema` instance under test; each guard below should keep `name` accessible after narrowing. */
+  /**
+   * `NamedSchema` instance under test; each guard below should keep `name` accessible after narrowing.
+   */
   const value = simplifiedTestValues.namedSchema;
 
   // Unknown guard
@@ -271,9 +287,13 @@ const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema(): void {
   }
 })();
 
-/** Tests all guard patterns against ComplexSchema for multi-property preservation. */
+/**
+ * Tests all guard patterns against ComplexSchema for multi-property preservation.
+ */
 const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema(): void {
-  /** `ComplexSchema` instance under test; verifies `weight`, `name`, and `version` all survive the four guards. */
+  /**
+   * `ComplexSchema` instance under test; verifies `weight`, `name`, and `version` all survive the four guards.
+   */
   const value = simplifiedTestValues.complexSchema;
 
   // Unknown guard
@@ -309,9 +329,13 @@ const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema(): voi
   }
 })();
 
-/** Tests guard patterns against unknown-typed value for narrowing behavior. */
+/**
+ * Tests guard patterns against unknown-typed value for narrowing behavior.
+ */
 const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue(): void {
-  /** Value cast to `unknown`; verifies the guards still narrow and that extra props collapse to errors. */
+  /**
+   * Value cast to `unknown`; verifies the guards still narrow and that extra props collapse to errors.
+   */
   const value = simplifiedTestValues.unknownValue;
 
   // Unknown guard
@@ -338,9 +362,13 @@ const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue(): void 
   isSchema_GenericExtends(value,);
 })();
 
-/** Tests guard patterns against any-typed value for type preservation. */
+/**
+ * Tests guard patterns against any-typed value for type preservation.
+ */
 const testSimplifiedAnyValue = (function testSimplifiedAnyValue(): void {
-  /** Value cast to `any`; demonstrates Generic patterns preserve `weight` better than Unknown/Typed for `any` sources. */
+  /**
+   * Value cast to `any`; demonstrates Generic patterns preserve `weight` better than Unknown/Typed for `any` sources.
+   */
   const value = simplifiedTestValues.anyValue;
 
   // Unknown guard
@@ -370,10 +398,14 @@ const testSimplifiedAnyValue = (function testSimplifiedAnyValue(): void {
   }
 })();
 
-/** Tests guard patterns against union types for compile-time safety. */
+/**
+ * Tests guard patterns against union types for compile-time safety.
+ */
 const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
   // Union with string
-  /** `Schema | string` union extracted via destructuring; verifies each guard's behavior when a non-schema branch is present. */
+  /**
+   * `Schema | string` union extracted via destructuring; verifies each guard's behavior when a non-schema branch is present.
+   */
   const { unionWithString, } = simplifiedTestValues;
 
   // Unknown guard - direct call
@@ -393,7 +425,9 @@ const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
   isSchema_GenericExtends(unionWithString,);
 
   // Union with null
-  /** `Schema | null` union extracted via destructuring; tests narrowing when `null` is in the union. */
+  /**
+   * `Schema | null` union extracted via destructuring; tests narrowing when `null` is in the union.
+   */
   const { unionWithNull, } = simplifiedTestValues;
 
   if (isSchema_Unknown(unionWithNull,)) {
@@ -409,10 +443,14 @@ const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
   }
 })();
 
-/** Tests guard patterns against intersection types for property preservation. */
+/**
+ * Tests guard patterns against intersection types for property preservation.
+ */
 const testSimplifiedIntersectionTypes =
   (function testSimplifiedIntersectionTypes(): void {
-    /** `Schema & { extraProp: boolean }` instance; checks each guard keeps the intersected extra property. */
+    /**
+     * `Schema & { extraProp: boolean }` instance; checks each guard keeps the intersected extra property.
+     */
     const intersectionValue = simplifiedTestValues.intersectionType;
 
     // Unknown guard
@@ -440,10 +478,14 @@ const testSimplifiedIntersectionTypes =
     }
   })();
 
-/** Tests guard patterns against edge cases: invalid schemas, nulls, and untyped objects. */
+/**
+ * Tests guard patterns against edge cases: invalid schemas, nulls, and untyped objects.
+ */
 const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
   // Invalid schemas
-  /** Object without `parse` extracted via destructuring; verifies Unknown false-positives and Generic correctly returns never. */
+  /**
+   * Object without `parse` extracted via destructuring; verifies Unknown false-positives and Generic correctly returns never.
+   */
   const { notASchema, } = simplifiedTestValues;
 
   if (isSchema_Unknown(notASchema,))
@@ -455,7 +497,9 @@ const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
   }
 
   // Null and undefined
-  /** `null` literal alias; verifies Unknown's narrowing never enters the body even though it type-checks. */
+  /**
+   * `null` literal alias; verifies Unknown's narrowing never enters the body even though it type-checks.
+   */
   const nullVal = simplifiedTestValues.nullValue;
   /**
    * `undefined` literal alias; mirrors {@link nullVal} for the `undefined` arm of the falsy edge cases.
@@ -469,7 +513,9 @@ const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
     undefinedVal; // Never executes, but what type?
 
   // Object with parse but not typed as Schema
-  /** Plain object that happens to carry `parse`; verifies Unknown and Generic both keep `extraStuff` after narrowing. */
+  /**
+   * Plain object that happens to carry `parse`; verifies Unknown and Generic both keep `extraStuff` after narrowing.
+   */
   const objWithParse = simplifiedTestValues.objectWithParse;
 
   if (isSchema_Unknown(objWithParse,)) {

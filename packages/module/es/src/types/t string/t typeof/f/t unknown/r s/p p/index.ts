@@ -65,7 +65,9 @@ export function $(
     // Check for null-prototype objects first (like Object.create(null))
     console.log('hello',);
     /* oxlint-disable typescript/no-unsafe-assignment -- Checking prototype */
-    /** Prototype reference inspected to distinguish plain objects from class instances. */
+    /**
+     * Prototype reference inspected to distinguish plain objects from class instances.
+     */
     const prototype = Object.getPrototypeOf(obj,);
     /* oxlint-enable typescript/no-unsafe-assignment */
     if (prototype === null)
@@ -91,9 +93,13 @@ export function $(
   }
 
   // For everything else (class instances, functions, etc.), throw an error
-  /** Raw typeof discriminant included in the error message. */
+  /**
+   * Raw typeof discriminant included in the error message.
+   */
   const objType = typeof obj;
-  /** Stringified preview of obj for the error message; computed via try/catch so unstringifiable values fall back gracefully. */
+  /**
+   * Stringified preview of obj for the error message; computed via try/catch so unstringifiable values fall back gracefully.
+   */
   const objStringified = (function buildStringifiedPreview(): string {
     try {
       return JSON.stringify(obj,);

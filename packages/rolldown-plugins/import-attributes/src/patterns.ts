@@ -9,7 +9,9 @@
 
 //region Constants
 
-/** Query parameter name used to encode the attribute type in rewritten specifiers. */
+/**
+ * Query parameter name used to encode the attribute type in rewritten specifiers.
+ */
 export const ATTR_QUERY_KEY = '__importattr';
 
 /**
@@ -37,15 +39,21 @@ export const NO_QUERY_ATTR: unique symbol = Symbol('import-attributes/no-query-a
  * ```
  */
 export function extractAttrType(id: string,): string | typeof NO_QUERY_ATTR {
-  /** Offset of the attribute marker; -1 signals the ID has no encoded attribute. */
+  /**
+   * Offset of the attribute marker; -1 signals the ID has no encoded attribute.
+   */
   const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
   if (queryIndex === (-1))
     return NO_QUERY_ATTR;
-  /** Position immediately after `?<key>=`, where the value substring begins. */
+  /**
+   * Position immediately after `?<key>=`, where the value substring begins.
+   */
   const valueStart = queryIndex + ATTR_QUERY_KEY
     .length
     + 2;
-  /** Boundary `&` introducing a subsequent query parameter, if any. */
+  /**
+   * Boundary `&` introducing a subsequent query parameter, if any.
+   */
   const ampIndex = id.indexOf(
     '&',
     valueStart,
@@ -72,7 +80,9 @@ export function extractAttrType(id: string,): string | typeof NO_QUERY_ATTR {
  * ```
  */
 export function stripAttrQuery(id: string,): string {
-  /** Offset of the attribute marker; -1 means the ID is already clean. */
+  /**
+   * Offset of the attribute marker; -1 means the ID is already clean.
+   */
   const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
   if (queryIndex === (-1))
     return id;

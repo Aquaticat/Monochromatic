@@ -12,7 +12,9 @@ export type ChainSegment =
   | { readonly isBreak: false; }
   | {
     readonly isBreak: true;
-    /** Byte offset of the segment's leading token; start of its continuation line. */
+    /**
+     * Byte offset of the segment's leading token; start of its continuation line.
+     */
     readonly breakOffset: number;
   };
 
@@ -56,15 +58,25 @@ export function selectBreakOffsets(
  * Parameters for {@link renderCanonical}.
  */
 export type RenderCanonicalParams = {
-  /** Full file source text. */
+  /**
+   * Full file source text.
+   */
   readonly sourceText: string;
-  /** Byte offset where the chain region begins (the head leaf). */
+  /**
+   * Byte offset where the chain region begins (the head leaf).
+   */
   readonly regionStart: number;
-  /** Byte offset where the chain region ends, past any trailing wrapper. */
+  /**
+   * Byte offset where the chain region ends, past any trailing wrapper.
+   */
   readonly regionEnd: number;
-  /** Break offsets in source order, as returned by {@link selectBreakOffsets}. */
+  /**
+   * Break offsets in source order, as returned by {@link selectBreakOffsets}.
+   */
   readonly breakOffsets: readonly number[];
-  /** Whitespace prefix prepended to every continuation line. */
+  /**
+   * Whitespace prefix prepended to every continuation line.
+   */
   readonly childIndent: string;
 };
 
@@ -105,27 +117,37 @@ export function renderCanonical({
       regionEnd,
     );
   }
-  /** End offset of each continuation slice: the next break, or the region end for the last. */
+  /**
+   * End offset of each continuation slice: the next break, or the region end for the last.
+   */
   const ends: readonly number[] = [
     ...breakOffsets.slice(1,),
     regionEnd,
   ];
-  /** First break offset; start of the first continuation line and end of the head slice. */
+  /**
+   * First break offset; start of the first continuation line and end of the head slice.
+   */
   const firstBreak = breakOffsets[0]
     ?? regionEnd;
-  /** Head line: from region start to the first break, trailing whitespace removed. */
+  /**
+   * Head line: from region start to the first break, trailing whitespace removed.
+   */
   const head = sourceText
     .slice(
       regionStart,
       firstBreak,
     )
     .trimEnd();
-  /** One `\n + indent + content` string per break offset, content sliced verbatim. */
+  /**
+   * One `\n + indent + content` string per break offset, content sliced verbatim.
+   */
   const continuations = breakOffsets.map(function piece(
     offset,
     index,
   ): string {
-    /** Slice end for this break: paired one-to-one with `breakOffsets` by construction. */
+    /**
+     * Slice end for this break: paired one-to-one with `breakOffsets` by construction.
+     */
     const end = ends[index];
     if (end === undefined) {
       throw new Error('chain render: break offset without matching end',);

@@ -26,7 +26,9 @@
 
 export {}; // module boundary marker
 
-/** Probe used to detect whether the browser supports `random()` on `order`. */
+/**
+ * Probe used to detect whether the browser supports `random()` on `order`.
+ */
 const RANDOM_PROBE = 'random(1, 1000, by 1)';
 
 /**
@@ -45,19 +47,25 @@ function shuffleChildren(): void {
     return;
   }
 
-  /** Wrapper elements opting into per-render shuffling. */
+  /**
+   * Wrapper elements opting into per-render shuffling.
+   */
   const wrappers = document.querySelectorAll<HTMLElement>(
     'shuffle-children',
   );
 
   for (const wrapper of wrappers) {
-    /** Snapshot of current child order before shuffling. */
+    /**
+     * Snapshot of current child order before shuffling.
+     */
     const children = [...wrapper.children,];
     if (children.length
       === 0)
       continue;
 
-    /** Permutation produced by attaching a random rank then sorting by it. */
+    /**
+     * Permutation produced by attaching a random rank then sorting by it.
+     */
     const shuffled = children
       .map(function attachRank(child,) {
         return {

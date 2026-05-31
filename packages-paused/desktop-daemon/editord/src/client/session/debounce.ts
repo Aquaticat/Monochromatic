@@ -19,7 +19,9 @@ import {
   type SessionState,
 } from './state.ts';
 
-/** Minimum interval between debounced saves, in milliseconds. */
+/**
+ * Minimum interval between debounced saves, in milliseconds.
+ */
 const SAVE_DEBOUNCE_MS = 300;
 
 /**
@@ -59,7 +61,9 @@ export function createDebouncedSave({
   readonly debouncedSave: () => void;
   readonly saveNow: () => void;
 } {
-  /** Saves state immediately without debouncing. */
+  /**
+   * Saves state immediately without debouncing.
+   */
   function saveNow(): void {
     saveSessionState({
       fsId,
@@ -68,7 +72,9 @@ export function createDebouncedSave({
     },);
   }
 
-  /** Debounced wrapper around `saveNow`; `flush` triggers an immediate save and cancels the pending one. */
+  /**
+   * Debounced wrapper around `saveNow`; `flush` triggers an immediate save and cancels the pending one.
+   */
   const {
     debounced: debouncedSave,
     flush,
@@ -79,7 +85,9 @@ export function createDebouncedSave({
 
   return {
     debouncedSave,
-    /** Flushes any pending debounced save and executes immediately. */
+    /**
+     * Flushes any pending debounced save and executes immediately.
+     */
     saveNow: flush,
   };
 }

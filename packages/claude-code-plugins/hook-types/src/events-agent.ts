@@ -25,7 +25,9 @@ type StopInput = HookInputBase & {
    */
   stop_hook_active: boolean;
 
-  /** Text content of Claude's final response. May be absent if the stop was triggered before any message was generated. */
+  /**
+   * Text content of Claude's final response. May be absent if the stop was triggered before any message was generated.
+   */
   last_assistant_message?: string;
 };
 
@@ -34,10 +36,14 @@ type StopInput = HookInputBase & {
  * Can prevent Claude from stopping.
  */
 type StopOutput = HookOutputBase & {
-  /** `"block"` prevents Claude from stopping. */
+  /**
+   * `"block"` prevents Claude from stopping.
+   */
   decision?: 'block';
 
-  /** Required when `decision` is `"block"`. Tells Claude why it should continue. */
+  /**
+   * Required when `decision` is `"block"`. Tells Claude why it should continue.
+   */
   reason?: string;
 };
 
@@ -52,10 +58,14 @@ type StopOutput = HookOutputBase & {
 type SubagentStartInput = HookInputBase & {
   hook_event_name: 'SubagentStart';
 
-  /** Unique identifier for the subagent. */
+  /**
+   * Unique identifier for the subagent.
+   */
   agent_id: string;
 
-  /** Agent type name (e.g. `"Bash"`, `"Explore"`, `"Plan"`, or custom agent names). */
+  /**
+   * Agent type name (e.g. `"Bash"`, `"Explore"`, `"Plan"`, or custom agent names).
+   */
   agent_type: string;
 };
 
@@ -67,7 +77,9 @@ type SubagentStartOutput = HookOutputBase & {
   hookSpecificOutput?: {
     hookEventName: 'SubagentStart';
 
-    /** Context added to the subagent's conversation. */
+    /**
+     * Context added to the subagent's conversation.
+     */
     additionalContext?: string;
   };
 };
@@ -89,10 +101,14 @@ type SubagentStopInput = HookInputBase & {
    */
   stop_hook_active: boolean;
 
-  /** Unique identifier for the subagent. */
+  /**
+   * Unique identifier for the subagent.
+   */
   agent_id: string;
 
-  /** Agent type name. */
+  /**
+   * Agent type name.
+   */
   agent_type: string;
 
   /**
@@ -101,7 +117,9 @@ type SubagentStopInput = HookInputBase & {
    */
   agent_transcript_path: string;
 
-  /** Text content of the subagent's final response. May be absent if the stop was triggered before any message was generated. */
+  /**
+   * Text content of the subagent's final response. May be absent if the stop was triggered before any message was generated.
+   */
   last_assistant_message?: string;
 };
 
@@ -122,10 +140,14 @@ type SubagentStopOutput = StopOutput;
 type TeammateIdleInput = HookInputBase & {
   hook_event_name: 'TeammateIdle';
 
-  /** Name of the teammate about to go idle. */
+  /**
+   * Name of the teammate about to go idle.
+   */
   teammate_name: string;
 
-  /** Name of the team. */
+  /**
+   * Name of the team.
+   */
   team_name: string;
 };
 
@@ -147,19 +169,29 @@ type TeammateIdleOutput = HookOutputBase;
 type TaskCompletedInput = HookInputBase & {
   hook_event_name: 'TaskCompleted';
 
-  /** Identifier of the task being completed. */
+  /**
+   * Identifier of the task being completed.
+   */
   task_id: string;
 
-  /** Title of the task. */
+  /**
+   * Title of the task.
+   */
   task_subject: string;
 
-  /** Detailed description of the task. */
+  /**
+   * Detailed description of the task.
+   */
   task_description?: string;
 
-  /** Name of the teammate completing the task. */
+  /**
+   * Name of the teammate completing the task.
+   */
   teammate_name?: string;
 
-  /** Name of the team. */
+  /**
+   * Name of the team.
+   */
   team_name?: string;
 };
 

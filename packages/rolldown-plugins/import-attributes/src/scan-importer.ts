@@ -56,7 +56,9 @@ export function scanImporterForAttribute({
   readonly importerPath: string;
   importerSourceCache: Map<string, string>;
 },): string | typeof NO_ATTR_TYPE {
-  /** Importer source text; lazily read from disk on cache miss and stored back. */
+  /**
+   * Importer source text; lazily read from disk on cache miss and stored back.
+   */
   let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
     try {
@@ -77,15 +79,21 @@ export function scanImporterForAttribute({
   if (!source.includes(specifier,))
     return NO_ATTR_TYPE;
 
-  /** Parsed AST root produced by rolldown's parser. */
+  /**
+   * Parsed AST root produced by rolldown's parser.
+   */
   const result = parseSync(
     importerPath,
     source,
   );
-  /** Mutable accumulator written by the visitor when a matching specifier is encountered. */
+  /**
+   * Mutable accumulator written by the visitor when a matching specifier is encountered.
+   */
   let found: string | typeof NO_ATTR_TYPE = NO_ATTR_TYPE;
 
-  /** AST visitor that records the attribute type on the first matching specifier. */
+  /**
+   * AST visitor that records the attribute type on the first matching specifier.
+   */
   const visitor = new Visitor({
     ImportDeclaration(node: ESTree.ImportDeclaration,): void {
       if (found !== NO_ATTR_TYPE)
@@ -134,7 +142,9 @@ export function scanImporterForAttribute({
       if (node.options
         === null)
         return;
-      /** Literal specifier text; computed sources are skipped. */
+      /**
+       * Literal specifier text; computed sources are skipped.
+       */
       const sourceValue = getStringLiteralValue(node.source,);
       if (sourceValue !== specifier)
         return;

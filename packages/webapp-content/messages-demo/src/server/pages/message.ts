@@ -41,16 +41,24 @@ import {
 
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 
-/** Tier-2 boundary in kibibytes. */
+/**
+ * Tier-2 boundary in kibibytes.
+ */
 const TIER_2_THRESHOLD_KIB = 8;
 
-/** Tier-3 boundary in kibibytes. */
+/**
+ * Tier-3 boundary in kibibytes.
+ */
 const TIER_3_THRESHOLD_KIB = 1_024;
 
-/** Tier-2 size threshold in characters. */
+/**
+ * Tier-2 size threshold in characters.
+ */
 const TIER_2_THRESHOLD = TIER_2_THRESHOLD_KIB * BYTES_PER_KIB;
 
-/** Tier-3 size threshold in characters. */
+/**
+ * Tier-3 size threshold in characters.
+ */
 const TIER_3_THRESHOLD = TIER_3_THRESHOLD_KIB * BYTES_PER_KIB;
 
 /**
@@ -99,12 +107,16 @@ export async function renderMessageChunk(
 ): Promise<Response> {
   await db.exec('BEGIN DEFERRED',);
   try {
-    /** Snapshot reused across the chunk count check, ETag, and chunk fetch. */
+    /**
+     * Snapshot reused across the chunk count check, ETag, and chunk fetch.
+     */
     const snapshot = await getSnapshot(input.messageId,);
     if (snapshot === ABSENT) {
       // Distinguish gone from not-found so the client can decide
       // whether to clear cached state or follow a redirect.
-      /** Tells 410 Gone (existed once) from 404 Not Found (never existed). */
+      /**
+       * Tells 410 Gone (existed once) from 404 Not Found (never existed).
+       */
       const exists = await messageExists(input.messageId,);
       await db.exec('COMMIT',);
       return new Response(
@@ -128,7 +140,9 @@ export async function renderMessageChunk(
       );
     }
 
-    /** Computed ETag; sent on both 200 and 304 responses. */
+    /**
+     * Computed ETag; sent on both 200 and 304 responses.
+     */
     const etag = etagForChunk({
       revision: snapshot.revision,
       chunkIndex: input.chunkIndex,
@@ -175,7 +189,9 @@ export async function renderMessageChunk(
       );
     }
 
-    /** Chunk row resolved via the copy-on-write draft chain walk. */
+    /**
+     * Chunk row resolved via the copy-on-write draft chain walk.
+     */
     const chunk = await getChunk({
       messageId: input.messageId,
       chunkIndex: input.chunkIndex,
@@ -192,13 +208,17 @@ export async function renderMessageChunk(
       );
     }
 
-    /** Rendered chunk body HTML; embedded in the layout's main slot. */
+    /**
+     * Rendered chunk body HTML; embedded in the layout's main slot.
+     */
     const body = renderChunkBody({
       snapshot,
       chunkIndex: input.chunkIndex,
       chunkHtml: chunk.html,
     },);
-    /** Complete HTML document returned to the client. */
+    /**
+     * Complete HTML document returned to the client.
+     */
     const html = renderPage({
       title: `Message ${String(snapshot.id,)} (chunk ${
         String(input.chunkIndex
@@ -246,19 +266,27 @@ function renderChunkBody(
     readonly chunkHtml: string;
   },
 ): string {
-  /** Destructured early so the chunk-nav branches read the fields directly. */
+  /**
+   * Destructured early so the chunk-nav branches read the fields directly.
+   */
   const {
     snapshot,
     chunkIndex,
     chunkHtml,
   } = input;
-  /** True when the prev link is at chunk 0; renders as a disabled span instead. */
+  /**
+   * True when the prev link is at chunk 0; renders as a disabled span instead.
+   */
   const prevDisabled = chunkIndex === 0;
-  /** True when the next link is at the last chunk; renders as a disabled span instead. */
+  /**
+   * True when the next link is at the last chunk; renders as a disabled span instead.
+   */
   const nextDisabled = chunkIndex >= (snapshot.chunkCount
     - 1);
 
-  /** Three pre-rendered nav items in the order prev, position, next. */
+  /**
+   * Three pre-rendered nav items in the order prev, position, next.
+   */
   const navItems: string[] = [
     prevDisabled
       ? h({
@@ -303,7 +331,9 @@ function renderChunkBody(
       },),
   ];
 
-  /** Message-meta header HTML (back link, author, revision). */
+  /**
+   * Message-meta header HTML (back link, author, revision).
+   */
   const meta = h({
     tag: 'header',
     attrs: { class: 'message-meta', },
@@ -329,7 +359,9 @@ function renderChunkBody(
     ],
   },);
 
-  /** Chunk-nav HTML (prev, position, next) for both top and bottom of the chunk body. */
+  /**
+   * Chunk-nav HTML (prev, position, next) for both top and bottom of the chunk body.
+   */
   const nav = h({
     tag: 'nav',
     attrs: {

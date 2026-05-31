@@ -60,7 +60,9 @@ function resolveSpecifier({
   readonly specifier: string;
   readonly fromFile: string;
 },): string {
-  /** Directory containing the importing file */
+  /**
+   * Directory containing the importing file
+   */
   const fromDir = dirname(fromFile,);
 
   // Absolute path (rare but possible)
@@ -72,7 +74,9 @@ function resolveSpecifier({
 
   // Explicit relative path
   if (specifier.startsWith('.',)) {
-    /** Resolved absolute path from relative specifier */
+    /**
+     * Resolved absolute path from relative specifier
+     */
     const resolved = resolve(
       [
         fromDir,
@@ -91,7 +95,9 @@ function resolveSpecifier({
   if ((!isPackageSpecifier(specifier,))
     || ((!specifier.includes('/',)) && (!specifier.startsWith('@',))))
   {
-    /** Attempt to resolve as relative path */
+    /**
+     * Attempt to resolve as relative path
+     */
     const asRelative = resolve(
       [
         fromDir,
@@ -123,10 +129,14 @@ function resolveSpecifier({
 export const postcssInlineImport: Plugin = {
   postcssPlugin: 'postcss-inline-import',
   Once(root: Root,): void {
-    /** Set of absolute paths already inlined to prevent circular/duplicate imports */
+    /**
+     * Set of absolute paths already inlined to prevent circular/duplicate imports
+     */
     const imported = new Set<string>();
 
-    /** Source file path for the root stylesheet */
+    /**
+     * Source file path for the root stylesheet
+     */
     const rootFrom = root.source
       ?.input
       .file;
@@ -182,10 +192,14 @@ function inlineImports({
   );
 
   for (const node of importNodes) {
-    /** Bare specifier with quotes/url() stripped */
+    /**
+     * Bare specifier with quotes/url() stripped
+     */
     const specifier = stripImportSpecifier(node.params,);
 
-    /** Absolute path to the imported file */
+    /**
+     * Absolute path to the imported file
+     */
     const resolvedPath = resolveSpecifier({
       specifier,
       fromFile,
@@ -198,9 +212,13 @@ function inlineImports({
     }
     imported.add(resolvedPath,);
 
-    /** Raw CSS content of the imported file */
+    /**
+     * Raw CSS content of the imported file
+     */
     const content = readCssFileSync(resolvedPath,);
-    /** Parsed AST of the imported file */
+    /**
+     * Parsed AST of the imported file
+     */
     const importedRoot = parse(
       content,
       { from: resolvedPath, },

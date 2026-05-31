@@ -14,7 +14,9 @@ import type {
 } from '@oxlint/plugins';
 
 /* oxlint-disable no-restricted-syntax/no-regex -- binding names are parser-produced identifiers, source files are normal TypeScript modules, and the anchored constant-name grammar has no nested quantifiers. */
-/** All-caps snake-case binding name pattern; assumed to be a constant import. */
+/**
+ * All-caps snake-case binding name pattern; assumed to be a constant import.
+ */
 const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
@@ -64,7 +66,9 @@ function classifyExportedName(
     readonly name: string;
   },
 ): 'callable' | 'const' | 'reexport' | 'unknown' {
-  /** Source text of the imported file; empty when the read fails so callers can short-circuit. */
+  /**
+   * Source text of the imported file; empty when the read fails so callers can short-circuit.
+   */
   const content = (function readOrEmpty(): string {
     try {
       return readFileSync(
@@ -79,7 +83,9 @@ function classifyExportedName(
   if (content === '')
     return 'unknown';
   /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
-  /** Pattern matching `export function`, `export async function`, and `export function*` declarations of `name`. */
+  /**
+   * Pattern matching `export function`, `export async function`, and `export function*` declarations of `name`.
+   */
   const fnRe = new RegExp(
     String.raw`(?:^|\n)export\s+(?:async\s+)?function\s*\*?\s+${name}\b`,
   );
@@ -87,19 +93,25 @@ function classifyExportedName(
   if (fnRe.test(content,))
     return 'callable';
   /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
-  /** Pattern matching `export class` declarations of `name`. */
+  /**
+   * Pattern matching `export class` declarations of `name`.
+   */
   const classRe = new RegExp(String.raw`(?:^|\n)export\s+class\s+${name}\b`,);
   /* oxlint-enable no-restricted-syntax/no-regex, eslint/require-unicode-regexp */
   if (classRe.test(content,))
     return 'callable';
   /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
-  /** Pattern matching `export const` declarations of `name`, regardless of initializer shape. */
+  /**
+   * Pattern matching `export const` declarations of `name`, regardless of initializer shape.
+   */
   const constRe = new RegExp(String.raw`(?:^|\n)export\s+const\s+${name}\b`,);
   /* oxlint-enable no-restricted-syntax/no-regex, eslint/require-unicode-regexp */
   if (constRe.test(content,))
     return 'const';
   /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
-  /** Pattern matching `export { ... name ... } from '...'` re-export specifiers. */
+  /**
+   * Pattern matching `export { ... name ... } from '...'` re-export specifiers.
+   */
   const reexportRe = new RegExp(
     String.raw`export\s*\{[^}]*\b${name}\b[^}]*\}\s*from\s*['"]`,
   );
@@ -154,7 +166,9 @@ function isCallableBinding(
     readonly currentFile: string;
   },
 ): boolean {
-  /** First definition site of the binding; absent for implicit globals the rule does not target. */
+  /**
+   * First definition site of the binding; absent for implicit globals the rule does not target.
+   */
   const [def,] = variable.defs;
   if (def === undefined)
     return false;
@@ -164,9 +178,13 @@ function isCallableBinding(
     return true;
   if (def.type
     === 'ImportBinding') {
-    /** Walk up to the enclosing ImportDeclaration to inspect the source. */
+    /**
+     * Walk up to the enclosing ImportDeclaration to inspect the source.
+     */
     const { node, } = def;
-    /** Resolved enclosing ImportDeclaration, or the non-import parent when scope-manager hands back something unexpected. */
+    /**
+     * Resolved enclosing ImportDeclaration, or the non-import parent when scope-manager hands back something unexpected.
+     */
     const decl = node.type
       === 'ImportDeclaration'
       ? node
@@ -175,23 +193,31 @@ function isCallableBinding(
       || (decl.type
         !== 'ImportDeclaration'))
       return !ALL_CAPS_SNAKE.test(variable.name,);
-    /** Literal source string of the import, typed as `string | null` by ESTree to cover non-conforming nodes. */
+    /**
+     * Literal source string of the import, typed as `string | null` by ESTree to cover non-conforming nodes.
+     */
     const sourceValue = decl.source
       .value;
     if ((typeof sourceValue) !== 'string')
       return !ALL_CAPS_SNAKE.test(variable.name,);
     if (!sourceValue.startsWith('.',))
       return !ALL_CAPS_SNAKE.test(variable.name,);
-    /** Resolve relative to the file under lint. */
+    /**
+     * Resolve relative to the file under lint.
+     */
     const sourcePath = resolve(
       dirname(currentFile,),
       sourceValue,
     );
-    /** Imports use the alias's local name; the source may export under a different identifier. */
+    /**
+     * Imports use the alias's local name; the source may export under a different identifier.
+     */
     const sourceName = (node.type
       === 'ImportSpecifier') && ('imported' in node)
       ? (function getImportedName(): string {
-        /** Imported-name slot on the specifier; an Identifier or string Literal per ESTree. */
+        /**
+         * Imported-name slot on the specifier; an Identifier or string Literal per ESTree.
+         */
         const { imported, } = node;
         if (imported.type
           === 'Identifier')
@@ -199,7 +225,9 @@ function isCallableBinding(
         return variable.name;
       })()
       : variable.name;
-    /** Classification tag distinguishing callable, plain const, re-export, or unresolved bindings. */
+    /**
+     * Classification tag distinguishing callable, plain const, re-export, or unresolved bindings.
+     */
     const kind = classifyExportedName({
       sourcePath,
       name: sourceName,
@@ -212,12 +240,16 @@ function isCallableBinding(
   }
   if (def.type
     === 'Variable') {
-    /** VariableDeclarator AST node carrying the initializer to inspect for callability. */
+    /**
+     * VariableDeclarator AST node carrying the initializer to inspect for callability.
+     */
     const declarator = def.node;
     if (declarator.type
       !== 'VariableDeclarator')
       return false;
-    /** Right-hand initializer; absent for `let x;`-style declarations the rule treats as non-callable. */
+    /**
+     * Right-hand initializer; absent for `let x;`-style declarations the rule treats as non-callable.
+     */
     const { init, } = declarator;
     if ((init === null) || (init === undefined))
       return false;
@@ -322,7 +354,9 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           .name
           !== 'describe'))
         return;
-      /** First argument of the call, or `undefined` when none was passed. */
+      /**
+       * First argument of the call, or `undefined` when none was passed.
+       */
       const [firstArg,] = node.arguments;
       if ((firstArg === undefined) || (firstArg.type
         !== 'ObjectExpression'))
@@ -346,7 +380,9 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           !== 'Literal') || ((typeof prop.value
             .value) !== 'string'))
           continue;
-        /** String value of the `name` property. */
+        /**
+         * String value of the `name` property.
+         */
         const stringValue = prop.value
           .value;
         if (stringValue === '')
@@ -359,7 +395,9 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
             !== 'global');
           scope = scope.upper
         ) {
-          /** Binding registered in this scope under `stringValue`, or `undefined` when the scope has none. */
+          /**
+           * Binding registered in this scope under `stringValue`, or `undefined` when the scope has none.
+           */
           const variable = scope.set
             .get(stringValue,);
           if (variable === undefined)

@@ -3,7 +3,9 @@ import type {
   SyncStore,
 } from '@monochromatic-dev/module-kv-store/ts';
 
-/** Maximum cache entries before LRU eviction in default memoize stores. */
+/**
+ * Maximum cache entries before LRU eviction in default memoize stores.
+ */
 export const DEFAULT_MAX_CACHE_SIZE = 1_024;
 
 /**
@@ -79,7 +81,9 @@ export type MemoizeAsyncOptions<
 export type MemoizedCallOptions<
   TArgs extends readonly unknown[],
 > = {
-  /** Original function arguments as a tuple, spread into both `keyFn` and the wrapped function. */
+  /**
+   * Original function arguments as a tuple, spread into both `keyFn` and the wrapped function.
+   */
   readonly args: TArgs;
   /**
    * Salt appended to cache key; change it to invalidate the cache
@@ -111,13 +115,21 @@ export type MemoizedFunction<
     this: void,
     options: MemoizedCallOptions<TArgs>,
   ): TReturn;
-  /** Underlying SyncStore, exposed for inspection and direct manipulation. */
+  /**
+   * Underlying SyncStore, exposed for inspection and direct manipulation.
+   */
   readonly store: SyncStore;
-  /** Wipe all cached entries. */
+  /**
+   * Wipe all cached entries.
+   */
   readonly clear: () => void;
-  /** Remove a specific entry by its full cache key (keyFn result plus salt). */
+  /**
+   * Remove a specific entry by its full cache key (keyFn result plus salt).
+   */
   readonly delete: (key: string,) => void;
-  /** Current number of cached entries. */
+  /**
+   * Current number of cached entries.
+   */
   readonly size: number;
 };
 
@@ -144,11 +156,17 @@ export type MemoizedAsyncFunction<
     this: void,
     options: MemoizedCallOptions<TArgs>,
   ): Promise<TReturn>;
-  /** Underlying Store, exposed for inspection and direct manipulation. */
+  /**
+   * Underlying Store, exposed for inspection and direct manipulation.
+   */
   readonly store: Store;
-  /** Wipe all cached entries and drop any in-flight deduplication state. */
+  /**
+   * Wipe all cached entries and drop any in-flight deduplication state.
+   */
   readonly clear: () => Promise<void>;
-  /** Remove a specific entry by its full cache key (keyFn result plus salt). */
+  /**
+   * Remove a specific entry by its full cache key (keyFn result plus salt).
+   */
   readonly delete: (key: string,) => Promise<void>;
 };
 
@@ -171,7 +189,9 @@ export type MemoizeNamedOptions<
   TArgs extends readonly unknown[],
   TReturn,
 > = MemoizeOptions<TArgs> & {
-  /** Pure synchronous function to memoize; impure functions produce incorrect cached results. */
+  /**
+   * Pure synchronous function to memoize; impure functions produce incorrect cached results.
+   */
   readonly fn: (
     this: void,
     ...args: TArgs
@@ -197,7 +217,9 @@ export type MemoizeAsyncNamedOptions<
   TArgs extends readonly unknown[],
   TReturn,
 > = MemoizeAsyncOptions<TArgs> & {
-  /** Pure async function to memoize; impure functions produce incorrect cached results. */
+  /**
+   * Pure async function to memoize; impure functions produce incorrect cached results.
+   */
   readonly fn: (
     this: void,
     ...args: TArgs

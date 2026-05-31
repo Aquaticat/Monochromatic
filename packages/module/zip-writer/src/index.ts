@@ -41,7 +41,9 @@ export {
   dosDateTime,
 } from './dos-time.ts';
 
-/** Reusable text encoder for filename and string content conversion. */
+/**
+ * Reusable text encoder for filename and string content conversion.
+ */
 const TEXT_ENCODER = new TextEncoder();
 
 /* oxlint-disable no-restricted-syntax/no-class -- ZipWriter is consumed via `new ZipWriter()` by packages/figma-parsers/penpot (src/index.ts:1534); migrating to a factory requires a coordinated call-site update tracked in docs/migration/no-class.md, out of scope for this package-local lint sweep */
@@ -61,10 +63,14 @@ const TEXT_ENCODER = new TextEncoder();
  * ```
  */
 export class ZipWriter {
-  /** Insertion-ordered map of path to entry. Map gives duplicate detection. */
+  /**
+   * Insertion-ordered map of path to entry. Map gives duplicate detection.
+   */
   readonly #entries = new Map<string, ZipEntry>();
 
-  /** Default modification time applied to every added file. */
+  /**
+   * Default modification time applied to every added file.
+   */
   readonly #defaultModified: DosDateTime;
 
   /**
@@ -94,7 +100,9 @@ export class ZipWriter {
     if (this.#entries
       .has(path,))
       throw new Error(`zip-writer: duplicate entry at \`${path}\``,);
-    /** UTF-8 path encoding shared between the size check and the stored entry. */
+    /**
+     * UTF-8 path encoding shared between the size check and the stored entry.
+     */
     const nameBytes = TEXT_ENCODER.encode(path,);
     if (nameBytes.length
       > MAX_UINT16) {
@@ -102,7 +110,9 @@ export class ZipWriter {
         `zip-writer: path too long when UTF-8 encoded (${nameBytes.length} bytes, max ${MAX_UINT16}): ${path}`,
       );
     }
-    /** Raw byte view of the content so the size check works for both inputs. */
+    /**
+     * Raw byte view of the content so the size check works for both inputs.
+     */
     const data = ((typeof content) === 'string')
       ? TEXT_ENCODER.encode(content,)
       : content;

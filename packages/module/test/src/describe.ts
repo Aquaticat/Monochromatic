@@ -22,7 +22,9 @@ import type { ItResult, } from './it.ts';
  * Result returned by a completed suite, mirroring {@link ItResult}.
  */
 export type DescribeResult = {
-  /** Suite name, returned so parent suites can log the hierarchy. */
+  /**
+   * Suite name, returned so parent suites can log the hierarchy.
+   */
   readonly name: string;
 };
 
@@ -129,7 +131,9 @@ async function runDescribe(
     readonly opts: DescribeOptions;
   },
 ): Promise<DescribeResult> {
-  /** Pulls option fields out with their defaults so the body can refer to them without re-reading `opts`. */
+  /**
+   * Pulls option fields out with their defaults so the body can refer to them without re-reading `opts`.
+   */
   const {
     name,
     children,
@@ -139,11 +143,15 @@ async function runDescribe(
     timeout,
     l: loggerOverride,
   } = opts;
-  /** Parent logger resolved from the override, the inherited parent, or the default module logger. */
+  /**
+   * Parent logger resolved from the override, the inherited parent, or the default module logger.
+   */
   const baseLogger = loggerOverride ?? ctx
     .parentLogger
     ?? defaultLogger;
-  /** Composed tagged logger for this suite; empty-name suites stay invisible by reusing the parent untagged. */
+  /**
+   * Composed tagged logger for this suite; empty-name suites stay invisible by reusing the parent untagged.
+   */
   const l = name === ''
     ? baseLogger
     : tagged({
@@ -152,13 +160,17 @@ async function runDescribe(
     },);
 
   if (skip !== false) {
-    /** Reason suffix appended after the SKIP keyword when a string was supplied. */
+    /**
+     * Reason suffix appended after the SKIP keyword when a string was supplied.
+     */
     const reason = (typeof skip) === 'string' ? `: ${skip}` : '';
     l.info(`SKIP suite${name ? ` "${name}"` : ''}${reason}`,);
     return { name, };
   }
 
-  /** Effective concurrency for this suite, inheriting parent when not set. */
+  /**
+   * Effective concurrency for this suite, inheriting parent when not set.
+   */
   const effectiveConcurrency = concurrency ?? ctx
     .effectiveConcurrency;
   /**
@@ -172,14 +184,20 @@ async function runDescribe(
     effectiveConcurrency,
     parentLogger: l,
   };
-  /** Whether concurrency is effectively unbounded. */
+  /**
+   * Whether concurrency is effectively unbounded.
+   */
   const isUnbounded = effectiveConcurrency >= Number
     .MAX_SAFE_INTEGER;
-  /** Whether children run one at a time. */
+  /**
+   * Whether children run one at a time.
+   */
   const isSequential = effectiveConcurrency <= 1;
 
   if (name !== '') {
-    /** Inline annotation describing this suite's dispatch mode for the `start` debug line. */
+    /**
+     * Inline annotation describing this suite's dispatch mode for the `start` debug line.
+     */
     const concurrencyLabel = isSequential
       ? ' (sequential)'
       : (isUnbounded
@@ -197,13 +215,17 @@ async function runDescribe(
   async function runSequential(): Promise<
     PromiseSettledResult<DescribeResult | ItResult>[]
   > {
-    /** Accumulator matched to `Promise.allSettled` shape so the call site can branch identically across modes. */
+    /**
+     * Accumulator matched to `Promise.allSettled` shape so the call site can branch identically across modes.
+     */
     const results: PromiseSettledResult<DescribeResult | ItResult>[] = [];
 
     for (const child of children) {
       try {
         /* oxlint-disable no-await-in-loop -- sequential execution requires awaiting each child before starting the next */
-        /** Resolved child result captured so it can be wrapped in the fulfilled settled-result shape. */
+        /**
+         * Resolved child result captured so it can be wrapped in the fulfilled settled-result shape.
+         */
         const value = await child[RUN_WITH_CONTEXT](childCtx,);
         /* oxlint-enable no-await-in-loop */
         results.push({
@@ -250,7 +272,9 @@ async function runDescribe(
    * @throws Error wrapping child failures when any child rejects
    */
   async function runOnce(runLabel: string,): Promise<void> {
-    /** Selected child dispatcher; assigned once so the subsequent timeout wrapper and await both see the same promise. */
+    /**
+     * Selected child dispatcher; assigned once so the subsequent timeout wrapper and await both see the same promise.
+     */
     const settleAll: Promise<PromiseSettledResult<DescribeResult | ItResult>[]> =
       isSequential
         ? runSequential()
@@ -261,7 +285,9 @@ async function runDescribe(
           : (function runLimited(): Promise<
             PromiseSettledResult<DescribeResult | ItResult>[]
           > {
-            /** p-limit instance owns the in-flight count for this suite so concurrent dispatch stays within the cap. */
+            /**
+             * p-limit instance owns the in-flight count for this suite so concurrent dispatch stays within the cap.
+             */
             const limit = pLimit(effectiveConcurrency,);
             return Promise.allSettled(children.map(function limitChild(child,) {
               return limit(function dispatchChild() {
@@ -270,7 +296,9 @@ async function runDescribe(
             },),);
           }()));
 
-    /** Settle promise optionally wrapped in `withTimeout` so the timeout failure surfaces through the same await. */
+    /**
+     * Settle promise optionally wrapped in `withTimeout` so the timeout failure surfaces through the same await.
+     */
     const withTimeoutApplied = timeout !== undefined
       ? withTimeout({
         promise: settleAll,
@@ -279,7 +307,9 @@ async function runDescribe(
       },)
       : settleAll;
 
-    /** Wall-clock start used for the suite-level duration report. */
+    /**
+     * Wall-clock start used for the suite-level duration report.
+     */
     const startTime = performance.now();
     /**
      * Awaits the settle promise while surfacing timeout failures inline.
@@ -303,7 +333,9 @@ async function runDescribe(
         return await withTimeoutApplied;
       }
       catch (timeoutError) {
-        /** Elapsed time at the moment the timeout fired, used in the inline FAIL summary. */
+        /**
+         * Elapsed time at the moment the timeout fired, used in the inline FAIL summary.
+         */
         const elapsedMs = performance.now()
           - startTime;
         l.error(await formatFailure({
@@ -313,17 +345,27 @@ async function runDescribe(
         throw timeoutError;
       }
     }
-    /** Settled child results awaited via the timeout-logging helper so a timeout always emits a FAIL line before throwing. */
+    /**
+     * Settled child results awaited via the timeout-logging helper so a timeout always emits a FAIL line before throwing.
+     */
     const settled = await awaitSettleWithTimeoutLogging();
-    /** Elapsed time across the whole settle, used in the suite-level summary line. */
+    /**
+     * Elapsed time across the whole settle, used in the suite-level summary line.
+     */
     const durationMs = performance.now()
       - startTime;
 
-    /** Failure accumulator; rejected child reasons are pushed here for the rollup throw. */
+    /**
+     * Failure accumulator; rejected child reasons are pushed here for the rollup throw.
+     */
     const errors: unknown[] = [];
-    /** Pass-side accumulator collecting fulfilled child names for the visible info line. */
+    /**
+     * Pass-side accumulator collecting fulfilled child names for the visible info line.
+     */
     const passedNames: string[] = [];
-    /** Empty-name suites are invisible wrappers; downgrade success logs to debug. */
+    /**
+     * Empty-name suites are invisible wrappers; downgrade success logs to debug.
+     */
     const logSuccess = name === '' ? l.debug : l.info;
 
     for (const result of settled) {
@@ -368,7 +410,9 @@ async function runDescribe(
       return;
     }
 
-    /** Aggregated cause: single child failure passes through; multiple failures fold into an `AggregateError`. */
+    /**
+     * Aggregated cause: single child failure passes through; multiple failures fold into an `AggregateError`.
+     */
     const cause = errors.length
       === 1
       ? errors[0]
@@ -391,11 +435,15 @@ async function runDescribe(
     );
   }
 
-  /** Total iteration count: one base run plus any explicit repeats. */
+  /**
+   * Total iteration count: one base run plus any explicit repeats.
+   */
   const totalRuns = 1 + repeats;
 
   for (let run = 0; run < totalRuns; run += 1) {
-    /** Per-iteration label inserted into the suite-level summary so repeat runs can be told apart. */
+    /**
+     * Per-iteration label inserted into the suite-level summary so repeat runs can be told apart.
+     */
     const runLabel = totalRuns > 1
       ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]`
       : '';

@@ -60,23 +60,41 @@ const cleanRegionParser = object({
 
 //region Clean region facts derived from optique parse
 
-/** Facts about the post-`clean` argv region used by linked-worktree policy. */
+/**
+ * Facts about the post-`clean` argv region used by linked-worktree policy.
+ */
 export type CleanRegion = {
-  /** Number of `--dry-run`/`-n` occurrences (any accepted abbreviation). */
+  /**
+   * Number of `--dry-run`/`-n` occurrences (any accepted abbreviation).
+   */
   readonly dryRunCount: number;
-  /** Number of `--no-dry-run` occurrences (any accepted abbreviation). */
+  /**
+   * Number of `--no-dry-run` occurrences (any accepted abbreviation).
+   */
   readonly noDryRunCount: number;
-  /** Number of `--interactive`/`-i` occurrences (any accepted abbreviation). */
+  /**
+   * Number of `--interactive`/`-i` occurrences (any accepted abbreviation).
+   */
   readonly interactiveCount: number;
-  /** Number of `--no-interactive` occurrences (any accepted abbreviation). */
+  /**
+   * Number of `--no-interactive` occurrences (any accepted abbreviation).
+   */
   readonly noInteractiveCount: number;
-  /** Final dry-run state after applying Git's left-to-right ordering. */
+  /**
+   * Final dry-run state after applying Git's left-to-right ordering.
+   */
   readonly dryRunActive: boolean;
-  /** Final interactive state after applying Git's left-to-right ordering. */
+  /**
+   * Final interactive state after applying Git's left-to-right ordering.
+   */
   readonly interactiveActive: boolean;
-  /** True when wrapper-only escape hatch appears as a real flag. */
+  /**
+   * True when wrapper-only escape hatch appears as a real flag.
+   */
   readonly hasEscapeHatch: boolean;
-  /** True when optique parse failed; rule should be conservative. */
+  /**
+   * True when optique parse failed; rule should be conservative.
+   */
   readonly parseFailed: boolean;
 };
 
@@ -95,7 +113,9 @@ export type CleanRegion = {
  * ```
  */
 function optionRegion(args: readonly string[],): readonly string[] {
-  /** Position of pathspec separator inside post-subcommand region. */
+  /**
+   * Position of pathspec separator inside post-subcommand region.
+   */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex === (-1))
@@ -130,10 +150,14 @@ function optionRegion(args: readonly string[],): readonly string[] {
 export function parseCleanRegion(
   postSubcommandArgs: readonly string[],
 ): CleanRegion {
-  /** Argv slice handed to optique; pathspec region is excluded. */
+  /**
+   * Argv slice handed to optique; pathspec region is excluded.
+   */
   const region = optionRegion(postSubcommandArgs,);
 
-  /** Optique parse result over the cleaned option region. */
+  /**
+   * Optique parse result over the cleaned option region.
+   */
   const parseResult = parseSync(
     cleanRegionParser,
     region,
@@ -152,9 +176,13 @@ export function parseCleanRegion(
     };
   }
 
-  /** Successful parse value with optique-inferred shape. */
+  /**
+   * Successful parse value with optique-inferred shape.
+   */
   const { value, } = parseResult;
-  /** Ordered dry-run and interactive state matching Git's last-option-wins behavior. */
+  /**
+   * Ordered dry-run and interactive state matching Git's last-option-wins behavior.
+   */
   const orderedState = scanCleanOptionOrder(region,);
 
   return {

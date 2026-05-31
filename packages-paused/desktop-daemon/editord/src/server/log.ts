@@ -13,7 +13,9 @@ import type { Logger as ModuleLogger, } from '@monochromatic-dev/module-logger/t
 
 await initPromise;
 
-/** Logger handle passed through editord server modules. */
+/**
+ * Logger handle passed through editord server modules.
+ */
 export type Logger = Readonly<ModuleLogger>;
 
 /**

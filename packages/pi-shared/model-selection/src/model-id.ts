@@ -21,29 +21,49 @@ export const MALFORMED_SLUG: unique symbol = Symbol('model-selection/malformed-s
 
 //region Types
 
-/** Parsed `provider/model` slug. */
+/**
+ * Parsed `provider/model` slug.
+ */
 export type ProviderModelSlug = {
-  /** Provider segment before the first slash. */
+  /**
+   * Provider segment before the first slash.
+   */
   readonly provider: string;
-  /** Model id segment after the first slash. */
+  /**
+   * Model id segment after the first slash.
+   */
   readonly modelId: string;
 };
 
-/** Global model registry shape needed by explicit selection. */
+/**
+ * Global model registry shape needed by explicit selection.
+ */
 export type ModelRegistryLookup<TModel extends ModelIdentity = ModelIdentity,> = {
-  /** Return every registry model. */
+  /**
+   * Return every registry model.
+   */
   getAll(): readonly TModel[];
 };
 
-/** Options for resolving an explicit model slug. */
+/**
+ * Options for resolving an explicit model slug.
+ */
 export type ResolveRequestedModelOptions<TModel extends ModelIdentity = ModelIdentity,> = {
-  /** Effective scoped model set. */
+  /**
+   * Effective scoped model set.
+   */
   readonly scope: EffectiveModelScope<TModel>;
-  /** User supplied slug. */
+  /**
+   * User supplied slug.
+   */
   readonly requestedSlug: string;
-  /** Global model registry used to distinguish out-of-scope slugs. */
+  /**
+   * Global model registry used to distinguish out-of-scope slugs.
+   */
   readonly modelRegistry: ModelRegistryLookup<TModel>;
-  /** Error prefix used by the consuming extension. */
+  /**
+   * Error prefix used by the consuming extension.
+   */
   readonly errorPrefix?: string;
 };
 
@@ -84,18 +104,24 @@ export function canonicalSlug(
 export function parseProviderModelSlug(
   slug: string,
 ): ProviderModelSlug | typeof MALFORMED_SLUG {
-  /** Slash index between provider and model id. */
+  /**
+   * Slash index between provider and model id.
+   */
   const slashIndex = slug.indexOf('/',);
   if (slashIndex === (-1))
     return MALFORMED_SLUG;
 
-  /** Provider segment before slash. */
+  /**
+   * Provider segment before slash.
+   */
   const provider = slug.slice(
     0,
     slashIndex,
   )
     .trim();
-  /** Model id segment after slash. */
+  /**
+   * Model id segment after slash.
+   */
   const modelId = slug.slice(slashIndex + 1,)
     .trim();
   if ((provider === '') || (modelId === ''))
@@ -126,7 +152,9 @@ export function getModelIdLeaf(
     readonly modelId: string;
   },
 ): string {
-  /** Index after final slash, or zero when no slash exists. */
+  /**
+   * Index after final slash, or zero when no slash exists.
+   */
   const leafStartIndex = modelId.lastIndexOf('/',)
     + 1;
   return modelId.slice(leafStartIndex,);
@@ -188,23 +216,31 @@ export function resolveRequestedModel<TModel extends ModelIdentity,>(
     errorPrefix: rawErrorPrefix,
   }: ResolveRequestedModelOptions<TModel>,
 ): ModelSelection<TModel> {
-  /** Error message prefix for the consuming extension. */
+  /**
+   * Error message prefix for the consuming extension.
+   */
   const errorPrefix = rawErrorPrefix
     ?? 'model selection';
-  /** Trimmed requested model slug. */
+  /**
+   * Trimmed requested model slug.
+   */
   const requestedSlug = rawRequestedSlug
     .trim();
   if (requestedSlug === '')
     throw new Error(`${errorPrefix}: model slug must not be empty`,);
 
-  /** Matching scoped model candidates. */
+  /**
+   * Matching scoped model candidates.
+   */
   const scopedMatches = findScopedSlugMatches({
     scope,
     requestedSlug,
   },);
   if (scopedMatches.length
     === 1) {
-    /** Only scoped match after length guard. */
+    /**
+     * Only scoped match after length guard.
+     */
     const [selected,] = scopedMatches;
     if (selected === undefined)
       throw new Error(`${errorPrefix}: internal slug resolution failed`,);
@@ -280,21 +316,27 @@ function findScopedSlugMatches<TModel extends ModelIdentity,>(
       },);
   }
 
-  /** Bare id matches inside scope. */
+  /**
+   * Bare id matches inside scope.
+   */
   const idMatches = scope.entries
     .filter(function matchId(entry,) {
       return entry.model
         .id
         === requestedSlug;
     },);
-  /** Model display-name matches inside scope. */
+  /**
+   * Model display-name matches inside scope.
+   */
   const nameMatches = scope.entries
     .filter(function matchName(entry,) {
       return entry.model
         .name
         === requestedSlug;
     },);
-  /** Unique matches across both bare forms. */
+  /**
+   * Unique matches across both bare forms.
+   */
   const uniqueMatches = uniqueScopedModels([
     ...idMatches,
     ...nameMatches,
@@ -344,7 +386,9 @@ function slugExistsGlobally(
 function uniqueScopedModels<TModel extends ModelIdentity,>(
   models: readonly ScopedModel<TModel>[],
 ): ScopedModel<TModel>[] {
-  /** Locally-owned accumulator built without mutating input. */
+  /**
+   * Locally-owned accumulator built without mutating input.
+   */
   const result: ScopedModel<TModel>[] = [];
   for (const model of models) {
     if (result.some(function alreadyAdded(entry,) {

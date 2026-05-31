@@ -5,16 +5,24 @@
  * needed for parameter text extraction.
  */
 type ArrowParamsNode = {
-  /** Whether the function is async. */
+  /**
+   * Whether the function is async.
+   */
   readonly async: boolean;
-  /** Generic type parameter list, if present. */
+  /**
+   * Generic type parameter list, if present.
+   */
   readonly typeParameters?: unknown;
 };
 
-/** Async keyword that may prefix arrow function source text. */
+/**
+ * Async keyword that may prefix arrow function source text.
+ */
 const ASYNC_KEYWORD = 'async';
 
-/** Whitespace characters consumed after an async arrow-function prefix. */
+/**
+ * Whitespace characters consumed after an async arrow-function prefix.
+ */
 const ASYNC_PREFIX_WHITESPACE = [
   ' ',
   '\t',
@@ -60,7 +68,9 @@ function isWhitespaceCharacter({ char, }: { readonly char: string; },): boolean 
 function indexAfterAsyncPrefix({ fullText, }: { readonly fullText: string; },): number {
   if (!fullText.startsWith(ASYNC_KEYWORD,))
     return 0;
-  /** Cursor after the async keyword, advanced across following whitespace. */
+  /**
+   * Cursor after the async keyword, advanced across following whitespace.
+   */
   let index = ASYNC_KEYWORD.length;
   if (!isWhitespaceCharacter({ char: fullText[index]
     ?? '', },))
@@ -105,7 +115,9 @@ export function extractParamsText(
     readonly node: ArrowParamsNode;
   },
 ): string {
-  /** Skip `async ` prefix if present. */
+  /**
+   * Skip `async ` prefix if present.
+   */
   let start = 0;
   if (node.async)
     start = indexAfterAsyncPrefix({ fullText, },);
@@ -117,10 +129,14 @@ export function extractParamsText(
   if ((node.typeParameters
     !== null) && (node.typeParameters
       !== undefined)) {
-    /** Source slice starting at the first non-`async` character; inspected for a leading `<`. */
+    /**
+     * Source slice starting at the first non-`async` character; inspected for a leading `<`.
+     */
     const tpText = fullText.slice(start,);
     if (tpText.startsWith('<',)) {
-      /** Angle-bracket nesting counter so nested generics resolve before the params open. */
+      /**
+       * Angle-bracket nesting counter so nested generics resolve before the params open.
+       */
       let depth = 0;
       for (let i = 0; i < tpText
         .length; i++) {
@@ -139,11 +155,17 @@ export function extractParamsText(
     }
   }
 
-  /** Now find the balanced parenthesized params. */
+  /**
+   * Now find the balanced parenthesized params.
+   */
   const rest = fullText.slice(start,);
-  /** Parenthesis nesting counter; the params end when it returns to zero. */
+  /**
+   * Parenthesis nesting counter; the params end when it returns to zero.
+   */
   let depth = 0;
-  /** Genuine sentinel marking the scanner is outside any string literal; a unique `Symbol`, never `null`, so the cursor type carries no nullish union. */
+  /**
+   * Genuine sentinel marking the scanner is outside any string literal; a unique `Symbol`, never `null`, so the cursor type carries no nullish union.
+   */
   const OUTSIDE_STRING = Symbol('outside-string',);
   /**
    * Active string-literal delimiter while scanning, or {@link OUTSIDE_STRING}
@@ -153,7 +175,9 @@ export function extractParamsText(
 
   for (let i = 0; i < rest
     .length; i++) {
-    /** Current character under the scanner cursor. */
+    /**
+     * Current character under the scanner cursor.
+     */
     const ch = rest[i];
 
     if (inString !== OUTSIDE_STRING) {
@@ -185,6 +209,8 @@ export function extractParamsText(
     }
   }
 
-  /** Fallback: return the whole rest (should not happen for valid arrow functions). */
+  /**
+   * Fallback: return the whole rest (should not happen for valid arrow functions).
+   */
   return rest;
 }

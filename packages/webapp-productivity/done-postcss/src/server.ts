@@ -42,10 +42,14 @@ import { settingsPage, } from './server/pages/settings.ts';
 import { taskDetailsPage, } from './server/pages/task-details.ts';
 import { staticHandler, } from './server/static.ts';
 
-/** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
+/**
+ * Default HTTP port when neither `--port=` nor `PORT` env var is provided.
+ */
 const DEFAULT_PORT = 3_000;
 
-/** Radix for decimal integer parsing. */
+/**
+ * Radix for decimal integer parsing.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -54,16 +58,24 @@ const DECIMAL_RADIX = 10;
  * @returns Resolved port number
  */
 function resolvePort(): number {
-  /** Port supplied via `--port=` CLI flag, if present. */
+  /**
+   * Port supplied via `--port=` CLI flag, if present.
+   */
   const argumentPort = getArgumentValue('port',);
-  /** Port from `PORT` environment variable, used when no CLI flag is given. */
+  /**
+   * Port from `PORT` environment variable, used when no CLI flag is given.
+   */
   const environmentPort = process.env
     .PORT;
-  /** Whichever source (CLI takes precedence) provided a value, or `undefined`. */
+  /**
+   * Whichever source (CLI takes precedence) provided a value, or `undefined`.
+   */
   const rawPort = argumentPort === ARGUMENT_ABSENT ? environmentPort : argumentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
-  /** Numeric port after `parseInt`; `NaN` falls back to `DEFAULT_PORT`. */
+  /**
+   * Numeric port after `parseInt`; `NaN` falls back to `DEFAULT_PORT`.
+   */
   const parsedPort = Number.parseInt(
     rawPort,
     DECIMAL_RADIX,
@@ -96,7 +108,9 @@ function requireParam(
     readonly name: string;
   },
 ): string {
-  /** Raw parameter value from h3's router; `undefined` when missing. */
+  /**
+   * Raw parameter value from h3's router; `undefined` when missing.
+   */
   const value = getRouterParam(
     event,
     name,
@@ -115,7 +129,9 @@ await buildCSS({
   output: './dist/css/styles.css',
 },);
 
-/** h3 application instance routing HTTP requests to handlers. */
+/**
+ * h3 application instance routing HTTP requests to handlers.
+ */
 const app = new H3();
 
 app.get(
@@ -228,7 +244,9 @@ app.get(
   staticHandler,
 );
 
-/** Running HTTP server instance. */
+/**
+ * Running HTTP server instance.
+ */
 const server = serve(
   app,
   { port: resolvePort(), },

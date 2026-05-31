@@ -65,7 +65,9 @@ async function ensureDir(dirPath: string,): Promise<void> {
  * ```
  */
 async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
-  /** Pending `rm` operations across every matched `dist/final/<artifact>`, awaited concurrently below. */
+  /**
+   * Pending `rm` operations across every matched `dist/final/<artifact>`, awaited concurrently below.
+   */
   const removals: Promise<void>[] = [];
 
   for await (const finalDir of glob(
@@ -116,7 +118,9 @@ function isMissingPathError(error: unknown,): boolean {
  */
 async function cleanRootSentinelArtifact(artifactPath: string,): Promise<void> {
   try {
-    /** Candidate stat, read with `lstat` so symlinks are preserved. */
+    /**
+     * Candidate stat, read with `lstat` so symlinks are preserved.
+     */
     const stats = await lstat(artifactPath,);
 
     if ((!stats.isFile()) || (stats.size
@@ -202,7 +206,9 @@ type SessionStartHousekeepingOutput = void;
 async function sessionStartHousekeepingHandler(
   event: ReadonlyDeep<SessionStartInput>,
 ): Promise<SessionStartHousekeepingOutput> {
-  /** Monorepo root, derived from the SessionStart event's `cwd` field. */
+  /**
+   * Monorepo root, derived from the SessionStart event's `cwd` field.
+   */
   const workspaceRoot = event.cwd;
   await Promise.all([
     ensureDir('/tmp/claude',),

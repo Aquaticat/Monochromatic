@@ -15,7 +15,9 @@ import { joinTokens, } from '../../render-helpers.ts';
 import { englishThirdSingular, } from './morphology.ts';
 import type { EnglishVerbEntry, } from './types.ts';
 
-/** Grammatical-person value used to detect third-person singular agreement; composed from the exempt 1..2 range to satisfy `no-magic-numbers`. */
+/**
+ * Grammatical-person value used to detect third-person singular agreement; composed from the exempt 1..2 range to satisfy `no-magic-numbers`.
+ */
 const THIRD_PERSON = 1 + 2;
 
 /**
@@ -39,7 +41,9 @@ export type EnglishQuestionVerbParts = {
   readonly complementForm: EnglishComplementForm;
 };
 
-/** Concrete auxiliary strategy after applying the default. */
+/**
+ * Concrete auxiliary strategy after applying the default.
+ */
 type EnglishAuxiliaryStrategy = NonNullable<EnglishVerbEntry['auxiliaryStrategy']>;
 
 /**
@@ -79,7 +83,9 @@ export function complementFormForVerb(
     readonly entry: EnglishVerbEntry;
   },
 ): EnglishComplementForm {
-  /** Configured auxiliary strategy after applying the default. */
+  /**
+   * Configured auxiliary strategy after applying the default.
+   */
   const strategy = auxiliaryStrategyFor({ entry, },);
   return (strategy === 'modal') || (strategy === 'none') ? 'bare' : 'infinitive';
 }
@@ -191,7 +197,9 @@ export function questionVerbParts(
     readonly agreement: SubjectAgreement;
   },
 ): EnglishQuestionVerbParts {
-  /** Configured auxiliary strategy after applying the default. */
+  /**
+   * Configured auxiliary strategy after applying the default.
+   */
   const strategy = auxiliaryStrategyFor({ entry, },);
   if (strategy === 'copula') {
     if (tense === 'future') {
@@ -258,7 +266,9 @@ export function subjectQuestionVerbSurface(
     readonly agreement: SubjectAgreement;
   },
 ): string {
-  /** Configured auxiliary strategy after applying the default. */
+  /**
+   * Configured auxiliary strategy after applying the default.
+   */
   const strategy = auxiliaryStrategyFor({ entry, },);
   if ((strategy === 'modal') || (strategy === 'none'))
     return tense === 'past' ? entry.past
@@ -295,7 +305,9 @@ function renderComplement<S extends string, V extends string, N extends string,>
     readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
   },
 ): string {
-  /** Rendered nested verb phrase before complement marker selection. */
+  /**
+   * Rendered nested verb phrase before complement marker selection.
+   */
   const rendered = renderVerbPhrase(phrase,);
   return complementFormForVerb({ entry, },)
     === 'bare' ? rendered : `to ${rendered}`;
@@ -344,16 +356,24 @@ export function makeEnglishVerbPhraseRenderer<
    * @returns rendered surface
    */
   function renderVerbPhrase(phrase: VerbPhrase<S, V, N>,): string {
-    /** Verb entry used for the head and complement attachment strategy. */
+    /**
+     * Verb entry used for the head and complement attachment strategy.
+     */
     const entry = verbs[phrase.verb];
-    /** Verb base form; finite tense is decided by callers that own subject + tense context. */
+    /**
+     * Verb base form; finite tense is decided by callers that own subject + tense context.
+     */
     const verb = entry.base;
-    /** Rendered object surface; empty string when no object slot was supplied. */
+    /**
+     * Rendered object surface; empty string when no object slot was supplied.
+     */
     const object = phrase.object
       === undefined
       ? ''
       : renderNounPhrase(phrase.object,);
-    /** Rendered complement, bare for modal-like heads and infinitive otherwise; empty string when absent. */
+    /**
+     * Rendered complement, bare for modal-like heads and infinitive otherwise; empty string when absent.
+     */
     const complement = phrase.complement
       === undefined
       ? ''
@@ -363,7 +383,9 @@ export function makeEnglishVerbPhraseRenderer<
           .phrase,
         renderVerbPhrase,
       },);
-    /** Rendered adverbial cluster; empty string when none. */
+    /**
+     * Rendered adverbial cluster; empty string when none.
+     */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([
       verb,

@@ -20,19 +20,29 @@ import {
 import { HIGHLIGHT_STYLES, } from '../highlight/styles.ts';
 import { INLAY_STYLES, } from '../inlay/styles.ts';
 
-/** Full viewport height as percentage. */
+/**
+ * Full viewport height as percentage.
+ */
 const FULL_HEIGHT = 100;
 
-/** Editor line height multiplier: 1.5 = (2 + 1) / 2. */
+/**
+ * Editor line height multiplier: 1.5 = (2 + 1) / 2.
+ */
 const LINE_HEIGHT = (2 + 1) / 2;
 
-/** Width of the line number gutter in `ch` units: 5 = 2 * 2 + 1. */
+/**
+ * Width of the line number gutter in `ch` units: 5 = 2 * 2 + 1.
+ */
 const GUTTER_WIDTH = (2 * 2) + 1;
 
-/** Total left padding (gutter + gap) in `ch` units: 6 = (2 + 1) * 2. */
+/**
+ * Total left padding (gutter + gap) in `ch` units: 6 = (2 + 1) * 2.
+ */
 const LINE_PADDING = (2 + 1) * 2;
 
-/** Shadow DOM styles for the editor pane. */
+/**
+ * Shadow DOM styles for the editor pane.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

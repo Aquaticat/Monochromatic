@@ -72,7 +72,9 @@ function readSuffixes(
   const [first,] = options;
   if (!isFirstOption(first,))
     return DEFAULT_SUFFIXES;
-  /** Configured suffix array; may be undefined when the user passes a partial object. */
+  /**
+   * Configured suffix array; may be undefined when the user passes a partial object.
+   */
   const { suffixes, } = first;
   if (!Array.isArray(suffixes,))
     return DEFAULT_SUFFIXES;
@@ -170,9 +172,13 @@ export const noClass: CreateOnceRule = {
     ],
   },
   createOnce(context: Context,): VisitorWithHooks {
-    /** Raw rule options; oxlint omits this until config is supplied. */
+    /**
+     * Raw rule options; oxlint omits this until config is supplied.
+     */
     const { options, } = context;
-    /** Suffix list resolved once per file; default the absent case to an empty array rather than widening the parameter to `| undefined`. */
+    /**
+     * Suffix list resolved once per file; default the absent case to an empty array rather than widening the parameter to `| undefined`.
+     */
     const suffixes = readSuffixes(options ?? [],);
 
     /**
@@ -203,7 +209,9 @@ export const noClass: CreateOnceRule = {
         === true)
         return;
 
-      /** Parent expression following `extends`, when present. */
+      /**
+       * Parent expression following `extends`, when present.
+       */
       const { superClass, } = node;
       if ((superClass === null) || (superClass === undefined)) {
         context.report({
@@ -221,7 +229,9 @@ export const noClass: CreateOnceRule = {
         return;
       }
 
-      /** Class identifier; null on anonymous class expressions. */
+      /**
+       * Class identifier; null on anonymous class expressions.
+       */
       const { id, } = node;
       if (
         (id !== null)

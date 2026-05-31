@@ -25,31 +25,49 @@ import {
  * `\<task-detail\>` web component for viewing and editing a single task.
  */
 class TaskDetail extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Current task configuration data. */
+  /**
+   * Current task configuration data.
+   */
   #data?: TaskDetailData;
 
-  /** Current display mode. */
+  /**
+   * Current display mode.
+   */
   #mode: TaskDetailMode = 'edit';
 
-  /** Mutable metadata state. */
+  /**
+   * Mutable metadata state.
+   */
   #tags: readonly string[] = [];
 
-  /** Mutable locations state. */
+  /**
+   * Mutable locations state.
+   */
   #locations: readonly string[] = [];
 
-  /** Mutable priority state; `METADATA_UNSET` until a value is selected. */
+  /**
+   * Mutable priority state; `METADATA_UNSET` until a value is selected.
+   */
   #priority: TaskPriority | typeof METADATA_UNSET = METADATA_UNSET;
 
-  /** Mutable complexity state; `METADATA_UNSET` until a value is selected. */
+  /**
+   * Mutable complexity state; `METADATA_UNSET` until a value is selected.
+   */
   #complexity: TaskComplexity | typeof METADATA_UNSET = METADATA_UNSET;
 
-  /** Autofill controller managing debounced AI requests. */
+  /**
+   * Autofill controller managing debounced AI requests.
+   */
   readonly #autofill: AutofillController;
 
-  /** Initializes the shadow root and autofill controller. */
+  /**
+   * Initializes the shadow root and autofill controller.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -157,20 +175,28 @@ class TaskDetail extends HTMLElement {
     };
   }
 
-  /** Rebuilds pill elements from current metadata state. */
+  /**
+   * Rebuilds pill elements from current metadata state.
+   */
   #updatePillsDisplay(): void {
-    /** Container the pill list is rendered into; absent before initial render. */
+    /**
+     * Container the pill list is rendered into; absent before initial render.
+     */
     const pillsContainer = this.#shadow
       .querySelector<HTMLElement>('.pills',);
     if (pillsContainer === null)
       return;
-    /** Task data extracted from `#data`; updates are skipped until `configure()` has run. */
+    /**
+     * Task data extracted from `#data`; updates are skipped until `configure()` has run.
+     */
     const task = this.#data
       ?.task;
     if (task === undefined)
       return;
 
-    /** Descriptor list driving the pill render below. */
+    /**
+     * Descriptor list driving the pill render below.
+     */
     const pills = buildPillData({
       task,
       tags: this.#tags,
@@ -189,13 +215,19 @@ class TaskDetail extends HTMLElement {
     );
   }
 
-  /** Delegates to renderTaskDetail and wires autofill on title input. */
+  /**
+   * Delegates to renderTaskDetail and wires autofill on title input.
+   */
   #render(): void {
-    /** Snapshot of `#data` to satisfy the absence check and stable destructure below. */
+    /**
+     * Snapshot of `#data` to satisfy the absence check and stable destructure below.
+     */
     const data = this.#data;
     if (data === undefined)
       return;
-    /** Title input returned by the shared renderer; autofill is wired on its `input` events. */
+    /**
+     * Title input returned by the shared renderer; autofill is wired on its `input` events.
+     */
     const { titleInput, } = renderTaskDetail({
       shadow: this.#shadow,
       task: data.task,
@@ -203,7 +235,9 @@ class TaskDetail extends HTMLElement {
       host: this,
     },);
     this.#updatePillsDisplay();
-    /** Captured so the input listener reaches the controller without a `this`-bound handler. */
+    /**
+     * Captured so the input listener reaches the controller without a `this`-bound handler.
+     */
     const autofill = this.#autofill;
     titleInput.addEventListener(
       'input',

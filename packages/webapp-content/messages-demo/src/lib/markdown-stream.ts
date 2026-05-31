@@ -15,10 +15,14 @@
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 import { micromark, } from 'micromark';
 
-/** Soft chunk target in kibibytes. */
+/**
+ * Soft chunk target in kibibytes.
+ */
 const CHUNK_TARGET_KIB = 32;
 
-/** Hard chunk cap in kibibytes. */
+/**
+ * Hard chunk cap in kibibytes.
+ */
 const CHUNK_HARD_CAP_KIB = 256;
 
 /**
@@ -44,11 +48,17 @@ export const CHUNK_HARD_CAP_BYTES: number = CHUNK_HARD_CAP_KIB * BYTES_PER_KIB;
  * the source character count for `messages.char_count` aggregation.
  */
 export type RenderedChunk = {
-  /** Source markdown for this chunk. Stored in `chunks.md`. */
+  /**
+   * Source markdown for this chunk. Stored in `chunks.md`.
+   */
   readonly md: string;
-  /** Pre-rendered safe HTML. Stored in `chunks.html`. Safe to inject as-is. */
+  /**
+   * Pre-rendered safe HTML. Stored in `chunks.html`. Safe to inject as-is.
+   */
   readonly html: string;
-  /** Count of characters in `md`. Aggregated into `messages.char_count`. */
+  /**
+   * Count of characters in `md`. Aggregated into `messages.char_count`.
+   */
   readonly charCount: number;
 };
 
@@ -89,9 +99,13 @@ function isCodeFence(line: string,): boolean {
  */
 export function* segmentBlocks(md: string,): Generator<string, void, void> {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming block segmenter: `buffer` accumulates lines until the blank-line boundary cuts a block; `inFence` toggles on each code-fence line so blanks inside fences do not split */
-  /** Accumulator for the current block; yielded by `flush` when a blank-line boundary is reached. */
+  /**
+   * Accumulator for the current block; yielded by `flush` when a blank-line boundary is reached.
+   */
   let buffer = '';
-  /** Tracks whether the walker is currently inside a fenced code block. */
+  /**
+   * Tracks whether the walker is currently inside a fenced code block.
+   */
   let inFence = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
@@ -118,10 +132,14 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
   // because CommonMark blanks are line-anchored and split() is the
   // simplest correct primitive for a demo. For multi-GB inputs the worker
   // calls this on chunks of the buffer, never the full thing.
-  /** Source split on `\n`; CommonMark blanks are line-anchored so this is the simplest correct primitive. */
+  /**
+   * Source split on `\n`; CommonMark blanks are line-anchored so this is the simplest correct primitive.
+   */
   const lines = md.split('\n',);
   for (const line of lines) {
-    /** Blank-line detection drives the block-boundary cut outside fences. */
+    /**
+     * Blank-line detection drives the block-boundary cut outside fences.
+     */
     const isBlank = line.trim()
       .length
       === 0;
@@ -163,9 +181,13 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
  */
 export function* renderChunks(md: string,): Generator<RenderedChunk, void, void> {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming chunker: `pendingMd` and `pendingHtml` accumulate across `segmentBlocks` iterations until the soft- or hard-cap threshold triggers an `emit` flush */
-  /** Accumulator of source markdown across blocks; flushed at chunk boundaries. */
+  /**
+   * Accumulator of source markdown across blocks; flushed at chunk boundaries.
+   */
   let pendingMd = '';
-  /** Accumulator of rendered HTML; the soft-target threshold compares against its length. */
+  /**
+   * Accumulator of rendered HTML; the soft-target threshold compares against its length.
+   */
   let pendingHtml = '';
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
@@ -194,7 +216,9 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
   }
 
   for (const block of segmentBlocks(md,)) {
-    /** Rendered HTML for one block; compared against the hard cap before merging into pending. */
+    /**
+     * Rendered HTML for one block; compared against the hard cap before merging into pending.
+     */
     const blockHtml = micromark(block,);
 
     // A single block over the hard cap still ships as its own chunk;
@@ -259,7 +283,9 @@ export function extractPreview({
   readonly maxLength: number;
 },): string {
   /* oxlint-disable no-restricted-syntax/no-regex -- preview extractor strips markdown structural markup from a chunk-sized excerpt (capped well below the chunk hard cap). Each pattern uses lazy quantifiers or negated character classes, so matching is linear in input length with no nested unbounded quantifiers. */
-  /** Successively stripped form; built up by chained replaces before length check. */
+  /**
+   * Successively stripped form; built up by chained replaces before length check.
+   */
   const stripped = md
     .replaceAll(
       /```[\s\S]*?```/gu,

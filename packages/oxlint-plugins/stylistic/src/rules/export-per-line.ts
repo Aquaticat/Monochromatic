@@ -7,7 +7,9 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Export declaration node shape carrying named specifiers for this rule. */
+/**
+ * Export declaration node shape carrying named specifiers for this rule.
+ */
 type ExportSpecifierListNode = Span & {
   /**
    * Inline export declaration: a node for `export const` and similar syntax,
@@ -18,7 +20,9 @@ type ExportSpecifierListNode = Span & {
    * union, which `no-nullish-union` bans).
    */
   readonly declaration?: unknown;
-  /** Named export specifiers in source order. */
+  /**
+   * Named export specifiers in source order.
+   */
   readonly specifiers?: readonly Span[];
 };
 
@@ -58,16 +62,22 @@ export const exportPerLine: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       ExportNamedDeclaration(node: Span,): void {
-        /** Narrowed export visitor node used for declaration and specifier access. */
+        /**
+         * Narrowed export visitor node used for declaration and specifier access.
+         */
         const exportNode = node as ExportSpecifierListNode;
 
-        /** Export-specific fields used to skip inline declarations and inspect named specifiers. */
+        /**
+         * Export-specific fields used to skip inline declarations and inspect named specifiers.
+         */
         const {
           declaration,
           specifiers,
         } = exportNode;
 
-        /** Skip inline declarations (`export const x = ...`). */
+        /**
+         * Skip inline declarations (`export const x = ...`).
+         */
         if ((declaration !== null)
           && (declaration !== undefined))
         {

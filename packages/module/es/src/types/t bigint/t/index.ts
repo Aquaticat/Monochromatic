@@ -1,2 +1,4 @@
-/** Branded type alias for `bigint`. */
+/**
+ * Branded type alias for `bigint`.
+ */
 export type $ = bigint;

@@ -1,6 +1,8 @@
 import type { Translation, } from '../i18n-types.ts';
 
-/** Simplified Chinese translations. */
+/**
+ * Simplified Chinese translations.
+ */
 const zh: Translation = {
   appName: 'paper2vn',
   start: '开始',

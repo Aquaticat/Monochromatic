@@ -86,21 +86,29 @@ export function makeChineseVerbPhraseRenderer<
    * @returns rendered surface
    */
   function renderVerbPhrase(phrase: VerbPhrase<S, V, N>,): string {
-    /** Verb base surface; tense decoration handled by callers that own tense context. */
+    /**
+     * Verb base surface; tense decoration handled by callers that own tense context.
+     */
     const verb = verbs[phrase.verb]
       .surface;
-    /** Rendered object surface; empty string when absent. */
+    /**
+     * Rendered object surface; empty string when absent.
+     */
     const object = phrase.object
       === undefined
       ? ''
       : renderNounPhrase(phrase.object,);
-    /** Rendered complement; empty string when absent. */
+    /**
+     * Rendered complement; empty string when absent.
+     */
     const complement = phrase.complement
       === undefined
       ? ''
       : renderVerbPhrase(phrase.complement
         .phrase,);
-    /** Rendered adverbial cluster; empty string when none. */
+    /**
+     * Rendered adverbial cluster; empty string when none.
+     */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([
       adverbials,

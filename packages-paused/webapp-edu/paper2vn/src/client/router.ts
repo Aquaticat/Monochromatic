@@ -7,7 +7,9 @@
  * read state from the store directly.
  */
 
-/** Symbolic screen id. */
+/**
+ * Symbolic screen id.
+ */
 export type ScreenId =
   | 'menu'
   | 'select-topic'
@@ -16,22 +18,34 @@ export type ScreenId =
   | 'saves'
   | 'log';
 
-/** Function that mounts a screen into the given container. */
+/**
+ * Function that mounts a screen into the given container.
+ */
 export type ScreenRenderer = (root: HTMLElement,) => void;
 
-/** Function that tears down a previously mounted screen. */
+/**
+ * Function that tears down a previously mounted screen.
+ */
 export type ScreenTeardown = () => void;
 
-/** Per-screen pair of mount and teardown. */
+/**
+ * Per-screen pair of mount and teardown.
+ */
 export type ScreenModule = {
-  /** Mounts the screen into the container. */
+  /**
+   * Mounts the screen into the container.
+   */
   mount: ScreenRenderer;
 
-  /** Optional teardown invoked when the screen is replaced. */
+  /**
+   * Optional teardown invoked when the screen is replaced.
+   */
   unmount?: ScreenTeardown;
 };
 
-/** Registered screens keyed by id. */
+/**
+ * Registered screens keyed by id.
+ */
 const screens = new Map<ScreenId, ScreenModule>();
 
 /**
@@ -41,9 +55,13 @@ const screens = new Map<ScreenId, ScreenModule>();
  * reassigned without violating the `no-module-root-let` rule.
  */
 const routerState: {
-  /** Last screen id activated, used during teardown. */
+  /**
+   * Last screen id activated, used during teardown.
+   */
   currentScreen: ScreenId | undefined;
-  /** Last teardown function, called before mounting the next screen. */
+  /**
+   * Last teardown function, called before mounting the next screen.
+   */
   currentTeardown: ScreenTeardown | undefined;
 } = {
   currentScreen: undefined,
@@ -92,7 +110,9 @@ export function registerScreen(
  * ```
  */
 export function navigate(id: ScreenId,): void {
-  /** Destination screen module, resolved before any teardown work. */
+  /**
+   * Destination screen module, resolved before any teardown work.
+   */
   const next = screens.get(id,);
   if (next === undefined)
     throw new Error(`[router] unknown screen: ${id}`,);
@@ -101,7 +121,9 @@ export function navigate(id: ScreenId,): void {
     routerState.currentTeardown();
     routerState.currentTeardown = undefined;
   }
-  /** App-root container where each screen mounts its subtree. */
+  /**
+   * App-root container where each screen mounts its subtree.
+   */
   const root = document.querySelector<HTMLElement>('#app',);
   if (root === null)
     throw new Error('[router] #app root not found',);

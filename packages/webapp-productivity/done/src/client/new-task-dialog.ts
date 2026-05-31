@@ -17,7 +17,9 @@ import { api, } from './lib/api.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/task-detail.ts';
 
-/** Blank task template used when creating a new task; optional fields stay absent. */
+/**
+ * Blank task template used when creating a new task; optional fields stay absent.
+ */
 const emptyTask: Task = {
   id: '',
   title: '',
@@ -36,9 +38,13 @@ const emptyTask: Task = {
  * Return value of {@link createNewTaskDialog}.
  */
 type NewTaskDialog = {
-  /** Fixed panel element to append to the document body. */
+  /**
+   * Fixed panel element to append to the document body.
+   */
   panel: HTMLElement;
-  /** FAB button element to append to the document body. */
+  /**
+   * FAB button element to append to the document body.
+   */
   fab: HTMLElement;
 };
 
@@ -60,11 +66,15 @@ type NewTaskDialog = {
  */
 export function createNewTaskDialog(): NewTaskDialog {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail */
-  /** Live instance of the custom element so its imperative API stays accessible. */
+  /**
+   * Live instance of the custom element so its imperative API stays accessible.
+   */
   const detail = document.createElement('task-detail',) as TaskDetail;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-  /** Popover host containing the detail panel; toggled by `openPanel`/`closePanel`. */
+  /**
+   * Popover host containing the detail panel; toggled by `openPanel`/`closePanel`.
+   */
   const panel = h({
     tag: 'div',
     class: 'new-task-panel',
@@ -75,7 +85,9 @@ export function createNewTaskDialog(): NewTaskDialog {
   );
   panel.append(detail,);
 
-  /** Hides the panel popover and restores the FAB. */
+  /**
+   * Hides the panel popover and restores the FAB.
+   */
   function closePanel(): void {
     panel.hidePopover();
     fab.hidden = false;
@@ -87,7 +99,9 @@ export function createNewTaskDialog(): NewTaskDialog {
       if (!(event instanceof CustomEvent))
         throw new TypeError("Expected CustomEvent for 'action' listener",);
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component */
-      /** Destructured action payload dispatched by the inner `<task-detail>`. */
+      /**
+       * Destructured action payload dispatched by the inner `<task-detail>`.
+       */
       const {
         action,
         title,
@@ -105,13 +119,17 @@ export function createNewTaskDialog(): NewTaskDialog {
       }
 
       if (action === 'save') {
-        /** Trimmed title captured once; empty titles short-circuit the save below. */
+        /**
+         * Trimmed title captured once; empty titles short-circuit the save below.
+         */
         const trimmedTitle = title.trim();
         if (trimmedTitle.length
           === 0)
           return;
 
-        /** Snapshot of the autofill/manual metadata, forwarded to the create endpoint. */
+        /**
+         * Snapshot of the autofill/manual metadata, forwarded to the create endpoint.
+         */
         const metadata = detail.getMetadata();
         void (async function saveTask(): Promise<void> {
           await api({
@@ -136,7 +154,9 @@ export function createNewTaskDialog(): NewTaskDialog {
     },
   );
 
-  /** Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation. */
+  /**
+   * Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation.
+   */
   function openPanel(): void {
     console.log(
       '[new-task-dialog] openPanel(), detail.configure is:',
@@ -156,7 +176,9 @@ export function createNewTaskDialog(): NewTaskDialog {
     requestAnimationFrame(function animatePanel() {
       panel.dataset
         .animating = '';
-      /** Looked up after the panel opens so the autofocus lands on the right input. */
+      /**
+       * Looked up after the panel opens so the autofocus lands on the right input.
+       */
       const titleInput =
         detail.shadowRoot
           ?.querySelector<HTMLInputElement>('.title-input',)
@@ -165,7 +187,9 @@ export function createNewTaskDialog(): NewTaskDialog {
     },);
   }
 
-  /** Floating action button referenced by `openPanel`/`closePanel` to toggle visibility. */
+  /**
+   * Floating action button referenced by `openPanel`/`closePanel` to toggle visibility.
+   */
   const fab = h({
     tag: 'fab-button',
     attrs: { label: 'Add task', },

@@ -12,13 +12,19 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Configuration for rendering a page with the standard HTML shell. */
+/**
+ * Configuration for rendering a page with the standard HTML shell.
+ */
 type LayoutOptions = {
   readonly title: string;
   readonly heading: string;
-  /** Path to the bundled client entry script, e.g. "/dist/client/inbox.js" */
+  /**
+   * Path to the bundled client entry script, e.g. "/dist/client/inbox.js"
+   */
   readonly entryScriptPath: string;
-  /** Arbitrary data serialized as JSON into `<script id="page-data">` for client hydration */
+  /**
+   * Arbitrary data serialized as JSON into `<script id="page-data">` for client hydration
+   */
   readonly pageData: unknown;
   readonly hideTopNav?: boolean;
 };
@@ -45,7 +51,9 @@ export function serializePageData(data: unknown,): string {
   );
 }
 
-/** Inline script that wires the top-nav hamburger menu to the side-drawer */
+/**
+ * Inline script that wires the top-nav hamburger menu to the side-drawer
+ */
 const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
       var drawer = document.getElementById('drawer');
       if (drawer) drawer.open = true;
@@ -64,7 +72,9 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  * ```
  */
 export function renderPage(options: LayoutOptions,): Response {
-  /** Top-nav element string, or empty when the caller opts out via `hideTopNav`. */
+  /**
+   * Top-nav element string, or empty when the caller opts out via `hideTopNav`.
+   */
   const topNav = options.hideTopNav
     === true
     ? ''
@@ -73,7 +83,9 @@ export function renderPage(options: LayoutOptions,): Response {
       attrs: { heading: options.heading, },
     },);
 
-  /** Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`. */
+  /**
+   * Rendered HTML response body; built via `hHtml` and wrapped with `<!DOCTYPE html>`.
+   */
   const html = `<!DOCTYPE html>
 ${
     h({

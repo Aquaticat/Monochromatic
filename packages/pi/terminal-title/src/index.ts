@@ -27,7 +27,9 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { titleForEvent, } from './title-builder.ts';
 
-/** Minimal context shape needed by all event handlers (just `ui.setTitle()`). */
+/**
+ * Minimal context shape needed by all event handlers (just `ui.setTitle()`).
+ */
 type TitleContext = {
   readonly ui: {
     readonly setTitle: (title: string,) => void;
@@ -66,7 +68,9 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       ctx: TitleContext,
     ) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
-      /** Event arguments coerced to a string-keyed record so the title builder can sample fields by name. */
+      /**
+       * Event arguments coerced to a string-keyed record so the title builder can sample fields by name.
+       */
       const args = (event.args
         ?? {}) as Record<string, unknown>;
       /* oxlint-enable typescript/no-unsafe-type-assertion */

@@ -48,21 +48,37 @@ import type { ContextAction, } from './types.ts';
 export type { ContextAction, };
 export type { DirEntry, };
 
-/** `<file-tree>`: directory tree sidebar with `<tree-dir-entry>` toggles. */
+/**
+ * `<file-tree>`: directory tree sidebar with `<tree-dir-entry>` toggles.
+ */
 export class FileTree extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
-  /** Container div for tree entries. */
+  /**
+   * Container div for tree entries.
+   */
   #tree: HTMLDivElement | null = null;
-  /** Last focused element for resolving `selectedDir`. */
+  /**
+   * Last focused element for resolving `selectedDir`.
+   */
   #lastFocused: HTMLElement | null = null;
-  /** Absolute root directory path. */
+  /**
+   * Absolute root directory path.
+   */
   #rootPath = '';
-  /** Shared mutable state for data fetching and caching. */
+  /**
+   * Shared mutable state for data fetching and caching.
+   */
   readonly #state: FileTreeState;
-  /** Context menu component for right-click actions. */
+  /**
+   * Context menu component for right-click actions.
+   */
   #contextMenu: ContextMenu | null = null;
-  /** Callback invoked when a context menu action is selected. */
+  /**
+   * Callback invoked when a context menu action is selected.
+   */
   #onContextAction: ((action: ContextAction,) => void) | null = null;
 
   /**
@@ -118,7 +134,9 @@ export class FileTree extends HTMLElement {
     this.#onContextAction = fn;
   }
 
-  /** Initializes the shadow root and internal state. */
+  /**
+   * Initializes the shadow root and internal state.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -141,9 +159,13 @@ export class FileTree extends HTMLElement {
     return resolveSelectedDir({ lastFocused: this.#lastFocused, },);
   }
 
-  /** Renders the tree container and attaches event delegation. */
+  /**
+   * Renders the tree container and attaches event delegation.
+   */
   connectedCallback(): void {
-    /** Stable reference to `this` so inner event handlers retain the component instance. */
+    /**
+     * Stable reference to `this` so inner event handlers retain the component instance.
+     */
     const tree = this;
     this.#tree = h({
       tag: 'div',
@@ -183,7 +205,9 @@ export class FileTree extends HTMLElement {
       .addEventListener(
       'show-context',
       function handleShowContext(event,) {
-        /** Detail payload from the bubbling `show-context` CustomEvent: coordinates and target. */
+        /**
+         * Detail payload from the bubbling `show-context` CustomEvent: coordinates and target.
+         */
         const {
           x,
           y,
@@ -230,15 +254,21 @@ export class FileTree extends HTMLElement {
    * @param rootPath - absolute path to the root directory
    */
   async expandRoot(rootPath: string,): Promise<void> {
-    /** Captured fetch callback; absent when the tree was never wired up with a backing fetcher. */
+    /**
+     * Captured fetch callback; absent when the tree was never wired up with a backing fetcher.
+     */
     const { fetchDir, } = this.#state;
     if ((this.#tree
       === null) || (fetchDir === null))
       return;
     this.#rootPath = rootPath;
-    /** Root-level directory listing used to populate the top of the tree. */
+    /**
+     * Root-level directory listing used to populate the top of the tree.
+     */
     const entries = await fetchDir(rootPath,);
-    /** DOM nodes representing the root listing; replaces any prior children. */
+    /**
+     * DOM nodes representing the root listing; replaces any prior children.
+     */
     const children = createEntryElements({
       parentPath: rootPath,
       entries,
@@ -283,9 +313,13 @@ export class FileTree extends HTMLElement {
       || (dirs.length
         === 0))
       return;
-    /** Trailing-slash prefix used to drop any restored path that escaped the configured root. */
+    /**
+     * Trailing-slash prefix used to drop any restored path that escaped the configured root.
+     */
     const rootPrefix = `${this.#rootPath}/`;
-    /** Restored paths that still sit under the current root; everything else is silently dropped. */
+    /**
+     * Restored paths that still sit under the current root; everything else is silently dropped.
+     */
     const validDirs = dirs.filter(function withinRoot(dir,) {
       return dir.startsWith(rootPrefix,);
     },);
@@ -327,7 +361,9 @@ export class FileTree extends HTMLElement {
       === null) || (this.#rootPath
         === ''))
       return;
-    /** Stable reference to `this` so the inline `restore` callback retains the component instance. */
+    /**
+     * Stable reference to `this` so the inline `restore` callback retains the component instance.
+     */
     const tree = this;
     await doRevealFiles({
       tree: this.#tree,

@@ -26,7 +26,9 @@ export function resolveAbsolutePoints(
   number,
   number,
 ][] {
-  /** Accumulator of resolved absolute coordinates, written in command order. */
+  /**
+   * Accumulator of resolved absolute coordinates, written in command order.
+   */
   const points: [
     number,
     number,

@@ -43,17 +43,23 @@ export function renderWhSubject<S extends string, V extends string, N extends st
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     verbs,
     renderNounPhrase,
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Finite verb surface using wh-subject agreement (3s). */
+  /**
+   * Finite verb surface using wh-subject agreement (3s).
+   */
   const verb = finiteVerbSurface({
     entry: verbs[sentence.predicate
       .verb],
@@ -62,20 +68,28 @@ export function renderWhSubject<S extends string, V extends string, N extends st
     tense,
     agreement: WH_SUBJECT_AGREEMENT,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body with `Qui` at head. */
+  /**
+   * Sentence body with `Qui` at head.
+   */
   const body = joinTokens([
     'Qui',
     verb,
@@ -111,35 +125,49 @@ export function renderWhObject<S extends string, V extends string, N extends str
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Subject surface after the wh-phrase. */
+  /**
+   * Subject surface after the wh-phrase.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Finite verb surface. */
+  /**
+   * Finite verb surface.
+   */
   const verb = finiteVerbSurface({
     entry: verbs[sentence.verb],
     key: sentence.verb,
     tense,
     agreement,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.adverbials,);
-  /** Sentence body with `Què` at head. */
+  /**
+   * Sentence body with `Què` at head.
+   */
   const body = joinTokens([
     'Què',
     verb,
@@ -174,7 +202,9 @@ export function renderWhAdverbial<S extends string, V extends string, N extends 
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
@@ -182,20 +212,28 @@ export function renderWhAdverbial<S extends string, V extends string, N extends 
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Subject surface after the wh-phrase. */
+  /**
+   * Subject surface after the wh-phrase.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Finite verb surface. */
+  /**
+   * Finite verb surface.
+   */
   const verb = finiteVerbSurface({
     entry: verbs[sentence.predicate
       .verb],
@@ -204,22 +242,32 @@ export function renderWhAdverbial<S extends string, V extends string, N extends 
     tense,
     agreement,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Catalan wh-word matched to the AST relation. */
+  /**
+   * Catalan wh-word matched to the AST relation.
+   */
   const wh = catalanWhWord(sentence.wh,);
-  /** Sentence body with wh-word at head. */
+  /**
+   * Sentence body with wh-word at head.
+   */
   const body = joinTokens([
     wh,
     verb,

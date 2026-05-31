@@ -46,11 +46,17 @@ type ItemPosition = 'source' | 'output';
  * ```
  */
 type ResolveGlobOptions = {
-  /** File glob pattern */
+  /**
+   * File glob pattern
+   */
   readonly pattern: string;
-  /** Whether this is a source or output item (for logging) */
+  /**
+   * Whether this is a source or output item (for logging)
+   */
   readonly position: ItemPosition;
-  /** Whether to log diagnostic messages */
+  /**
+   * Whether to log diagnostic messages
+   */
   readonly verbose: boolean;
 };
 
@@ -79,7 +85,9 @@ async function resolveGlob({
   position,
   verbose,
 }: ResolveGlobOptions,): Promise<number[]> {
-  /** Files matched by the glob; an empty result yields an empty timestamp set rather than an error. */
+  /**
+   * Files matched by the glob; an empty result yields an empty timestamp set rather than an error.
+   */
   const files = await resolveGlobFiles(pattern,);
 
   if (files.length
@@ -89,11 +97,15 @@ async function resolveGlob({
     return [];
   }
 
-  /** `fs.stat` results for every matched file; awaited concurrently so I/O latency overlaps. */
+  /**
+   * `fs.stat` results for every matched file; awaited concurrently so I/O latency overlaps.
+   */
   const stats = await Promise.all(files.map(function statFile(file,) {
     return stat(file,);
   },),);
-  /** Modification times in milliseconds, projected from the stat results so the caller does not need stat metadata. */
+  /**
+   * Modification times in milliseconds, projected from the stat results so the caller does not need stat metadata.
+   */
   const mtimes = stats.map(function extractMtime(fileStat,) {
     return fileStat.mtimeMs;
   },);
@@ -120,11 +132,17 @@ async function resolveGlob({
  * ```
  */
 type ResolveShellCommandOptions = {
-  /** Shell command to execute (without `sh:` prefix) */
+  /**
+   * Shell command to execute (without `sh:` prefix)
+   */
   readonly command: string;
-  /** Whether this is a source or output item (for error messages) */
+  /**
+   * Whether this is a source or output item (for error messages)
+   */
   readonly position: ItemPosition;
-  /** Whether to log diagnostic messages */
+  /**
+   * Whether to log diagnostic messages
+   */
   readonly verbose: boolean;
 };
 
@@ -160,11 +178,15 @@ async function resolveShellCommand({
   position,
   verbose,
 }: ResolveShellCommandOptions,): Promise<number> {
-  /** Raw stdout from the command */
+  /**
+   * Raw stdout from the command
+   */
   let stdout = '';
 
   try {
-    /** Captured subprocess result; only `stdout` is consumed because the command contract returns its timestamp there. */
+    /**
+     * Captured subprocess result; only `stdout` is consumed because the command contract returns its timestamp there.
+     */
     const result = await spawn(
       command,
       { shell: true, },
@@ -183,7 +205,9 @@ async function resolveShellCommand({
     );
   }
 
-  /** Numeric timestamp parsed from the command's stdout; `UNPARSEABLE_TIMESTAMP` triggers the unparseable-output error path. */
+  /**
+   * Numeric timestamp parsed from the command's stdout; `UNPARSEABLE_TIMESTAMP` triggers the unparseable-output error path.
+   */
   const parsed = parseTimestamp(stdout,);
   if (parsed === UNPARSEABLE_TIMESTAMP) {
     throw new Error(
@@ -195,7 +219,9 @@ async function resolveShellCommand({
   }
 
   if (verbose) {
-    /** ISO timestamp for finite values, raw `Infinity`/`-Infinity` string otherwise; only used for human-readable logging. */
+    /**
+     * ISO timestamp for finite values, raw `Infinity`/`-Infinity` string otherwise; only used for human-readable logging.
+     */
     const display = Number.isFinite(parsed,)
       ? new Date(parsed,).toISOString()
       : String(parsed,);
@@ -220,11 +246,17 @@ async function resolveShellCommand({
  * ```
  */
 export type ResolveItemsOptions = {
-  /** Array of glob patterns and/or `sh:` commands */
+  /**
+   * Array of glob patterns and/or `sh:` commands
+   */
   readonly items: readonly string[];
-  /** Whether these are source or output items */
+  /**
+   * Whether these are source or output items
+   */
   readonly position: ItemPosition;
-  /** Whether to log diagnostic messages */
+  /**
+   * Whether to log diagnostic messages
+   */
   readonly verbose: boolean;
 };
 
@@ -252,11 +284,15 @@ export async function resolveItems({
   position,
   verbose,
 }: ResolveItemsOptions,): Promise<number[]> {
-  /** Per-item timestamp arrays awaited concurrently; flattened below into a single timestamp set. */
+  /**
+   * Per-item timestamp arrays awaited concurrently; flattened below into a single timestamp set.
+   */
   const results = await Promise.all(
     items.map(async function resolveItem(item,): Promise<number[]> {
       if (isShellCommand(item,)) {
-        /** Single timestamp produced by a `sh:` command; wrapped in an array so the outer `flat()` call sees a uniform shape. */
+        /**
+         * Single timestamp produced by a `sh:` command; wrapped in an array so the outer `flat()` call sees a uniform shape.
+         */
         const ts = await resolveShellCommand({
           command: extractCommand(item,),
           position,

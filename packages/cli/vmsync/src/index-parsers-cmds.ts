@@ -36,22 +36,30 @@ type SubcommandParser = Parser<'sync', VmsyncArgs, any>;
 
 //region Shared value parsers
 
-/** Value parser for VM name arguments, displayed as NAME in help. */
+/**
+ * Value parser for VM name arguments, displayed as NAME in help.
+ */
 const name = string({
   metavar: 'NAME',
 },);
 
-/** Value parser for file path arguments, displayed as PATH in help. */
+/**
+ * Value parser for file path arguments, displayed as PATH in help.
+ */
 const path = string({
   metavar: 'PATH',
 },);
 
-/** Value parser for memory strings, displayed as MEMORY in help. */
+/**
+ * Value parser for memory strings, displayed as MEMORY in help.
+ */
 const memoryValue = string({
   metavar: 'MEMORY',
 },);
 
-/** Value parser for CPU count, displayed as CPUS in help. */
+/**
+ * Value parser for CPU count, displayed as CPUS in help.
+ */
 const cpusValue = integer({
   metavar: 'CPUS',
   min: 1,
@@ -61,7 +69,9 @@ const cpusValue = integer({
 
 //region Subcommand parsers
 
-/** Parser for `import <path> [--name NAME]`. */
+/**
+ * Parser for `import <path> [--name NAME]`.
+ */
 export const importCmd: SubcommandParser = command(
   'import',
   map(
@@ -101,7 +111,9 @@ export const importCmd: SubcommandParser = command(
   },
 );
 
-/** Parser for `boot <name>`. */
+/**
+ * Parser for `boot <name>`.
+ */
 export const bootCmd: SubcommandParser = command(
   'boot',
   map(
@@ -120,7 +132,9 @@ export const bootCmd: SubcommandParser = command(
   },
 );
 
-/** Parser for `sync <name>`. */
+/**
+ * Parser for `sync <name>`.
+ */
 export const syncCmd: SubcommandParser = command(
   'sync',
   map(
@@ -139,7 +153,9 @@ export const syncCmd: SubcommandParser = command(
   },
 );
 
-/** Parser for `status <name>`. */
+/**
+ * Parser for `status <name>`.
+ */
 export const statusCmd: SubcommandParser = command(
   'status',
   map(
@@ -158,7 +174,9 @@ export const statusCmd: SubcommandParser = command(
   },
 );
 
-/** Parser for `list`. */
+/**
+ * Parser for `list`.
+ */
 export const listCmd: SubcommandParser = command(
   'list',
   map(
@@ -174,7 +192,9 @@ export const listCmd: SubcommandParser = command(
   },
 );
 
-/** Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`. */
+/**
+ * Parser for `config <name> [--memory MEMORY] [--cpus CPUS]`.
+ */
 export const configCmd: SubcommandParser = command(
   'config',
   map(

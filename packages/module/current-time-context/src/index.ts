@@ -6,13 +6,19 @@
 
 //region Constants
 
-/** Width used for zero-padded 24-hour clock fields. */
+/**
+ * Width used for zero-padded 24-hour clock fields.
+ */
 const CLOCK_FIELD_WIDTH = 2;
 
-/** Opening XML-like tag wrapped around hidden wall-clock context. */
+/**
+ * Opening XML-like tag wrapped around hidden wall-clock context.
+ */
 const TIME_CONTEXT_OPEN_TAG = '<time>';
 
-/** Closing XML-like tag wrapped around hidden wall-clock context. */
+/**
+ * Closing XML-like tag wrapped around hidden wall-clock context.
+ */
 const TIME_CONTEXT_CLOSE_TAG = '</time>';
 
 //endregion Constants

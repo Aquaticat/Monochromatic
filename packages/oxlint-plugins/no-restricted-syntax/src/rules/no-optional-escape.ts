@@ -104,7 +104,9 @@ function isOptionalTupleElement(element: ESTree.TSTupleElement,): boolean {
  * ```
  */
 function falsyLiteralMessageId(member: ESTree.TSLiteralType,): string | typeof NO_MATCH {
-  /** Literal node carried by this union member. */
+  /**
+   * Literal node carried by this union member.
+   */
   const { literal, } = member;
   if (literal.type
     === 'Literal') {
@@ -124,7 +126,9 @@ function falsyLiteralMessageId(member: ESTree.TSLiteralType,): string | typeof N
   }
   if (literal.type
     === 'TemplateLiteral') {
-    /** First template quasi, present on every template literal. */
+    /**
+     * First template quasi, present on every template literal.
+     */
     const [firstQuasi,] = literal.quasis;
     if (firstQuasi === undefined) {
       return NO_MATCH;
@@ -252,7 +256,9 @@ function tupleMessageId(node: ESTree.TSTupleType,): string | typeof NO_MATCH {
     !== 1) {
     return NO_MATCH;
   }
-  /** Sole tuple element, checked for the rest-only `[...T[]]` shape. */
+  /**
+   * Sole tuple element, checked for the rest-only `[...T[]]` shape.
+   */
   const [firstElement,] = node.elementTypes;
   if (firstElement === undefined) {
     return NO_MATCH;
@@ -286,7 +292,9 @@ function typeReferenceMessageId(node: ESTree.TSTypeReference,): string | typeof 
     !== 'Identifier') {
     return NO_MATCH;
   }
-  /** Referenced type name, e.g. `Partial`, `Record`, `Pick`. */
+  /**
+   * Referenced type name, e.g. `Partial`, `Record`, `Pick`.
+   */
   const { name, } = node.typeName;
   if (name === 'Partial') {
     return 'partial';
@@ -294,12 +302,16 @@ function typeReferenceMessageId(node: ESTree.TSTypeReference,): string | typeof 
   if (!EMPTY_OBJECT_UTILITIES.has(name,)) {
     return NO_MATCH;
   }
-  /** Type arguments supplied to the reference, if any. */
+  /**
+   * Type arguments supplied to the reference, if any.
+   */
   const { typeArguments, } = node;
   if (typeArguments === null) {
     return NO_MATCH;
   }
-  /** Second type argument; `never` here marks an empty-object utility type. */
+  /**
+   * Second type argument; `never` here marks an empty-object utility type.
+   */
   const [, secondArg,] = typeArguments.params;
   if (secondArg === undefined) {
     return NO_MATCH;
@@ -396,11 +408,15 @@ export const noOptionalEscape: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       TSUnionType(node: ESTree.TSUnionType,): void {
-        /** Whether the union has a non-literal member, gating falsy-literal sentinels. */
+        /**
+         * Whether the union has a non-literal member, gating falsy-literal sentinels.
+         */
         const hasNonLiteral = node.types
           .some(isNonLiteralMember,);
         for (const member of node.types) {
-          /** Matched fake-optional form for this member, or the no-match sentinel. */
+          /**
+           * Matched fake-optional form for this member, or the no-match sentinel.
+           */
           const messageId = unionMemberMessageId({
             member,
             hasNonLiteral,
@@ -414,7 +430,9 @@ export const noOptionalEscape: CreateOnceRule = {
         }
       },
       TSTupleType(node: ESTree.TSTupleType,): void {
-        /** Matched fake-optional tuple form, or the no-match sentinel. */
+        /**
+         * Matched fake-optional tuple form, or the no-match sentinel.
+         */
         const messageId = tupleMessageId(node,);
         if (messageId !== NO_MATCH) {
           context.report({
@@ -432,7 +450,9 @@ export const noOptionalEscape: CreateOnceRule = {
         }
       },
       TSTypeReference(node: ESTree.TSTypeReference,): void {
-        /** Matched fake-optional utility form, or the no-match sentinel. */
+        /**
+         * Matched fake-optional utility form, or the no-match sentinel.
+         */
         const messageId = typeReferenceMessageId(node,);
         if (messageId !== NO_MATCH) {
           context.report({

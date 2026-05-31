@@ -14,16 +14,24 @@ import type { AdvisorToolParams, } from './types.ts';
 
 //region Schema
 
-/** TypeBox object builder aliased to satisfy constructor-style lint. */
+/**
+ * TypeBox object builder aliased to satisfy constructor-style lint.
+ */
 const typeObject = Type.Object;
 
-/** TypeBox optional builder aliased to satisfy constructor-style lint. */
+/**
+ * TypeBox optional builder aliased to satisfy constructor-style lint.
+ */
 const typeOptional = Type.Optional;
 
-/** TypeBox string builder aliased to satisfy constructor-style lint. */
+/**
+ * TypeBox string builder aliased to satisfy constructor-style lint.
+ */
 const typeString = Type.String;
 
-/** TypeBox schema for Advisor tool parameters. */
+/**
+ * TypeBox schema for Advisor tool parameters.
+ */
 export const AdvisorToolParametersSchema: TObject<{
   model: TOptional<TString>;
 }> = typeObject(
@@ -65,7 +73,9 @@ export function prepareAdvisorArguments(
   if ((typeof args) !== 'object')
     throw new Error('advisor: arguments must be an object with optional model field',);
 
-  /** Unknown fields not accepted by public tool contract. */
+  /**
+   * Unknown fields not accepted by public tool contract.
+   */
   const extraKeys = Object
     .keys(args,)
     .filter(function isExtraKey(key,) {

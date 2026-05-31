@@ -44,7 +44,9 @@ export async function geminiEmbedBatch({
   readonly inputs: readonly ImageInput[];
   readonly config: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: geminiEmbedBatch.name,
     l,
@@ -53,7 +55,9 @@ export async function geminiEmbedBatch({
     `computing batch embeddings via Gemini for ${String(inputs.length,)} image(s)`,
   );
 
-  /** Resolved Gemini credential; pulled here once and forwarded into the API call. */
+  /**
+   * Resolved Gemini credential; pulled here once and forwarded into the API call.
+   */
   const apiKey = resolveGeminiApiKey(config.apiKey,);
   /**
    * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
@@ -61,14 +65,18 @@ export async function geminiEmbedBatch({
   const model = (config.model
     ?? DEFAULT_GEMINI_MODEL) as GeminiModel;
 
-  /** Gemini-shaped inline data payloads converted from each caller image, in input order. */
+  /**
+   * Gemini-shaped inline data payloads converted from each caller image, in input order.
+   */
   const inlineDataItems = await Promise.all(
     inputs.map(function convertInput(input,) {
       return toGeminiInlineData(input,);
     },),
   );
 
-  /** batchEmbedContents request body wrapping each inline item in its own per-request entry. */
+  /**
+   * batchEmbedContents request body wrapping each inline item in its own per-request entry.
+   */
   const requestBody: GeminiBatchEmbedRequest = {
     requests: inlineDataItems.map(function wrapInlineData(inlineData,) {
       return {
@@ -80,11 +88,15 @@ export async function geminiEmbedBatch({
     },),
   };
 
-  /** Full batchEmbedContents endpoint URL with the resolved model interpolated. */
+  /**
+   * Full batchEmbedContents endpoint URL with the resolved model interpolated.
+   */
   const url = `${GEMINI_API_BASE}/${model}:batchEmbedContents`;
   rl.debug(`calling Gemini batch API: ${url}, ${String(inputs.length,)} input(s)`,);
 
-  /** Raw `fetch` response; status checked before parsing JSON so errors surface with their body. */
+  /**
+   * Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
+   */
   const response = await fetch(
     url,
     {
@@ -98,13 +110,17 @@ export async function geminiEmbedBatch({
   );
 
   if (!response.ok) {
-    /** Raw response body captured for both the log line and the thrown error message. */
+    /**
+     * Raw response body captured for both the log line and the thrown error message.
+     */
     const errorBody = await response.text();
     rl.error(`Gemini batch API returned ${String(response.status,)}: ${errorBody}`,);
     throw new Error(`Gemini API error (${String(response.status,)}): ${errorBody}`,);
   }
 
-  /** Parsed batchEmbedContents payload; embedding vectors arrive in input order at `embeddings[]`. */
+  /**
+   * Parsed batchEmbedContents payload; embedding vectors arrive in input order at `embeddings[]`.
+   */
   const result = await response.json() as GeminiBatchEmbedResponse;
   rl.debug(`received ${String(result.embeddings
     .length,)} embedding(s)`,);

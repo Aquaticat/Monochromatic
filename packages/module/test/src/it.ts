@@ -26,9 +26,13 @@ import {
  * and a sinon sandbox that auto-restores after the test.
  */
 export type TestContext = {
-  /** Scoped expect with assertion tracking. Supports `expect.assertions(n)` and `expect.hasAssertions()`. */
+  /**
+   * Scoped expect with assertion tracking. Supports `expect.assertions(n)` and `expect.hasAssertions()`.
+   */
   readonly expect: ScopedExpect;
-  /** Sinon sandbox for stubs, spies, and fake timers. Auto-restores after the test completes. */
+  /**
+   * Sinon sandbox for stubs, spies, and fake timers. Auto-restores after the test completes.
+   */
   readonly sinon: DisposableSandbox;
 };
 
@@ -36,7 +40,9 @@ export type TestContext = {
  * Options for a single test case.
  */
 export type ItOptions = {
-  /** Whether the test is expected to throw. When `true` or a reason string, a throwing test is treated as PASS and a passing test as FAIL. Defaults to `false`. */
+  /**
+   * Whether the test is expected to throw. When `true` or a reason string, a throwing test is treated as PASS and a passing test as FAIL. Defaults to `false`.
+   */
   readonly fails?: boolean | string;
   /* oxlint-disable typescript/prefer-readonly-parameter-types -- `TestContext.sinon` is `DisposableSandbox` extending sinon's `SinonSandbox`, an external SDK class whose methods mutate sandbox state by design; deep-readonly does not apply. */
   /**
@@ -46,15 +52,25 @@ export type ItOptions = {
    */
   readonly fn: (ctx: TestContext,) => Promise<void>;
   /* oxlint-enable typescript/prefer-readonly-parameter-types */
-  /** Logger to use for pass/fail output. Provided by the parent describe. */
+  /**
+   * Logger to use for pass/fail output. Provided by the parent describe.
+   */
   readonly l?: Logger;
-  /** Human-readable test name, shown in output and error messages. */
+  /**
+   * Human-readable test name, shown in output and error messages.
+   */
   readonly name: string;
-  /** Number of additional times to re-run the test after the first execution. Useful for catching flaky tests. Defaults to `0`. */
+  /**
+   * Number of additional times to re-run the test after the first execution. Useful for catching flaky tests. Defaults to `0`.
+   */
   readonly repeats?: number;
-  /** Whether to skip execution entirely. When `true` or a reason string, the test logs SKIP and returns immediately. Defaults to `false`. */
+  /**
+   * Whether to skip execution entirely. When `true` or a reason string, the test logs SKIP and returns immediately. Defaults to `false`.
+   */
   readonly skip?: boolean | string;
-  /** Timeout in milliseconds. Must be less than any parent describe timeout. */
+  /**
+   * Timeout in milliseconds. Must be less than any parent describe timeout.
+   */
   readonly timeout?: number;
 };
 
@@ -62,7 +78,9 @@ export type ItOptions = {
  * Result returned by a completed test case.
  */
 export type ItResult = {
-  /** Test name, returned so parent suites can log the hierarchy. */
+  /**
+   * Test name, returned so parent suites can log the hierarchy.
+   */
   readonly name: string;
 };
 
@@ -89,7 +107,9 @@ async function runFnOnce({
   readonly name: string;
   readonly timeout?: number;
 },): Promise<void> {
-  /** Hoists the test-fn invocation so it can be optionally wrapped with `withTimeout`. */
+  /**
+   * Hoists the test-fn invocation so it can be optionally wrapped with `withTimeout`.
+   */
   const promise = fn(ctx,);
 
   await (timeout !== undefined
@@ -139,7 +159,9 @@ async function runIt(
     readonly opts: ItOptions;
   },
 ): Promise<ItResult> {
-  /** Pulls out individual fields with their defaults so the body can refer to them without re-reading the option object. */
+  /**
+   * Pulls out individual fields with their defaults so the body can refer to them without re-reading the option object.
+   */
   const {
     name,
     fn,
@@ -158,7 +180,9 @@ async function runIt(
    */
   const baseLogger = explicitLogger ?? descriptorCtx
     .parentLogger;
-  /** Composed tagged logger used for every PASS/FAIL/SKIP line of this test. */
+  /**
+   * Composed tagged logger used for every PASS/FAIL/SKIP line of this test.
+   */
   const l = baseLogger !== undefined
     ? tagged({
       tag: name,
@@ -167,38 +191,58 @@ async function runIt(
     : tagged({ tag: name, },);
 
   if (skip !== false) {
-    /** Reason suffix appended after the SKIP keyword when a string was supplied. */
+    /**
+     * Reason suffix appended after the SKIP keyword when a string was supplied.
+     */
     const reason = (typeof skip) === 'string' ? `: ${skip}` : '';
     l.info(`SKIP${reason}`,);
     return { name, };
   }
 
-  /** Scoped expect plus its tracker so per-run assertion counts can be checked after each iteration. */
+  /**
+   * Scoped expect plus its tracker so per-run assertion counts can be checked after each iteration.
+   */
   const [scopedExpect, tracker,] = createScopedExpect();
-  /** Sinon sandbox tied to this test so stubs auto-restore when the function returns. */
+  /**
+   * Sinon sandbox tied to this test so stubs auto-restore when the function returns.
+   */
   await using sandbox = createSinon();
-  /** Test context handed to the user-supplied test body. */
+  /**
+   * Test context handed to the user-supplied test body.
+   */
   const ctx: TestContext = {
     expect: scopedExpect,
     sinon: sandbox,
   };
 
-  /** Total iteration count: one base run plus any explicit repeats. */
+  /**
+   * Total iteration count: one base run plus any explicit repeats.
+   */
   const totalRuns = 1 + repeats;
 
-  /** Spreads `timeout` into the runFnOnce call only when set, so exactOptional never receives an explicit `undefined`. */
+  /**
+   * Spreads `timeout` into the runFnOnce call only when set, so exactOptional never receives an explicit `undefined`.
+   */
   const timeoutArg = timeout !== undefined ? { timeout, } : {};
 
   for (let run = 0; run < totalRuns; run += 1) {
-    /** Per-iteration label inserted in log messages so repeat runs can be told apart. */
+    /**
+     * Per-iteration label inserted in log messages so repeat runs can be told apart.
+     */
     const runLabel = totalRuns > 1
       ? ` [run ${String(run + 1,)}/${String(totalRuns,)}]`
       : '';
-    /** Tracks whether the test body threw so post-run logic can branch on outcome. */
+    /**
+     * Tracks whether the test body threw so post-run logic can branch on outcome.
+     */
     let threw = false;
-    /** Captured throwable so failure formatting and rethrow can use the original cause. */
+    /**
+     * Captured throwable so failure formatting and rethrow can use the original cause.
+     */
     let caughtError: unknown = undefined;
-    /** Start timestamp for this iteration so duration can be reported in PASS/FAIL output. */
+    /**
+     * Start timestamp for this iteration so duration can be reported in PASS/FAIL output.
+     */
     const runStart = performance.now();
 
     tracker.count = 0;
@@ -222,11 +266,15 @@ async function runIt(
     // clean sandbox; `await using` only fires at function-scope exit.
     sandbox.restore();
 
-    /** Elapsed time for this iteration, formatted into the result log line. */
+    /**
+     * Elapsed time for this iteration, formatted into the result log line.
+     */
     const durationMs = performance.now()
       - runStart;
 
-    /** Inline annotation appended after the FAIL/PASS line when `fails` was set as a string. */
+    /**
+     * Inline annotation appended after the FAIL/PASS line when `fails` was set as a string.
+     */
     const failsReason = (typeof fails) === 'string' ? ` (${fails})` : '';
 
     if (fails !== false) {
@@ -239,7 +287,9 @@ async function runIt(
         continue;
       }
 
-      /** Synthetic cause attached to the rethrow when a `fails`-marked test unexpectedly passes. */
+      /**
+       * Synthetic cause attached to the rethrow when a `fails`-marked test unexpectedly passes.
+       */
       const failsCause = new Error('Expected test to throw but it passed',);
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
       l.error(await formatFailure({
@@ -271,7 +321,9 @@ async function runIt(
       !== undefined) && (tracker.count
         !== tracker
         .expected)) {
-      /** Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw. */
+      /**
+       * Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw.
+       */
       const assertionCause = new Error(
         `Expected ${String(tracker.expected,)} assertions, but ${
           String(tracker.count,)
@@ -293,7 +345,9 @@ async function runIt(
     if (tracker.requiresAtLeastOne
       && (tracker.count
         === 0)) {
-      /** Synthetic cause used when `expect.hasAssertions()` was declared but no assertion ran. */
+      /**
+       * Synthetic cause used when `expect.hasAssertions()` was declared but no assertion ran.
+       */
       const noAssertionsCause = new Error(
         'Expected at least one assertion to be called',
       );

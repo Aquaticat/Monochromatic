@@ -35,14 +35,18 @@ export function tomlSetHeaderComment(
   },
 ): TomlEditState {
   if (comment === undefined) {
-    /** Drop the property entirely so the cleared state has no header. */
+    /**
+     * Drop the property entirely so the cleared state has no header.
+     */
     const {
       headerComment: _cleared,
       ...rest
     } = edit;
     return rest;
   }
-  /** Normalised payload so the state field carries one representation. */
+  /**
+   * Normalised payload so the state field carries one representation.
+   */
   const headerComment = (typeof comment) === 'string' ? comment : comment.join('\n',);
   return {
     ...edit,

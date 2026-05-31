@@ -63,19 +63,25 @@ export async function findPackageRoot(
     readonly name: string;
   },
 ): Promise<string> {
-  /** Path to the manifest tested at the current level before recursing upward. */
+  /**
+   * Path to the manifest tested at the current level before recursing upward.
+   */
   const candidate = resolve([
     dir,
     'package.json',
   ],);
   try {
-    /** Raw file contents read up front so JSON parsing and the read share one `try` block; either failure routes to the upward walk. */
+    /**
+     * Raw file contents read up front so JSON parsing and the read share one `try` block; either failure routes to the upward walk.
+     */
     const contents = await readFile(
       candidate,
       'utf8',
     );
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; package.json shape is well-known and we only consume the optional `name` field, which the `===` check tolerates if absent. */
-    /** Cast to expose the optional `name` field for the discriminant compare below. */
+    /**
+     * Cast to expose the optional `name` field for the discriminant compare below.
+     */
     const parsed = JSON.parse(contents,) as { name?: string; };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     if (parsed.name
@@ -85,7 +91,9 @@ export async function findPackageRoot(
   catch {
     /* candidate file missing, unreadable, or malformed JSON: keep walking upward */
   }
-  /** Next directory to inspect; equal to `dir` only at the filesystem root, which terminates recursion. */
+  /**
+   * Next directory to inspect; equal to `dir` only at the filesystem root, which terminates recursion.
+   */
   const parent = dirname(dir,);
   if (parent === dir) {
     throw new Error(
@@ -150,11 +158,15 @@ export function findPackageRootCached(
     readonly name: string;
   },
 ): Promise<string> {
-  /** In-flight or resolved promise from a prior call; presence means another caller is already walking for this `name`. */
+  /**
+   * In-flight or resolved promise from a prior call; presence means another caller is already walking for this `name`.
+   */
   const existing = cache.get(name,);
   if (existing !== undefined)
     return existing;
-  /** Fresh walk started before the cache write so concurrent first callers all observe the same in-flight promise. */
+  /**
+   * Fresh walk started before the cache write so concurrent first callers all observe the same in-flight promise.
+   */
   const walking = findPackageRoot({
     dir,
     name,

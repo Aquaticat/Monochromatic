@@ -55,7 +55,9 @@ export function $({ str, }: { str: string; },): RegExp {
   // The pattern matches: $ ( ) * + . ? [ \ ] ^ { | }
   // Each matched character gets replaced with a backslash-escaped version
   // For example: "user.name" becomes "user\.name" which matches literal "user.name"
-  /** Input string with regex metacharacters escaped so it matches literally. */
+  /**
+   * Input string with regex metacharacters escaped so it matches literally.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- this function's sole purpose is string→regex conversion; the metachar set is fixed (15 chars), input length bounds runtime, and the rewrite is `$&` literal escape with no backtracking risk.
   const escapedPattern = str.replaceAll(
     /[$()*+.?[\\\]^{|}]/g,

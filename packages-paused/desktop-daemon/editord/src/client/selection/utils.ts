@@ -8,7 +8,9 @@
 
 import type { SelectionRange, } from '../../../protocol.ts';
 
-/** Range coordinates used for comparison. */
+/**
+ * Range coordinates used for comparison.
+ */
 export type FlatRange = {
   readonly startLine: number;
   readonly startCharacter: number;
@@ -30,9 +32,13 @@ export type FlatRange = {
  * ```
  */
 export function flattenChain({ root, }: { readonly root: SelectionRange; },): SelectionRange[] {
-  /** Accumulator filled by walking the parent chain below. */
+  /**
+   * Accumulator filled by walking the parent chain below.
+   */
   const result: SelectionRange[] = [];
-  /** Walker cursor; undefined exits the loop. */
+  /**
+   * Walker cursor; undefined exits the loop.
+   */
   let current: SelectionRange | undefined = root;
   while (current !== undefined) {
     result.push(current,);
@@ -65,7 +71,9 @@ export function strictlyContains(
     readonly inner: FlatRange;
   },
 ): boolean {
-  /** True when outer's start is strictly earlier than inner's start. */
+  /**
+   * True when outer's start is strictly earlier than inner's start.
+   */
   const outerStartBefore = (outer.startLine
     < inner
     .startLine)
@@ -75,7 +83,9 @@ export function strictlyContains(
       && (outer.startCharacter
         < inner
         .startCharacter));
-  /** True when outer's end is strictly later than inner's end. */
+  /**
+   * True when outer's end is strictly later than inner's end.
+   */
   const outerEndAfter = (outer.endLine
     > inner
     .endLine)
@@ -103,7 +113,9 @@ export function strictlyContains(
       === inner
       .endCharacter);
 
-  /** Strictly larger: at least one boundary must differ outward. */
+  /**
+   * Strictly larger: at least one boundary must differ outward.
+   */
   if (outerStartBefore && outerEndAfter)
     return true;
   if (outerStartBefore && outerEndSame)

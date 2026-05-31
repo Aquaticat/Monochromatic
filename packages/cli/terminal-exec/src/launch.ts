@@ -18,7 +18,9 @@ import {
 import { resolveTerminal, } from './resolve.ts';
 import { NO_TERMINAL, } from './validate.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'launch',
   l: parentLogger,
@@ -50,7 +52,9 @@ export async function launchTerminal({
   readonly command?: readonly string[];
   readonly title?: string;
 },): Promise<void> {
-  /** Platform-specific resolution; the NO_TERMINAL path raises a user-facing error below. */
+  /**
+   * Platform-specific resolution; the NO_TERMINAL path raises a user-facing error below.
+   */
   const terminal = await resolveTerminal();
 
   if (terminal === NO_TERMINAL) {
@@ -64,7 +68,9 @@ export async function launchTerminal({
 
   l.info(`resolved terminal: ${terminal.entryId}`,);
 
-  /** Final command array fed to spawn; built from the terminal entry and user options. */
+  /**
+   * Final command array fed to spawn; built from the terminal entry and user options.
+   */
   const argv = buildCommand({
     terminal,
     options: {
@@ -80,7 +86,9 @@ export async function launchTerminal({
     === 0)
     throw new Error('launchTerminal: buildCommand returned empty argv',);
 
-  /** Splits argv to feed spawn's separate executable/args parameters. */
+  /**
+   * Splits argv to feed spawn's separate executable/args parameters.
+   */
   const [executable, ...args] = argv;
 
   l.info(`launching: ${String(executable,)} ${args.join(' ',)}`,);
@@ -90,7 +98,9 @@ export async function launchTerminal({
     resolve,
     reject,
   ): void {
-    /** Detached child reference; unref'd so the parent does not wait on it. */
+    /**
+     * Detached child reference; unref'd so the parent does not wait on it.
+     */
     const child = spawn(
       String(executable,),
       args,
@@ -105,7 +115,9 @@ export async function launchTerminal({
       'error',
       reject,
     );
-    /** Resolve on next tick: if spawn failed, the error event fires synchronously. */
+    /**
+     * Resolve on next tick: if spawn failed, the error event fires synchronously.
+     */
     queueMicrotask(resolve,);
   },);
 }

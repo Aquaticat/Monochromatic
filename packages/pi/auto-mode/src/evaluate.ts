@@ -36,7 +36,9 @@ import {
   type VerdictData,
 } from './types.ts';
 
-/** Tagged logger for the evaluate module. */
+/**
+ * Tagged logger for the evaluate module.
+ */
 const l = tagged({
   tag: 'evaluate',
   l: parentLogger,
@@ -116,21 +118,27 @@ async function evaluate(
     readonly batchContext: readonly BatchEntry[];
   },
 ): Promise<EvaluateResult> {
-  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
+  /**
+   * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
+   */
   const innerL = tagged({
     tag: evaluate.name,
     l,
   },);
   innerL.debug(`evaluating action: ${action}`,);
 
-  /** Prior approval for the exact action, if the latest matching session verdict still allows reuse. */
+  /**
+   * Prior approval for the exact action, if the latest matching session verdict still allows reuse.
+   */
   const reusableApproval = getReusableApproval({
     ctx,
     action,
     approvalFingerprint,
   },);
   if (reusableApproval.reusable) {
-    /** Audit reason recorded for this reuse decision and surfaced in the flow widget. */
+    /**
+     * Audit reason recorded for this reuse decision and surfaced in the flow widget.
+     */
     const reuseReason = `Previously approved in this session (${reusableApproval.source}): ${reusableApproval.reason}`;
     innerL.info(`reuse ${reusableApproval.source}: ${action}`,);
     pi.appendEntry(
@@ -206,16 +214,24 @@ async function evaluate(
     };
   }
 
-  /** Resolved judge after the `ok` discriminant narrowed the union. */
+  /**
+   * Resolved judge after the `ok` discriminant narrowed the union.
+   */
   const { judge, } = judgeResult;
 
-  /** Recent session activity rendered as a string for the judge prompt. */
+  /**
+   * Recent session activity rendered as a string for the judge prompt.
+   */
   const recentContext = buildContext(ctx,);
-  /** Active trust directives for this session, listed in the prompt as guardrail relaxations. */
+  /**
+   * Active trust directives for this session, listed in the prompt as guardrail relaxations.
+   */
   const trustDirectives = getTrustDirectives(ctx,);
 
   try {
-    /** Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance. */
+    /**
+     * Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance.
+     */
     const verdict = await callJudge({
       model: judge.model,
       auth: judge.auth,
@@ -285,7 +301,9 @@ async function evaluate(
     };
   }
   catch (err) {
-    /** Normalised error message so both `Error` instances and non-`Error` throws produce a string. */
+    /**
+     * Normalised error message so both `Error` instances and non-`Error` throws produce a string.
+     */
     const msg = err instanceof Error ? err.message : String(err,);
     innerL.error(`judge error: ${msg}`,);
     return {
@@ -318,7 +336,9 @@ async function resolveJudgeModel(
     readonly config: MergedConfig;
   },
 ): Promise<BudgetModel> {
-  /** Dynamically imported budget-model finder; lazy to keep startup cost low when judging is rare. */
+  /**
+   * Dynamically imported budget-model finder; lazy to keep startup cost low when judging is rare.
+   */
   const { findBudgetModel, } = await import('./budget-model.ts');
   return findBudgetModel({
     ctx,
@@ -336,14 +356,18 @@ async function resolveJudgeModel(
 function toBudgetModelOptions(
   config: MergedConfig,
 ): BudgetModelOptions {
-  /** Judge-model block destructured so the per-field reads below stay single-identifier. */
+  /**
+   * Judge-model block destructured so the per-field reads below stay single-identifier.
+   */
   const {
     strategy,
     costRatio,
     majorVersions,
     modelOverride,
   } = config.judgeModel;
-  /** Budget-model options, with `modelOverride` re-attached only when the judge config pinned one. */
+  /**
+   * Budget-model options, with `modelOverride` re-attached only when the judge config pinned one.
+   */
   const opts: BudgetModelOptions = {
     strategy,
     costRatio,

@@ -32,7 +32,9 @@ export const RUN_WITH_CONTEXT: unique symbol = Symbol('runWithContext',);
  * because the hierarchy is already encoded in every emitted message.
  */
 export type DescriptorContext = {
-  /** Concurrency the parent suite settled on for its children. */
+  /**
+   * Concurrency the parent suite settled on for its children.
+   */
   readonly effectiveConcurrency: number;
   /**
    * Composed tagged logger from the parent suite. A child wraps this

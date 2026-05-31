@@ -39,12 +39,16 @@ export async function openInTerminal(
     readonly path: string;
   },
 ): Promise<void> {
-  /** Path validated to live inside `rootDir`; resolved absolute form passed to the OS launcher. */
+  /**
+   * Path validated to live inside `rootDir`; resolved absolute form passed to the OS launcher.
+   */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
-  /** Local alias of `process.platform`; lets each branch read like a plain comparison. */
+  /**
+   * Local alias of `process.platform`; lets each branch read like a plain comparison.
+   */
   const currentPlatform = platform;
 
   if (currentPlatform === 'linux')
@@ -100,15 +104,21 @@ export async function openInDefaultApp(
     readonly path: string;
   },
 ): Promise<void> {
-  /** Path validated to live inside `rootDir`; resolved absolute form passed to the OS launcher. */
+  /**
+   * Path validated to live inside `rootDir`; resolved absolute form passed to the OS launcher.
+   */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
-  /** Local alias of `process.platform`; lets each branch read like a plain comparison. */
+  /**
+   * Local alias of `process.platform`; lets each branch read like a plain comparison.
+   */
   const currentPlatform = platform;
 
-  /** Parent directory of the target; used as the spawn `cwd` so relative resources resolve correctly. */
+  /**
+   * Parent directory of the target; used as the spawn `cwd` so relative resources resolve correctly.
+   */
   const dir = dirname(absolutePath,);
 
   if (currentPlatform === 'linux') {

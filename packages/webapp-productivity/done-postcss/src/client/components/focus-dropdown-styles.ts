@@ -3,10 +3,14 @@
  */
 import { css, } from '../css.ts';
 
-/** Z-index for the dropdown menu overlay. */
+/**
+ * Z-index for the dropdown menu overlay.
+ */
 const MENU_Z_INDEX = 10;
 
-/** Shadow DOM styles for `\<focus-dropdown\>` -- trigger button, popover menu, and option items. */
+/**
+ * Shadow DOM styles for `\<focus-dropdown\>` -- trigger button, popover menu, and option items.
+ */
 export const FOCUS_DROPDOWN_STYLES: string = css(`
   :host {
     display: block;

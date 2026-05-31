@@ -19,14 +19,18 @@ import { renderStyles, } from './styles.ts';
 
 export {};
 
-/** Absolute path to this package's root directory */
+/**
+ * Absolute path to this package's root directory
+ */
 const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
 )
   .pathname;
 
-/** Output directory for the generated site */
+/**
+ * Output directory for the generated site
+ */
 const DIST_DIR = join(
   PACKAGE_DIR,
   'dist',
@@ -35,10 +39,14 @@ const DIST_DIR = join(
 
 console.error('[syllable-break-demo] building...',);
 
-/** Minified CSS stylesheet */
+/**
+ * Minified CSS stylesheet
+ */
 const css = renderStyles();
 
-/** Client-side hyphenation and UI script, pre-bundled by tsdown */
+/**
+ * Client-side hyphenation and UI script, pre-bundled by tsdown
+ */
 const js = await readFile(
   join(
     PACKAGE_DIR,
@@ -49,7 +57,9 @@ const js = await readFile(
   'utf8',
 );
 
-/** Complete self-contained HTML document */
+/**
+ * Complete self-contained HTML document
+ */
 const html = renderPage({
   css,
   js,

@@ -14,9 +14,13 @@ export const NO_ARGV_MODELS: unique symbol = Symbol('model-selection/no-argv-mod
 
 //region Public API
 
-/** Options for parsing `--models` from argv. */
+/**
+ * Options for parsing `--models` from argv.
+ */
 export type ParseArgvModelsOptions = {
-  /** Process arguments excluding or including executable prefix. */
+  /**
+   * Process arguments excluding or including executable prefix.
+   */
   readonly argv: readonly string[];
 };
 
@@ -38,7 +42,9 @@ export type ParseArgvModelsOptions = {
 export function parseArgvModelPatterns(
   options: ParseArgvModelsOptions,
 ): string[] | typeof NO_ARGV_MODELS {
-  /** Inline `--models=value` argument, if present. */
+  /**
+   * Inline `--models=value` argument, if present.
+   */
   const inline = options.argv
     .find(function isInlineModelsArg(arg,) {
       return arg.startsWith('--models=',);
@@ -46,13 +52,17 @@ export function parseArgvModelPatterns(
   if (inline !== undefined)
     return splitPatterns(inline.slice('--models='.length,),);
 
-  /** Index of `--models` when supplied as a separate argument. */
+  /**
+   * Index of `--models` when supplied as a separate argument.
+   */
   const modelsIndex = options.argv
     .indexOf('--models',);
   if (modelsIndex === (-1))
     return NO_ARGV_MODELS;
 
-  /** Value following `--models`. */
+  /**
+   * Value following `--models`.
+   */
   const value = options.argv[modelsIndex + 1];
   if (value === undefined)
     return [];

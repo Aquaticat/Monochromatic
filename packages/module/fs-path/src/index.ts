@@ -57,7 +57,9 @@ const hasNodePath = ((typeof process) !== 'undefined')
     ?.node
     !== undefined);
 
-/** Computed import specifier to prevent static bundler resolution */
+/**
+ * Computed import specifier to prevent static bundler resolution
+ */
 // oxlint-disable-next-line typescript/no-unnecessary-template-expression -- template expression prevents static bundler resolution
 const nodePathSpecifier = `node${':path'}`;
 
@@ -82,7 +84,9 @@ const nodePath: typeof import('node:path/posix') | typeof NODE_PATH_ABSENT = has
 
 //endregion Node delegation
 
-/** POSIX path separator */
+/**
+ * POSIX path separator
+ */
 export const sep = '/';
 
 /**
@@ -123,7 +127,9 @@ export function dirname(filePath: string,): string {
 export function isAbsolute(filePath: string,): boolean {
   if (nodePath !== NODE_PATH_ABSENT)
     return nodePath.isAbsolute(filePath,);
-  /** Unicode code point for `/` */
+  /**
+   * Unicode code point for `/`
+   */
   const SLASH_CODE_POINT = 47;
   return (filePath.length
     > 0) && (filePath.codePointAt(0,)

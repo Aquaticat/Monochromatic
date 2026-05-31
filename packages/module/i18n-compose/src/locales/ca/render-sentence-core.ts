@@ -42,7 +42,9 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
@@ -50,20 +52,28 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Subject surface. */
+  /**
+   * Subject surface.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Finite verb surface. */
+  /**
+   * Finite verb surface.
+   */
   const verb = finiteVerbSurface({
     entry: verbs[sentence.predicate
       .verb],
@@ -72,20 +82,28 @@ export function renderDeclarative<S extends string, V extends string, N extends 
     tense,
     agreement,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body before sentence-case fixup. */
+  /**
+   * Sentence body before sentence-case fixup.
+   */
   const body = joinTokens([
     subj,
     verb,
@@ -121,7 +139,9 @@ export function renderYesNo<S extends string, V extends string, N extends string
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     subjects,
     verbs,
@@ -129,20 +149,28 @@ export function renderYesNo<S extends string, V extends string, N extends string
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Sentence-level tense; defaults to present when omitted. */
+  /**
+   * Sentence-level tense; defaults to present when omitted.
+   */
   const tense = sentence.tense
     ?? 'present';
-  /** Agreement metadata. */
+  /**
+   * Agreement metadata.
+   */
   const agreement = subjectAgreement({
     ref: sentence.subject,
     subjects,
   },);
-  /** Subject surface. */
+  /**
+   * Subject surface.
+   */
   const subj = subjectSurface({
     ref: sentence.subject,
     subjects,
   },);
-  /** Finite verb surface. */
+  /**
+   * Finite verb surface.
+   */
   const verb = finiteVerbSurface({
     entry: verbs[sentence.predicate
       .verb],
@@ -151,20 +179,28 @@ export function renderYesNo<S extends string, V extends string, N extends string
     tense,
     agreement,
   },);
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body before terminator. */
+  /**
+   * Sentence body before terminator.
+   */
   const body = joinTokens([
     subj,
     verb,
@@ -200,34 +236,46 @@ export function renderImperative<S extends string, V extends string, N extends s
     deps: SentenceDeps<S, V, N>;
   }>,
 ): string {
-  /** Locale dependencies captured for this render. */
+  /**
+   * Locale dependencies captured for this render.
+   */
   const {
     verbs,
     renderNounPhrase,
     renderVerbPhrase,
     renderAdverbials,
   } = deps;
-  /** Imperative surface; falls back to the infinitive when no dedicated form is supplied. */
+  /**
+   * Imperative surface; falls back to the infinitive when no dedicated form is supplied.
+   */
   const verb = verbs[sentence.predicate
     .verb]
     .imperative
     ?? verbs[sentence.predicate
       .verb]
     .infinitive;
-  /** Rendered object slot. */
+  /**
+   * Rendered object slot.
+   */
   const object = renderOptionalObject({
     predicate: sentence.predicate,
     renderNounPhrase,
   },);
-  /** Rendered infinitive complement. */
+  /**
+   * Rendered infinitive complement.
+   */
   const complement = renderOptionalComplement({
     predicate: sentence.predicate,
     renderVerbPhrase,
   },);
-  /** Rendered adverbial cluster. */
+  /**
+   * Rendered adverbial cluster.
+   */
   const adverbials = renderAdverbials(sentence.predicate
     .adverbials,);
-  /** Sentence body before sentence-case fixup. */
+  /**
+   * Sentence body before sentence-case fixup.
+   */
   const body = joinTokens([
     verb,
     object,

@@ -17,13 +17,19 @@ import {
 
 //region Constants
 
-/** Milliseconds before the server auto-closes if no client connects. */
+/**
+ * Milliseconds before the server auto-closes if no client connects.
+ */
 const SERVER_IDLE_TIMEOUT_MS = 30_000;
 
-/** Milliseconds before a client read attempt times out. */
+/**
+ * Milliseconds before a client read attempt times out.
+ */
 const CLIENT_READ_TIMEOUT_MS = 10_000;
 
-/** Loopback address (no remote access). */
+/**
+ * Loopback address (no remote access).
+ */
 const LOCALHOST = '127.0.0.1';
 
 //endregion
@@ -34,9 +40,13 @@ const LOCALHOST = '127.0.0.1';
  * Result of creating a one-shot TCP server.
  */
 export type OneShotTcpServerResult = {
-  /** Host:port string (e.g. "127.0.0.1:43210"). */
+  /**
+   * Host:port string (e.g. "127.0.0.1:43210").
+   */
   address: string;
-  /** Closes the server. */
+  /**
+   * Closes the server.
+   */
   cleanup: () => void;
 };
 
@@ -79,11 +89,15 @@ export async function createOneShotTcpServer(
     server?: Server;
     idleTimer?: ReturnType<typeof setTimeout>;
   } = {};
-  /** Guards against re-entry when multiple clients race to connect. */
+  /**
+   * Guards against re-entry when multiple clients race to connect.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch for racing client connections
   let served = false;
 
-  /** Close the server and clear idle timer. */
+  /**
+   * Close the server and clear idle timer.
+   */
   function close(): void {
     if (handles.idleTimer
       !== undefined) {
@@ -100,7 +114,9 @@ export async function createOneShotTcpServer(
 
   // Wait for the server to start listening before returning
   /* oxlint-disable eslint-plugin-promise/avoid-new -- wrapping callback-based server.listen requires manual Promise construction */
-  /** Host:port string resolved once the listening callback observes a valid AddressInfo. */
+  /**
+   * Host:port string resolved once the listening callback observes a valid AddressInfo.
+   */
   const address = await new Promise<string>(
     function awaitListening(
       resolve,
@@ -148,7 +164,9 @@ export async function createOneShotTcpServer(
         0,
         LOCALHOST,
         function onListening(): void {
-          /** AddressInfo from the bound socket; resolved into host:port for callers. */
+          /**
+           * AddressInfo from the bound socket; resolved into host:port for callers.
+           */
           const addrInfo = handles.server
             ?.address();
           if (
@@ -210,13 +228,21 @@ export function readFromTcpSocket(
       resolve,
       reject,
     ): void {
-      /** Host and stringified port split out of the address. */
+      /**
+       * Host and stringified port split out of the address.
+       */
       const [host, portStr,] = address.split(':',);
-      /** Numeric port forwarded to createTcpConnection. */
+      /**
+       * Numeric port forwarded to createTcpConnection.
+       */
       const port = Number(portStr,);
-      /** Captured data buffers concatenated when the server ends the stream. */
+      /**
+       * Captured data buffers concatenated when the server ends the stream.
+       */
       const chunks: Buffer[] = [];
-      /** Latch ensuring resolve/reject is called exactly once. */
+      /**
+       * Latch ensuring resolve/reject is called exactly once.
+       */
       // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch shared between data/end/error handlers and the timeout
       let settled = false;
 
@@ -244,7 +270,9 @@ export function readFromTcpSocket(
           resolve(result ?? '',);
       }
 
-      /** Outbound TCP connection whose event handlers feed the promise lifecycle. */
+      /**
+       * Outbound TCP connection whose event handlers feed the promise lifecycle.
+       */
       const socket = createTcpConnection(
         {
           host,

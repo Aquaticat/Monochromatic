@@ -108,10 +108,14 @@ export function buildCoreMatchers(
       expected: number,
       precision: number = 2,
     ): void {
-      /** Half-tolerance multiplier (named to keep the magic constant rule from firing on `0.5`). */
+      /**
+       * Half-tolerance multiplier (named to keep the magic constant rule from firing on `0.5`).
+       */
       const HALF = 1 / 2;
       /* oxlint-disable prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent */
-      /** Floating-point tolerance derived from `precision` so chai's `closeTo` accepts values within +/-HALF of the lowest place. */
+      /**
+       * Floating-point tolerance derived from `precision` so chai's `closeTo` accepts values within +/-HALF of the lowest place.
+       */
       const delta = Math.pow(
         10,
         -precision,

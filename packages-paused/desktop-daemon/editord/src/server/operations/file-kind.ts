@@ -9,7 +9,9 @@ import { extname, } from 'node:path';
 
 import type { FileKind, } from '../../protocol.ts';
 
-/** Extensions treated as raster/vector images (excludes SVG which is editable text). */
+/**
+ * Extensions treated as raster/vector images (excludes SVG which is editable text).
+ */
 const IMAGE_EXTENSIONS = new Set([
   '.png',
   '.jpg',
@@ -21,7 +23,9 @@ const IMAGE_EXTENSIONS = new Set([
   '.avif',
 ],);
 
-/** Extensions treated as audio. */
+/**
+ * Extensions treated as audio.
+ */
 const AUDIO_EXTENSIONS = new Set([
   '.mp3',
   '.wav',
@@ -32,7 +36,9 @@ const AUDIO_EXTENSIONS = new Set([
   '.opus',
 ],);
 
-/** Extensions treated as video. */
+/**
+ * Extensions treated as video.
+ */
 const VIDEO_EXTENSIONS = new Set([
   '.mp4',
   '.webm',
@@ -56,7 +62,9 @@ const VIDEO_EXTENSIONS = new Set([
 export function getMediaKind(
   { path, }: { readonly path: string; },
 ): Extract<FileKind, 'image' | 'audio' | 'video'> | null {
-  /** Lowercased extension so the extension sets stay case-insensitive. */
+  /**
+   * Lowercased extension so the extension sets stay case-insensitive.
+   */
   const ext = extname(path,)
     .toLowerCase();
   if (IMAGE_EXTENSIONS.has(ext,))
@@ -68,7 +76,9 @@ export function getMediaKind(
   return null;
 }
 
-/** MIME type mapping for media file extensions. */
+/**
+ * MIME type mapping for media file extensions.
+ */
 const CONTENT_TYPE_MAP: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',

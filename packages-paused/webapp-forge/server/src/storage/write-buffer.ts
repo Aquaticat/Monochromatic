@@ -60,13 +60,19 @@ const DEFAULT_CONCURRENCY = 64;
  * ```
  */
 export type WriteBufferOptions = {
-  /** Flush when this many items are queued. Default 256. */
+  /**
+   * Flush when this many items are queued. Default 256.
+   */
   readonly flushAtItems?: number;
 
-  /** Flush this many ms after the first queued item. Default 50. */
+  /**
+   * Flush this many ms after the first queued item. Default 50.
+   */
   readonly flushAtMs?: number;
 
-  /** Maximum simultaneous in-flight `putBatch` calls. Default 64. */
+  /**
+   * Maximum simultaneous in-flight `putBatch` calls. Default 64.
+   */
   readonly concurrency?: number;
 };
 
@@ -79,16 +85,24 @@ export type WriteBufferOptions = {
  * ```
  */
 export type CreateWriteBufferParams = {
-  /** Downstream storage adapter to buffer writes against. */
+  /**
+   * Downstream storage adapter to buffer writes against.
+   */
   readonly storage: Storage;
 
-  /** Flush when this many items are queued. Default 256. */
+  /**
+   * Flush when this many items are queued. Default 256.
+   */
   readonly flushAtItems?: number;
 
-  /** Flush this many ms after the first queued item. Default 50. */
+  /**
+   * Flush this many ms after the first queued item. Default 50.
+   */
   readonly flushAtMs?: number;
 
-  /** Maximum simultaneous in-flight `putBatch` calls. Default 64. */
+  /**
+   * Maximum simultaneous in-flight `putBatch` calls. Default 64.
+   */
   readonly concurrency?: number;
 };
 
@@ -182,13 +196,19 @@ export function createWriteBuffer({
   flushAtMs = DEFAULT_FLUSH_AT_MS,
   concurrency = DEFAULT_CONCURRENCY,
 }: CreateWriteBufferParams,): WriteBuffer {
-  /** Pending items keyed by storage key (later wins). */
+  /**
+   * Pending items keyed by storage key (later wins).
+   */
   const queue = new Map<string, StoragePutItem>();
 
-  /** In-flight flush promises bounded by `concurrency`. */
+  /**
+   * In-flight flush promises bounded by `concurrency`.
+   */
   const inFlight = new Set<Promise<void>>();
 
-  /** Mutable per-instance state captured by the closures below. */
+  /**
+   * Mutable per-instance state captured by the closures below.
+   */
   const state: {
     closed: boolean;
     timerId: ReturnType<typeof setTimeout> | null;
@@ -228,7 +248,9 @@ export function createWriteBuffer({
     if (queue.size
       === 0)
       return;
-    /** Snapshot of pending items; re-entry from `enqueue` repopulates `queue`. */
+    /**
+     * Snapshot of pending items; re-entry from `enqueue` repopulates `queue`.
+     */
     const items: StoragePutItem[] = [...queue.values(),];
     queue.clear();
     // Bound concurrency: when we have already saturated the in-flight
@@ -238,11 +260,15 @@ export function createWriteBuffer({
       // oxlint-disable-next-line no-await-in-loop -- explicit serialisation under saturation
       await Promise.race(inFlight,);
     }
-    /** In-flight putBatch promise tracked so close() can await every flush. */
+    /**
+     * In-flight putBatch promise tracked so close() can await every flush.
+     */
     const promise = storage.putBatch(items,);
     inFlight.add(promise,);
     detach(async function trackInFlight(): Promise<void> {
-      /** RAII disposer removes `promise` from the in-flight set on settle. */
+      /**
+       * RAII disposer removes `promise` from the in-flight set on settle.
+       */
       using _disposeOnSettle = {
         [Symbol.dispose](): void {
           inFlight.delete(promise,);

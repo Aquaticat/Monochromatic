@@ -31,19 +31,25 @@ import { renderByProbe, } from './html/view-probe.ts';
 
 export {};
 
-/** Absolute path to this package's root directory */
+/**
+ * Absolute path to this package's root directory
+ */
 const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
 )
   .pathname;
-/** Output directory for the generated site */
+/**
+ * Output directory for the generated site
+ */
 const DIST_DIR = join(
   PACKAGE_DIR,
   'dist',
   'final',
 );
-/** Directory containing CSS source files */
+/**
+ * Directory containing CSS source files
+ */
 const CSS_DIR = join(
   PACKAGE_DIR,
   'src',
@@ -51,7 +57,9 @@ const CSS_DIR = join(
 );
 
 console.error('[viewer] reading artifacts...',);
-/** All run entries and per-probe detail data loaded from artifact directories. */
+/**
+ * All run entries and per-probe detail data loaded from artifact directories.
+ */
 const {
   entries,
   probeDetails,
@@ -63,12 +71,16 @@ console.error(
 
 //region Build model labels and thresholds from the canonical model registry
 
-/** Unique model labels across all entries */
+/**
+ * Unique model labels across all entries
+ */
 const uniqueLabels = [...new Set(entries.map(function getLabel(entry,) {
   return entry.label;
 },),),];
 
-/** Map from model label to computed degradation threshold */
+/**
+ * Map from model label to computed degradation threshold
+ */
 const thresholds = new Map<string, number>(
   uniqueLabels.map(function buildThreshold(label,) {
     return [
@@ -86,24 +98,34 @@ const thresholds = new Map<string, number>(
 
 //region Build model summaries for the overview
 
-/** Summaries for the overview table, one per model */
+/**
+ * Summaries for the overview table, one per model
+ */
 const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(label,) {
-  /** Entries that share the model label being summarised this iteration. */
+  /**
+   * Entries that share the model label being summarised this iteration.
+   */
   const modelEntries = entries.filter(function matchLabel(entry,) {
     return entry.label
       === label;
   },);
-  /** Latest multi-probe run for meaningful overall score; fall back to latest run */
+  /**
+   * Latest multi-probe run for meaningful overall score; fall back to latest run
+   */
   /* oxlint-disable-next-line unicorn/no-array-callback-reference -- hasMultipleProbes is a type-compatible predicate */
   const latestMultiProbe = modelEntries.filter(hasMultipleProbes,)
     .at(-1,);
-  /** Run that drives the summary row; prefers a multi-probe run for representative score. */
+  /**
+   * Run that drives the summary row; prefers a multi-probe run for representative score.
+   */
   const latest = latestMultiProbe ?? modelEntries
     .at(-1,);
   if (latest === undefined)
     return [];
 
-  /** Degradation threshold for this model; `0` when no threshold is registered. */
+  /**
+   * Degradation threshold for this model; `0` when no threshold is registered.
+   */
   const threshold = thresholds.get(label,)
     ?? 0;
   return [{
@@ -125,34 +147,48 @@ const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(lab
 
 console.error('[viewer] rendering HTML...',);
 
-/** Overview table HTML for the dashboard. */
+/**
+ * Overview table HTML for the dashboard.
+ */
 const overviewHtml = renderOverview({
   summaries,
   entries,
 },);
-/** By-model charts HTML for the dashboard. */
+/**
+ * By-model charts HTML for the dashboard.
+ */
 const byModelHtml = renderByModel({
   entries,
   thresholds,
 },);
-/** By-probe charts HTML for the dashboard. */
+/**
+ * By-probe charts HTML for the dashboard.
+ */
 const byProbeHtml = renderByProbe({ entries, },);
-/** Detail overlay popovers HTML for all entries. */
+/**
+ * Detail overlay popovers HTML for all entries.
+ */
 const overlaysHtml = await renderAllOverlays({
   entries,
   probeDetails,
 },);
 
-/** Assembled dashboard HTML combining all sections. */
+/**
+ * Assembled dashboard HTML combining all sections.
+ */
 const dashboardHtml = renderDashboard({
   overviewHtml,
   byModelHtml,
   byProbeHtml,
   overlaysHtml,
 },);
-/** Inline SVG icon sprite sheet. */
+/**
+ * Inline SVG icon sprite sheet.
+ */
 const spriteHtml = renderSvgSprite();
-/** Complete page HTML ready to write to disk. */
+/**
+ * Complete page HTML ready to write to disk.
+ */
 const pageHtml = renderPage({
   body: spriteHtml + dashboardHtml,
   title: 'Inference canary dashboard',
@@ -167,7 +203,9 @@ await mkdir(
   { recursive: true, },
 );
 
-/** Destructured CSS build result; HTML write result is discarded. */
+/**
+ * Destructured CSS build result; HTML write result is discarded.
+ */
 const [, cssResult,] = await Promise.all([
   writeFile(
     join(

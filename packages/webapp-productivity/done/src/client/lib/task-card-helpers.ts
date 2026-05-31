@@ -8,17 +8,27 @@ import {
 
 import type { Task, } from '../../lib/types.ts';
 
-/** Configuration for a `<task-card>` instance, passed via `createTaskCard`. */
+/**
+ * Configuration for a `<task-card>` instance, passed via `createTaskCard`.
+ */
 export type TaskCardOptions = {
-  /** Whether to show a red "blocked" badge chip. */
+  /**
+   * Whether to show a red "blocked" badge chip.
+   */
   readonly showBlockedBadge?: boolean;
-  /** Callback when the card body is clicked (navigates to task detail). */
+  /**
+   * Callback when the card body is clicked (navigates to task detail).
+   */
   readonly onOpen: (taskId: string,) => void;
-  /** Callback when the checkbox is clicked (completes the task). */
+  /**
+   * Callback when the checkbox is clicked (completes the task).
+   */
   readonly onToggleComplete?: (taskId: string,) => Promise<void>;
 };
 
-/** Cached formatter; `Intl.DurationFormat` is safe to reuse across calls. */
+/**
+ * Cached formatter; `Intl.DurationFormat` is safe to reuse across calls.
+ */
 const DIGITAL_FORMATTER = new Intl.DurationFormat(
   undefined,
   { style: 'digital', },
@@ -39,16 +49,24 @@ const DIGITAL_FORMATTER = new Intl.DurationFormat(
  * formatTrackedTime(3661); // '1:01:01'
  */
 export function formatTrackedTime(seconds: number,): string {
-  /** Clamps the input so negative or fractional inputs do not propagate into the formatter. */
+  /**
+   * Clamps the input so negative or fractional inputs do not propagate into the formatter.
+   */
   const totalSeconds = Math.max(
     0,
     Math.floor(seconds,),
   );
-  /** Hours bucket fed to `Intl.DurationFormat`. */
+  /**
+   * Hours bucket fed to `Intl.DurationFormat`.
+   */
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
-  /** Minutes bucket within the hour. */
+  /**
+   * Minutes bucket within the hour.
+   */
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
-  /** Seconds remainder within the minute. */
+  /**
+   * Seconds remainder within the minute.
+   */
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
   return DIGITAL_FORMATTER.format({
     hours,
@@ -70,7 +88,9 @@ export function formatTrackedTime(seconds: number,): string {
  * // ['#errand', 'tracked: 1:30:00', 'home']
  */
 export function buildChipTexts(task: Task,): string[] {
-  /** Accumulator mutated by the conditional pushes below; tag chips come first. */
+  /**
+   * Accumulator mutated by the conditional pushes below; tag chips come first.
+   */
   const chips: string[] = [];
 
   if (task.tags

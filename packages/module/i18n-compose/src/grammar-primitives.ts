@@ -94,7 +94,9 @@ export function personNumberKey(
     readonly number: GrammaticalNumber;
   },
 ): PersonNumberKey {
-  /** Number shorthand: `s` for singular, `p` for plural. */
+  /**
+   * Number shorthand: `s` for singular, `p` for plural.
+   */
   const numberCode = number === 'singular' ? 's' : 'p';
   return `${person}${numberCode}` as PersonNumberKey;
 }

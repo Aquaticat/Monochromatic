@@ -7,11 +7,17 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Type body node shape carrying members under oxlint's type-literal variants. */
+/**
+ * Type body node shape carrying members under oxlint's type-literal variants.
+ */
 type TypeMemberListNode = Span & {
-  /** Interface body members in source order. */
+  /**
+   * Interface body members in source order.
+   */
   readonly body?: readonly Span[];
-  /** Type literal members in source order. */
+  /**
+   * Type literal members in source order.
+   */
   readonly members?: readonly Span[];
 };
 
@@ -55,14 +61,20 @@ export const typePropertyPerLine: CreateOnceRule = {
      * @param node - TSTypeLiteral or TSInterfaceBody AST node
      */
     function checkBody(node: Span,): void {
-      /** Narrowed type-body visitor node used for member access. */
+      /**
+       * Narrowed type-body visitor node used for member access.
+       */
       const bodyNode = node as TypeMemberListNode;
-      /** Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`. */
+      /**
+       * Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`.
+       */
       const {
         body,
         members: literalMembers,
       } = bodyNode;
-      /** Combined member list regardless of oxlint's node-shape variant. */
+      /**
+       * Combined member list regardless of oxlint's node-shape variant.
+       */
       const members = body ?? literalMembers;
       if (members === undefined)
         return;

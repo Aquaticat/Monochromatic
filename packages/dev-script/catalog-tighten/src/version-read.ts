@@ -43,12 +43,16 @@ export const NO_INSTALLED_VERSION: unique symbol = Symbol('catalog-tighten/no-in
  */
 export function readVersionFromPackageJson(pkgJsonPath: string,): string | typeof NO_MANIFEST_VERSION {
   try {
-    /** Raw `package.json` text read from disk; deliberately read synchronously so callers stay sync. */
+    /**
+     * Raw `package.json` text read from disk; deliberately read synchronously so callers stay sync.
+     */
     const content = readFileSync(
       pkgJsonPath,
       'utf8',
     );
-    /** Parsed manifest narrowed to the only field this helper consults: `version`. */
+    /**
+     * Parsed manifest narrowed to the only field this helper consults: `version`.
+     */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON structure from package.json is well-known
     const parsed = JSON.parse(content,) as { version?: string; };
     return parsed.version ?? NO_MANIFEST_VERSION;
@@ -85,14 +89,18 @@ export function readVersionFromBunStore(
     readonly monorepoRoot: string;
   },
 ): string | typeof NO_INSTALLED_VERSION {
-  /** Top-level bun store directory holding all installed package versions for the monorepo. */
+  /**
+   * Top-level bun store directory holding all installed package versions for the monorepo.
+   */
   const bunStoreDir = join(
     monorepoRoot,
     'node_modules',
     '.bun',
   );
   // Bun encodes `@scope/name` as `@scope+name` in store directory names
-  /** Package name rewritten with `/` → `+` so it matches bun's encoded store directory prefix. */
+  /**
+   * Package name rewritten with `/` → `+` so it matches bun's encoded store directory prefix.
+   */
   const storePrefix = npmName.includes('/',)
     ? npmName.replace(
       '/',
@@ -139,7 +147,9 @@ export function readVersionFromBunStore(
    */
   let bestVersion: string | typeof NO_INSTALLED_VERSION = NO_INSTALLED_VERSION;
   for (const candidate of candidates) {
-    /** Absolute path to the candidate's nested `package.json`; bun stores the real package under `node_modules/<name>`. */
+    /**
+     * Absolute path to the candidate's nested `package.json`; bun stores the real package under `node_modules/<name>`.
+     */
     const pkgJsonPath = join(
       bunStoreDir,
       candidate,
@@ -147,7 +157,9 @@ export function readVersionFromBunStore(
       npmName,
       'package.json',
     );
-    /** Version of one candidate; `NO_MANIFEST_VERSION` skips this iteration without touching `bestVersion`. */
+    /**
+     * Version of one candidate; `NO_MANIFEST_VERSION` skips this iteration without touching `bestVersion`.
+     */
     const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
     if (candidateVersion === NO_MANIFEST_VERSION)
       continue;

@@ -36,19 +36,27 @@ import type {
  * ```
  */
 export function computeDocumentRange({ editor, }: { readonly editor: HTMLDivElement; },): Range {
-  /** Zero-based index of the final line; clamped to 0 when the editor has no children. */
+  /**
+   * Zero-based index of the final line; clamped to 0 when the editor has no children.
+   */
   const lastLineIndex = Math.max(
     0,
     editor.children
       .length
       - 1,
   );
-  /** DOM element representing the final line; used to measure its trailing length. */
+  /**
+   * DOM element representing the final line; used to measure its trailing length.
+   */
   const lastLineEl = editor.children[lastLineIndex];
-  /** Text content of the final line, defaulting to `''` when the element is missing. */
+  /**
+   * Text content of the final line, defaulting to `''` when the element is missing.
+   */
   const lastLineText = lastLineEl?.textContent
     ?? '';
-  /** Effective length of the final line; lone newlines render as length 0 to match document semantics. */
+  /**
+   * Effective length of the final line; lone newlines render as length 0 to match document semantics.
+   */
   const lastLineLength = lastLineText === '\n' ? 0 : lastLineText.length;
   return {
     start: {
@@ -105,7 +113,9 @@ export function diagnosticsEqual({
     da,
     i,
   ) {
-    /** Counterpart diagnostic from the second array at the same index; missing index implies mismatched length. */
+    /**
+     * Counterpart diagnostic from the second array at the same index; missing index implies mismatched length.
+     */
     const db = b[i];
     if (db === undefined)
       return false;
@@ -181,7 +191,9 @@ export function hintsEqual({
     ha,
     i,
   ) {
-    /** Counterpart inlay hint from the second array at the same index; missing index implies mismatched length. */
+    /**
+     * Counterpart inlay hint from the second array at the same index; missing index implies mismatched length.
+     */
     const hb = b[i];
     if (hb === undefined)
       return false;

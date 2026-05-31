@@ -23,7 +23,9 @@ import {
   tokenizeExec,
 } from './tokenize.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'validate',
   l: parentLogger,
@@ -71,14 +73,20 @@ async function executableExists({ name, }: { readonly name: string; },): Promise
  * @returns Absolute path if found, or {@link EXECUTABLE_NOT_ON_PATH}.
  */
 async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_PATH> {
-  /** Empty PATH fallback yields no candidates, which falls through to null cleanly. */
+  /**
+   * Empty PATH fallback yields no candidates, which falls through to null cleanly.
+   */
   const pathEnv = process.env
     .PATH
     ?? '';
-  /** Split on the platform PATH delimiter; colon on POSIX. */
+  /**
+   * Split on the platform PATH delimiter; colon on POSIX.
+   */
   const dirs = pathEnv.split(delimiter,);
   for (const dir of dirs) {
-    /** Absolute path candidate fed to access() inside the loop. */
+    /**
+     * Absolute path candidate fed to access() inside the loop.
+     */
     const candidate = resolve(
       dir,
       name,
@@ -99,17 +107,29 @@ async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_P
  * Result of validating a desktop entry for terminal emulator use.
  */
 export type ValidatedEntry = {
-  /** Tokenized Exec command as an argument array. */
+  /**
+   * Tokenized Exec command as an argument array.
+   */
   readonly execTokens: readonly string[];
-  /** Resolved TerminalArgExec value (from entry, default, or `-e`). */
+  /**
+   * Resolved TerminalArgExec value (from entry, default, or `-e`).
+   */
   readonly execArg: string;
-  /** TerminalArgAppId value. */
+  /**
+   * TerminalArgAppId value.
+   */
   readonly appIdArg: string;
-  /** TerminalArgTitle value. */
+  /**
+   * TerminalArgTitle value.
+   */
   readonly titleArg: string;
-  /** TerminalArgDir value. */
+  /**
+   * TerminalArgDir value.
+   */
   readonly dirArg: string;
-  /** TerminalArgHold value. */
+  /**
+   * TerminalArgHold value.
+   */
   readonly holdArg: string;
 };
 
@@ -164,7 +184,9 @@ export async function validateEntry({
     if (entry.onlyShowIn
       .length
       > 0) {
-      /** Whether any OnlyShowIn entry matches the current desktops list. */
+      /**
+       * Whether any OnlyShowIn entry matches the current desktops list.
+       */
       const shown = entry.onlyShowIn
         .some(function matchDesktop(d,) {
         return desktops.includes(d.toLowerCase(),);
@@ -177,7 +199,9 @@ export async function validateEntry({
     if (entry.notShowIn
       .length
       > 0) {
-      /** Whether any NotShowIn entry matches the current desktops list. */
+      /**
+       * Whether any NotShowIn entry matches the current desktops list.
+       */
       const hidden = entry.notShowIn
         .some(function matchDesktop(d,) {
         return desktops.includes(d.toLowerCase(),);
@@ -199,7 +223,9 @@ export async function validateEntry({
     return NO_TERMINAL;
   }
 
-  /** Argv form of the Exec line; INVALID_EXEC or empty disqualifies the entry. */
+  /**
+   * Argv form of the Exec line; INVALID_EXEC or empty disqualifies the entry.
+   */
   const execTokens = tokenizeExec({ exec: entry.exec, },);
   if ((execTokens === INVALID_EXEC) || (execTokens.length
     === 0)) {
@@ -207,7 +233,9 @@ export async function validateEntry({
     return NO_TERMINAL;
   }
 
-  /** Executable token, the only one we PATH-check before validating. */
+  /**
+   * Executable token, the only one we PATH-check before validating.
+   */
   const [firstToken,] = execTokens;
   if (firstToken === undefined)
     throw new Error('unreachable: length checked above',);
@@ -216,7 +244,9 @@ export async function validateEntry({
     return NO_TERMINAL;
   }
 
-  /** Resolve TerminalArgExec: entry value \> config default \> `-e`. */
+  /**
+   * Resolve TerminalArgExec: entry value \> config default \> `-e`.
+   */
   const resolvedExecArg = entry.execArg
     .length
     > 0

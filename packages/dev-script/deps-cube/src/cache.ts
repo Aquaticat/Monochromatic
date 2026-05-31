@@ -53,9 +53,13 @@ export const CACHE_MISS: unique symbol = Symbol('cache-miss',);
  * One stored field's payload.
  */
 type CacheValue<T,> = {
-  /** The cached data. */
+  /**
+   * The cached data.
+   */
   value: T;
-  /** Epoch milliseconds at which the value was written. */
+  /**
+   * Epoch milliseconds at which the value was written.
+   */
   fetchedAt: number;
 };
 
@@ -68,11 +72,17 @@ type CacheFile = Record<string, CacheValue<unknown>>;
  * Address of a single field within the cache.
  */
 type CacheKey = {
-  /** Npm package name (may be scoped, e.g. `@anthropic-ai/sdk`). */
+  /**
+   * Npm package name (may be scoped, e.g. `@anthropic-ai/sdk`).
+   */
   readonly name: string;
-  /** Concrete version string (e.g. `0.92.0`). */
+  /**
+   * Concrete version string (e.g. `0.92.0`).
+   */
   readonly version: string;
-  /** Field name within the cache file (e.g. `languages`, `commits`). */
+  /**
+   * Field name within the cache file (e.g. `languages`, `commits`).
+   */
   readonly field: string;
 };
 
@@ -116,7 +126,9 @@ export type Cache = {
       readonly value: unknown;
     },
   ) => Promise<void>;
-  /** Absolute path to the cache root, exposed for diagnostics and tests. */
+  /**
+   * Absolute path to the cache root, exposed for diagnostics and tests.
+   */
   readonly rootDir: string;
 };
 
@@ -131,10 +143,14 @@ export type Cache = {
  * @returns Absolute path to the default cache root directory.
  */
 function defaultRootDir(): string {
-  /** XDG override; empty or unset falls through to the `$HOME/.cache` default. */
+  /**
+   * XDG override; empty or unset falls through to the `$HOME/.cache` default.
+   */
   const xdg = process.env
     .XDG_CACHE_HOME;
-  /** Resolved cache home; honours XDG when present, falls back to the conventional location. */
+  /**
+   * Resolved cache home; honours XDG when present, falls back to the conventional location.
+   */
   const cacheHome = ((xdg !== undefined) && (xdg !== '')) ? xdg : join(
     homedir(),
     '.cache',
@@ -186,7 +202,9 @@ function filePath(
  */
 async function readFileOrEmpty(path: string,): Promise<CacheFile> {
   try {
-    /** UTF-8 file contents fed to `JSON.parse`; any failure here is caught below as a miss. */
+    /**
+     * UTF-8 file contents fed to `JSON.parse`; any failure here is caught below as a miss.
+     */
     const raw = await readFile(
       path,
       'utf8',
@@ -216,7 +234,9 @@ async function readFileOrEmpty(path: string,): Promise<CacheFile> {
 export function createCache(
   { rootDir, }: { readonly rootDir?: string; } = {},
 ): Cache {
-  /** Cache root used by every closure on this handle; pinned at construction so later env mutations are ignored. */
+  /**
+   * Cache root used by every closure on this handle; pinned at construction so later env mutations are ignored.
+   */
   const resolvedRoot = rootDir ?? defaultRootDir();
 
   /**
@@ -234,15 +254,21 @@ export function createCache(
       readonly ttlMs?: number;
     },
   ): Promise<T | typeof CACHE_MISS> {
-    /** Absolute on-disk path for this (name, version) pair. */
+    /**
+     * Absolute on-disk path for this (name, version) pair.
+     */
     const path = filePath({
       name,
       version,
       rootDir: resolvedRoot,
     },);
-    /** Parsed cache file; treats a missing or corrupt file as an empty record. */
+    /**
+     * Parsed cache file; treats a missing or corrupt file as an empty record.
+     */
     const file = await readFileOrEmpty(path,);
-    /** Stored entry for the requested field, or `undefined` for a miss. */
+    /**
+     * Stored entry for the requested field, or `undefined` for a miss.
+     */
     const entry = file[field];
     if (entry === undefined)
       return CACHE_MISS;
@@ -268,15 +294,21 @@ export function createCache(
       readonly value: unknown;
     },
   ): Promise<void> {
-    /** Destination cache file path. */
+    /**
+     * Destination cache file path.
+     */
     const path = filePath({
       name,
       version,
       rootDir: resolvedRoot,
     },);
-    /** Current file contents preserved across the write so sibling fields aren't clobbered. */
+    /**
+     * Current file contents preserved across the write so sibling fields aren't clobbered.
+     */
     const existing = await readFileOrEmpty(path,);
-    /** Merged file body to be serialised; new value plus a fresh `fetchedAt` overwrites the matching field. */
+    /**
+     * Merged file body to be serialised; new value plus a fresh `fetchedAt` overwrites the matching field.
+     */
     const next: CacheFile = {
       ...existing,
       [field]: {
@@ -288,7 +320,9 @@ export function createCache(
       dirname(path,),
       { recursive: true, },
     );
-    /** Sibling temp path used for the atomic write; pid and timestamp avoid collisions between concurrent writes. */
+    /**
+     * Sibling temp path used for the atomic write; pid and timestamp avoid collisions between concurrent writes.
+     */
     const tmpPath = `${path}.${process.pid}.${Date.now()}.tmp`;
     await writeFile(
       tmpPath,

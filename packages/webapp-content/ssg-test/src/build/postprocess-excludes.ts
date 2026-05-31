@@ -9,7 +9,9 @@
  * @module
  */
 
-/** Suffix-match exclusions; paths ending in any of these are skipped. */
+/**
+ * Suffix-match exclusions; paths ending in any of these are skipped.
+ */
 const LEAF_EXCLUDE_SUFFIXES = [
   '.html',
   'styles.css',
@@ -22,7 +24,9 @@ const LEAF_EXCLUDE_SUFFIXES = [
   '.zst',
 ] as const;
 
-/** Substring-match exclusions; paths containing any of these are skipped. */
+/**
+ * Substring-match exclusions; paths containing any of these are skipped.
+ */
 const LEAF_EXCLUDE_SUBSTRINGS = [
   'pagefind/',
   'node_modules/',
@@ -46,15 +50,21 @@ const LEAF_EXCLUDE_SUBSTRINGS = [
  * ```
  */
 export function containsHiddenDirectory(filePath: string,): boolean {
-  /** Index of the first `/.` candidate; -1 means no hidden segment exists. */
+  /**
+   * Index of the first `/.` candidate; -1 means no hidden segment exists.
+   */
   const dotSlashIdx = filePath.indexOf('/.',);
   if (dotSlashIdx === (-1))
     return false;
-  /** Character immediately after `/.`; an empty char or `/` means it is `/./`, not `/.name/`. */
+  /**
+   * Character immediately after `/.`; an empty char or `/` means it is `/./`, not `/.name/`.
+   */
   const charAfterDot = filePath.charAt(dotSlashIdx + 2,);
   if ((charAfterDot === '') || (charAfterDot === '/'))
     return containsHiddenDirectory(filePath.slice(dotSlashIdx + 1,),);
-  /** Position of the slash that closes the segment; segment is hidden only if a slash follows. */
+  /**
+   * Position of the slash that closes the segment; segment is hidden only if a slash follows.
+   */
   const closingSlash = filePath.indexOf(
     '/',
     dotSlashIdx + 2,

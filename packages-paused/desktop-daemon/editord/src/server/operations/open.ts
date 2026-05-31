@@ -18,20 +18,34 @@ import {
 } from './hex-dump.ts';
 import { probeMedia, } from './probe-media.ts';
 
-/** Number of bytes to read for null-byte detection before committing to a full read. */
+/**
+ * Number of bytes to read for null-byte detection before committing to a full read.
+ */
 const BINARY_PROBE_SIZE = 8_192;
 
-/** Result of opening a file. */
+/**
+ * Result of opening a file.
+ */
 export type OpenResult = {
-  /** Content category driving viewer selection. */
+  /**
+   * Content category driving viewer selection.
+   */
   readonly kind: FileKind;
-  /** Absolute resolved path. */
+  /**
+   * Absolute resolved path.
+   */
   readonly path: string;
-  /** File content: UTF-8 text, hex dump, or empty string for media. */
+  /**
+   * File content: UTF-8 text, hex dump, or empty string for media.
+   */
   readonly content: string;
-  /** On-disk file size in bytes, available for text and binary kinds. */
+  /**
+   * On-disk file size in bytes, available for text and binary kinds.
+   */
   readonly size?: number;
-  /** Trimmed ffprobe output for media files, omitting version/build header. */
+  /**
+   * Trimmed ffprobe output for media files, omitting version/build header.
+   */
   readonly mediaInfo?: string;
 };
 
@@ -61,16 +75,22 @@ export async function openFile(
     readonly path: string;
   },
 ): Promise<OpenResult> {
-  /** Resolved root-rebased path used by every downstream filesystem call. */
+  /**
+   * Resolved root-rebased path used by every downstream filesystem call.
+   */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
 
-  /** Null falls through to the binary probe path below. */
+  /**
+   * Null falls through to the binary probe path below.
+   */
   const mediaKind = getMediaKind({ path, },);
   if (mediaKind !== null) {
-    /** Optional metadata (dimensions, duration); omitted from the response when null. */
+    /**
+     * Optional metadata (dimensions, duration); omitted from the response when null.
+     */
     const mediaInfo = await probeMedia({ path: absolutePath, },);
     return {
       kind: mediaKind,
@@ -80,11 +100,17 @@ export async function openFile(
     };
   }
 
-  /** Probe first bytes for null to detect binary without reading the entire file. */
+  /**
+   * Probe first bytes for null to detect binary without reading the entire file.
+   */
   await using handle = await fsOpen(absolutePath,);
-  /** Holds only the head bytes; reused as the prefix when concatenating the tail later. */
+  /**
+   * Holds only the head bytes; reused as the prefix when concatenating the tail later.
+   */
   const probe = Buffer.alloc(BINARY_PROBE_SIZE,);
-  /** Actual byte count may be less than the buffer for files smaller than the probe size. */
+  /**
+   * Actual byte count may be less than the buffer for files smaller than the probe size.
+   */
   const { bytesRead, } = await handle.read(
     probe,
     0,
@@ -99,9 +125,13 @@ export async function openFile(
     )
     .includes(0,))
   {
-    /** Binary: read only what hex dump needs instead of the entire file. */
+    /**
+     * Binary: read only what hex dump needs instead of the entire file.
+     */
     const { size, } = await handle.stat();
-    /** Capped so very large binaries do not exhaust memory. */
+    /**
+     * Capped so very large binaries do not exhaust memory.
+     */
     const dumpLimit = Math.min(
       size,
       HEX_DUMP_MAX_BYTES,
@@ -127,9 +157,13 @@ export async function openFile(
     };
   }
 
-  /** Read the remainder from the already-open handle instead of re-reading the full file. */
+  /**
+   * Read the remainder from the already-open handle instead of re-reading the full file.
+   */
   const { size, } = await handle.stat();
-  /** Tail length needed; ≤ 0 means the probe already captured the whole file. */
+  /**
+   * Tail length needed; ≤ 0 means the probe already captured the whole file.
+   */
   const remaining = size - bytesRead;
   if (remaining <= 0) {
     return {
@@ -144,7 +178,9 @@ export async function openFile(
       size,
     };
   }
-  /** Concatenated with the probe to form the full file contents. */
+  /**
+   * Concatenated with the probe to form the full file contents.
+   */
   const tail = Buffer.alloc(remaining,);
   await handle.read(
     tail,

@@ -61,14 +61,18 @@ export function renderResultElements({
         : absolutePath;
     }
 
-    /** Path truncated around the query match so the result fits in the line budget. */
+    /**
+     * Path truncated around the query match so the result fits in the line budget.
+     */
     const displayPath = middleOut({
       text: relativePath(result.path,),
       query,
       budget,
     },);
 
-    /** DOM children built up incrementally; content results append line and text spans below. */
+    /**
+     * DOM children built up incrementally; content results append line and text spans below.
+     */
     const children: (Node | string)[] = [
       h({
         tag: 'span',
@@ -135,14 +139,22 @@ export function highlightMatches(
     return;
   }
 
-  /** Lowercase query reused for every comparison to keep matching case-insensitive. */
+  /**
+   * Lowercase query reused for every comparison to keep matching case-insensitive.
+   */
   const lowerQuery = query.toLowerCase();
-  /** Cached query length so each match advance avoids re-reading `query.length`. */
+  /**
+   * Cached query length so each match advance avoids re-reading `query.length`.
+   */
   const queryLength = query.length;
-  /** Accumulated DOM Ranges submitted to the Custom Highlight API in one call. */
+  /**
+   * Accumulated DOM Ranges submitted to the Custom Highlight API in one call.
+   */
   const ranges: Range[] = [];
 
-  /** Text-only walker over the results container; skips element nodes that cannot host highlights. */
+  /**
+   * Text-only walker over the results container; skips element nodes that cannot host highlights.
+   */
   const walker = document.createTreeWalker(
     container,
     NodeFilter.SHOW_TEXT,
@@ -154,12 +166,18 @@ export function highlightMatches(
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker cursor: `node` advances via `walker.nextNode()`
   let node = walker.nextNode();
   while (node !== null) {
-    /** Raw text of the current node; empty string falls back when textContent is null. */
+    /**
+     * Raw text of the current node; empty string falls back when textContent is null.
+     */
     const text = node.textContent
       ?? '';
-    /** Lowercase version of `text` for case-insensitive `indexOf` comparisons. */
+    /**
+     * Lowercase version of `text` for case-insensitive `indexOf` comparisons.
+     */
     const lowerText = text.toLowerCase();
-    /** Cursor advanced past each match so overlapping matches are not re-reported. */
+    /**
+     * Cursor advanced past each match so overlapping matches are not re-reported.
+     */
     let searchFrom = 0;
 
     // oxlint-disable-next-line -- indexOf returns -1 when not found; loop terminates correctly
@@ -171,7 +189,9 @@ export function highlightMatches(
       if (index === (-1))
         break;
 
-      /** DOM Range covering this match so the Custom Highlight API can style it. */
+      /**
+       * DOM Range covering this match so the Custom Highlight API can style it.
+       */
       const range = new Range();
       range.setStart(
         node,

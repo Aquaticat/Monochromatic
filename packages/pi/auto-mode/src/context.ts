@@ -33,15 +33,23 @@ import {
  */
 type ReusableApproval =
   | {
-    /** Whether session history contains reusable approval. */
+    /**
+     * Whether session history contains reusable approval.
+     */
     readonly reusable: true;
-    /** Prior approval reason to surface in audit logs and widgets. */
+    /**
+     * Prior approval reason to surface in audit logs and widgets.
+     */
     readonly reason: string;
-    /** Approval source used to distinguish judge and user approvals. */
+    /**
+     * Approval source used to distinguish judge and user approvals.
+     */
     readonly source: 'approve' | 'user-approve';
   }
   | {
-    /** Whether session history contains reusable approval. */
+    /**
+     * Whether session history contains reusable approval.
+     */
     readonly reusable: false;
   };
 
@@ -62,7 +70,9 @@ type ReusableApproval =
 function getTrustDirectives(
   ctx: ExtensionContext,
 ): string[] {
-  /** Accumulator for currently-active trust directives. */
+  /**
+   * Accumulator for currently-active trust directives.
+   */
   const directives: string[] = [];
   for (const entry of ctx.sessionManager
     .getBranch()) {
@@ -114,19 +124,25 @@ function getReusableApproval(
     readonly approvalFingerprint: string;
   },
 ): ReusableApproval {
-  /** Current branch snapshot; entries before forks outside this branch are intentionally ignored. */
+  /**
+   * Current branch snapshot; entries before forks outside this branch are intentionally ignored.
+   */
   const branch = ctx.sessionManager
     .getBranch();
 
   for (let i = branch.length
     - 1; i >= 0; i--) {
-    /** Branch entry inspected while walking newest to oldest. */
+    /**
+     * Branch entry inspected while walking newest to oldest.
+     */
     const entry = branch[i];
     if (entry === undefined)
       continue;
     if (!isVerdictEntry(entry,))
       continue;
-    /** Verdict payload from matching custom entry. */
+    /**
+     * Verdict payload from matching custom entry.
+     */
     const {
       action: verdictAction,
       approvalFingerprint: verdictApprovalFingerprint,
@@ -186,13 +202,19 @@ const NO_PENDING_VERDICT = Symbol('no-pending-verdict',);
 function buildContext(
   ctx: ExtensionContext,
 ): string {
-  /** Full session branch snapshot, scanned forward below. */
+  /**
+   * Full session branch snapshot, scanned forward below.
+   */
   const branch = ctx.sessionManager
     .getBranch();
 
-  /** Accumulator for activity lines in chronological order. */
+  /**
+   * Accumulator for activity lines in chronological order.
+   */
   const activityLines: string[] = [];
-  /** Queue of in-flight tool calls awaiting their matching toolResult. */
+  /**
+   * Queue of in-flight tool calls awaiting their matching toolResult.
+   */
   const pendingCalls: {
     name: string;
     summary: string;
@@ -218,12 +240,16 @@ function buildContext(
     if (entry.type
       !== 'message')
       continue;
-    /** Narrowed message payload after the entry-type guard. */
+    /**
+     * Narrowed message payload after the entry-type guard.
+     */
     const msg = (entry as SessionMessageEntry).message;
 
     if (msg.role
       === 'user') {
-      /** Plain-text rendering of the user message used for the activity line. */
+      /**
+       * Plain-text rendering of the user message used for the activity line.
+       */
       const text = extractUserText(msg.content,);
       activityLines.push(`[user] ${text}`,);
       continue;
@@ -248,9 +274,13 @@ function buildContext(
 
     if (msg.role
       === 'toolResult') {
-      /** Tool call paired with this result, removed from the pending queue. */
+      /**
+       * Tool call paired with this result, removed from the pending queue.
+       */
       const call = pendingCalls.shift();
-      /** Display string for the call: stored summary, or fallback to tool name. */
+      /**
+       * Display string for the call: stored summary, or fallback to tool name.
+       */
       const callStr = call?.summary
         ?? msg
         .toolName;
@@ -262,9 +292,13 @@ function buildContext(
         );
       }
       else {
-        /** "error" / "ok" suffix derived from the result's error flag. */
+        /**
+         * "error" / "ok" suffix derived from the result's error flag.
+         */
         const outcome = msg.isError ? 'error' : 'ok';
-        /** Optional bash-only detail suffix appended after the outcome. */
+        /**
+         * Optional bash-only detail suffix appended after the outcome.
+         */
         const detail = msg.toolName
           === 'bash'
           ? bashDetail(msg.content,)
@@ -275,7 +309,9 @@ function buildContext(
     }
   }
 
-  /** Final activity lines selected by max(latest-user span, recent floor). */
+  /**
+   * Final activity lines selected by max(latest-user span, recent floor).
+   */
   return selectContextActivityLines(activityLines,)
     .join('\n',);
 }
@@ -301,19 +337,25 @@ function buildContext(
 function selectContextActivityLines(
   activityLines: readonly string[],
 ): readonly string[] {
-  /** Activity-line index of latest user message, or -1 when none exists. */
+  /**
+   * Activity-line index of latest user message, or -1 when none exists.
+   */
   const lastUserActivityIndex = activityLines.findLastIndex(
     function isUserActivityLine(activityLine,) {
       return activityLine.startsWith('[user] ',);
     },
   );
-  /** Earliest line included by the recent-activity floor. */
+  /**
+   * Earliest line included by the recent-activity floor.
+   */
   const recentFloorStart = Math.max(
     0,
     activityLines.length
       - CONTEXT_ACTIVITY_FLOOR,
   );
-  /** Start line for max(latest-user span, recent floor). */
+  /**
+   * Start line for max(latest-user span, recent floor).
+   */
   const selectedStart = lastUserActivityIndex === (-1)
     ? recentFloorStart
     : Math.min(
@@ -413,7 +455,9 @@ function bashDetail(
     readonly text?: string;
   }[],
 ): string {
-  /** Flattened text content from all text blocks, used to derive the last line. */
+  /**
+   * Flattened text content from all text blocks, used to derive the last line.
+   */
   const text = content
     .filter(
       function hasText(c,) {
@@ -428,7 +472,9 @@ function bashDetail(
       },
     )
     .join('',);
-  /** Last non-empty trimmed line of bash output, the most informative suffix. */
+  /**
+   * Last non-empty trimmed line of bash output, the most informative suffix.
+   */
   const lastLine = text.trim()
     .split('\n',)
     .pop()

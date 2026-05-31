@@ -39,7 +39,9 @@ export function tomlKeys(
     readonly path?: TomlPath;
   },
 ): readonly (string | number)[] {
-  /** Effective resolution accounts for pending edits and deletes. */
+  /**
+   * Effective resolution accounts for pending edits and deletes.
+   */
   const result = effectiveAt({
     edit,
     path,
@@ -50,7 +52,9 @@ export function tomlKeys(
     return [];
   if (result.kind
     === 'pending-value') {
-    /** Local alias so the type guards can read directly. */
+    /**
+     * Local alias so the type guards can read directly.
+     */
     const v = result.value;
     if (Array.isArray(v,)) {
       return v.map(function eachIdx(
@@ -143,16 +147,22 @@ function tableChildKeys(
       `tableChildKeys: expected table container, got ${container.type}`,
     );
   }
-  /** Tracks emitted top-level segments so each first key is reported once. */
+  /**
+   * Tracks emitted top-level segments so each first key is reported once.
+   */
   const seen = new Set<string>();
   return container
     .body
     .flatMap(function flatten(child,) {
     if (child.type
       === 'TOMLKeyValue') {
-      /** All key segments of this entry so the first one can be projected out. */
+      /**
+       * All key segments of this entry so the first one can be projected out.
+       */
       const segs = keysOf({ key: child.key, },);
-      /** Top-level segment that becomes the visible key. */
+      /**
+       * Top-level segment that becomes the visible key.
+       */
       const first = nonNullishOrThrow(segs[0],);
       if (seen.has(first,))
         return [];
@@ -161,7 +171,9 @@ function tableChildKeys(
     }
     if (container.type
       === 'TOMLTopLevelTable') {
-      /** Header's first segment so a top-level table contributes its top key. */
+      /**
+       * Header's first segment so a top-level table contributes its top key.
+       */
       const [tableTop,] = child.resolvedKey;
       if (((typeof tableTop) !== 'string') || seen
         .has(tableTop,))

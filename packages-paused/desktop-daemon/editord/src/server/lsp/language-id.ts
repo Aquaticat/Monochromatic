@@ -7,7 +7,9 @@
 
 import { extname, } from 'node:path';
 
-/** Extension-to-language-ID mapping for supported file types. */
+/**
+ * Extension-to-language-ID mapping for supported file types.
+ */
 const EXTENSION_MAP: Record<string, string> = {
   '.ts': 'typescript',
   '.tsx': 'typescriptreact',
@@ -43,14 +45,18 @@ const EXTENSION_MAP: Record<string, string> = {
  * ```
  */
 export function getLanguageId({ path, }: { readonly path: string; },): string {
-  /** Lowercase extension (including the leading dot) used to look up the LSP language id. */
+  /**
+   * Lowercase extension (including the leading dot) used to look up the LSP language id.
+   */
   const ext = extname(path,)
     .toLowerCase();
   return EXTENSION_MAP[ext]
     ?? 'plaintext';
 }
 
-/** Language IDs that oxlint and tsgo handle (JavaScript/TypeScript family). */
+/**
+ * Language IDs that oxlint and tsgo handle (JavaScript/TypeScript family).
+ */
 export const JS_TS_LANGUAGE_IDS: ReadonlySet<string> = new Set([
   'javascript',
   'javascriptreact',

@@ -10,7 +10,9 @@ import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
 import type { DeepReadonly, } from './types.ts';
 
-/** Tagged logger for the ignore module. */
+/**
+ * Tagged logger for the ignore module.
+ */
 const l = tagged({
   tag: 'ignore',
   l: parentLogger,
@@ -82,18 +84,24 @@ function readIgnoreFile(dirent: DeepReadonly<Dirent>,): Promise<string> {
  * ```
  */
 export async function getIgnoreContent(): Promise<string> {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: getIgnoreContent.name,
     l,
   },);
-  /** Directory entries, or the absent sentinel when the ignore directory is missing. */
+  /**
+   * Directory entries, or the absent sentinel when the ignore directory is missing.
+   */
   const filesInDir = await readIgnoreDir();
   if (filesInDir === IGNORE_DIR_ABSENT) {
     innerL.debug('ignore directory not found',);
     return '';
   }
-  /** Per-file contents read in parallel, joined back into one stream for callers. */
+  /**
+   * Per-file contents read in parallel, joined back into one stream for callers.
+   */
   const contents = await mapIterableAsync({
     fn: readIgnoreFile,
     iterable: filesInDir,
@@ -114,14 +122,20 @@ export async function getIgnoreContent(): Promise<string> {
  * ```
  */
 export function parseIgnoredLinks(content: string,): Set<string> {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: parseIgnoredLinks.name,
     l,
   },);
-  /** Accumulator for unique link URLs so duplicate ignore entries collapse. */
+  /**
+   * Accumulator for unique link URLs so duplicate ignore entries collapse.
+   */
   const links = new Set<string>();
-  /** Trimmed, non-empty lines so the JSON parser does not choke on whitespace. */
+  /**
+   * Trimmed, non-empty lines so the JSON parser does not choke on whitespace.
+   */
   const lines = content
     .split('\n',)
     .map(function trimLine(line,) {
@@ -133,11 +147,15 @@ export function parseIgnoredLinks(content: string,): Set<string> {
     },);
   for (const line of lines) {
     try {
-      /** Parsed entry kept as unknown so the shape check below narrows it explicitly. */
+      /**
+       * Parsed entry kept as unknown so the shape check below narrows it explicitly.
+       */
       const parsed: unknown = JSON.parse(line,);
       if ((parsed !== null) && ((typeof parsed) === 'object')
         && ('link' in parsed)) {
-        /** Destructured link field so the type guard runs on a named binding. */
+        /**
+         * Destructured link field so the type guard runs on a named binding.
+         */
         const { link, } = parsed;
         if (((typeof link) === 'string') && (link !== ''))
           links.add(link,);

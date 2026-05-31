@@ -33,7 +33,9 @@ import { username, } from 'better-auth/plugins';
 
 import { getArgumentValue, } from './args.ts';
 
-/** Tagged logger scoped to the auth instance. */
+/**
+ * Tagged logger scoped to the auth instance.
+ */
 const l = tagged({
   tag: 'auth',
   l: logger,
@@ -46,7 +48,9 @@ const l = tagged({
  */
 const DEFAULT_DATABASE_PATH = './data/forge.db';
 
-/** Default Better Auth base URL when env override is absent. */
+/**
+ * Default Better Auth base URL when env override is absent.
+ */
 const DEFAULT_BETTER_AUTH_URL = 'http://localhost:3000';
 
 /**
@@ -71,12 +75,18 @@ const DEV_BETTER_AUTH_SECRET =
  * ```
  */
 function resolveLibsqlUrl(): string {
-  /** `--db=PATH` CLI argument when supplied; highest priority source. */
+  /**
+   * `--db=PATH` CLI argument when supplied; highest priority source.
+   */
   const argumentPath = getArgumentValue('db',);
-  /** `DB_PATH` environment variable; second priority source. */
+  /**
+   * `DB_PATH` environment variable; second priority source.
+   */
   const environmentPath = process.env
     .DB_PATH;
-  /** Selected raw path; falls back to the compile-time default. */
+  /**
+   * Selected raw path; falls back to the compile-time default.
+   */
   const rawPath = argumentPath ?? environmentPath
     ?? DEFAULT_DATABASE_PATH;
   if (rawPath === ':memory:')
@@ -86,17 +96,23 @@ function resolveLibsqlUrl(): string {
   return `file:${rawPath}`;
 }
 
-/** Resolved Better Auth secret; production must set `BETTER_AUTH_SECRET`. */
+/**
+ * Resolved Better Auth secret; production must set `BETTER_AUTH_SECRET`.
+ */
 const betterAuthSecret = process.env
   .BETTER_AUTH_SECRET
   ?? DEV_BETTER_AUTH_SECRET;
 
-/** Resolved app base URL for Better Auth's session cookie scope. */
+/**
+ * Resolved app base URL for Better Auth's session cookie scope.
+ */
 const betterAuthUrl = process.env
   .BETTER_AUTH_URL
   ?? DEFAULT_BETTER_AUTH_URL;
 
-/** Resolved libsql URL captured once so the log line and the dialect agree. */
+/**
+ * Resolved libsql URL captured once so the log line and the dialect agree.
+ */
 const libsqlUrl = resolveLibsqlUrl();
 
 l.info(`init libsql=${libsqlUrl} baseURL=${betterAuthUrl}`,);

@@ -12,10 +12,14 @@ import type { EnvAssignment, } from './types.ts';
 
 //region Sentinels
 
-/** Sentinel returned when token is not shell assignment word. */
+/**
+ * Sentinel returned when token is not shell assignment word.
+ */
 const NO_SHELL_ASSIGNMENT: unique symbol = Symbol('no-shell-assignment',);
 
-/** Result from parsing shell assignment word. */
+/**
+ * Result from parsing shell assignment word.
+ */
 type ShellAssignmentParseResult = EnvAssignment | typeof NO_SHELL_ASSIGNMENT;
 
 //endregion Sentinels
@@ -38,12 +42,16 @@ type ShellAssignmentParseResult = EnvAssignment | typeof NO_SHELL_ASSIGNMENT;
 function parseShellAssignmentWord(
   word: string,
 ): ShellAssignmentParseResult {
-  /** Equals sign separating shell assignment name from value. */
+  /**
+   * Equals sign separating shell assignment name from value.
+   */
   const equalsIndex = word.indexOf('=',);
   if (equalsIndex <= 0)
     return NO_SHELL_ASSIGNMENT;
 
-  /** Candidate variable name before equals sign. */
+  /**
+   * Candidate variable name before equals sign.
+   */
   const name = word.slice(
     0,
     equalsIndex,
@@ -77,23 +85,31 @@ function parseShellAssignmentWord(
 function extractShellAssignmentNames(
   word: string,
 ): readonly string[] {
-  /** Assignment names discovered while scanning token text. */
+  /**
+   * Assignment names discovered while scanning token text.
+   */
   const names: string[] = [];
 
   for (let index = 0; index < word.length; index += 1) {
-    /** Character where a shell identifier may begin. */
+    /**
+     * Character where a shell identifier may begin.
+     */
     const candidateStart = word.at(index,) ?? '';
     if (!isShellIdentifierStartChar(candidateStart,))
       continue;
 
-    /** Previous character blocks matches from middle of longer identifiers. */
+    /**
+     * Previous character blocks matches from middle of longer identifiers.
+     */
     const previous = index > 0
       ? word.at(index - 1,) ?? ''
       : '';
     if (isShellIdentifierChar(previous,))
       continue;
 
-    /** Index immediately after contiguous shell identifier characters. */
+    /**
+     * Index immediately after contiguous shell identifier characters.
+     */
     const identifierEnd = findShellIdentifierEnd({
       word,
       start: index,

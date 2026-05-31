@@ -20,11 +20,17 @@ import { ABSENT, } from './constants.ts';
  * ```
  */
 export type BackendResult<TBackend = unknown,> = {
-  /** Serialized value returned by a backend, or `ABSENT` when the backend lacks the key. */
+  /**
+   * Serialized value returned by a backend, or `ABSENT` when the backend lacks the key.
+   */
   readonly value: string | typeof ABSENT;
-  /** Backend priority (higher value means higher tier). */
+  /**
+   * Backend priority (higher value means higher tier).
+   */
   readonly priority: number;
-  /** Backend instance that produced the value. */
+  /**
+   * Backend instance that produced the value.
+   */
   readonly backend: TBackend;
 };
 
@@ -53,7 +59,9 @@ export function pickMajority<TBackend = unknown,>({
   hasMajority: boolean;
   value: string | typeof ABSENT;
 } {
-  /** Leader candidate and its bucket after sorting by descending bucket size. */
+  /**
+   * Leader candidate and its bucket after sorting by descending bucket size.
+   */
   const sorted = [...buckets.entries(),]
     .toSorted(function byDescCount(
       [, bucketA,],
@@ -64,7 +72,9 @@ export function pickMajority<TBackend = unknown,>({
         .length;
     },);
 
-  /** Top entry from sorted buckets; falls back to empty bucket so majority check stays well-defined when no results exist. */
+  /**
+   * Top entry from sorted buckets; falls back to empty bucket so majority check stays well-defined when no results exist.
+   */
   const [leaderKey, leaderBucket,] = sorted.at(0,)
     ?? [
       ABSENT,
@@ -107,7 +117,9 @@ export function computeFromHighestTier<TBackend = unknown,>({
   highestResults: readonly BackendResult<TBackend>[];
   key: string;
 }>,): string | typeof ABSENT {
-  /** Majority pick restricted to the highest priority tier; throws below when no clear winner exists. */
+  /**
+   * Majority pick restricted to the highest priority tier; throws below when no clear winner exists.
+   */
   const highestTier = pickMajority({
     buckets: groupedHighest,
     totalCount: highestResults.length,
@@ -149,7 +161,9 @@ export function computeCanonical<TBackend = unknown,>({
   highestResults: readonly BackendResult<TBackend>[];
   key: string;
 }>,): string | typeof ABSENT {
-  /** Cross-tier grouping by serialized value so a strong overall majority can short-circuit tier-aware fallback. */
+  /**
+   * Cross-tier grouping by serialized value so a strong overall majority can short-circuit tier-aware fallback.
+   */
   const groupedAll = Map.groupBy(
     results,
     function byValue({ value, },) {
@@ -157,7 +171,9 @@ export function computeCanonical<TBackend = unknown,>({
     },
   );
 
-  /** Cross-tier majority pick; consulted before falling back to highest-tier-only resolution. */
+  /**
+   * Cross-tier majority pick; consulted before falling back to highest-tier-only resolution.
+   */
   const overall = pickMajority({
     buckets: groupedAll,
     totalCount: results.length,
@@ -203,7 +219,9 @@ export function resolveConsensus<TBackend = unknown,>({
   ];
   key: string;
 }>,): string | typeof ABSENT {
-  /** Results grouped by priority tier so the highest-priority cohort can be isolated for consensus. */
+  /**
+   * Results grouped by priority tier so the highest-priority cohort can be isolated for consensus.
+   */
   const grouped = Map.groupBy(
     results,
     function byPriority({ priority, },) {
@@ -211,7 +229,9 @@ export function resolveConsensus<TBackend = unknown,>({
     },
   );
 
-  /** Tier cohorts ordered ascending by priority so `.at(-1)` yields the highest-priority cohort. */
+  /**
+   * Tier cohorts ordered ascending by priority so `.at(-1)` yields the highest-priority cohort.
+   */
   const sortedTiers = [...grouped.entries(),]
     .toSorted(function byAscPriority(
       [priorityA,],
@@ -223,13 +243,17 @@ export function resolveConsensus<TBackend = unknown,>({
       return tierResults;
     },);
 
-  /** Last entry in `sortedTiers`; the highest-priority cohort that gates consensus when cross-tier majority fails. */
+  /**
+   * Last entry in `sortedTiers`; the highest-priority cohort that gates consensus when cross-tier majority fails.
+   */
   const highestResults = sortedTiers.at(-1,);
   if ((highestResults === undefined) || (highestResults.length
     === 0))
     throw new Error(`(maybe sync) store.get: no backend results for key "${key}"`,);
 
-  /** Highest-tier results regrouped by serialized value, ready for majority resolution. */
+  /**
+   * Highest-tier results regrouped by serialized value, ready for majority resolution.
+   */
   const groupedHighest = Map.groupBy(
     highestResults,
     function byValue({ value, },) {

@@ -14,63 +14,101 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { l as parentLogger, } from './log.ts';
 
-/** Tagged logger for git worktree read allowlist helpers. */
+/**
+ * Tagged logger for git worktree read allowlist helpers.
+ */
 const moduleLogger = tagged({
   tag: 'git-worktree-read-allowlist',
   l: parentLogger,
 },);
 
-/** Package name used by cli-git shims that delegate to this workspace's wrapper. */
+/**
+ * Package name used by cli-git shims that delegate to this workspace's wrapper.
+ */
 const CLI_GIT_PACKAGE_NAME = '@monochromatic-dev/cli-git';
 
-/** Built cli-git entry marker used by pnpm shims that do not name package metadata. */
+/**
+ * Built cli-git entry marker used by pnpm shims that do not name package metadata.
+ */
 const CLI_GIT_BUNDLED_ENTRY_MARKER = 'packages/cli/git/dist/final/node/index.mjs';
 
-/** Text markers that identify scripts delegating to the workspace git wrapper. */
+/**
+ * Text markers that identify scripts delegating to the workspace git wrapper.
+ */
 const CLI_GIT_SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
   CLI_GIT_PACKAGE_NAME,
   CLI_GIT_BUNDLED_ENTRY_MARKER,
 ],);
 
-/** Prefix used by `git worktree list --porcelain` to introduce worktree roots. */
+/**
+ * Prefix used by `git worktree list --porcelain` to introduce worktree roots.
+ */
 const WORKTREE_PORCELAIN_PREFIX = 'worktree ';
 
-/** Maximum time allowed for read-only git metadata probes. */
+/**
+ * Maximum time allowed for read-only git metadata probes.
+ */
 const GIT_METADATA_QUERY_TIMEOUT_MS = 2_000;
 
-/** Sentinel returned when git metadata query exits non-zero or cannot run. */
+/**
+ * Sentinel returned when git metadata query exits non-zero or cannot run.
+ */
 const GIT_STDOUT_UNAVAILABLE = Symbol('git-stdout-unavailable',);
 
-/** Result from read-only git stdout query. */
+/**
+ * Result from read-only git stdout query.
+ */
 type GitStdoutResult = string | typeof GIT_STDOUT_UNAVAILABLE;
 
-/** Options for resolving real git from a PATH-like value. */
+/**
+ * Options for resolving real git from a PATH-like value.
+ */
 type ResolveRealGitOptions = {
-  /** PATH-like string to scan. */
+  /**
+   * PATH-like string to scan.
+   */
   readonly pathEnv?: string;
 };
 
-/** Options for read-only git stdout queries. */
+/**
+ * Options for read-only git stdout queries.
+ */
 type ReadGitStdoutOptions = {
-  /** Absolute path to real git binary. */
+  /**
+   * Absolute path to real git binary.
+   */
   readonly gitPath: string;
-  /** Git arguments after executable name. */
+  /**
+   * Git arguments after executable name.
+   */
   readonly args: readonly string[];
-  /** Working directory for git subprocess. */
+  /**
+   * Working directory for git subprocess.
+   */
   readonly cwd: string;
 };
 
-/** Options for linked-worktree root classification. */
+/**
+ * Options for linked-worktree root classification.
+ */
 type IsLinkedWorktreeRootOptions = {
-  /** Absolute path to real git binary. */
+  /**
+   * Absolute path to real git binary.
+   */
   readonly gitPath: string;
-  /** Candidate worktree root to classify. */
+  /**
+   * Candidate worktree root to classify.
+   */
   readonly worktreeRoot: string;
 };
 
-/** Options for building read allowlisted directories from git worktree metadata. */
+/**
+ * Options for building read allowlisted directories from git worktree metadata.
+ */
 type LinkedWorktreeReadAllowlistedDirsOptions = {
-  /** Agent session working directory. */
+  /**
+   * Agent session working directory.
+   */
   readonly cwd: string;
 };
 
@@ -137,7 +175,9 @@ function stripTrailingLineBreak(output: string,): string {
  */
 function isCliGitShimForSelfSync(candidatePath: string,): boolean {
   try {
-    /** Candidate executable bytes decoded as text for wrapper marker scanning. */
+    /**
+     * Candidate executable bytes decoded as text for wrapper marker scanning.
+     */
     const content = readFileSync(
       candidatePath,
       'utf8',
@@ -175,11 +215,15 @@ export function resolveRealGitSync({
 }: ResolveRealGitOptions = {},): string {
   moduleLogger.debug('resolving real git for linked worktree read allowlist',);
 
-  /** Individual PATH entries, scanned in shell lookup order. */
+  /**
+   * Individual PATH entries, scanned in shell lookup order.
+   */
   const pathDirs = pathEnv.split(delimiter,);
 
   for (const dir of pathDirs) {
-    /** Absolute candidate path for `git` inside this PATH entry. */
+    /**
+     * Absolute candidate path for `git` inside this PATH entry.
+     */
     const candidatePath = resolve(
       dir === ''
         ? process.cwd()
@@ -299,7 +343,9 @@ function isLinkedWorktreeRoot({
   gitPath,
   worktreeRoot,
 }: IsLinkedWorktreeRootOptions,): boolean {
-  /** Raw rev-parse metadata for candidate worktree root. */
+  /**
+   * Raw rev-parse metadata for candidate worktree root.
+   */
   const metadata = readGitStdout({
     gitPath,
     cwd: worktreeRoot,
@@ -315,7 +361,9 @@ function isLinkedWorktreeRoot({
   if (metadata === GIT_STDOUT_UNAVAILABLE)
     return false;
 
-  /** Rev-parse metadata fields in output order. */
+  /**
+   * Rev-parse metadata fields in output order.
+   */
   const [
     isInsideWorktreeOutput,
     gitDir,
@@ -329,9 +377,13 @@ function isLinkedWorktreeRoot({
     return false;
 
   try {
-    /** Symlink-stable git-dir path. */
+    /**
+     * Symlink-stable git-dir path.
+     */
     const resolvedGitDir = realpathSync.native(gitDir,);
-    /** Symlink-stable common git-dir path. */
+    /**
+     * Symlink-stable common git-dir path.
+     */
     const resolvedGitCommonDir = realpathSync.native(gitCommonDir,);
     return resolvedGitDir !== resolvedGitCommonDir;
   }
@@ -367,9 +419,13 @@ export function linkedWorktreeReadAllowlistedDirs({
   moduleLogger.debug(`collecting linked worktree read allowlist from ${cwd}`,);
 
   try {
-    /** Absolute path to real git binary used for read-only metadata queries. */
+    /**
+     * Absolute path to real git binary used for read-only metadata queries.
+     */
     const gitPath = resolveRealGitSync();
-    /** Raw worktree-list output for repository containing cwd. */
+    /**
+     * Raw worktree-list output for repository containing cwd.
+     */
     const worktreeList = readGitStdout({
       gitPath,
       cwd,
@@ -383,7 +439,9 @@ export function linkedWorktreeReadAllowlistedDirs({
     if (worktreeList === GIT_STDOUT_UNAVAILABLE)
       return [];
 
-    /** Linked worktree roots reported by git and confirmed via rev-parse metadata. */
+    /**
+     * Linked worktree roots reported by git and confirmed via rev-parse metadata.
+     */
     const linkedRoots = extractWorktreePaths(worktreeList,)
       .filter(function keepLinkedWorktreeRoot(worktreeRoot,) {
         return isLinkedWorktreeRoot({

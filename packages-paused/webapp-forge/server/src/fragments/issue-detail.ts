@@ -18,28 +18,48 @@ import {
  * View-model fed to the {@link renderIssueDetail} renderer.
  */
 export type IssueDetailData = {
-  /** Repo owner login (e.g. `alice`). */
+  /**
+   * Repo owner login (e.g. `alice`).
+   */
   readonly ownerLogin: string;
-  /** Repo name. */
+  /**
+   * Repo name.
+   */
   readonly repoName: string;
-  /** Issue number (1-based per repo). */
+  /**
+   * Issue number (1-based per repo).
+   */
   readonly issueNumber: number;
-  /** Issue title. */
+  /**
+   * Issue title.
+   */
   readonly title: string;
-  /** Issue body (plain text or markdown source; rendered as text in Phase 1). */
+  /**
+   * Issue body (plain text or markdown source; rendered as text in Phase 1).
+   */
   readonly body: string;
-  /** Author login. */
+  /**
+   * Author login.
+   */
   readonly authorLogin: string;
-  /** ISO timestamp of issue creation. */
+  /**
+   * ISO timestamp of issue creation.
+   */
   readonly createdAt: string;
-  /** Issue state label (`open` or `closed`). */
+  /**
+   * Issue state label (`open` or `closed`).
+   */
   readonly state: string;
-  /** Labels currently attached. */
+  /**
+   * Labels currently attached.
+   */
   readonly labels: readonly {
     readonly name: string;
     readonly color: string;
   }[];
-  /** Comments on the issue, oldest first. */
+  /**
+   * Comments on the issue, oldest first.
+   */
   readonly comments: readonly {
     readonly id: string;
     readonly authorLogin: string;
@@ -153,7 +173,9 @@ function commentBlock(props: {
  * ```
  */
 export function renderIssueDetail(data: IssueDetailData,): SafeHtml {
-  /** Per-label badge HTML rendered into the header. */
+  /**
+   * Per-label badge HTML rendered into the header.
+   */
   const labelBadges = data.labels
     .map(function eachLabel(label,) {
     return labelBadge({
@@ -161,7 +183,9 @@ export function renderIssueDetail(data: IssueDetailData,): SafeHtml {
       color: label.color,
     },);
   },);
-  /** Per-comment HTML rendered into the issue body. */
+  /**
+   * Per-comment HTML rendered into the issue body.
+   */
   const commentBlocks = data.comments
     .map(function eachComment(comment,) {
     return commentBlock({

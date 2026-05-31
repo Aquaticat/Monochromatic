@@ -32,13 +32,21 @@ import type {
  * ```
  */
 type CacheAndComputePerfMultiplierOptions = {
-  /** Probe configuration (for perfTest thresholds and probe name) */
+  /**
+   * Probe configuration (for perfTest thresholds and probe name)
+   */
   readonly config: CodeGenProbeConfig;
-  /** Scoring context (for model label in logs and cache keys) */
+  /**
+   * Scoring context (for model label in logs and cache keys)
+   */
   readonly context: ScoreContext;
-  /** Shared caches to populate with the perf result */
+  /**
+   * Shared caches to populate with the perf result
+   */
   readonly caches: WritableProbeFactoryCaches;
-  /** Timed container result, omitted when no perf test ran */
+  /**
+   * Timed container result, omitted when no perf test ran
+   */
   readonly perfResult?: TimedContainerResult;
 };
 
@@ -79,12 +87,16 @@ export function cacheAndComputePerfMultiplier({
     context.label,
     perfResult,
   );
-  /** Multiplier in [0, 1] derived from `perfResult.durationMs` against the configured thresholds. */
+  /**
+   * Multiplier in [0, 1] derived from `perfResult.durationMs` against the configured thresholds.
+   */
   const score = computePerfScore({
     perfResult,
     config: config.perfTest,
   },);
-  /** Probe-specific logger for perf result messages. */
+  /**
+   * Probe-specific logger for perf result messages.
+   */
   const rl = tagged({
     tag: config.name,
     l: tagged({

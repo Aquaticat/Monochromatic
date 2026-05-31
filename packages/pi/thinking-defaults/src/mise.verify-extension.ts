@@ -13,10 +13,14 @@ import {
 
 //region Constants
 
-/** Built extension path consumed by Pi. */
+/**
+ * Built extension path consumed by Pi.
+ */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
-/** Expected event registrations from the extension entry point. */
+/**
+ * Expected event registrations from the extension entry point.
+ */
 const EXPECTED_REGISTRATIONS = [
   'event:session_start',
   'event:model_select',
@@ -26,9 +30,13 @@ const EXPECTED_REGISTRATIONS = [
 
 //region Types
 
-/** Built thinking-defaults extension module shape. */
+/**
+ * Built thinking-defaults extension module shape.
+ */
 type ThinkingDefaultsExtensionModule = {
-  /** Pi extension factory. */
+  /**
+   * Pi extension factory.
+   */
   readonly default: ExtensionFactory;
 };
 
@@ -49,7 +57,9 @@ type ThinkingDefaultsExtensionModule = {
  * ```
  */
 async function verifyBuiltExtension(): Promise<string> {
-  /** Built extension module imported through package output. */
+  /**
+   * Built extension module imported through package output.
+   */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isThinkingDefaultsExtensionModule(mod,)) {
     throw new Error(
@@ -57,14 +67,18 @@ async function verifyBuiltExtension(): Promise<string> {
     );
   }
 
-  /** Fake Pi API plus its captured registration log. */
+  /**
+   * Fake Pi API plus its captured registration log.
+   */
   const {
     api,
     registrations,
   } = fakePiApi();
   await mod.default(api,);
 
-  /** Expected registrations not observed. */
+  /**
+   * Expected registrations not observed.
+   */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
   },);
@@ -112,9 +126,13 @@ function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: readonly string[];
 } {
-  /** Mutable registration call log captured by the fake API. */
+  /**
+   * Mutable registration call log captured by the fake API.
+   */
   const registrations: string[] = [];
-  /** Fake Pi API recording each registration into the captured log. */
+  /**
+   * Fake Pi API recording each registration into the captured log.
+   */
   const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);

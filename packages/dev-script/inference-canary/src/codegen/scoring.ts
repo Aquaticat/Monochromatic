@@ -29,13 +29,19 @@ import type { ScoreContext, } from '../probes.ts';
 
 //region Scoring penalties
 
-/** Points deducted per type error reported by tsgo */
+/**
+ * Points deducted per type error reported by tsgo
+ */
 const TYPE_ERROR_PENALTY = 0.1;
 
-/** Maximum penalty any single lint rule can contribute */
+/**
+ * Maximum penalty any single lint rule can contribute
+ */
 const MAX_PENALTY_PER_RULE = 0.3;
 
-/** Maximum number of violated rules to display in the log summary */
+/**
+ * Maximum number of violated rules to display in the log summary
+ */
 const MAX_DISPLAYED_RULES = 5;
 
 //endregion Scoring penalties
@@ -52,9 +58,13 @@ const MAX_DISPLAYED_RULES = 5;
  * ```
  */
 type CombinedScoreOptions = {
-  /** 0-1 score from output verification; must be exactly 1.0 to earn points */
+  /**
+   * 0-1 score from output verification; must be exactly 1.0 to earn points
+   */
   readonly correctness: number;
-  /** Full lint result with per-rule penalty map and type errors */
+  /**
+   * Full lint result with per-rule penalty map and type errors
+   */
   readonly lint: LintResult;
 };
 
@@ -85,7 +95,9 @@ export function combinedScore({
   if (correctness < 1)
     return 0;
 
-  /** Total lint penalty after capping each rule at `MAX_PENALTY_PER_RULE`; subtracted from the perfect-score baseline. */
+  /**
+   * Total lint penalty after capping each rule at `MAX_PENALTY_PER_RULE`; subtracted from the perfect-score baseline.
+   */
   const lintPenalty = [...lint.perRulePenalty
     .values(),]
     .reduce(
@@ -102,7 +114,9 @@ export function combinedScore({
       0,
     );
 
-  /** Flat per-error penalty for tsgo diagnostics; no cap since each type error is treated as distinct. */
+  /**
+   * Flat per-error penalty for tsgo diagnostics; no cap since each type error is treated as distinct.
+   */
   const typePenalty = lint.typeErrors
     * TYPE_ERROR_PENALTY;
   return Math.max(
@@ -125,11 +139,17 @@ export function combinedScore({
  * ```
  */
 type LintAndLogOptions = {
-  /** TypeScript source to analyze */
+  /**
+   * TypeScript source to analyze
+   */
   readonly source: string;
-  /** Probe name for log prefixes */
+  /**
+   * Probe name for log prefixes
+   */
   readonly probeName: string;
-  /** Model identity and pass for artifact organization */
+  /**
+   * Model identity and pass for artifact organization
+   */
   readonly context: ScoreContext;
 };
 
@@ -155,7 +175,9 @@ export async function lintAndLog({
   probeName,
   context,
 }: LintAndLogOptions,): Promise<LintResult> {
-  /** Full lint result returned to callers; also drives the per-probe log summary below. */
+  /**
+   * Full lint result returned to callers; also drives the per-probe log summary below.
+   */
   const lint = await lintSource({
     source,
     meta: {
@@ -169,7 +191,9 @@ export async function lintAndLog({
   if (lint.linterRan
     || lint
     .typeCheckerRan) {
-    /** Probe-specific logger for lint result summary. */
+    /**
+     * Probe-specific logger for lint result summary.
+     */
     const rl = tagged({
       tag: probeName,
       l: tagged({
@@ -177,17 +201,23 @@ export async function lintAndLog({
         l,
       },),
     },);
-    /** Oxlint portion of the one-line log summary; "skipped" when the linter never ran. */
+    /**
+     * Oxlint portion of the one-line log summary; "skipped" when the linter never ran.
+     */
     const lintSummary = lint.linterRan
       ? `lint=${String(lint.severity
         .errors,)}err/${String(lint.severity
           .warnings,)}warn`
       : 'lint=skipped';
-    /** Tsgo portion of the one-line log summary; "skipped" when the type checker never ran. */
+    /**
+     * Tsgo portion of the one-line log summary; "skipped" when the type checker never ran.
+     */
     const typeSummary = lint.typeCheckerRan
       ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
-    /** Top `MAX_DISPLAYED_RULES` violated rule IDs in a parenthetical; empty when nothing violated. */
+    /**
+     * Top `MAX_DISPLAYED_RULES` violated rule IDs in a parenthetical; empty when nothing violated.
+     */
     const rulesSummary = lint.violatedRules
       .length
       > 0

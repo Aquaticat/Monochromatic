@@ -26,13 +26,21 @@ import {
  * ```
  */
 type VerifySolutionSetOptions = {
-  /** Raw output section for one puzzle */
+  /**
+   * Raw output section for one puzzle
+   */
   readonly section: string;
-  /** Clue grid to verify solutions against */
+  /**
+   * Clue grid to verify solutions against
+   */
   readonly clues: readonly (readonly number[])[];
-  /** Exact number of solutions expected, omitted for "at least min" */
+  /**
+   * Exact number of solutions expected, omitted for "at least min"
+   */
   readonly expectedCount?: number;
-  /** Minimum number of solutions when expectedCount is absent */
+  /**
+   * Minimum number of solutions when expectedCount is absent
+   */
   readonly minCount: number;
 };
 
@@ -62,9 +70,13 @@ export function verifySolutionSet({
   expectedCount,
   minCount,
 }: VerifySolutionSetOptions,): boolean {
-  /** Raw solution text blocks split on blank lines within the section */
+  /**
+   * Raw solution text blocks split on blank lines within the section
+   */
   const solutionBlocks = splitSolutions(section,);
-  /** Parsed grids from solution blocks, filtering out unparseable ones (empty array result) */
+  /**
+   * Parsed grids from solution blocks, filtering out unparseable ones (empty array result)
+   */
   const grids = solutionBlocks
     .map(function parseSol(sol,): number[][] {
       return parseGrid(sol,);
@@ -73,7 +85,9 @@ export function verifySolutionSet({
       return grid.length
         > 0;
     },);
-  /** Whether the solution count matches the expected or minimum threshold */
+  /**
+   * Whether the solution count matches the expected or minimum threshold
+   */
   const countOk = expectedCount !== undefined
     ? grids.length
       === expectedCount
@@ -81,7 +95,9 @@ export function verifySolutionSet({
       >= minCount;
   if (!countOk)
     return false;
-  /** Whether every parsed grid is a valid complete sudoku matching the original clues */
+  /**
+   * Whether every parsed grid is a valid complete sudoku matching the original clues
+   */
   const allValid = grids.every(function validateGrid(grid,): boolean {
     return isValidSolution(grid,)
       && matchesClues({

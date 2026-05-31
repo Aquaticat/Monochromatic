@@ -10,7 +10,9 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'kde',
   l: parentLogger,
@@ -72,18 +74,26 @@ async function readFileOrAbsent(
  * ```
  */
 export async function kdeTerminalService(): Promise<string | typeof NO_KDE_TERMINAL> {
-  /** HOME envar fallback keeps path construction deterministic on systems where HOME is unset. */
+  /**
+   * HOME envar fallback keeps path construction deterministic on systems where HOME is unset.
+   */
   const home = process.env
     .HOME
     ?? '/tmp';
-  /** XDG config base; defaults under HOME per the spec. */
+  /**
+   * XDG config base; defaults under HOME per the spec.
+   */
   const configHome = process.env
     .XDG_CONFIG_HOME
     ?? `${home}/config`;
-  /** KDE's global settings file; source of the TerminalService key. */
+  /**
+   * KDE's global settings file; source of the TerminalService key.
+   */
   const path = `${configHome}/kdeglobals`;
 
-  /** KDEGLOBALS_UNREADABLE when kdeglobals is missing or unreadable; the catch path is the only failure mode. */
+  /**
+   * KDEGLOBALS_UNREADABLE when kdeglobals is missing or unreadable; the catch path is the only failure mode.
+   */
   const text = await readFileOrAbsent({ path, },);
   if (text === KDEGLOBALS_UNREADABLE) {
     l.debug('kdeglobals not found',);
@@ -91,10 +101,14 @@ export async function kdeTerminalService(): Promise<string | typeof NO_KDE_TERMI
   }
 
   for (const rawLine of text.split('\n',)) {
-    /** Whitespace tolerance before the prefix check. */
+    /**
+     * Whitespace tolerance before the prefix check.
+     */
     const line = rawLine.trim();
     if (line.startsWith('TerminalService=',)) {
-      /** Payload after the key, trimmed of stray whitespace before the empty check. */
+      /**
+       * Payload after the key, trimmed of stray whitespace before the empty check.
+       */
       const value = line.slice('TerminalService='.length,)
         .trim();
       if (value.length

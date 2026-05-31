@@ -24,9 +24,13 @@ import type {
  * for example).
  */
 export type ArticleForms = {
-  /** Article form combined with a singular noun, e.g. English `a`, Catalan `el`. */
+  /**
+   * Article form combined with a singular noun, e.g. English `a`, Catalan `el`.
+   */
   readonly singular?: string;
-  /** Article form combined with a plural noun, e.g. Catalan `els`; English `the`. */
+  /**
+   * Article form combined with a plural noun, e.g. Catalan `els`; English `the`.
+   */
   readonly plural?: string;
 };
 
@@ -52,15 +56,25 @@ export type ArticleForms = {
  * ```
  */
 export type SubjectEntry = {
-  /** Nominative surface form, e.g. English `I`, Catalan `jo`, Chinese `我`. */
+  /**
+   * Nominative surface form, e.g. English `I`, Catalan `jo`, Chinese `我`.
+   */
   readonly surface: string;
-  /** Possessive surface form, e.g. English `my`, Catalan `meu`, Chinese `我的`. */
+  /**
+   * Possessive surface form, e.g. English `my`, Catalan `meu`, Chinese `我的`.
+   */
   readonly possessive: string;
-  /** Grammatical person used by verb-agreement lookups. */
+  /**
+   * Grammatical person used by verb-agreement lookups.
+   */
   readonly person: Person;
-  /** Grammatical number used by verb-agreement lookups. */
+  /**
+   * Grammatical number used by verb-agreement lookups.
+   */
   readonly number: GrammaticalNumber;
-  /** Optional gender; Catalan adjectives and articles consult this when present. */
+  /**
+   * Optional gender; Catalan adjectives and articles consult this when present.
+   */
   readonly gender?: GrammaticalGender;
 };
 
@@ -119,17 +133,29 @@ export type NounPlural =
  * ```
  */
 export type NounEntry = {
-  /** Singular bare surface form, used for `noun.bare` and as the base for derivations. */
+  /**
+   * Singular bare surface form, used for `noun.bare` and as the base for derivations.
+   */
   readonly surface: string;
-  /** Plural surface or a function producing one from a count. */
+  /**
+   * Plural surface or a function producing one from a count.
+   */
   readonly plural?: NounPlural;
-  /** Grammatical gender, consulted by gender-sensitive locales (Catalan). */
+  /**
+   * Grammatical gender, consulted by gender-sensitive locales (Catalan).
+   */
   readonly gender?: GrammaticalGender;
-  /** Countability constraint, validated before rendering `noun.counted` phrases. */
+  /**
+   * Countability constraint, validated before rendering `noun.counted` phrases.
+   */
   readonly countability?: Countability;
-  /** Classifier surface, used by Chinese-style counted phrases. */
+  /**
+   * Classifier surface, used by Chinese-style counted phrases.
+   */
   readonly classifier?: string;
-  /** Article tables, used by `noun.definite` and `noun.indefinite`. */
+  /**
+   * Article tables, used by `noun.definite` and `noun.indefinite`.
+   */
   readonly articles?: {
     readonly definite?: ArticleForms;
     readonly indefinite?: ArticleForms;

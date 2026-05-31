@@ -15,10 +15,14 @@
  */
 
 /* oxlint-disable no-restricted-syntax/no-module-root-let -- bootstrap flags: `composerBooted` is flipped once when the composer module finishes loading; `pendingSubmit` is set by the submit interceptor when a click arrives before bootstrap and cleared inside `bootComposer` after redispatch */
-/** Whether the composer module has been loaded and bootstrapped. */
+/**
+ * Whether the composer module has been loaded and bootstrapped.
+ */
 let composerBooted = false;
 
-/** Pending submit event waiting for the composer to bootstrap. */
+/**
+ * Pending submit event waiting for the composer to bootstrap.
+ */
 let pendingSubmit = false;
 /* oxlint-enable no-restricted-syntax/no-module-root-let */
 
@@ -31,12 +35,16 @@ async function bootComposer(): Promise<void> {
   if (composerBooted)
     return;
   composerBooted = true;
-  /** Lazily-loaded composer module; `bootstrap` registers the real submit handler. */
+  /**
+   * Lazily-loaded composer module; `bootstrap` registers the real submit handler.
+   */
   const composer = await import('./composer.ts');
   await composer.bootstrap();
   if (pendingSubmit) {
     pendingSubmit = false;
-    /** Composer form element; redispatch fires the freshly-attached submit handler. */
+    /**
+     * Composer form element; redispatch fires the freshly-attached submit handler.
+     */
     const form = document.querySelector<HTMLFormElement>('#composer',);
     if (form !== null) {
       form.dispatchEvent(new Event(
@@ -54,7 +62,9 @@ async function bootComposer(): Promise<void> {
  * Wires the synchronous interceptor + the lazy loader.
  */
 function attachComposerLoaders(): void {
-  /** Composer form element; null exits early on pages without a composer. */
+  /**
+   * Composer form element; null exits early on pages without a composer.
+   */
   const form = document.querySelector<HTMLFormElement>('#composer',);
   if (form === null)
     return;
@@ -75,7 +85,9 @@ function attachComposerLoaders(): void {
     { capture: true, },
   );
 
-  /** Single-shot user interaction handler that triggers the lazy load. */
+  /**
+   * Single-shot user interaction handler that triggers the lazy load.
+   */
   function onInteraction(): void {
     void bootComposer();
   }

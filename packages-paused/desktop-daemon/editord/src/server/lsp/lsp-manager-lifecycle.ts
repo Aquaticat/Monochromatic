@@ -224,7 +224,9 @@ export function routeNotification({
   readonly params: unknown;
 },): void {
   if (method === 'textDocument/publishDiagnostics') {
-    /** Narrowed view of `params` for the `publishDiagnostics` LSP notification. */
+    /**
+     * Narrowed view of `params` for the `publishDiagnostics` LSP notification.
+     */
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP publishDiagnostics shape
     const p = params as {
       readonly uri: string;

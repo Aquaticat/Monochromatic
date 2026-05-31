@@ -39,7 +39,9 @@ function isTrustedReadAllowlistDir(
   dir: string,
 ): boolean {
   try {
-    /** Filesystem metadata for candidate allowlist root. */
+    /**
+     * Filesystem metadata for candidate allowlist root.
+     */
     const stats = statSync(dir,);
     if (!stats.isDirectory())
       return false;

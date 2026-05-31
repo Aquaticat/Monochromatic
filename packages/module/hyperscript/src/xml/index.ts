@@ -95,15 +95,25 @@ function escapeXml(raw: string,): string {
  * HTML/DOM concepts with no meaning in generic XML.
  */
 type XmlOptions = {
-  /** XML tag name, may include namespace prefix (e.g. `'atom:link'`) */
+  /**
+   * XML tag name, may include namespace prefix (e.g. `'atom:link'`)
+   */
   readonly tag: string;
-  /** Text content (XML-escaped automatically) */
+  /**
+   * Text content (XML-escaped automatically)
+   */
   readonly text?: string;
-  /** Raw inner XML (NOT escaped; caller is responsible for well-formedness) */
+  /**
+   * Raw inner XML (NOT escaped; caller is responsible for well-formedness)
+   */
   readonly raw?: string;
-  /** Attributes set as key="value" pairs (values are XML-escaped) */
+  /**
+   * Attributes set as key="value" pairs (values are XML-escaped)
+   */
   readonly attrs?: Readonly<Record<string, string>>;
-  /** Child XML strings to concatenate inside the element */
+  /**
+   * Child XML strings to concatenate inside the element
+   */
   readonly children?: readonly string[];
 };
 
@@ -140,7 +150,9 @@ type XmlOptions = {
     children,
   }: XmlOptions,
 ): string {
-  /** Accumulates serialization fragments so they can be joined once at the end without intermediate string concatenations. */
+  /**
+   * Accumulates serialization fragments so they can be joined once at the end without intermediate string concatenations.
+   */
   const parts: string[] = [`<${tag}`,];
 
   if (attrs !== undefined) {
@@ -150,7 +162,9 @@ type XmlOptions = {
 
   //region Self-closing check
   // XML has no void elements; instead, childless elements self-close.
-  /** Flags whether the element has body content so the caller can choose between self-closing and the open/close pair. */
+  /**
+   * Flags whether the element has body content so the caller can choose between self-closing and the open/close pair.
+   */
   const hasContent = (text !== undefined)
     || (raw !== undefined)
     || ((children !== undefined) && (children.length

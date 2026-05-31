@@ -14,11 +14,17 @@ export { showToast, };
  * Request configuration accepted by {@link api}; a readonly subset of `RequestInit`.
  */
 export type ApiRequestOptions = {
-  /** HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`. */
+  /**
+   * HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`.
+   */
   readonly method?: string;
-  /** Request body; callers serialize JSON to a string. */
+  /**
+   * Request body; callers serialize JSON to a string.
+   */
   readonly body?: string;
-  /** Extra request headers merged over the default JSON content type. */
+  /**
+   * Extra request headers merged over the default JSON content type.
+   */
   readonly headers?: Readonly<Record<string, string>>;
 };
 
@@ -44,7 +50,9 @@ export async function api<TResponse = unknown,>({
   readonly path: string;
   readonly options?: ApiRequestOptions;
 },): Promise<TResponse> {
-  /** Base headers merged with any caller-supplied overrides below. */
+  /**
+   * Base headers merged with any caller-supplied overrides below.
+   */
   const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers
     !== undefined) {
@@ -58,7 +66,9 @@ export async function api<TResponse = unknown,>({
       );
     },);
   }
-  /** Network response; status checked before the body is parsed. */
+  /**
+   * Network response; status checked before the body is parsed.
+   */
   const response = await fetch(
     path,
     {
@@ -68,7 +78,9 @@ export async function api<TResponse = unknown,>({
   );
 
   if (!response.ok) {
-    /** Error payload (possibly invalid JSON, hence the catch). */
+    /**
+     * Error payload (possibly invalid JSON, hence the catch).
+     */
     let error: unknown = undefined;
     try {
       error = await response.json();
@@ -76,7 +88,9 @@ export async function api<TResponse = unknown,>({
     catch {
       error = { error: 'Request failed', };
     }
-    /** Surface message extracted from `error.error` when present, otherwise the generic fallback. */
+    /**
+     * Surface message extracted from `error.error` when present, otherwise the generic fallback.
+     */
     const message = ((typeof error) === 'object')
         && (error !== null)
       && ('error' in error)

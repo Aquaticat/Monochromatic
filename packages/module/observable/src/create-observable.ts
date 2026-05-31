@@ -11,9 +11,13 @@
  * handler synchronously; `getValue` reads the current value.
  */
 export type Observable<T,> = {
-  /** Reads the current observed value. */
+  /**
+   * Reads the current observed value.
+   */
   getValue: () => T;
-  /** Stores a new value and triggers the change handler synchronously. */
+  /**
+   * Stores a new value and triggers the change handler synchronously.
+   */
   setValue: (newValue: T,) => void;
 };
 
@@ -55,14 +59,18 @@ export function createObservable<T,>(
     ) => void;
   },
 ): Observable<T> {
-  /** Internal store backing the methods; held on an object property so mutation avoids a function-root `let`. */
+  /**
+   * Internal store backing the methods; held on an object property so mutation avoids a function-root `let`.
+   */
   const state: { current: T; } = { current: initialValue, };
   return {
     getValue: function getValue(): T {
       return state.current;
     },
     setValue: function setValue(newValue: T,): void {
-      /** Snapshot of the prior value preserved for the change handler call. */
+      /**
+       * Snapshot of the prior value preserved for the change handler call.
+       */
       const old = state.current;
       state.current = newValue;
       onChange(

@@ -43,7 +43,9 @@ export function tomlInsertCommentBefore(
     readonly comment: string | readonly string[];
   },
 ): TomlEditState {
-  /** Path lookup so missing keys throw before any state change. */
+  /**
+   * Path lookup so missing keys throw before any state change.
+   */
   const resolved = resolveByPath({
     edit,
     path,
@@ -56,16 +58,22 @@ export function tomlInsertCommentBefore(
     );
   }
 
-  /** Normalised to an array so a single string and a multi-line list share the join path. */
+  /**
+   * Normalised to an array so a single string and a multi-line list share the join path.
+   */
   const lines = toLines({ comment, },);
-  /** Each line gets the `# ` prefix and a newline so it stands as its own physical line. */
+  /**
+   * Each line gets the `# ` prefix and a newline so it stands as its own physical line.
+   */
   const text = lines
     .map(function withHash(line,) {
       return `# ${line}\n`;
     },)
     .join('',);
 
-  /** Anchor records placement so the emitter can splice in source order. */
+  /**
+   * Anchor records placement so the emitter can splice in source order.
+   */
   const anchor: Insertion['anchor'] = resolved.kind
     === 'array-of-tables'
     ? {

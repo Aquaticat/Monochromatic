@@ -5,16 +5,22 @@
 
 //region Types: response shape definitions
 
-/** Single text content item in an MCP response. */
+/**
+ * Single text content item in an MCP response.
+ */
 type TextContent = {
   text: string;
   type: 'text';
 };
 
-/** Successful MCP response containing text content. */
+/**
+ * Successful MCP response containing text content.
+ */
 type TextResponse = { content: [TextContent,]; };
 
-/** MCP error response containing text content and an error flag. */
+/**
+ * MCP error response containing text content and an error flag.
+ */
 type ErrorResponse = {
   content: [TextContent,];
   isError: true;
@@ -24,7 +30,9 @@ type ErrorResponse = {
 
 //region Response builders: construct MCP-compliant response objects
 
-/** Literal type constant for text content items. */
+/**
+ * Literal type constant for text content items.
+ */
 const TEXT_TYPE = 'text' as const;
 
 /**
@@ -68,7 +76,9 @@ export function errorResponse({
   readonly err: unknown;
   readonly tag: string;
 },): ErrorResponse {
-  /** Human-readable error text extracted from `Error.message` when available, stringified otherwise. */
+  /**
+   * Human-readable error text extracted from `Error.message` when available, stringified otherwise.
+   */
   const message = (err instanceof Error) ? err.message : String(err,);
   console.error(
     `[mcp-mvm] ${tag} failed:`,
@@ -103,7 +113,9 @@ export function formatExecResult(
     readonly stdout: string;
   },
 ): string {
-  /** Output sections accumulated in order: stdout, stderr (when non-empty), exit code. Joined with blank lines below. */
+  /**
+   * Output sections accumulated in order: stdout, stderr (when non-empty), exit code. Joined with blank lines below.
+   */
   const parts: string[] = [];
   if (result.stdout
     .length

@@ -7,13 +7,21 @@
 
 import type { JsonRpcMessage, } from './json-rpc.ts';
 
-/** Pending request awaiting an LSP server response. */
+/**
+ * Pending request awaiting an LSP server response.
+ */
 export type PendingLspRequest = {
-  /** Resolves the pending request with the server's result. */
+  /**
+   * Resolves the pending request with the server's result.
+   */
   readonly resolve: (value: unknown,) => void;
-  /** Rejects the pending request with an error. */
+  /**
+   * Rejects the pending request with an error.
+   */
   readonly reject: (error: Error,) => void;
-  /** Timeout handle to clear when the response arrives. */
+  /**
+   * Timeout handle to clear when the response arrives.
+   */
   timeoutId: ReturnType<typeof setTimeout> | null;
 };
 
@@ -62,7 +70,9 @@ export function routeJsonRpcMessage({
   },) => void;
 },): void {
   if (('id' in message) && (!('method' in message))) {
-    /** Narrowed response view used to look up the matching pending request. */
+    /**
+     * Narrowed response view used to look up the matching pending request.
+     */
     const response = message as {
       readonly id: number;
       readonly result?: unknown;
@@ -71,7 +81,9 @@ export function routeJsonRpcMessage({
         readonly message: string;
       };
     };
-    /** Pending request entry; undefined means the response was orphaned (e.g. timed out). */
+    /**
+     * Pending request entry; undefined means the response was orphaned (e.g. timed out).
+     */
     const entry = pending.get(response.id,);
     if (entry !== undefined) {
       pending.delete(response.id,);
@@ -87,7 +99,9 @@ export function routeJsonRpcMessage({
     }
   }
   else if (('method' in message) && (!('id' in message))) {
-    /** Narrowed notification view forwarded to the consumer's handler. */
+    /**
+     * Narrowed notification view forwarded to the consumer's handler.
+     */
     const notification = message as {
       readonly method: string;
       readonly params?: unknown;
@@ -98,7 +112,9 @@ export function routeJsonRpcMessage({
     },);
   }
   else if (('method' in message) && ('id' in message)) {
-    /** Narrowed request view used only for the response id below. */
+    /**
+     * Narrowed request view used only for the response id below.
+     */
     const request = message as { readonly id: number; };
     send({
       jsonrpc: '2.0',

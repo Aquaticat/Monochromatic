@@ -78,28 +78,40 @@ export function applyInlayAnnotations({
   readonly hints: readonly InlayHint[];
   readonly diagnostics: readonly Diagnostic[];
 },): void {
-  /** Inter-to-mono space ratio used when composing per-line annotation strings. */
+  /**
+   * Inter-to-mono space ratio used when composing per-line annotation strings.
+   */
   const spaceRatio = measureSpaceRatio({ editor, },);
-  /** Hints bucketed by their line number so each line div sees only its own entries. */
+  /**
+   * Hints bucketed by their line number so each line div sees only its own entries.
+   */
   const hintsByLine = groupByLine({
     items: hints,
     keyFn: hintLine,
   },);
-  /** Diagnostics bucketed by their starting line number; same purpose as `hintsByLine`. */
+  /**
+   * Diagnostics bucketed by their starting line number; same purpose as `hintsByLine`.
+   */
   const diagsByLine = groupByLine({
     items: diagnostics,
     keyFn: diagLine,
   },);
-  /** Union of line indices that need annotations this pass; drives both apply and cleanup loops. */
+  /**
+   * Union of line indices that need annotations this pass; drives both apply and cleanup loops.
+   */
   const newLines = new Set([
     ...hintsByLine.keys(),
     ...diagsByLine.keys(),
   ],);
-  /** Live HTMLCollection of editor line divs; indexed by line number. */
+  /**
+   * Live HTMLCollection of editor line divs; indexed by line number.
+   */
   const { children, } = editor;
 
   for (const line of newLines) {
-    /** Line div for the current line index, or undefined when the editor is shorter than expected. */
+    /**
+     * Line div for the current line index, or undefined when the editor is shorter than expected.
+     */
     const div = children[line];
     if ((div !== undefined) && (div instanceof HTMLElement)) {
       applyLineAnnotation({
@@ -112,11 +124,15 @@ export function applyInlayAnnotations({
     }
   }
 
-  /** Clear annotations only from lines that previously had them but no longer do. */
+  /**
+   * Clear annotations only from lines that previously had them but no longer do.
+   */
   for (const line of annotatedLines) {
     if (newLines.has(line,))
       continue;
-    /** Line div whose stale annotation must be removed; null when the line was deleted. */
+    /**
+     * Line div whose stale annotation must be removed; null when the line was deleted.
+     */
     const div = children[line];
     if ((div instanceof HTMLElement) && (div.dataset
       .inlay
@@ -147,7 +163,9 @@ export function applyInlayAnnotations({
  */
 export function clearInlayAnnotations({ editor, }: { readonly editor: HTMLElement; },): void {
   for (const line of annotatedLines) {
-    /** Line div whose annotation attributes are being cleared on this teardown pass. */
+    /**
+     * Line div whose annotation attributes are being cleared on this teardown pass.
+     */
     const child = editor.children[line];
     if (child instanceof HTMLElement) {
       delete child.dataset

@@ -139,7 +139,9 @@ export function createMcpServer(
    * @returns JSON-RPC success or error response.
    */
   function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
-    /** Request `id` is echoed in the response; `method` selects the branch below. */
+    /**
+     * Request `id` is echoed in the response; `method` selects the branch below.
+     */
     const {
       id,
       method,

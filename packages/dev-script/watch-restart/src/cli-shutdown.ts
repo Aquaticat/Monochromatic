@@ -35,7 +35,9 @@ export function installShutdownHandler(
           process.exit(0,);
         }
         catch (error) {
-          /** Human-readable error string used in the shutdown-failure stderr line. */
+          /**
+           * Human-readable error string used in the shutdown-failure stderr line.
+           */
           const message = error instanceof Error
             ? error.message
             : String(error,);

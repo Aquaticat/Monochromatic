@@ -57,27 +57,45 @@
  * ```
  */
 
-/** Resolves a tag name to its element type, falling back to `HTMLElement` for custom elements */
+/**
+ * Resolves a tag name to its element type, falling back to `HTMLElement` for custom elements
+ */
 type ElementFromTag<TTag extends string,> = TTag extends keyof HTMLElementTagNameMap
   ? HTMLElementTagNameMap[TTag]
   : HTMLElement;
 
-/** Named parameters for element creation */
+/**
+ * Named parameters for element creation
+ */
 type HOptions<TTag extends string,> = {
-  /** HTML tag name or custom element tag */
+  /**
+   * HTML tag name or custom element tag
+   */
   tag: TTag;
-  /** CSS class name(s) */
+  /**
+   * CSS class name(s)
+   */
   class?: string;
-  /** Text content */
+  /**
+   * Text content
+   */
   text?: string;
-  /** Raw inner HTML */
+  /**
+   * Raw inner HTML
+   */
   html?: string;
-  /** Attributes set via `setAttribute` */
+  /**
+   * Attributes set via `setAttribute`
+   */
   attrs?: Record<string, string>;
-  /** Inline style properties (camelCase keys, e.g. `{ flexDirection: 'column' }`) */
+  /**
+   * Inline style properties (camelCase keys, e.g. `{ flexDirection: 'column' }`)
+   */
   style?: Record<string, string>;
   /* oxlint-disable no-restricted-syntax/no-optional-escape -- external-boundary mirror of the DOM HTMLElementEventMap: each known event's handler receives its correctly-typed event, and handlers are optional because a caller registers only the events it needs, which a string index signature cannot type per-key */
-  /** Event listeners keyed by event name (known DOM events are type-checked, unknown ones accepted as fallback) */
+  /**
+   * Event listeners keyed by event name (known DOM events are type-checked, unknown ones accepted as fallback)
+   */
   on?: {
     [K in keyof HTMLElementEventMap]?: (
       event: HTMLElementEventMap[K],
@@ -85,7 +103,9 @@ type HOptions<TTag extends string,> = {
     // oxlint-disable-next-line typescript/no-explicit-any -- event parameter type varies by listener; `any` keeps the index signature bivariant so typed handlers stay assignable to the intersection
   } & Record<string, (event: any,) => void>;
   /* oxlint-enable no-restricted-syntax/no-optional-escape */
-  /** Child nodes to append */
+  /**
+   * Child nodes to append
+   */
   children?: readonly (Node | string)[];
 };
 
@@ -128,7 +148,9 @@ type HOptions<TTag extends string,> = {
   }: HOptions<TTag>,
 ): ElementFromTag<TTag> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement, narrowed via tag generic */
-  /** Narrows the created element so subsequent property writes are checked against the resolved tag mapping. */
+  /**
+   * Narrows the created element so subsequent property writes are checked against the resolved tag mapping.
+   */
   const element = document.createElement(tag,) as ElementFromTag<TTag>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 

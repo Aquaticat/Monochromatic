@@ -12,10 +12,14 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Editor line height multiplier: 1.5 = (2 + 1) / 2. */
+/**
+ * Editor line height multiplier: 1.5 = (2 + 1) / 2.
+ */
 const LINE_HEIGHT = (2 + 1) / 2;
 
-/** CSS rules for inlay hint annotations. */
+/**
+ * CSS rules for inlay hint annotations.
+ */
 export const INLAY_STYLES: string = [
   $({
     rule: '.editor > div[data-inlay]::after',

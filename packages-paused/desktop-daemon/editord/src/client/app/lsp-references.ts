@@ -18,7 +18,9 @@ import type {
   ReferencesPopupHandle,
 } from './types.ts';
 
-/** Tagged logger for LSP references. */
+/**
+ * Tagged logger for LSP references.
+ */
 const refLog = tagged({
   tag: 'lsp-references',
   l,
@@ -62,12 +64,16 @@ export async function showReferences(
     readonly rect: DOMRect;
   },
 ): Promise<void> {
-  /** Current file path; null when no buffer is open, in which case the request would be meaningless. */
+  /**
+   * Current file path; null when no buffer is open, in which case the request would be meaningless.
+   */
   const path = getCurrentFilePath();
   if (path === null)
     return;
   try {
-    /** Server response payload; `locations` is the only field consumed downstream. */
+    /**
+     * Server response payload; `locations` is the only field consumed downstream.
+     */
     const { locations, } = await ws.request({
       type: 'findReferences',
       path,
@@ -84,12 +90,20 @@ export async function showReferences(
       return;
     }
 
-    /** Strip common prefix from paths for display. */
-    /** Without destructuring: prefer-destructuring lint error for member access. */
+    /**
+     * Strip common prefix from paths for display.
+     */
+    /**
+     * Without destructuring: prefer-destructuring lint error for member access.
+     */
     const { rootDir, } = ws;
-    /** Display-ready reference entries with paths shortened relative to the workspace root. */
+    /**
+     * Display-ready reference entries with paths shortened relative to the workspace root.
+     */
     const items: ReferenceLocation[] = locations.map(function toItem(loc,) {
-      /** Workspace-relative display string; falls back to the full path when outside the root. */
+      /**
+       * Workspace-relative display string; falls back to the full path when outside the root.
+       */
       const label = loc.path
         .startsWith(rootDir,)
         ? loc.path
@@ -106,7 +120,9 @@ export async function showReferences(
 
     if (items.length
       === 1) {
-      /** Without destructuring: prefer-destructuring lint error for index-0 access. */
+      /**
+       * Without destructuring: prefer-destructuring lint error for index-0 access.
+       */
       const [only,] = items;
       if (only !== undefined)
         referencesPopup.selectReference(only,);

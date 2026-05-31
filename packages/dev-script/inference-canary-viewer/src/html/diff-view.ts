@@ -29,9 +29,13 @@ import type { DiffLine, } from '../data/diff.ts';
 export function renderSideBySideDiff(
   diffLines: readonly DiffLine[],
 ): string {
-  /** Accumulator for the initial-pass column's line spans. */
+  /**
+   * Accumulator for the initial-pass column's line spans.
+   */
   const leftLines: string[] = [];
-  /** Accumulator for the fix-pass column's line spans. */
+  /**
+   * Accumulator for the fix-pass column's line spans.
+   */
   const rightLines: string[] = [];
 
   for (const line of diffLines) {

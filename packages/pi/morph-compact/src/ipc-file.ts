@@ -23,9 +23,13 @@ import { join, } from 'node:path';
  * Result of writing a compact file.
  */
 export type WriteCompactFileResult = {
-  /** Absolute path to the temp file. */
+  /**
+   * Absolute path to the temp file.
+   */
   filePath: string;
-  /** Deletes the temp directory containing the file. */
+  /**
+   * Deletes the temp directory containing the file.
+   */
   cleanup: () => void;
 };
 
@@ -56,14 +60,18 @@ export type WriteCompactFileResult = {
 export function writeCompactFile(
   text: string,
 ): WriteCompactFileResult {
-  /** Unique temp directory whose removal yields a single cleanup target. */
+  /**
+   * Unique temp directory whose removal yields a single cleanup target.
+   */
   const dir = mkdtempSync(
     join(
       tmpdir(),
       'morph-compact-',
     ),
   );
-  /** Final write target inside the temp directory; surfaced to the new session. */
+  /**
+   * Final write target inside the temp directory; surfaced to the new session.
+   */
   const filePath = join(
     dir,
     'data.txt',

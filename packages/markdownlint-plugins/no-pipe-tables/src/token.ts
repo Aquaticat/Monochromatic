@@ -19,17 +19,29 @@ import type { MicromarkToken, } from 'markdownlint';
  *   so no per-function lint suppression is needed.
  */
 export type ReadonlyToken = {
-  /** Token type (a micromark token-type name such as `'table'`). */
+  /**
+   * Token type (a micromark token-type name such as `'table'`).
+   */
   readonly type: string;
-  /** Leaf token text; the `\|` table escape survives here. */
+  /**
+   * Leaf token text; the `\|` table escape survives here.
+   */
   readonly text: string;
-  /** Start line (1-based). */
+  /**
+   * Start line (1-based).
+   */
   readonly startLine: number;
-  /** End line (1-based). */
+  /**
+   * End line (1-based).
+   */
   readonly endLine: number;
-  /** Start column (1-based); `1` for a top-level, unindented token. */
+  /**
+   * Start column (1-based); `1` for a top-level, unindented token.
+   */
   readonly startColumn: number;
-  /** Child tokens. */
+  /**
+   * Child tokens.
+   */
   readonly children: readonly ReadonlyToken[];
 };
 

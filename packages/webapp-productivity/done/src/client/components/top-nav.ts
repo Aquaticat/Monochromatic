@@ -12,21 +12,31 @@ import { TOP_NAV_STYLES, } from './top-nav-styles.ts';
  * and a search link.
  */
 class TopNav extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the hamburger, heading, and search link into the shadow root. */
+  /**
+   * Renders the hamburger, heading, and search link into the shadow root.
+   */
   connectedCallback(): void {
-    /** Resolved at attach time so a missing attribute still renders an empty title slot. */
+    /**
+     * Resolved at attach time so a missing attribute still renders an empty title slot.
+     */
     const heading = this.getAttribute('heading',)
       ?? '';
-    /** Pre-bound dispatcher so the inner click handler keeps `this` after handoff. */
+    /**
+     * Pre-bound dispatcher so the inner click handler keeps `this` after handoff.
+     */
     const dispatchFn = this.dispatchEvent
       .bind(this,);
 

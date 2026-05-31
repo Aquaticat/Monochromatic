@@ -16,13 +16,17 @@ import type {
   Pose,
 } from '../types.ts';
 
-/** LLM JSON response shape we validate against. */
+/**
+ * LLM JSON response shape we validate against.
+ */
 type RawResponse = {
   title?: unknown;
   chapters?: unknown;
 };
 
-/** Recognized poses; anything else falls back to `neutral`. */
+/**
+ * Recognized poses; anything else falls back to `neutral`.
+ */
 const VALID_POSES: readonly Pose[] = [
   'neutral',
   'thinking',
@@ -117,12 +121,18 @@ function asChapter(value: unknown,): Chapter | undefined {
   };
 }
 
-/** Generated payload, returned to the caller. */
+/**
+ * Generated payload, returned to the caller.
+ */
 export type Generation = {
-  /** Inferred or LLM-supplied paper title. */
+  /**
+   * Inferred or LLM-supplied paper title.
+   */
   title: string;
 
-  /** Validated chapters. */
+  /**
+   * Validated chapters.
+   */
   chapters: readonly Chapter[];
 };
 
@@ -157,7 +167,9 @@ export async function generateChapters(
     signal: AbortSignal | undefined;
   },
 ): Promise<Generation> {
-  /** Current locale's translation accessors, used for default title fallback. */
+  /**
+   * Current locale's translation accessors, used for default title fallback.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   /**
@@ -182,12 +194,18 @@ export async function generateChapters(
    * makes the prompt build sub-millisecond. Documented in
    * docs/troubleshooting/typesafe-i18n-regex-redos.md.
    */
-  /** Persona prompt plus chapter-instruction schema, used as the system message. */
+  /**
+   * Persona prompt plus chapter-instruction schema, used as the system message.
+   */
   const systemMessage = `${rawString('persona',)}\n\n${rawString('chapterInstruction',)}`;
-  /** Paper body wrapped in fences with the JSON-only directive. */
+  /**
+   * Paper body wrapped in fences with the JSON-only directive.
+   */
   const userMessage =
     `Paper text:\n\n---BEGIN PAPER---\n${truncated}\n---END PAPER---\n\nRespond with valid JSON only.`;
-  /** Raw LLM response text returned by the provider. */
+  /**
+   * Raw LLM response text returned by the provider.
+   */
   const text = await chat({
     messages: [
       {
@@ -202,7 +220,9 @@ export async function generateChapters(
     expectJson: true,
     signal,
   },);
-  /** Response text with surrounding Markdown JSON fences stripped. */
+  /**
+   * Response text with surrounding Markdown JSON fences stripped.
+   */
   const cleaned = stripJsonFence(text,);
   /*
    * LLM output is an untrusted shape; we narrow against `RawResponse`
@@ -229,7 +249,9 @@ export async function generateChapters(
   if (chapters.length
     === 0)
     throw new Error('generator: no valid chapters in response',);
-  /** LLM-provided paper title, falling back to the locale default when missing. */
+  /**
+   * LLM-provided paper title, falling back to the locale default when missing.
+   */
   const title = (((typeof parsed.title) === 'string') && (parsed.title
     .length
     > 0))
@@ -252,11 +274,15 @@ export async function generateChapters(
  * @returns text with surrounding code fence removed when present
  */
 function stripJsonFence(text: string,): string {
-  /** Input with surrounding whitespace removed, used to detect the fence. */
+  /**
+   * Input with surrounding whitespace removed, used to detect the fence.
+   */
   const trimmed = text.trim();
   if (trimmed.startsWith('```',)) {
     /* oxlint-disable no-restricted-syntax/no-regex -- Two anchored regex strip the Markdown JSON code fence prefix (``` or ```json + whitespace) and suffix (``` + trailing whitespace) around an LLM JSON response. Regex is the clearest way to express the optional `json` tag and anchored whitespace tokens; LLM output is bounded so no backtracking surface. */
-    /** Fenceless body returned when a Markdown JSON fence wrapped the input. */
+    /**
+     * Fenceless body returned when a Markdown JSON fence wrapped the input.
+     */
     const stripped = trimmed
       .replace(
         /^```(?:json)?\s*/u,

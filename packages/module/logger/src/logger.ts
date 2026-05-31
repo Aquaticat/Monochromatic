@@ -86,7 +86,9 @@ async function initialize(): Promise<void> {
 
   for (const entry of sinkEntries) {
     try {
-      /** Verification return value (sync boolean or Promise); the next line awaits conditionally so sync sinks add no microtask. */
+      /**
+       * Verification return value (sync boolean or Promise); the next line awaits conditionally so sync sinks add no microtask.
+       */
       const result = entry.verify();
       // oxlint-disable-next-line no-await-in-loop -- Sinks must be verified sequentially to avoid race conditions
       entry.available = result instanceof Promise ? await result : result;
@@ -104,7 +106,9 @@ async function initialize(): Promise<void> {
     throw new Error('No logging backends available',);
 }
 
-/** Eager initialization promise: throws at module load if no backends available. */
+/**
+ * Eager initialization promise: throws at module load if no backends available.
+ */
 // oxlint-disable-next-line unicorn/prefer-top-level-await -- fire-and-forget initialization, not awaited
 const initPromise: Promise<void> = initialize();
 
@@ -133,7 +137,9 @@ function createMethod(level: Level,): (message: string,) => void {
       .initialized)
       throw new Error('No logging backends available',);
 
-    /** Subset of sinks that survived verification; filtered fresh per call so a sink that drops out is excluded next time. */
+    /**
+     * Subset of sinks that survived verification; filtered fresh per call so a sink that drops out is excluded next time.
+     */
     const available = sinkEntries.filter(function isAvailable(entry,) {
       return entry.available;
     },);
@@ -141,7 +147,9 @@ function createMethod(level: Level,): (message: string,) => void {
       === 0)
       return;
 
-    /** Shared LogRecord forwarded to every available sink; built once per call so all sinks see the same timestamp. */
+    /**
+     * Shared LogRecord forwarded to every available sink; built once per call so all sinks see the same timestamp.
+     */
     const record: LogRecord = {
       level,
       message,
@@ -149,7 +157,9 @@ function createMethod(level: Level,): (message: string,) => void {
     };
 
     available.forEach(function writeToSink(entry,) {
-      /** Sink write promise; its rejection marks the sink unavailable rather than crashing the caller. */
+      /**
+       * Sink write promise; its rejection marks the sink unavailable rather than crashing the caller.
+       */
       const result = entry.sink
         .write(record,);
       // Fire-and-forget: awaiting would make the logger blocking
@@ -186,7 +196,9 @@ function createMethod(level: Level,): (message: string,) => void {
 async function flushAll(): Promise<void> {
   await Promise.all(
     sinkEntries.map(async function runFlush(entry,) {
-      /** Optional sink-supplied flush hook; absent when the sink writes synchronously and needs no draining. */
+      /**
+       * Optional sink-supplied flush hook; absent when the sink writes synchronously and needs no draining.
+       */
       const sinkFlush = entry.sink
         .flush;
       if ((!entry.available) || ((typeof sinkFlush) !== 'function'))

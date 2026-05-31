@@ -45,9 +45,13 @@ const QUIET_INJECTION: readonly string[] = [
  * ```
  */
 export function hasExplicitStatusHintsOverride(args: readonly string[],): boolean {
-  /** Position of the subcommand within args; everything before it is the global-option region scanned for `-c`. */
+  /**
+   * Position of the subcommand within args; everything before it is the global-option region scanned for `-c`.
+   */
   const { subcommandIndex, } = parseGlobalOptions(args,);
-  /** Slice of args strictly before the subcommand; where pre-subcommand global options live. */
+  /**
+   * Slice of args strictly before the subcommand; where pre-subcommand global options live.
+   */
   const preSubcommandArgs = args.slice(
     0,
     subcommandIndex,
@@ -88,14 +92,18 @@ export function hasExplicitStatusHintsOverride(args: readonly string[],): boolea
  * ```
  */
 export function statusHintsOff(args: readonly string[],): readonly string[] {
-  /** Position of the `status` (or other) subcommand within args. */
+  /**
+   * Position of the `status` (or other) subcommand within args.
+   */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
   if (args[subcommandIndex]
     !== 'status')
     return args;
 
-  /** Tagged logger for the status-hints-off rule. */
+  /**
+   * Tagged logger for the status-hints-off rule.
+   */
   const rl = tagged({
     tag: statusHintsOff.name,
     l,

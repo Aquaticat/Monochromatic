@@ -36,7 +36,9 @@ import type {
  */
 export function isAttachedGap(s: string,): boolean {
   return (function scan(): boolean {
-    /** Running count of newlines; a second one disqualifies the gap. */
+    /**
+     * Running count of newlines; a second one disqualifies the gap.
+     */
     let newlineCount = 0;
     for (const char of s) {
       if (char === '\n') {
@@ -78,9 +80,13 @@ export function attachedCommentsFor(
     readonly edit: TomlEditState;
   },
 ): readonly TomlComment[] {
-  /** Local alias so the recursive walker reads as `comments[i]`. */
+  /**
+   * Local alias so the recursive walker reads as `comments[i]`.
+   */
   const { comments, } = edit.program;
-  /** Source bytes so the gap test can read between adjacent comments. */
+  /**
+   * Source bytes so the gap test can read between adjacent comments.
+   */
   const { source, } = edit;
   return collectAttached({
     comments,
@@ -105,25 +111,39 @@ function collectAttached(
     readonly cursor: number;
   },
 ): readonly TomlComment[] {
-  /** Last comment whose end falls before the cursor; starting point for the backward walk. */
+  /**
+   * Last comment whose end falls before the cursor; starting point for the backward walk.
+   */
   const initialIdx = lastCommentBefore({
     comments,
     offset: cursor,
   },);
-  /** IIFE scopes the moving cursor so no `let` survives at the function-body root. */
+  /**
+   * IIFE scopes the moving cursor so no `let` survives at the function-body root.
+   */
   return (function walk(): TomlComment[] {
-    /** Cursor that retreats to each attached comment's start as the block grows. */
+    /**
+     * Cursor that retreats to each attached comment's start as the block grows.
+     */
     let cursorPos = cursor;
-    /** Filled nearest-first while walking back, reversed to source order on return. */
+    /**
+     * Filled nearest-first while walking back, reversed to source order on return.
+     */
     const collected: TomlComment[] = [];
     for (let idx = initialIdx; idx >= 0; idx--) {
-      /** Candidate comment so the gap check can decide if it is still attached. */
+      /**
+       * Candidate comment so the gap check can decide if it is still attached.
+       */
       const comment = nonNullishOrThrow(comments[idx],);
-      /** Start and end offsets of the candidate comment. */
+      /**
+       * Start and end offsets of the candidate comment.
+       */
       const [commentStart, commentEnd,] = comment.range;
       if (commentEnd >= cursorPos)
         continue;
-      /** Source between the comment and the cursor; whitespace-only means still attached. */
+      /**
+       * Source between the comment and the cursor; whitespace-only means still attached.
+       */
       const between = source.slice(
         commentEnd,
         cursorPos,
@@ -189,16 +209,24 @@ export function trailingInlineCommentFor(
     readonly edit: TomlEditState;
   },
 ): { readonly comment?: TomlComment; } {
-  /** Source bytes so the same-line check can scan for the next newline. */
+  /**
+   * Source bytes so the same-line check can scan for the next newline.
+   */
   const { source, } = edit;
-  /** First newline after the node; `-1` means EOF, so `limit` falls back to `source.length`. */
+  /**
+   * First newline after the node; `-1` means EOF, so `limit` falls back to `source.length`.
+   */
   const newlineAfter = source.indexOf(
     '\n',
     node.range[1],
   );
-  /** Upper bound for "still on the same line" matches. */
+  /**
+   * Upper bound for "still on the same line" matches.
+   */
   const limit = newlineAfter === (-1) ? source.length : newlineAfter;
-  /** First comment that starts after the node and before the line break. */
+  /**
+   * First comment that starts after the node and before the line break.
+   */
   const match = edit.program
     .comments
     .find(function inLine(c,) {

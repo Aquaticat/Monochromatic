@@ -3,11 +3,15 @@ import {
   SECONDS_PER_MINUTE,
 } from '@monochromatic-dev/module-const/ts';
 
-/** How long capture sets are retained in the buffer before pruning. */
+/**
+ * How long capture sets are retained in the buffer before pruning.
+ */
 const RETENTION_MS = 10 * SECONDS_PER_MINUTE
   * MS_PER_SECOND;
 
-/** Maximum number of capture sets kept in the rolling buffer. */
+/**
+ * Maximum number of capture sets kept in the rolling buffer.
+ */
 const MAX_ENTRIES = 3;
 
 /**
@@ -19,11 +23,17 @@ const MAX_ENTRIES = 3;
  * ```
  */
 export type CaptureSet = {
-  /** Unix epoch milliseconds when the capture was taken. */
+  /**
+   * Unix epoch milliseconds when the capture was taken.
+   */
   readonly timestamp: number;
-  /** JPEG-encoded desktop screenshot. */
+  /**
+   * JPEG-encoded desktop screenshot.
+   */
   readonly screenshot: Buffer;
-  /** JPEG-encoded webcam frame. */
+  /**
+   * JPEG-encoded webcam frame.
+   */
   readonly webcam: Buffer;
 };
 
@@ -33,7 +43,9 @@ export type CaptureSet = {
  */
 type CaptureBuffer = readonly CaptureSet[];
 
-/** Module-singleton mutable state for the rolling capture buffer; wrapped so it satisfies no-module-root-let. */
+/**
+ * Module-singleton mutable state for the rolling capture buffer; wrapped so it satisfies no-module-root-let.
+ */
 const state: { buffer: CaptureBuffer; } = { buffer: [], };
 
 /**
@@ -107,7 +119,9 @@ function isAfterCutoff(
  * Removes capture sets older than {@link RETENTION_MS} from the buffer.
  */
 function prune(): void {
-  /** Oldest timestamp to keep; sets older than this are filtered out. */
+  /**
+   * Oldest timestamp to keep; sets older than this are filtered out.
+   */
   const cutoff = Date.now()
     - RETENTION_MS;
   state.buffer = state.buffer

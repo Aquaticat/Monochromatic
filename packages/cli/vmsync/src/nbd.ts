@@ -17,13 +17,19 @@ import {
 import { spawn, } from './spawn.ts';
 import type { QemuMapRegion, } from './types.ts';
 
-/** Maximum NBD devices to search when finding a free slot. */
+/**
+ * Maximum NBD devices to search when finding a free slot.
+ */
 const MAX_NBD_DEVICES = 16;
 
-/** Block size for dd transfers (1 MiB). */
+/**
+ * Block size for dd transfers (1 MiB).
+ */
 const DD_BLOCK_SIZE = 1_048_576;
 
-/** Bytes per sector for dd block size alignment. */
+/**
+ * Bytes per sector for dd block size alignment.
+ */
 const SECTOR_SIZE = 512;
 
 //region NBD device discovery
@@ -44,13 +50,17 @@ const SECTOR_SIZE = 512;
  * ```
  */
 export async function findFreeNbdDevice(): Promise<string> {
-  /** Function-tagged logger so NBD device discovery is traceable in shared logs. */
+  /**
+   * Function-tagged logger so NBD device discovery is traceable in shared logs.
+   */
   const rl = tagged({
     tag: findFreeNbdDevice.name,
     l,
   },);
 
-  /** Check all candidate devices concurrently and return the first free one. */
+  /**
+   * Check all candidate devices concurrently and return the first free one.
+   */
   const candidates = Array.from(
     { length: MAX_NBD_DEVICES, },
     function buildCandidate(
@@ -64,7 +74,9 @@ export async function findFreeNbdDevice(): Promise<string> {
     },
   );
 
-  /** Check all devices concurrently to find free ones. */
+  /**
+   * Check all devices concurrently to find free ones.
+   */
   const freeChecks = await Promise.all(
     candidates.map(
       async function checkCandidate(
@@ -73,7 +85,9 @@ export async function findFreeNbdDevice(): Promise<string> {
           sysfsSize,
         },
       ) {
-        /** Whether this device is free (not connected). */
+        /**
+         * Whether this device is free (not connected).
+         */
         const isFree = await checkDeviceFree({
           sysfsSize,
           rl,
@@ -83,7 +97,9 @@ export async function findFreeNbdDevice(): Promise<string> {
     ),
   );
 
-  /** First free device from the concurrent checks. */
+  /**
+   * First free device from the concurrent checks.
+   */
   const freeDevice = freeChecks.find(
     function isDefined(d,) {
       return d !== undefined;
@@ -120,7 +136,9 @@ async function checkDeviceFree(
 ): Promise<boolean> {
   try {
     await access(sysfsSize,);
-    /** Size value from sysfs; "0" means not connected. */
+    /**
+     * Size value from sysfs; "0" means not connected.
+     */
     const sizeStr = await spawn({
       command: 'cat',
       args: [sysfsSize,],
@@ -197,13 +215,17 @@ export async function connectDisposable(
     readonly format: string;
   },
 ): Promise<NbdConnection> {
-  /** Function-tagged logger so connect/disconnect events are paired in traces. */
+  /**
+   * Function-tagged logger so connect/disconnect events are paired in traces.
+   */
   const rl = tagged({
     tag: connectDisposable.name,
     l,
   },);
 
-  /** Argument list built dynamically based on options. */
+  /**
+   * Argument list built dynamically based on options.
+   */
   const args = [
     '-c',
     device,
@@ -274,13 +296,17 @@ export async function patchBlocks(
     readonly changedRegions: readonly QemuMapRegion[];
   },
 ): Promise<void> {
-  /** Function-tagged logger so per-region copy operations are traceable. */
+  /**
+   * Function-tagged logger so per-region copy operations are traceable.
+   */
   const rl = tagged({
     tag: patchBlocks.name,
     l,
   },);
 
-  /** Total bytes to transfer across all changed regions. */
+  /**
+   * Total bytes to transfer across all changed regions.
+   */
   const totalBytes = changedRegions.reduce(
     function sumLength(
       acc,
@@ -297,7 +323,9 @@ export async function patchBlocks(
     } MiB)`,
   );
 
-  /** Transfer promises collected for parallel execution. */
+  /**
+   * Transfer promises collected for parallel execution.
+   */
   const transfers = changedRegions.map(
     function buildTransfer(region,) {
       return transferRegion({
@@ -349,10 +377,14 @@ async function transferRegion(
     );
   }
 
-  /** Number of dd-sized blocks, rounding up for partial final blocks. */
+  /**
+   * Number of dd-sized blocks, rounding up for partial final blocks.
+   */
   const blockCount = Math.ceil(region.length
     / DD_BLOCK_SIZE,);
-  /** Byte offset for dd skip/seek. */
+  /**
+   * Byte offset for dd skip/seek.
+   */
   const byteOffset = region.start;
 
   rl.debug(
@@ -389,7 +421,9 @@ async function transferRegion(
  * ```
  */
 export async function ensureNbdModule(): Promise<void> {
-  /** Function-tagged logger so module-load attempts surface clearly in traces. */
+  /**
+   * Function-tagged logger so module-load attempts surface clearly in traces.
+   */
   const rl = tagged({
     tag: ensureNbdModule.name,
     l,

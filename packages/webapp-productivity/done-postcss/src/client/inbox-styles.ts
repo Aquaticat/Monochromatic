@@ -5,7 +5,9 @@
  * hydration logic rather than style declarations.
  */
 
-/** Inbox-specific styles for task children, controls, and location options. */
+/**
+ * Inbox-specific styles for task children, controls, and location options.
+ */
 export const inboxStyles = `
 .task-children {
   margin-inline-start: 1.5rem;

@@ -14,17 +14,29 @@ import { text, } from 'node:stream/consumers';
 
 //region ANSI escape helpers
 
-/** ANSI reset; appended after every coloured segment to avoid bleeding into adjacent text. */
+/**
+ * ANSI reset; appended after every coloured segment to avoid bleeding into adjacent text.
+ */
 const RESET = '\u001B[0m';
-/** ANSI red; reserved for critical states (low remaining quota, projected overrun). */
+/**
+ * ANSI red; reserved for critical states (low remaining quota, projected overrun).
+ */
 const RED = '\u001B[31m';
-/** ANSI green; reserved for healthy states (plenty of quota remaining). */
+/**
+ * ANSI green; reserved for healthy states (plenty of quota remaining).
+ */
 const GREEN = '\u001B[32m';
-/** ANSI yellow; reserved for caution states and the effort indicator. */
+/**
+ * ANSI yellow; reserved for caution states and the effort indicator.
+ */
 const YELLOW = '\u001B[33m';
-/** ANSI magenta; reserved for the upper context-usage tier just below the maximum. */
+/**
+ * ANSI magenta; reserved for the upper context-usage tier just below the maximum.
+ */
 const MAGENTA = '\u001B[35m';
-/** ANSI white; reserved for the top context-usage tier, signalling the window is nearly full. */
+/**
+ * ANSI white; reserved for the top context-usage tier, signalling the window is nearly full.
+ */
 const WHITE = '\u001B[37m';
 
 /**
@@ -47,7 +59,9 @@ function color(
 
 //region Types for the statusline JSON payload
 
-/** Shape of the JSON payload Claude Code dispatches to the statusline binary on stdin. */
+/**
+ * Shape of the JSON payload Claude Code dispatches to the statusline binary on stdin.
+ */
 type StatuslineInput = {
   transcript_path?: string;
   model?: {
@@ -69,7 +83,9 @@ type StatuslineInput = {
   };
 };
 
-/** One rate-limit window (five-hour or seven-day) as reported in {@link StatuslineInput}. */
+/**
+ * One rate-limit window (five-hour or seven-day) as reported in {@link StatuslineInput}.
+ */
 type RateLimitTier = {
   used_percentage?: number;
   resets_at?: number;
@@ -79,7 +95,9 @@ type RateLimitTier = {
 
 //region Model display name
 
-/** Latest versions and default context sizes per model family. */
+/**
+ * Latest versions and default context sizes per model family.
+ */
 const MODEL_DEFAULTS: Record<
   string,
   {
@@ -118,20 +136,28 @@ const DISPLAY_NAME_RE =
  * @example formatModelDisplay("Opus 4.5 (200K context)") // "Opus 4.5 (200K)"
  */
 function formatModelDisplay(raw: string,): string {
-  /** Captured groups from the display-name format; `null` when the input does not match the expected shape. */
+  /**
+   * Captured groups from the display-name format; `null` when the input does not match the expected shape.
+   */
   const match = DISPLAY_NAME_RE.exec(raw,);
   if (!match?.groups)
     return raw;
 
-  /** Components of the parsed display name; each may be empty for short variants like `"Opus"`. */
+  /**
+   * Components of the parsed display name; each may be empty for short variants like `"Opus"`.
+   */
   const {
     family,
     version,
     context,
   } = match.groups;
-  /** Reference values for this family; lookup miss leaves `undefined`, which fails the equality checks below and keeps the raw version/context in the output. */
+  /**
+   * Reference values for this family; lookup miss leaves `undefined`, which fails the equality checks below and keeps the raw version/context in the output.
+   */
   const defaults = MODEL_DEFAULTS[family];
-  /** Accumulator for the trimmed display name, seeded with the family and extended only with parts that diverge from defaults. */
+  /**
+   * Accumulator for the trimmed display name, seeded with the family and extended only with parts that diverge from defaults.
+   */
   let result = family;
 
   if (version && (version !== defaults
@@ -148,16 +174,26 @@ function formatModelDisplay(raw: string,): string {
 
 //region Relative time formatting
 
-/** Seconds in one minute, named so duration arithmetic reads as units rather than magic. */
+/**
+ * Seconds in one minute, named so duration arithmetic reads as units rather than magic.
+ */
 const SECONDS_PER_MINUTE = 60;
-/** Seconds in one hour, used both for time arithmetic and to derive {@link FIVE_HOUR_WINDOW_SECONDS}. */
+/**
+ * Seconds in one hour, used both for time arithmetic and to derive {@link FIVE_HOUR_WINDOW_SECONDS}.
+ */
 const SECONDS_PER_HOUR = 3_600;
-/** Seconds in one day, used both for time arithmetic and to derive {@link SEVEN_DAY_WINDOW_SECONDS}. */
+/**
+ * Seconds in one day, used both for time arithmetic and to derive {@link SEVEN_DAY_WINDOW_SECONDS}.
+ */
 const SECONDS_PER_DAY = 86_400;
 
-/** Format epoch seconds as a relative duration like "1h23m" or "3d2h". */
+/**
+ * Format epoch seconds as a relative duration like "1h23m" or "3d2h".
+ */
 function formatRelativeTime(resetsAt: number,): string {
-  /** Remaining seconds until the reset; non-positive when the reset already passed. */
+  /**
+   * Remaining seconds until the reset; non-positive when the reset already passed.
+   */
   const diff = resetsAt - Math
     .floor(Date.now()
       / 1_000,);
@@ -169,16 +205,24 @@ function formatRelativeTime(resetsAt: number,): string {
   if (diff < SECONDS_PER_HOUR)
     return `${Math.floor(diff / SECONDS_PER_MINUTE,)}m`;
   if (diff < SECONDS_PER_DAY) {
-    /** Whole-hour component of `diff` for the sub-day formatting branch. */
+    /**
+     * Whole-hour component of `diff` for the sub-day formatting branch.
+     */
     const hours = Math.floor(diff / SECONDS_PER_HOUR,);
-    /** Residual minutes after subtracting the whole hours; omitted from output when zero. */
+    /**
+     * Residual minutes after subtracting the whole hours; omitted from output when zero.
+     */
     const mins = Math.floor((diff % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
     return mins > 0 ? `${hours}h${mins}m` : `${hours}h`;
   }
 
-  /** Whole-day component of `diff` for the multi-day formatting branch. */
+  /**
+   * Whole-day component of `diff` for the multi-day formatting branch.
+   */
   const days = Math.floor(diff / SECONDS_PER_DAY,);
-  /** Residual hours after subtracting the whole days; omitted from output when zero. */
+  /**
+   * Residual hours after subtracting the whole days; omitted from output when zero.
+   */
   const hours = Math.floor((diff % SECONDS_PER_DAY) / SECONDS_PER_HOUR,);
   return hours > 0 ? `${days}d${hours}h` : `${days}d`;
 }
@@ -187,17 +231,29 @@ function formatRelativeTime(resetsAt: number,): string {
 
 //region Rate limit formatting
 
-/** Visibility cutoff: tier renders only once remaining is at or below this percentage. */
+/**
+ * Visibility cutoff: tier renders only once remaining is at or below this percentage.
+ */
 const RATE_LIMIT_THRESHOLD = 50;
-/** Critical-band cutoff: at or below this remaining percentage the tier renders red. */
+/**
+ * Critical-band cutoff: at or below this remaining percentage the tier renders red.
+ */
 const CRITICAL_THRESHOLD = 10;
-/** Caution-band cutoff: at or below this remaining percentage the tier renders yellow. */
+/**
+ * Caution-band cutoff: at or below this remaining percentage the tier renders yellow.
+ */
 const CAUTION_THRESHOLD = 25;
-/** Length of the five-hour rate-limit window in seconds; used to recover elapsed time from `resets_at`. */
+/**
+ * Length of the five-hour rate-limit window in seconds; used to recover elapsed time from `resets_at`.
+ */
 const FIVE_HOUR_WINDOW_SECONDS = 5 * SECONDS_PER_HOUR;
-/** Length of the seven-day rate-limit window in seconds; used to recover elapsed time from `resets_at`. */
+/**
+ * Length of the seven-day rate-limit window in seconds; used to recover elapsed time from `resets_at`.
+ */
 const SEVEN_DAY_WINDOW_SECONDS = 7 * SECONDS_PER_DAY;
-/** Projected-usage cutoff: forces a rate-limit segment to render when the extrapolated end-of-window usage exceeds this percentage. */
+/**
+ * Projected-usage cutoff: forces a rate-limit segment to render when the extrapolated end-of-window usage exceeds this percentage.
+ */
 const PROJECTED_OVERRUN_THRESHOLD = 100;
 
 /**
@@ -234,10 +290,14 @@ function formatRateLimit({
   if ((!tier?.used_percentage) || (!tier.resets_at))
     return '';
 
-  /** Current wall-clock time in epoch seconds; matched against `tier.resets_at` to derive elapsed. */
+  /**
+   * Current wall-clock time in epoch seconds; matched against `tier.resets_at` to derive elapsed.
+   */
   const now = Math.floor(Date.now()
     / 1_000,);
-  /** Seconds already consumed in the window; negative when `resets_at` is in the future by more than the window. */
+  /**
+   * Seconds already consumed in the window; negative when `resets_at` is in the future by more than the window.
+   */
   const elapsed = windowSeconds - (tier.resets_at
     - now);
   /**
@@ -251,25 +311,35 @@ function formatRateLimit({
     ? (tier.used_percentage
       / elapsed) * windowSeconds
     : 0;
-  /** True when projected usage exceeds 100%, forcing the segment to render even below {@link RATE_LIMIT_THRESHOLD}. */
+  /**
+   * True when projected usage exceeds 100%, forcing the segment to render even below {@link RATE_LIMIT_THRESHOLD}.
+   */
   const isProjectedOverrun = projected > PROJECTED_OVERRUN_THRESHOLD;
 
-  /** Remaining quota percentage as a whole number; the user-facing value in the output. */
+  /**
+   * Remaining quota percentage as a whole number; the user-facing value in the output.
+   */
   const remaining = Math.floor(100 - tier
     .used_percentage,);
   if ((remaining > RATE_LIMIT_THRESHOLD) && (!isProjectedOverrun))
     return '';
 
-  /** Human-readable time until window reset, formatted by {@link formatRelativeTime}. */
+  /**
+   * Human-readable time until window reset, formatted by {@link formatRelativeTime}.
+   */
   const timeLeft = formatRelativeTime(tier.resets_at,);
-  /** Colour code picked from the critical/caution/healthy bands or red for any projected overrun. */
+  /**
+   * Colour code picked from the critical/caution/healthy bands or red for any projected overrun.
+   */
   const rateColor = (isProjectedOverrun || (remaining <= CRITICAL_THRESHOLD))
     ? RED
     : (remaining <= CAUTION_THRESHOLD
       ? YELLOW
       : GREEN);
 
-  /** Inline annotation showing the projected end-of-window percentage; empty when no overrun is projected. */
+  /**
+   * Inline annotation showing the projected end-of-window percentage; empty when no overrun is projected.
+   */
   const overrunMarker = isProjectedOverrun
     ? ` →${Math.floor(projected,)}%`
     : '';
@@ -286,16 +356,26 @@ function formatRateLimit({
 
 //region Context window formatting
 
-/** Token count at or above which the used segment renders white, signalling the window is nearly full. */
+/**
+ * Token count at or above which the used segment renders white, signalling the window is nearly full.
+ */
 const CONTEXT_THRESHOLD_WHITE = 900_000;
-/** Token count at or above which the used segment renders magenta, the upper tier just below white. */
+/**
+ * Token count at or above which the used segment renders magenta, the upper tier just below white.
+ */
 const CONTEXT_THRESHOLD_MAGENTA = 200_000;
-/** Token count at or above which the used segment renders yellow, the first non-neutral tier. */
+/**
+ * Token count at or above which the used segment renders yellow, the first non-neutral tier.
+ */
 const CONTEXT_THRESHOLD_YELLOW = 100_000;
-/** Base for the thousands grouping used by {@link formatContextWindow}. */
+/**
+ * Base for the thousands grouping used by {@link formatContextWindow}.
+ */
 const THOUSANDS = 1_000;
 
-/** Format used/total token counter with color based on usage level. */
+/**
+ * Format used/total token counter with color based on usage level.
+ */
 function formatContextWindow(
   used: number,
   total: number,
@@ -318,10 +398,14 @@ function formatContextWindow(
     : String(used,)
       .padStart(7,);
 
-  /** Total token count rendered with locale-aware thousands separators. */
+  /**
+   * Total token count rendered with locale-aware thousands separators.
+   */
   const totalFmt = total.toLocaleString('en-US',);
 
-  /** Colour code picked from the WHITE/MAGENTA/YELLOW bands; empty when usage sits below every threshold. */
+  /**
+   * Colour code picked from the WHITE/MAGENTA/YELLOW bands; empty when usage sits below every threshold.
+   */
   const contextColor = used >= CONTEXT_THRESHOLD_WHITE
     ? WHITE
     : used >= CONTEXT_THRESHOLD_MAGENTA
@@ -344,7 +428,9 @@ function formatContextWindow(
 
 //region Effort level from settings
 
-/** Effort level symbols matching Claude Code's built-in indicators. */
+/**
+ * Effort level symbols matching Claude Code's built-in indicators.
+ */
 const EFFORT_SYMBOLS: Record<string, string> = {
   low: '\u25CB',
   medium: '\u25D0',
@@ -359,20 +445,30 @@ const EFFORT_SYMBOLS: Record<string, string> = {
  */
 async function readEffortIndicator(): Promise<string> {
   try {
-    /** User home directory; treated as empty when the env var is unset so the path simply fails to resolve. */
+    /**
+     * User home directory; treated as empty when the env var is unset so the path simply fails to resolve.
+     */
     const home = process.env
       .HOME
       ?? '';
-    /** Path to the global Claude Code settings file storing `effortLevel`. */
+    /**
+     * Path to the global Claude Code settings file storing `effortLevel`.
+     */
     const settingsPath = `${home}/.claude/settings.json`;
-    /** Raw JSON read from disk; only `effortLevel` is consumed downstream. */
+    /**
+     * Raw JSON read from disk; only `effortLevel` is consumed downstream.
+     */
     const raw = await readFile(
       settingsPath,
       'utf8',
     );
-    /** Parsed settings narrowed to just the `effortLevel` field this function cares about. */
+    /**
+     * Parsed settings narrowed to just the `effortLevel` field this function cares about.
+     */
     const settings: { effortLevel?: string; } = JSON.parse(raw,);
-    /** Resolved effort level; defaults to `"high"`, which is the rendered-as-empty branch. */
+    /**
+     * Resolved effort level; defaults to `"high"`, which is the rendered-as-empty branch.
+     */
     const level = settings.effortLevel
       ?? 'high';
     return EFFORT_SYMBOLS[level]
@@ -501,13 +597,19 @@ const NOISE_GERUNDS = new Set([
   'nstring',
 ],);
 
-/** Minimum word length to consider as a gerund candidate. */
+/**
+ * Minimum word length to consider as a gerund candidate.
+ */
 const MIN_GERUND_LENGTH = 5;
 
-/** Matches words ending in "-ing", including hyphenated compounds like "tree-shaking". */
+/**
+ * Matches words ending in "-ing", including hyphenated compounds like "tree-shaking".
+ */
 const GERUND_PATTERN = /\b[a-z]+-?[a-z]*ing\b/g;
 
-/** Number of bytes to read from the end of the transcript. */
+/**
+ * Number of bytes to read from the end of the transcript.
+ */
 const TAIL_BYTES = 8_192;
 
 /**
@@ -522,11 +624,15 @@ const TAIL_BYTES = 8_192;
  * @example findGerundInText("I'll try compiling and then testing") // "Testing"
  */
 function findGerundInText(text: string,): string | undefined {
-  /** Raw `-ing` matches across the lowercased text; empty array when nothing matches, so downstream filters stay total. */
+  /**
+   * Raw `-ing` matches across the lowercased text; empty array when nothing matches, so downstream filters stay total.
+   */
   const matches = text.toLowerCase()
     .match(GERUND_PATTERN,)
     ?? [];
-  /** Matches that survive the length and noise filters; the last one becomes the activity word. */
+  /**
+   * Matches that survive the length and noise filters; the last one becomes the activity word.
+   */
   const candidates = matches
     .filter(function isLongEnough(w,) {
       return w.length
@@ -540,7 +646,9 @@ function findGerundInText(text: string,): string | undefined {
     === 0)
     return undefined;
 
-  /** Last surviving candidate; preferred over the first so the statusline tracks the most recent activity. */
+  /**
+   * Last surviving candidate; preferred over the first so the statusline tracks the most recent activity.
+   */
   const last = candidates.at(-1,);
   /* oxlint-disable-next-line typescript/no-non-null-assertion -- length check guarantees element */
   return last!.charAt(0,)
@@ -567,15 +675,21 @@ async function readActivityWord(
     return '';
 
   try {
-    /** Blob view of the transcript; preferred over readFile so we can slice the tail without loading the full file. */
+    /**
+     * Blob view of the transcript; preferred over readFile so we can slice the tail without loading the full file.
+     */
     const blob = await openAsBlob(transcriptPath,);
-    /** Slice offset clamped to zero so transcripts shorter than {@link TAIL_BYTES} still read from the beginning. */
+    /**
+     * Slice offset clamped to zero so transcripts shorter than {@link TAIL_BYTES} still read from the beginning.
+     */
     const start = Math.max(
       0,
       blob.size
         - TAIL_BYTES,
     );
-    /** Tail of the transcript decoded as UTF-8 text; we accept potential codepoint truncation at the head, since later matches win. */
+    /**
+     * Tail of the transcript decoded as UTF-8 text; we accept potential codepoint truncation at the head, since later matches win.
+     */
     const tail = await blob
       .slice(
         start,
@@ -594,22 +708,34 @@ async function readActivityWord(
 
 //region Main
 
-/** Parsed statusline payload from stdin; trusted as {@link StatuslineInput} because Claude Code dispatches it directly. */
+/**
+ * Parsed statusline payload from stdin; trusted as {@link StatuslineInput} because Claude Code dispatches it directly.
+ */
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON from Claude Code statusline dispatch */
 const input = JSON.parse(await text(process.stdin,),) as StatuslineInput;
 
-/** Separator inserted between rendered segments; four spaces give breathing room without ANSI artifacts. */
+/**
+ * Separator inserted between rendered segments; four spaces give breathing room without ANSI artifacts.
+ */
 const SEP = '    ';
 
-/** Model display name pulled from the input; absent or empty when Claude Code did not supply it. */
+/**
+ * Model display name pulled from the input; absent or empty when Claude Code did not supply it.
+ */
 const displayName = input.model
   ?.display_name;
-/** Effort-level indicator read from `~/.claude/settings.json`; empty when "high" or unreadable. */
+/**
+ * Effort-level indicator read from `~/.claude/settings.json`; empty when "high" or unreadable.
+ */
 const effortIndicator = await readEffortIndicator();
-/** Composed model segment: model name plus the yellow effort indicator when applicable; empty when no display name. */
+/**
+ * Composed model segment: model name plus the yellow effort indicator when applicable; empty when no display name.
+ */
 const modelSegment = displayName
   ? (function formatModel() {
-    /** Trimmed display form of the model name from {@link formatModelDisplay}. */
+    /**
+     * Trimmed display form of the model name from {@link formatModelDisplay}.
+     */
     const model = formatModelDisplay(displayName,);
     return effortIndicator
       ? `${model} ${
@@ -622,14 +748,20 @@ const modelSegment = displayName
   })()
   : '';
 
-/** Current-usage subtree from the input; absent when Claude Code has not reported any usage yet. */
+/**
+ * Current-usage subtree from the input; absent when Claude Code has not reported any usage yet.
+ */
 const usage = input.context_window
   ?.current_usage;
-/** Total context-window size; defaults to zero so the segment is suppressed when the input lacks this field. */
+/**
+ * Total context-window size; defaults to zero so the segment is suppressed when the input lacks this field.
+ */
 const total = input.context_window
   ?.context_window_size
   ?? 0;
-/** Sum of every input/output/cache token bucket; the user-facing "used" half of the context segment. */
+/**
+ * Sum of every input/output/cache token bucket; the user-facing "used" half of the context segment.
+ */
 const used = (usage?.input_tokens
   ?? 0)
   + (usage?.cache_creation_input_tokens
@@ -638,7 +770,9 @@ const used = (usage?.input_tokens
     ?? 0)
   + (usage?.output_tokens
     ?? 0);
-/** Rendered context-window segment; empty until both used and total are known so the line stays clean at session start. */
+/**
+ * Rendered context-window segment; empty until both used and total are known so the line stays clean at session start.
+ */
 const contextSegment = (used > 0) && (total > 0)
   ? formatContextWindow(
     used,
@@ -646,28 +780,38 @@ const contextSegment = (used > 0) && (total > 0)
   )
   : '';
 
-/** Rendered five-hour rate-limit segment; empty when remaining is comfortable and no overrun is projected. */
+/**
+ * Rendered five-hour rate-limit segment; empty when remaining is comfortable and no overrun is projected.
+ */
 const fiveHour = formatRateLimit({
   tier: input.rate_limits
     ?.five_hour,
   windowSeconds: FIVE_HOUR_WINDOW_SECONDS,
 },);
-/** Rendered seven-day rate-limit segment; same emit-when-needed logic as {@link fiveHour}. */
+/**
+ * Rendered seven-day rate-limit segment; same emit-when-needed logic as {@link fiveHour}.
+ */
 const sevenDay = formatRateLimit({
   tier: input.rate_limits
     ?.seven_day,
   windowSeconds: SEVEN_DAY_WINDOW_SECONDS,
 },);
-/** Joined rate-limit segment; uses a middle-dot separator only when both tiers render. */
+/**
+ * Joined rate-limit segment; uses a middle-dot separator only when both tiers render.
+ */
 const rateSegment = fiveHour && sevenDay
   ? `${fiveHour} · ${sevenDay}`
   : fiveHour || sevenDay
     || '';
 
-/** Context-aware activity word extracted from the transcript tail; empty when extraction fails or no transcript exists. */
+/**
+ * Context-aware activity word extracted from the transcript tail; empty when extraction fails or no transcript exists.
+ */
 const activityWord = await readActivityWord(input.transcript_path,);
 
-/** Final statusline assembled from the four segments, dropping empty ones so the separator never appears doubled. */
+/**
+ * Final statusline assembled from the four segments, dropping empty ones so the separator never appears doubled.
+ */
 const line = [
   modelSegment,
   contextSegment,

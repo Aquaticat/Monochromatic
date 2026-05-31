@@ -10,21 +10,31 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from './css.ts';
 
-/** Disabled button opacity. */
+/**
+ * Disabled button opacity.
+ */
 const DISABLED_OPACITY = 0.45;
 
-/** Sidebar flex-basis in rem. */
+/**
+ * Sidebar flex-basis in rem.
+ */
 const SIDEBAR_BASIS = 22;
 
-/** Body max-inline-size numerator in px (1194/16 rem). */
+/**
+ * Body max-inline-size numerator in px (1194/16 rem).
+ */
 const BODY_MAX_WIDTH_PX = 1_194;
 
-/** Full viewport block-size in dvb units. */
+/**
+ * Full viewport block-size in dvb units.
+ */
 const FULL_DVB = 100;
 
 //region Resets
 
-/** Box-model reset and form element font inheritance. */
+/**
+ * Box-model reset and form element font inheritance.
+ */
 export const resets: string = [
   css({
     rule: '*, *::before, *::after',
@@ -64,7 +74,9 @@ export const resets: string = [
 
 //region Layout shell
 
-/** Body, sidebar, page-wrapper, and app container layout rules. */
+/**
+ * Body, sidebar, page-wrapper, and app container layout rules.
+ */
 export const layoutShell: string = [
   css({
     rule: ':root',

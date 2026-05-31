@@ -37,7 +37,9 @@ import type {
   Verdict,
 } from './types.ts';
 
-/** Tagged logger for the judge module. */
+/**
+ * Tagged logger for the judge module.
+ */
 const l = tagged({
   tag: 'judge',
   l: parentLogger,
@@ -123,14 +125,18 @@ async function callJudge(
     readonly streamSimpleFn?: JudgeStreamSimple;
   },
 ): Promise<Verdict> {
-  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
+  /**
+   * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
+   */
   const innerL = tagged({
     tag: callJudge.name,
     l,
   },);
   innerL.debug(`calling ${model.provider}/${model.id} for action: ${action}`,);
 
-  /** Rendered user-message body that bundles action, context, directives, and batch siblings. */
+  /**
+   * Rendered user-message body that bundles action, context, directives, and batch siblings.
+   */
   const userContent = buildUserContent({
     action,
     cwd,
@@ -139,7 +145,9 @@ async function callJudge(
     batchContext,
   },);
 
-  /** Single-turn user message array handed to the streaming entry point. */
+  /**
+   * Single-turn user message array handed to the streaming entry point.
+   */
   const messages = [
     {
       role: 'user' as const,
@@ -148,9 +156,13 @@ async function callJudge(
     },
   ];
 
-  /** Abort controller wired into the timeout disposable and both stream calls. */
+  /**
+   * Abort controller wired into the timeout disposable and both stream calls.
+   */
   const controller = new AbortController();
-  /** Disposable timer; on scope exit it clears the timeout regardless of how the function returns. */
+  /**
+   * Disposable timer; on scope exit it clears the timeout regardless of how the function returns.
+   */
   using _timer = disposableTimeout({
     ms: timeoutMs,
     onTimeout() {
@@ -158,7 +170,9 @@ async function callJudge(
     },
   },);
 
-  /** Streaming event source for the initial forced-tool judge invocation. */
+  /**
+   * Streaming event source for the initial forced-tool judge invocation.
+   */
   const toolCallStream = streamSimpleFn(
     model,
     {
@@ -214,7 +228,9 @@ async function callJudge(
     );
   }
 
-  /** Parsed verdict arguments from the forced-tool path or direct JSON retry. */
+  /**
+   * Parsed verdict arguments from the forced-tool path or direct JSON retry.
+   */
   const result = await collectJudgeVerdictArgs({
     toolCallStream,
     createJsonRetryStream,

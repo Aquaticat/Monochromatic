@@ -35,13 +35,21 @@ import {
  * Parameters for {@link compressBranch}.
  */
 export type CompressBranchParams = {
-  /** All entries on the current session branch. */
+  /**
+   * All entries on the current session branch.
+   */
   readonly branchEntries: readonly SessionEntry[];
-  /** Current context token usage and window size. Absent if not yet available. */
+  /**
+   * Current context token usage and window size. Absent if not yet available.
+   */
   readonly contextUsage?: Readonly<ContextUsage>;
-  /** Morph API key (from env or mcp.json fallback). */
+  /**
+   * Morph API key (from env or mcp.json fallback).
+   */
   readonly apiKey: string;
-  /** Optional user-provided instructions for compression focus. */
+  /**
+   * Optional user-provided instructions for compression focus.
+   */
   readonly customInstructions?: string;
 };
 
@@ -54,7 +62,9 @@ type BranchMessage = SessionMessageEntry['message'];
 
 //region Entry walking
 
-/** Sentinel returned by `findLastIndex` when no entry satisfies the predicate. */
+/**
+ * Sentinel returned by `findLastIndex` when no entry satisfies the predicate.
+ */
 const NO_COMPACTION_INDEX = -1;
 
 /**
@@ -74,18 +84,24 @@ function walkBranch(branchEntries: readonly SessionEntry[],): {
   previousSummary?: string;
   messages: BranchMessage[];
 } {
-  /** Position of the most recent compaction entry; sentinel value means none seen. */
+  /**
+   * Position of the most recent compaction entry; sentinel value means none seen.
+   */
   const lastCompactionIndex = branchEntries.findLastIndex(
     function isCompaction(entry,) {
       return (entry !== undefined) && (entry.type
         === 'compaction');
     },
   );
-  /** Compaction entry slot lookup; undefined when no compaction was found. */
+  /**
+   * Compaction entry slot lookup; undefined when no compaction was found.
+   */
   const lastCompactionEntry = (lastCompactionIndex === NO_COMPACTION_INDEX)
     ? undefined
     : branchEntries[lastCompactionIndex];
-  /** Last compaction entry's summary text; undefined when no compaction was found. */
+  /**
+   * Last compaction entry's summary text; undefined when no compaction was found.
+   */
   const previousSummary = (lastCompactionEntry?.type
     === 'compaction')
     ? lastCompactionEntry.summary
@@ -93,9 +109,13 @@ function walkBranch(branchEntries: readonly SessionEntry[],): {
 
   // Collect all messages from SessionMessageEntry entries
   // after the last compaction (or all messages if no compaction)
-  /** First index past the last compaction; iteration anchor for collection. */
+  /**
+   * First index past the last compaction; iteration anchor for collection.
+   */
   const startIdx = lastCompactionIndex + 1;
-  /** Post-compaction messages forwarded into the Morph payload. */
+  /**
+   * Post-compaction messages forwarded into the Morph payload.
+   */
   const messages: BranchMessage[] = branchEntries
     .slice(startIdx,)
     .filter(function isMessage(entry,) {
@@ -146,7 +166,9 @@ function walkBranch(branchEntries: readonly SessionEntry[],): {
 export async function compressBranch(
   params: CompressBranchParams,
 ): Promise<string> {
-  /** Destructured caller params used in the compression body. */
+  /**
+   * Destructured caller params used in the compression body.
+   */
   const {
     branchEntries,
     contextUsage,
@@ -154,7 +176,9 @@ export async function compressBranch(
     customInstructions,
   } = params;
 
-  /** Previous summary plus post-compaction messages recovered from the branch. */
+  /**
+   * Previous summary plus post-compaction messages recovered from the branch.
+   */
   const {
     previousSummary,
     messages,
@@ -175,29 +199,41 @@ export async function compressBranch(
     return previousSummary;
 
   // Serialize messages for Morph input
-  /** Plain-text rendering of post-compaction messages fed to Morph. */
+  /**
+   * Plain-text rendering of post-compaction messages fed to Morph.
+   */
   const conversationText = serializeConversation(
     convertToLlm(messages,),
   );
-  /** Final prompt body combining prior summary tags and conversation. */
+  /**
+   * Final prompt body combining prior summary tags and conversation.
+   */
   const input = buildMorphInput({
     serializedConversation: conversationText,
     ...((previousSummary !== undefined) ? { previousSummary, } : {}),
   },);
 
-  /** Latest-intent query forwarded for relevance ranking. */
+  /**
+   * Latest-intent query forwarded for relevance ranking.
+   */
   const query = extractLatestQuery({
     branchEntries,
     ...((customInstructions !== undefined) ? { customInstructions, } : {}),
   },);
-  /** Adaptive ratio derived from current context pressure. */
+  /**
+   * Adaptive ratio derived from current context pressure.
+   */
   const ratio = chooseCompressionRatio(contextUsage,);
 
-  /** Per-call client constructed with the resolved API key. */
+  /**
+   * Per-call client constructed with the resolved API key.
+   */
   const client = createMorphCompactClient({
     morphApiKey: apiKey,
   },);
-  /** Network response payload from the compact endpoint. */
+  /**
+   * Network response payload from the compact endpoint.
+   */
   const result = await client.compact({
     input,
     query,
@@ -207,7 +243,9 @@ export async function compressBranch(
     includeLineRanges: true,
   },);
 
-  /** Trimmed compacted body; empty output is treated as failure. */
+  /**
+   * Trimmed compacted body; empty output is treated as failure.
+   */
   const output = result.output
     ?.trim();
   if ((output === undefined) || (output === '')) {

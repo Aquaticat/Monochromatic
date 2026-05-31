@@ -50,9 +50,13 @@ export function headFragment(
     readonly canonicalUrl: string;
   },
 ): string {
-  /** Locale-bound translator captured once for siteName plus any further translated strings. */
+  /**
+   * Locale-bound translator captured once for siteName plus any further translated strings.
+   */
   const t = i18nObject(lang,);
-  /** Page title with site name suffix per the Capo.js title convention. */
+  /**
+   * Page title with site name suffix per the Capo.js title convention.
+   */
   const fullTitle = `${title} | ${t.siteName()}`;
 
   return h({

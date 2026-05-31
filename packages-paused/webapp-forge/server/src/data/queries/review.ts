@@ -110,12 +110,16 @@ export async function submitReviewWithEvent(row: {
         row.prIssueId,
       ],
     },);
-    /** Per-resource monotonic sequence captured before the event row insert. */
+    /**
+     * Per-resource monotonic sequence captured before the event row insert.
+     */
     const sequenceNumber = await nextSequence({
       resourceType: 'pr',
       resourceId: row.prIssueId,
     },);
-    /** Generated `events.id` returned to callers for cursor tracking. */
+    /**
+     * Generated `events.id` returned to callers for cursor tracking.
+     */
     const eventId = await insertEvent({
       resourceType: 'pr',
       resourceId: row.prIssueId,

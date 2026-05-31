@@ -13,10 +13,14 @@ import {
 
 //region Constants
 
-/** Built extension path consumed by Pi. */
+/**
+ * Built extension path consumed by Pi.
+ */
 const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 
-/** Expected resource registrations from the extension entry point. */
+/**
+ * Expected resource registrations from the extension entry point.
+ */
 const EXPECTED_REGISTRATIONS = [
   'tool:advisor',
   'command:advisor',
@@ -29,9 +33,13 @@ const EXPECTED_REGISTRATIONS = [
 
 //region Types
 
-/** Built Advisor extension module shape. */
+/**
+ * Built Advisor extension module shape.
+ */
 type AdvisorExtensionModule = {
-  /** Pi extension factory. */
+  /**
+   * Pi extension factory.
+   */
   readonly default: ExtensionFactory;
 };
 
@@ -47,7 +55,9 @@ type AdvisorExtensionModule = {
  * @throws when built extension import or registration fails
  */
 async function verifyBuiltExtension(): Promise<string> {
-  /** Built extension module imported through package output. */
+  /**
+   * Built extension module imported through package output.
+   */
   const mod: unknown = await import(BUILT_EXTENSION_PATH);
   if (!isAdvisorExtensionModule(mod,)) {
     throw new Error(
@@ -55,14 +65,20 @@ async function verifyBuiltExtension(): Promise<string> {
     );
   }
 
-  /** Fake Pi API and its registration call log. */
+  /**
+   * Fake Pi API and its registration call log.
+   */
   const fakeApi = fakePiApi();
   await mod.default(fakeApi.api,);
 
-  /** Snapshot of recorded registration calls. */
+  /**
+   * Snapshot of recorded registration calls.
+   */
   const registrations = fakeApi.registrations();
 
-  /** Expected registrations not observed. */
+  /**
+   * Expected registrations not observed.
+   */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
   },);
@@ -97,9 +113,13 @@ function fakePiApi(): {
   readonly api: ExtensionAPI;
   readonly registrations: () => readonly string[];
 } {
-  /** Locally-owned registration log accessed through closures. */
+  /**
+   * Locally-owned registration log accessed through closures.
+   */
   const registrations: string[] = [];
-  /** Fake extension API that records registration calls into the closure. */
+  /**
+   * Fake extension API that records registration calls into the closure.
+   */
   const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);

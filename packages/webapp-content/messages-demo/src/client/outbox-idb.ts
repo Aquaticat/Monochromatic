@@ -13,13 +13,19 @@ import {
 } from './idb-helpers.ts';
 import type { ChunkUpload, } from './outbox.ts';
 
-/** IndexedDB database name used for the persistent outbox. */
+/**
+ * IndexedDB database name used for the persistent outbox.
+ */
 const OUTBOX_DB_NAME = 'messages-demo:outbox';
 
-/** Object-store name inside the outbox database. */
+/**
+ * Object-store name inside the outbox database.
+ */
 const OUTBOX_STORE = 'pending';
 
-/** IndexedDB schema version. Bump if the record shape changes. */
+/**
+ * IndexedDB schema version. Bump if the record shape changes.
+ */
 const OUTBOX_DB_VERSION = 1;
 
 /**
@@ -69,20 +75,28 @@ export function openOutboxDb(): Promise<IDBDatabase> {
  * ```
  */
 export async function readPersistedQueue(db: IDBDatabase,): Promise<ChunkUpload[]> {
-  /** Read-only transaction scoped to the outbox store; held until the request resolves. */
+  /**
+   * Read-only transaction scoped to the outbox store; held until the request resolves.
+   */
   const tx = db.transaction(
     OUTBOX_STORE,
     'readonly',
   );
-  /** Store handle reused by the `getAll` request below. */
+  /**
+   * Store handle reused by the `getAll` request below.
+   */
   const store = tx.objectStore(OUTBOX_STORE,);
   // The store's keyPath constrains every record to ChunkUpload shape;
   // see openOutboxDb's onUpgrade. getAll's typings widen to any[].
   /* oxlint-disable typescript/no-unsafe-type-assertion -- IDB store schema constraint */
-  /** Cast widens `getAll`'s `any[]` back to the schema-enforced `ChunkUpload[]`. */
+  /**
+   * Cast widens `getAll`'s `any[]` back to the schema-enforced `ChunkUpload[]`.
+   */
   const request = store.getAll() as IDBRequest<ChunkUpload[]>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Resolved records; sorted in place below so the drain loop emits original order. */
+  /**
+   * Resolved records; sorted in place below so the drain loop emits original order.
+   */
   const raw = await idbRequestResult<ChunkUpload[]>(request,);
   // Array.sort dictates the (a, b) => number callback shape, so the
   // comparator stays inline rather than being promoted to a top-level
@@ -121,7 +135,9 @@ export async function persistOne(
     upload: ChunkUpload;
   },
 ): Promise<void> {
-  /** Read-write transaction held until `idbTransactionDone` resolves below. */
+  /**
+   * Read-write transaction held until `idbTransactionDone` resolves below.
+   */
   const tx = input.idb
     .transaction(
     OUTBOX_STORE,
@@ -149,17 +165,23 @@ export async function deleteAcked(
     ack: number;
   },
 ): Promise<void> {
-  /** Read-write transaction held until `idbTransactionDone` resolves below. */
+  /**
+   * Read-write transaction held until `idbTransactionDone` resolves below.
+   */
   const tx = input.idb
     .transaction(
     OUTBOX_STORE,
     'readwrite',
   );
-  /** Store handle reused by the bounded-delete below. */
+  /**
+   * Store handle reused by the bounded-delete below.
+   */
   const store = tx.objectStore(OUTBOX_STORE,);
   // Composite key range: every (draftId, seq) with seq in [0, ack].
   // Lower bound at seq=0 is the smallest value the chunker produces.
-  /** Composite-key range bounding the delete to one draft id and seqs 0..ack. */
+  /**
+   * Composite-key range bounding the delete to one draft id and seqs 0..ack.
+   */
   const range = IDBKeyRange.bound(
     [
       input.draftId,

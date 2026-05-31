@@ -8,7 +8,9 @@ import {
   rngPick,
 } from './rng.ts';
 
-/** Lorem-style word pool used to compose synthetic bodies. */
+/**
+ * Lorem-style word pool used to compose synthetic bodies.
+ */
 const WORD_POOL = (
   'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor '
   + 'incididunt ut labore magna aliqua enim minim veniam quis nostrud exercitation '
@@ -17,7 +19,9 @@ const WORD_POOL = (
 )
   .split(' ',);
 
-/** Common bug-tracker title prefixes. */
+/**
+ * Common bug-tracker title prefixes.
+ */
 const TITLE_PREFIXES = [
   'Bug:',
   'Feature:',
@@ -40,22 +44,30 @@ const TITLE_PREFIXES = [
  * ```
  */
 export function synthesizeTitle(seed: number,): string {
-  /** Title prefix sampled from the bug-tracker palette, defaulted when picking fails. */
+  /**
+   * Title prefix sampled from the bug-tracker palette, defaulted when picking fails.
+   */
   const prefix = rngPick({
     seed,
     items: TITLE_PREFIXES,
   },)
     ?? 'Issue:';
-  /** Title word count drawn from the seed; bounds the per-word picking loop. */
+  /**
+   * Title word count drawn from the seed; bounds the per-word picking loop.
+   */
   const wordCount = rngInt({
     seed: seed + 1,
     lo: 4,
     hi: 10,
   },);
-  /** Collected title words assembled into the returned string. */
+  /**
+   * Collected title words assembled into the returned string.
+   */
   const words: string[] = [];
   for (let i = 0; i < wordCount; i += 1) {
-    /** Per-word pick from the lorem pool; defaulted when picking fails. */
+    /**
+     * Per-word pick from the lorem pool; defaulted when picking fails.
+     */
     const picked = rngPick({
       seed: seed + 2
         + i,
@@ -105,7 +117,9 @@ export function synthesizeBody(row: {
     if (state.remaining
       <= 0)
       return [];
-    /** Paragraph length capped by remaining so the body never overshoots the target. */
+    /**
+     * Paragraph length capped by remaining so the body never overshoots the target.
+     */
     const paragraphLength = Math.min(
       state.remaining,
       rngInt({
@@ -114,10 +128,14 @@ export function synthesizeBody(row: {
         hi: 60,
       },),
     );
-    /** Collected paragraph words assembled before joining onto the paragraph list. */
+    /**
+     * Collected paragraph words assembled before joining onto the paragraph list.
+     */
     const words: string[] = [];
     for (let i = 0; i < paragraphLength; i += 1) {
-      /** Per-word pick from the lorem pool; defaulted when picking fails. */
+      /**
+       * Per-word pick from the lorem pool; defaulted when picking fails.
+       */
       const picked = rngPick({
         seed: state.cursor
           + 1
@@ -138,7 +156,9 @@ export function synthesizeBody(row: {
       },),
     ];
   }
-  /** Collected paragraph strings joined with blank lines for the returned body. */
+  /**
+   * Collected paragraph strings joined with blank lines for the returned body.
+   */
   const paragraphs = buildParagraphs({
     remaining: row.targetWordCount,
     cursor: row.seed,

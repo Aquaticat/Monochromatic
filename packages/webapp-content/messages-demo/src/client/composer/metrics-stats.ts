@@ -6,10 +6,14 @@
  * are easy to unit-test in isolation.
  */
 
-/** 99th percentile divisor. */
+/**
+ * 99th percentile divisor.
+ */
 export const PERCENTILE_99 = 0.99;
 
-/** Halfway split for the median when sample count is even. */
+/**
+ * Halfway split for the median when sample count is even.
+ */
 const MEDIAN_SPLIT = 0.5;
 
 /**
@@ -35,7 +39,9 @@ export function percentile(
     .length
     === 0)
     return 0;
-  /** Nearest-rank index clamped to 0 so empty-but-passing checks still index safely. */
+  /**
+   * Nearest-rank index clamped to 0 so empty-but-passing checks still index safely.
+   */
   const rank = Math.max(
     0,
     Math.ceil(input.p
@@ -64,7 +70,9 @@ export function median(sortedAsc: readonly number[],): number {
   if (sortedAsc.length
     === 0)
     return 0;
-  /** Center index for odd-length arrays; upper of the two centers for even-length arrays. */
+  /**
+   * Center index for odd-length arrays; upper of the two centers for even-length arrays.
+   */
   const mid = Math.floor(sortedAsc.length
     * MEDIAN_SPLIT,);
   if ((sortedAsc.length

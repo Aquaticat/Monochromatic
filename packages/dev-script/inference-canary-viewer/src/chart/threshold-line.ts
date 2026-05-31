@@ -31,9 +31,13 @@ export function renderThresholdLine(threshold?: {
     return '';
   if (threshold.value <= 0)
     return '';
-  /** Percentage multiplier */
+  /**
+   * Percentage multiplier
+   */
   const PERCENT = 100;
-  /** Inline-style positioning expressed as percentage from the chart floor. */
+  /**
+   * Inline-style positioning expressed as percentage from the chart floor.
+   */
   const bottom = threshold.value * PERCENT;
   return h({
     tag: 'div',

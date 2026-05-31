@@ -7,10 +7,14 @@
 import { css, } from '../css.ts';
 import { SIDE_DRAWER_PANEL_STYLES, } from './side-drawer-panel-styles.ts';
 
-/** Viewport breakpoint matching the body flex-wrap threshold. */
+/**
+ * Viewport breakpoint matching the body flex-wrap threshold.
+ */
 const DESKTOP_BREAKPOINT = '48rem';
 
-/** Shadow DOM styles for `\<side-drawer\>` -- inline sidebar, shared nav, and panel. */
+/**
+ * Shadow DOM styles for `\<side-drawer\>` -- inline sidebar, shared nav, and panel.
+ */
 export const SIDE_DRAWER_STYLES: string = css(`
   :host { display: block; }
   .wrapper { block-size: 100%; }

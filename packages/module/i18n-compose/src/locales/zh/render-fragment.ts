@@ -78,7 +78,9 @@ export function makeChineseFragmentRenderer<
 >(
   deps: FragmentDeps<L, S, V, N>,
 ): (fragment: Fragment<L, S, V, N>,) => string {
-  /** Destructured locale dependencies captured for use across every sub-renderer below. */
+  /**
+   * Destructured locale dependencies captured for use across every sub-renderer below.
+   */
   const {
     labels,
     verbs,
@@ -97,18 +99,24 @@ export function makeChineseFragmentRenderer<
   function renderVerbPhraseFragment(
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
-    /** Chinese non-finite forms reuse the surface; no morphological distinction. */
+    /**
+     * Chinese non-finite forms reuse the surface; no morphological distinction.
+     */
     const head = verbs[fragment.phrase
       .verb]
       .surface;
-    /** Rendered object surface; empty string when absent. */
+    /**
+     * Rendered object surface; empty string when absent.
+     */
     const object = fragment.phrase
       .object
       === undefined
       ? ''
       : renderNounPhrase(fragment.phrase
         .object,);
-    /** Rendered complement; empty string when absent. */
+    /**
+     * Rendered complement; empty string when absent.
+     */
     const complement = fragment.phrase
       .complement
       === undefined
@@ -116,10 +124,14 @@ export function makeChineseFragmentRenderer<
       : renderVerbPhrase(fragment.phrase
         .complement
         .phrase,);
-    /** Rendered adverbial cluster; empty string when none. */
+    /**
+     * Rendered adverbial cluster; empty string when none.
+     */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
-    /** Joined surface before capitalization fixup. */
+    /**
+     * Joined surface before capitalization fixup.
+     */
     const body = joinTokens([
       adverbials,
       head,
@@ -171,7 +183,9 @@ export function makeChineseFragmentRenderer<
     if (fragment.kind
       === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
-    /** Rendered sequence parts concatenated (no space separator in Chinese). */
+    /**
+     * Rendered sequence parts concatenated (no space separator in Chinese).
+     */
     const joined = fragment
       .parts
       .map(function mapPart(part,): string {

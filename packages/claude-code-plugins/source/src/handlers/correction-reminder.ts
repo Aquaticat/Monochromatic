@@ -80,10 +80,14 @@ const CORRECTION_PHRASES: readonly string[] = [
 
 //region Detection
 
-/** Unicode left single quotation mark (`U+2018`). */
+/**
+ * Unicode left single quotation mark (`U+2018`).
+ */
 const LEFT_SINGLE_QUOTE = '‘';
 
-/** Unicode right single quotation mark (`U+2019`). */
+/**
+ * Unicode right single quotation mark (`U+2019`).
+ */
 const RIGHT_SINGLE_QUOTE = '’';
 
 /**
@@ -201,7 +205,9 @@ type CorrectionReminderOutput = UserPromptSubmitOutput;
 function correctionReminderHandler(
   event: ReadonlyDeep<UserPromptSubmitInput>,
 ): CorrectionReminderOutput {
-  /** True when the user's prompt contains a correction phrase; gates the reminder text. */
+  /**
+   * True when the user's prompt contains a correction phrase; gates the reminder text.
+   */
   const triggered = detectCorrection(event.prompt,);
   return {
     hookSpecificOutput: {

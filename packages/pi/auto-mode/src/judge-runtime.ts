@@ -34,7 +34,9 @@ function buildStreamOptions(
     readonly toolChoice?: unknown;
   },
 ): SimpleStreamOptions {
-  /** Provider-specific stream options assembled key-by-key so `auth` fields stay optional. */
+  /**
+   * Provider-specific stream options assembled key-by-key so `auth` fields stay optional.
+   */
   const opts: Record<string, unknown> = {
     signal: controller.signal,
   };
@@ -73,7 +75,9 @@ function disposableTimeout(
     readonly onTimeout: () => void;
   },
 ): Disposable {
-  /** Timer handle returned by setTimeout; cleared on dispose to cancel pending callbacks. */
+  /**
+   * Timer handle returned by setTimeout; cleared on dispose to cancel pending callbacks.
+   */
   const id = setTimeout(
     onTimeout,
     ms,

@@ -17,13 +17,21 @@ export const PATHSPEC_SEPARATOR = '--';
 
 //region Escape hatch token stripping
 
-/** Options for stripping the escape hatch from post-subcommand argv. */
+/**
+ * Options for stripping the escape hatch from post-subcommand argv.
+ */
 type StripEscapeHatchOptions = {
-  /** Complete git argv. */
+  /**
+   * Complete git argv.
+   */
   readonly args: readonly string[];
-  /** Index where guarded subcommand appears. */
+  /**
+   * Index where guarded subcommand appears.
+   */
   readonly subcommandIndex: number;
-  /** Options that consume next argv token as value. */
+  /**
+   * Options that consume next argv token as value.
+   */
   readonly separateValueOptions: ReadonlySet<string>;
 };
 
@@ -60,14 +68,20 @@ export function stripEscapeHatch({
   subcommandIndex,
   separateValueOptions,
 }: StripEscapeHatchOptions,): readonly string[] {
-  /** Pre-subcommand region and subcommand kept verbatim so global options survive the strip. */
+  /**
+   * Pre-subcommand region and subcommand kept verbatim so global options survive the strip.
+   */
   const preAndSubcommand = args.slice(
     0,
     subcommandIndex + 1,
   );
-  /** Slice of args strictly after guarded subcommand. */
+  /**
+   * Slice of args strictly after guarded subcommand.
+   */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
-  /** Position of pathspec separator inside post-subcommand region. */
+  /**
+   * Position of pathspec separator inside post-subcommand region.
+   */
   const separatorIndex = postSubcommandArgs.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex === (-1)) {
@@ -80,12 +94,16 @@ export function stripEscapeHatch({
     ];
   }
 
-  /** Region before pathspec separator where wrapper-only options are recognized. */
+  /**
+   * Region before pathspec separator where wrapper-only options are recognized.
+   */
   const wrapperArgs = postSubcommandArgs.slice(
     0,
     separatorIndex,
   );
-  /** Pathspec separator and user path text preserved verbatim. */
+  /**
+   * Pathspec separator and user path text preserved verbatim.
+   */
   const pathspecArgs = postSubcommandArgs.slice(separatorIndex,);
 
   return [
@@ -98,11 +116,17 @@ export function stripEscapeHatch({
   ];
 }
 
-/** Options for the arity-aware escape-hatch filter. */
+/**
+ * Options for the arity-aware escape-hatch filter.
+ */
 type FilterFlagEscapeHatchOptions = {
-  /** Argv slice to filter. */
+  /**
+   * Argv slice to filter.
+   */
   readonly args: readonly string[];
-  /** Options whose next argv token is value. */
+  /**
+   * Options whose next argv token is value.
+   */
   readonly separateValueOptions: ReadonlySet<string>;
 };
 
@@ -130,14 +154,18 @@ function filterFlagEscapeHatch({
   args,
   separateValueOptions,
 }: FilterFlagEscapeHatchOptions,): readonly string[] {
-  /** Current token at the head of args. */
+  /**
+   * Current token at the head of args.
+   */
   const [arg, ...remaining] = args;
 
   if (arg === undefined)
     return [];
 
   if (separateValueOptions.has(arg,)) {
-    /** Value token that follows a separated-value option; kept verbatim. */
+    /**
+     * Value token that follows a separated-value option; kept verbatim.
+     */
     const [value, ...afterValue] = remaining;
 
     if (value === undefined)

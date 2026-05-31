@@ -17,10 +17,14 @@ import {
 } from './lsp-client.ts';
 import { pathToUri, } from './uri.ts';
 
-/** LSP server type identifier. */
+/**
+ * LSP server type identifier.
+ */
 export type ServerType = 'oxlint' | 'tsgo' | 'dprint';
 
-/** Separator between server type and root in pool map keys. */
+/**
+ * Separator between server type and root in pool map keys.
+ */
 export const POOL_KEY_SEPARATOR = ':';
 
 /**
@@ -62,12 +66,16 @@ export function buildPoolKey({
  * ```
  */
 export function rootFromPoolKey({ key, }: { readonly key: string; },): string {
-  /** Negative one collapses to slice(0), returning the whole key when no separator exists. */
+  /**
+   * Negative one collapses to slice(0), returning the whole key when no separator exists.
+   */
   const colonIndex = key.indexOf(POOL_KEY_SEPARATOR,);
   return key.slice(colonIndex + 1,);
 }
 
-/** Config files that define a project root for each server type. */
+/**
+ * Config files that define a project root for each server type.
+ */
 export const CONFIG_FILES: Record<ServerType, readonly string[]> = {
   oxlint: ['package.json',],
   tsgo: ['tsconfig.json',],
@@ -77,7 +85,9 @@ export const CONFIG_FILES: Record<ServerType, readonly string[]> = {
   ],
 };
 
-/** Spawn command and arguments for each server type. */
+/**
+ * Spawn command and arguments for each server type.
+ */
 const COMMANDS: Record<ServerType, {
   readonly command: string;
   readonly args: readonly string[];
@@ -161,14 +171,20 @@ export async function spawnLspClient({
     readonly recentStderr: string;
   },) => void;
 },): Promise<LspClient | null> {
-  /** Per-server-type spawn definition: command, args, init opts. */
+  /**
+   * Per-server-type spawn definition: command, args, init opts.
+   */
   const def = COMMANDS[type];
-  /** Project-local bin dir prepended to PATH so workspace tooling resolves first. */
+  /**
+   * Project-local bin dir prepended to PATH so workspace tooling resolves first.
+   */
   const binPath = join(
     root,
     'node_modules/.bin',
   );
-  /** Environment passed to the child; PATH gets the project bin dir prepended. */
+  /**
+   * Environment passed to the child; PATH gets the project bin dir prepended.
+   */
   const env = {
     ...process.env,
     PATH: `${binPath}${delimiter}${process.env
@@ -176,11 +192,15 @@ export async function spawnLspClient({
       ?? ''}`,
   };
 
-  /** LSP wire format expects a URI for the workspace root. */
+  /**
+   * LSP wire format expects a URI for the workspace root.
+   */
   const rootUri = pathToUri({ path: root, },);
 
   try {
-    /** Client wrapper around the spawned LSP child process. */
+    /**
+     * Client wrapper around the spawned LSP child process.
+     */
     const c = createLspClient({
       command: def.command,
       args: [...def.args,],

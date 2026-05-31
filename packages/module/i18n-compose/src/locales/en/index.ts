@@ -36,20 +36,28 @@ export function defineEnglishLocale<
 >(
   input: DefineEnglishLocaleInput<Label, Subject, Verb, Noun>,
 ): LocaleSpec<Label, Subject, Verb, Noun> {
-  /** Noun-phrase renderer closed over the noun + subject tables. */
+  /**
+   * Noun-phrase renderer closed over the noun + subject tables.
+   */
   const renderNounPhrase = makeEnglishNounPhraseRenderer({
     nouns: input.nouns,
     subjects: input.subjects,
   },);
-  /** Adverbial cluster renderer that depends on noun-phrase rendering. */
+  /**
+   * Adverbial cluster renderer that depends on noun-phrase rendering.
+   */
   const renderAdverbials = makeEnglishAdverbialRenderer({ renderNounPhrase, },);
-  /** Verb-phrase renderer with closure over verbs + sub-renderers. */
+  /**
+   * Verb-phrase renderer with closure over verbs + sub-renderers.
+   */
   const renderVerbPhrase = makeEnglishVerbPhraseRenderer({
     verbs: input.verbs,
     renderNounPhrase,
     renderAdverbials,
   },);
-  /** Sentence renderer dispatching on AST kind. */
+  /**
+   * Sentence renderer dispatching on AST kind.
+   */
   const renderSentence = makeEnglishSentenceRenderer({
     subjects: input.subjects,
     verbs: input.verbs,
@@ -57,7 +65,9 @@ export function defineEnglishLocale<
     renderVerbPhrase,
     renderAdverbials,
   },);
-  /** Fragment renderer dispatching on AST kind. */
+  /**
+   * Fragment renderer dispatching on AST kind.
+   */
   const renderFragment = makeEnglishFragmentRenderer({
     labels: input.labels,
     verbs: input.verbs,

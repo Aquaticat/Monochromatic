@@ -14,16 +14,24 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { HALF, } from '@monochromatic-dev/module-const';
 
-/** Full dimension as percentage. */
+/**
+ * Full dimension as percentage.
+ */
 const FULL = 100;
 
-/** Repeat button resting opacity. */
+/**
+ * Repeat button resting opacity.
+ */
 const REPEAT_RESTING_OPACITY = 0.8;
 
-/** Minimum touch target for the repeat button in rem: 5/2. */
+/**
+ * Minimum touch target for the repeat button in rem: 5/2.
+ */
 const REPEAT_MIN_SIZE = ((2 * 2) + 1) / 2;
 
-/** Media element and control styles. */
+/**
+ * Media element and control styles.
+ */
 export const MEDIA_STYLES: string = [
   $({
     rule: 'img',

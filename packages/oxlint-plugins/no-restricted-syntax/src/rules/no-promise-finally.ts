@@ -43,7 +43,9 @@ export const noPromiseFinally: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       CallExpression(node: ESTree.CallExpression,): void {
-        /** Call target; only `x.finally()` member calls qualify for the rule. */
+        /**
+         * Call target; only `x.finally()` member calls qualify for the rule.
+         */
         const { callee, } = node;
         if ((callee.type
           !== 'MemberExpression') || callee

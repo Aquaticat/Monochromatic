@@ -61,7 +61,9 @@
  * ```
  */
 
-/** HTML void elements that must not have a closing tag. */
+/**
+ * HTML void elements that must not have a closing tag.
+ */
 export const VOID_ELEMENTS: Set<string> = new Set<string>([
   'area',
   'base',
@@ -116,21 +118,37 @@ export function escapeHtml(raw: string,): string {
     );
 }
 
-/** Named parameters for string-based element creation */
+/**
+ * Named parameters for string-based element creation
+ */
 type HOptions = {
-  /** HTML tag name */
+  /**
+   * HTML tag name
+   */
   readonly tag: string;
-  /** CSS class name(s) */
+  /**
+   * CSS class name(s)
+   */
   readonly class?: string;
-  /** Text content (HTML-escaped automatically) */
+  /**
+   * Text content (HTML-escaped automatically)
+   */
   readonly text?: string;
-  /** Raw inner HTML (NOT escaped) */
+  /**
+   * Raw inner HTML (NOT escaped)
+   */
   readonly html?: string;
-  /** Attributes set as key="value" pairs (values are HTML-escaped) */
+  /**
+   * Attributes set as key="value" pairs (values are HTML-escaped)
+   */
   readonly attrs?: Readonly<Record<string, string>>;
-  /** Inline style properties (camelCase or kebab-case keys) */
+  /**
+   * Inline style properties (camelCase or kebab-case keys)
+   */
   readonly style?: Readonly<Record<string, string>>;
-  /** Child HTML strings to concatenate inside the element */
+  /**
+   * Child HTML strings to concatenate inside the element
+   */
   readonly children?: readonly string[];
 };
 
@@ -149,11 +167,15 @@ type HOptions = {
  * ```
  */
 function camelToKebab(property: string,): string {
-  /** Per-character kebab fragments, joined once at the end so the accumulator is never rebuilt each step (single linear pass: O(n) time, O(1) stack, no recursion). */
+  /**
+   * Per-character kebab fragments, joined once at the end so the accumulator is never rebuilt each step (single linear pass: O(n) time, O(1) stack, no recursion).
+   */
   const fragments: string[] = [];
 
   for (const c of property) {
-    /** True when `c` is an ASCII uppercase letter (`A`-`Z`). */
+    /**
+     * True when `c` is an ASCII uppercase letter (`A`-`Z`).
+     */
     const isUpper = (c >= 'A') && (c <= 'Z');
     fragments.push(isUpper ? `-${c.toLowerCase()}` : c,);
   }
@@ -195,7 +217,9 @@ function camelToKebab(property: string,): string {
     children,
   }: HOptions,
 ): string {
-  /** Accumulates serialization fragments so they can be joined once at the end without intermediate string concatenations. */
+  /**
+   * Accumulates serialization fragments so they can be joined once at the end without intermediate string concatenations.
+   */
   const parts: string[] = [`<${tag}`,];
 
   if (className !== undefined)
@@ -207,7 +231,9 @@ function camelToKebab(property: string,): string {
   }
 
   if (style !== undefined) {
-    /** Holds the serialized inline style value so it can be HTML-escaped as a single attribute before insertion. */
+    /**
+     * Holds the serialized inline style value so it can be HTML-escaped as a single attribute before insertion.
+     */
     const declarations = Object
       .entries(style,)
       .map(function toDecl([property, value,],) {

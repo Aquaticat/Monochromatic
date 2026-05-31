@@ -113,20 +113,26 @@ function checkCompletedChildren(
     readonly consume: boolean;
   },
 ): string | typeof NOTHING_TO_REPORT {
-  /** Filenames in `SPAWNS_DIR`, or `NOTHING_TO_REPORT` when the directory is missing or unreadable. */
+  /**
+   * Filenames in `SPAWNS_DIR`, or `NOTHING_TO_REPORT` when the directory is missing or unreadable.
+   */
   const entries = readSpawnsDir();
 
   if (entries === NOTHING_TO_REPORT)
     return NOTHING_TO_REPORT;
 
-  /** Formatted result strings for each completed child belonging to this parent. */
+  /**
+   * Formatted result strings for each completed child belonging to this parent.
+   */
   const results: string[] = [];
 
   for (const filename of entries) {
     if (!filename.endsWith('.json',))
       continue;
 
-    /** Absolute path to the candidate spawn-state file. */
+    /**
+     * Absolute path to the candidate spawn-state file.
+     */
     const filePath = join(
       SPAWNS_DIR,
       filename,
@@ -147,13 +153,17 @@ function checkCompletedChildren(
     );
 
     try {
-      /** Raw JSON for the candidate; parsed below to recover the spawn state. */
+      /**
+       * Raw JSON for the candidate; parsed below to recover the spawn state.
+       */
       const raw = readFileSync(
         filePath,
         'utf8',
       );
       /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
-      /** Parsed spawn state used to filter by parent session and stopped status. */
+      /**
+       * Parsed spawn state used to filter by parent session and stopped status.
+       */
       const state = JSON.parse(raw,) as SpawnState;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
 
@@ -173,7 +183,9 @@ function checkCompletedChildren(
           );
         }
         catch {
-          /** Another hook invocation already renamed this file. */
+          /**
+           * Another hook invocation already renamed this file.
+           */
           continue;
         }
       }

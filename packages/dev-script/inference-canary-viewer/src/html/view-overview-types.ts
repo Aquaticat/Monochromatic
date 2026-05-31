@@ -5,7 +5,9 @@
  * to avoid circular imports.
  */
 
-/** Aggregated model summary for the overview table */
+/**
+ * Aggregated model summary for the overview table
+ */
 export type ModelSummary = {
   readonly model: string;
   readonly label: string;
@@ -17,7 +19,9 @@ export type ModelSummary = {
   readonly degraded: boolean;
 };
 
-/** Model health status: a failure, a degradation, or a healthy run. */
+/**
+ * Model health status: a failure, a degradation, or a healthy run.
+ */
 export type StatusLevel = 'failed' | 'degraded' | 'healthy';
 
 /**

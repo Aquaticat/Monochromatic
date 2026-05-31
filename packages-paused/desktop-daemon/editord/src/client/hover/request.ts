@@ -13,7 +13,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for hover requests. */
+/**
+ * Tagged logger for hover requests.
+ */
 const hoverLog = tagged({
   tag: 'hover-request',
   l,
@@ -59,7 +61,9 @@ export async function doRequestHover({
   readonly y: number;
 },): Promise<void> {
   try {
-    /** Hover text from the language server; empty string means "nothing to show". */
+    /**
+     * Hover text from the language server; empty string means "nothing to show".
+     */
     const { contents, } = await ws.request({
       type: 'hover',
       path,

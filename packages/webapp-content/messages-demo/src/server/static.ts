@@ -84,7 +84,9 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
           );
         },
         getMeta: async function getMetadata(id,) {
-          /** Resolved stat result or `STAT_ABSENT` when the file does not exist or is inaccessible. */
+          /**
+           * Resolved stat result or `STAT_ABSENT` when the file does not exist or is inaccessible.
+           */
           const stats = await tryStat(id,);
           return ((stats !== STAT_ABSENT) && stats
             .isFile())

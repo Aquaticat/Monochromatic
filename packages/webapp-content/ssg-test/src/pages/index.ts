@@ -34,12 +34,18 @@ export function indexPage(
     readonly canonicalUrl: string;
   },
 ): string {
-  /** English-locale translator used for the document-level meta strings on the language picker. */
+  /**
+   * English-locale translator used for the document-level meta strings on the language picker.
+   */
   const t = i18nObject('en',);
-  /** Page title composed from all language translations of "choose a language". */
+  /**
+   * Page title composed from all language translations of "choose a language".
+   */
   const title = locales
     .map(function capitalize(locale,) {
-      /** Translated phrase before title-case fixup. */
+      /**
+       * Translated phrase before title-case fixup.
+       */
       const str = i18nObject(locale,)
         .chooseALang();
       return str.charAt(0,)
@@ -49,7 +55,9 @@ export function indexPage(
     },)
     .join(' ',);
 
-  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
+  /**
+   * Main element tree composed before the page layout wraps it with `<head>` and friends.
+   */
   const content = h({
     tag: 'main',
     children: [

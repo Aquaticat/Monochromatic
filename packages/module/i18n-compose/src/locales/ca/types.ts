@@ -20,9 +20,13 @@ import type {
  * live in a sparse map indexed by `Tense` and {@link PersonNumberKey}.
  */
 export type CatalanVerbEntry = {
-  /** Infinitive form, e.g. `tenir`. Used by complements and as fallback head. */
+  /**
+   * Infinitive form, e.g. `tenir`. Used by complements and as fallback head.
+   */
   readonly infinitive: string;
-  /** Imperative surface; defaults to second-person singular present finite when unset. */
+  /**
+   * Imperative surface; defaults to second-person singular present finite when unset.
+   */
   readonly imperative?: string;
   /**
    * Sparse table of finite forms by tense and person/number. A `Map` models
@@ -33,7 +37,9 @@ export type CatalanVerbEntry = {
   readonly finite: ReadonlyMap<Tense, ReadonlyMap<PersonNumberKey, string>>;
 };
 
-/** Input shape accepted by `defineCatalanLocale`. */
+/**
+ * Input shape accepted by `defineCatalanLocale`.
+ */
 export type DefineCatalanLocaleInput<
   Label extends string,
   Subject extends string,
@@ -46,5 +52,7 @@ export type DefineCatalanLocaleInput<
   readonly verbs: Readonly<Record<Verb, CatalanVerbEntry>>;
 };
 
-/** Catalan does not pin any tokens out of the casing pipeline; the invariant set is empty. */
+/**
+ * Catalan does not pin any tokens out of the casing pipeline; the invariant set is empty.
+ */
 export const CA_CASE_INVARIANTS: ReadonlySet<string> = new Set();

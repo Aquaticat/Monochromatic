@@ -49,11 +49,17 @@ const stashRegionParser = object({
 
 //region Stash region facts derived from optique parse
 
-/** Facts about the post-`stash` argv region used by linked-worktree policy. */
+/**
+ * Facts about the post-`stash` argv region used by linked-worktree policy.
+ */
 export type StashRegion = {
-  /** True when wrapper-only escape hatch appears as a real flag. */
+  /**
+   * True when wrapper-only escape hatch appears as a real flag.
+   */
   readonly hasEscapeHatch: boolean;
-  /** True when optique parse failed; rule should be conservative. */
+  /**
+   * True when optique parse failed; rule should be conservative.
+   */
   readonly parseFailed: boolean;
 };
 
@@ -71,7 +77,9 @@ export type StashRegion = {
  * ```
  */
 function optionRegion(args: readonly string[],): readonly string[] {
-  /** Position of pathspec separator inside post-subcommand region. */
+  /**
+   * Position of pathspec separator inside post-subcommand region.
+   */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex === (-1))
@@ -102,10 +110,14 @@ function optionRegion(args: readonly string[],): readonly string[] {
 export function parseStashRegion(
   postSubcommandArgs: readonly string[],
 ): StashRegion {
-  /** Argv slice handed to optique; pathspec region is excluded. */
+  /**
+   * Argv slice handed to optique; pathspec region is excluded.
+   */
   const region = optionRegion(postSubcommandArgs,);
 
-  /** Optique parse result over the cleaned option region. */
+  /**
+   * Optique parse result over the cleaned option region.
+   */
   const parseResult = parseSync(
     stashRegionParser,
     region,
@@ -118,7 +130,9 @@ export function parseStashRegion(
     };
   }
 
-  /** Successful parse value with optique-inferred shape. */
+  /**
+   * Successful parse value with optique-inferred shape.
+   */
   const { value, } = parseResult;
 
   return {

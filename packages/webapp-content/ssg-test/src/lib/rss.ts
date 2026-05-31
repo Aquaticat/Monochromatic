@@ -37,7 +37,9 @@ export function generateLanguageRss(
     readonly siteUrl: string;
   },
 ): string {
-  /** Locale-bound translator captured once so siteName and siteDescription resolve in the same locale. */
+  /**
+   * Locale-bound translator captured once so siteName and siteDescription resolve in the same locale.
+   */
   const t = i18nObject(lang,);
   return generateRssFeed({
     title: t.siteName(),

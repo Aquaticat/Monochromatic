@@ -11,7 +11,9 @@ import type { ModelPricing, } from './types.ts';
 
 //region Constants
 
-/** Minimum digit count for a numeric token to be treated as a date stamp. */
+/**
+ * Minimum digit count for a numeric token to be treated as a date stamp.
+ */
 const DATE_TOKEN_DIGIT_COUNT = 8;
 
 /**
@@ -43,7 +45,9 @@ export function extractMajorVersion(
   for (const token of splitModelIdTokens(id,)) {
     if (isDateLikeToken(token,))
       continue;
-    /** First digit run in current token. */
+    /**
+     * First digit run in current token.
+     */
     const digitRun = firstDigitRun(token,);
     if (digitRun !== NO_MAJOR_VERSION)
       return digitRun;
@@ -66,12 +70,16 @@ export function extractMajorVersion(
 export function extractVersionNumbers(
   id: string,
 ): number[] {
-  /** Accumulator for every per-token version number. */
+  /**
+   * Accumulator for every per-token version number.
+   */
   const numbers: number[] = [];
   for (const token of splitModelIdTokens(id,)) {
     if (isDateLikeToken(token,))
       continue;
-    /** First digit run in current token. */
+    /**
+     * First digit run in current token.
+     */
     const digitRun = firstDigitRun(token,);
     if (digitRun !== NO_MAJOR_VERSION)
       numbers.push(digitRun,);
@@ -105,17 +113,25 @@ export function compareVersions<TModel extends Pick<ModelPricing, 'id'>,>(
     readonly b: TModel;
   },
 ): number {
-  /** Version vector for `a`, e.g. `[3, 5]` for `claude-3.5-sonnet`. */
+  /**
+   * Version vector for `a`, e.g. `[3, 5]` for `claude-3.5-sonnet`.
+   */
   const leftVersions = extractVersionNumbers(a.id,);
-  /** Version vector for `b`, compared positionally against `leftVersions`. */
+  /**
+   * Version vector for `b`, compared positionally against `leftVersions`.
+   */
   const rightVersions = extractVersionNumbers(b.id,);
-  /** Number of positions to walk. */
+  /**
+   * Number of positions to walk.
+   */
   const maxLength = Math.max(
     leftVersions.length,
     rightVersions.length,
   );
   for (let index = 0; index < maxLength; index++) {
-    /** Per-position delta with `b` first so higher versions sort earlier. */
+    /**
+     * Per-position delta with `b` first so higher versions sort earlier.
+     */
     const diff = (rightVersions[index]
       ?? 0) - (leftVersions[index]
         ?? 0);
@@ -153,16 +169,22 @@ export function findCheapestInMajorVersions<TModel extends ModelPricing,>(
     readonly majorVersions: number;
   },
 ): TModel[] {
-  /** Distinct major-version numbers seen across candidate set. */
+  /**
+   * Distinct major-version numbers seen across candidate set.
+   */
   const allVersions = new Set<number>();
   for (const model of models) {
-    /** Major version extracted from current model id. */
+    /**
+     * Major version extracted from current model id.
+     */
     const version = extractMajorVersion(model.id,);
     if (version !== NO_MAJOR_VERSION)
       allVersions.add(version,);
   }
 
-  /** Major versions in descending order. */
+  /**
+   * Major versions in descending order.
+   */
   const sortedVersions = [...allVersions,]
     .toSorted(function sortDescending(
       left,
@@ -174,19 +196,27 @@ export function findCheapestInMajorVersions<TModel extends ModelPricing,>(
     === 0)
     return [];
 
-  /** Subset of major versions to keep. */
+  /**
+   * Subset of major versions to keep.
+   */
   const included = majorVersions === 0
     ? sortedVersions
     : sortedVersions.slice(
       0,
       majorVersions,
     );
-  /** Set form for O(1) membership checks. */
+  /**
+   * Set form for O(1) membership checks.
+   */
   const includedSet = new Set(included,);
 
-  /** Models whose major version is in the kept set. */
+  /**
+   * Models whose major version is in the kept set.
+   */
   const eligible = models.filter(function hasIncludedVersion(model,) {
-    /** Per-model major version used for membership. */
+    /**
+     * Per-model major version used for membership.
+     */
     const version = extractMajorVersion(model.id,);
     return (version !== NO_MAJOR_VERSION) && includedSet
       .has(version,);
@@ -196,7 +226,9 @@ export function findCheapestInMajorVersions<TModel extends ModelPricing,>(
     left,
     right,
   ) {
-    /** Cost-only ordering before version tie-break. */
+    /**
+     * Cost-only ordering before version tie-break.
+     */
     const costDiff = left.cost
       .input
       - right
@@ -225,9 +257,13 @@ export function findCheapestInMajorVersions<TModel extends ModelPricing,>(
 function splitModelIdTokens(
   id: string,
 ): string[] {
-  /** Completed model-id tokens. */
+  /**
+   * Completed model-id tokens.
+   */
   const tokens: string[] = [];
-  /** Characters collected for current token. */
+  /**
+   * Characters collected for current token.
+   */
   let currentTokenCharacters: string[] = [];
   for (const character of id) {
     if (isModelIdSeparator(character,)) {
@@ -286,7 +322,9 @@ function isDateLikeToken(
 function firstDigitRun(
   token: string,
 ): number | typeof NO_MAJOR_VERSION {
-  /** Digit characters for current run. */
+  /**
+   * Digit characters for current run.
+   */
   const digits: string[] = [];
   for (const character of token) {
     if (isAsciiDigit(character,)) {

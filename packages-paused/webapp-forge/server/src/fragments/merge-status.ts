@@ -12,22 +12,34 @@ import {
   type SafeHtml,
 } from './jsx-runtime.ts';
 
-/** Recognised mergeability values. */
+/**
+ * Recognised mergeability values.
+ */
 export type MergeableState = 'unknown' | 'clean' | 'conflicts';
 
 /**
  * View-model fed to the {@link renderMergeStatus} renderer.
  */
 export type MergeStatusData = {
-  /** PR number for the panel header. */
+  /**
+   * PR number for the panel header.
+   */
   readonly prNumber: number;
-  /** Mergeability discriminant. */
+  /**
+   * Mergeability discriminant.
+   */
   readonly mergeable: MergeableState;
-  /** Approved review count. */
+  /**
+   * Approved review count.
+   */
   readonly approvedCount: number;
-  /** Changes-requested review count. */
+  /**
+   * Changes-requested review count.
+   */
   readonly changesRequestedCount: number;
-  /** Required-approvals threshold (0 if unconfigured). */
+  /**
+   * Required-approvals threshold (0 if unconfigured).
+   */
   readonly requiredApprovals: number;
 };
 

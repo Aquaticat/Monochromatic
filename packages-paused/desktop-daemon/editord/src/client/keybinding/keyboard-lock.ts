@@ -12,7 +12,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for keyboard lock. */
+/**
+ * Tagged logger for keyboard lock.
+ */
 const lockLog = tagged({
   tag: 'keyboard-lock',
   l,
@@ -20,13 +22,17 @@ const lockLog = tagged({
 
 //region Keyboard Lock API type augmentation (not yet in lib.dom.d.ts)
 
-/** Keyboard Lock API surface on the Keyboard interface. */
+/**
+ * Keyboard Lock API surface on the Keyboard interface.
+ */
 type KeyboardWithLock = {
   readonly lock: (keyCodes?: readonly string[],) => Promise<void>;
   readonly unlock: () => void;
 };
 
-/** Navigator with optional Keyboard Lock API support. */
+/**
+ * Navigator with optional Keyboard Lock API support.
+ */
 type NavigatorWithKeyboard = Navigator & {
   readonly keyboard?: KeyboardWithLock;
 };
@@ -58,7 +64,9 @@ const LOCKED_KEY_CODES = [
  * ```
  */
 export async function lockKeyboard(): Promise<void> {
-  /** Navigator augmented with the Keyboard Lock API; missing in lib.dom.d.ts so cast locally. */
+  /**
+   * Navigator augmented with the Keyboard Lock API; missing in lib.dom.d.ts so cast locally.
+   */
   const nav = navigator as NavigatorWithKeyboard;
   if (nav.keyboard
     === undefined) {

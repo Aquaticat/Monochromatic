@@ -74,7 +74,9 @@ export function* $<T,>(params: {
   ];
   item: T;
 }, void, undefined> {
-  /** Predicate and source iterable destructured for use inside the loop. */
+  /**
+   * Predicate and source iterable destructured for use inside the loop.
+   */
   const {
     predicate,
     iterable,
@@ -82,7 +84,9 @@ export function* $<T,>(params: {
 
   for (const item of iterable) {
     try {
-      /** Predicate verdict for the current item, used to choose pass/fail. */
+      /**
+       * Predicate verdict for the current item, used to choose pass/fail.
+       */
       const result = predicate(item,);
       // oxlint-disable-next-line unicorn/prefer-ternary -- yield cannot be used in ternary expression
       if (result) {

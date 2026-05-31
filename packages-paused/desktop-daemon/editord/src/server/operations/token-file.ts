@@ -40,7 +40,9 @@ import {
  */
 const FRESHNESS_THRESHOLD_MS = 3_000;
 
-/** Interval at which the running server touches the token file's mtime. */
+/**
+ * Interval at which the running server touches the token file's mtime.
+ */
 const TOUCH_INTERVAL_MS = 1_000;
 
 //endregion Constants
@@ -68,7 +70,9 @@ function tokenFilePath({ port, }: { readonly port: number; },): string {
  */
 async function readFreshToken({ path, }: { readonly path: string; },): Promise<string | null> {
   try {
-    /** Stat record for the token file; throws (caught below) when the file does not exist. */
+    /**
+     * Stat record for the token file; throws (caught below) when the file does not exist.
+     */
     const fileStat = await stat(path,);
     /**
      * Age of the token file in milliseconds; compared against {@link FRESHNESS_THRESHOLD_MS}.
@@ -78,12 +82,16 @@ async function readFreshToken({ path, }: { readonly path: string; },): Promise<s
       .mtimeMs;
     if (ageMs > FRESHNESS_THRESHOLD_MS)
       return null;
-    /** Raw file contents; trimmed below to strip any trailing newline written by editors. */
+    /**
+     * Raw file contents; trimmed below to strip any trailing newline written by editors.
+     */
     const content = await readFile(
       path,
       'utf8',
     );
-    /** Token string with surrounding whitespace removed; empty after trimming counts as no token. */
+    /**
+     * Token string with surrounding whitespace removed; empty after trimming counts as no token.
+     */
     const token = content.trim();
     if (token.length
       === 0)
@@ -177,7 +185,9 @@ async function writeAndTouch({
     },
   );
 
-  /** Timer handle for the periodic mtime-refresh; cancelled by `stopTouching`/`deleteFile`. */
+  /**
+   * Timer handle for the periodic mtime-refresh; cancelled by `stopTouching`/`deleteFile`.
+   */
   const interval = setInterval(
     function touchTokenFile() {
       void touchFile({
@@ -235,21 +245,29 @@ export async function resolveAuthToken({
   readonly stopTouching: () => void;
   readonly deleteFile: () => void;
 }> {
-  /** Logger scoped with the `token` tag so token lifecycle events are filterable. */
+  /**
+   * Logger scoped with the `token` tag so token lifecycle events are filterable.
+   */
   const tokenLog = tagged({
     tag: 'token',
     l,
   },);
-  /** Absolute path to the token file for this port; isolates concurrent instances on the same machine. */
+  /**
+   * Absolute path to the token file for this port; isolates concurrent instances on the same machine.
+   */
   const path = tokenFilePath({ port, },);
 
-  /** Override token from the environment; takes precedence over file reuse and fresh generation. */
+  /**
+   * Override token from the environment; takes precedence over file reuse and fresh generation.
+   */
   const envToken = process.env
     .EDITORD_TOKEN;
   if ((envToken !== undefined) && (envToken.length
     > 0)) {
     tokenLog.info('using token from EDITORD_TOKEN env var',);
-    /** Lifecycle handles returned by `writeAndTouch`; merged into the resolveAuthToken return value. */
+    /**
+     * Lifecycle handles returned by `writeAndTouch`; merged into the resolveAuthToken return value.
+     */
     const handles = await writeAndTouch({
       path,
       token: envToken,
@@ -261,12 +279,16 @@ export async function resolveAuthToken({
     };
   }
 
-  /** Token recovered from a recently-touched file, or null when the file is stale or missing. */
+  /**
+   * Token recovered from a recently-touched file, or null when the file is stale or missing.
+   */
   const existing = await readFreshToken({ path, },);
 
   if (existing !== null) {
     tokenLog.info('reusing token from previous instance (auto-restart detected)',);
-    /** Lifecycle handles for the reused token; same shape as the env-var branch. */
+    /**
+     * Lifecycle handles for the reused token; same shape as the env-var branch.
+     */
     const handles = await writeAndTouch({
       path,
       token: existing,
@@ -278,10 +300,14 @@ export async function resolveAuthToken({
     };
   }
 
-  /** Newly generated UUID used as the auth token on cold start (no env override, no fresh file). */
+  /**
+   * Newly generated UUID used as the auth token on cold start (no env override, no fresh file).
+   */
   const token = crypto.randomUUID();
   tokenLog.info('generated fresh token',);
-  /** Lifecycle handles for the freshly generated token. */
+  /**
+   * Lifecycle handles for the freshly generated token.
+   */
   const handles = await writeAndTouch({
     path,
     token,

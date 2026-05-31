@@ -7,28 +7,44 @@
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
-/** Hexadecimal radix for `toString` and `padStart`. */
+/**
+ * Hexadecimal radix for `toString` and `padStart`.
+ */
 const HEX_RADIX = 16;
 
-/** Width of the offset column in hex characters. */
+/**
+ * Width of the offset column in hex characters.
+ */
 const OFFSET_WIDTH = HEX_RADIX / 2;
 
-/** Number of bytes displayed per hex dump line. */
+/**
+ * Number of bytes displayed per hex dump line.
+ */
 const BYTES_PER_LINE = HEX_RADIX;
 
-/** Group boundary for inserting an extra space between hex columns. */
+/**
+ * Group boundary for inserting an extra space between hex columns.
+ */
 const GROUP_BOUNDARY = OFFSET_WIDTH;
 
-/** Multiplier to derive max dump size from bytes per line. */
+/**
+ * Multiplier to derive max dump size from bytes per line.
+ */
 const DUMP_LINE_COUNT = 1_024;
 
-/** Maximum bytes to include in the dump before truncating. */
+/**
+ * Maximum bytes to include in the dump before truncating.
+ */
 export const HEX_DUMP_MAX_BYTES: number = BYTES_PER_LINE * DUMP_LINE_COUNT;
 
-/** First printable ASCII code point (space). */
+/**
+ * First printable ASCII code point (space).
+ */
 const ASCII_PRINTABLE_START = 0x20;
 
-/** Last printable ASCII code point (tilde). */
+/**
+ * Last printable ASCII code point (tilde).
+ */
 const ASCII_PRINTABLE_END = 0x7E;
 
 /**
@@ -57,25 +73,35 @@ export function generateHexDump(
     readonly totalSize?: number;
   },
 ): string {
-  /** Original file size; differs from buffer length when caller pre-truncated. */
+  /**
+   * Original file size; differs from buffer length when caller pre-truncated.
+   */
   const fullSize = totalSize ?? buffer
     .length;
-  /** Capped output length so very large buffers do not produce unbounded dumps. */
+  /**
+   * Capped output length so very large buffers do not produce unbounded dumps.
+   */
   const limit = Math.min(
     buffer.length,
     HEX_DUMP_MAX_BYTES,
   );
-  /** Accumulator joined with newlines as the final return. */
+  /**
+   * Accumulator joined with newlines as the final return.
+   */
   const lines: string[] = [];
 
   for (let offset = 0; offset < limit; offset += BYTES_PER_LINE) {
-    /** Padded offset shown at the start of each dump row. */
+    /**
+     * Padded offset shown at the start of each dump row.
+     */
     const offsetHex = offset.toString(HEX_RADIX,)
       .padStart(
       OFFSET_WIDTH,
       '0',
     );
-    /** Clamps the final row when the buffer is not a multiple of the row width. */
+    /**
+     * Clamps the final row when the buffer is not a multiple of the row width.
+     */
     const end = Math.min(
       offset + BYTES_PER_LINE,
       limit,
@@ -88,9 +114,13 @@ export function generateHexDump(
       end,
     );
 
-    /** Per-byte hex strings joined with spaces below. */
+    /**
+     * Per-byte hex strings joined with spaces below.
+     */
     const hexParts: string[] = [];
-    /** ASCII gutter built byte-by-byte alongside the hex parts. */
+    /**
+     * ASCII gutter built byte-by-byte alongside the hex parts.
+     */
     let ascii = '';
 
     for (let i = 0; i < BYTES_PER_LINE; i++) {

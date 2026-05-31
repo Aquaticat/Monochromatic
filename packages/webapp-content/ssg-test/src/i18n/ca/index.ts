@@ -1,6 +1,8 @@
 import type { Translation, } from '../i18n-types.ts';
 
-/** Catalan translations. */
+/**
+ * Catalan translations.
+ */
 const ca = {
   siteName: 'Aquaticat',
   siteDescription: 'Canviant el món, un disseny a la vegada',

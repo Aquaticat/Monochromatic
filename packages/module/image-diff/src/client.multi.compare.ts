@@ -55,7 +55,9 @@ export async function compareAll({
   readonly imageA: ImageInput;
   readonly imageB: ImageInput;
 },): Promise<readonly MultiProviderComparisonEntry[]> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: compareAll.name,
     l,
@@ -74,7 +76,9 @@ export async function compareAll({
    */
   const allResults = await Promise.allSettled([
     ...ALL_PROVIDERS.map(async function compareWithProvider(provider,) {
-      /** Single-provider embedding comparison; paired with the provider name in the returned entry. */
+      /**
+       * Single-provider embedding comparison; paired with the provider name in the returned entry.
+       */
       const result = await compareEmbeddings({
         imageA,
         imageB,
@@ -91,27 +95,37 @@ export async function compareAll({
     },),
   ],);
 
-  /** Last settlement is the description call. */
+  /**
+   * Last settlement is the description call.
+   */
   const descriptionSettlement = allResults.at(-1,);
   if (descriptionSettlement === undefined)
     throw new Error('unreachable: allResults is non-empty',);
-  /** Textual diff description when the description call succeeded; `ABSENT` on rejection. */
+  /**
+   * Textual diff description when the description call succeeded; `ABSENT` on rejection.
+   */
   const description = descriptionSettlement.status
     === 'fulfilled'
     ? descriptionSettlement.value as string | typeof ABSENT
     : ABSENT;
 
-  /** All settlements before the last are provider results. */
+  /**
+   * All settlements before the last are provider results.
+   */
   const providerSettlements = allResults.slice(
     0,
     -1,
   );
-  /** Collected per-provider comparison entries that resolved successfully; rejections are logged and skipped. */
+  /**
+   * Collected per-provider comparison entries that resolved successfully; rejections are logged and skipped.
+   */
   const successfulEntries: MultiProviderComparisonEntry[] = [];
   for (const settlement of providerSettlements) {
     if (settlement.status
       === 'fulfilled') {
-      /** Fulfilled settlement value reshaped via assertion; `allSettled` returns `unknown` for tuple inputs. */
+      /**
+       * Fulfilled settlement value reshaped via assertion; `allSettled` returns `unknown` for tuple inputs.
+       */
       const entry = settlement.value as {
         provider: Provider;
         result: Omit<ComparisonResult, 'description'>;

@@ -17,7 +17,9 @@ import type {
 
 //region Constants
 
-/** Permissive license SPDX identifiers (uppercase). */
+/**
+ * Permissive license SPDX identifiers (uppercase).
+ */
 const PERMISSIVE_LICENSES = new Set([
   'MIT',
   'BSD-2-CLAUSE',
@@ -33,21 +35,33 @@ const PERMISSIVE_LICENSES = new Set([
 
 //region Repository normalisation
 
-/** Parsed `{owner, repo}` pair returned by the GitHub source parsers. */
+/**
+ * Parsed `{owner, repo}` pair returned by the GitHub source parsers.
+ */
 type GithubOwnerRepo = {
-  /** Captured owner segment. */
+  /**
+   * Captured owner segment.
+   */
   owner: string;
-  /** Captured repo segment with the optional `.git` suffix stripped. */
+  /**
+   * Captured repo segment with the optional `.git` suffix stripped.
+   */
   repo: string;
 };
 
-/** Lowercase shorthand prefix that selects the `github:owner/repo` parser. */
+/**
+ * Lowercase shorthand prefix that selects the `github:owner/repo` parser.
+ */
 const GITHUB_SHORTHAND_PREFIX = 'github:';
 
-/** `.git` suffix stripped from repository URL paths so the canonical URL is clean. */
+/**
+ * `.git` suffix stripped from repository URL paths so the canonical URL is clean.
+ */
 const GIT_SUFFIX = '.git';
 
-/** Lowercase substring that selects the GitHub URL parser branch. */
+/**
+ * Lowercase substring that selects the GitHub URL parser branch.
+ */
 const GITHUB_DOMAIN = 'github.com';
 
 /**
@@ -101,22 +115,32 @@ function parseGithubShorthand(s: string,): GithubOwnerRepo | typeof NOT_SHORTHAN
   {
     return NOT_SHORTHAND;
   }
-  /** Substring after the `github:` prefix; split into owner/repo on the first `/`. */
+  /**
+   * Substring after the `github:` prefix; split into owner/repo on the first `/`.
+   */
   const rest = s.slice(GITHUB_SHORTHAND_PREFIX.length,);
-  /** Position of the first `/`; `-1` or `0` means there is no owner half. */
+  /**
+   * Position of the first `/`; `-1` or `0` means there is no owner half.
+   */
   const slashIdx = rest.indexOf('/',);
   if (slashIdx <= 0)
     return NOT_SHORTHAND;
-  /** Owner segment captured up to the first slash. */
+  /**
+   * Owner segment captured up to the first slash.
+   */
   const owner = rest.slice(
     0,
     slashIdx,
   );
-  /** Repo segment after the slash, with the trailing `.git` (if any) stripped. */
+  /**
+   * Repo segment after the slash, with the trailing `.git` (if any) stripped.
+   */
   const repoRaw = rest.slice(slashIdx + 1,);
   if (repoRaw === '')
     return NOT_SHORTHAND;
-  /** Repo with `.git` stripped when present so the URL form matches the prior regex output. */
+  /**
+   * Repo with `.git` stripped when present so the URL form matches the prior regex output.
+   */
   const repo = repoRaw.endsWith(GIT_SUFFIX,)
     ? repoRaw.slice(
       0,
@@ -146,29 +170,43 @@ function parseGithubShorthand(s: string,): GithubOwnerRepo | typeof NOT_SHORTHAN
  * @returns owner/repo pair, or {@link NOT_GITHUB_URL} when the URL is not on GitHub
  */
 function parseGithubUrl(s: string,): GithubOwnerRepo | typeof NOT_GITHUB_URL {
-  /** Lower-cased copy so the domain scan is case-insensitive; offsets line up with `s`. */
+  /**
+   * Lower-cased copy so the domain scan is case-insensitive; offsets line up with `s`.
+   */
   const lowered = s.toLowerCase();
-  /** Position of the domain in the lower-cased copy. */
+  /**
+   * Position of the domain in the lower-cased copy.
+   */
   const ghIdx = lowered.indexOf(GITHUB_DOMAIN,);
   if (ghIdx === (-1))
     return NOT_GITHUB_URL;
-  /** Index immediately after the domain; the separator byte must live here. */
+  /**
+   * Index immediately after the domain; the separator byte must live here.
+   */
   const afterDomain = ghIdx + GITHUB_DOMAIN
     .length;
   if (afterDomain >= s
     .length)
     return NOT_GITHUB_URL;
-  /** Separator char between domain and path; per the URL forms must be `/` or `:`. */
+  /**
+   * Separator char between domain and path; per the URL forms must be `/` or `:`.
+   */
   const sep = s.charAt(afterDomain,);
   if ((sep !== '/') && (sep !== ':'))
     return NOT_GITHUB_URL;
-  /** Path segment between the separator and the rest of the URL. */
+  /**
+   * Path segment between the separator and the rest of the URL.
+   */
   const tail = s.slice(afterDomain + 1,);
-  /** Position of the slash splitting owner from repo. */
+  /**
+   * Position of the slash splitting owner from repo.
+   */
   const slashIdx = tail.indexOf('/',);
   if (slashIdx <= 0)
     return NOT_GITHUB_URL;
-  /** Owner segment captured up to the splitting slash. */
+  /**
+   * Owner segment captured up to the splitting slash.
+   */
   const owner = tail.slice(
     0,
     slashIdx,
@@ -186,11 +224,15 @@ function parseGithubUrl(s: string,): GithubOwnerRepo | typeof NOT_GITHUB_URL {
    * @returns exclusive end of the repo span
    */
   function scanRepoEnd(from: number,): number {
-    /** Scan cursor; walked forward to the first URL delimiter or end of `tail`. */
+    /**
+     * Scan cursor; walked forward to the first URL delimiter or end of `tail`.
+     */
     let end = from;
     while (end < tail
       .length) {
-      /** Char at cursor; URL delimiters end the repo span. */
+      /**
+       * Char at cursor; URL delimiters end the repo span.
+       */
       const c = tail.charAt(end,);
       if ((c === '/')
         || (c === '?')
@@ -200,14 +242,18 @@ function parseGithubUrl(s: string,): GithubOwnerRepo | typeof NOT_GITHUB_URL {
     }
     return end;
   }
-  /** Repo span before any URL delimiter. */
+  /**
+   * Repo span before any URL delimiter.
+   */
   const repoRaw = tail.slice(
     slashIdx + 1,
     scanRepoEnd(slashIdx + 1,),
   );
   if (repoRaw === '')
     return NOT_GITHUB_URL;
-  /** Repo with the trailing `.git` (if any) stripped. */
+  /**
+   * Repo with the trailing `.git` (if any) stripped.
+   */
   const repo = repoRaw.endsWith(GIT_SUFFIX,)
     ? repoRaw.slice(
       0,
@@ -246,14 +292,22 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
   if ((repoField === undefined) || (repoField === null))
     return REPO_UNPARSEABLE;
 
-  /** `true` when `repository` field is a plain string instead of an object. */
+  /**
+   * `true` when `repository` field is a plain string instead of an object.
+   */
   const isStringForm = (typeof repoField) === 'string';
-  /** Unified string form of `repository`, regardless of plain-string or object shape. */
+  /**
+   * Unified string form of `repository`, regardless of plain-string or object shape.
+   */
   const rawString = isStringForm ? repoField : (repoField.url
     ?? '');
-  /** Optional monorepo sub-directory; only object-form entries carry one. */
+  /**
+   * Optional monorepo sub-directory; only object-form entries carry one.
+   */
   const directory = isStringForm ? undefined : repoField.directory;
-  /** Spread fragment carrying `directory` only when present, so it never lands as explicit `undefined`. */
+  /**
+   * Spread fragment carrying `directory` only when present, so it never lands as explicit `undefined`.
+   */
   const directoryPart = directory === undefined ? {} : { directory, };
 
   if (rawString === '')
@@ -375,11 +429,15 @@ function looksLikePinnedSemver(s: string,): boolean {
    * @returns exclusive end of the digit run
    */
   function scanDigits(from: number,): number {
-    /** Scan cursor; walked forward over each ASCII digit from `from`. */
+    /**
+     * Scan cursor; walked forward over each ASCII digit from `from`.
+     */
     let end = from;
     while (end < s
       .length) {
-      /** Char at cursor; only ASCII digits advance. */
+      /**
+       * Char at cursor; only ASCII digits advance.
+       */
       const c = s.charAt(end,);
       if ((c < '0') || (c > '9'))
         break;
@@ -387,21 +445,27 @@ function looksLikePinnedSemver(s: string,): boolean {
     }
     return end;
   }
-  /** Exclusive end of the major digit run. */
+  /**
+   * Exclusive end of the major digit run.
+   */
   const major = scanDigits(0,);
   if (major === 0)
     return false;
   if (s.charAt(major,)
     !== '.')
     return false;
-  /** Exclusive end of the minor digit run. */
+  /**
+   * Exclusive end of the minor digit run.
+   */
   const minor = scanDigits(major + 1,);
   if (minor === (major + 1))
     return false;
   if (s.charAt(minor,)
     !== '.')
     return false;
-  /** Exclusive end of the patch digit run. */
+  /**
+   * Exclusive end of the patch digit run.
+   */
   const patch = scanDigits(minor + 1,);
   return patch > (minor + 1);
 }
@@ -426,12 +490,18 @@ function looksLikePinnedSemver(s: string,): boolean {
  * ```
  */
 export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
-  /** `true` when `license` field is a plain SPDX string instead of object form. */
+  /**
+   * `true` when `license` field is a plain SPDX string instead of object form.
+   */
   const isStringForm = (typeof license) === 'string';
-  /** Raw license string before normalisation, either field itself or `.type` subfield. */
+  /**
+   * Raw license string before normalisation, either field itself or `.type` subfield.
+   */
   const unnormalised = isStringForm ? license : (license?.type
     ?? '');
-  /** Normalised license string, object form unwrapped, uppercased, trimmed, ready for checks. */
+  /**
+   * Normalised license string, object form unwrapped, uppercased, trimmed, ready for checks.
+   */
   const raw = unnormalised
     .toUpperCase()
     .trim();

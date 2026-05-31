@@ -25,14 +25,18 @@ export function percentile(row: {
     .length
     === 0)
     return 0;
-  /** Ascending copy preserves the caller's readonly input while enabling positional lookup. */
+  /**
+   * Ascending copy preserves the caller's readonly input while enabling positional lookup.
+   */
   const sorted = [...row.samples,].toSorted(function compareAsc(
     a,
     b,
   ) {
     return a - b;
   },);
-  /** Clamped position so out-of-range fractions still resolve to a real sample. */
+  /**
+   * Clamped position so out-of-range fractions still resolve to a real sample.
+   */
   const index = Math.min(
     sorted.length
       - 1,

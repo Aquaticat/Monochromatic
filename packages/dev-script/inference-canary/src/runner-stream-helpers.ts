@@ -37,7 +37,9 @@ import type {
  * ```
  */
 export class PartialCompletionError extends Error {
-  /** Partial completion data collected before the stream was aborted */
+  /**
+   * Partial completion data collected before the stream was aborted
+   */
   readonly partialResult: CompletionResult;
 
   /**
@@ -69,9 +71,13 @@ export class PartialCompletionError extends Error {
  * ```
  */
 type LogTimingOptions = {
-  /** Probe/call label for log prefix */
+  /**
+   * Probe/call label for log prefix
+   */
   readonly probeName: string;
-  /** Collected timing data */
+  /**
+   * Collected timing data
+   */
   readonly timing: StreamTiming;
 };
 
@@ -95,12 +101,16 @@ export function logTiming({
   probeName,
   timing,
 }: LogTimingOptions,): void {
-  /** Timing-specific logger tagged with the call label. */
+  /**
+   * Timing-specific logger tagged with the call label.
+   */
   const rl = tagged({
     tag: `timing:${probeName}`,
     l,
   },);
-  /** Total stream duration rendered as seconds with one decimal, suitable for terse human log lines. */
+  /**
+   * Total stream duration rendered as seconds with one decimal, suitable for terse human log lines.
+   */
   const totalSeconds = (timing.totalMs
     / MS_PER_SECOND).toFixed(1,);
   rl.info(
@@ -118,13 +128,21 @@ export function logTiming({
  * ```
  */
 type BuildStreamUsageOptions = {
-  /** Tokens in the prompt */
+  /**
+   * Tokens in the prompt
+   */
   readonly promptTokens: number;
-  /** Tokens in the generated completion */
+  /**
+   * Tokens in the generated completion
+   */
   readonly completionTokens: number;
-  /** Sum of prompt and completion tokens */
+  /**
+   * Sum of prompt and completion tokens
+   */
   readonly totalTokens: number;
-  /** Tokens used for internal reasoning, omitted when the model does not report them */
+  /**
+   * Tokens used for internal reasoning, omitted when the model does not report them
+   */
   readonly reasoningTokens?: number;
 };
 
@@ -178,15 +196,25 @@ export function buildStreamUsage({
  * ```
  */
 type BuildResultOptions = {
-  /** Collected content deltas */
+  /**
+   * Collected content deltas
+   */
   readonly chunks: readonly string[];
-  /** Collected reasoning deltas */
+  /**
+   * Collected reasoning deltas
+   */
   readonly reasoningChunks: readonly string[];
-  /** Computed timing breakdown */
+  /**
+   * Computed timing breakdown
+   */
   readonly timing: StreamTiming;
-  /** Normalized token usage, omitted when the API reported none */
+  /**
+   * Normalized token usage, omitted when the API reported none
+   */
   readonly usage?: StreamUsage;
-  /** Stop reason from the final chunk, omitted when not reported */
+  /**
+   * Stop reason from the final chunk, omitted when not reported
+   */
   readonly finishReason?: string;
 };
 

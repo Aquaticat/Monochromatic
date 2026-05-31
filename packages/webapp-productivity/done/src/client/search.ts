@@ -16,13 +16,21 @@ import './components/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/search-bar.ts';
 
-/** Shape of the JSON blob embedded in the search page by the server. */
+/**
+ * Shape of the JSON blob embedded in the search page by the server.
+ */
 type SearchPageData = {
-  /** User's search query string. */
+  /**
+   * User's search query string.
+   */
   query: string;
-  /** Task results matching the query. */
+  /**
+   * Task results matching the query.
+   */
   results: SearchTask[];
-  /** All known tags for the tag chip display. */
+  /**
+   * All known tags for the tag chip display.
+   */
   availableTags: string[];
 };
 
@@ -42,7 +50,9 @@ function handleOpen(taskId: string,): void {
  * @param event - `search` CustomEvent carrying the typed query
  */
 function handleSearch(event: CustomEvent<{ query: string; }>,): void {
-  /** Search-bar query text destructured for the URL builder below. */
+  /**
+   * Search-bar query text destructured for the URL builder below.
+   */
   const { query, } = event.detail;
   globalThis.location
     .href = query.length
@@ -68,15 +78,21 @@ async function handleComplete(taskId: string,): Promise<void> {
 injectCSS(globalStyles,);
 injectCSS(searchStyles,);
 
-/** Deserialized page data containing search query, results, and available tags. */
+/**
+ * Deserialized page data containing search query, results, and available tags.
+ */
 const pageData = readPageData<SearchPageData>();
 
-/** Raw DOM element for the `#app` container. */
+/**
+ * Raw DOM element for the `#app` container.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Validated `#app` container element. */
+/**
+ * Validated `#app` container element.
+ */
 const app = appElement;
 
 // Listen for search events from the search-bar component
@@ -98,7 +114,9 @@ if (pageData.query
     },),
   );
 
-  /** Tags surfaced as quick-pick chips when the user has not typed anything yet. */
+  /**
+   * Tags surfaced as quick-pick chips when the user has not typed anything yet.
+   */
   const { availableTags, } = pageData;
   if (availableTags.length
     > 0) {
@@ -124,7 +142,9 @@ if (pageData.query
   }
 }
 else {
-  /** Container appended below; populated by iterating `pageData.results`. */
+  /**
+   * Container appended below; populated by iterating `pageData.results`.
+   */
   const resultList = h({
     tag: 'ul',
     class: 'task-list',

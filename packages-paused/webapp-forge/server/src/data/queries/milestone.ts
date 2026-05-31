@@ -135,7 +135,9 @@ export async function clearIssueMilestone(issueId: string,): Promise<void> {
  * ```
  */
 export async function getIssueMilestoneId(issueId: string,): Promise<string | undefined> {
-  /** Single junction row; `undefined` when the issue has no milestone. */
+  /**
+   * Single junction row; `undefined` when the issue has no milestone.
+   */
   const row = await get<{ readonly milestone_id: string; }>({
     sql: 'SELECT milestone_id FROM issue_milestone WHERE issue_id = ?',
     params: [issueId,],

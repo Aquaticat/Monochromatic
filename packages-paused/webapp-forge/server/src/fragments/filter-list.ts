@@ -22,13 +22,21 @@ import {
  * View-model fed to {@link renderFilterList}.
  */
 export type FilterListData = {
-  /** Repo owner login. */
+  /**
+   * Repo owner login.
+   */
   readonly ownerLogin: string;
-  /** Repo name. */
+  /**
+   * Repo name.
+   */
   readonly repoName: string;
-  /** Filter facet labels for display. */
+  /**
+   * Filter facet labels for display.
+   */
   readonly facetLabel: string;
-  /** Issue summaries, sorted by `updatedAt` desc. */
+  /**
+   * Issue summaries, sorted by `updatedAt` desc.
+   */
   readonly issues: readonly {
     readonly id: string;
     readonly number: number;
@@ -116,7 +124,9 @@ function issueRow(props: {
  * ```
  */
 export function renderFilterList(data: FilterListData,): SafeHtml {
-  /** Per-issue row HTML rendered into the filter list. */
+  /**
+   * Per-issue row HTML rendered into the filter list.
+   */
   const rows = data.issues
     .map(function eachIssue(issue,) {
     return issueRow({

@@ -23,13 +23,19 @@ type SessionStartSource = 'startup' | 'resume' | 'clear' | 'compact';
 type SessionStartInput = HookInputBase & {
   hook_event_name: 'SessionStart';
 
-  /** How the session was initiated. */
+  /**
+   * How the session was initiated.
+   */
   source: SessionStartSource;
 
-  /** Model identifier for the session. */
+  /**
+   * Model identifier for the session.
+   */
   model: string;
 
-  /** Agent name when started with `claude --agent <name>`. */
+  /**
+   * Agent name when started with `claude --agent <name>`.
+   */
   agent_type?: string;
 };
 
@@ -41,7 +47,9 @@ type SessionStartOutput = HookOutputBase & {
   hookSpecificOutput?: {
     hookEventName: 'SessionStart';
 
-    /** Context added to Claude's conversation. */
+    /**
+     * Context added to Claude's conversation.
+     */
     additionalContext?: string;
   };
 };
@@ -67,7 +75,9 @@ type SessionEndReason =
 type SessionEndInput = HookInputBase & {
   hook_event_name: 'SessionEnd';
 
-  /** Why the session ended. */
+  /**
+   * Why the session ended.
+   */
   reason: SessionEndReason;
 };
 
@@ -103,22 +113,34 @@ type InstructionsMemoryType = 'User' | 'Project' | 'Local' | 'Managed';
 type InstructionsLoadedInput = HookInputBase & {
   hook_event_name: 'InstructionsLoaded';
 
-  /** Absolute path to the loaded instruction file. */
+  /**
+   * Absolute path to the loaded instruction file.
+   */
   file_path: string;
 
-  /** Scope of the file. */
+  /**
+   * Scope of the file.
+   */
   memory_type: InstructionsMemoryType;
 
-  /** Why the file was loaded. */
+  /**
+   * Why the file was loaded.
+   */
   load_reason: InstructionsLoadReason;
 
-  /** Path glob patterns from `paths:` frontmatter, for `path_glob_match` loads. */
+  /**
+   * Path glob patterns from `paths:` frontmatter, for `path_glob_match` loads.
+   */
   globs?: string[];
 
-  /** Path to the file whose access triggered this load, for lazy loads. */
+  /**
+   * Path to the file whose access triggered this load, for lazy loads.
+   */
   trigger_file_path?: string;
 
-  /** Path to the parent instruction file, for `include` loads. */
+  /**
+   * Path to the parent instruction file, for `include` loads.
+   */
   parent_file_path?: string;
 };
 
@@ -149,10 +171,14 @@ type ConfigChangeSource =
 type ConfigChangeInput = HookInputBase & {
   hook_event_name: 'ConfigChange';
 
-  /** Which configuration type changed. */
+  /**
+   * Which configuration type changed.
+   */
   source: ConfigChangeSource;
 
-  /** Path to the specific file that was modified. */
+  /**
+   * Path to the specific file that was modified.
+   */
   file_path?: string;
 };
 
@@ -161,10 +187,14 @@ type ConfigChangeInput = HookInputBase & {
  * Can block changes (except `policy_settings` which cannot be blocked).
  */
 type ConfigChangeOutput = HookOutputBase & {
-  /** `"block"` prevents the config change from being applied. */
+  /**
+   * `"block"` prevents the config change from being applied.
+   */
   decision?: 'block';
 
-  /** Explanation shown to the user when blocked. */
+  /**
+   * Explanation shown to the user when blocked.
+   */
   reason?: string;
 };
 

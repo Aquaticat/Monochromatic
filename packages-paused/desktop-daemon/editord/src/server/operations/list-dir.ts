@@ -11,11 +11,17 @@ import { readdir, } from 'node:fs/promises';
 import type { DirEntry, } from '../../protocol.ts';
 import { assertWithinRoot, } from './assert-within-root.ts';
 
-/** Result of listing a directory. */
+/**
+ * Result of listing a directory.
+ */
 type ListDirResult = {
-  /** Absolute resolved path. */
+  /**
+   * Absolute resolved path.
+   */
   readonly path: string;
-  /** Directory entries in filesystem order. */
+  /**
+   * Directory entries in filesystem order.
+   */
   readonly entries: readonly DirEntry[];
 };
 
@@ -45,18 +51,24 @@ export async function listDir(
     readonly path: string;
   },
 ): Promise<ListDirResult> {
-  /** Absolute resolved path; throws when `path` escapes `rootDir`, gating the readdir below. */
+  /**
+   * Absolute resolved path; throws when `path` escapes `rootDir`, gating the readdir below.
+   */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
-  /** Raw Dirent results from Node; mapped to the wire shape below to drop unrelated fields. */
+  /**
+   * Raw Dirent results from Node; mapped to the wire shape below to drop unrelated fields.
+   */
   const dirents = await readdir(
     absolutePath,
     { withFileTypes: true, },
   );
 
-  /** Wire-format entries with just `name` and `isDirectory`; client does not need stat data. */
+  /**
+   * Wire-format entries with just `name` and `isDirectory`; client does not need stat data.
+   */
   const entries: DirEntry[] = dirents.map(function toDirEntry(dirent,) {
     return {
       name: dirent.name,

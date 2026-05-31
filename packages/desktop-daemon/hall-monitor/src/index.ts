@@ -16,14 +16,20 @@ import { log, } from './log.ts';
 
 export {};
 
-/** Minutes per cycle interval. */
+/**
+ * Minutes per cycle interval.
+ */
 const INTERVAL_MINUTES = 5;
 
-/** Interval between capture-analyze-notify cycles. */
+/**
+ * Interval between capture-analyze-notify cycles.
+ */
 const INTERVAL_MS = INTERVAL_MINUTES * SECONDS_PER_MINUTE
   * MS_PER_SECOND;
 
-/** Parsed CLI arguments for the hall-monitor daemon. */
+/**
+ * Parsed CLI arguments for the hall-monitor daemon.
+ */
 const { values: args, } = parseArgs({
   args: process.argv
     .slice(2,),
@@ -33,7 +39,9 @@ const { values: args, } = parseArgs({
   }, },
 },);
 
-/** Module-singleton mutable state for the daemon loop flag; wrapped so it satisfies no-module-root-let. */
+/**
+ * Module-singleton mutable state for the daemon loop flag; wrapped so it satisfies no-module-root-let.
+ */
 const state: { running: boolean; } = { running: true, };
 
 /**

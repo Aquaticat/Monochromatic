@@ -32,22 +32,32 @@ import { formatNotes, } from './tool-helpers.ts';
  */
 export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
   try {
-    /** Per-file LSP diagnostics from every Neovim instance, already merged across instances. */
+    /**
+     * Per-file LSP diagnostics from every Neovim instance, already merged across instances.
+     */
     const editorFiles = await getAllDiagnostics();
-    /** Paths fed to oxlint; matches the set of files the editors currently have open. */
+    /**
+     * Paths fed to oxlint; matches the set of files the editors currently have open.
+     */
     const allPaths = editorFiles.map(function extractPath(fileEntry,) {
       return fileEntry.path;
     },);
 
-    /** CLI lint output keyed by absolute path, plus any notes (e.g. unsaved-buffer caveat). */
+    /**
+     * CLI lint output keyed by absolute path, plus any notes (e.g. unsaved-buffer caveat).
+     */
     const lintResult = await runOxlint({ files: allPaths, },);
 
     //region Merge editor and lint diagnostics per file
-    /** Path-keyed accumulator that holds editor+lint merge per file before the final result list. */
+    /**
+     * Path-keyed accumulator that holds editor+lint merge per file before the final result list.
+     */
     const mergedByPath = new Map<string, Diagnostic[]>();
 
     for (const fileEntry of editorFiles) {
-      /** Lint diagnostics for this path; empty when oxlint produced none, which still yields a clean editor-only merge. */
+      /**
+       * Lint diagnostics for this path; empty when oxlint produced none, which still yields a clean editor-only merge.
+       */
       const lintDiags = lintResult.diagnostics
         .get(fileEntry.path,)
         ?? [];
@@ -71,7 +81,9 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
     }
     //endregion Merge editor and lint diagnostics per file
 
-    /** Final list shape consumed by the MCP response; one entry per file with merged diagnostics. */
+    /**
+     * Final list shape consumed by the MCP response; one entry per file with merged diagnostics.
+     */
     const result: FileDiagnostics[] = [...mergedByPath.entries(),].map(
       function toFileDiagnostics([path, diagnostics,],) {
         return {
@@ -91,9 +103,13 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
       };
     }
 
-    /** Per-file text blocks; each block has the path header followed by indented diagnostic lines. */
+    /**
+     * Per-file text blocks; each block has the path header followed by indented diagnostic lines.
+     */
     const sections = result.map(function formatSection(fileEntry,) {
-      /** Diagnostic lines for this file; indented two spaces so the path header reads as the section title. */
+      /**
+       * Diagnostic lines for this file; indented two spaces so the path header reads as the section title.
+       */
       const lines = fileEntry.diagnostics
         .map(function formatLine(diagnostic,) {
         return formatDiagnostic({
@@ -112,7 +128,9 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
     };
   }
   catch (err: unknown) {
-    /** Surface-friendly error text for the MCP response; preserves `Error.message` when available, otherwise stringifies. */
+    /**
+     * Surface-friendly error text for the MCP response; preserves `Error.message` when available, otherwise stringifies.
+     */
     const message = err instanceof Error ? err.message : String(err,);
     console.error(
       '[mcp-nvim] get_all_diagnostics failed:',

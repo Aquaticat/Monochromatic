@@ -7,13 +7,19 @@
  * or cancellation.
  */
 
-/** Cancels a pending typewriter timer. */
+/**
+ * Cancels a pending typewriter timer.
+ */
 export type Cancel = () => void;
 
-/** Minimum per-character interval in milliseconds. */
+/**
+ * Minimum per-character interval in milliseconds.
+ */
 const MIN_INTERVAL_MS = 8;
 
-/** Milliseconds per second, used to convert chars-per-second to interval. */
+/**
+ * Milliseconds per second, used to convert chars-per-second to interval.
+ */
 const MS_PER_SECOND = 1_000;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `target` is a live `HTMLElement` whose `textContent` is mutated each tick; deep-readonly cannot describe the DOM-mount contract. */
@@ -53,12 +59,16 @@ export function typewrite(
   done: Promise<void>;
 } {
   target.textContent = '';
-  /** Per-character delay derived from `charsPerSecond`, floored at 8 ms. */
+  /**
+   * Per-character delay derived from `charsPerSecond`, floored at 8 ms.
+   */
   const interval = Math.max(
     MIN_INTERVAL_MS,
     Math.floor(MS_PER_SECOND / charsPerSecond,),
   );
-  /** Mutable runtime state for the typewriter (cancellation, cursor index). */
+  /**
+   * Mutable runtime state for the typewriter (cancellation, cursor index).
+   */
   const state: {
     cancelled: boolean;
     index: number;
@@ -73,9 +83,13 @@ export function typewrite(
    * inside the timer callback when the reveal completes or cancels.
    */
   /* oxlint-disable eslint-plugin-promise/avoid-new -- only way to await setInterval lifecycle; promise is local to this call. */
-  /** Promise resolved when the reveal completes or is cancelled. */
+  /**
+   * Promise resolved when the reveal completes or is cancelled.
+   */
   const done = new Promise<void>(function run(resolve,): void {
-    /** Repeating timer driving the per-character reveal. */
+    /**
+     * Repeating timer driving the per-character reveal.
+     */
     const timer = globalThis.setInterval(
       function step(): void {
         if (state.cancelled) {

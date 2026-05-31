@@ -10,13 +10,17 @@ import {
   tagged,
 } from './log.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'exec',
   l: parentLogger,
 },);
 
-/** Exit code for command-not-found errors. */
+/**
+ * Exit code for command-not-found errors.
+ */
 const EXIT_NOT_FOUND = 127;
 
 /**
@@ -37,16 +41,22 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
     === 0)
     throw new Error('execvp: empty command array',);
 
-  /** First token separated so the args slice below can pass the rest to Bun.spawn. */
+  /**
+   * First token separated so the args slice below can pass the rest to Bun.spawn.
+   */
   const [executable,] = command;
   if (executable === undefined)
     throw new Error('execvp: unreachable (length checked above)',);
-  /** Arguments without the executable, ready to feed Bun.spawn's separate argv parameter. */
+  /**
+   * Arguments without the executable, ready to feed Bun.spawn's separate argv parameter.
+   */
   const args = command.slice(1,);
 
   l.debug(`exec: ${executable} ${args.join(' ',)}`,);
 
-  /** Spawned-process handle; consumed by the exited callback to propagate the exit code. */
+  /**
+   * Spawned-process handle; consumed by the exited callback to propagate the exit code.
+   */
   const proc = Bun.spawn(
     [
       executable,

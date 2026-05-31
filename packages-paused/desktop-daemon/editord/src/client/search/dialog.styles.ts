@@ -15,19 +15,29 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Overlay width as percentage of viewport inline size: 60%. */
+/**
+ * Overlay width as percentage of viewport inline size: 60%.
+ */
 const OVERLAY_WIDTH = 60;
 
-/** Maximum overlay height in dynamic viewport block units: 70. */
+/**
+ * Maximum overlay height in dynamic viewport block units: 70.
+ */
 const OVERLAY_MAX_HEIGHT = 70;
 
-/** Input padding in `rem`: 0.75 = (2 + 1) / (2 * 2). */
+/**
+ * Input padding in `rem`: 0.75 = (2 + 1) / (2 * 2).
+ */
 const INPUT_PADDING = (2 + 1) / (2 * 2);
 
-/** Backdrop opacity: 0.5 = 1 / 2. */
+/**
+ * Backdrop opacity: 0.5 = 1 / 2.
+ */
 const BACKDROP_ALPHA = 1 / 2;
 
-/** Dialog and input styles for the search overlay. */
+/**
+ * Dialog and input styles for the search overlay.
+ */
 export const DIALOG_STYLES: string = [
   $({
     rule: 'dialog[open]',

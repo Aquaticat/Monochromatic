@@ -8,7 +8,9 @@
 import { rawString, } from '../i18n/runtime.ts';
 import { chat, } from '../llm/index.ts';
 
-/** Same truncation cap as the chapter generator. */
+/**
+ * Same truncation cap as the chapter generator.
+ */
 const PAPER_TEXT_BUDGET = 60_000;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `signal` is a Web `AbortSignal` (external SDK with mutating methods); deep-readonly cannot apply, and the function only reads the bag before forwarding to `chat`. */
@@ -61,7 +63,9 @@ export async function askPersona(
    * same accessor keeps these prompts immune to future i18n edits that
    * might introduce them.
    */
-  /** Persona prompt assembled with the paper body so the model stays grounded. */
+  /**
+   * Persona prompt assembled with the paper body so the model stays grounded.
+   */
   const systemMessage = `${rawString('persona',)}\n\n${
     rawString('askInstruction',)
   }\n\nPaper text follows:\n---BEGIN PAPER---\n${truncated}\n---END PAPER---`;

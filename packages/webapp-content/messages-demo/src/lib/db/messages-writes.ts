@@ -19,7 +19,9 @@ import db, {
  */
 export const MAX_REVISIONS = 10;
 
-/** Outcome codes returned by the edit handler. */
+/**
+ * Outcome codes returned by the edit handler.
+ */
 export type EditOutcome =
   | {
     readonly kind: 'ok';
@@ -62,7 +64,9 @@ export async function editMessage(
 ): Promise<EditOutcome> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
-    /** Current message row; drives the outcome variant based on existence, ownership, and revision cap. */
+    /**
+     * Current message row; drives the outcome variant based on existence, ownership, and revision cap.
+     */
     const message = await get<{
       user_id: string;
       revision: number;
@@ -87,7 +91,9 @@ export async function editMessage(
       await db.exec('ROLLBACK',);
       return { kind: 'capped', };
     }
-    /** Child draft row; absent or mismatched ownership becomes `forbidden`. */
+    /**
+     * Child draft row; absent or mismatched ownership becomes `forbidden`.
+     */
     const newDraft = await get<{
       user_id: string;
       finalized: number;
@@ -102,9 +108,13 @@ export async function editMessage(
       return { kind: 'forbidden', };
     }
 
-    /** Captured before the UPDATE so messages.updated_at reflects the commit moment. */
+    /**
+     * Captured before the UPDATE so messages.updated_at reflects the commit moment.
+     */
     const now = Date.now();
-    /** Incremented revision returned to the handler so it can echo the new value. */
+    /**
+     * Incremented revision returned to the handler so it can echo the new value.
+     */
     const newRevision = message.revision
       + 1;
     await run({
@@ -138,7 +148,9 @@ export async function editMessage(
   }
 }
 
-/** Outcome codes returned by the delete handler. */
+/**
+ * Outcome codes returned by the delete handler.
+ */
 export type DeleteOutcome =
   | { readonly kind: 'ok'; }
   | { readonly kind: 'forbidden'; }
@@ -164,7 +176,9 @@ export async function softDeleteMessage(
     readonly userId: string;
   },
 ): Promise<DeleteOutcome> {
-  /** Current message row; absent or already-deleted becomes `not-found`, mismatched user becomes `forbidden`. */
+  /**
+   * Current message row; absent or already-deleted becomes `not-found`, mismatched user becomes `forbidden`.
+   */
   const message = await get<{
     user_id: string;
     deleted: number;
@@ -181,7 +195,9 @@ export async function softDeleteMessage(
     !== input
     .userId)
     return { kind: 'forbidden', };
-  /** Captured before the UPDATE so deleted_at and updated_at land at the same instant. */
+  /**
+   * Captured before the UPDATE so deleted_at and updated_at land at the same instant.
+   */
   const now = Date.now();
   await run({
     sql: 'UPDATE messages SET deleted_at = ?, updated_at = ? WHERE id = ?',

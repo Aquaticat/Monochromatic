@@ -12,17 +12,23 @@
 
 import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
 
-/** Capability flags consulted by the enhancement modules. */
+/**
+ * Capability flags consulted by the enhancement modules.
+ */
 export type StorageCaps = {
   readonly idb: boolean;
   readonly opfs: boolean;
   readonly localStorage: boolean;
 };
 
-/** Tag used for probe writes so concurrent test rows do not collide. */
+/**
+ * Tag used for probe writes so concurrent test rows do not collide.
+ */
 const PROBE_KEY = '__messages_demo_storage_probe__';
 
-/** Cap on each individual probe in milliseconds. */
+/**
+ * Cap on each individual probe in milliseconds.
+ */
 const PROBE_TIMEOUT_MS = 500;
 
 /**
@@ -75,7 +81,9 @@ async function capProbe(
  * ```
  */
 export async function probeStorage(): Promise<StorageCaps> {
-  /** Three probes run concurrently; the timeout cap applies per-probe. */
+  /**
+   * Three probes run concurrently; the timeout cap applies per-probe.
+   */
   const [idb, opfs, ls,] = await Promise.all([
     capProbe({
       probe: probeIdb(),
@@ -111,7 +119,9 @@ function probeIdb(): Promise<boolean> {
       resolve(false,);
       return;
     }
-    /** Open request held so success and error listeners can be wired before it resolves. */
+    /**
+     * Open request held so success and error listeners can be wired before it resolves.
+     */
     const request = indexedDB.open(
       PROBE_KEY,
       1,
@@ -127,14 +137,20 @@ function probeIdb(): Promise<boolean> {
       'success',
       function onSuccess(): void {
         try {
-          /** Open DB handle reused to start a read-write transaction and to close on completion. */
+          /**
+           * Open DB handle reused to start a read-write transaction and to close on completion.
+           */
           const dbConn = request.result;
-          /** Read-write transaction; the put-then-complete dance verifies actual round-trip. */
+          /**
+           * Read-write transaction; the put-then-complete dance verifies actual round-trip.
+           */
           const tx = dbConn.transaction(
             'probe',
             'readwrite',
           );
-          /** Store handle reused by the put below. */
+          /**
+           * Store handle reused by the put below.
+           */
           const store = tx.objectStore('probe',);
           store.put(
             1,
@@ -188,15 +204,21 @@ async function probeOpfs(): Promise<boolean> {
     return false;
   }
   try {
-    /** OPFS root acquired once and reused by the file handle below. */
+    /**
+     * OPFS root acquired once and reused by the file handle below.
+     */
     const root = await navigator.storage
       .getDirectory();
-    /** Probe file handle, created if absent; deleted in the cleanup below. */
+    /**
+     * Probe file handle, created if absent; deleted in the cleanup below.
+     */
     const handle = await root.getFileHandle(
       PROBE_KEY,
       { create: true, },
     );
-    /** Writable stream; the round-trip write proves OPFS actually accepts data. */
+    /**
+     * Writable stream; the round-trip write proves OPFS actually accepts data.
+     */
     const writable = await handle.createWritable();
     await writable.write('1',);
     await writable.close();
@@ -231,7 +253,9 @@ function probeLocalStorage(): Promise<boolean> {
       PROBE_KEY,
       '1',
     );
-    /** Round-tripped read; compared against the literal we set above. */
+    /**
+     * Round-tripped read; compared against the literal we set above.
+     */
     const value = localStorage.getItem(PROBE_KEY,);
     localStorage.removeItem(PROBE_KEY,);
     return Promise.resolve(value === '1',);

@@ -28,7 +28,9 @@ import { parser, } from './cli-parsers.ts';
 import { handleCompare, } from './cli.compare.ts';
 import { handleEmbed, } from './cli.embed.ts';
 
-/** Parsed CLI result from process.argv. */
+/**
+ * Parsed CLI result from process.argv.
+ */
 const args = runSync(
   parser,
   {
@@ -41,7 +43,9 @@ const args = runSync(
   },
 );
 
-/** Provider/model overrides shared by both subcommands; spread in only when present. */
+/**
+ * Provider/model overrides shared by both subcommands; spread in only when present.
+ */
 const {
   provider,
   model,

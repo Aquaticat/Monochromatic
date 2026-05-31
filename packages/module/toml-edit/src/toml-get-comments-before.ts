@@ -42,7 +42,9 @@ export function tomlGetCommentsBefore(
     readonly path: TomlPath;
   },
 ): readonly TomlComment[] {
-  /** Effective resolution accounts for pending edits and deletes. */
+  /**
+   * Effective resolution accounts for pending edits and deletes.
+   */
   const result = effectiveAt({
     edit,
     path,
@@ -57,7 +59,9 @@ export function tomlGetCommentsBefore(
   if (result.kind
     === 'pending-value')
     return [];
-  /** First AoT element is the one a preceding comment block would attach to in source. */
+  /**
+   * First AoT element is the one a preceding comment block would attach to in source.
+   */
   const node = result.kind
     === 'array-of-tables'
     ? nonNullishOrThrow(result.nodes[0],)

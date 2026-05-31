@@ -29,7 +29,9 @@ import type {
  * ```
  */
 export function createMemoryStorage(): Storage {
-  /** Backing map closed over by every method on the returned adapter. */
+  /**
+   * Backing map closed over by every method on the returned adapter.
+   */
   const map = new Map<string, Uint8Array>();
   return {
     put(

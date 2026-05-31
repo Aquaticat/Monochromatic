@@ -45,9 +45,13 @@ export function parseArrayElements({
   items: readonly Jsonc.Value[];
   tail: FragmentStringJsonc;
 } {
-  /** Leading comments at element start; carries per-element comment. */
+  /**
+   * Leading comments at element start; carries per-element comment.
+   */
   const lead = startsWithComment({ value: tail, },);
-  /** Start positioned at element value or closing bracket. */
+  /**
+   * Start positioned at element value or closing bracket.
+   */
   const start = lead.remainingContent;
 
   if (start.startsWith(']',)) {
@@ -57,7 +61,9 @@ export function parseArrayElements({
     };
   }
 
-  /** Parsed value from current element with propagated comment. */
+  /**
+   * Parsed value from current element with propagated comment.
+   */
   const {
     parsed,
     remaining,
@@ -65,7 +71,9 @@ export function parseArrayElements({
     value: start,
     context: lead,
   },);
-  /** Separator decision following the element. */
+  /**
+   * Separator decision following the element.
+   */
   const decision = expectArraySeparatorOrEnd(remaining,);
   if (decision.kind
     === 'end') {
@@ -114,9 +122,13 @@ export function customParserForArray(
   },
 ): Jsonc.Array & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip: Drop the opening '[' then consume leading comments/space
-  /** Tail after stripping the opening '[' to keep pointer immutable. */
+  /**
+   * Tail after stripping the opening '[' to keep pointer immutable.
+   */
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
-  /** Array-level comment from context and header tail inside brackets. */
+  /**
+   * Array-level comment from context and header tail inside brackets.
+   */
   const {
     arrayComment,
     tail: headerTail,
@@ -127,11 +139,15 @@ export function customParserForArray(
   //endregion Entry and comment skip
 
   //region Empty array fast-exit: Handle immediate closing bracket
-  /** Leading comments/spaces directly inside '[' before first element or ']'. */
+  /**
+   * Leading comments/spaces directly inside '[' before first element or ']'.
+   */
   const insideLead = startsWithComment({ value: headerTail, },);
   if (insideLead.remainingContent
     .startsWith(']',)) {
-    /** Combined array-level comment when header and inside comments are present. */
+    /**
+     * Combined array-level comment when header and inside comments are present.
+     */
     const finalComment = arrayComment && insideLead
       .comment
       ? mergeComments({
@@ -152,7 +168,9 @@ export function customParserForArray(
   //endregion Empty array fast-exit
 
   //region Element recursion: Delegate to exported pure helper
-  /** Parsed items and tail after the terminating ']'. */
+  /**
+   * Parsed items and tail after the terminating ']'.
+   */
   const {
     items,
     tail,

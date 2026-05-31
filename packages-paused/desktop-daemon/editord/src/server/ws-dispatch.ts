@@ -25,7 +25,9 @@ import {
   sendJson,
 } from './ws-send.ts';
 
-/** Tagged logger for the dispatch subsystem. */
+/**
+ * Tagged logger for the dispatch subsystem.
+ */
 const l = tagged({
   tag: 'ws-dispatch',
   l: rootLogger,
@@ -70,7 +72,9 @@ export async function dispatchMessage(
     readonly dirWatcher: DirWatcher | null;
   },
 ): Promise<void> {
-  /** Untyped intermediate so the shape can be validated before assertion. */
+  /**
+   * Untyped intermediate so the shape can be validated before assertion.
+   */
   const raw: unknown = JSON.parse(messageText,);
   if (((typeof raw) !== 'object')
     || (raw === null)
@@ -87,14 +91,18 @@ export async function dispatchMessage(
     return;
   }
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- shape validated above: object with string `type`; individual handlers check discriminants */
-  /** Narrowed view used by every handler branch below. */
+  /**
+   * Narrowed view used by every handler branch below.
+   */
   const parsed = raw as ClientMessage;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
   try {
     if (parsed.type
       === 'open') {
-      /** File contents and metadata returned to the requesting peer. */
+      /**
+       * File contents and metadata returned to the requesting peer.
+       */
       const result = await openFile({
         rootDir,
         path: parsed.path,
@@ -120,7 +128,9 @@ export async function dispatchMessage(
     }
     if (parsed.type
       === 'save') {
-      /** Resolved path used to suppress the matching watcher event below. */
+      /**
+       * Resolved path used to suppress the matching watcher event below.
+       */
       const absolutePath = await saveFile({
         rootDir,
         path: parsed.path,
@@ -142,7 +152,9 @@ export async function dispatchMessage(
     }
     if (parsed.type
       === 'listDir') {
-      /** Directory entries and metadata returned to the requesting peer. */
+      /**
+       * Directory entries and metadata returned to the requesting peer.
+       */
       const result = await listDir({
         rootDir,
         path: parsed.path,
@@ -161,7 +173,9 @@ export async function dispatchMessage(
       === 'search') {
       peerSearchControllers.get(peer,)
         ?.abort();
-      /** Stored on the peer so a subsequent search request can cancel this one. */
+      /**
+       * Stored on the peer so a subsequent search request can cancel this one.
+       */
       const controller = new AbortController();
       peerSearchControllers.set(
         peer,
@@ -171,7 +185,9 @@ export async function dispatchMessage(
         rootDir,
         path: parsed.scope,
       },);
-      /** Search hits returned only when the controller has not been aborted. */
+      /**
+       * Search hits returned only when the controller has not been aborted.
+       */
       const result = await search({
         rootDir: parsed.scope,
         query: parsed.query,
@@ -222,7 +238,9 @@ export async function dispatchMessage(
     },);
   }
   catch (error) {
-    /** Normalised to a string so the error reply is JSON-safe. */
+    /**
+     * Normalised to a string so the error reply is JSON-safe.
+     */
     const msg = extractErrorMessage({ error, },);
     /**
      * Filesystem race-condition class: target vanished or changed type between the
@@ -241,7 +259,9 @@ export async function dispatchMessage(
       l.warn(`dispatch failed (transient race): ${msg}`,);
     else
       l.error(`dispatch failed: ${msg}`,);
-    /** Undefined for notifications, suppressing the targeted reply below. */
+    /**
+     * Undefined for notifications, suppressing the targeted reply below.
+     */
     const requestId = 'id' in parsed ? (parsed as { readonly id: string; }).id : undefined;
     if (requestId !== undefined) {
       sendJson({

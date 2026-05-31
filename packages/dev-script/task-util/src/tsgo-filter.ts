@@ -40,7 +40,9 @@ import spawn from 'nano-spawn';
 
 //region Incremental cache cleanup
 
-/** Glob patterns for TypeScript incremental caches that `task-tsgo` refreshes before each run. */
+/**
+ * Glob patterns for TypeScript incremental caches that `task-tsgo` refreshes before each run.
+ */
 const BUILD_INFO_GLOBS = [
   'dist/**/*.tsbuildinfo',
   '.cache/typescript/**/*.tsbuildinfo',
@@ -65,7 +67,9 @@ const BUILD_INFO_GLOBS = [
  * ```
  */
 async function removeStaleBuildInfo(): Promise<void> {
-  /** Buffered tsbuildinfo paths collected from every configured async glob; unlinked concurrently below. */
+  /**
+   * Buffered tsbuildinfo paths collected from every configured async glob; unlinked concurrently below.
+   */
   const entries = (await Promise.all(
     BUILD_INFO_GLOBS.map(function collectBuildInfo(pattern,): Promise<string[]> {
       return Array.fromAsync(glob(pattern,),);
@@ -81,7 +85,9 @@ async function removeStaleBuildInfo(): Promise<void> {
 
 //region Diagnostic line detection
 
-/** Literal text that opens the error code on every tsgo diagnostic line. */
+/**
+ * Literal text that opens the error code on every tsgo diagnostic line.
+ */
 const ERROR_CODE_TOKEN = '): error TS';
 
 /**
@@ -101,11 +107,15 @@ function endOfDigitRun({
   readonly from: number;
 },): number {
   return (function walk(): number {
-    /** Cursor advanced across the ASCII digit run; stops at the first non-digit or the end of `s`. */
+    /**
+     * Cursor advanced across the ASCII digit run; stops at the first non-digit or the end of `s`.
+     */
     let idx = from;
     while (idx < s
       .length) {
-      /** Char at the cursor; only ASCII digits advance the run. */
+      /**
+       * Char at the cursor; only ASCII digits advance the run.
+       */
       const c = s.charAt(idx,);
       if ((c < '0') || (c > '9'))
         break;
@@ -147,10 +157,14 @@ export function isDiagnosticLine(line: string,): boolean {
     return (function walk(): number {
       if (pos <= 0)
         return 0;
-      /** Cursor walked left across the ASCII digit run; the loop guard keeps it at or above 0. */
+      /**
+       * Cursor walked left across the ASCII digit run; the loop guard keeps it at or above 0.
+       */
       let p = pos;
       while (p > 0) {
-        /** Char just left of the cursor; a non-digit ends the back-walk. */
+        /**
+         * Char just left of the cursor; a non-digit ends the back-walk.
+         */
         const c = line.charAt(p - 1,);
         if ((c < '0') || (c > '9'))
           break;
@@ -163,14 +177,18 @@ export function isDiagnosticLine(line: string,): boolean {
   // Single linear walk over each `ERROR_CODE_TOKEN` occurrence; `from` advances
   // monotonically past every rejected candidate, so no prefix is ever rescanned.
   for (let from = 0;;) {
-    /** Position of the literal error-code token; `-1` ends the search. */
+    /**
+     * Position of the literal error-code token; `-1` ends the search.
+     */
     const codeIdx = line.indexOf(
       ERROR_CODE_TOKEN,
       from,
     );
     if (codeIdx === (-1))
       return false;
-    /** Exclusive end of the trailing digit run; must be followed by `:` to match. */
+    /**
+     * Exclusive end of the trailing digit run; must be followed by `:` to match.
+     */
     const codeEnd = endOfDigitRun({
       s: line,
       from: codeIdx + ERROR_CODE_TOKEN
@@ -184,16 +202,22 @@ export function isDiagnosticLine(line: string,): boolean {
       from = codeIdx + 1;
       continue;
     }
-    /** Exclusive end of the digits in `<col>` (between the `,` and `): error TS`). */
+    /**
+     * Exclusive end of the digits in `<col>` (between the `,` and `): error TS`).
+     */
     const colEnd = codeIdx;
-    /** Inclusive start of the column digit run; comma boundary must sit just before. */
+    /**
+     * Inclusive start of the column digit run; comma boundary must sit just before.
+     */
     const colStart = startOfDigitsBackwards(colEnd,);
     if ((colStart === colEnd) || (line.charAt(colStart - 1,)
       !== ',')) {
       from = codeIdx + 1;
       continue;
     }
-    /** Inclusive start of the line digit run; opening `(` must sit just before. */
+    /**
+     * Inclusive start of the line digit run; opening `(` must sit just before.
+     */
     const lineStart = startOfDigitsBackwards(colStart - 1,);
     if ((lineStart === (colStart - 1)) || (line.charAt(lineStart - 1,)
       !== '(')) {
@@ -348,14 +372,22 @@ export function filterTsgoOutput(output: string,): {
     };
   }
 
-  /** Source output split per line so each diagnostic header and continuation can be classified independently. */
+  /**
+   * Source output split per line so each diagnostic header and continuation can be classified independently.
+   */
   const lines = output.split('\n',);
-  /** Lines retained after filtering; rejoined with `\n` to reconstruct the output stream. */
+  /**
+   * Lines retained after filtering; rejoined with `\n` to reconstruct the output stream.
+   */
   const kept: string[] = [];
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: droppingContinuation and hasRemainingErrors are mutated by four branches across loop iterations, with side effects on `kept`. */
-  /** True while the loop is inside a suppressed diagnostic block, so its continuation lines are also dropped. */
+  /**
+   * True while the loop is inside a suppressed diagnostic block, so its continuation lines are also dropped.
+   */
   let droppingContinuation = false;
-  /** True once any non-suppressed diagnostic is retained; the caller uses it to decide the wrapper's exit code. */
+  /**
+   * True once any non-suppressed diagnostic is retained; the caller uses it to decide the wrapper's exit code.
+   */
   let hasRemainingErrors = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
@@ -402,7 +434,9 @@ export function filterTsgoOutput(output: string,): {
  * ```
  */
 async function main(): Promise<void> {
-  /** Arguments forwarded to tsgo, defaulting to `--build` when none are provided. */
+  /**
+   * Arguments forwarded to tsgo, defaulting to `--build` when none are provided.
+   */
   const tsgoArgs = process.argv
     .length
     > 2
@@ -414,7 +448,9 @@ async function main(): Promise<void> {
   await removeStaleBuildInfo();
 
   try {
-    /** Successful spawn result; stdout/stderr are forwarded unfiltered when tsgo exits 0. */
+    /**
+     * Successful spawn result; stdout/stderr are forwarded unfiltered when tsgo exits 0.
+     */
     const result = await spawn(
       'tsgo',
       [...tsgoArgs,],
@@ -439,7 +475,9 @@ async function main(): Promise<void> {
         && ('exitCode' in error)
     ) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
-      /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
+      /**
+       * Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter.
+       */
       const subprocessError = error as {
         stdout?: string;
         stderr?: string;
@@ -448,11 +486,15 @@ async function main(): Promise<void> {
       };
       /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-      /** Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
+      /**
+       * Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty.
+       */
       // Filter stdout (where tsgo writes diagnostics)
       const stdoutResult = filterTsgoOutput(subprocessError.stdout
         ?? '',);
-      /** Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
+      /**
+       * Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty.
+       */
       // Filter stderr as well in case tsgo writes diagnostics there
       const stderrResult = filterTsgoOutput(subprocessError.stderr
         ?? '',);

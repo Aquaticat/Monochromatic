@@ -8,61 +8,99 @@
 
 import { rng, } from './rng.ts';
 
-/** Cumulative thresholds that split the distribution into buckets. */
+/**
+ * Cumulative thresholds that split the distribution into buckets.
+ */
 const P50_THRESHOLD = 0.5;
 
-/** 95th percentile threshold. */
+/**
+ * 95th percentile threshold.
+ */
 const P95_THRESHOLD = 0.95;
 
-/** 99th percentile threshold. */
+/**
+ * 99th percentile threshold.
+ */
 const P99_THRESHOLD = 0.99;
 
-/** Lower bound (count) for the P50 bucket of issue counts. */
+/**
+ * Lower bound (count) for the P50 bucket of issue counts.
+ */
 const ISSUES_P50_BASE = 1;
 
-/** Range size (count) for the P50 bucket. */
+/**
+ * Range size (count) for the P50 bucket.
+ */
 const ISSUES_P50_RANGE = 30;
 
-/** Lower bound for the P95 bucket. */
+/**
+ * Lower bound for the P95 bucket.
+ */
 const ISSUES_P95_BASE = 30;
 
-/** Range size for the P95 bucket. */
+/**
+ * Range size for the P95 bucket.
+ */
 const ISSUES_P95_RANGE = 200;
 
-/** Lower bound for the P99 bucket. */
+/**
+ * Lower bound for the P99 bucket.
+ */
 const ISSUES_P99_BASE = 200;
 
-/** Range size for the P99 bucket. */
+/**
+ * Range size for the P99 bucket.
+ */
 const ISSUES_P99_RANGE = 4_800;
 
-/** Lower bound for the tail bucket. */
+/**
+ * Lower bound for the tail bucket.
+ */
 const ISSUES_TAIL_BASE = 5_000;
 
-/** Range size for the tail bucket. */
+/**
+ * Range size for the tail bucket.
+ */
 const ISSUES_TAIL_RANGE = 45_000;
 
-/** Lower bound (count) for the P50 bucket of comment counts. */
+/**
+ * Lower bound (count) for the P50 bucket of comment counts.
+ */
 const COMMENTS_P50_BASE = 0;
 
-/** Range size for the P50 comment bucket. */
+/**
+ * Range size for the P50 comment bucket.
+ */
 const COMMENTS_P50_RANGE = 4;
 
-/** Lower bound for the P95 comment bucket. */
+/**
+ * Lower bound for the P95 comment bucket.
+ */
 const COMMENTS_P95_BASE = 4;
 
-/** Range size for the P95 comment bucket. */
+/**
+ * Range size for the P95 comment bucket.
+ */
 const COMMENTS_P95_RANGE = 30;
 
-/** Lower bound for the P99 comment bucket. */
+/**
+ * Lower bound for the P99 comment bucket.
+ */
 const COMMENTS_P99_BASE = 30;
 
-/** Range size for the P99 comment bucket. */
+/**
+ * Range size for the P99 comment bucket.
+ */
 const COMMENTS_P99_RANGE = 200;
 
-/** Lower bound for the tail comment bucket. */
+/**
+ * Lower bound for the tail comment bucket.
+ */
 const COMMENTS_TAIL_BASE = 200;
 
-/** Range size for the tail comment bucket. */
+/**
+ * Range size for the tail comment bucket.
+ */
 const COMMENTS_TAIL_RANGE = 1_000;
 
 /**
@@ -79,7 +117,9 @@ const COMMENTS_TAIL_RANGE = 1_000;
  * ```
  */
 export function sampleIssueCount(seed: number,): number {
-  /** Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds. */
+  /**
+   * Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds.
+   */
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
     return ISSUES_P50_BASE + Math
@@ -113,7 +153,9 @@ export function sampleIssueCount(seed: number,): number {
  * ```
  */
 export function sampleCommentCount(seed: number,): number {
-  /** Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds. */
+  /**
+   * Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds.
+   */
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
     return COMMENTS_P50_BASE + Math

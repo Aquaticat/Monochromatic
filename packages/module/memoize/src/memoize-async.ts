@@ -75,12 +75,16 @@ export async function memoizeAsync<
 >(
   options: MemoizeAsyncNamedOptions<TArgs, TReturn>,
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
-  /** Caller-provided function plus key derivation extracted from `options` for closure capture. */
+  /**
+   * Caller-provided function plus key derivation extracted from `options` for closure capture.
+   */
   const {
     fn,
     keyFn,
   } = options;
-  /** Cache backend; defaults to a per-instance LRU store so callers without one still get bounded memory. */
+  /**
+   * Cache backend; defaults to a per-instance LRU store so callers without one still get bounded memory.
+   */
   const store: Store = options.store
     ?? await createStore({
       storeId: `memoize-${crypto.randomUUID()}`,
@@ -90,7 +94,9 @@ export async function memoizeAsync<
       },],
     },);
 
-  /** In-flight promises keyed by cache key, deduplicating concurrent calls onto one computation. */
+  /**
+   * In-flight promises keyed by cache key, deduplicating concurrent calls onto one computation.
+   */
   const inflight = new Map<string, Promise<TReturn>>();
 
   /**
@@ -131,15 +137,21 @@ export async function memoizeAsync<
     cacheKey: string;
     args: TArgs;
   }>,): Promise<TReturn> {
-    /** Auto-disposer that clears the inflight entry on scope exit, even on throw. */
+    /**
+     * Auto-disposer that clears the inflight entry on scope exit, even on throw.
+     */
     using _guard = inflightGuard(cacheKey,);
 
-    /** Cached value if present; `ABSENT` signals a miss and triggers recomputation. */
+    /**
+     * Cached value if present; `ABSENT` signals a miss and triggers recomputation.
+     */
     const stored = await store.get<TReturn>(cacheKey,);
     if (stored !== ABSENT)
       return stored;
 
-    /** Freshly computed value persisted to `store` so subsequent calls hit the cache. */
+    /**
+     * Freshly computed value persisted to `store` so subsequent calls hit the cache.
+     */
     const result = await fn(...args,);
     await store.set(
       cacheKey,
@@ -164,12 +176,16 @@ export async function memoizeAsync<
     cacheKey: string;
     args: TArgs;
   }>,): Promise<TReturn> {
-    /** In-flight promise for this key, if any; returning it dedupes concurrent callers. */
+    /**
+     * In-flight promise for this key, if any; returning it dedupes concurrent callers.
+     */
     const existing = inflight.get(cacheKey,);
     if (existing !== undefined)
       return existing;
 
-    /** Newly started computation registered in `inflight` so concurrent callers share it. */
+    /**
+     * Newly started computation registered in `inflight` so concurrent callers share it.
+     */
     const promise = resolveValue({
       cacheKey,
       args,
@@ -196,7 +212,9 @@ export async function memoizeAsync<
       salt,
     }: MemoizedCallOptions<TArgs>,
   ): Promise<TReturn> {
-    /** Composite cache key combining the argument-derived key with the per-call `salt`. */
+    /**
+     * Composite cache key combining the argument-derived key with the per-call `salt`.
+     */
     const cacheKey = buildCacheKey({
       argKey: keyFn(...args,),
       salt,

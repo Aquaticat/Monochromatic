@@ -66,12 +66,18 @@ async function readModelDirs(): Promise<string[]> {
  * ```
  */
 export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
-  /** Lower bound for "recent" in epoch ms; artifacts older than this are ignored. */
+  /**
+   * Lower bound for "recent" in epoch ms; artifacts older than this are ignored.
+   */
   const cutoff = Date.now()
     - TWENTY_FOUR_HOURS_MS;
-  /** Per-model set of probe names that already have a recent initial-pass artifact. */
+  /**
+   * Per-model set of probe names that already have a recent initial-pass artifact.
+   */
   const probePairs = new Map<string, Set<string>>();
-  /** Model labels with a recent whole-model failure (e.g. 429); all probes are skipped for these. */
+  /**
+   * Model labels with a recent whole-model failure (e.g. 429); all probes are skipped for these.
+   */
   const failedModels = new Set<string>();
 
   /**
@@ -80,12 +86,16 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   const modelDirs = await readModelDirs();
 
   for (const modelDir of modelDirs) {
-    /** Absolute path to one model's artifact directory; used as the base for nested artifact scans. */
+    /**
+     * Absolute path to one model's artifact directory; used as the base for nested artifact scans.
+     */
     const modelPath = join(
       LINT_DIR,
       modelDir,
     );
-    /** Names of per-run artifact subdirectories under the current model; empty when readdir fails. */
+    /**
+     * Names of per-run artifact subdirectories under the current model; empty when readdir fails.
+     */
     let artifactDirs: string[] = [];
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential directory reads per model
@@ -110,23 +120,31 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
           rawTimestamp,
           cutoff,
         },)) {
-          /** Path to the failure artifact's meta.json; read to recover the original model label. */
+          /**
+           * Path to the failure artifact's meta.json; read to recover the original model label.
+           */
           const metaPath = join(
             modelPath,
             dirName,
             'meta.json',
           );
           try {
-            /** Raw JSON text of the failure meta file before parsing. */
+            /**
+             * Raw JSON text of the failure meta file before parsing.
+             */
             // oxlint-disable-next-line no-await-in-loop -- sequential meta.json reads within nested artifact scan
             const metaRaw = await readFile(
               metaPath,
               'utf8',
             );
-            /** Parsed failure meta; partial because old artifacts may predate newer fields. */
+            /**
+             * Parsed failure meta; partial because old artifacts may predate newer fields.
+             */
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
             const meta = JSON.parse(metaRaw,) as StoredFailureArtifactMeta;
-            /** Display label for the model; falls back to the directory name when meta has none. */
+            /**
+             * Display label for the model; falls back to the directory name when meta has none.
+             */
             const label = meta.label
               ?? modelDir;
             if (meta.failed
@@ -163,32 +181,44 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
         continue;
       }
 
-      /** Path to the probe artifact's meta.json; needed to resolve the model's display label and the probe name. */
+      /**
+       * Path to the probe artifact's meta.json; needed to resolve the model's display label and the probe name.
+       */
       const metaPath = join(
         modelPath,
         dirName,
         'meta.json',
       );
       try {
-        /** Raw JSON text of the probe meta file before parsing. */
+        /**
+         * Raw JSON text of the probe meta file before parsing.
+         */
         // oxlint-disable-next-line no-await-in-loop -- sequential meta.json reads within nested artifact scan
         const metaRaw = await readFile(
           metaPath,
           'utf8',
         );
-        /** Parsed probe meta; partial because old artifacts may omit `label` or other newer fields. */
+        /**
+         * Parsed probe meta; partial because old artifacts may omit `label` or other newer fields.
+         */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
         const meta = JSON.parse(metaRaw,) as StoredArtifactMeta;
-        /** Display label for the model; falls back to the directory name for legacy artifacts. */
+        /**
+         * Display label for the model; falls back to the directory name for legacy artifacts.
+         */
         const label = meta.label
           ?? modelDir;
-        /** Probe name extracted from the artifact meta; runs are skipped when missing. */
+        /**
+         * Probe name extracted from the artifact meta; runs are skipped when missing.
+         */
         const {
           probe,
         } = meta;
         if (probe === undefined)
           continue;
-        /** Existing probe set for this model label, or a fresh set when this is the first hit. */
+        /**
+         * Existing probe set for this model label, or a fresh set when this is the first hit.
+         */
         const existing = probePairs.get(label,)
           ?? new Set<string>();
         existing.add(probe,);

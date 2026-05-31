@@ -10,7 +10,9 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-/** Output directory for generated static files. */
+/**
+ * Output directory for generated static files.
+ */
 export const DIST = 'dist';
 
 /**
@@ -34,7 +36,9 @@ export async function writePage(
     readonly content: string;
   },
 ): Promise<void> {
-  /** Absolute target so mkdir and writeFile reach the same dist location. */
+  /**
+   * Absolute target so mkdir and writeFile reach the same dist location.
+   */
   const fullPath = join(
     DIST,
     relativePath,

@@ -12,31 +12,49 @@ import type {
   ProviderId,
 } from '../types.ts';
 
-/** Minimum font-scale slider value. */
+/**
+ * Minimum font-scale slider value.
+ */
 export const FONT_SCALE_MIN = 0.75;
 
-/** Maximum font-scale slider value. */
+/**
+ * Maximum font-scale slider value.
+ */
 export const FONT_SCALE_MAX = 1.5;
 
-/** Font-scale slider step. */
+/**
+ * Font-scale slider step.
+ */
 export const FONT_SCALE_STEP = 0.05;
 
-/** Minimum text-speed slider value (chars per second). */
+/**
+ * Minimum text-speed slider value (chars per second).
+ */
 export const TEXT_SPEED_MIN = 10;
 
-/** Maximum text-speed slider value (chars per second). */
+/**
+ * Maximum text-speed slider value (chars per second).
+ */
 export const TEXT_SPEED_MAX = 120;
 
-/** Text-speed slider step. */
+/**
+ * Text-speed slider step.
+ */
 export const TEXT_SPEED_STEP = 5;
 
-/** Volume slider step (used for both voice and BGM). */
+/**
+ * Volume slider step (used for both voice and BGM).
+ */
 export const VOLUME_STEP = 0.05;
 
-/** Maximum auto-advance delay in milliseconds. */
+/**
+ * Maximum auto-advance delay in milliseconds.
+ */
 export const AUTO_DELAY_MAX_MS = 5_000;
 
-/** Auto-advance delay slider step in milliseconds. */
+/**
+ * Auto-advance delay slider step in milliseconds.
+ */
 export const AUTO_DELAY_STEP_MS = 100;
 
 /**
@@ -87,7 +105,9 @@ export function field(
     hintText: string | undefined;
   },
 ): HTMLElement {
-  /** Field children built up with the optional hint paragraph. */
+  /**
+   * Field children built up with the optional hint paragraph.
+   */
   const children: (Node | string)[] = [
     el({
       tag: 'label',
@@ -218,7 +238,9 @@ export function languageSelect(activeLocale: Locale,): HTMLSelectElement {
         label,
       ],
     ): HTMLOptionElement {
-      /** Option attributes, with `selected` set when the locale matches. */
+      /**
+       * Option attributes, with `selected` set when the locale matches.
+       */
       const attrs: Record<string, string> = { value, };
       if (activeLocale === value)
         attrs.selected = 'selected';
@@ -292,7 +314,9 @@ export function providerSelect(
         label,
       ],
     ): HTMLOptionElement {
-      /** Option attributes, with `selected` set when the provider id matches. */
+      /**
+       * Option attributes, with `selected` set when the provider id matches.
+       */
       const attrs: Record<string, string> = { value, };
       if (activeProvider === value)
         attrs.selected = 'selected';
@@ -343,14 +367,18 @@ export function providerInput(
     onValue: (value: string,) => void;
   },
 ): HTMLInputElement {
-  /** Input attribute bag built up before construction. */
+  /**
+   * Input attribute bag built up before construction.
+   */
   const attrs: Record<string, string> = {
     type,
     value: initial,
   };
   if (autocomplete !== undefined)
     attrs.autocomplete = autocomplete;
-  /** Configured input element wired to forward its current value. */
+  /**
+   * Configured input element wired to forward its current value.
+   */
   const input = el({
     tag: 'input',
     attrs,
@@ -392,11 +420,15 @@ export function checkbox(
     onChange: (value: boolean,) => void;
   },
 ): HTMLInputElement {
-  /** Checkbox attributes; `checked` is added only when `initial` is true. */
+  /**
+   * Checkbox attributes; `checked` is added only when `initial` is true.
+   */
   const attrs: Record<string, string> = { type: 'checkbox', };
   if (initial)
     attrs.checked = 'checked';
-  /** Configured checkbox wired to forward its current `checked` value. */
+  /**
+   * Configured checkbox wired to forward its current `checked` value.
+   */
   const input = el({
     tag: 'input',
     attrs,
@@ -457,7 +489,9 @@ export function anthropicWarningNodes(
   if (provider.id
     !== 'anthropic')
     return [];
-  /** Acknowledgement checkbox writing back to provider state on change. */
+  /**
+   * Acknowledgement checkbox writing back to provider state on change.
+   */
   const ackInput = checkbox({
     initial: provider.acknowledgedAnthropicWarning,
     onChange: onAcknowledge,

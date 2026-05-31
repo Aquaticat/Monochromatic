@@ -76,7 +76,9 @@ function handleSessionStart({
     { recursive: true, },
   );
 
-  /** Maps this Claude process's PID to the session identity for CLI coordination. */
+  /**
+   * Maps this Claude process's PID to the session identity for CLI coordination.
+   */
   const mapping: PidMapping = {
     sessionId,
     transcriptPath,
@@ -102,26 +104,34 @@ function handleSessionStart({
     .CLAUDE_SPAWN_ID;
 
   if (spawnId !== undefined) {
-    /** Path to the spawn-state JSON pre-created by the CLI for this child. */
+    /**
+     * Path to the spawn-state JSON pre-created by the CLI for this child.
+     */
     const jsonPath = join(
       SPAWNS_DIR,
       `${spawnId}.json`,
     );
 
     try {
-      /** Existing spawn-state text on disk; parsed below before deciding to claim. */
+      /**
+       * Existing spawn-state text on disk; parsed below before deciding to claim.
+       */
       const raw = readFileSync(
         jsonPath,
         'utf8',
       );
       /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
-      /** Parsed spawn state; an empty `sessionId` field signals an unclaimed slot. */
+      /**
+       * Parsed spawn state; an empty `sessionId` field signals an unclaimed slot.
+       */
       const state = JSON.parse(raw,) as SpawnState;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
 
       if (state.sessionId
         === '') {
-        /** Genuine child: claim ownership by filling in session identity. */
+        /**
+         * Genuine child: claim ownership by filling in session identity.
+         */
         const updated: SpawnState = {
           ...state,
           sessionId,
@@ -134,11 +144,15 @@ function handleSessionStart({
       }
     }
     catch {
-      /** File missing (stale env, already `.reported`) or unreadable: skip. */
+      /**
+       * File missing (stale env, already `.reported`) or unreadable: skip.
+       */
     }
   }
 
-  /** Warning text from CLI auto-setup, or `NO_WARNING` when setup succeeded or was unnecessary. */
+  /**
+   * Warning text from CLI auto-setup, or `NO_WARNING` when setup succeeded or was unnecessary.
+   */
   const cliWarning = autoSetupCli(hookDir,);
   if (cliWarning !== NO_WARNING)
     return cliWarning;
@@ -200,14 +214,18 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
     '..',
     '..',
   );
-  /** Absolute path to CLI entry point that the symlink will target. */
+  /**
+   * Absolute path to CLI entry point that the symlink will target.
+   */
   const cliSource = join(
     pluginRoot,
     'src',
     'cli.ts',
   );
 
-  /** Standard XDG user-local bin directory. */
+  /**
+   * Standard XDG user-local bin directory.
+   */
   const localBin = join(
     process.env
       .HOME
@@ -215,7 +233,9 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
     '.local',
     'bin',
   );
-  /** Destination path for the `spawn-claude` symlink in user's local bin. */
+  /**
+   * Destination path for the `spawn-claude` symlink in user's local bin.
+   */
   const symlinkPath = join(
     localBin,
     'spawn-claude',
@@ -227,15 +247,21 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
       { recursive: true, },
     );
 
-    /** Unix permission bits for owner rwx, group/others rx. */
+    /**
+     * Unix permission bits for owner rwx, group/others rx.
+     */
     const EXECUTABLE_PERMISSION = 0o755;
-    /** Ensure CLI source is executable (shebang: #!/usr/bin/env bun). */
+    /**
+     * Ensure CLI source is executable (shebang: #!/usr/bin/env bun).
+     */
     chmodSync(
       cliSource,
       EXECUTABLE_PERMISSION,
     );
 
-    /** Remove stale symlink if it exists, then create a fresh one. */
+    /**
+     * Remove stale symlink if it exists, then create a fresh one.
+     */
     try {
       unlinkSync(symlinkPath,);
     }
@@ -245,7 +271,9 @@ function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
       symlinkPath,
     );
 
-    /** Verify ~/.local/bin is on PATH so the symlink is discoverable. */
+    /**
+     * Verify ~/.local/bin is on PATH so the symlink is discoverable.
+     */
     const pathDirs = (process.env
       .PATH
       ?? '').split(':',);

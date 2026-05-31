@@ -32,16 +32,26 @@ function suppressContextMenu(event: Event,): void {
  * ```
  */
 export class TreeFileEntry extends HTMLElement {
-  /** Absolute file path. */
+  /**
+   * Absolute file path.
+   */
   entryPath = '';
-  /** Display name. */
+  /**
+   * Display name.
+   */
   entryName = '';
-  /** Position in recent files list (-1 = not recent). */
+  /**
+   * Position in recent files list (-1 = not recent).
+   */
   recencyIndex = -1;
-  /** Guards against re-rendering when the element is re-inserted into the DOM. */
+  /**
+   * Guards against re-rendering when the element is re-inserted into the DOM.
+   */
   #initialized = false;
 
-  /** Renders the file label and attaches event handlers. */
+  /**
+   * Renders the file label and attaches event handlers.
+   */
   connectedCallback(): void {
     if (this.#initialized)
       return;
@@ -56,7 +66,9 @@ export class TreeFileEntry extends HTMLElement {
     this.style
       .order = String(nameToOrder({ name: this.entryName, },),);
 
-    /** Recency badge slot rendered to the left of the entry name. */
+    /**
+     * Recency badge slot rendered to the left of the entry name.
+     */
     const toggle = h({
       tag: 'span',
       class: 'toggle',
@@ -77,7 +89,9 @@ export class TreeFileEntry extends HTMLElement {
       },),
     );
 
-    /** Captured for the listener closures because event callbacks rebind `this`. */
+    /**
+     * Captured for the listener closures because event callbacks rebind `this`.
+     */
     const entry = this;
     this.addEventListener(
       'click',
@@ -147,7 +161,9 @@ export function createTreeFileEntry({
   readonly recencyIndex: number;
 },): TreeFileEntry {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define */
-  /** Custom element instance returned to the caller. */
+  /**
+   * Custom element instance returned to the caller.
+   */
   const entry = document.createElement('tree-file-entry',) as TreeFileEntry;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   entry.entryPath = path;

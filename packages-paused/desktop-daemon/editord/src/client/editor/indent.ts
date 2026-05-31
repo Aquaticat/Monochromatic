@@ -7,25 +7,43 @@
 
 import { INDENT_UNIT, } from './text-resolve.ts';
 
-/** Selection range coordinates for indent adjustment. */
+/**
+ * Selection range coordinates for indent adjustment.
+ */
 export type SelectionCoords = {
-  /** 0-based start line index. */
+  /**
+   * 0-based start line index.
+   */
   readonly startLine: number;
-  /** 0-based start character offset. */
+  /**
+   * 0-based start character offset.
+   */
   readonly startCharacter: number;
-  /** 0-based end line index. */
+  /**
+   * 0-based end line index.
+   */
   readonly endLine: number;
-  /** 0-based end character offset. */
+  /**
+   * 0-based end character offset.
+   */
   readonly endCharacter: number;
 };
 
-/** Result of an indent/unindent operation. */
+/**
+ * Result of an indent/unindent operation.
+ */
 export type IndentResult = {
-  /** Whether a selection range should be restored (vs a single cursor). */
+  /**
+   * Whether a selection range should be restored (vs a single cursor).
+   */
   readonly isSelection: boolean;
-  /** Selection coordinates when `isSelection` is true. */
+  /**
+   * Selection coordinates when `isSelection` is true.
+   */
   readonly selection: SelectionCoords;
-  /** Cursor coordinates when `isSelection` is false. */
+  /**
+   * Cursor coordinates when `isSelection` is false.
+   */
   readonly cursor: {
     readonly line: number;
     readonly character: number;
@@ -61,17 +79,25 @@ export function indentLines({
   readonly cursorCharacter: number;
   readonly selection: SelectionCoords | null;
 },): IndentResult {
-  /** First line affected by the operation; collapses to the cursor line when no selection exists. */
+  /**
+   * First line affected by the operation; collapses to the cursor line when no selection exists.
+   */
   const startLine = selection !== null ? selection.startLine : cursorLine;
-  /** Last line affected by the operation; equals `startLine` for single-cursor mode. */
+  /**
+   * Last line affected by the operation; equals `startLine` for single-cursor mode.
+   */
   const endLine = selection !== null ? selection.endLine : cursorLine;
 
   for (let i = startLine; i <= endLine; i++) {
-    /** Editor line `<div>` at index `i`; undefined when the editor was mutated mid-loop. */
+    /**
+     * Editor line `<div>` at index `i`; undefined when the editor was mutated mid-loop.
+     */
     const lineDiv = editor.children[i];
     if (lineDiv === undefined)
       continue;
-    /** Raw text of the line, including the `\n` placeholder for empty lines. */
+    /**
+     * Raw text of the line, including the `\n` placeholder for empty lines.
+     */
     const text = lineDiv.textContent;
     lineDiv.textContent = text === '\n' ? INDENT_UNIT : INDENT_UNIT + text;
   }
@@ -141,29 +167,41 @@ export function unindentLines({
   readonly cursorCharacter: number;
   readonly selection: SelectionCoords | null;
 },): IndentResult {
-  /** First line affected by the operation; collapses to the cursor line when no selection exists. */
+  /**
+   * First line affected by the operation; collapses to the cursor line when no selection exists.
+   */
   const startLine = selection !== null ? selection.startLine : cursorLine;
-  /** Last line affected by the operation; equals `startLine` for single-cursor mode. */
+  /**
+   * Last line affected by the operation; equals `startLine` for single-cursor mode.
+   */
   const endLine = selection !== null ? selection.endLine : cursorLine;
 
-  /** Track spaces removed per line for cursor/selection adjustment. */
+  /**
+   * Track spaces removed per line for cursor/selection adjustment.
+   */
   const removedPerLine: number[] = [];
 
   for (let i = startLine; i <= endLine; i++) {
-    /** Editor line `<div>` at index `i`; missing when the children list was mutated mid-loop. */
+    /**
+     * Editor line `<div>` at index `i`; missing when the children list was mutated mid-loop.
+     */
     const lineDiv = editor.children[i];
     if (lineDiv === undefined) {
       removedPerLine.push(0,);
       continue;
     }
-    /** Raw text of the line, including the `\n` placeholder for empty lines. */
+    /**
+     * Raw text of the line, including the `\n` placeholder for empty lines.
+     */
     const text = lineDiv.textContent;
     if (text === '\n') {
       removedPerLine.push(0,);
       continue;
     }
 
-    /** Number of leading spaces removed this iteration; 0, 1, or 2 depending on existing indent depth. */
+    /**
+     * Number of leading spaces removed this iteration; 0, 1, or 2 depending on existing indent depth.
+     */
     let count = 0;
     if (text.startsWith('  ',))
       count = 2;
@@ -171,7 +209,9 @@ export function unindentLines({
       count = 1;
 
     if (count > 0) {
-      /** Line text after removing leading spaces; collapses to the empty-line placeholder when nothing remains. */
+      /**
+       * Line text after removing leading spaces; collapses to the empty-line placeholder when nothing remains.
+       */
       const newText = text.slice(count,);
       lineDiv.textContent = newText === '' ? '\n' : newText;
     }
@@ -179,9 +219,13 @@ export function unindentLines({
   }
 
   if (selection !== null) {
-    /** Spaces removed from the first selected line; used to shift `selection.startCharacter`. */
+    /**
+     * Spaces removed from the first selected line; used to shift `selection.startCharacter`.
+     */
     const [startRemoved = 0,] = removedPerLine;
-    /** Spaces removed from the last selected line; used to shift `selection.endCharacter`. */
+    /**
+     * Spaces removed from the last selected line; used to shift `selection.endCharacter`.
+     */
     const endRemoved = removedPerLine.at(-1,)
       ?? 0;
     return {
@@ -207,7 +251,9 @@ export function unindentLines({
     };
   }
 
-  /** Spaces removed from the cursor's line; used to shift `cursorCharacter`. */
+  /**
+   * Spaces removed from the cursor's line; used to shift `cursorCharacter`.
+   */
   const lineRemoved = removedPerLine[0]
     ?? 0;
   return {

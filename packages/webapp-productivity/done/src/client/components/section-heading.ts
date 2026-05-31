@@ -12,16 +12,24 @@ import {
   minTouchTarget,
 } from '../mixins.ts';
 
-/** Host gap in rem (1/2). */
+/**
+ * Host gap in rem (1/2).
+ */
 const HOST_GAP = 1 / 2;
 
-/** Heading and toggle size in rem (1 1/4). */
+/**
+ * Heading and toggle size in rem (1 1/4).
+ */
 const HEADING_SIZE = 1 + ((1 / 2) / 2);
 
-/** Normal font weight. */
+/**
+ * Normal font weight.
+ */
 const FONT_WEIGHT_NORMAL = 400;
 
-/** Compiled CSS string for `<section-heading>` Shadow DOM. */
+/**
+ * Compiled CSS string for `<section-heading>` Shadow DOM.
+ */
 const STYLES = [
   css({
     rule: ':host',
@@ -70,13 +78,19 @@ const STYLES = [
  * Dispatches a `toggle` event with `{ open }` when the heading is clicked.
  */
 class SectionHeading extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Whether the section content is expanded. */
+  /**
+   * Whether the section content is expanded.
+   */
   #open = true;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -91,7 +105,9 @@ class SectionHeading extends HTMLElement {
     return this.#open;
   }
 
-  /** Renders content and wires the heading click listener. */
+  /**
+   * Renders content and wires the heading click listener.
+   */
   connectedCallback(): void {
     this.#render();
     this.#shadow
@@ -102,11 +118,15 @@ class SectionHeading extends HTMLElement {
     );
   }
 
-  /** Bound toggle handler that collapses/expands and dispatches a `toggle` event. */
+  /**
+   * Bound toggle handler that collapses/expands and dispatches a `toggle` event.
+   */
   readonly #toggle = this.#onToggle
     .bind(this,);
 
-  /** Toggles the open state and dispatches a `toggle` event. */
+  /**
+   * Toggles the open state and dispatches a `toggle` event.
+   */
   #onToggle(): void {
     this.#open = !this.#open;
     this.#updateToggle();
@@ -130,12 +150,16 @@ class SectionHeading extends HTMLElement {
    * ```
    */
   #updateToggle(): void {
-    /** Shadow-DOM lookup; element may be missing if `#render` has not run yet. */
+    /**
+     * Shadow-DOM lookup; element may be missing if `#render` has not run yet.
+     */
     const toggle = this.#shadow
       .querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)
       toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
-    /** Sibling content region whose visibility tracks the open flag. */
+    /**
+     * Sibling content region whose visibility tracks the open flag.
+     */
     const content = this.#shadow
       .querySelector<HTMLElement>('.content',);
     if (content !== null)
@@ -143,12 +167,18 @@ class SectionHeading extends HTMLElement {
         .display = this.#open ? 'flex' : 'none';
   }
 
-  /** Renders the heading row and content slot into the shadow root. */
+  /**
+   * Renders the heading row and content slot into the shadow root.
+   */
   #render(): void {
-    /** Resolved at render time so heading still works when the icon attribute is omitted. */
+    /**
+     * Resolved at render time so heading still works when the icon attribute is omitted.
+     */
     const icon = this.getAttribute('icon',)
       ?? '';
-    /** Resolved at render time so heading still works when the label attribute is omitted. */
+    /**
+     * Resolved at render time so heading still works when the label attribute is omitted.
+     */
     const label = this.getAttribute('label',)
       ?? '';
 

@@ -72,9 +72,13 @@ export function expectRecordSeparatorOrEnd(
   kind: 'next';
   tailStart: FragmentStringJsonc;
 } {
-  /** Leading comments/whitespace after previous member. */
+  /**
+   * Leading comments/whitespace after previous member.
+   */
   const after = startsWithComment({ value: tail, },);
-  /** Tail trimmed to detect ',' or '}' token. */
+  /**
+   * Tail trimmed to detect ',' or '}' token.
+   */
   const rc = after.remainingContent
     .trimStart() as FragmentStringJsonc;
 
@@ -86,11 +90,17 @@ export function expectRecordSeparatorOrEnd(
   }
 
   if (rc.startsWith(',',)) {
-    /** Tail after the member separator comma. */
+    /**
+     * Tail after the member separator comma.
+     */
     const afterComma = rc.slice(1,) as FragmentStringJsonc;
-    /** Comments/whitespace before the next potential member. */
+    /**
+     * Comments/whitespace before the next potential member.
+     */
     const next = startsWithComment({ value: afterComma, },);
-    /** Start of the next token inside the record. */
+    /**
+     * Start of the next token inside the record.
+     */
     const nextToken = next.remainingContent
       .trimStart() as FragmentStringJsonc;
     if (nextToken.startsWith('}',)) {
@@ -105,9 +115,13 @@ export function expectRecordSeparatorOrEnd(
     };
   }
 
-  /** Maximum characters for error preview snippet */
+  /**
+   * Maximum characters for error preview snippet
+   */
   const ERROR_PREVIEW_LENGTH = 32;
-  /** Truncated snippet of the remaining content surfaced inside the error message. */
+  /**
+   * Truncated snippet of the remaining content surfaced inside the error message.
+   */
   const preview = rc.slice(
     0,
     ERROR_PREVIEW_LENGTH,
@@ -139,17 +153,25 @@ export function parseRecordKey(
   keyNode: Jsonc.RecordKey;
   remaining: FragmentStringJsonc;
 } {
-  /** Leading comments at key start; carries per-key comment. */
+  /**
+   * Leading comments at key start; carries per-key comment.
+   */
   const lead = startsWithComment({ value: tail, },);
-  /** Start positioned at quoted key. */
+  /**
+   * Start positioned at quoted key.
+   */
   const start = lead.remainingContent;
 
   if (!start.startsWith('"',))
     throw new Error('malformed jsonc object: expected quoted key',);
 
-  /** Scanned quoted key with tail after closing quote. */
+  /**
+   * Scanned quoted key with tail after closing quote.
+   */
   const keyScan = scanQuotedString({ value: start, },);
-  /** Key node with optional propagated leading comment. */
+  /**
+   * Key node with optional propagated leading comment.
+   */
   const keyNode: Jsonc.RecordKey = lead.comment
     ? {
       ...keyScan.parsed,
@@ -183,9 +205,13 @@ export function parseRecordKey(
 export function expectColonAfterKey(
   tail: FragmentStringJsonc,
 ): FragmentStringJsonc {
-  /** Comments/whitespace after key before the colon. */
+  /**
+   * Comments/whitespace after key before the colon.
+   */
   const afterKeyLead = startsWithComment({ value: tail, },);
-  /** Tail starting at ':' or error position. */
+  /**
+   * Tail starting at ':' or error position.
+   */
   const rc = afterKeyLead.remainingContent
     .trimStart() as FragmentStringJsonc;
   if (!rc.startsWith(':',))

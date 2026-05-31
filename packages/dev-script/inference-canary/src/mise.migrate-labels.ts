@@ -38,7 +38,9 @@ const DIR_RENAMES: Record<string, string> = {
  */
 const DIR_LABELS: Record<string, string> = DIR_RENAMES;
 
-/** Top-level model directories from the canary-lint artifact root; empty when the directory is missing. */
+/**
+ * Top-level model directories from the canary-lint artifact root; empty when the directory is missing.
+ */
 const modelDirs: string[] = await (async function tryReadModelDirs(): Promise<string[]> {
   try {
     return await readdir(LINT_DIR,);
@@ -50,21 +52,27 @@ const modelDirs: string[] = await (async function tryReadModelDirs(): Promise<st
 })();
 
 for (const modelDir of modelDirs) {
-  /** Label for this model from the mapping, undefined if no mapping exists */
+  /**
+   * Label for this model from the mapping, undefined if no mapping exists
+   */
   const label = DIR_LABELS[modelDir];
   if (label === undefined) {
     console.log(`  skip: ${modelDir} (no mapping)`,);
     continue;
   }
 
-  /** Absolute path to this model's artifact directory */
+  /**
+   * Absolute path to this model's artifact directory
+   */
   const modelPath = join(
     LINT_DIR,
     modelDir,
   );
 
   // Update meta.json files inside this model dir
-  /** Artifact subdirectories for this model */
+  /**
+   * Artifact subdirectories for this model
+   */
   let subdirs: string[] = [];
   try {
     // oxlint-disable-next-line no-await-in-loop -- sequential directory reads; each iteration depends on prior rename results
@@ -75,20 +83,26 @@ for (const modelDir of modelDirs) {
   }
 
   for (const subdir of subdirs) {
-    /** Absolute path to the meta.json file in this artifact */
+    /**
+     * Absolute path to the meta.json file in this artifact
+     */
     const metaPath = join(
       modelPath,
       subdir,
       'meta.json',
     );
     try {
-      /** Raw JSON content of the meta.json file */
+      /**
+       * Raw JSON content of the meta.json file
+       */
       // oxlint-disable-next-line no-await-in-loop -- sequential meta.json updates within a model directory
       const raw = await readFile(
         metaPath,
         'utf8',
       );
-      /** Parsed meta.json contents for label injection */
+      /**
+       * Parsed meta.json contents for label injection
+       */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- meta.json structure is known
       const meta = JSON.parse(raw,) as Record<string, unknown>;
       if (meta.label
@@ -113,10 +127,14 @@ for (const modelDir of modelDirs) {
   }
 
   // Rename directory if needed
-  /** New directory name from the rename mapping */
+  /**
+   * New directory name from the rename mapping
+   */
   const newName = DIR_RENAMES[modelDir];
   if (newName !== undefined) {
-    /** Absolute path for the renamed directory */
+    /**
+     * Absolute path for the renamed directory
+     */
     const newPath = join(
       LINT_DIR,
       newName,
@@ -130,7 +148,9 @@ for (const modelDir of modelDirs) {
       console.log(`  renamed: ${modelDir} -> ${newName}`,);
     }
     catch (error) {
-      /** Human-readable error message for rename failures */
+      /**
+       * Human-readable error message for rename failures
+       */
       const errorMsg = error instanceof Error ? error.message : String(error,);
       console.error(`  failed to rename ${modelDir}: ${errorMsg}`,);
     }

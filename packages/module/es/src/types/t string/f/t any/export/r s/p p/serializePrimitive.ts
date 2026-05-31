@@ -34,7 +34,9 @@ export function serializePrimitive({
     .with(
       'boolean',
       function handler() {
-        /** Cast of `obj` to its narrowed primitive after the discriminant match confirmed the runtime type. */
+        /**
+         * Cast of `obj` to its narrowed primitive after the discriminant match confirmed the runtime type.
+         */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms boolean
         const boolObj = obj as boolean;
         return String(boolObj,);
@@ -44,7 +46,9 @@ export function serializePrimitive({
       'number',
       function handler() {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- discriminant match confirms number */
-        /** obj narrowed to number after the discriminant matched 'number'. */
+        /**
+         * obj narrowed to number after the discriminant matched 'number'.
+         */
         const numberObj = obj as number;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
         return String(numberObj,);
@@ -54,7 +58,9 @@ export function serializePrimitive({
       'string',
       function handler() {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- discriminant match confirms string */
-        /** obj narrowed to string after the discriminant matched 'string'. */
+        /**
+         * obj narrowed to string after the discriminant matched 'string'.
+         */
         const stringObj = obj as string;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
         return JSON.stringify(stringObj,);
@@ -64,7 +70,9 @@ export function serializePrimitive({
       'date',
       function handler() {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- discriminant match confirms Date */
-        /** obj narrowed to Date after the discriminant matched 'date'. */
+        /**
+         * obj narrowed to Date after the discriminant matched 'date'.
+         */
         const dateObj = obj as Date;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
         return `new Date(${JSON.stringify(dateObj,)})`;
@@ -74,7 +82,9 @@ export function serializePrimitive({
       'bigint',
       function handler() {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- discriminant match confirms bigint */
-        /** obj narrowed to bigint after the discriminant matched 'bigint'. */
+        /**
+         * obj narrowed to bigint after the discriminant matched 'bigint'.
+         */
         const bigintObj = obj as bigint;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
         return `${String(bigintObj,)}n`;
@@ -102,10 +112,14 @@ export function serializePrimitive({
       'symbol',
       function handler() {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- discriminant match confirms symbol */
-        /** obj narrowed to symbol after the discriminant matched 'symbol'. */
+        /**
+         * obj narrowed to symbol after the discriminant matched 'symbol'.
+         */
         const symbolObj = obj as symbol;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
-        /** Symbol description used to round-trip the value through Symbol(). */
+        /**
+         * Symbol description used to round-trip the value through Symbol().
+         */
         const { description, } = symbolObj;
         return description !== undefined
           ? `Symbol(${JSON.stringify(description,)})`

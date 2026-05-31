@@ -86,7 +86,9 @@ const TOOL_RESULT_MAX_CHARS = 2_000;
 function bashExecutionToText(
   msg: BashExecutionAgentMessage,
 ): string {
-  /** Per-section pieces joined with newlines to produce the final summary text. */
+  /**
+   * Per-section pieces joined with newlines to produce the final summary text.
+   */
   const sections: string[] = [
     `Ran \`${msg.command}\``,
     (msg.output
@@ -143,7 +145,9 @@ function truncateForSummary({
   if (text.length
     <= maxChars)
     return text;
-  /** Dropped-character count surfaced in the truncation marker. */
+  /**
+   * Dropped-character count surfaced in the truncation marker.
+   */
   const truncatedChars = text.length
     - maxChars;
   return `${
@@ -194,7 +198,9 @@ function toLlmMessage(
   }
   if (m.role
     === 'custom') {
-    /** Normalized content array; raw strings are wrapped before forwarding. */
+    /**
+     * Normalized content array; raw strings are wrapped before forwarding.
+     */
     const content = ((typeof m.content) === 'string')
       ? [{
         type: 'text' as const,
@@ -325,12 +331,16 @@ function userTextFromContent(
 export function serializeConversation(
   messages: readonly Message[],
 ): string {
-  /** Top-level accumulator joined into the final serialized transcript. */
+  /**
+   * Top-level accumulator joined into the final serialized transcript.
+   */
   const parts: string[] = [];
   for (const msg of messages) {
     if (msg.role
       === 'user') {
-      /** User-role text harvested from raw string or structured content. */
+      /**
+       * User-role text harvested from raw string or structured content.
+       */
       const content = userTextFromContent(msg.content,);
       if (content)
         parts.push(`[User]: ${content}`,);
@@ -338,11 +348,17 @@ export function serializeConversation(
     }
     if (msg.role
       === 'assistant') {
-      /** Per-message accumulator for visible assistant text blocks. */
+      /**
+       * Per-message accumulator for visible assistant text blocks.
+       */
       const textParts: string[] = [];
-      /** Per-message accumulator for hidden reasoning blocks. */
+      /**
+       * Per-message accumulator for hidden reasoning blocks.
+       */
       const thinkingParts: string[] = [];
-      /** Per-message accumulator for formatted tool-call signatures. */
+      /**
+       * Per-message accumulator for formatted tool-call signatures.
+       */
       const toolCalls: string[] = [];
       for (const block of msg.content) {
         if (block.type
@@ -357,7 +373,9 @@ export function serializeConversation(
         }
         if (block.type
           === 'toolCall') {
-          /** Human-readable argument string injected into the tool-call signature. */
+          /**
+           * Human-readable argument string injected into the tool-call signature.
+           */
           const argsStr = Object
             .entries(block.arguments,)
             .map(function fmtArg([key, value,],) {
@@ -380,7 +398,9 @@ export function serializeConversation(
     }
     if (msg.role
       === 'toolResult') {
-      /** Concatenated text payload after filtering out image blocks. */
+      /**
+       * Concatenated text payload after filtering out image blocks.
+       */
       const content = msg
         .content
         .filter(function isText(c,): c is TextContent {

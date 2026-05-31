@@ -40,11 +40,17 @@ import {
 const SQRT_3_INV = 1 / Math
   .sqrt(3,);
 
-/** Latitude divisions for the sphere mesh; 16 keeps the silhouette smooth without exploding the vertex count. */
+/**
+ * Latitude divisions for the sphere mesh; 16 keeps the silhouette smooth without exploding the vertex count.
+ */
 const SPHERE_NLAT = 16;
-/** Longitude divisions for the sphere mesh; matches `SPHERE_NLAT`. */
+/**
+ * Longitude divisions for the sphere mesh; matches `SPHERE_NLAT`.
+ */
 const SPHERE_NLONG = 16;
-/** Cone tessellation; 16 sides is enough for a clean arrowhead silhouette at any zoom. */
+/**
+ * Cone tessellation; 16 sides is enough for a clean arrowhead silhouette at any zoom.
+ */
 const CONE_RADIAL_SEGMENTS = 16;
 
 /**
@@ -97,7 +103,9 @@ const OCTAHEDRON_FACE_INDICES: readonly (readonly [
   ],
 ];
 
-/** Six canonical octahedron vertices, on the unit axes. */
+/**
+ * Six canonical octahedron vertices, on the unit axes.
+ */
 const OCTAHEDRON_VERTICES: readonly (readonly [
   number,
   number,
@@ -135,9 +143,13 @@ const OCTAHEDRON_VERTICES: readonly (readonly [
   ],
 ];
 
-/** Number of position/normal floats per face (3 vertices × 3 components). */
+/**
+ * Number of position/normal floats per face (3 vertices × 3 components).
+ */
 const FLOATS_PER_FACE_VEC3 = 9;
-/** Number of texcoord floats per face (3 vertices × 2 components). */
+/**
+ * Number of texcoord floats per face (3 vertices × 2 components).
+ */
 const FLOATS_PER_FACE_VEC2 = 6;
 
 //endregion Constants
@@ -167,13 +179,21 @@ export const sphereGeometry: Geometry = new SphereGeometry({
  * @returns A `Geometry` ready to feed into `SimpleMeshLayer.mesh`.
  */
 function buildOctahedronGeometry(): Geometry {
-  /** Eight-face count; drives every typed-array size below. */
+  /**
+   * Eight-face count; drives every typed-array size below.
+   */
   const faceCount = OCTAHEDRON_FACE_INDICES.length;
-  /** Interleaved per-face vertex positions; written face-by-face inside the loop. */
+  /**
+   * Interleaved per-face vertex positions; written face-by-face inside the loop.
+   */
   const positions = new Float32Array(faceCount * FLOATS_PER_FACE_VEC3,);
-  /** Per-vertex normals; each face's three corners share the same face normal. */
+  /**
+   * Per-vertex normals; each face's three corners share the same face normal.
+   */
   const normals = new Float32Array(faceCount * FLOATS_PER_FACE_VEC3,);
-  /** Per-vertex UVs; every face uses the same triangle so the canvas texture renders identically per side. */
+  /**
+   * Per-vertex UVs; every face uses the same triangle so the canvas texture renders identically per side.
+   */
   const texCoords = new Float32Array(faceCount * FLOATS_PER_FACE_VEC2,);
   /**
    * Looks up an octahedron vertex by index; throws on out-of-range.
@@ -201,34 +221,48 @@ function buildOctahedronGeometry(): Geometry {
     [a, b, c,],
     faceIndex,
   ) {
-    /** First corner of the triangle being emitted. */
+    /**
+     * First corner of the triangle being emitted.
+     */
     const [
       vAx,
       vAy,
       vAz,
     ] = vertexAt(a,);
-    /** Second corner of the triangle being emitted. */
+    /**
+     * Second corner of the triangle being emitted.
+     */
     const [
       vBx,
       vBy,
       vBz,
     ] = vertexAt(b,);
-    /** Third corner of the triangle being emitted. */
+    /**
+     * Third corner of the triangle being emitted.
+     */
     const [
       vCx,
       vCy,
       vCz,
     ] = vertexAt(c,);
-    /** Face-centroid sum component × `SQRT_3_INV` = octahedral unit normal. */
+    /**
+     * Face-centroid sum component × `SQRT_3_INV` = octahedral unit normal.
+     */
     const nx = (vAx + vBx
       + vCx) * SQRT_3_INV;
-    /** Y component of the same face normal. */
+    /**
+     * Y component of the same face normal.
+     */
     const ny = (vAy + vBy
       + vCy) * SQRT_3_INV;
-    /** Z component of the same face normal. */
+    /**
+     * Z component of the same face normal.
+     */
     const nz = (vAz + vBz
       + vCz) * SQRT_3_INV;
-    /** Byte-flat write cursor for the position buffer; advances three vec3 slots per face. */
+    /**
+     * Byte-flat write cursor for the position buffer; advances three vec3 slots per face.
+     */
     const posOffset = faceIndex * FLOATS_PER_FACE_VEC3;
     positions[posOffset + 0] = vAx;
     positions[posOffset + 1] = vAy;
@@ -285,7 +319,9 @@ function buildOctahedronGeometry(): Geometry {
   },);
 }
 
-/** Built once at module load and reused for every non-leaf glyph. */
+/**
+ * Built once at module load and reused for every non-leaf glyph.
+ */
 export const octahedronGeometry: Geometry = buildOctahedronGeometry();
 
 /**
@@ -302,7 +338,9 @@ export const coneGeometryX: Geometry = new ConeGeometry({
   verticalAxis: 'x',
 },);
 
-/** Unit cone with apex along +Y; +Y axis arrowhead. */
+/**
+ * Unit cone with apex along +Y; +Y axis arrowhead.
+ */
 export const coneGeometryY: Geometry = new ConeGeometry({
   radius: 1,
   height: 1,
@@ -310,7 +348,9 @@ export const coneGeometryY: Geometry = new ConeGeometry({
   verticalAxis: 'y',
 },);
 
-/** Unit cone with apex along +Z; +Z axis arrowhead. */
+/**
+ * Unit cone with apex along +Z; +Z axis arrowhead.
+ */
 export const coneGeometryZ: Geometry = new ConeGeometry({
   radius: 1,
   height: 1,

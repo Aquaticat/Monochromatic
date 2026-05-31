@@ -48,7 +48,9 @@ const DISTRO_MANAGER_MAP: Record<string, PackageManager> = {
  * ```
  */
 export function detectPackageManager(distro: string,): PackageManager {
-  /** Strip tag suffix (e.g. `fedora:39` becomes `fedora`) for lookup. */
+  /**
+   * Strip tag suffix (e.g. `fedora:39` becomes `fedora`) for lookup.
+   */
   const baseName = distro.includes(':',)
     ? distro.slice(
       0,
@@ -123,7 +125,9 @@ export function prerequisiteCommand({
   readonly manager: PackageManager;
   readonly user: UserContext;
 },): string {
-  /** Captured to keep the ternary readable and avoid two lookups. */
+  /**
+   * Captured to keep the ternary readable and avoid two lookups.
+   */
   const commands = PREREQUISITE_COMMANDS[manager];
   return user === 'root' ? commands.base : commands.withSudo;
 }

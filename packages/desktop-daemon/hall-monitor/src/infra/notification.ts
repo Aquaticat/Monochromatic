@@ -27,7 +27,9 @@ export async function sendNotification(summary: string,): Promise<void> {
     log.info('[notify] Desktop notification sent.',);
   }
   catch (err: unknown) {
-    /** Caught error rendered as a string; preserves `err.message` for `Error` instances, otherwise coerces via `String(err)`. */
+    /**
+     * Caught error rendered as a string; preserves `err.message` for `Error` instances, otherwise coerces via `String(err)`.
+     */
     const message = err instanceof Error ? err.message : String(err,);
     console.error(`[notify] Failed to send notification: ${message}`,);
     log.error(`[notify] Failed to send notification: ${message}`,);

@@ -34,7 +34,9 @@ async function fileReadable(
   absolutePath: string,
 ): Promise<boolean> {
   try {
-    /** Stat record used to distinguish files from directories or symlinks. */
+    /**
+     * Stat record used to distinguish files from directories or symlinks.
+     */
     const info = await stat(absolutePath,);
     return info.isFile();
   }
@@ -65,15 +67,21 @@ async function fileReadable(
 export async function wireSize(
   absolutePath: string,
 ): Promise<number | typeof WIRE_SIZE_UNAVAILABLE> {
-  /** Candidate companion path; pre-compressed asset served when the client supports zstd. */
+  /**
+   * Candidate companion path; pre-compressed asset served when the client supports zstd.
+   */
   const zstPath = `${absolutePath}.zst`;
   if (await fileReadable(zstPath,)) {
-    /** Stat of the `.zst` companion; only `size` is needed downstream. */
+    /**
+     * Stat of the `.zst` companion; only `size` is needed downstream.
+     */
     const info = await stat(zstPath,);
     return info.size;
   }
   if (await fileReadable(absolutePath,)) {
-    /** Stat of the uncompressed asset; fallback when no `.zst` companion exists. */
+    /**
+     * Stat of the uncompressed asset; fallback when no `.zst` companion exists.
+     */
     const info = await stat(absolutePath,);
     return info.size;
   }

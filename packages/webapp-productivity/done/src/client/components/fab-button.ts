@@ -12,17 +12,25 @@ import {
   minTouchTarget,
 } from '../mixins.ts';
 
-/** Z-index for FAB positioning. */
+/**
+ * Z-index for FAB positioning.
+ */
 const Z_INDEX_FAB = 50;
 
-/** FAB button size in rem. */
+/**
+ * FAB button size in rem.
+ */
 const FAB_SIZE = 4;
 
-/** FAB border width in rem (1/4). */
+/**
+ * FAB border width in rem (1/4).
+ */
 const FAB_BORDER = 1 / 2
   / 2;
 
-/** Compiled CSS string for `<fab-button>` Shadow DOM. */
+/**
+ * Compiled CSS string for `<fab-button>` Shadow DOM.
+ */
 const STYLES = [
   css({
     rule: ':host',
@@ -69,18 +77,26 @@ const STYLES = [
  * Reads the `label` attribute for accessibility and renders a `<slot>` for custom content.
  */
 class FabButton extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the action button with label and slot into the shadow root. */
+  /**
+   * Renders the action button with label and slot into the shadow root.
+   */
   connectedCallback(): void {
-    /** Resolved at attach time so missing attributes still render a usable button. */
+    /**
+     * Resolved at attach time so missing attributes still render a usable button.
+     */
     const label = this.getAttribute('label',)
       ?? 'Action';
     this.#shadow

@@ -20,18 +20,28 @@ import spawn from 'nano-spawn';
 
 import type { Logger, } from '../log.ts';
 
-/** Cache entry with a timestamp for TTL-based eviction. */
+/**
+ * Cache entry with a timestamp for TTL-based eviction.
+ */
 type IncludesCacheEntry = {
-  /** Resolved absolute glob patterns from tsconfig `include`. */
+  /**
+   * Resolved absolute glob patterns from tsconfig `include`.
+   */
   readonly patterns: readonly string[];
-  /** Timestamp when the entry was stored (milliseconds since epoch). */
+  /**
+   * Timestamp when the entry was stored (milliseconds since epoch).
+   */
   readonly storedAt: number;
 };
 
-/** Time-to-live for cached entries (milliseconds). */
+/**
+ * Time-to-live for cached entries (milliseconds).
+ */
 const CACHE_TTL_MS = 120_000;
 
-/** Cached resolved includes keyed by project root path. */
+/**
+ * Cached resolved includes keyed by project root path.
+ */
 const includesCache = new Map<string, IncludesCacheEntry>();
 
 /**
@@ -64,7 +74,9 @@ export async function resolveTsconfigIncludes({
   readonly root: string;
   readonly l: Logger;
 },): Promise<readonly string[]> {
-  /** TTL-gated reuse below avoids respawning tsgo for repeated queries. */
+  /**
+   * TTL-gated reuse below avoids respawning tsgo for repeated queries.
+   */
   const cached = includesCache.get(root,);
   if ((cached !== undefined) && ((Date.now()
     - cached
@@ -72,12 +84,16 @@ export async function resolveTsconfigIncludes({
     return cached.patterns;
 
   try {
-    /** Project-local bin dir prepended to PATH so workspace tsgo resolves first. */
+    /**
+     * Project-local bin dir prepended to PATH so workspace tsgo resolves first.
+     */
     const binPath = join(
       root,
       'node_modules/.bin',
     );
-    /** tsgo --showConfig stdout; parsed as the project's resolved tsconfig. */
+    /**
+     * tsgo --showConfig stdout; parsed as the project's resolved tsconfig.
+     */
     const result = await spawn(
       'tsgo',
       ['--showConfig',],
@@ -93,12 +109,16 @@ export async function resolveTsconfigIncludes({
     );
 
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- tsgo --showConfig always returns { include?: string[] } */
-    /** Parsed tsconfig payload narrowed to the `include` field used below. */
+    /**
+     * Parsed tsconfig payload narrowed to the `include` field used below.
+     */
     const config = JSON.parse(result.output,) as {
       readonly include?: string[];
     };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    /** Empty fallback so the cache stores a usable array even for unconfigured projects. */
+    /**
+     * Empty fallback so the cache stores a usable array even for unconfigured projects.
+     */
     const patterns = config.include
       ?? [];
 
@@ -114,7 +134,9 @@ export async function resolveTsconfigIncludes({
   }
   catch (error) {
     l.error(`failed to resolve tsconfig includes for ${root}: ${String(error,)}`,);
-    /** Return empty array on failure; caller should allow the file through as a safe fallback. */
+    /**
+     * Return empty array on failure; caller should allow the file through as a safe fallback.
+     */
     return [];
   }
 }
@@ -153,7 +175,9 @@ export function matchesTsconfigIncludes({
   readonly path: string;
   readonly patterns: readonly string[];
 },): boolean {
-  /** Safe fallback: if resolution failed (empty patterns), allow everything through. */
+  /**
+   * Safe fallback: if resolution failed (empty patterns), allow everything through.
+   */
   if (patterns.length
     === 0)
     return true;

@@ -8,10 +8,14 @@
 
 //region Configuration
 
-/** Default URL for the chat completions endpoint. */
+/**
+ * Default URL for the chat completions endpoint.
+ */
 const DEFAULT_COMPLETIONS_URL = 'http://localhost:8080/v1/chat/completions';
 
-/** Resolved endpoint URL, evaluated once at import time. */
+/**
+ * Resolved endpoint URL, evaluated once at import time.
+ */
 const completionsUrl = process.env
   .CHAT_COMPLETIONS_URL
   ?? DEFAULT_COMPLETIONS_URL;
@@ -20,13 +24,19 @@ const completionsUrl = process.env
 
 //region Rate limiter: sliding-window counter
 
-/** Maximum requests allowed within the sliding window. */
+/**
+ * Maximum requests allowed within the sliding window.
+ */
 const MAX_REQUESTS_PER_WINDOW = 30;
 
-/** Sliding window duration in milliseconds (60 seconds). */
+/**
+ * Sliding window duration in milliseconds (60 seconds).
+ */
 const WINDOW_DURATION_MS = 60_000;
 
-/** Request timeout in milliseconds (30 seconds). */
+/**
+ * Request timeout in milliseconds (30 seconds).
+ */
 const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
@@ -43,14 +53,18 @@ const requestTimestamps: number[] = [];
  * @returns `true` when the request should be rejected
  */
 function isRateLimited(): boolean {
-  /** Boundary timestamp; any entry older than this is expired and discarded. */
+  /**
+   * Boundary timestamp; any entry older than this is expired and discarded.
+   */
   const cutoff = Date.now()
     - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
   while (requestTimestamps.length
     > 0) {
-    /** Oldest tracked timestamp; `undefined` only when the array drained, which the length guard rules out. */
+    /**
+     * Oldest tracked timestamp; `undefined` only when the array drained, which the length guard rules out.
+     */
     const [oldest,] = requestTimestamps;
     if ((oldest === undefined) || (oldest
       >= cutoff))
@@ -62,7 +76,9 @@ function isRateLimited(): boolean {
     >= MAX_REQUESTS_PER_WINDOW;
 }
 
-/** Records the current timestamp in the sliding window. */
+/**
+ * Records the current timestamp in the sliding window.
+ */
 function recordRequest(): void {
   requestTimestamps.push(Date.now(),);
 }
@@ -71,42 +87,68 @@ function recordRequest(): void {
 
 //region Types
 
-/** Message in a chat conversation. */
+/**
+ * Message in a chat conversation.
+ */
 export type ChatMessage = {
-  /** Role of the message author. */
+  /**
+   * Role of the message author.
+   */
   readonly role: 'system' | 'user' | 'assistant';
-  /** Text content of the message. */
+  /**
+   * Text content of the message.
+   */
   readonly content: string;
 };
 
-/** Options for a chat completion request. */
+/**
+ * Options for a chat completion request.
+ */
 export type ChatCompletionOptions = {
-  /** Messages in the conversation. */
+  /**
+   * Messages in the conversation.
+   */
   readonly messages: readonly ChatMessage[];
-  /** Sampling temperature (0 = deterministic). */
+  /**
+   * Sampling temperature (0 = deterministic).
+   */
   readonly temperature?: number;
-  /** Maximum tokens to generate. */
+  /**
+   * Maximum tokens to generate.
+   */
   readonly maxTokens?: number;
-  /** When `true`, request `response_format: \{ type: "json_object" \}`. */
+  /**
+   * When `true`, request `response_format: \{ type: "json_object" \}`.
+   */
   readonly jsonMode?: boolean;
 };
 
-/** Single choice from a chat completion response. */
+/**
+ * Single choice from a chat completion response.
+ */
 type ChatCompletionResponseChoice = {
-  /** Message content of the choice. */
+  /**
+   * Message content of the choice.
+   */
   message: {
     role: string;
     content: string;
   };
 };
 
-/** Full chat completion response from the API. */
+/**
+ * Full chat completion response from the API.
+ */
 type ChatCompletionResponse = {
-  /** Array of completion choices. */
+  /**
+   * Array of completion choices.
+   */
   choices: ChatCompletionResponseChoice[];
 };
 
-/** Discriminated union result of a chat completion attempt. */
+/**
+ * Discriminated union result of a chat completion attempt.
+ */
 export type ChatCompletionResult =
   | {
     ok: true;
@@ -149,7 +191,9 @@ export async function chatCompletion(
 
   recordRequest();
 
-  /** Request payload accumulated below; optional fields are conditionally added. */
+  /**
+   * Request payload accumulated below; optional fields are conditionally added.
+   */
   const body: Record<string, unknown> = {
     messages: options.messages,
     temperature: options.temperature
@@ -165,7 +209,9 @@ export async function chatCompletion(
     body.response_format = { type: 'json_object', };
 
   try {
-    /** Raw fetch response read by both the error and success branches below. */
+    /**
+     * Raw fetch response read by both the error and success branches below.
+     */
     const response = await fetch(
       completionsUrl,
       {
@@ -177,7 +223,9 @@ export async function chatCompletion(
     );
 
     if (!response.ok) {
-      /** Body text from a failed response; left as a default when reading throws. */
+      /**
+       * Body text from a failed response; left as a default when reading throws.
+       */
       let errorText = 'unknown error';
       try {
         errorText = await response.text();
@@ -192,10 +240,14 @@ export async function chatCompletion(
     }
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse */
-    /** Parsed completion payload; shape matches `ChatCompletionResponse`. */
+    /**
+     * Parsed completion payload; shape matches `ChatCompletionResponse`.
+     */
     const data = (await response.json()) as ChatCompletionResponse;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    /** First (and only used) choice; `undefined` triggers an empty-result error result. */
+    /**
+     * First (and only used) choice; `undefined` triggers an empty-result error result.
+     */
     const [firstChoice,] = data.choices;
     if (firstChoice === undefined) {
       return {
@@ -211,7 +263,9 @@ export async function chatCompletion(
     };
   }
   catch (caughtError: unknown) {
-    /** Display string extracted from the thrown value, with a `String()` fallback for non-Errors. */
+    /**
+     * Display string extracted from the thrown value, with a `String()` fallback for non-Errors.
+     */
     const message = caughtError instanceof Error
       ? caughtError.message
       : String(caughtError,);

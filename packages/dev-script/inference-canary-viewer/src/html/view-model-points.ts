@@ -56,7 +56,9 @@ export function buildOverallPoints({
         entry,
         index,
       ): ScatterPoint {
-        /** Stable id linking the overall point to its run-detail overlay. */
+        /**
+         * Stable id linking the overall point to its run-detail overlay.
+         */
         const runId = `${label}-${entry.timestamp}`;
         return {
           runId,
@@ -139,12 +141,18 @@ export function buildProbePoints({
       entry,
       index,
     ): ScatterPoint {
-      /** Probe-specific initial-pass score with zero fallback. */
+      /**
+       * Probe-specific initial-pass score with zero fallback.
+       */
       const score = entry.probeScores[probe]
         ?? 0;
-      /** Probe-specific fix-pass score; undefined when no fix was attempted. */
+      /**
+       * Probe-specific fix-pass score; undefined when no fix was attempted.
+       */
       const pass2Score = entry.pass2Scores?.[probe];
-      /** Stable id linking the probe point to its probe-detail overlay. */
+      /**
+       * Stable id linking the probe point to its probe-detail overlay.
+       */
       const runId = `${label}-${probe}-${entry.timestamp}`;
       return {
         runId,

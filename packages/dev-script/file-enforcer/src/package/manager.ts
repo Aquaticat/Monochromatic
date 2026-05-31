@@ -5,7 +5,9 @@ import type { PackageManager, } from './types.ts';
 
 //region Template utilities
 
-/** Placeholder token in command templates, replaced with the resolved package name */
+/**
+ * Placeholder token in command templates, replaced with the resolved package name
+ */
 const PKG_PLACEHOLDER = '{pkg}';
 
 /**
@@ -67,23 +69,33 @@ export async function detectManager(): Promise<PackageManager | typeof NO_MANAGE
   if (managerCache.has('manager',))
     return managerCache.get('manager',)
       ?? NO_MANAGER;
-  /** Snapshot of registered manager entries; iteration order defines detection priority. */
+  /**
+   * Snapshot of registered manager entries; iteration order defines detection priority.
+   */
   const entries = [...MANAGERS.entries(),];
-  /** Per-manager probe results: the manager name when its check succeeds, otherwise NO_MANAGER. */
+  /**
+   * Per-manager probe results: the manager name when its check succeeds, otherwise NO_MANAGER.
+   */
   const results = await Promise.all(
     entries.map(
       async function checkManager([name, def,],): Promise<PackageManager | typeof NO_MANAGER> {
-        /** Whether this manager's existence check exits successfully on the current system. */
+        /**
+         * Whether this manager's existence check exits successfully on the current system.
+         */
         const available = await evaluatePredicate(def.check,);
         return available ? name : NO_MANAGER;
       },
     ),
   );
-  /** First detected entry in priority order, or `undefined` when nothing matched. */
+  /**
+   * First detected entry in priority order, or `undefined` when nothing matched.
+   */
   const detected = results.find(function isPresent(name,): name is PackageManager {
     return name !== NO_MANAGER;
   },);
-  /** Resolved value stored in the cache and returned to the caller. */
+  /**
+   * Resolved value stored in the cache and returned to the caller.
+   */
   const resolved = detected ?? NO_MANAGER;
   managerCache.set(
     'manager',
@@ -168,11 +180,15 @@ const rootCache = new Map<'isRoot', boolean>();
  * ```
  */
 export function isRoot(): boolean {
-  /** Cached detection, or `undefined` when detection has not run yet. */
+  /**
+   * Cached detection, or `undefined` when detection has not run yet.
+   */
   const cached = rootCache.get('isRoot',);
   if (cached !== undefined)
     return cached;
-  /** Fresh detection result; stored before return so subsequent calls short-circuit. */
+  /**
+   * Fresh detection result; stored before return so subsequent calls short-circuit.
+   */
   const detected = process.getuid?.()
     === 0;
   rootCache.set(
@@ -224,11 +240,15 @@ export async function canProvide(
     readonly packageName: string;
   },
 ): Promise<boolean> {
-  /** Manager definition; absent entry means `manager` is unrecognised. */
+  /**
+   * Manager definition; absent entry means `manager` is unrecognised.
+   */
   const def = MANAGERS.get(manager,);
   if (!def)
     return false;
-  /** Search command with `{pkg}` substituted to the resolved package name. */
+  /**
+   * Search command with `{pkg}` substituted to the resolved package name.
+   */
   const cmd = fillTemplate({
     template: def.search,
     packageName,
@@ -267,16 +287,22 @@ export async function installPackage(
     readonly packageName: string;
   },
 ): Promise<string> {
-  /** Manager definition; missing entry indicates a programmer bug, so we throw. */
+  /**
+   * Manager definition; missing entry indicates a programmer bug, so we throw.
+   */
   const def = MANAGERS.get(manager,);
   if (!def)
     throw new Error(`Unknown package manager: ${manager}`,);
-  /** Install command with `{pkg}` substituted to the resolved package name. */
+  /**
+   * Install command with `{pkg}` substituted to the resolved package name.
+   */
   const cmd = fillTemplate({
     template: def.install,
     packageName,
   },);
-  /** True when the manager needs root and the process is not already running as root. */
+  /**
+   * True when the manager needs root and the process is not already running as root.
+   */
   const needsSudo = def.needsRoot
     && (!isRoot());
   /**
@@ -288,7 +314,9 @@ export async function installPackage(
       ...cmd,
     ]
     : cmd;
-  /** Head/tail split of `fullCmd` so `exec` receives executable and args separately. */
+  /**
+   * Head/tail split of `fullCmd` so `exec` receives executable and args separately.
+   */
   const [executable = '', ...args] = fullCmd;
   return await exec({
     cmd: executable,

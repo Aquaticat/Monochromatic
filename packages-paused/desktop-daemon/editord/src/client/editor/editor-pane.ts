@@ -55,26 +55,46 @@ import {
   mapCursorThroughEdits,
 } from './text-edits.ts';
 
-/** `<editor-pane>`: contenteditable text editor component. */
+/**
+ * `<editor-pane>`: contenteditable text editor component.
+ */
 export class EditorPane extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
-  /** The contenteditable container element. */
+  /**
+   * The contenteditable container element.
+   */
   #editor: HTMLDivElement | null = null;
-  /** Lezer parser for the current file's language. */
+  /**
+   * Lezer parser for the current file's language.
+   */
   #parser: Parser | null = null;
-  /** Pending rAF IDs grouped so disconnect cleanup stays in sync with schedulers. */
+  /**
+   * Pending rAF IDs grouped so disconnect cleanup stays in sync with schedulers.
+   */
   readonly #frames = createEditorPaneFrames();
-  /** Current diagnostics. */
+  /**
+   * Current diagnostics.
+   */
   #diagnostics: readonly Diagnostic[] = [];
-  /** Current inlay hints. */
+  /**
+   * Current inlay hints.
+   */
   #inlayHints: readonly InlayHint[] = [];
-  /** Resize observer for re-measurement. */
+  /**
+   * Resize observer for re-measurement.
+   */
   #resizeObserver: ResizeObserver | null = null;
-  /** Detects all DOM mutations inside the editor and dispatches `contentchange`. */
+  /**
+   * Detects all DOM mutations inside the editor and dispatches `contentchange`.
+   */
   #mutationObserver: MutationObserver | null = null;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -82,7 +102,9 @@ export class EditorPane extends HTMLElement {
 
   //region Lifecycle
 
-  /** Renders the editor container and attaches event listeners. */
+  /**
+   * Renders the editor container and attaches event listeners.
+   */
   connectedCallback(): void {
     this.#editor = createEditorElement();
     this.#editor
@@ -124,7 +146,9 @@ export class EditorPane extends HTMLElement {
     );
   }
 
-  /** Cleans up observers and pending animation frames. */
+  /**
+   * Cleans up observers and pending animation frames.
+   */
   disconnectedCallback(): void {
     this.#mutationObserver
       ?.disconnect();
@@ -242,13 +266,17 @@ export class EditorPane extends HTMLElement {
       === null) || (edits.length
         === 0))
       return;
-    /** Capture cursor before setText replaces every line div. */
+    /**
+     * Capture cursor before setText replaces every line div.
+     */
     const cursorBefore = this.getCursorPosition();
     /**
      * Pre-edit document text; retained so {@link mapCursorThroughEdits} can translate the cursor.
      */
     const original = this.getText();
-    /** Post-edit document text; written back via `setText`. */
+    /**
+     * Post-edit document text; written back via `setText`.
+     */
     const updated = applyEditsToText({
       text: original,
       edits,
@@ -464,12 +492,16 @@ export class EditorPane extends HTMLElement {
 
   //region Internal
 
-  /** MutationObserver callback: dispatches `contentchange` on any editor DOM mutation. */
+  /**
+   * MutationObserver callback: dispatches `contentchange` on any editor DOM mutation.
+   */
   #onMutation(): void {
     dispatchContentChange({ target: this, },);
   }
 
-  /** Schedules diagnostic highlights. */
+  /**
+   * Schedules diagnostic highlights.
+   */
   #scheduleDiagnosticHighlights(): void {
     cancelAnimationFrame(this.#frames
       .diagnosticHighlight,);
@@ -483,7 +515,9 @@ export class EditorPane extends HTMLElement {
     }
   }
 
-  /** Schedules inlay annotations. */
+  /**
+   * Schedules inlay annotations.
+   */
   #scheduleInlayAnnotations(): void {
     cancelAnimationFrame(this.#frames
       .inlayAnnotation,);
@@ -498,7 +532,9 @@ export class EditorPane extends HTMLElement {
     }
   }
 
-  /** Schedules inlay re-measurement. */
+  /**
+   * Schedules inlay re-measurement.
+   */
   #scheduleInlayMeasure(): void {
     if (this.#editor
       !== null) {
@@ -509,7 +545,9 @@ export class EditorPane extends HTMLElement {
     }
   }
 
-  /** Schedules syntax highlighting. */
+  /**
+   * Schedules syntax highlighting.
+   */
   #scheduleHighlight(): void {
     cancelAnimationFrame(this.#frames
       .highlight,);

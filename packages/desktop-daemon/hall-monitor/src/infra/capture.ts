@@ -4,13 +4,19 @@ import { unlink, } from 'node:fs/promises';
 
 import spawn from 'nano-spawn';
 
-/** Path to the ffmpeg binary. */
+/**
+ * Path to the ffmpeg binary.
+ */
 const FFMPEG = '/usr/bin/ffmpeg';
 
-/** Maximum long-edge resolution for downscaled screenshots. */
+/**
+ * Maximum long-edge resolution for downscaled screenshots.
+ */
 const SCREENSHOT_LONG_EDGE = 1_440;
 
-/** Maximum long-edge resolution for downscaled webcam frames. */
+/**
+ * Maximum long-edge resolution for downscaled webcam frames.
+ */
 const WEBCAM_LONG_EDGE = 720;
 
 /**
@@ -45,9 +51,13 @@ function scaleFilter(longEdge: number,): string {
  * ```
  */
 export async function captureScreenshot(): Promise<Buffer> {
-  /** Temp PNG path used as a handoff file between spectacle and ffmpeg; cleaned up by the disposable below. */
+  /**
+   * Temp PNG path used as a handoff file between spectacle and ffmpeg; cleaned up by the disposable below.
+   */
   const tmp = `/tmp/hall-monitor-screen-${Date.now()}.png`;
-  /** Disposable wrapper for temp file cleanup. */
+  /**
+   * Disposable wrapper for temp file cleanup.
+   */
   await using _cleanup = {
     [Symbol.asyncDispose]: async function cleanupTempFile(): Promise<void> {
       try {
@@ -71,7 +81,9 @@ export async function captureScreenshot(): Promise<Buffer> {
       stderr: 'ignore',
     },
   );
-  /** ffmpeg child process that downscales the PNG handoff file and writes JPEG bytes to stdout. */
+  /**
+   * ffmpeg child process that downscales the PNG handoff file and writes JPEG bytes to stdout.
+   */
   const proc = cpSpawn(
     FFMPEG,
     [
@@ -94,7 +106,9 @@ export async function captureScreenshot(): Promise<Buffer> {
       'inherit',
     ], },
   );
-  /** Accumulated JPEG byte chunks streamed from ffmpeg's stdout. */
+  /**
+   * Accumulated JPEG byte chunks streamed from ffmpeg's stdout.
+   */
   const chunks: Buffer[] = [];
   proc.stdout
     .on(
@@ -107,7 +121,9 @@ export async function captureScreenshot(): Promise<Buffer> {
     proc,
     'close',
   );
-  /** Concatenated screenshot buffer; rejected when ffmpeg produced no output. */
+  /**
+   * Concatenated screenshot buffer; rejected when ffmpeg produced no output.
+   */
   const buf = Buffer.concat(chunks,);
   if (buf.length
     === 0)
@@ -130,7 +146,9 @@ export async function captureScreenshot(): Promise<Buffer> {
  * ```
  */
 export async function captureWebcam(): Promise<Buffer> {
-  /** ffmpeg child process that grabs a single v4l2 frame and emits JPEG bytes on stdout. */
+  /**
+   * ffmpeg child process that grabs a single v4l2 frame and emits JPEG bytes on stdout.
+   */
   const proc = cpSpawn(
     FFMPEG,
     [
@@ -156,7 +174,9 @@ export async function captureWebcam(): Promise<Buffer> {
       'inherit',
     ], },
   );
-  /** Accumulated JPEG byte chunks streamed from ffmpeg's stdout. */
+  /**
+   * Accumulated JPEG byte chunks streamed from ffmpeg's stdout.
+   */
   const chunks: Buffer[] = [];
   proc.stdout
     .on(
@@ -169,7 +189,9 @@ export async function captureWebcam(): Promise<Buffer> {
     proc,
     'close',
   );
-  /** Concatenated webcam frame buffer; rejected when ffmpeg produced no output. */
+  /**
+   * Concatenated webcam frame buffer; rejected when ffmpeg produced no output.
+   */
   const buf = Buffer.concat(chunks,);
   if (buf.length
     === 0)

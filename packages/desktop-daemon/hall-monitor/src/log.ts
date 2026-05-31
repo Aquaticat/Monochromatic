@@ -97,13 +97,21 @@ function logError(msg: string,): void {
  * ```
  */
 export const log: {
-  /** Log at debug priority. */
+  /**
+   * Log at debug priority.
+   */
   debug: (msg: string,) => void;
-  /** Log at info priority. */
+  /**
+   * Log at info priority.
+   */
   info: (msg: string,) => void;
-  /** Log at warning priority. */
+  /**
+   * Log at warning priority.
+   */
   warn: (msg: string,) => void;
-  /** Log at err priority. */
+  /**
+   * Log at err priority.
+   */
   error: (msg: string,) => void;
 } = {
   debug: logDebug,

@@ -27,7 +27,9 @@ const path = runSync(
 );
 
 console.log(`Backing up ${path}`,);
-/** Current ISO timestamp with colons removed, used as the backup subdirectory name */
+/**
+ * Current ISO timestamp with colons removed, used as the backup subdirectory name
+ */
 const now = new Date().toISOString()
   .replaceAll(
   ':',

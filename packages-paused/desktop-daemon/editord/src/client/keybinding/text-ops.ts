@@ -8,7 +8,9 @@
 
 import type { KeybindingDeps, } from './deps.ts';
 
-/** Deps subset for text manipulation handlers. */
+/**
+ * Deps subset for text manipulation handlers.
+ */
 type TextOpsDeps = Pick<KeybindingDeps,
   'deleteCurrentLine' | 'selectAndCopyCurrentLine' | 'duplicateLineDown' | 'swapLineDown'
     | 'swapLineUp'>;
@@ -69,7 +71,9 @@ export function handleTextEditKey({
     deps.deleteCurrentLine();
     return true;
   }
-  /** Without combined condition: no-lonely-if lint error for nested if without else. */
+  /**
+   * Without combined condition: no-lonely-if lint error for nested if without else.
+   */
   if ((event.ctrlKey
     || event
     .metaKey)

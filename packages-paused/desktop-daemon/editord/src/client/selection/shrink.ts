@@ -21,7 +21,9 @@ import {
   toFlat,
 } from './utils.ts';
 
-/** Tagged logger for selection shrink. */
+/**
+ * Tagged logger for selection shrink.
+ */
 const shrinkLog = tagged({
   tag: 'selection-shrink',
   l,
@@ -51,23 +53,31 @@ export async function doShrinkSelection({
   readonly editorPane: EditorPaneHandle;
   readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
-  /** Skip when no file is open; LSP needs a target. */
+  /**
+   * Skip when no file is open; LSP needs a target.
+   */
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
-  /** Existing selection compared against chain entries to pick the next inner range. */
+  /**
+   * Existing selection compared against chain entries to pick the next inner range.
+   */
   const currentSel = editorPane.getSelection();
   if (currentSel === null)
     return;
 
-  /** Cursor coords sent to the LSP `selectionRange` request. */
+  /**
+   * Cursor coords sent to the LSP `selectionRange` request.
+   */
   const pos = editorPane.getCursorPosition();
   if (pos === null)
     return;
 
   try {
-    /** Innermost-first chain of ranges returned by the LSP. */
+    /**
+     * Innermost-first chain of ranges returned by the LSP.
+     */
     const chain = await fetchChain({
       ws,
       path,
@@ -89,7 +99,9 @@ export async function doShrinkSelection({
        * Flat form needed by {@link strictlyContains}.
        */
       const flat = toFlat({ sr: entry, },);
-      /** Without this combined check, the inner `best` comparison would run for non-contained ranges. */
+      /**
+       * Without this combined check, the inner `best` comparison would run for non-contained ranges.
+       */
       if (strictlyContains({
         outer: currentSel,
         inner: flat,
@@ -110,7 +122,9 @@ export async function doShrinkSelection({
       );
     }
     else {
-      /** No smaller range: collapse to cursor. */
+      /**
+       * No smaller range: collapse to cursor.
+       */
       editorPane.restoreCursor({
         line: pos.line,
         character: pos.character,

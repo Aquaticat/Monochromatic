@@ -13,7 +13,9 @@ import readdirGlob from 'tiny-readdir-glob';
 
 //region Glob resolution
 
-/** Glob metacharacters that mark where a static prefix ends. */
+/**
+ * Glob metacharacters that mark where a static prefix ends.
+ */
 const GLOB_META_CHARS = '*?{[';
 
 /**
@@ -62,7 +64,9 @@ function splitGlob(pattern: string,): readonly [
   cwd: string,
   relativeGlob: string,
 ] {
-  /** Position of the first wildcard character; `-1` means the pattern is a literal path. */
+  /**
+   * Position of the first wildcard character; `-1` means the pattern is a literal path.
+   */
   const metaIndex = firstGlobMetaIndex(pattern,);
 
   if (metaIndex === (-1)) {
@@ -72,12 +76,16 @@ function splitGlob(pattern: string,): readonly [
     ];
   }
 
-  /** Literal portion of the pattern preceding the first wildcard; the matcher's `cwd` is derived from it. */
+  /**
+   * Literal portion of the pattern preceding the first wildcard; the matcher's `cwd` is derived from it.
+   */
   const staticPrefix = pattern.slice(
     0,
     metaIndex,
   );
-  /** Last `/` inside the static prefix; splits the directory `cwd` from the remaining glob suffix. */
+  /**
+   * Last `/` inside the static prefix; splits the directory `cwd` from the remaining glob suffix.
+   */
   const lastSep = staticPrefix.lastIndexOf('/',);
 
   if (lastSep === (-1)) {
@@ -117,7 +125,9 @@ export async function resolveGlobFiles(pattern: string,): Promise<string[]> {
   if (relativeGlob === '')
     return [cwd,];
 
-  /** Files matched by `tiny-readdir-glob`; rebound here so destructuring carries TSDoc above the const block. */
+  /**
+   * Files matched by `tiny-readdir-glob`; rebound here so destructuring carries TSDoc above the const block.
+   */
   const { files, } = await readdirGlob(
     relativeGlob,
     { cwd, },

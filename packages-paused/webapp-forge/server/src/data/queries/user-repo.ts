@@ -26,7 +26,9 @@ import type {
   User,
 } from './types.ts';
 
-/** Raw row shape returned by SELECTs against the Better Auth `user` table. */
+/**
+ * Raw row shape returned by SELECTs against the Better Auth `user` table.
+ */
 type UserRow = {
   readonly id: string;
   readonly login: string | null;
@@ -84,9 +86,13 @@ export async function insertUser(row: {
   readonly email?: string | null;
   readonly createdAt: number;
 },): Promise<void> {
-  /** ISO timestamp shared by both `createdAt` and `updatedAt` columns. */
+  /**
+   * ISO timestamp shared by both `createdAt` and `updatedAt` columns.
+   */
   const createdAtIso = new Date(row.createdAt,).toISOString();
-  /** Email defaults to a synthesised value so the NOT NULL column is satisfied. */
+  /**
+   * Email defaults to a synthesised value so the NOT NULL column is satisfied.
+   */
   const email = row.email
     ?? `${row.login}@forge.test`;
   await run({
@@ -176,7 +182,9 @@ export async function insertLabel(row: {
  * ```
  */
 export async function getUser(id: string,): Promise<User | undefined> {
-  /** Raw user row from the DB; `undefined` when no match. */
+  /**
+   * Raw user row from the DB; `undefined` when no match.
+   */
   const row = await get<UserRow>({
     sql: 'SELECT id, username AS login, email, createdAt FROM user WHERE id = ?',
     params: [id,],
@@ -197,7 +205,9 @@ export async function getUser(id: string,): Promise<User | undefined> {
  * ```
  */
 export async function getUserByLogin(login: string,): Promise<User | undefined> {
-  /** Raw user row from the DB; `undefined` when no match. */
+  /**
+   * Raw user row from the DB; `undefined` when no match.
+   */
   const row = await get<UserRow>({
     sql: 'SELECT id, username AS login, email, createdAt FROM user WHERE username = ?',
     params: [login,],

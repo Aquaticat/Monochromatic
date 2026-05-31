@@ -1,2 +1,4 @@
-/** Type alias for `undefined`. */
+/**
+ * Type alias for `undefined`.
+ */
 export type $ = undefined;

@@ -26,14 +26,18 @@ import type {
 
 //region Types
 
-/** Coarse type classification used by the channel-acceptance allowlist. */
+/**
+ * Coarse type classification used by the channel-acceptance allowlist.
+ */
 export type DimKind = 'continuous' | 'binary' | 'categorical';
 
 //endregion Types
 
 //region Display names
 
-/** Per-dim display string for axis labels, dropdowns, and tooltips. */
+/**
+ * Per-dim display string for axis labels, dropdowns, and tooltips.
+ */
 export const DIM_DISPLAY_NAMES: Record<DataDimKey, string> = {
   logSourceBytes: 'log10(source bytes)',
   logDaysStale: 'log10(days stale)',
@@ -122,7 +126,9 @@ export const CHANNEL_ACCEPTED_KINDS: Record<ChannelKey, readonly DimKind[]> = {
 
 //region Toggle labels
 
-/** Human-readable legend per 3-state boolean filter toggle. */
+/**
+ * Human-readable legend per 3-state boolean filter toggle.
+ */
 export const TOGGLE_LABELS: Record<ToggleKey, string> = {
   isLeaf: 'Is leaf (no runtime deps)',
   tsMajority: 'TS-majority (≥ 95%)',

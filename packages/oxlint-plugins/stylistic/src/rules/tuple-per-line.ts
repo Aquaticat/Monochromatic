@@ -7,9 +7,13 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Tuple-type node shape carrying element types for this rule. */
+/**
+ * Tuple-type node shape carrying element types for this rule.
+ */
 type TupleElementListNode = Span & {
-  /** Tuple element types in source order. */
+  /**
+   * Tuple element types in source order.
+   */
   readonly elementTypes?: readonly Span[];
 };
 
@@ -44,9 +48,13 @@ export const tuplePerLine: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       TSTupleType(node: Span,): void {
-        /** Narrowed tuple visitor node used for element type access. */
+        /**
+         * Narrowed tuple visitor node used for element type access.
+         */
         const tupleNode = node as TupleElementListNode;
-        /** Extract elementTypes from the tuple type. */
+        /**
+         * Extract elementTypes from the tuple type.
+         */
         const { elementTypes: elements, } = tupleNode;
         if (elements === undefined)
           return;

@@ -23,25 +23,37 @@ import type {
 process.env
   .DB_PATH ??= ':memory:';
 
-/** Lazy import keeps the runtime module from initialising before `DB_PATH` is set. */
+/**
+ * Lazy import keeps the runtime module from initialising before `DB_PATH` is set.
+ */
 const { hotRepo, } = await import('./scenarios/hot-repo.ts');
 
-/** Sister lazy import for the second scenario. */
+/**
+ * Sister lazy import for the second scenario.
+ */
 const { burstyComment, } = await import('./scenarios/bursty-comment.ts');
 
-/** Phase 2 scenario: many sparse repos, parallel writers. */
+/**
+ * Phase 2 scenario: many sparse repos, parallel writers.
+ */
 const { wideService, } = await import('./scenarios/wide-service.ts');
 
-/** Phase 2 scenario: force-push iterations against the smart-HTTP receive-pack code path. */
+/**
+ * Phase 2 scenario: force-push iterations against the smart-HTTP receive-pack code path.
+ */
 const { forcePush, } = await import('./scenarios/force-push.ts');
 
-/** Tagged logger scoped to the stress CLI. */
+/**
+ * Tagged logger scoped to the stress CLI.
+ */
 const l = tagged({
   tag: 'stress',
   l: logger,
 },);
 
-/** Scenarios known to the CLI (Phase 1 + Phase 2). */
+/**
+ * Scenarios known to the CLI (Phase 1 + Phase 2).
+ */
 const SCENARIOS: readonly Scenario[] = [
   hotRepo,
   burstyComment,
@@ -62,13 +74,17 @@ const SCENARIOS: readonly Scenario[] = [
  * ```
  */
 function formatSummary(results: readonly ScenarioResult[],): string {
-  /** Accumulator seeded with the markdown table header. */
+  /**
+   * Accumulator seeded with the markdown table header.
+   */
   const lines: string[] = [
     '| scenario | duration ms | events | p50 ms | p99 ms | violations |',
     '| --- | ---: | ---: | ---: | ---: | --- |',
   ];
   for (const r of results) {
-    /** Rendered cell, joined for readability when a scenario reports multiple violations. */
+    /**
+     * Rendered cell, joined for readability when a scenario reports multiple violations.
+     */
     const violationText = r.invariantViolations
       .length
       === 0
@@ -84,14 +100,20 @@ function formatSummary(results: readonly ScenarioResult[],): string {
   return lines.join('\n',);
 }
 
-/** Resolved `--scenario=` flag, defaulting to `all`. */
+/**
+ * Resolved `--scenario=` flag, defaulting to `all`.
+ */
 const target = getFlag('scenario',)
   ?? 'all';
 
-/** Optional `--out=` flag for a JSON results file. */
+/**
+ * Optional `--out=` flag for a JSON results file.
+ */
 const outFile = getFlag('out',);
 
-/** Filtered scenario list to actually run. */
+/**
+ * Filtered scenario list to actually run.
+ */
 const toRun: Scenario[] = target === 'all'
   ? [...SCENARIOS,]
   : SCENARIOS.filter(function matchesTarget(s,) {
@@ -113,12 +135,16 @@ if (toRun.length
   process.exitCode = 1;
 }
 else {
-  /** Aggregated per-scenario results for the report. */
+  /**
+   * Aggregated per-scenario results for the report.
+   */
   const results: ScenarioResult[] = [];
   for (const scenario of toRun) {
     l.info(`running scenario: ${scenario.name}`,);
     /* oxlint-disable no-await-in-loop -- scenarios share the runtime; serial run by design */
-    /** Single-scenario outcome appended to the aggregated report. */
+    /**
+     * Single-scenario outcome appended to the aggregated report.
+     */
     const result = await scenario.run();
     /* oxlint-enable no-await-in-loop */
     results.push(result,);
@@ -132,7 +158,9 @@ else {
     );
   }
 
-  /** Markdown table emitted to stdout for piping into reports or CI artifacts. */
+  /**
+   * Markdown table emitted to stdout for piping into reports or CI artifacts.
+   */
   const summary = formatSummary(results,);
   // CLI output goes through stdout for piping into reports / CI artifacts.
   process.stdout
@@ -148,7 +176,9 @@ else {
     );
   }
 
-  /** True when any scenario reported invariant violations. */
+  /**
+   * True when any scenario reported invariant violations.
+   */
   const failed = results.some(function hasViolation(r,) {
     return r.invariantViolations
       .length

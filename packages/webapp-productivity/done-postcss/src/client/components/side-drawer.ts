@@ -27,16 +27,24 @@ import { SIDE_DRAWER_STYLES, } from './side-drawer-styles.ts';
  * Toggle the popover via the `open` attribute (set by the top-nav hamburger).
  */
 class SideDrawer extends HTMLElement {
-  /** Attributes to observe for popover toggling. */
+  /**
+   * Attributes to observe for popover toggling.
+   */
   static observedAttributes = ['open',];
 
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Reference to the popover panel element; absent until first render. */
+  /**
+   * Reference to the popover panel element; absent until first render.
+   */
   #panel?: HTMLDivElement;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -68,13 +76,17 @@ class SideDrawer extends HTMLElement {
     }
   }
 
-  /** Renders content and attaches event handlers for closing the drawer. */
+  /**
+   * Renders content and attaches event handlers for closing the drawer.
+   */
   connectedCallback(): void {
     this.#render();
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow
       .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
-    /** Captured so the close handlers reach this component without `this`-bound functions. */
+    /**
+     * Captured so the close handlers reach this component without `this`-bound functions.
+     */
     const self = this;
 
     this.#shadow
@@ -99,7 +111,9 @@ class SideDrawer extends HTMLElement {
     );
   }
 
-  /** Toggles popover visibility when the open attribute changes. */
+  /**
+   * Toggles popover visibility when the open attribute changes.
+   */
   attributeChangedCallback(): void {
     if (this.#panel
       === undefined)
@@ -113,9 +127,13 @@ class SideDrawer extends HTMLElement {
         .hidePopover();
   }
 
-  /** Renders both the inline sidebar and popover panel into the shadow root. */
+  /**
+   * Renders both the inline sidebar and popover panel into the shadow root.
+   */
   #render(): void {
-    /** Popover-only close button; tagged with `panel-close` so the click handler can find it. */
+    /**
+     * Popover-only close button; tagged with `panel-close` so the click handler can find it.
+     */
     const panelClose = buildCloseButton('Close menu',);
     panelClose.classList
       .add('panel-close',);

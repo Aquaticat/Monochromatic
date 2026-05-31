@@ -32,7 +32,9 @@ export {};
  */
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
-/** Raw args after the script name. */
+/**
+ * Raw args after the script name.
+ */
 const rawArgs = process.argv
   .slice(2,);
 
@@ -42,7 +44,9 @@ const rawArgs = process.argv
  */
 const doubleDashIndex = rawArgs.indexOf('--',);
 
-/** Boundary past which tokens must not be touched. */
+/**
+ * Boundary past which tokens must not be touched.
+ */
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
@@ -61,7 +65,9 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
 
 //region Dispatch: parse argv and route to the appropriate handler
 
-/** Parsed CLI result from process.argv. */
+/**
+ * Parsed CLI result from process.argv.
+ */
 const args = runSync(
   parser,
   {

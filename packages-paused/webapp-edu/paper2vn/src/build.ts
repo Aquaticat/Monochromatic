@@ -20,14 +20,18 @@ import { renderStyles, } from './styles.ts';
 
 export {};
 
-/** Absolute path to this package's root directory */
+/**
+ * Absolute path to this package's root directory
+ */
 const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
 )
   .pathname;
 
-/** Output directory for the generated single-file app */
+/**
+ * Output directory for the generated single-file app
+ */
 const DIST_DIR = join(
   PACKAGE_DIR,
   'dist',
@@ -36,7 +40,9 @@ const DIST_DIR = join(
 
 console.error('[paper2vn] building...',);
 
-/** Pre-bundled client SPA, produced by tsdown */
+/**
+ * Pre-bundled client SPA, produced by tsdown
+ */
 const js = await readFile(
   join(
     PACKAGE_DIR,
@@ -63,10 +69,14 @@ const spritePackManifest = await readFile(
   'utf8',
 );
 
-/** Minified CSS stylesheet */
+/**
+ * Minified CSS stylesheet
+ */
 const css = renderStyles();
 
-/** Complete self-contained HTML document */
+/**
+ * Complete self-contained HTML document
+ */
 const html = renderPage({
   css,
   js,
@@ -77,7 +87,9 @@ await mkdir(
   DIST_DIR,
   { recursive: true, },
 );
-/** Final HTML output path inside the dist directory. */
+/**
+ * Final HTML output path inside the dist directory.
+ */
 const outPath = join(
   DIST_DIR,
   'index.html',

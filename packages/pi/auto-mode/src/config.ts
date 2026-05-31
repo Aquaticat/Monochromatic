@@ -28,7 +28,9 @@ import type {
   ModelOverride,
 } from './types.ts';
 
-/** Tagged logger for the config module. */
+/**
+ * Tagged logger for the config module.
+ */
 const l = tagged({
   tag: 'config',
   l: parentLogger,
@@ -53,15 +55,21 @@ const l = tagged({
 function loadMergedConfig(
   cwd: string,
 ): MergedConfig {
-  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
+  /**
+   * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
+   */
   const innerL = tagged({
     tag: loadMergedConfig.name,
     l,
   },);
   innerL.debug(`loading config for cwd: ${cwd}`,);
-  /** Validated global config (or `GLOBAL_DEFAULTS` when the file is absent). */
+  /**
+   * Validated global config (or `GLOBAL_DEFAULTS` when the file is absent).
+   */
   const global = loadGlobalConfig();
-  /** Project config lookup result; `found` discriminates whether a project-level file exists. */
+  /**
+   * Project config lookup result; `found` discriminates whether a project-level file exists.
+   */
   const project = loadProjectConfig(cwd,);
   innerL.debug(
     `loaded global=${String(true,)} project=${String(project.found,)} enabled=${
@@ -69,13 +77,19 @@ function loadMergedConfig(
     }`,
   );
 
-  /** Mutable matcher list seeded from global config; project commands are appended below. */
+  /**
+   * Mutable matcher list seeded from global config; project commands are appended below.
+   */
   const commands: CommandMatcher[] = [...global.commands,];
-  /** Mutable pattern-string list seeded from global config; project patterns are appended below. */
+  /**
+   * Mutable pattern-string list seeded from global config; project patterns are appended below.
+   */
   const patternStrs = [...global.patterns,];
 
   if (project.found) {
-    /** Project-level matchers and patterns destructured so the spreads below stay single-identifier. */
+    /**
+     * Project-level matchers and patterns destructured so the spreads below stay single-identifier.
+     */
     const {
       commands: projectCommands,
       patterns: projectPatterns,
@@ -84,27 +98,37 @@ function loadMergedConfig(
     patternStrs.push(...projectPatterns,);
   }
 
-  /** Judge-model block from the global config, with `JUDGE_MODEL_DEFAULTS` as fallback for omitted files. */
+  /**
+   * Judge-model block from the global config, with `JUDGE_MODEL_DEFAULTS` as fallback for omitted files.
+   */
   const rawJudgeModel = global.judgeModel
     ?? { ...JUDGE_MODEL_DEFAULTS, };
 
-  /** Override block re-attached to the judge model when the config pins one; an absent override stays absent. */
+  /**
+   * Override block re-attached to the judge model when the config pins one; an absent override stays absent.
+   */
   const overrideContext = (
     function resolveOverrideContext(): {
       modelOverride?: ModelOverride;
     } {
-      /** Pinned-model override from the validated config, if any. */
+      /**
+       * Pinned-model override from the validated config, if any.
+       */
       const ov = rawJudgeModel.modelOverride;
       if (ov === undefined)
         return {};
       if ((typeof ov) === 'string')
         return { modelOverride: ov, };
-      /** Override auth fields destructured so the conditional spreads below stay single-identifier. */
+      /**
+       * Override auth fields destructured so the conditional spreads below stay single-identifier.
+       */
       const {
         apiKey,
         headers,
       } = ov.auth;
-      /** Inline auth assembled immutably so omitted keys stay absent rather than `undefined`. */
+      /**
+       * Inline auth assembled immutably so omitted keys stay absent rather than `undefined`.
+       */
       const auth: BudgetModelAuth = {
         ...(apiKey !== undefined ? { apiKey, } : {}),
         ...(headers !== undefined ? { headers, } : {}),
@@ -118,7 +142,9 @@ function loadMergedConfig(
     }
   )();
 
-  /** Validated judge-model block, with modelOverride re-attached only when the config pinned one. */
+  /**
+   * Validated judge-model block, with modelOverride re-attached only when the config pinned one.
+   */
   const judgeModel: MergedConfig['judgeModel'] = {
     strategy: rawJudgeModel.strategy,
     costRatio: rawJudgeModel.costRatio,
@@ -135,7 +161,9 @@ function loadMergedConfig(
     function resolveProjectInstructions(): { projectInstructions?: string } {
       if (!project.found)
         return {};
-      /** Project-level instructions string, possibly absent or empty. */
+      /**
+       * Project-level instructions string, possibly absent or empty.
+       */
       const { instructions, } = project.config;
       if ((instructions === undefined) || (instructions === ''))
         return {};
@@ -165,7 +193,9 @@ function loadMergedConfig(
 
 //region Internal loading
 
-/** Default global config values. */
+/**
+ * Default global config values.
+ */
 const GLOBAL_DEFAULTS: AutoModeConfig = {
   enabled: true,
   commands: [],
@@ -174,10 +204,14 @@ const GLOBAL_DEFAULTS: AutoModeConfig = {
   judgeTimeoutMs: 10_000,
 };
 
-/** Raw JSON object from config files. */
+/**
+ * Raw JSON object from config files.
+ */
 type RawJson = Record<string, unknown>;
 
-/** Default project config values. */
+/**
+ * Default project config values.
+ */
 const PROJECT_DEFAULTS: ProjectConfig = {
   commands: [],
   patterns: [],
@@ -243,7 +277,9 @@ function readJsonFile(
   }
   catch (err) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Node.js error code access */
-    /** Node-style errno (`ENOENT`, etc.) when the error originated in `fs`; `undefined` for anything else. */
+    /**
+     * Node-style errno (`ENOENT`, etc.) when the error originated in `fs`; `undefined` for anything else.
+     */
     const errCode = ((err instanceof Error) && ('code' in err))
       ? (err as NodeJS.ErrnoException).code
       : undefined;
@@ -305,9 +341,13 @@ function compilePatterns(
  * @returns the parsed global config
  */
 function loadGlobalConfig(): AutoModeConfig {
-  /** Absolute path to `~/.pi/agent/extensions/pi-auto-mode.json`. */
+  /**
+   * Absolute path to `~/.pi/agent/extensions/pi-auto-mode.json`.
+   */
   const path = globalConfigPath();
-  /** Parsed JSON contents, or `undefined` when the file is absent so the caller can fall back to defaults. */
+  /**
+   * Parsed JSON contents, or `undefined` when the file is absent so the caller can fall back to defaults.
+   */
   const raw = readJsonFile({
     path,
     label: 'global',
@@ -315,13 +355,19 @@ function loadGlobalConfig(): AutoModeConfig {
   if (raw === undefined)
     return GLOBAL_DEFAULTS;
   /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; nested config from JSON */
-  /** Re-typed view of the JSON root as a record for spread/merge access. */
+  /**
+   * Re-typed view of the JSON root as a record for spread/merge access.
+   */
   const rawObj = raw as RawJson;
-  /** Nested judge-model block from disk; defaults to an empty object so deep-merge below sees a record. */
+  /**
+   * Nested judge-model block from disk; defaults to an empty object so deep-merge below sees a record.
+   */
   const rawJudgeModel = (rawObj.judgeModel
     ?? {}) as RawJson;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Defaults overlaid with the on-disk record, with a deeper merge for the nested judge-model. */
+  /**
+   * Defaults overlaid with the on-disk record, with a deeper merge for the nested judge-model.
+   */
   const merged = {
     ...GLOBAL_DEFAULTS,
     ...rawObj,
@@ -330,7 +376,9 @@ function loadGlobalConfig(): AutoModeConfig {
       ...rawJudgeModel,
     },
   };
-  /** valibot validation outcome; `success` discriminates the typed output from the issue list. */
+  /**
+   * valibot validation outcome; `success` discriminates the typed output from the issue list.
+   */
   const result = v.safeParse(
     AutoModeConfigSchema,
     merged,
@@ -358,9 +406,13 @@ function loadProjectConfig(
   found: true;
   config: ProjectConfig;
 } | { found: false } {
-  /** Absolute path to `<cwd>/.pi/extensions/pi-auto-mode.json`. */
+  /**
+   * Absolute path to `<cwd>/.pi/extensions/pi-auto-mode.json`.
+   */
   const path = projectConfigPath(cwd,);
-  /** Parsed JSON contents, or `undefined` when the project file is absent. */
+  /**
+   * Parsed JSON contents, or `undefined` when the project file is absent.
+   */
   const raw = readJsonFile({
     path,
     label: 'project',
@@ -368,15 +420,21 @@ function loadProjectConfig(
   if (raw === undefined)
     return { found: false, };
   /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown */
-  /** Re-typed view of the JSON root as a record for spread/merge access. */
+  /**
+   * Re-typed view of the JSON root as a record for spread/merge access.
+   */
   const rawObj = raw as RawJson;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Project defaults overlaid with the on-disk record before schema validation. */
+  /**
+   * Project defaults overlaid with the on-disk record before schema validation.
+   */
   const merged = {
     ...PROJECT_DEFAULTS,
     ...rawObj,
   };
-  /** valibot validation outcome; `success` discriminates the typed output from the issue list. */
+  /**
+   * valibot validation outcome; `success` discriminates the typed output from the issue list.
+   */
   const result = v.safeParse(
     ProjectConfigSchema,
     merged,

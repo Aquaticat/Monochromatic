@@ -5,7 +5,9 @@
  * used by the editor pane component.
  */
 
-/** Single indent level: two spaces. */
+/**
+ * Single indent level: two spaces.
+ */
 export const INDENT_UNIT = '  ';
 
 /**
@@ -38,12 +40,16 @@ export function resolveTextPosition({
   readonly node: Node;
   readonly offset: number;
 } | null {
-  /** Line element at `lineIndex`; undefined when the index is past the editor's end. */
+  /**
+   * Line element at `lineIndex`; undefined when the index is past the editor's end.
+   */
   const lineDiv = editor.children[lineIndex];
   if (lineDiv === undefined)
     return null;
 
-  /** Text-only walker over the line so syntax-highlight spans are skipped. */
+  /**
+   * Text-only walker over the line so syntax-highlight spans are skipped.
+   */
   const walker = document.createTreeWalker(
     lineDiv,
     NodeFilter.SHOW_TEXT,
@@ -59,7 +65,9 @@ export function resolveTextPosition({
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker cursor: `textNode` advances via `walker.nextNode()`
   let textNode = walker.nextNode();
   while (textNode !== null) {
-    /** Length of the current text node; treat null textContent as 0. */
+    /**
+     * Length of the current text node; treat null textContent as 0.
+     */
     const len = textNode.textContent
       ?.length
       ?? 0;
@@ -73,7 +81,9 @@ export function resolveTextPosition({
     textNode = walker.nextNode();
   }
 
-  /** Offset past end: clamp to last text node's end. */
+  /**
+   * Offset past end: clamp to last text node's end.
+   */
   const { lastChild, } = lineDiv;
   if (lastChild !== null) {
     return {
@@ -136,7 +146,9 @@ export function resolveLineCharacter({
   if (lineDiv === null)
     return null;
 
-  /** Zero-based line index of `lineDiv`; -1 when the element is not actually under the editor. */
+  /**
+   * Zero-based line index of `lineDiv`; -1 when the element is not actually under the editor.
+   */
   const line = Array.prototype
     .indexOf
     .call(

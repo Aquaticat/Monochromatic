@@ -12,26 +12,40 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for session state operations. */
+/**
+ * Tagged logger for session state operations.
+ */
 const l = tagged({
   tag: 'session',
   l: rootLogger,
 },);
 
-/** Persisted UI state for a single editord session. */
+/**
+ * Persisted UI state for a single editord session.
+ */
 export type SessionState = {
-  /** Absolute path of the currently open file, or null if none. */
+  /**
+   * Absolute path of the currently open file, or null if none.
+   */
   readonly filePath: string | null;
-  /** Absolute paths of all expanded directories in the file tree. */
+  /**
+   * Absolute paths of all expanded directories in the file tree.
+   */
   readonly expandedDirs: readonly string[];
-  /** 0-based cursor position in the editor. */
+  /**
+   * 0-based cursor position in the editor.
+   */
   readonly cursor: {
     readonly line: number;
     readonly character: number;
   };
-  /** Vertical scroll offset of the editor pane in pixels. */
+  /**
+   * Vertical scroll offset of the editor pane in pixels.
+   */
   readonly scrollTop: number;
-  /** Recently opened file paths, index 0 = most recent. May be absent in older saved state. */
+  /**
+   * Recently opened file paths, index 0 = most recent. May be absent in older saved state.
+   */
   readonly recentFiles?: readonly string[];
 };
 
@@ -78,7 +92,9 @@ export function saveSessionState({
   readonly state: SessionState;
 },): void {
   try {
-    /** Composite localStorage key keyed on filesystem id + root dir. */
+    /**
+     * Composite localStorage key keyed on filesystem id + root dir.
+     */
     const key = storageKey({
       fsId,
       rootDir,
@@ -115,12 +131,16 @@ export function restoreSessionState({
   readonly rootDir: string;
 },): SessionState | null {
   try {
-    /** Composite localStorage key keyed on filesystem id + root dir. */
+    /**
+     * Composite localStorage key keyed on filesystem id + root dir.
+     */
     const key = storageKey({
       fsId,
       rootDir,
     },);
-    /** Raw JSON string; null indicates no saved state for this key. */
+    /**
+     * Raw JSON string; null indicates no saved state for this key.
+     */
     const raw = localStorage.getItem(key,);
     if (raw === null)
       return null;

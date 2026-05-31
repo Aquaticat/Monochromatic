@@ -97,7 +97,9 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
         .surface;
     if (phrase.kind
       === 'noun.counted') {
-      /** Resolved noun entry validated before classifier rendering. */
+      /**
+       * Resolved noun entry validated before classifier rendering.
+       */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
         entry,

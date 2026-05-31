@@ -10,10 +10,14 @@ import { BYTES_PER_MIB, } from '@monochromatic-dev/module-const';
 import { extractPdf, } from './pdf.ts';
 import { extractText, } from './text.ts';
 
-/** Maximum accepted upload size in mebibytes, mirroring the original UI. */
+/**
+ * Maximum accepted upload size in mebibytes, mirroring the original UI.
+ */
 const MAX_MIB = 30;
 
-/** Maximum accepted file size in bytes. */
+/**
+ * Maximum accepted file size in bytes.
+ */
 const MAX_BYTES = MAX_MIB * BYTES_PER_MIB;
 
 /**
@@ -36,14 +40,20 @@ export async function extractPaperText(file: File,): Promise<string> {
   if (file.size
     > MAX_BYTES)
     throw new Error(`paper too large: ${file.size} bytes (max ${MAX_BYTES})`,);
-  /** Lowercased file name so extension checks stay case-insensitive. */
+  /**
+   * Lowercased file name so extension checks stay case-insensitive.
+   */
   const name = file.name
     .toLowerCase();
-  /** Whether the upload should be routed to the PDF extractor. */
+  /**
+   * Whether the upload should be routed to the PDF extractor.
+   */
   const isPdf = name.endsWith('.pdf',)
     || (file.type
       === 'application/pdf');
-  /** Whether the upload should be routed to the plain-text extractor. */
+  /**
+   * Whether the upload should be routed to the plain-text extractor.
+   */
   const isText = name.endsWith('.txt',)
     || name
     .endsWith('.md',)

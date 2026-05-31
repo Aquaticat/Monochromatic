@@ -40,7 +40,9 @@ import {
 
 //region Constants
 
-/** All ten data dims, fixed order for dropdown rendering. */
+/**
+ * All ten data dims, fixed order for dropdown rendering.
+ */
 const DIM_KEYS: readonly DataDimKey[] = [
   'logSourceBytes',
   'logDaysStale',
@@ -54,7 +56,9 @@ const DIM_KEYS: readonly DataDimKey[] = [
   'licenseClassNumeric',
 ];
 
-/** Channels in their dropdown render order. */
+/**
+ * Channels in their dropdown render order.
+ */
 const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
   'y',
@@ -64,24 +68,32 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
   'size',
 ];
 
-/** Three-state toggle radio values, fixed order. */
+/**
+ * Three-state toggle radio values, fixed order.
+ */
 const TOGGLE_VALUES: readonly ToggleValue[] = [
   'any',
   'yes',
   'no',
 ];
 
-/** Name-labels select options, fixed order. */
+/**
+ * Name-labels select options, fixed order.
+ */
 const NAME_LABEL_OPTIONS: readonly ('none' | 'topN' | 'all')[] = [
   'none',
   'topN',
   'all',
 ];
 
-/** Slider step in displayed-value units; fine enough for log-scale dims. */
+/**
+ * Slider step in displayed-value units; fine enough for log-scale dims.
+ */
 const RANGE_STEP = 0.01;
 
-/** Display-channel labels for the dim picker rows. */
+/**
+ * Display-channel labels for the dim picker rows.
+ */
 const CHANNEL_LABELS: Record<ChannelKey, string> = {
   x: 'x',
   y: 'y',
@@ -212,14 +224,20 @@ function renderDimDropdown(
    */
   const options = DIM_KEYS
     .map(function renderOption(dim,) {
-      /** `true` when the channel accepts this dim type; gates the `disabled` attribute. */
+      /**
+       * `true` when the channel accepts this dim type; gates the `disabled` attribute.
+       */
       const accepted = acceptsDim({
         channel,
         dim,
       },);
-      /** ` selected` suffix when this option matches the channel's current dim, empty otherwise. */
+      /**
+       * ` selected` suffix when this option matches the channel's current dim, empty otherwise.
+       */
       const selected = dim === selectedDim ? ' selected' : '';
-      /** ` disabled` suffix when the dim is not accepted by the channel; greys out the option. */
+      /**
+       * ` disabled` suffix when the dim is not accepted by the channel; greys out the option.
+       */
       const disabled = accepted ? '' : ' disabled';
       return `<option value="${dim}"${selected}${disabled}>${
         DIM_DISPLAY_NAMES[dim]
@@ -259,10 +277,14 @@ function renderToggleRow(
     readonly current: ToggleValue;
   },
 ): string {
-  /** One `<input type="radio">` per allowed value, concatenated to form the toggle's radio group. */
+  /**
+   * One `<input type="radio">` per allowed value, concatenated to form the toggle's radio group.
+   */
   const radios = TOGGLE_VALUES
     .map(function renderRadio(value,) {
-      /** ` checked` suffix when this radio matches `current`, empty otherwise. */
+      /**
+       * ` checked` suffix when this radio matches `current`, empty otherwise.
+       */
       const checked = value === current ? ' checked' : '';
       return `<label><input type="radio" name="toggle-${key}" value="${value}"${checked}>${value}</label>`;
     },)
@@ -313,21 +335,31 @@ function renderRangeRow(
     ];
   },
 ): string {
-  /** Slider's `min`/`max` bounds from the dim's full data extent. */
+  /**
+   * Slider's `min`/`max` bounds from the dim's full data extent.
+   */
   const [
     fullMin,
     fullMax,
   ] = fullExtent;
-  /** Currently-set `[min, max]` from state; drives the two handle positions. */
+  /**
+   * Currently-set `[min, max]` from state; drives the two handle positions.
+   */
   const [
     curMin,
     curMax,
   ] = current;
-  /** String form of `fullMin` for the slider's `min` HTML attribute. */
+  /**
+   * String form of `fullMin` for the slider's `min` HTML attribute.
+   */
   const minAttr = fullMin.toString();
-  /** String form of `fullMax` for the slider's `max` HTML attribute. */
+  /**
+   * String form of `fullMax` for the slider's `max` HTML attribute.
+   */
   const maxAttr = fullMax.toString();
-  /** String form of `RANGE_STEP` for the slider's `step` HTML attribute. */
+  /**
+   * String form of `RANGE_STEP` for the slider's `step` HTML attribute.
+   */
   const stepAttr = RANGE_STEP.toString();
   return `<div class="range-row control-row" data-channel="${channel}">
       <label>${CHANNEL_LABELS[channel]} range</label>
@@ -358,20 +390,34 @@ function renderRangeRow(
 function renderDisplaySection(
   { state, }: { readonly state: AppState; },
 ): string {
-  /** Local alias for the display-toggles sub-state so each control read below stays one line. */
+  /**
+   * Local alias for the display-toggles sub-state so each control read below stays one line.
+   */
   const dt = state.displayToggles;
-  /** ` checked` suffix when the wireframe toggle is on; renders the box's bounding wireframe. */
+  /**
+   * ` checked` suffix when the wireframe toggle is on; renders the box's bounding wireframe.
+   */
   const wireframe = dt.showWireframe ? ' checked' : '';
-  /** ` checked` suffix when the threshold-planes toggle is on; renders the cube's 6 cutoff planes. */
+  /**
+   * ` checked` suffix when the threshold-planes toggle is on; renders the cube's 6 cutoff planes.
+   */
   const planes = dt.showThresholdPlanes ? ' checked' : '';
-  /** ` checked` suffix when the axis-labels toggle is on; renders dim names near each axis. */
+  /**
+   * ` checked` suffix when the axis-labels toggle is on; renders dim names near each axis.
+   */
   const axisLabels = dt.showAxisLabels ? ' checked' : '';
-  /** ` checked` suffix when the unknown-cluster toggle is on; surfaces probes with missing dim values. */
+  /**
+   * ` checked` suffix when the unknown-cluster toggle is on; surfaces probes with missing dim values.
+   */
   const unknown = dt.showUnknownCluster ? ' checked' : '';
-  /** One `<option>` per name-label policy, concatenated to form the name-labels dropdown body. */
+  /**
+   * One `<option>` per name-label policy, concatenated to form the name-labels dropdown body.
+   */
   const nameOptions = NAME_LABEL_OPTIONS
     .map(function renderOption(value,) {
-      /** ` selected` suffix when this option matches the current name-labels policy. */
+      /**
+       * ` selected` suffix when this option matches the current name-labels policy.
+       */
       const selected = dt.nameLabels
         === value ? ' selected' : '';
       return `<option value="${value}"${selected}>${value}</option>`;
@@ -441,7 +487,9 @@ export function renderControls(
       },);
     },)
     .join('',);
-  /** Concatenated range-slider rows, one per channel; computes the dim extent fresh each render. */
+  /**
+   * Concatenated range-slider rows, one per channel; computes the dim extent fresh each render.
+   */
   const rangeRows = CHANNEL_KEYS
     .map(function rangeFor(channel,) {
       return renderRangeRow({
@@ -454,10 +502,14 @@ export function renderControls(
       },);
     },)
     .join('',);
-  /** Total probe count rendered into the visibility-counter; used for both numerator and denominator at first paint. */
+  /**
+   * Total probe count rendered into the visibility-counter; used for both numerator and denominator at first paint.
+   */
   const total = probes.length
     .toString();
-  /** HTML-escaped search string, safe for embedding in the search input's `value` attribute. */
+  /**
+   * HTML-escaped search string, safe for embedding in the search input's `value` attribute.
+   */
   const searchAttr = escapeAttr(state.search,);
   return `<aside id="controls" class="controls">
     <section class="controls-section" data-section="camera">

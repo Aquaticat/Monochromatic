@@ -1,4 +1,6 @@
-/** Union of extended typeof string literals including `'null'`, `'NaN'`, `'array'`, `'date'`, `'set'`, `'map'`. */
+/**
+ * Union of extended typeof string literals including `'null'`, `'NaN'`, `'array'`, `'date'`, `'set'`, `'map'`.
+ */
 export type $ =
   | 'null'
   | 'undefined'

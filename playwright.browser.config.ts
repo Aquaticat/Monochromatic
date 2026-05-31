@@ -4,7 +4,9 @@ import {
   type PlaywrightTestConfig,
 } from '@playwright/test';
 
-/** Browser Playwright configuration with an explicit public export type for isolated declarations. */
+/**
+ * Browser Playwright configuration with an explicit public export type for isolated declarations.
+ */
 const config: PlaywrightTestConfig = defineConfig({
   testDir: './packages',
   testMatch: [

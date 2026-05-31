@@ -13,11 +13,17 @@ import type { ThinkingDefaultLevel, } from './model-policy.ts';
 
 //region Types
 
-/** Dependencies used while registering the extension. */
+/**
+ * Dependencies used while registering the extension.
+ */
 type RegisterThinkingDefaultsOptions = {
-  /** Pi extension API. */
+  /**
+   * Pi extension API.
+   */
   readonly pi: ExtensionAPI;
-  /** Restores persisted scalar thinking default after active-level changes. */
+  /**
+   * Restores persisted scalar thinking default after active-level changes.
+   */
   readonly restoreDefaultThinkingLevel?: () => boolean;
 };
 
@@ -77,11 +83,15 @@ export function registerThinkingDefaults(
       _event,
       ctx,
     ) {
-      /** Current model carried by the session-start context. */
+      /**
+       * Current model carried by the session-start context.
+       */
       const { model, } = ctx;
       if (model === undefined)
         return;
-      /** Thinking application result for the session-start context model. */
+      /**
+       * Thinking application result for the session-start context model.
+       */
       const result = applyThinkingDefault({
         model,
         getThinkingLevel: getCurrentThinkingLevel,
@@ -95,7 +105,9 @@ export function registerThinkingDefaults(
   pi.on(
     'model_select',
     function onModelSelect(event,) {
-      /** Thinking application result for the newly selected model. */
+      /**
+       * Thinking application result for the newly selected model.
+       */
       const result = applyThinkingDefault({
         model: event.model,
         getThinkingLevel: getCurrentThinkingLevel,

@@ -51,7 +51,9 @@ export async function verifyVirtioBoot({
 
   // Redefine VM with VirtIO disk (no CDROMs needed, boot from hard disk)
   await undefineVm({ name: TEMPLATE_VM_NAME, },);
-  /** Domain XML rebuilt with VirtIO disk for the post-install verify pass. */
+  /**
+   * Domain XML rebuilt with VirtIO disk for the post-install verify pass.
+   */
   const virtioXml = domainXml({
     diskPath,
     name: TEMPLATE_VM_NAME,

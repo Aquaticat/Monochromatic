@@ -8,10 +8,14 @@ import { access, } from 'node:fs/promises';
 
 import sharp from 'sharp';
 
-/** AVIF encoding quality (0-100). Lossless-equivalent maximum. */
+/**
+ * AVIF encoding quality (0-100). Lossless-equivalent maximum.
+ */
 export const AVIF_QUALITY = 100;
 
-/** AVIF encoding effort (0-9, higher = slower + better compression). Maximum effort. */
+/**
+ * AVIF encoding effort (0-9, higher = slower + better compression). Maximum effort.
+ */
 export const AVIF_EFFORT = 9;
 
 /**
@@ -63,7 +67,9 @@ export async function fileExists(
     // Expected for missing files; log unexpected access errors for diagnostics
     if ((!isNodeError(error,)) || (error.code
       !== 'ENOENT')) {
-      /** Fallback to console so diagnostic still surfaces when no logger is supplied. */
+      /**
+       * Fallback to console so diagnostic still surfaces when no logger is supplied.
+       */
       const target = l ?? console;
       target.error(
         `Unexpected error checking file existence for ${filePath}: ${String(error,)}`,

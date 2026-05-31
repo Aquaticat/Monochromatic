@@ -37,7 +37,9 @@ export {
  */
 export const ABSENT: unique symbol = Symbol('messages-demo:absent',);
 
-/** Public shape of a row in the message feed. */
+/**
+ * Public shape of a row in the message feed.
+ */
 export type FeedMessage = {
   readonly id: number;
   readonly userId: string;
@@ -49,7 +51,9 @@ export type FeedMessage = {
   readonly preview: string;
 };
 
-/** Snapshot of a message taken at the start of a read transaction. */
+/**
+ * Snapshot of a message taken at the start of a read transaction.
+ */
 export type MessageSnapshot = {
   readonly id: number;
   readonly draftId: string;
@@ -77,7 +81,9 @@ export type MessageSnapshot = {
  * ```
  */
 export async function listFeed(cursor?: Cursor,): Promise<FeedMessage[]> {
-  /** Raw SQL rows from the cursor or non-cursor query; mapped to the FeedMessage shape below. */
+  /**
+   * Raw SQL rows from the cursor or non-cursor query; mapped to the FeedMessage shape below.
+   */
   const rows = cursor === undefined
     ? await all<{
       readonly id: number;
@@ -151,7 +157,9 @@ export async function feedAggregates(): Promise<{
   maxId: number;
   maxUpdatedAt: number;
 }> {
-  /** Single-row aggregates query; `COALESCE` folds the empty-corpus null into 0 in SQL so the row type stays null-free. */
+  /**
+   * Single-row aggregates query; `COALESCE` folds the empty-corpus null into 0 in SQL so the row type stays null-free.
+   */
   const row = await get<{
     max_id: number;
     max_updated_at: number;
@@ -189,7 +197,9 @@ export async function feedAggregates(): Promise<{
  * ```
  */
 export async function getSnapshot(messageId: number,): Promise<MessageSnapshot | typeof ABSENT> {
-  /** Single-row snapshot lookup; `deleted` (0/1) is computed in SQL so the row type stays null-free. */
+  /**
+   * Single-row snapshot lookup; `deleted` (0/1) is computed in SQL so the row type stays null-free.
+   */
   const row = await get<{
     id: number;
     draft_id: string;
@@ -233,7 +243,9 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
  * ```
  */
 export async function messageExists(messageId: number,): Promise<boolean> {
-  /** Single-row EXISTS probe; a no-row result reads as "does not exist". */
+  /**
+   * Single-row EXISTS probe; a no-row result reads as "does not exist".
+   */
   const row = await get<{ exists: number; }>({
     sql: 'SELECT EXISTS(SELECT 1 FROM messages WHERE id = ?) AS "exists"',
     params: [messageId,],
@@ -244,7 +256,9 @@ export async function messageExists(messageId: number,): Promise<boolean> {
     === 1;
 }
 
-/** Pre-rendered chunk fields returned to the read path. */
+/**
+ * Pre-rendered chunk fields returned to the read path.
+ */
 export type ChunkRow = {
   readonly md: string;
   readonly html: string;
@@ -276,7 +290,9 @@ export async function getChunk(
   // Turso does not implement recursive CTEs, so we walk the chain in
   // JS. Chain depth is `revision - 1`; capped at 10 by the edit handler,
   // so this loop is bounded.
-  /** Head draft row; absence means the message id is unknown. */
+  /**
+   * Head draft row; absence means the message id is unknown.
+   */
   const head = await get<{ draft_id: string; }>({
     sql: 'SELECT draft_id FROM messages WHERE id = ?',
     params: [input.messageId,],
@@ -284,14 +300,18 @@ export async function getChunk(
   if (head === NO_ROW)
     return ABSENT;
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor with side-effecting branches: the walk advances `cursor` after each row-by-row decision and exits via either `return found` or the reassignment to the `CHAIN_END` sentinel */
-  /** Walk cursor; advances to each draft's parent until a chunk is found or the chain ends. */
+  /**
+   * Walk cursor; advances to each draft's parent until a chunk is found or the chain ends.
+   */
   let cursor: string | typeof CHAIN_END = head.draft_id;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   // Chain walk: each iteration must read the previous draft's parent_id
   // before deciding whether to keep walking. Inherently sequential.
   /* oxlint-disable eslint/no-await-in-loop */
   while (cursor !== CHAIN_END) {
-    /** Chunk row in the current draft, if present; a real row returns the chunk immediately. */
+    /**
+     * Chunk row in the current draft, if present; a real row returns the chunk immediately.
+     */
     const found = await get<{
       md: string;
       html: string;

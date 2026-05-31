@@ -14,23 +14,33 @@ import './components/top-nav.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/setting-group.ts';
 
-/** Shape of the JSON blob embedded in the settings page by the server. */
+/**
+ * Shape of the JSON blob embedded in the settings page by the server.
+ */
 type SettingsPageData = {
-  /** Server-provided settings message. */
+  /**
+   * Server-provided settings message.
+   */
   message: string;
 };
 
 injectCSS(styles,);
 
-/** Deserialized settings page data (reserved for future use). */
+/**
+ * Deserialized settings page data (reserved for future use).
+ */
 const _pageData = readPageData<SettingsPageData>();
 
-/** Root app container element. */
+/**
+ * Root app container element.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Typed reference to the app container. */
+/**
+ * Typed reference to the app container.
+ */
 const app = appElement;
 
 //region Calendar connect

@@ -47,9 +47,13 @@ export async function requestGotoDefinition({
   readonly line: number;
   readonly character: number;
 } | null> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** LSP returns Location | Location[] | null; normalised below. */
+  /**
+   * LSP returns Location | Location[] | null; normalised below.
+   */
   const result = await client.request({
     method: 'textDocument/definition',
     params: {
@@ -65,7 +69,9 @@ export async function requestGotoDefinition({
   if ((result === null) || (result === undefined))
     return null;
 
-  /** LSP definition returns Location | Location[] | null */
+  /**
+   * LSP definition returns Location | Location[] | null
+   */
   const rawLocation = Array.isArray(result,)
     ? (result as unknown[])[0]
     : result;
@@ -73,7 +79,9 @@ export async function requestGotoDefinition({
     return null;
 
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape */
-  /** Narrowed Location view used to read the definition coords. */
+  /**
+   * Narrowed Location view used to read the definition coords.
+   */
   const loc = rawLocation as {
     readonly uri: string;
     readonly range: {
@@ -84,7 +92,9 @@ export async function requestGotoDefinition({
     };
   };
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-  /** Filesystem path returned to the caller; the wire form was URI. */
+  /**
+   * Filesystem path returned to the caller; the wire form was URI.
+   */
   const defPath = uriToPath({ uri: loc.uri, },);
   return {
     path: defPath,
@@ -131,9 +141,13 @@ export async function requestReferences({
   readonly line: number;
   readonly character: number;
 }[]> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** Empty / non-array result is mapped to `[]` below. */
+  /**
+   * Empty / non-array result is mapped to `[]` below.
+   */
   const result = await client.request({
     method: 'textDocument/references',
     params: {
@@ -163,7 +177,9 @@ export async function requestReferences({
   }[])
     .map(
       function convertLocation(loc,) {
-        /** Filesystem path returned to the caller; the wire form was URI. */
+        /**
+         * Filesystem path returned to the caller; the wire form was URI.
+         */
         const refPath = uriToPath({ uri: loc.uri, },);
         return {
           path: refPath,

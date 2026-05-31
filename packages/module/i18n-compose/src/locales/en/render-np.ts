@@ -127,13 +127,17 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
         .surface;
     if (phrase.kind
       === 'noun.counted') {
-      /** Resolved noun entry validated before numeric rendering. */
+      /**
+       * Resolved noun entry validated before numeric rendering.
+       */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
         entry,
         noun: phrase.noun,
       },);
-      /** Counted noun head: singular at count 1, plural otherwise. */
+      /**
+       * Counted noun head: singular at count 1, plural otherwise.
+       */
       const head = countedNoun({
         entry,
         count: phrase.count,
@@ -142,7 +146,9 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     }
     if (phrase.kind
       === 'noun.definite') {
-      /** Definite-article singular form, defaults to `the` when the entry omits it. */
+      /**
+       * Definite-article singular form, defaults to `the` when the entry omits it.
+       */
       const article = nouns[phrase.noun]
         .articles
         ?.definite
@@ -153,7 +159,9 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     }
     if (phrase.kind
       === 'noun.indefinite') {
-      /** Indefinite-article singular form, defaults to `a` (no a/an inference). */
+      /**
+       * Indefinite-article singular form, defaults to `a` (no a/an inference).
+       */
       const article = nouns[phrase.noun]
         .articles
         ?.indefinite

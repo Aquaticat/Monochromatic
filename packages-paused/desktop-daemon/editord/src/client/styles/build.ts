@@ -30,7 +30,9 @@ import { STYLES as THEME_STYLES, } from './theme.ts';
 
 export {};
 
-/** Package root resolved by walking up to the nearest `package.json`. */
+/**
+ * Package root resolved by walking up to the nearest `package.json`.
+ */
 const PACKAGE_ROOT = dirname(
   nonNullishOrThrow(await findUp(
     'package.json',
@@ -38,19 +40,25 @@ const PACKAGE_ROOT = dirname(
   ),),
 );
 
-/** Output directory under the package root. */
+/**
+ * Output directory under the package root.
+ */
 const OUT_DIR = join(
   PACKAGE_ROOT,
   'dist/client',
 );
 
-/** Output file path. */
+/**
+ * Output file path.
+ */
 const OUT_FILE = join(
   OUT_DIR,
   'global.css',
 );
 
-/** Combined CSS from all global style modules. */
+/**
+ * Combined CSS from all global style modules.
+ */
 const css = THEME_STYLES + RESET_STYLES
   + TOAST_STYLES
   + FAB_STYLES

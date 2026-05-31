@@ -88,7 +88,9 @@ export async function serve(
     readonly output?: StdoutWriter;
   },
 ): Promise<void> {
-  /** Reused across every outbound message so each call avoids allocating a fresh encoder. */
+  /**
+   * Reused across every outbound message so each call avoids allocating a fresh encoder.
+   */
   const encoder = new TextEncoder();
 
   for await (const line of readLines(input,)) {
@@ -112,7 +114,9 @@ export async function serve(
         '[mcp-stdio] failed to parse JSON from stdin:',
         error,
       );
-      /** Parse-error response returned with `id: null` because the original id cannot be recovered. */
+      /**
+       * Parse-error response returned with `id: null` because the original id cannot be recovered.
+       */
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
@@ -136,7 +140,9 @@ export async function serve(
         '[mcp-stdio] received invalid JSON-RPC message (missing jsonrpc or method):',
         parsed,
       );
-      /** Shape-error response when the message parsed but lacks `jsonrpc` or `method`. */
+      /**
+       * Shape-error response when the message parsed but lacks `jsonrpc` or `method`.
+       */
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
@@ -155,7 +161,9 @@ export async function serve(
 
     console.error(`[mcp-stdio] <- ${line}`,);
 
-    /** Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected). */
+    /**
+     * Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected).
+     */
     const response = await server.handleMessage(parsed,);
 
     // Notifications produce no response.
@@ -204,7 +212,9 @@ async function writeMessage(
     readonly message: JsonRpcOutbound;
   },
 ): Promise<void> {
-  /** Newline-terminated JSON; MCP stdio framing requires one message per line. */
+  /**
+   * Newline-terminated JSON; MCP stdio framing requires one message per line.
+   */
   const serialized = `${JSON.stringify(message,)}\n`;
   await writer.write(encoder.encode(serialized,),);
 }

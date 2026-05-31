@@ -41,7 +41,9 @@ export const requireDestructuredParams: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       FunctionDeclaration(node: ESTree.Function,): void {
-        /** Minimum parameter count that triggers the rule. */
+        /**
+         * Minimum parameter count that triggers the rule.
+         */
         const minParams = 2;
         if (node.params
           .length

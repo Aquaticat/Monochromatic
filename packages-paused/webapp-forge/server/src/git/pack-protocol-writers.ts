@@ -12,13 +12,19 @@ import {
   flushPkt,
 } from './pkt-line.ts';
 
-/** Sideband channel for pack data. */
+/**
+ * Sideband channel for pack data.
+ */
 const SIDEBAND_CHANNEL_PACK = 0x01;
 
-/** Sideband channel for progress messages (printed to stderr by the client). */
+/**
+ * Sideband channel for progress messages (printed to stderr by the client).
+ */
 const SIDEBAND_CHANNEL_PROGRESS = 0x02;
 
-/** Sideband channel for fatal errors. */
+/**
+ * Sideband channel for fatal errors.
+ */
 const SIDEBAND_CHANNEL_ERROR = 0x03;
 
 /**
@@ -33,7 +39,9 @@ const SIDEBAND_64K_TOTAL_LIMIT = 65_519;
  */
 const SIDEBAND_PLAIN_TOTAL_LIMIT = 999;
 
-/** Subtracted from the total limits above to leave room for the 1-byte channel marker. */
+/**
+ * Subtracted from the total limits above to leave room for the 1-byte channel marker.
+ */
 const SIDEBAND_CHANNEL_MARKER_BYTES = 1;
 
 /**
@@ -42,7 +50,9 @@ const SIDEBAND_CHANNEL_MARKER_BYTES = 1;
  */
 const MAX_SIDEBAND_64K_PAYLOAD = SIDEBAND_64K_TOTAL_LIMIT - SIDEBAND_CHANNEL_MARKER_BYTES;
 
-/** Maximum payload for plain (non-64k) sideband. */
+/**
+ * Maximum payload for plain (non-64k) sideband.
+ */
 const MAX_SIDEBAND_PAYLOAD = SIDEBAND_PLAIN_TOTAL_LIMIT - SIDEBAND_CHANNEL_MARKER_BYTES;
 
 /**
@@ -73,24 +83,34 @@ export function multiplexSideband(row: {
   readonly channel: number;
   readonly useSideBand64k: boolean;
 },): Uint8Array[] {
-  /** Per-frame payload ceiling depends on which sideband flavour was negotiated. */
+  /**
+   * Per-frame payload ceiling depends on which sideband flavour was negotiated.
+   */
   const max = row.useSideBand64k ? MAX_SIDEBAND_64K_PAYLOAD : MAX_SIDEBAND_PAYLOAD;
-  /** Output frames produced as the payload is sliced. */
+  /**
+   * Output frames produced as the payload is sliced.
+   */
   const out: Uint8Array[] = [];
-  /** Read position advancing through `row.payload`. */
+  /**
+   * Read position advancing through `row.payload`.
+   */
   let cursor = 0;
   while (cursor
     < row
     .payload
     .byteLength) {
-    /** Next chunk of payload bytes for one sideband frame. */
+    /**
+     * Next chunk of payload bytes for one sideband frame.
+     */
     const slice = row.payload
       .subarray(
       cursor,
       cursor + max,
     );
     cursor += slice.byteLength;
-    /** Frame buffer with the channel marker prepended to the slice. */
+    /**
+     * Frame buffer with the channel marker prepended to the slice.
+     */
     const wrapped = new Uint8Array(slice.byteLength
       + 1,);
     wrapped[0] = row.channel;
@@ -130,14 +150,18 @@ export function writeUploadPackResponse(row: {
   readonly useSideBand64k: boolean;
   readonly progress?: string;
 },): Uint8Array[] {
-  /** Response chunks; starts with the mandatory NAK acknowledging no common bases. */
+  /**
+   * Response chunks; starts with the mandatory NAK acknowledging no common bases.
+   */
   const chunks: Uint8Array[] = [encodePkt('NAK\n',),];
   if (row.useSideBand) {
     if ((row.progress
       !== undefined) && (row.progress
         .length
         > 0)) {
-      /** Fresh encoder reused only for the progress payload. */
+      /**
+       * Fresh encoder reused only for the progress payload.
+       */
       const encoder = new TextEncoder();
       chunks.push(...multiplexSideband({
         payload: encoder.encode(row.progress,),
@@ -197,12 +221,18 @@ export function writeReceivePackResponse(row: {
   readonly unpackOk: boolean;
   readonly unpackError?: string;
   readonly refResults: readonly RefUpdateResult[];
-  /** Whether the client negotiated `side-band` or `side-band-64k`. */
+  /**
+   * Whether the client negotiated `side-band` or `side-band-64k`.
+   */
   readonly useSideBand?: boolean;
-  /** Whether the client negotiated `side-band-64k` specifically. */
+  /**
+   * Whether the client negotiated `side-band-64k` specifically.
+   */
   readonly useSideBand64k?: boolean;
 },): Uint8Array[] {
-  /** Status report chunks; sideband wrapping is applied later when negotiated. */
+  /**
+   * Status report chunks; sideband wrapping is applied later when negotiated.
+   */
   const report: Uint8Array[] = [
     row.unpackOk
       ? encodePkt('unpack ok\n',)
@@ -220,7 +250,9 @@ export function writeReceivePackResponse(row: {
   if (row.useSideBand
     !== true)
     return report;
-  /** Running sum of report chunk lengths to size the flattened buffer. */
+  /**
+   * Running sum of report chunk lengths to size the flattened buffer.
+   */
   const total = report.reduce(
     function sumByteLength(
       sum: number,
@@ -231,7 +263,9 @@ export function writeReceivePackResponse(row: {
     },
     0,
   );
-  /** Flattened report bytes; sideband multiplexing operates on a single buffer. */
+  /**
+   * Flattened report bytes; sideband multiplexing operates on a single buffer.
+   */
   const flat = new Uint8Array(total,);
   report.reduce(
     function writeChunkAt(
@@ -258,7 +292,9 @@ export function writeReceivePackResponse(row: {
   ];
 }
 
-/** Sideband channel constants exported for tests and `iso-server.ts`. */
+/**
+ * Sideband channel constants exported for tests and `iso-server.ts`.
+ */
 export const SidebandChannels: {
   readonly PACK: number;
   readonly PROGRESS: number;

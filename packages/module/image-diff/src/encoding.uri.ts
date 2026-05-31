@@ -33,7 +33,9 @@ import type { ImageInput, } from './types.ts';
  * ```
  */
 export async function toImageUri(input: ImageInput,): Promise<string> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: toImageUri.name,
     l,
@@ -65,9 +67,13 @@ export async function toImageUri(input: ImageInput,): Promise<string> {
 
   if (isImagePath(input,)) {
     rl.debug(`reading file as data URI: ${input.path}`,);
-    /** Image format inferred from the path's extension; drives the data-URI's media type. */
+    /**
+     * Image format inferred from the path's extension; drives the data-URI's media type.
+     */
     const format = inferFormat(input.path,);
-    /** Raw file bytes read from disk; re-encoded as a data URI below. */
+    /**
+     * Raw file bytes read from disk; re-encoded as a data URI below.
+     */
     const fileBuffer = await readFile(input.path,);
     return bufferToDataUri({
       buffer: fileBuffer.buffer,

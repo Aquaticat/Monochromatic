@@ -13,7 +13,9 @@ import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 import type { DeepReadonly, } from './types.ts';
 
-/** Tagged logger for the feed module. */
+/**
+ * Tagged logger for the feed module.
+ */
 const l = tagged({
   tag: 'feed',
   l: parentLogger,
@@ -47,14 +49,20 @@ export type FeedWOutline = DeepReadonly<{
 export async function getSortedFeeds(
   outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
 ): Promise<FeedWOutline[]> {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: getSortedFeeds.name,
     l,
   },);
-  /** Fetched and parsed feeds held so the sort step works on a stable array. */
+  /**
+   * Fetched and parsed feeds held so the sort step works on a stable array.
+   */
   const feeds = await fetchAndParseFeeds(outlines,);
-  /** Date-sorted copy returned, preserving the input array's identity for callers. */
+  /**
+   * Date-sorted copy returned, preserving the input array's identity for callers.
+   */
   const result = feeds.toSorted(function byDate(
     feedA,
     feedB,
@@ -78,22 +86,32 @@ export async function getSortedFeeds(
 async function fetchAndParseFeeds(
   outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
 ): Promise<FeedWOutline[]> {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: fetchAndParseFeeds.name,
     l,
   },);
-  /** Unique sentinel returned for fetch/text failures so the filter step can drop them. */
+  /**
+   * Unique sentinel returned for fetch/text failures so the filter step can drop them.
+   */
   const DISCARD = Symbol('discard',);
-  /** Fetched OPML text paired with its source outline for later parsing. */
+  /**
+   * Fetched OPML text paired with its source outline for later parsing.
+   */
   type TextWOutline = {
     text: string;
     outline: DeepReadonly<InnerOutlineWUrl>;
   };
-  /** Fetched feed texts paired with outlines, filtered down to the successful subset. */
+  /**
+   * Fetched feed texts paired with outlines, filtered down to the successful subset.
+   */
   const textsWOutline: TextWOutline[] = (await mapIterableAsync({
     fn: async function fetchFeed(outline: DeepReadonly<InnerOutlineWUrl>,) {
-      /** Single Response held so status check and text read share one network round trip. */
+      /**
+       * Single Response held so status check and text read share one network round trip.
+       */
       const response = await fetch(outline.xmlUrl,);
       if (!response.ok) {
         innerL.warn(`${outline.xmlUrl} responded ${String(response.status,)}`,);
@@ -122,7 +140,9 @@ async function fetchAndParseFeeds(
     text,
     outline,
   },) {
-    /** Parser picked by outline type so each feed runs through the matching parser. */
+    /**
+     * Parser picked by outline type so each feed runs through the matching parser.
+     */
     const parser = outline.type
       === 'atom' ? parseAtomFeed : parseRssFeed;
     try {
@@ -138,7 +158,9 @@ async function fetchAndParseFeeds(
   },);
 }
 
-/** Coerces string, number, or Date inputs into a Date instance. */
+/**
+ * Coerces string, number, or Date inputs into a Date instance.
+ */
 const coerceDateSchema = v.pipe(
   v.union([
     v.string(),
@@ -159,7 +181,9 @@ const coerceDateSchema = v.pipe(
  * @returns Parsed publication date
  */
 function extractDate(feedWOutline: FeedWOutline,): Date {
-  /** Destructured fields so the branch reads `outline.type` and `feed` directly. */
+  /**
+   * Destructured fields so the branch reads `outline.type` and `feed` directly.
+   */
   const {
     feed,
     outline,
@@ -167,7 +191,9 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
   if (outline.type
     === 'atom') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type */
-    /** Narrowed feed view used to read the Atom-specific `updated` field. */
+    /**
+     * Narrowed feed view used to read the Atom-specific `updated` field.
+     */
     const atomFeed = feed as Atom.Feed<string>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return v.parse(
@@ -177,7 +203,9 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
     );
   }
   /* oxlint-disable typescript/no-unsafe-type-assertion -- non-atom feeds are RSS */
-  /** Narrowed feed view used to read the RSS-specific `pubDate` field. */
+  /**
+   * Narrowed feed view used to read the RSS-specific `pubDate` field.
+   */
   const rssFeed = feed as Rss.Feed<string>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return v.parse(

@@ -8,7 +8,9 @@
 import { readdir, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
-/** Glob suffix for matrix test files. */
+/**
+ * Glob suffix for matrix test files.
+ */
 const MATRIX_TEST_SUFFIX = '.unit.matrix.test.ts';
 
 /**
@@ -32,7 +34,9 @@ const MATRIX_TEST_SUFFIX = '.unit.matrix.test.ts';
  * ```
  */
 export async function discoverTestFiles(cwd: string,): Promise<readonly string[]> {
-  /** Raw recursive directory walk; filtered and mapped below into the public result. */
+  /**
+   * Raw recursive directory walk; filtered and mapped below into the public result.
+   */
   const entries = await readdir(
     cwd,
     {
@@ -41,7 +45,9 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
     },
   );
 
-  /** Filtered, sorted absolute paths; built as a chain to keep each step inspectable. */
+  /**
+   * Filtered, sorted absolute paths; built as a chain to keep each step inspectable.
+   */
   const files = entries
     .filter(function isMatrixTest(entry,) {
       if (!entry.isFile())
@@ -49,7 +55,9 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
       if (!entry.name
         .endsWith(MATRIX_TEST_SUFFIX,))
         return false;
-      /** Skip node_modules and dist directories. */
+      /**
+       * Skip node_modules and dist directories.
+       */
       const { parentPath, } = entry;
       if (parentPath.includes('node_modules',)
         || parentPath

@@ -41,14 +41,20 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
     readonly availableModels: readonly TModel[];
   },
 ): TModel | typeof NO_EXACT_MATCH {
-  /** Trimmed user reference. */
+  /**
+   * Trimmed user reference.
+   */
   const trimmedReference = modelReference.trim();
   if (trimmedReference === '')
     return NO_EXACT_MATCH;
 
-  /** Lowercase reference for pi-compatible exact matching. */
+  /**
+   * Lowercase reference for pi-compatible exact matching.
+   */
   const normalizedReference = trimmedReference.toLowerCase();
-  /** Canonical slug matches. */
+  /**
+   * Canonical slug matches.
+   */
   const canonicalMatches = availableModels.filter(function matchesCanonical(model,) {
     return canonicalSlug(model,)
       .toLowerCase()
@@ -61,7 +67,9 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
     > 1)
     return NO_EXACT_MATCH;
 
-  /** Match provider/model form before bare id. */
+  /**
+   * Match provider/model form before bare id.
+   */
   const providerMatch = matchProviderModelReference({
     trimmedReference,
     availableModels,
@@ -69,7 +77,9 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
   if (providerMatch !== NO_EXACT_MATCH)
     return providerMatch;
 
-  /** Bare id matches. */
+  /**
+   * Bare id matches.
+   */
   const idMatches = availableModels.filter(function matchesId(model,) {
     return model.id
       .toLowerCase()
@@ -101,26 +111,34 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
     readonly availableModels: readonly TModel[];
   },
 ): TModel | typeof NO_EXACT_MATCH {
-  /** Slash index used to parse provider/model references. */
+  /**
+   * Slash index used to parse provider/model references.
+   */
   const slashIndex = trimmedReference.indexOf('/',);
   if (slashIndex === (-1))
     return NO_EXACT_MATCH;
 
-  /** Provider segment from a canonical reference. */
+  /**
+   * Provider segment from a canonical reference.
+   */
   const provider = trimmedReference
     .slice(
       0,
       slashIndex,
     )
     .trim();
-  /** Model id segment from a canonical reference. */
+  /**
+   * Model id segment from a canonical reference.
+   */
   const modelId = trimmedReference
     .slice(slashIndex + 1,)
     .trim();
   if ((provider === '') || (modelId === ''))
     return NO_EXACT_MATCH;
 
-  /** Exact provider and model id matches. */
+  /**
+   * Exact provider and model id matches.
+   */
   const providerMatches = availableModels.filter(function matchesProvider(model,) {
     return (model.provider
       .toLowerCase()

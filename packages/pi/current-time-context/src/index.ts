@@ -12,7 +12,9 @@ import { formatTimeContext, } from './format-time-context.ts';
 
 //region Constants
 
-/** Custom message type used for hidden current-time context entries. */
+/**
+ * Custom message type used for hidden current-time context entries.
+ */
 const CURRENT_TIME_CONTEXT_TYPE = 'current-time-context';
 
 //endregion Constants

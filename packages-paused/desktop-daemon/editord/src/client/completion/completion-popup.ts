@@ -14,10 +14,14 @@ import {
   updateSelection,
 } from './render.ts';
 
-/** Vertical offset from the cursor in pixels. */
+/**
+ * Vertical offset from the cursor in pixels.
+ */
 const VERTICAL_OFFSET = 4;
 
-/** Editor cursor position when the popup was shown. */
+/**
+ * Editor cursor position when the popup was shown.
+ */
 type ShownAt = {
   readonly line: number;
   readonly character: number;
@@ -29,24 +33,38 @@ type ShownAt = {
  * Dispatches `completion-select` CustomEvent when an item is accepted.
  */
 export class CompletionPopup extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
-  /** Container for the list items. */
+  /**
+   * Container for the list items.
+   */
   #list: HTMLDivElement | null = null;
-  /** Currently displayed items. */
+  /**
+   * Currently displayed items.
+   */
   #items: readonly CompletionItem[] = [];
-  /** Index of the selected item (-1 = none). */
+  /**
+   * Index of the selected item (-1 = none).
+   */
   #selectedIndex = -1;
-  /** Cursor position captured at the latest `show()`; null while hidden. */
+  /**
+   * Cursor position captured at the latest `show()`; null while hidden.
+   */
   #shownAt: ShownAt | null = null;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the container and sets up popover behavior. */
+  /**
+   * Renders the container and sets up popover behavior.
+   */
   connectedCallback(): void {
     this.#list = h({
       tag: 'div',
@@ -66,7 +84,9 @@ export class CompletionPopup extends HTMLElement {
     );
   }
 
-  /** Shows the popup with items at the given position. */
+  /**
+   * Shows the popup with items at the given position.
+   */
   show({
     items,
     x,
@@ -101,7 +121,9 @@ export class CompletionPopup extends HTMLElement {
       this.showPopover();
   }
 
-  /** Hides the popup and clears items. */
+  /**
+   * Hides the popup and clears items.
+   */
   hide(): void {
     if (this.matches(':popover-open',))
       this.hidePopover();
@@ -128,7 +150,9 @@ export class CompletionPopup extends HTMLElement {
     return this.matches(':popover-open',);
   }
 
-  /** Moves the selection up or down. */
+  /**
+   * Moves the selection up or down.
+   */
   navigate({ direction, }: { readonly direction: 'up' | 'down'; },): void {
     if (this.#items
       .length
@@ -173,11 +197,15 @@ export class CompletionPopup extends HTMLElement {
         .#items
         .length))
       return null;
-    /** Currently highlighted completion entry; bounds-checked above. */
+    /**
+     * Currently highlighted completion entry; bounds-checked above.
+     */
     const item = this.#items[this.#selectedIndex];
     if (item === undefined)
       return null;
-    /** Text the caller will splice into the document at the cursor. */
+    /**
+     * Text the caller will splice into the document at the cursor.
+     */
     const { insertText, } = item;
     this.hide();
     this.dispatchEvent(

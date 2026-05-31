@@ -152,7 +152,9 @@ export function pipedAsync<
  * ```
  */
 export function pipedAsync(args: RunArgs,): Promise<unknown> {
-  /** Logger tagged at the eager async public API boundary. */
+  /**
+   * Logger tagged at the eager async public API boundary.
+   */
   const l = tagged(args.l
     === undefined
     ? { tag: pipedAsync.name, }

@@ -113,13 +113,19 @@ function importAttributesPlugin(): Plugin {
       importer,
       options,
     ) {
-      /** Check for query-param-tagged specifiers (from static imports after transform). */
+      /**
+       * Check for query-param-tagged specifiers (from static imports after transform).
+       */
       const queryAttrType = extractAttrType(source,);
       if (queryAttrType !== NO_QUERY_ATTR) {
-        /** Specifier without the attribute query so the downstream resolver can locate the file. */
+        /**
+         * Specifier without the attribute query so the downstream resolver can locate the file.
+         */
         const cleanSource = stripAttrQuery(source,);
 
-        /** Resolved descriptor from the underlying resolver; `null` triggers the relative-path fallback. */
+        /**
+         * Resolved descriptor from the underlying resolver; `null` triggers the relative-path fallback.
+         */
         const resolved = await this.resolve(
           cleanSource,
           importer,
@@ -138,10 +144,14 @@ function importAttributesPlugin(): Plugin {
 
         if ((importer !== undefined) && (cleanSource
           .startsWith('.',))) {
-          /** Importer directory used as the base for resolving the relative specifier. */
+          /**
+           * Importer directory used as the base for resolving the relative specifier.
+           */
           const importerDir = dirname(importer.split('?',)[0]
             ?? importer,);
-          /** Absolute path produced when the resolver could not locate the target. */
+          /**
+           * Absolute path produced when the resolver could not locate the target.
+           */
           const absolutePath = resolve(
             importerDir,
             cleanSource,
@@ -162,10 +172,14 @@ function importAttributesPlugin(): Plugin {
        * from the original AST before `transform` could rewrite them.
        */
       if (importer !== undefined) {
-        /** Importer path stripped of any attribute query; used both as scan target and base directory. */
+        /**
+         * Importer path stripped of any attribute query; used both as scan target and base directory.
+         */
         const cleanImporter = importer.split('?',)[0]
           ?? importer;
-        /** Attribute type discovered by scanning the importer's AST for this specifier. */
+        /**
+         * Attribute type discovered by scanning the importer's AST for this specifier.
+         */
         const attrType = scanImporterForAttribute({
           specifier: source,
           importerPath: cleanImporter,
@@ -173,7 +187,9 @@ function importAttributesPlugin(): Plugin {
         },);
 
         if (attrType !== NO_ATTR_TYPE) {
-          /** Resolved descriptor for an untagged dynamic-import specifier; `null` triggers the relative fallback. */
+          /**
+           * Resolved descriptor for an untagged dynamic-import specifier; `null` triggers the relative fallback.
+           */
           const resolved = await this.resolve(
             source,
             importer,
@@ -191,9 +207,13 @@ function importAttributesPlugin(): Plugin {
           }
 
           if (source.startsWith('.',)) {
-            /** Importer directory used as the base for the relative-resolution fallback. */
+            /**
+             * Importer directory used as the base for the relative-resolution fallback.
+             */
             const importerDir = dirname(cleanImporter,);
-            /** Absolute path produced when the resolver returned `null`. */
+            /**
+             * Absolute path produced when the resolver returned `null`.
+             */
             const absolutePath = resolve(
               importerDir,
               source,
@@ -214,24 +234,34 @@ function importAttributesPlugin(): Plugin {
      * and passing its content through the registered handler.
      */
     async load(id,) {
-      /** Attribute type encoded in the requested ID; absent IDs are left to other loaders. */
+      /**
+       * Attribute type encoded in the requested ID; absent IDs are left to other loaders.
+       */
       const attrType = extractAttrType(id,);
       if (attrType === NO_QUERY_ATTR)
         return null;
 
-      /** Registered transformer for this attribute type; absent types are left to other loaders. */
+      /**
+       * Registered transformer for this attribute type; absent types are left to other loaders.
+       */
       const handler = HANDLERS[attrType];
       if (handler === undefined)
         return null;
 
-      /** File path stripped of the attribute query so the bytes can be read from disk. */
+      /**
+       * File path stripped of the attribute query so the bytes can be read from disk.
+       */
       const filePath = stripAttrQuery(id,);
-      /** Raw file contents fed into the handler. */
+      /**
+       * Raw file contents fed into the handler.
+       */
       const content = await readFile(
         filePath,
         'utf8',
       );
-      /** Module source produced by the handler, returned as rolldown's loaded module. */
+      /**
+       * Module source produced by the handler, returned as rolldown's loaded module.
+       */
       const moduleCode = handler(
         content,
         filePath,

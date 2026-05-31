@@ -38,10 +38,14 @@ type SubcommandParser = Parser<'sync', MvmArgs, any>;
 
 //region Shared value parsers: reusable metavar-labeled string parsers
 
-/** Value parser for VM name arguments, displayed as NAME in help */
+/**
+ * Value parser for VM name arguments, displayed as NAME in help
+ */
 const name = string({ metavar: 'NAME', },);
 
-/** Shared option parser for `--from SOURCE` cloning flag */
+/**
+ * Shared option parser for `--from SOURCE` cloning flag
+ */
 const fromOption = optional(
   option(
     '--from',
@@ -52,7 +56,9 @@ const fromOption = optional(
   ),
 );
 
-/** Option parser for `--image IMAGE` to select a distro */
+/**
+ * Option parser for `--image IMAGE` to select a distro
+ */
 const imageOption = optional(
   option(
     '--image',
@@ -64,14 +70,18 @@ const imageOption = optional(
   ),
 );
 
-/** Value parser for individual command tokens after `--`, displayed as COMMAND in help */
+/**
+ * Value parser for individual command tokens after `--`, displayed as COMMAND in help
+ */
 const commandToken = string({ metavar: 'COMMAND', },);
 
 //endregion Shared value parsers
 
 //region Subcommand parsers
 
-/** Parser for `create <name> [--from SOURCE] [--image IMAGE]` */
+/**
+ * Parser for `create <name> [--from SOURCE] [--image IMAGE]`
+ */
 export const createCmd: SubcommandParser = command(
   'create',
   map(
@@ -92,7 +102,9 @@ export const createCmd: SubcommandParser = command(
   { brief: message`Create and start a new VM`, },
 );
 
-/** Parser for `shell <name>` */
+/**
+ * Parser for `shell <name>`
+ */
 export const shellCmd: SubcommandParser = command(
   'shell',
   map(
@@ -107,7 +119,9 @@ export const shellCmd: SubcommandParser = command(
   { brief: message`Open a serial console to a running VM`, },
 );
 
-/** Parser for `list` (alias `ls`) */
+/**
+ * Parser for `list` (alias `ls`)
+ */
 export const listCmd: SubcommandParser = command(
   'list',
   map(
@@ -119,7 +133,9 @@ export const listCmd: SubcommandParser = command(
   { brief: message`Show all VMs and their state`, },
 );
 
-/** Parser for `ls` (hidden alias of `list`) */
+/**
+ * Parser for `ls` (hidden alias of `list`)
+ */
 export const lsCmd: SubcommandParser = command(
   'ls',
   map(
@@ -131,7 +147,9 @@ export const lsCmd: SubcommandParser = command(
   { hidden: true, },
 );
 
-/** Parser for `destroy --all` -- destroys every managed VM */
+/**
+ * Parser for `destroy --all` -- destroys every managed VM
+ */
 const destroyAllParser = map(
   object({ all: flag(
     '--all',
@@ -145,7 +163,9 @@ const destroyAllParser = map(
   },
 );
 
-/** Parser for `destroy <name>` -- destroys a single VM by name */
+/**
+ * Parser for `destroy <name>` -- destroys a single VM by name
+ */
 const destroyNameParser = map(
   object({ name: argument(name,), },),
   function toDestroyNameArgs(v: { readonly name: string; },): MvmArgs {
@@ -157,7 +177,9 @@ const destroyNameParser = map(
   },
 );
 
-/** Parser for `destroy` */
+/**
+ * Parser for `destroy`
+ */
 export const destroyCmd: SubcommandParser = command(
   'destroy',
   or(
@@ -167,7 +189,9 @@ export const destroyCmd: SubcommandParser = command(
   { brief: message`Stop and delete a VM`, },
 );
 
-/** Parser for `rm` (hidden alias of `destroy`) */
+/**
+ * Parser for `rm` (hidden alias of `destroy`)
+ */
 export const rmCmd: SubcommandParser = command(
   'rm',
   or(
@@ -177,7 +201,9 @@ export const rmCmd: SubcommandParser = command(
   { hidden: true, },
 );
 
-/** Parser for `exec <name> -- <command...>` -- run a command in an existing VM */
+/**
+ * Parser for `exec <name> -- <command...>` -- run a command in an existing VM
+ */
 export const execCmd: SubcommandParser = command(
   'exec',
   map(
@@ -200,7 +226,9 @@ export const execCmd: SubcommandParser = command(
   { brief: message`Run a command inside a named VM via guest agent`, },
 );
 
-/** Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM */
+/**
+ * Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM
+ */
 export const runCmd: SubcommandParser = command(
   'run',
   map(
@@ -220,7 +248,9 @@ export const runCmd: SubcommandParser = command(
   { brief: message`Create an ephemeral VM, run a command, then destroy it`, },
 );
 
-/** Parser for `update` -- re-downloads and rebuilds all template images */
+/**
+ * Parser for `update` -- re-downloads and rebuilds all template images
+ */
 export const updateCmd: SubcommandParser = command(
   'update',
   map(
@@ -232,10 +262,14 @@ export const updateCmd: SubcommandParser = command(
   { brief: message`Re-download and rebuild all template images`, },
 );
 
-/** Value parser for file path arguments, displayed as PATH in help. */
+/**
+ * Value parser for file path arguments, displayed as PATH in help.
+ */
 const path = string({ metavar: 'PATH', },);
 
-/** Parser for `push <name> <hostPath> <guestPath>` -- copy file from host into VM. */
+/**
+ * Parser for `push <name> <hostPath> <guestPath>` -- copy file from host into VM.
+ */
 export const pushCmd: SubcommandParser = command(
   'push',
   map(
@@ -262,7 +296,9 @@ export const pushCmd: SubcommandParser = command(
   { brief: message`Copy a file from the host into a running VM`, },
 );
 
-/** Parser for `pull <name> <guestPath> <hostPath>` -- copy file from VM to host. */
+/**
+ * Parser for `pull <name> <guestPath> <hostPath>` -- copy file from VM to host.
+ */
 export const pullCmd: SubcommandParser = command(
   'pull',
   map(

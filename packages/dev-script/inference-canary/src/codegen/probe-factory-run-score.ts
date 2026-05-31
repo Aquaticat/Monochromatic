@@ -51,13 +51,21 @@ import type {
  * ```
  */
 type ScoreImplOptions = {
-  /** Probe configuration with testInput, verify, perfTest, and additionalRuns */
+  /**
+   * Probe configuration with testInput, verify, perfTest, and additionalRuns
+   */
   readonly config: CodeGenProbeConfig;
-  /** Raw model response text containing a fenced code block */
+  /**
+   * Raw model response text containing a fenced code block
+   */
   readonly response: string;
-  /** Scoring context with model label, pass, timestamp, and abort signal */
+  /**
+   * Scoring context with model label, pass, timestamp, and abort signal
+   */
   readonly context: ScoreContext;
-  /** Shared per-model caches populated for downstream use by buildFixPromptImpl */
+  /**
+   * Shared per-model caches populated for downstream use by buildFixPromptImpl
+   */
   readonly caches: WritableProbeFactoryCaches;
 };
 
@@ -91,7 +99,9 @@ export async function scoreImpl({
   context,
   caches,
 }: ScoreImplOptions,): Promise<number> {
-  /** Probe-specific logger for scoring messages. */
+  /**
+   * Probe-specific logger for scoring messages.
+   */
   const rl = tagged({
     tag: config.name,
     l: tagged({
@@ -99,7 +109,9 @@ export async function scoreImpl({
       l,
     },),
   },);
-  /** Extraction result: source code and whether a fenced block was found */
+  /**
+   * Extraction result: source code and whether a fenced block was found
+   */
   const extraction = tryExtractCode(response,);
   if (!extraction.fenced) {
     rl.info('no fenced code block found in response',);
@@ -113,9 +125,13 @@ export async function scoreImpl({
     return 0;
   }
 
-  /** Extracted TypeScript source from the model response */
+  /**
+   * Extracted TypeScript source from the model response
+   */
   const rawSource = extraction.source;
-  /** Source after probe-level transform, with reject flag for constraint violations */
+  /**
+   * Source after probe-level transform, with reject flag for constraint violations
+   */
   const transformed = config.transformSource
     !== undefined
     ? config.transformSource(
@@ -127,30 +143,42 @@ export async function scoreImpl({
       source: rawSource,
     };
 
-  /** Final source to execute in containers */
+  /**
+   * Final source to execute in containers
+   */
   const { source, } = transformed;
 
-  /** Abort signal from the score context, destructured so the spread guard below has no member chain. */
+  /**
+   * Abort signal from the score context, destructured so the spread guard below has no member chain.
+   */
   const {
     signal,
   } = context;
-  /** Spread-friendly abort signal; included only when the score context carries one, to satisfy exactOptionalPropertyTypes. */
+  /**
+   * Spread-friendly abort signal; included only when the score context carries one, to satisfy exactOptionalPropertyTypes.
+   */
   const signalArg = signal !== undefined ? { signal, } : {};
 
   // Launch all container runs in parallel: correctness + lint + perf + additional
-  /** Main correctness container promise */
+  /**
+   * Main correctness container promise
+   */
   const correctnessPromise = runInContainer({
     source,
     stdinData: config.testInput,
     ...signalArg,
   },);
-  /** Lint analysis promise */
+  /**
+   * Lint analysis promise
+   */
   const lintPromise = lintAndLog({
     source,
     probeName: config.name,
     context,
   },);
-  /** Perf container promise (undefined when no perfTest configured) */
+  /**
+   * Perf container promise (undefined when no perfTest configured)
+   */
   const perfPromise = config.perfTest
     !== undefined
     ? runInContainerTimed({
@@ -160,7 +188,9 @@ export async function scoreImpl({
       ...signalArg,
     },)
     : undefined;
-  /** Additional run container promises (empty array when no additional runs) */
+  /**
+   * Additional run container promises (empty array when no additional runs)
+   */
   const additionalPromise = config.additionalRuns
     !== undefined
     ? executeAdditionalRuns({
@@ -170,14 +200,20 @@ export async function scoreImpl({
     },)
     : undefined;
 
-  /** Correctness container result and lint analysis awaited together so downstream caching and scoring see both. */
+  /**
+   * Correctness container result and lint analysis awaited together so downstream caching and scoring see both.
+   */
   const [result, lint,] = await Promise.all([
     correctnessPromise,
     lintPromise,
   ],);
-  /** Awaited perf container result; undefined when this probe declares no perf test. */
+  /**
+   * Awaited perf container result; undefined when this probe declares no perf test.
+   */
   const perfResult = perfPromise !== undefined ? await perfPromise : undefined;
-  /** Awaited additional-run results, in declaration order; undefined when no additional runs are configured. */
+  /**
+   * Awaited additional-run results, in declaration order; undefined when no additional runs are configured.
+   */
   const additionalResults = additionalPromise !== undefined
     ? await additionalPromise
     : undefined;
@@ -205,7 +241,9 @@ export async function scoreImpl({
     },);
   }
 
-  /** Perf score in [0, 1]; multiplied into the combined score so slow runs degrade the full result, not a fraction of it. */
+  /**
+   * Perf score in [0, 1]; multiplied into the combined score so slow runs degrade the full result, not a fraction of it.
+   */
   const perfMultiplier = cacheAndComputePerfMultiplier({
     config,
     context,
@@ -235,12 +273,16 @@ export async function scoreImpl({
       * perfMultiplier;
   }
 
-  /** Main-run correctness fraction from the probe's verifier; combined below with additional-run correctness via `Math.min`. */
+  /**
+   * Main-run correctness fraction from the probe's verifier; combined below with additional-run correctness via `Math.min`.
+   */
   const { correctness: mainCorrectness, } = config.verify(result,);
 
   // Combine main and additional run correctness via Math.min;
   // every run must achieve perfect correctness for a non-zero final score
-  /** Per-run correctness fractions from additional runs (empty when none configured) */
+  /**
+   * Per-run correctness fractions from additional runs (empty when none configured)
+   */
   const additionalCorrectnesses =
     (additionalResults !== undefined) && (config.additionalRuns
       !== undefined)
@@ -253,7 +295,9 @@ export async function scoreImpl({
       },)
       : [];
 
-  /** Combined correctness: minimum of main and all additional runs */
+  /**
+   * Combined correctness: minimum of main and all additional runs
+   */
   const overallCorrectness = Math.min(
     mainCorrectness,
     ...additionalCorrectnesses,

@@ -79,13 +79,17 @@ export async function pushFile(
   },
 ): Promise<string> {
   validateName(name,);
-  /** Tagged logger so push entries are scoped to `pushFile` in the output. */
+  /**
+   * Tagged logger so push entries are scoped to `pushFile` in the output.
+   */
   const rl = tagged({
     tag: pushFile.name,
     l,
   },);
 
-  /** Host-side shared directory for this VM. */
+  /**
+   * Host-side shared directory for this VM.
+   */
   const sharedDir = join(
     VMS_DIR,
     name,
@@ -96,10 +100,14 @@ export async function pushFile(
     { recursive: true, },
   );
 
-  /** Filename to use inside the shared directory. */
+  /**
+   * Filename to use inside the shared directory.
+   */
   const filename = basename(guestPath,);
 
-  /** Full path on the host inside the shared directory. */
+  /**
+   * Full path on the host inside the shared directory.
+   */
   const sharedHostPath = join(
     sharedDir,
     filename,
@@ -111,15 +119,21 @@ export async function pushFile(
     sharedHostPath,
   );
 
-  /** Determine the guest-side path based on OS family. */
+  /**
+   * Determine the guest-side path based on OS family.
+   */
   const vmDir = join(
     VMS_DIR,
     name,
   );
-  /** VM metadata used to pick the correct guest mount point for the OS family. */
+  /**
+   * VM metadata used to pick the correct guest mount point for the OS family.
+   */
   const meta = await readVmMeta(vmDir,);
 
-  /** Absolute path the guest will use to read the pushed file, branched on OS. */
+  /**
+   * Absolute path the guest will use to read the pushed file, branched on OS.
+   */
   const guestFilePath = meta.osFamily
     === 'windows'
     ? `${WINDOWS_GUEST_MOUNT_POINT}${filename}`
@@ -166,30 +180,40 @@ export async function pullFile(
   },
 ): Promise<Buffer> {
   validateName(name,);
-  /** Tagged logger so pull entries are scoped to `pullFile` in the output. */
+  /**
+   * Tagged logger so pull entries are scoped to `pullFile` in the output.
+   */
   const rl = tagged({
     tag: pullFile.name,
     l,
   },);
 
-  /** Host-side shared directory for this VM. */
+  /**
+   * Host-side shared directory for this VM.
+   */
   const sharedDir = join(
     VMS_DIR,
     name,
     SHARED_DIR_NAME,
   );
 
-  /** Filename to read from the shared directory. */
+  /**
+   * Filename to read from the shared directory.
+   */
   const filename = basename(guestPath,);
 
-  /** Full path on the host. */
+  /**
+   * Full path on the host.
+   */
   const sharedHostPath = join(
     sharedDir,
     filename,
   );
 
   rl.info(`pulling ${sharedHostPath} (guest: ${guestPath})`,);
-  /** File payload read from the shared mount; returned to the caller as a Buffer. */
+  /**
+   * File payload read from the shared mount; returned to the caller as a Buffer.
+   */
   const content = await readFile(sharedHostPath,);
   rl.info(`pulled ${String(content.length,)} bytes from ${sharedHostPath}`,);
 

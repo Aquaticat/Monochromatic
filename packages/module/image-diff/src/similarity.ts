@@ -40,9 +40,13 @@ export function dotProduct({
   let sum = 0;
   for (let i = 0; i < a
     .length; i++) {
-    /** Element from the first vector at index `i`; guarded against jagged-array sparsity. */
+    /**
+     * Element from the first vector at index `i`; guarded against jagged-array sparsity.
+     */
     const ai = a[i];
-    /** Element from the second vector at index `i`; guarded against jagged-array sparsity. */
+    /**
+     * Element from the second vector at index `i`; guarded against jagged-array sparsity.
+     */
     const bi = b[i];
     if ((ai === undefined) || (bi === undefined))
       break;
@@ -84,12 +88,16 @@ export function cosineSimilarity({
     );
   }
 
-  /** Numerator of the cosine formula; reused below after the magnitudes are computed. */
+  /**
+   * Numerator of the cosine formula; reused below after the magnitudes are computed.
+   */
   const dot = dotProduct({
     a,
     b,
   },);
-  /** Denominator of the cosine formula: product of the two vector lengths via the self-dot-product identity. */
+  /**
+   * Denominator of the cosine formula: product of the two vector lengths via the self-dot-product identity.
+   */
   const magnitude = Math.sqrt(dotProduct({
     a,
     b: a,

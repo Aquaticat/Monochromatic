@@ -24,11 +24,17 @@ import type {
  * ```
  */
 export class NoBudgetModelError extends Error {
-  /** Why no budget model was found. */
+  /**
+   * Why no budget model was found.
+   */
   readonly reason: string;
-  /** Best candidate from same provider, when one was found. */
+  /**
+   * Best candidate from same provider, when one was found.
+   */
   readonly sameProvider?: BudgetModelCandidate;
-  /** Cheapest candidate across all providers, when one was found. */
+  /**
+   * Cheapest candidate across all providers, when one was found.
+   */
   readonly cheapestOverall?: BudgetModelCandidate;
 
   /**
@@ -45,20 +51,26 @@ export class NoBudgetModelError extends Error {
       readonly cheapestOverall?: BudgetModelCandidate;
     } = {},
   ) {
-    /** Per-line accumulator for multi-line error message. */
+    /**
+     * Per-line accumulator for multi-line error message.
+     */
     const lines = [
       "Tried to auto-detect a budget model for a background task, but couldn't find one.",
       `Reason: ${reason}`,
     ];
     if (candidates.sameProvider
       !== undefined) {
-      /** Local alias so template strings stay readable. */
+      /**
+       * Local alias so template strings stay readable.
+       */
       const candidate = candidates.sameProvider;
       lines.push(
         `Best same-provider option: ${candidate.provider}/${candidate.modelId} ($${candidate.costInput}/$${candidate.costOutput} per M tokens)`,
       );
     }
-    /** Cheapest-overall candidate, surfaced only when present with an API key. */
+    /**
+     * Cheapest-overall candidate, surfaced only when present with an API key.
+     */
     const cheapest = candidates.cheapestOverall;
     if (cheapest?.hasApiKey
       === true) {

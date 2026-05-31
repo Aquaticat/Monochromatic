@@ -63,7 +63,9 @@ export function selectAdvisorModel(
     },);
   }
 
-  /** Default model selection for empty params. */
+  /**
+   * Default model selection for empty params.
+   */
   const defaultSelection = selectDefaultModel({
     scope,
     estimatedInputTokens,

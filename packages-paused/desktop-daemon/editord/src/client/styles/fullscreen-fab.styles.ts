@@ -15,26 +15,40 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** FAB stacking order above all other fixed elements. */
+/**
+ * FAB stacking order above all other fixed elements.
+ */
 const Z_INDEX = 9_999;
 
-/** Default opacity: 6/10. */
+/**
+ * Default opacity: 6/10.
+ */
 const DEFAULT_OPACITY = (2 + 1) / ((2 * 2) + 1);
 
-/** Opacity transition denominator: 20, expressed with exempt literals. */
+/**
+ * Opacity transition denominator: 20, expressed with exempt literals.
+ */
 const TRANSITION_DURATION_DENOMINATOR = (2 * 2) * ((2 * 2) + 1);
 
-/** Opacity transition duration in seconds: 0.15 = 3/20. */
+/**
+ * Opacity transition duration in seconds: 0.15 = 3/20.
+ */
 const TRANSITION_DURATION = (2 + 1) / TRANSITION_DURATION_DENOMINATOR;
 
-/** Circle percentage value: 50, expressed with exempt literals. */
+/**
+ * Circle percentage value: 50, expressed with exempt literals.
+ */
 const CIRCLE_PERCENT = ((2 * 2) + 1) * ((2 * 2) + 1)
   * 2;
 
-/** Minimum touch target size in rem: 3. */
+/**
+ * Minimum touch target size in rem: 3.
+ */
 const TOUCH_TARGET = 2 + 1;
 
-/** Global fullscreen FAB styles. */
+/**
+ * Global fullscreen FAB styles.
+ */
 export const STYLES: string = $({
   rule: '.fullscreen-fab',
   decls: {

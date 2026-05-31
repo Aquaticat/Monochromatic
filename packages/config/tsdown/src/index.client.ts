@@ -7,7 +7,9 @@ import {
 
 import { browserslistTargets, } from './browserslist-targets.ts';
 
-/** Resolved Browserslist targets shared by client bundles. */
+/**
+ * Resolved Browserslist targets shared by client bundles.
+ */
 const target = await browserslistTargets({ runtime: 'browser', },);
 
 /**

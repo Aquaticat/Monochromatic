@@ -14,7 +14,9 @@ import {
 
 import { HTTP_BAD_REQUEST, } from '../lib/http.ts';
 
-/** Radix used for explicit decimal integer parsing. */
+/**
+ * Radix used for explicit decimal integer parsing.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -56,7 +58,9 @@ export function paramsInput(
 export function ifNoneMatchInput(
   headers: Headers,
 ): { readonly ifNoneMatch?: string; } {
-  /** Raw header; `null` (absent) collapses to an omitted optional below. */
+  /**
+   * Raw header; `null` (absent) collapses to an omitted optional below.
+   */
   const raw = headers.get('if-none-match',);
   if (raw === null)
     return {};
@@ -81,7 +85,9 @@ export function requireParam(
     readonly name: string;
   },
 ): string {
-  /** Indexed once so the empty-string check and the return both reference the same value. */
+  /**
+   * Indexed once so the empty-string check and the return both reference the same value.
+   */
   const value = input.params?.[input.name];
   if ((value === undefined) || (value === '')) {
     throw new HTTPError({
@@ -113,15 +119,21 @@ export function parseId(
     readonly min?: number;
   },
 ): number {
-  /** Defaults to `1`; ids start at 1, chunk indices pass `min: 0`. */
+  /**
+   * Defaults to `1`; ids start at 1, chunk indices pass `min: 0`.
+   */
   const min = input.min
     ?? 1;
-  /** Raw param string forwarded into `Number.parseInt`. */
+  /**
+   * Raw param string forwarded into `Number.parseInt`.
+   */
   const raw = requireParam({
     ...paramsInput(input.params,),
     name: input.name,
   },);
-  /** Parsed integer; non-finite or below-minimum triggers a 400 below. */
+  /**
+   * Parsed integer; non-finite or below-minimum triggers a 400 below.
+   */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,

@@ -55,13 +55,17 @@ async function setWindowsHostname({
   readonly hostname: string;
   readonly name: string;
 },): Promise<void> {
-  /** Logger scoped to this helper so the rename invocation is namespaced. */
+  /**
+   * Logger scoped to this helper so the rename invocation is namespaced.
+   */
   const rl = tagged({
     tag: setWindowsHostname.name,
     l,
   },);
   rl.info(`setting Windows hostname to ${hostname}`,);
-  /** Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal. */
+  /**
+   * Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal.
+   */
   const result = await exec({
     command: `Rename-Computer -NewName '${hostname}' -Force`,
     name,
@@ -109,18 +113,24 @@ export async function create({
   readonly name: string;
 },): Promise<void> {
   validateName(name,);
-  /** Logger scoped to this create call so step logs are namespaced. */
+  /**
+   * Logger scoped to this create call so step logs are namespaced.
+   */
   const rl = tagged({
     tag: create.name,
     l,
   },);
-  /** Per-VM scratch directory under `VMS_DIR`; holds disk, seed ISO, and shared dir. */
+  /**
+   * Per-VM scratch directory under `VMS_DIR`; holds disk, seed ISO, and shared dir.
+   */
   const vmDir = join(
     VMS_DIR,
     name,
   );
 
-  /** Resolved image record from registry or custom-template lookup; drives the rest of the pipeline. */
+  /**
+   * Resolved image record from registry or custom-template lookup; drives the rest of the pipeline.
+   */
   const resolved = resolveImage(image,);
   rl.info(`creating VM ${name} (image: ${image})`,);
   await mkdir(
@@ -128,7 +138,9 @@ export async function create({
     { recursive: true, },
   );
 
-  /** Backing template path; registry images go through the bake pipeline, custom ones are used directly. */
+  /**
+   * Backing template path; registry images go through the bake pipeline, custom ones are used directly.
+   */
   const templateImage = resolved.kind
     === 'registry'
     ? await ensureTemplate(resolved.spec,)
@@ -142,12 +154,16 @@ export async function create({
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
-  /** New VM's qcow2 path; created with the resolved template as a backing file. */
+  /**
+   * New VM's qcow2 path; created with the resolved template as a backing file.
+   */
   const diskPath = join(
     vmDir,
     'disk.qcow2',
   );
-  /** Disk capacity for the new VM; Windows needs a larger image so it gets bumped up. */
+  /**
+   * Disk capacity for the new VM; Windows needs a larger image so it gets bumped up.
+   */
   const diskSize = guest.osFamily
     === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
 
@@ -167,7 +183,9 @@ export async function create({
     ],
   },);
 
-  /** Shared directory exposed to the guest via virtiofs. */
+  /**
+   * Shared directory exposed to the guest via virtiofs.
+   */
   const sharedDir = join(
     vmDir,
     SHARED_DIR_NAME,
@@ -177,13 +195,17 @@ export async function create({
     { recursive: true, },
   );
 
-  /** NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; NO_SEED_ISO for Windows. */
+  /**
+   * NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; NO_SEED_ISO for Windows.
+   */
   const seedIso = await createSeedIso({
     guest,
     name,
     vmDir,
   },);
-  /** Libvirt domain XML wiring the disk, seed ISO, and shared dir into a new VM definition. */
+  /**
+   * Libvirt domain XML wiring the disk, seed ISO, and shared dir into a new VM definition.
+   */
   const xml = domainXml({
     diskPath,
     name,

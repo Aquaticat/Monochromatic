@@ -18,7 +18,9 @@ import {
 
 //region Transfer tools: move files between host and guest VMs
 
-/** MCP tool: push a file from the host into a running VM. */
+/**
+ * MCP tool: push a file from the host into a running VM.
+ */
 export const pushTool: ToolEntry = defineTool({
   name: 'push_to_vm',
   entry: {
@@ -47,11 +49,17 @@ export const pushTool: ToolEntry = defineTool({
       ],
     },
     handler: async function handlePushToVm(args,) {
-      /** Target VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding. */
+      /**
+       * Target VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding.
+       */
       const name = String(args.name,);
-      /** Host source path coerced to string for the same reason as `name`. */
+      /**
+       * Host source path coerced to string for the same reason as `name`.
+       */
       const hostPath = String(args.hostPath,);
-      /** Guest destination path coerced to string for the same reason as `name`. */
+      /**
+       * Guest destination path coerced to string for the same reason as `name`.
+       */
       const guestPath = String(args.guestPath,);
       try {
         await pushFile({
@@ -71,7 +79,9 @@ export const pushTool: ToolEntry = defineTool({
   },
 },);
 
-/** MCP tool: pull a file from a running VM to the host. */
+/**
+ * MCP tool: pull a file from a running VM to the host.
+ */
 export const pullTool: ToolEntry = defineTool({
   name: 'pull_from_vm',
   entry: {
@@ -100,19 +110,29 @@ export const pullTool: ToolEntry = defineTool({
       ],
     },
     handler: async function handlePullFromVm(args,) {
-      /** Source VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding. */
+      /**
+       * Source VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding.
+       */
       const name = String(args.name,);
-      /** Guest source path coerced to string for the same reason as `name`. */
+      /**
+       * Guest source path coerced to string for the same reason as `name`.
+       */
       const guestPath = String(args.guestPath,);
-      /** Host destination path coerced to string for the same reason as `name`. */
+      /**
+       * Host destination path coerced to string for the same reason as `name`.
+       */
       const hostPath = String(args.hostPath,);
       try {
-        /** Raw file bytes pulled from the guest, written to the host below. */
+        /**
+         * Raw file bytes pulled from the guest, written to the host below.
+         */
         const content = await pullFile({
           name,
           guestPath,
         },);
-        /** Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path. */
+        /**
+         * Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path.
+         */
         const { writeFile, } = await import('node:fs/promises');
         await writeFile(
           hostPath,

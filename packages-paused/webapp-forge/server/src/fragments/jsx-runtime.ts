@@ -23,14 +23,18 @@ import {
 
 //region Types
 
-/** Wrapper distinguishing rendered HTML from raw text in the JSX tree. */
+/**
+ * Wrapper distinguishing rendered HTML from raw text in the JSX tree.
+ */
 export type SafeHtml = { readonly html: string; };
 
 //endregion Types
 
 //region Internals
 
-/** Maps JSX prop names to their HTML attribute equivalents. */
+/**
+ * Maps JSX prop names to their HTML attribute equivalents.
+ */
 const PROP_TO_ATTR: Record<string, string> = {
   className: 'class',
   htmlFor: 'for',
@@ -98,7 +102,9 @@ function renderChild(child: unknown,): string {
  * @returns space-prefixed attribute string (empty string if no attributes)
  */
 function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
-  /** Accumulator for the rendered attribute string. */
+  /**
+   * Accumulator for the rendered attribute string.
+   */
   let result = '';
   for (const [key, value,] of Object.entries(props,)) {
     if ((key === 'children') || (key === 'dangerouslySetInnerHTML'))
@@ -106,7 +112,9 @@ function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
     if ((value === null) || (value === undefined)
       || (value === false))
       continue;
-    /** Attribute name; remapped from JSX prop names when the table provides one. */
+    /**
+     * Attribute name; remapped from JSX prop names when the table provides one.
+     */
     const name = PROP_TO_ATTR[key]
       ?? key;
     if (value === true)
@@ -186,13 +194,17 @@ function jsxImpl(
   if ((typeof type) === 'function')
     return type(props,);
 
-  /** Rendered attribute string used by both branches below. */
+  /**
+   * Rendered attribute string used by both branches below.
+   */
   const attrs = renderAttrs(props,);
 
   if (VOID_ELEMENTS.has(type,))
     return { html: `<${type}${attrs}>`, };
 
-  /** Inner HTML: dangerouslySetInnerHTML wins over children when present. */
+  /**
+   * Inner HTML: dangerouslySetInnerHTML wins over children when present.
+   */
   const inner = isDangerousHtml(props.dangerouslySetInnerHTML,)
     ? props.dangerouslySetInnerHTML
       .__html

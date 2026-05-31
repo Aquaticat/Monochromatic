@@ -21,10 +21,14 @@ import {
 } from '../lib/jsx-to-html.ts';
 import { GAP_SMALL, } from '../styles/constants.ts';
 
-/** Valid alert type identifiers. */
+/**
+ * Valid alert type identifiers.
+ */
 type AlertType = 'caution' | 'important' | 'note' | 'tip' | 'warning';
 
-/** Material Symbols PUA codepoint per alert type (resolved at import time from ligature names). */
+/**
+ * Material Symbols PUA codepoint per alert type (resolved at import time from ligature names).
+ */
 const ALERT_ICONS: Record<AlertType, string> = {
   caution: icon('report',),
   important: icon('priority_high',),
@@ -33,7 +37,9 @@ const ALERT_ICONS: Record<AlertType, string> = {
   warning: icon('warning',),
 };
 
-/** Human-readable label per alert type. */
+/**
+ * Human-readable label per alert type.
+ */
 const ALERT_LABELS: Record<AlertType, string> = {
   caution: 'Caution',
   important: 'Important',
@@ -58,9 +64,13 @@ export function CalloutAlert(props: {
   readonly children: unknown;
   readonly 'data-type': AlertType;
 },): SafeHtml {
-  /** Discriminator picking the right icon and label pair from the alert tables. */
+  /**
+   * Discriminator picking the right icon and label pair from the alert tables.
+   */
   const type = props['data-type'];
-  /** Icon plus label cluster rendered ahead of the alert body. */
+  /**
+   * Icon plus label cluster rendered ahead of the alert body.
+   */
   const indicator = jsx(
     'alert-indicator',
     {
@@ -80,7 +90,9 @@ export function CalloutAlert(props: {
       ],
     },
   );
-  /** Slot wrapper for the user-supplied alert body. */
+  /**
+   * Slot wrapper for the user-supplied alert body.
+   */
   const content = jsx(
     'alert-content',
     {
@@ -88,7 +100,9 @@ export function CalloutAlert(props: {
       children: props.children,
     },
   );
-  /** Semantic blockquote root keeping screen readers' alert quote context. */
+  /**
+   * Semantic blockquote root keeping screen readers' alert quote context.
+   */
   const blockquote = jsx(
     'blockquote',
     {
@@ -110,10 +124,14 @@ export function CalloutAlert(props: {
 
 //region CSS
 
-/** Border thickness for the alert's leading edge, in rem. */
+/**
+ * Border thickness for the alert's leading edge, in rem.
+ */
 const ALERT_BORDER_REM = 0.25;
 
-/** Emphasis font-weight for the indicator label. */
+/**
+ * Emphasis font-weight for the indicator label.
+ */
 const INDICATOR_WEIGHT = 600;
 
 /**

@@ -78,7 +78,9 @@ const NON_LOCAL_REF: unique symbol = Symbol('page-weight/non-local-ref',);
  * @returns trimmed local reference, or {@link NON_LOCAL_REF}
  */
 function localUrlOrAbsent(raw: string,): string | typeof NON_LOCAL_REF {
-  /** URL with surrounding whitespace removed; raw CSS values often carry stray padding. */
+  /**
+   * URL with surrounding whitespace removed; raw CSS values often carry stray padding.
+   */
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed
     .startsWith('#',))
@@ -123,9 +125,13 @@ const NO_MORE_TOKENS: unique symbol = Symbol('page-weight/no-more-tokens',);
  * ```
  */
 export function extractCssUrls(source: string,): string[] {
-  /** Full token stream produced by the CSS tokenizer; walked once below. */
+  /**
+   * Full token stream produced by the CSS tokenizer; walked once below.
+   */
   const tokens: CSSToken[] = tokenize({ css: source, },);
-  /** Output set; deduplicates references seen multiple times across the stylesheet. */
+  /**
+   * Output set; deduplicates references seen multiple times across the stylesheet.
+   */
   const refs = new Set<string>();
 
   /**
@@ -140,7 +146,9 @@ export function extractCssUrls(source: string,): string[] {
   function nextSemanticToken(startIndex: number,): CSSToken | typeof NO_MORE_TOKENS {
     for (let index = startIndex; index < tokens
       .length; index += 1) {
-      /** Current token under inspection; skipped if it carries no semantic content. */
+      /**
+       * Current token under inspection; skipped if it carries no semantic content.
+       */
       const token = nonNullishOrThrow(tokens[index],);
       if (!isTokenWhiteSpaceOrComment(token,))
         return token;
@@ -155,7 +163,9 @@ export function extractCssUrls(source: string,): string[] {
    * @param raw - URL string as it appeared in CSS
    */
   function addLocalRef(raw: string,): void {
-    /** Local reference carried by `raw`, or `NON_LOCAL_REF` when external. */
+    /**
+     * Local reference carried by `raw`, or `NON_LOCAL_REF` when external.
+     */
     const local = localUrlOrAbsent(raw,);
     if (local !== NON_LOCAL_REF)
       refs.add(local,);
@@ -163,7 +173,9 @@ export function extractCssUrls(source: string,): string[] {
 
   for (let index = 0; index < tokens
     .length; index += 1) {
-    /** Current token in the linear scan; dispatch below depends on its kind. */
+    /**
+     * Current token in the linear scan; dispatch below depends on its kind.
+     */
     const token = nonNullishOrThrow(tokens[index],);
     if (isTokenURL(token,)) {
       addLocalRef(tokenValue(token,),);
@@ -174,7 +186,9 @@ export function extractCssUrls(source: string,): string[] {
         .toLowerCase()
         !== 'url')
         continue;
-      /** First semantic token after `url(`; expected to be the quoted URL string. */
+      /**
+       * First semantic token after `url(`; expected to be the quoted URL string.
+       */
       const next = nextSemanticToken(index + 1,);
       if ((next !== NO_MORE_TOKENS) && isTokenString(next,))
         addLocalRef(tokenValue(next,),);

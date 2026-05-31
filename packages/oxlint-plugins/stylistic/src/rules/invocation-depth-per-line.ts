@@ -15,7 +15,9 @@ import {
   type SpineNode,
 } from '../utility/invocation-spine.ts';
 
-/** Maximum counted invocation heads allowed to start on one source line. */
+/**
+ * Maximum counted invocation heads allowed to start on one source line.
+ */
 const MAX_INVOCATIONS_PER_LINE = 2;
 
 /**
@@ -72,24 +74,36 @@ export const invocationDepthPerLine: CreateOnceRule = {
      */
     function check(node: Span,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- visitor nodes carry the callee/arguments/source/options/expression/argument/parent fields SpineNode reads; oxlint types them only as bare Span */
-      /** Node narrowed to the spine view the walk reads. */
+      /**
+       * Node narrowed to the spine view the walk reads.
+       */
       const owner = node as SpineNode;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (!isSpineRoot(owner,))
         return;
-      /** Counted invocations from the root down, outermost first. */
+      /**
+       * Counted invocations from the root down, outermost first.
+       */
       const spine = collectSpine(owner,);
       if (spine.length
         <= MAX_INVOCATIONS_PER_LINE)
         return;
-      /** Outermost invocation per source line; the first seen is the highest. */
+      /**
+       * Outermost invocation per source line; the first seen is the highest.
+       */
       const lineOwners = new Map<number, SpineNode>();
-      /** Count of invocation heads per source line. */
+      /**
+       * Count of invocation heads per source line.
+       */
       const lineCounts = new Map<number, number>();
       spine.forEach(function tally(spineNode,): void {
-        /** Source location of this invocation's head. */
+        /**
+         * Source location of this invocation's head.
+         */
         const { loc, } = spineNode;
-        /** 1-indexed source line where the invocation head begins. */
+        /**
+         * 1-indexed source line where the invocation head begins.
+         */
         const { line, } = loc.start;
         lineCounts.set(
           line,
@@ -108,7 +122,9 @@ export const invocationDepthPerLine: CreateOnceRule = {
       ): void {
         if (count <= MAX_INVOCATIONS_PER_LINE)
           return;
-        /** Highest invocation on the violating line; the fix splits its operand. */
+        /**
+         * Highest invocation on the violating line; the fix splits its operand.
+         */
         const lineOwner = nonNullishOrThrow(lineOwners.get(line,),);
         context.report({
           node: lineOwner,

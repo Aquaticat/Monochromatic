@@ -54,7 +54,9 @@ export function streamRg({
     resolve,
     reject,
   ) {
-    /** Child process whose stdout is parsed line-by-line below. */
+    /**
+     * Child process whose stdout is parsed line-by-line below.
+     */
     const proc = spawn(
       'rg',
       [
@@ -121,7 +123,9 @@ export function streamRg({
           if (line === '')
             continue;
 
-          /** Null skips noise lines (rg JSON envelopes that are not match records). */
+          /**
+           * Null skips noise lines (rg JSON envelopes that are not match records).
+           */
           const result = processLine(line,);
           if (result !== null) {
             results.push(result,);

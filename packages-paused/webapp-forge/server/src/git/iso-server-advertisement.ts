@@ -14,7 +14,9 @@ import {
   flushPkt,
 } from './pkt-line.ts';
 
-/** Capabilities advertised in `info/refs?service=git-upload-pack`. */
+/**
+ * Capabilities advertised in `info/refs?service=git-upload-pack`.
+ */
 const UPLOAD_PACK_CAPS: readonly string[] = [
   'multi_ack',
   'multi_ack_detailed',
@@ -25,7 +27,9 @@ const UPLOAD_PACK_CAPS: readonly string[] = [
   'agent=monochromatic-forge/0',
 ];
 
-/** Capabilities advertised in `info/refs?service=git-receive-pack`. */
+/**
+ * Capabilities advertised in `info/refs?service=git-receive-pack`.
+ */
 const RECEIVE_PACK_CAPS: readonly string[] = [
   'report-status',
   'side-band-64k',
@@ -59,30 +63,42 @@ export async function buildInfoRefsAdvertisement(row: {
   readonly repo: string;
   readonly service: 'git-upload-pack' | 'git-receive-pack';
 },): Promise<Uint8Array> {
-  /** On-disk repo path the advertisement is built against. */
+  /**
+   * On-disk repo path the advertisement is built against.
+   */
   const gitdir = await ensureRepoExists({
     owner: row.owner,
     repo: row.repo,
   },);
-  /** Capability set advertised depends on which service the client requested. */
+  /**
+   * Capability set advertised depends on which service the client requested.
+   */
   const caps = row.service
     === 'git-upload-pack' ? UPLOAD_PACK_CAPS : RECEIVE_PACK_CAPS;
-  /** Existing refs decide between empty-repo placeholder and standard layout. */
+  /**
+   * Existing refs decide between empty-repo placeholder and standard layout.
+   */
   const refs = await listAllRefs({ gitdir, },);
-  /** Accumulator for the response body parts in protocol order. */
+  /**
+   * Accumulator for the response body parts in protocol order.
+   */
   const chunks: Uint8Array[] = [
     encodePkt(`# service=${row.service}\n`,),
     flushPkt(),
   ];
   if (refs.length
     === 0) {
-    /** Synthetic `capabilities^{}` pkt-line is required when no refs exist. */
+    /**
+     * Synthetic `capabilities^{}` pkt-line is required when no refs exist.
+     */
     const head = `${ZERO_OID} capabilities^{}\0${caps.join(' ',)}\n`;
     chunks.push(encodePkt(head,),);
   }
   else {
     for (const [index, [refName, oid,],] of refs.entries()) {
-      /** First ref carries the capabilities suffix; subsequent refs do not. */
+      /**
+       * First ref carries the capabilities suffix; subsequent refs do not.
+       */
       const line = index === 0
         ? `${oid} ${refName}\0${caps.join(' ',)}\n`
         : `${oid} ${refName}\n`;
@@ -107,13 +123,19 @@ export async function buildInfoRefsAdvertisement(row: {
  * ```
  */
 function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
-  /** Running sum of every chunk's byte length to size the output buffer. */
+  /**
+   * Running sum of every chunk's byte length to size the output buffer.
+   */
   let total = 0;
   for (const chunk of chunks)
     total += chunk.byteLength;
-  /** Destination buffer sized exactly to the total chunk length. */
+  /**
+   * Destination buffer sized exactly to the total chunk length.
+   */
   const out = new Uint8Array(total,);
-  /** Write position advancing through `out` as each chunk is copied. */
+  /**
+   * Write position advancing through `out` as each chunk is copied.
+   */
   let cursor = 0;
   for (const chunk of chunks) {
     out.set(

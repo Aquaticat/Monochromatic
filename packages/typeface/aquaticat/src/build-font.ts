@@ -38,16 +38,22 @@ import {
 
 //region Main build
 
-/** Directory containing this build script. */
+/**
+ * Directory containing this build script.
+ */
 const scriptDir = dirname(new URL(import.meta.url,).pathname,);
 
-/** Absolute path to the master glyph strip SVG. */
+/**
+ * Absolute path to the master glyph strip SVG.
+ */
 const svgPath = resolve(
   scriptDir,
   'glyphs.svg',
 );
 
-/** Output directory for generated font files. */
+/**
+ * Output directory for generated font files.
+ */
 const distDir = resolve(
   scriptDir,
   '..',
@@ -58,16 +64,22 @@ console.log(
   'Reading glyph SVG:',
   svgPath,
 );
-/** Raw SVG file content. */
+/**
+ * Raw SVG file content.
+ */
 const svgContent = readFileSync(
   svgPath,
   'utf8',
 );
-/** Parsed glyph cells from the SVG strip. */
+/**
+ * Parsed glyph cells from the SVG strip.
+ */
 const cells = parseSvg(svgContent,);
 console.log(`Parsed ${cells.length} glyph cells`,);
 
-/** Required .notdef glyph (empty placeholder for missing characters). */
+/**
+ * Required .notdef glyph (empty placeholder for missing characters).
+ */
 const notdefGlyph = new opentype.Glyph({
   name: '.notdef',
   unicode: 0,
@@ -75,7 +87,9 @@ const notdefGlyph = new opentype.Glyph({
   path: new opentype.Path(),
 },);
 
-/** Space character glyph (no visible path, just advance width). */
+/**
+ * Space character glyph (no visible path, just advance width).
+ */
 const spaceGlyph = new opentype.Glyph({
   name: 'space',
   unicode: 32,
@@ -83,20 +97,28 @@ const spaceGlyph = new opentype.Glyph({
   path: new opentype.Path(),
 },);
 
-/** Assembled letter glyphs from the parsed SVG cells. */
+/**
+ * Assembled letter glyphs from the parsed SVG cells.
+ */
 const letterGlyphs = cells.flatMap(
   function buildGlyph(
     cell,
     cellIndex,
   ): opentype.Glyph[] {
-    /** Unicode code point assigned to this cell position, or undefined for unused slots. */
+    /**
+     * Unicode code point assigned to this cell position, or undefined for unused slots.
+     */
     const unicode = CELL_UNICODE[cellIndex];
     if (unicode === undefined)
       return [];
 
-    /** Human-readable letter string used as the OpenType glyph name. */
+    /**
+     * Human-readable letter string used as the OpenType glyph name.
+     */
     const letterName = String.fromCodePoint(unicode,);
-    /** Local X bounds of this glyph's strokes, used to derive shift and advance width. */
+    /**
+     * Local X bounds of this glyph's strokes, used to derive shift and advance width.
+     */
     const {
       minX,
       maxX,
@@ -104,16 +126,24 @@ const letterGlyphs = cells.flatMap(
       paths: cell.paths,
       cellX: cell.xOffset,
     },);
-    /** Horizontal shift that places the leftmost stroke exactly one side-bearing inside the glyph box. */
+    /**
+     * Horizontal shift that places the leftmost stroke exactly one side-bearing inside the glyph box.
+     */
     const xShift = SIDE_BEARING - minX;
-    /** Total advance width: stroke span plus a side-bearing on each side. */
+    /**
+     * Total advance width: stroke span plus a side-bearing on each side.
+     */
     const advanceWidth = (maxX - minX) + (2 * SIDE_BEARING);
 
-    /** OpenType path that collects every contour from this cell's SVG paths. */
+    /**
+     * OpenType path that collects every contour from this cell's SVG paths.
+     */
     const path = new opentype.Path();
     cell.paths
       .forEach(function addCellPath(cellPath,) {
-      /** Tokenised commands for one SVG path, dispatched into stroked or filled tracing. */
+      /**
+       * Tokenised commands for one SVG path, dispatched into stroked or filled tracing.
+       */
       const commands = parseSvgPathD(cellPath.d,);
       if (cellPath.isStroked) {
         addStrokedPath({
@@ -148,7 +178,9 @@ const letterGlyphs = cells.flatMap(
   },
 );
 
-/** Assembled OpenType font with all glyphs. */
+/**
+ * Assembled OpenType font with all glyphs.
+ */
 const font = new opentype.Font({
   familyName: 'Aquaticat',
   styleName: 'Regular',
@@ -167,12 +199,16 @@ mkdirSync(
   { recursive: true, },
 );
 
-/** Output path for the OTF font file. */
+/**
+ * Output path for the OTF font file.
+ */
 const otfPath = resolve(
   distDir,
   'Aquaticat-Regular.otf',
 );
-/** Raw OTF binary data. */
+/**
+ * Raw OTF binary data.
+ */
 const buffer = font.toArrayBuffer();
 writeFileSync(
   otfPath,

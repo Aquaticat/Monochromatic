@@ -8,10 +8,14 @@
 
 //region Configuration
 
-/** Default URL for the chat completions endpoint. */
+/**
+ * Default URL for the chat completions endpoint.
+ */
 const DEFAULT_COMPLETIONS_URL = 'http://localhost:8080/v1/chat/completions';
 
-/** Resolved endpoint URL, evaluated once at import time. */
+/**
+ * Resolved endpoint URL, evaluated once at import time.
+ */
 const completionsUrl = process.env
   .CHAT_COMPLETIONS_URL
   ?? DEFAULT_COMPLETIONS_URL;
@@ -20,13 +24,19 @@ const completionsUrl = process.env
 
 //region Rate limiter (sliding-window counter)
 
-/** Maximum requests allowed within the sliding window. */
+/**
+ * Maximum requests allowed within the sliding window.
+ */
 const MAX_REQUESTS_PER_WINDOW = 30;
 
-/** Sliding window duration in milliseconds (60 seconds). */
+/**
+ * Sliding window duration in milliseconds (60 seconds).
+ */
 const WINDOW_DURATION_MS = 60_000;
 
-/** Request timeout in milliseconds (30 seconds). */
+/**
+ * Request timeout in milliseconds (30 seconds).
+ */
 const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
@@ -43,7 +53,9 @@ const requestTimestamps: number[] = [];
  * @returns `true` when the request should be rejected
  */
 function isRateLimited(): boolean {
-  /** Lower bound of the sliding window; older timestamps are evicted below. */
+  /**
+   * Lower bound of the sliding window; older timestamps are evicted below.
+   */
   const cutoff = Date.now()
     - WINDOW_DURATION_MS;
 
@@ -59,7 +71,9 @@ function isRateLimited(): boolean {
     >= MAX_REQUESTS_PER_WINDOW;
 }
 
-/** Records the current timestamp in the sliding window. */
+/**
+ * Records the current timestamp in the sliding window.
+ */
 function recordRequest(): void {
   requestTimestamps.push(Date.now(),);
 }
@@ -68,42 +82,68 @@ function recordRequest(): void {
 
 //region Types
 
-/** Message in a chat conversation. */
+/**
+ * Message in a chat conversation.
+ */
 export type ChatMessage = {
-  /** Role of the message author. */
+  /**
+   * Role of the message author.
+   */
   readonly role: 'system' | 'user' | 'assistant';
-  /** Text content of the message. */
+  /**
+   * Text content of the message.
+   */
   readonly content: string;
 };
 
-/** Options for a chat completion request. */
+/**
+ * Options for a chat completion request.
+ */
 export type ChatCompletionOptions = {
-  /** Messages in the conversation. */
+  /**
+   * Messages in the conversation.
+   */
   readonly messages: readonly ChatMessage[];
-  /** Sampling temperature (0 = deterministic). */
+  /**
+   * Sampling temperature (0 = deterministic).
+   */
   readonly temperature?: number;
-  /** Maximum tokens to generate. */
+  /**
+   * Maximum tokens to generate.
+   */
   readonly maxTokens?: number;
-  /** When `true`, request `response_format: \{ type: "json_object" \}`. */
+  /**
+   * When `true`, request `response_format: \{ type: "json_object" \}`.
+   */
   readonly jsonMode?: boolean;
 };
 
-/** Single choice from a chat completion response. */
+/**
+ * Single choice from a chat completion response.
+ */
 type ChatCompletionResponseChoice = {
-  /** Message content of the choice. */
+  /**
+   * Message content of the choice.
+   */
   message: {
     role: string;
     content: string;
   };
 };
 
-/** Full chat completion response from the API. */
+/**
+ * Full chat completion response from the API.
+ */
 type ChatCompletionResponse = {
-  /** Array of completion choices. */
+  /**
+   * Array of completion choices.
+   */
   choices: ChatCompletionResponseChoice[];
 };
 
-/** Discriminated union result of a chat completion attempt. */
+/**
+ * Discriminated union result of a chat completion attempt.
+ */
 export type ChatCompletionResult =
   | {
     ok: true;
@@ -145,7 +185,9 @@ export async function chatCompletion(
 
   recordRequest();
 
-  /** Mutable request body so optional fields can be appended conditionally below. */
+  /**
+   * Mutable request body so optional fields can be appended conditionally below.
+   */
   const body: Record<string, unknown> = {
     messages: options.messages,
     temperature: options.temperature
@@ -161,7 +203,9 @@ export async function chatCompletion(
     body.response_format = { type: 'json_object', };
 
   try {
-    /** Network response from the OpenAI-compatible endpoint. */
+    /**
+     * Network response from the OpenAI-compatible endpoint.
+     */
     const response = await fetch(
       completionsUrl,
       {
@@ -173,7 +217,9 @@ export async function chatCompletion(
     );
 
     if (!response.ok) {
-      /** Best-effort body text; reassigned in the try block, default surfaces on parse failure. */
+      /**
+       * Best-effort body text; reassigned in the try block, default surfaces on parse failure.
+       */
       let errorText = 'unknown error';
       try {
         errorText = await response.text();
@@ -188,10 +234,14 @@ export async function chatCompletion(
     }
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse */
-    /** Parsed response payload; only `choices[0]` is consumed below. */
+    /**
+     * Parsed response payload; only `choices[0]` is consumed below.
+     */
     const data = (await response.json()) as ChatCompletionResponse;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    /** First completion choice; absent on malformed responses. */
+    /**
+     * First completion choice; absent on malformed responses.
+     */
     const [firstChoice,] = data.choices;
     if (firstChoice === undefined) {
       return {
@@ -207,7 +257,9 @@ export async function chatCompletion(
     };
   }
   catch (caughtError: unknown) {
-    /** Human-readable error text extracted whether the cause is an Error or a raw throw. */
+    /**
+     * Human-readable error text extracted whether the cause is an Error or a raw throw.
+     */
     const message = caughtError instanceof Error
       ? caughtError.message
       : String(caughtError,);

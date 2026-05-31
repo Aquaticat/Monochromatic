@@ -40,7 +40,9 @@ const NON_LOCAL_REF: unique symbol = Symbol('page-weight/non-local-ref',);
  */
 const BLANK_STYLE: unique symbol = Symbol('page-weight/blank-style',);
 
-/** Reusable unified parser configured for full HTML documents. */
+/**
+ * Reusable unified parser configured for full HTML documents.
+ */
 const parser = unified()
   .use(rehypeParse,);
 
@@ -119,11 +121,15 @@ function attr(
     readonly name: string;
   },
 ): string | typeof NO_ASSET_URL {
-  /** Attribute value as hast stores it; may be missing or non-string. */
+  /**
+   * Attribute value as hast stores it; may be missing or non-string.
+   */
   const raw = element.properties[name];
   if ((typeof raw) !== 'string')
     return NO_ASSET_URL;
-  /** Whitespace-stripped value so empty-after-trim attributes report as `NO_ASSET_URL`. */
+  /**
+   * Whitespace-stripped value so empty-after-trim attributes report as `NO_ASSET_URL`.
+   */
   const trimmed = raw.trim();
   return trimmed === '' ? NO_ASSET_URL : trimmed;
 }
@@ -140,7 +146,9 @@ function attr(
  * @returns first URL, or {@link NO_ASSET_URL} if the value is empty
  */
 function firstSrcsetUrl(srcset: string,): string | typeof NO_ASSET_URL {
-  /** First candidate descriptor in the srcset list; used as the canonical pick. */
+  /**
+   * First candidate descriptor in the srcset list; used as the canonical pick.
+   */
   const first = srcset.split(',',)[0]
     ?.trim();
   if ((first === undefined) || (first === ''))
@@ -192,9 +200,13 @@ export function firstNonWhitespaceToken(line: string,): string {
   // most once (O(n) time, O(1) stack, no recursion). Fragments are pushed and
   // joined once, mirroring the codebase's other linear string scanners.
   return (function scan(): string {
-    /** Token characters collected after the leading-whitespace run ends; joined once at the end. */
+    /**
+     * Token characters collected after the leading-whitespace run ends; joined once at the end.
+     */
     const chars: string[] = [];
-    /** Whether the leading-whitespace run has ended and token capture has begun. */
+    /**
+     * Whether the leading-whitespace run has ended and token capture has begun.
+     */
     let started = false;
     for (const c of line) {
       if (isWhitespace(c,)) {
@@ -225,7 +237,9 @@ export function firstNonWhitespaceToken(line: string,): string {
 function localUrlOrAbsent(raw?: string,): string | typeof NON_LOCAL_REF {
   if (raw === undefined)
     return NON_LOCAL_REF;
-  /** Whitespace-stripped form so empty and fragment-only references are filtered out. */
+  /**
+   * Whitespace-stripped form so empty and fragment-only references are filtered out.
+   */
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed
     .startsWith('#',))
@@ -255,13 +269,17 @@ const MEDIA_PARENTS = new Set([
  * @returns concatenated stylesheet text, or {@link BLANK_STYLE} when blank
  */
 function inlineStyleText(element: DeepReadonly<Element>,): string | typeof BLANK_STYLE {
-  /** Text-node fragments collected from the `<style>` children. */
+  /**
+   * Text-node fragments collected from the `<style>` children.
+   */
   const parts: string[] = [];
   for (const child of element.children) {
     if (isText(child,))
       parts.push(child.value,);
   }
-  /** Concatenated `<style>` content; only emitted when non-blank. */
+  /**
+   * Concatenated `<style>` content; only emitted when non-blank.
+   */
   const text = parts.join('',);
   return text.trim() === '' ? BLANK_STYLE : text;
 }
@@ -287,27 +305,35 @@ function collectMedia(
   readonly url?: string;
   readonly styles: readonly string[];
 } {
-  /** Inline `<style>` bodies found among the media children, in source order. */
+  /**
+   * Inline `<style>` bodies found among the media children, in source order.
+   */
   const styles: string[] = [];
   for (const child of element.children) {
     if (!isElement(child,))
       continue;
     if (child.tagName
       === 'source') {
-      /** `srcset` on the current `<source>` child, if any; preferred over `src`. */
+      /**
+       * `srcset` on the current `<source>` child, if any; preferred over `src`.
+       */
       const srcset = attr({
         element: child,
         name: 'srcset',
       },);
       if (srcset !== NO_ASSET_URL) {
-        /** Canonical first candidate of the `<source>` `srcset`; omitted when empty. */
+        /**
+         * Canonical first candidate of the `<source>` `srcset`; omitted when empty.
+         */
         const url = firstSrcsetUrl(srcset,);
         return url === NO_ASSET_URL ? { styles, } : {
           url,
           styles,
         };
       }
-      /** Plain `src` fallback for the current `<source>` child when no `srcset` is set. */
+      /**
+       * Plain `src` fallback for the current `<source>` child when no `srcset` is set.
+       */
       const src = attr({
         element: child,
         name: 'src',
@@ -320,7 +346,9 @@ function collectMedia(
     }
     if (child.tagName
       === 'style') {
-      /** Text of the current `<style>` child, when non-blank. */
+      /**
+       * Text of the current `<style>` child, when non-blank.
+       */
       const text = inlineStyleText(child,);
       if (text !== BLANK_STYLE)
         styles.push(text,);
@@ -332,7 +360,9 @@ function collectMedia(
       if (isElement(child,)
         && (child.tagName
           === 'img')) {
-        /** Fallback `<img>` `src` used when no `<source>` child matched. */
+        /**
+         * Fallback `<img>` `src` used when no `<source>` child matched.
+         */
         const src = attr({
           element: child,
           name: 'src',
@@ -394,7 +424,9 @@ function ownAssetUrl(element: DeepReadonly<Element>,): string | typeof NO_ASSET_
   }
   if (element.tagName
     === 'img') {
-    /** `<img>` `srcset`, preferred over `src` when set. */
+    /**
+     * `<img>` `srcset`, preferred over `src` when set.
+     */
     const srcset = attr({
       element,
       name: 'srcset',
@@ -408,7 +440,9 @@ function ownAssetUrl(element: DeepReadonly<Element>,): string | typeof NO_ASSET_
   }
   if (element.tagName
     === 'use') {
-    /** `<use>` `href`, preferred over the legacy `xlink:href`. */
+    /**
+     * `<use>` `href`, preferred over the legacy `xlink:href`.
+     */
     const href = attr({
       element,
       name: 'href',
@@ -428,9 +462,13 @@ function ownAssetUrl(element: DeepReadonly<Element>,): string | typeof NO_ASSET_
  * plus inline stylesheet text blocks (which need their own `url()` scan).
  */
 export type HtmlReferences = {
-  /** Relative/absolute asset URLs as written in the source HTML. */
+  /**
+   * Relative/absolute asset URLs as written in the source HTML.
+   */
   readonly urls: readonly string[];
-  /** Raw CSS text from `<style>` blocks, pending `url()` extraction. */
+  /**
+   * Raw CSS text from `<style>` blocks, pending `url()` extraction.
+   */
   readonly inlineStyles: readonly string[];
 };
 
@@ -447,11 +485,17 @@ export type HtmlReferences = {
  * ```
  */
 export function extractHtmlRefs(source: string,): HtmlReferences {
-  /** Parsed hast tree the walker descends. */
+  /**
+   * Parsed hast tree the walker descends.
+   */
   const tree = parseHtml(source,);
-  /** Dedup set built up during the walk; converted to an array on return. */
+  /**
+   * Dedup set built up during the walk; converted to an array on return.
+   */
   const urls = new Set<string>();
-  /** `<style>` bodies pulled out for a separate `url()` scan by the caller. */
+  /**
+   * `<style>` bodies pulled out for a separate `url()` scan by the caller.
+   */
   const inlineStyles: string[] = [];
 
   /**
@@ -467,16 +511,22 @@ export function extractHtmlRefs(source: string,): HtmlReferences {
     if (isElement(node,)) {
       if (node.tagName
         === 'style') {
-        /** Text of this `<style>` block, when non-blank. */
+        /**
+         * Text of this `<style>` block, when non-blank.
+         */
         const text = inlineStyleText(node,);
         if (text !== BLANK_STYLE)
           inlineStyles.push(text,);
         return;
       }
       if (MEDIA_PARENTS.has(node.tagName,)) {
-        /** Canonical media pick plus any inline styles found among its children. */
+        /**
+         * Canonical media pick plus any inline styles found among its children.
+         */
         const media = collectMedia(node,);
-        /** Local reference of the media pick, or `NON_LOCAL_REF` when external/absent. */
+        /**
+         * Local reference of the media pick, or `NON_LOCAL_REF` when external/absent.
+         */
         const local = localUrlOrAbsent(media.url,);
         if (local !== NON_LOCAL_REF)
           urls.add(local,);
@@ -484,7 +534,9 @@ export function extractHtmlRefs(source: string,): HtmlReferences {
           inlineStyles.push(style,);
         return;
       }
-      /** This element's own candidate asset URL, or `NO_ASSET_URL` when it has none. */
+      /**
+       * This element's own candidate asset URL, or `NO_ASSET_URL` when it has none.
+       */
       const own = ownAssetUrl(node,);
       /**
        * Local reference of this element's own asset, or `NON_LOCAL_REF`.

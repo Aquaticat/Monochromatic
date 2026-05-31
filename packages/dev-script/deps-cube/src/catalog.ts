@@ -27,13 +27,21 @@ import { parse as parseYaml, } from 'yaml';
  * Single resolved catalog entry from `pnpm-workspace.yaml`.
  */
 export type CatalogEntry = {
-  /** Key as written in the catalog (may be an alias when `range` starts with `npm:`). */
+  /**
+   * Key as written in the catalog (may be an alias when `range` starts with `npm:`).
+   */
   readonly catalogKey: string;
-  /** Actual npm package name to query the registry with. */
+  /**
+   * Actual npm package name to query the registry with.
+   */
   readonly npmName: string;
-  /** Version range string (semver, exact, `*`, or just the trailing part of `npm:<name>@<range>`). */
+  /**
+   * Version range string (semver, exact, `*`, or just the trailing part of `npm:<name>@<range>`).
+   */
   readonly range: string;
-  /** Name of the named catalog this entry came from; absent for the default `catalog:` block. */
+  /**
+   * Name of the named catalog this entry came from; absent for the default `catalog:` block.
+   */
   readonly catalogName?: string;
 };
 
@@ -133,7 +141,9 @@ function entriesFromBlock(
 ): readonly CatalogEntry[] {
   return Object.entries(block,)
     .map(function toEntry([key, value,],): CatalogEntry {
-      /** Real npm package name plus version range, with `npm:` aliases resolved. */
+      /**
+       * Real npm package name plus version range, with `npm:` aliases resolved.
+       */
       const {
         npmName,
         range,
@@ -176,7 +186,9 @@ function entriesFromBlock(
 export async function readCatalog(
   { startDir, }: { readonly startDir?: string; } = {},
 ): Promise<readonly CatalogEntry[]> {
-  /** Absolute path to the nearest `pnpm-workspace.yaml` walked up from `startDir`. */
+  /**
+   * Absolute path to the nearest `pnpm-workspace.yaml` walked up from `startDir`.
+   */
   const workspaceYamlPath = await findUp(
     'pnpm-workspace.yaml',
     startDir === undefined ? undefined : { cwd: startDir, },
@@ -190,26 +202,38 @@ export async function readCatalog(
     );
   }
 
-  /** UTF-8 text of the workspace file; fed to the YAML parser. */
+  /**
+   * UTF-8 text of the workspace file; fed to the YAML parser.
+   */
   const raw = await readFile(
     workspaceYamlPath,
     'utf8',
   );
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- YAML parse is `unknown`; pnpm-workspace.yaml shape is fixed. */
-  /** Parsed workspace document, narrowed to the catalog-bearing subset. */
+  /**
+   * Parsed workspace document, narrowed to the catalog-bearing subset.
+   */
   const parsed = parseYaml(raw,) as WorkspaceYaml;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
-  /** Default `catalog:` block; empty object preserves the rest of the pipeline when absent. */
+  /**
+   * Default `catalog:` block; empty object preserves the rest of the pipeline when absent.
+   */
   const defaultBlock = parsed.catalog
     ?? {};
-  /** Named `catalogs.*` blocks keyed by catalog name; empty object when the file has only the default catalog. */
+  /**
+   * Named `catalogs.*` blocks keyed by catalog name; empty object when the file has only the default catalog.
+   */
   const namedBlocks = parsed.catalogs
     ?? {};
 
-  /** Flattened entries from the default block, each tagged without a `catalogName`. */
+  /**
+   * Flattened entries from the default block, each tagged without a `catalogName`.
+   */
   const defaultEntries = entriesFromBlock({ block: defaultBlock, },);
-  /** Flattened entries from every named block, each tagged with its `catalogName`. */
+  /**
+   * Flattened entries from every named block, each tagged with its `catalogName`.
+   */
   const namedEntries = Object.entries(namedBlocks,)
     .flatMap(
     function expandNamed([catalogName, block,],) {
@@ -220,7 +244,9 @@ export async function readCatalog(
     },
   );
 
-  /** Union of default and named entries returned to callers. */
+  /**
+   * Union of default and named entries returned to callers.
+   */
   const combined = [
     ...defaultEntries,
     ...namedEntries,

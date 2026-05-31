@@ -16,12 +16,16 @@ import {
 
 import { ENTRY_STYLES, } from './entry.styles.ts';
 
-/** Sidebar width in `rem`: 16 = 2 * 2 * 2 * 2. */
+/**
+ * Sidebar width in `rem`: 16 = 2 * 2 * 2 * 2.
+ */
 const SIDEBAR_WIDTH = 2 * 2
   * 2
   * 2;
 
-/** Shadow DOM styles for the file tree. */
+/**
+ * Shadow DOM styles for the file tree.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

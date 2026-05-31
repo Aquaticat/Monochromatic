@@ -2,10 +2,14 @@ import { BYTES_PER_MIB, } from '@monochromatic-dev/module-const/ts';
 
 export {};
 
-/** Number of mebibytes per allocation chunk: large enough to exhaust memory in a few iterations. */
+/**
+ * Number of mebibytes per allocation chunk: large enough to exhaust memory in a few iterations.
+ */
 const CHUNK_SIZE_MIB = 256;
 
-/** Size of each allocation in bytes. */
+/**
+ * Size of each allocation in bytes.
+ */
 const CHUNK_SIZE_BYTES = CHUNK_SIZE_MIB * BYTES_PER_MIB;
 
 /**

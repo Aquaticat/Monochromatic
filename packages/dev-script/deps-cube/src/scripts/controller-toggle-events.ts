@@ -45,7 +45,9 @@ export function wireToggles(
   },
 ): void {
   TOGGLE_KEYS.forEach(function bind(key: ToggleKey,) {
-    /** Fieldset wrapping three radios for this toggle; event delegation hangs off it. */
+    /**
+     * Fieldset wrapping three radios for this toggle; event delegation hangs off it.
+     */
     const fieldset = document.querySelector<HTMLFieldSetElement>(
       `[data-toggle="${key}"]`,
     );
@@ -54,11 +56,15 @@ export function wireToggles(
     fieldset.addEventListener(
       'change',
       function onChange(event,) {
-        /** Delegated target; narrowed to `HTMLInputElement` before reading `.value`. */
+        /**
+         * Delegated target; narrowed to `HTMLInputElement` before reading `.value`.
+         */
         const input = event.target;
         if (!(input instanceof HTMLInputElement))
           return;
-        /** Narrowed toggle value matching input value; `undefined` rejects unexpected values. */
+        /**
+         * Narrowed toggle value matching input value; `undefined` rejects unexpected values.
+         */
         const next = TOGGLE_VALUES.find(function match(candidate,) {
           return candidate === input
             .value;
@@ -103,7 +109,9 @@ export function wireSearch(
     commit: Commit;
   },
 ): void {
-  /** Search-box `<input>`; mirrored to `state.search` on every keystroke. */
+  /**
+   * Search-box `<input>`; mirrored to `state.search` on every keystroke.
+   */
   const input = elInput('search',);
   input.addEventListener(
     'input',

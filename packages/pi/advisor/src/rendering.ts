@@ -48,20 +48,28 @@ export function renderAdvisorCall(
     readonly theme: ReadonlyDeep<Theme>;
   },
 ): Component {
-  /** Requested target displayed before execution resolves. */
+  /**
+   * Requested target displayed before execution resolves.
+   */
   const target = args.model
     ?? 'default scoped model';
-  /** Styled tool title. */
+  /**
+   * Styled tool title.
+   */
   const title = theme.fg(
     'toolTitle',
     theme.bold('advisor',),
   );
-  /** Styled action label. */
+  /**
+   * Styled action label.
+   */
   const action = theme.fg(
     'accent',
     'Consulting advisor',
   );
-  /** Styled target model label. */
+  /**
+   * Styled target model label.
+   */
   const targetText = theme.fg(
     'dim',
     target,
@@ -100,7 +108,9 @@ export function renderAdvisorResult(
     readonly theme: ReadonlyDeep<Theme>;
   },
 ): Component {
-  /** Text block returned to primary model. */
+  /**
+   * Text block returned to primary model.
+   */
   const text = result.content[0]
     ?.type
     === 'text'
@@ -149,11 +159,15 @@ export function renderAdvisorMessage(
     readonly theme: ReadonlyDeep<Theme>;
   },
 ): Component {
-  /** Message text from custom message content. */
+  /**
+   * Message text from custom message content.
+   */
   const text = (typeof message.content) === 'string'
     ? message.content
     : '(advisor returned no text)';
-  /** Structured details when present. */
+  /**
+   * Structured details when present.
+   */
   const details = isAdvisorDetails(message.details,)
     ? message.details
     : fallbackDetails();

@@ -40,11 +40,17 @@ export async function renderAllOverlays({
   readonly entries: readonly ViewerEntry[];
   readonly probeDetails: ReadonlyMap<string, ProbeDetail>;
 },): Promise<string> {
-  /** Resolved overlay HTML fragments for every entry, awaited before join. */
+  /**
+   * Resolved overlay HTML fragments for every entry, awaited before join.
+   */
   const overlays = await Promise.all(entries.flatMap(function buildEntryOverlays(entry,) {
-    /** Probe slugs present in this entry, used to fan out per-probe overlays. */
+    /**
+     * Probe slugs present in this entry, used to fan out per-probe overlays.
+     */
     const probeNames = Object.keys(entry.probeScores,);
-    /** DOM id for the entry-level run overlay matching the scatter button target. */
+    /**
+     * DOM id for the entry-level run overlay matching the scatter button target.
+     */
     const overallId = `${entry.label}-${entry.timestamp}`;
 
     return [
@@ -53,15 +59,21 @@ export async function renderAllOverlays({
         entry,
       },),),
       ...probeNames.map(function buildProbeOverlay(probe,) {
-        /** DOM id for the probe-level overlay opened from per-probe cards. */
+        /**
+         * DOM id for the probe-level overlay opened from per-probe cards.
+         */
         const probeId = `${entry.label}-${probe}-${entry.timestamp}`;
-        /** Composite key into the enriched probe-detail map. */
+        /**
+         * Composite key into the enriched probe-detail map.
+         */
         const key = probeKey({
           label: entry.label,
           probe,
           timestamp: entry.timestamp,
         },);
-        /** Enriched probe detail for this overlay; absent for runs without artifacts. */
+        /**
+         * Enriched probe detail for this overlay; absent for runs without artifacts.
+         */
         const detail = probeDetails.get(key,);
         return renderProbeOverlay({
           id: probeId,
@@ -93,14 +105,20 @@ function renderRunOverlay({
   readonly id: string;
   readonly entry: ViewerEntry;
 },): string {
-  /** Display label destructured for use in cards and headings below. */
+  /**
+   * Display label destructured for use in cards and headings below.
+   */
   const { label, } = entry;
 
-  /** Joined probe card markup feeding the overlay grid section. */
+  /**
+   * Joined probe card markup feeding the overlay grid section.
+   */
   const probeCards = Object
     .entries(entry.probeScores,)
     .map(function renderProbeCard([name, score,],) {
-      /** Popover-target id matching the per-probe overlay's `id`. */
+      /**
+       * Popover-target id matching the per-probe overlay's `id`.
+       */
       const probeOverlayId = `run-${entry.label}-${name}-${entry.timestamp}`;
       return h({
         tag: 'button',
@@ -124,10 +142,14 @@ function renderRunOverlay({
     },)
     .join('\n',);
 
-  /** Bracketed failure detail appended only when an error message is present. */
+  /**
+   * Bracketed failure detail appended only when an error message is present.
+   */
   const errorSuffix = entry.error
     !== undefined ? ` (${entry.error})` : '';
-  /** Composed overlay heading shown at the top of the run popover. */
+  /**
+   * Composed overlay heading shown at the top of the run popover.
+   */
   const title = `${label} - ${entry.overallScore
     .toFixed(2,)} - ${entry.timestamp}${
     entry.failed ? ` (FAILED${errorSuffix})` : ''

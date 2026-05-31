@@ -51,17 +51,23 @@ async function safeReaddir(rl: Logger,): Promise<string[]> {
  * ```
  */
 export async function listVms(): Promise<readonly string[]> {
-  /** Tagged logger so list-vm entries are scoped to `listVms` in the output. */
+  /**
+   * Tagged logger so list-vm entries are scoped to `listVms` in the output.
+   */
   const rl = tagged({
     tag: listVms.name,
     l,
   },);
   rl.info(`scanning ${DATA_DIR}`,);
 
-  /** Entries in the data directory; empty if the directory does not exist. */
+  /**
+   * Entries in the data directory; empty if the directory does not exist.
+   */
   const entries = await safeReaddir(rl,);
 
-  /** Check all entries concurrently for valid config files. */
+  /**
+   * Check all entries concurrently for valid config files.
+   */
   const checks = await Promise.all(
     entries.map(
       async function checkEntry(entry,) {
@@ -83,7 +89,9 @@ export async function listVms(): Promise<readonly string[]> {
     ),
   );
 
-  /** VM names with valid config files. */
+  /**
+   * VM names with valid config files.
+   */
   const names = checks.filter(
     function isDefined(name,): name is string {
       return name !== undefined;
@@ -105,13 +113,17 @@ export async function listVms(): Promise<readonly string[]> {
  * ```
  */
 export async function printVmList(): Promise<void> {
-  /** Tagged logger so print-list entries are scoped to `printVmList` in the output. */
+  /**
+   * Tagged logger so print-list entries are scoped to `printVmList` in the output.
+   */
   const rl = tagged({
     tag: printVmList.name,
     l,
   },);
 
-  /** All managed VM names. */
+  /**
+   * All managed VM names.
+   */
   const names = await listVms();
 
   if (names.length
@@ -120,14 +132,22 @@ export async function printVmList(): Promise<void> {
     return;
   }
 
-  /** Column width for aligned name output. */
+  /**
+   * Column width for aligned name output.
+   */
   const NAME_COL = 20;
-  /** Column width for sync state. */
+  /**
+   * Column width for sync state.
+   */
   const SYNC_COL = 10;
-  /** Column width for hypervisor. */
+  /**
+   * Column width for hypervisor.
+   */
   const HV_COL = 10;
 
-  /** Load all configs concurrently. */
+  /**
+   * Load all configs concurrently.
+   */
   const configs = await Promise.all(
     names.map(
       function loadConfig(name,) {
@@ -138,10 +158,14 @@ export async function printVmList(): Promise<void> {
 
   configs.forEach(
     function printRow(config,) {
-      /** Sync state label. */
+      /**
+       * Sync state label.
+       */
       const syncLabel = config.state
         .synced ? 'synced' : 'dirty';
-      /** Last hypervisor label. */
+      /**
+       * Last hypervisor label.
+       */
       const hvLabel = config.state
         .lastBootHypervisor
         ?? 'never';

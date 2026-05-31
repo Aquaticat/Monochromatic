@@ -20,7 +20,9 @@ import {
 export type { DesktopEntry, } from './desktop-entry-types.ts';
 export { expandEscapes, } from './desktop-entry-types.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'desktop-entry',
   l: parentLogger,
@@ -51,7 +53,9 @@ export const DESKTOP_ENTRY_UNREADABLE: unique symbol = Symbol('terminal-exec/des
 export async function parseDesktopEntry(
   { path, }: { readonly path: string; },
 ): Promise<DesktopEntry | typeof DESKTOP_ENTRY_UNREADABLE> {
-  /** Empty default lets the catch return DESKTOP_ENTRY_UNREADABLE without restructuring the read path. */
+  /**
+   * Empty default lets the catch return DESKTOP_ENTRY_UNREADABLE without restructuring the read path.
+   */
   let text = '';
   try {
     text = await readFile(
@@ -63,14 +67,20 @@ export async function parseDesktopEntry(
     return DESKTOP_ENTRY_UNREADABLE;
   }
 
-  /** Parse accumulator; each applyKey call returns an updated copy. Annotated readonly so the immutable updates type-check. */
+  /**
+   * Parse accumulator; each applyKey call returns an updated copy. Annotated readonly so the immutable updates type-check.
+   */
   let result: DesktopEntry = createEmptyEntry();
 
-  /** Section gate; toggled on each `[Section]` line so non-Desktop Entry sections are skipped. */
+  /**
+   * Section gate; toggled on each `[Section]` line so non-Desktop Entry sections are skipped.
+   */
   let inDesktopEntry = false;
 
   for (const rawLine of text.split('\n',)) {
-    /** Whitespace tolerance before prefix checks. */
+    /**
+     * Whitespace tolerance before prefix checks.
+     */
     const line = rawLine.trim();
 
     if (line.startsWith('[',)) {
@@ -85,19 +95,25 @@ export async function parseDesktopEntry(
     if (!inDesktopEntry)
       continue;
 
-    /** Separator index; -1 means a non-key line that must be skipped. */
+    /**
+     * Separator index; -1 means a non-key line that must be skipped.
+     */
     const eqIdx = line.indexOf('=',);
     if (eqIdx === (-1))
       continue;
 
-    /** Normalized key name passed to applyKey for dispatch. */
+    /**
+     * Normalized key name passed to applyKey for dispatch.
+     */
     const key = line
       .slice(
         0,
         eqIdx,
       )
       .trim();
-    /** Payload after `=`, trimmed before applyKey stores it. */
+    /**
+     * Payload after `=`, trimmed before applyKey stores it.
+     */
     const value = line.slice(eqIdx + 1,)
       .trim();
 

@@ -1,6 +1,8 @@
 import type { $ as TypeOf, } from '../../../../t/index.ts';
 
-/** Primitive types that need no further decomposition in the enhanced typeof result. */
+/**
+ * Primitive types that need no further decomposition in the enhanced typeof result.
+ */
 const noFurtherTypeOf = [
   'undefined',
   'symbol',
@@ -26,7 +28,9 @@ const noFurtherTypeOf = [
  * ```
  */
 export function $(value: unknown,): TypeOf {
-  /** Result of the built-in `typeof` operator; discriminates the branches below. */
+  /**
+   * Result of the built-in `typeof` operator; discriminates the branches below.
+   */
   const typeOf = typeof value;
 
   if (noFurtherTypeOf.includes(typeOf,)) {
@@ -36,10 +40,14 @@ export function $(value: unknown,): TypeOf {
 
   if (typeOf === 'bigint') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- typeof guard ensures value is bigint */
-    /** Narrowed bigint view of `value` after the typeof guard; needed because the assertion is unsafe to write inline twice. */
+    /**
+     * Narrowed bigint view of `value` after the typeof guard; needed because the assertion is unsafe to write inline twice.
+     */
     const myValue = value as bigint;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    /** Tristate sign discriminator (`0`, `'positive'`, `'negative'`) carried in the bigint variant of the result. */
+    /**
+     * Tristate sign discriminator (`0`, `'positive'`, `'negative'`) carried in the bigint variant of the result.
+     */
     const sign = myValue === 0n ? 0 : (myValue > 0n ? 'positive' : 'negative');
     return [
       typeOf,
@@ -49,7 +57,9 @@ export function $(value: unknown,): TypeOf {
 
   if (typeOf === 'boolean') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- typeof guard ensures value is boolean */
-    /** Narrowed boolean view of `value`; surfaced through the `true` discriminator in the result. */
+    /**
+     * Narrowed boolean view of `value`; surfaced through the `true` discriminator in the result.
+     */
     const myValue = value as boolean;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return [
@@ -60,7 +70,9 @@ export function $(value: unknown,): TypeOf {
 
   if (typeOf === 'number') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- typeof guard ensures value is number */
-    /** Narrowed number view of `value`; consulted for NaN, sign, and integer status. */
+    /**
+     * Narrowed number view of `value`; consulted for NaN, sign, and integer status.
+     */
     const myValue = value as number;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     if (Number.isNaN(myValue,)) {
@@ -70,7 +82,9 @@ export function $(value: unknown,): TypeOf {
       ];
     }
 
-    /** Tristate sign discriminator (`0`, `'positive'`, `'negative'`) carried in the non-NaN number variant. */
+    /**
+     * Tristate sign discriminator (`0`, `'positive'`, `'negative'`) carried in the non-NaN number variant.
+     */
     const sign = myValue === 0 ? 0 : (myValue > 0 ? 'positive' : 'negative');
     /**
      * True when {@link myValue} has a fractional component; lets callers branch on integer vs float.
@@ -92,7 +106,9 @@ export function $(value: unknown,): TypeOf {
 
   if (typeOf === 'string') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- typeof guard ensures value is string */
-    /** Narrowed string view of `value`; inspected for emptiness and single-character classification. */
+    /**
+     * Narrowed string view of `value`; inspected for emptiness and single-character classification.
+     */
     const myValue = value as string;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     if (myValue.length
@@ -129,7 +145,9 @@ export function $(value: unknown,): TypeOf {
     ];
   }
 
-  /** `Object.prototype.toString` tag (e.g. `[object Array]`); the canonical way to distinguish built-in object subtypes. */
+  /**
+   * `Object.prototype.toString` tag (e.g. `[object Array]`); the canonical way to distinguish built-in object subtypes.
+   */
   const prototypeString = Object.prototype
     .toString
     .call(value,);
@@ -214,7 +232,9 @@ export function $(value: unknown,): TypeOf {
     }
     if (prototypeString === '[object RegExp]') {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- prototype string check confirms RegExp */
-      /** Narrowed RegExp view of `value`; only the `global` flag is surfaced in the result. */
+      /**
+       * Narrowed RegExp view of `value`; only the `global` flag is surfaced in the result.
+       */
       const regexp = value as RegExp;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       return [
@@ -229,7 +249,9 @@ export function $(value: unknown,): TypeOf {
     }
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- typeof guard ensures value is object */
-    /** Narrowed object view of `value`; probed via well-known symbols to classify plain objects as iterable or async-iterable. */
+    /**
+     * Narrowed object view of `value`; probed via well-known symbols to classify plain objects as iterable or async-iterable.
+     */
     const myValue = value as object;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 

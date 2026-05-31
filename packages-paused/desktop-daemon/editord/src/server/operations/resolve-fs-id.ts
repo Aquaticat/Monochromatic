@@ -36,10 +36,14 @@ function linuxFsId({ path, }: { readonly path: string; },): string {
     .trim();
 }
 
-/** Length of a Windows drive root prefix (e.g. `"C:\"`). */
+/**
+ * Length of a Windows drive root prefix (e.g. `"C:\"`).
+ */
 const DRIVE_ROOT_LENGTH = 3;
 
-/** Lowercase form of the `vol` command's serial-line label; matched case-insensitively. */
+/**
+ * Lowercase form of the `vol` command's serial-line label; matched case-insensitively.
+ */
 const SERIAL_LABEL = 'serial number is';
 
 /**
@@ -57,13 +61,19 @@ const SERIAL_LABEL = 'serial number is';
  * ```
  */
 export function parseVolumeSerial(output: string,): string {
-  /** Lower-cased copy used for the label scan; offsets line up with `output`. */
+  /**
+   * Lower-cased copy used for the label scan; offsets line up with `output`.
+   */
   const lower = output.toLowerCase();
-  /** Position of the label; -1 means the locale or shell output is unexpected. */
+  /**
+   * Position of the label; -1 means the locale or shell output is unexpected.
+   */
   const idx = lower.indexOf(SERIAL_LABEL,);
   if (idx === (-1))
     return '';
-  /** Cursor positioned at the first byte after the label. */
+  /**
+   * Cursor positioned at the first byte after the label.
+   */
   const afterLabel = idx + SERIAL_LABEL
     .length;
   /**
@@ -76,21 +86,29 @@ export function parseVolumeSerial(output: string,): string {
    * repeated string rebuild).
    */
   return (function scanToken(): string {
-    /** Forward-only cursor; never rewinds, so the whole scan is one linear pass. */
+    /**
+     * Forward-only cursor; never rewinds, so the whole scan is one linear pass.
+     */
     let cursor = afterLabel;
     while (cursor < output
       .length) {
-      /** Char at cursor; only ASCII space and tab precede the token. */
+      /**
+       * Char at cursor; only ASCII space and tab precede the token.
+       */
       const c = output.charAt(cursor,);
       if ((c !== ' ') && (c !== '\t'))
         break;
       cursor += 1;
     }
-    /** Token characters collected in order; joined once so the token is never rebuilt per step. */
+    /**
+     * Token characters collected in order; joined once so the token is never rebuilt per step.
+     */
     const collected: string[] = [];
     while (cursor < output
       .length) {
-      /** Char at cursor; any ASCII whitespace ends the token. */
+      /**
+       * Char at cursor; any ASCII whitespace ends the token.
+       */
       const c = output.charAt(cursor,);
       if (
         (c === ' ')
@@ -117,12 +135,16 @@ export function parseVolumeSerial(output: string,): string {
  * @returns volume serial string
  */
 function windowsFsId({ path, }: { readonly path: string; },): string {
-  /** Extract drive root (e.g. "C:\") from the absolute path. */
+  /**
+   * Extract drive root (e.g. "C:\") from the absolute path.
+   */
   const driveRoot = path.slice(
     0,
     DRIVE_ROOT_LENGTH,
   );
-  /** Raw output from `cmd /c vol`, expected to contain a "Serial Number is XXXX-XXXX" line. */
+  /**
+   * Raw output from `cmd /c vol`, expected to contain a "Serial Number is XXXX-XXXX" line.
+   */
   const output = execFileSync(
     'cmd.exe',
     [
@@ -134,7 +156,9 @@ function windowsFsId({ path, }: { readonly path: string; },): string {
       encoding: 'utf8',
     },
   );
-  /** Captured serial token; empty string means the locale or shell output is unexpected. */
+  /**
+   * Captured serial token; empty string means the locale or shell output is unexpected.
+   */
   const serial = parseVolumeSerial(output,);
   if (serial === '')
     throw new Error(`failed to parse volume serial from: ${output}`,);
@@ -183,7 +207,9 @@ function darwinFsId({ path, }: { readonly path: string; },): string {
  * ```
  */
 export function resolveFsId({ path, }: { readonly path: string; },): string {
-  /** Host OS name from `os.platform()`; dispatched below to the per-OS implementation. */
+  /**
+   * Host OS name from `os.platform()`; dispatched below to the per-OS implementation.
+   */
   const os = platform();
   if (os === 'linux')
     return linuxFsId({ path, },);

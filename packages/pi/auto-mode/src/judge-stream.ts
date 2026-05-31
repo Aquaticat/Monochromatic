@@ -12,7 +12,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { extractJsonVerdict, } from './judge-json.ts';
 import { l as parentLogger, } from './log.ts';
 
-/** Tagged logger for judge stream collection. */
+/**
+ * Tagged logger for judge stream collection.
+ */
 const l = tagged({
   tag: 'judge',
   l: parentLogger,
@@ -32,15 +34,23 @@ const l = tagged({
  */
 type JudgeStreamResult =
   | {
-    /** Discriminant for successful `render_verdict` tool extraction. */
+    /**
+     * Discriminant for successful `render_verdict` tool extraction.
+     */
     readonly kind: 'toolCall';
-    /** Parsed arguments from `render_verdict`. */
+    /**
+     * Parsed arguments from `render_verdict`.
+     */
     readonly args: Record<string, string>;
   }
   | {
-    /** Discriminant for streams that ended without any tool call. */
+    /**
+     * Discriminant for streams that ended without any tool call.
+     */
     readonly kind: 'noToolCall';
-    /** Text blocks emitted by the model before the stream ended. */
+    /**
+     * Text blocks emitted by the model before the stream ended.
+     */
     readonly textContent: string;
   };
 
@@ -57,7 +67,9 @@ type JudgeStreamResult =
  */
 type JsonRetryStreamFactory = (
   options: {
-    /** Text from the first response, useful for retry diagnostics. */
+    /**
+     * Text from the first response, useful for retry diagnostics.
+     */
     readonly firstAttemptTextContent: string;
   },
 ) => AsyncIterable<AssistantMessageEvent>;
@@ -97,13 +109,17 @@ async function collectJudgeVerdictArgs(
     readonly createJsonRetryStream: JsonRetryStreamFactory;
   },
 ): Promise<Record<string, string>> {
-  /** First judge result, either tool arguments or a missing-tool marker. */
+  /**
+   * First judge result, either tool arguments or a missing-tool marker.
+   */
   const firstResult = await collectJudgeStream(toolCallStream,);
   if (firstResult.kind
     === 'toolCall')
     return firstResult.args;
 
-  /** Per-call sub-logger so the retry warning carries the function name as a tag. */
+  /**
+   * Per-call sub-logger so the retry warning carries the function name as a tag.
+   */
   const innerL = tagged({
     tag: collectJudgeVerdictArgs.name,
     l,
@@ -139,7 +155,9 @@ async function collectJudgeStream(
    * until a `toolcall_end` event sets it.
    */
   let toolCall: ToolCall | typeof NO_TOOL_CALL = NO_TOOL_CALL;
-  /** Cumulative text from `text_end` events, used only when the model never emitted a tool call. */
+  /**
+   * Cumulative text from `text_end` events, used only when the model never emitted a tool call.
+   */
   let textContent = '';
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
@@ -189,7 +207,9 @@ async function collectJudgeStream(
 async function collectJsonVerdict(
   stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
-  /** Retry stream result, usually direct text JSON but tolerant of valid tool output. */
+  /**
+   * Retry stream result, usually direct text JSON but tolerant of valid tool output.
+   */
   const result = await collectJudgeStream(stream,);
   if (result.kind
     === 'toolCall')
@@ -228,7 +248,9 @@ async function collectJsonVerdict(
 async function collectToolCall(
   stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
-  /** Stream result from the shared collector. */
+  /**
+   * Stream result from the shared collector.
+   */
   const result = await collectJudgeStream(stream,);
 
   if (result.kind
@@ -236,7 +258,9 @@ async function collectToolCall(
     return result.args;
 
   if (result.textContent !== '') {
-    /** Per-call sub-logger so the text-fallback warning carries the function name as a tag. */
+    /**
+     * Per-call sub-logger so the text-fallback warning carries the function name as a tag.
+     */
     const innerL = tagged({
       tag: collectToolCall.name,
       l,

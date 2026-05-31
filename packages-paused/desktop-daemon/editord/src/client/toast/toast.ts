@@ -12,10 +12,14 @@
 
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Duration in milliseconds before the toast is removed. */
+/**
+ * Duration in milliseconds before the toast is removed.
+ */
 const DISMISS_MS = 2_000;
 
-/** Vertical gap below the cursor in pixels. */
+/**
+ * Vertical gap below the cursor in pixels.
+ */
 const VERTICAL_OFFSET = 4;
 
 /**
@@ -31,7 +35,9 @@ const VERTICAL_OFFSET = 4;
  * ```
  */
 export function showFixedToast({ message, }: { readonly message: string; },): void {
-  /** Toast element styled by the `[data-variant="fixed"]` selector. */
+  /**
+   * Toast element styled by the `[data-variant="fixed"]` selector.
+   */
   const toast = h({
     tag: 'div',
     class: 'toast',
@@ -72,7 +78,9 @@ export function showCursorToast(
     readonly rect: DOMRect;
   },
 ): void {
-  /** Toast element styled by the `[data-variant="cursor"]` selector. */
+  /**
+   * Toast element styled by the `[data-variant="cursor"]` selector.
+   */
   const toast = h({
     tag: 'div',
     class: 'toast',
@@ -80,7 +88,9 @@ export function showCursorToast(
     attrs: { 'data-variant': 'cursor', },
   },);
 
-  /** Dynamic position properties that vary per toast instance. */
+  /**
+   * Dynamic position properties that vary per toast instance.
+   */
   toast.style
     .setProperty(
     'inset-inline-start',

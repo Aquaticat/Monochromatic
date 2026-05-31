@@ -36,7 +36,9 @@ const kimiFixed = kimiSvg.replace(
   '<rect width="24" height="24" rx="3" fill="#888"/><path',
 );
 
-/** Default viewBox used when an SVG omits the attribute on its root element. */
+/**
+ * Default viewBox used when an SVG omits the attribute on its root element.
+ */
 const DEFAULT_VIEWBOX = '0 0 24 24';
 
 /**
@@ -49,11 +51,15 @@ const DEFAULT_VIEWBOX = '0 0 24 24';
  * @returns viewBox value, or {@link DEFAULT_VIEWBOX} when the attribute is absent
  */
 function extractViewBox(raw: string,): string {
-  /** Position of the opening of the attribute literal; `-1` ends the search. */
+  /**
+   * Position of the opening of the attribute literal; `-1` ends the search.
+   */
   const open = raw.indexOf('viewBox="',);
   if (open === (-1))
     return DEFAULT_VIEWBOX;
-  /** Position of the closing quote; `-1` means the attribute is unterminated. */
+  /**
+   * Position of the closing quote; `-1` means the attribute is unterminated.
+   */
   const close = raw.indexOf(
     '"',
     open + 'viewBox="'
@@ -80,7 +86,9 @@ function extractViewBox(raw: string,): string {
 function stripOpeningSvgTag(raw: string,): string {
   if (!raw.startsWith('<svg',))
     return raw;
-  /** Position of the `>` that closes the opening tag; `-1` means malformed input. */
+  /**
+   * Position of the `>` that closes the opening tag; `-1` means malformed input.
+   */
   const gt = raw.indexOf(
     '>',
     '<svg'.length,
@@ -100,7 +108,9 @@ function stripOpeningSvgTag(raw: string,): string {
  * @returns body without the trailing `</svg>`
  */
 function stripClosingSvgTag(s: string,): string {
-  /** Trailing whitespace stripped; matches `\s*$` semantics of the prior regex. */
+  /**
+   * Trailing whitespace stripped; matches `\s*$` semantics of the prior regex.
+   */
   const trimmed = s.trimEnd();
   if (!trimmed.endsWith('</svg>',))
     return trimmed;
@@ -115,9 +125,13 @@ function stripClosingSvgTag(s: string,): string {
  * surrounding markup with each `<defs>` block removed.
  */
 type DefsPartition = {
-  /** Concatenated bodies of every `<defs>` block discovered. */
+  /**
+   * Concatenated bodies of every `<defs>` block discovered.
+   */
   defs: string;
-  /** Source markup with the `<defs>` blocks removed. */
+  /**
+   * Source markup with the `<defs>` blocks removed.
+   */
   content: string;
 };
 
@@ -140,15 +154,23 @@ type DefsPartition = {
  */
 export function extractAndStripDefs(s: string,): DefsPartition {
   return (function partition(): DefsPartition {
-    /** Hoisted `<defs>` block bodies in document order; joined once at the end so the build is O(n) time. */
+    /**
+     * Hoisted `<defs>` block bodies in document order; joined once at the end so the build is O(n) time.
+     */
     const defs: string[] = [];
-    /** Markup chunks outside every `<defs>` block; joined once at the end. */
+    /**
+     * Markup chunks outside every `<defs>` block; joined once at the end.
+     */
     const content: string[] = [];
-    /** Scan cursor; advances past each `</defs>` so no byte is ever revisited (single linear pass, O(1) stack). */
+    /**
+     * Scan cursor; advances past each `</defs>` so no byte is ever revisited (single linear pass, O(1) stack).
+     */
     let from = 0;
     while (from <= s
       .length) {
-      /** Position of the next `<defs>` opener; `-1` ends the scan. */
+      /**
+       * Position of the next `<defs>` opener; `-1` ends the scan.
+       */
       const open = s.indexOf(
         '<defs>',
         from,
@@ -157,7 +179,9 @@ export function extractAndStripDefs(s: string,): DefsPartition {
         content.push(s.slice(from,),);
         break;
       }
-      /** Position of the matching `</defs>`; `-1` means the block is unterminated. */
+      /**
+       * Position of the matching `</defs>`; `-1` means the block is unterminated.
+       */
       const close = s.indexOf(
         '</defs>',
         open + '<defs>'
@@ -186,7 +210,9 @@ export function extractAndStripDefs(s: string,): DefsPartition {
   })();
 }
 
-/** Raw SVG sources keyed by OpenRouter vendor prefix */
+/**
+ * Raw SVG sources keyed by OpenRouter vendor prefix
+ */
 const RAW_SVGS: Record<string, string> = {
   anthropic: claudeSvg,
   google: geminiSvg,
@@ -214,9 +240,13 @@ function parseSvg(raw: string,): {
   viewBox: string;
   inner: string;
 } {
-  /** Extracted viewBox value; `extractViewBox` falls back to the lobehub icon default. */
+  /**
+   * Extracted viewBox value; `extractViewBox` falls back to the lobehub icon default.
+   */
   const viewBox = extractViewBox(raw,);
-  /** SVG body with the outer `<svg>` opening and closing tags stripped. */
+  /**
+   * SVG body with the outer `<svg>` opening and closing tags stripped.
+   */
   const inner = stripClosingSvgTag(stripOpeningSvgTag(raw,),);
   return {
     viewBox,
@@ -246,28 +276,44 @@ function extractDefs(inner: string,): {
   return extractAndStripDefs(inner,);
 }
 
-/** Parsed symbol data for a single vendor icon */
+/**
+ * Parsed symbol data for a single vendor icon
+ */
 type VendorSymbol = {
-  /** Symbol element ID (e.g. `icon-anthropic`) */
+  /**
+   * Symbol element ID (e.g. `icon-anthropic`)
+   */
   readonly id: string;
-  /** SVG viewBox attribute value */
+  /**
+   * SVG viewBox attribute value
+   */
   readonly viewBox: string;
-  /** Inner markup (paths, shapes) without `<defs>` */
+  /**
+   * Inner markup (paths, shapes) without `<defs>`
+   */
   readonly inner: string;
-  /** Extracted `<defs>` content (gradients, filters) to hoist */
+  /**
+   * Extracted `<defs>` content (gradients, filters) to hoist
+   */
   readonly defs: string;
 };
 
-/** Map of vendor prefix to parsed symbol data */
+/**
+ * Map of vendor prefix to parsed symbol data
+ */
 const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
   Object.entries(RAW_SVGS,)
     .map(function parseEntry([vendor, raw,],) {
-    /** ViewBox and inner markup pulled from the raw SVG before defs are extracted. */
+    /**
+     * ViewBox and inner markup pulled from the raw SVG before defs are extracted.
+     */
     const {
       viewBox,
       inner,
     } = parseSvg(raw,);
-    /** `<defs>` content and remaining markup, separated so gradients can be hoisted. */
+    /**
+     * `<defs>` content and remaining markup, separated so gradients can be hoisted.
+     */
     const {
       defs,
       content,
@@ -300,7 +346,9 @@ const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
  * ```
  */
 export function renderSvgSprite(): string {
-  /** Rendered `<symbol>` elements, one per vendor; concatenated inside the sprite root. */
+  /**
+   * Rendered `<symbol>` elements, one per vendor; concatenated inside the sprite root.
+   */
   const symbols = [...VENDOR_SYMBOLS.values(),].map(
     function buildSymbol({
       id,
@@ -310,13 +358,17 @@ export function renderSvgSprite(): string {
       return `<symbol id="${id}" viewBox="${viewBox}">${inner}</symbol>`;
     },
   );
-  /** Concatenated `<defs>` content from every vendor; hoisted onto the sprite root. */
+  /**
+   * Concatenated `<defs>` content from every vendor; hoisted onto the sprite root.
+   */
   const allDefs = [...VENDOR_SYMBOLS.values(),]
     .map(function pickDefs({ defs, },): string {
       return defs;
     },)
     .join('',);
-  /** Optional `<defs>` wrapper; omitted when no vendor contributed defs to avoid an empty tag. */
+  /**
+   * Optional `<defs>` wrapper; omitted when no vendor contributed defs to avoid an empty tag.
+   */
   const defsBlock = allDefs !== '' ? `<defs>${allDefs}</defs>` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;inline-size:0;block-size:0;overflow:hidden">${defsBlock}${
     symbols.join('',)
@@ -389,9 +441,13 @@ export function iconDot({
   readonly modelId: string;
   readonly color: string;
 },): string {
-  /** Vendor prefix taken from the slash-delimited model ID. */
+  /**
+   * Vendor prefix taken from the slash-delimited model ID.
+   */
   const vendor = vendorPrefix(modelId,);
-  /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
+  /**
+   * Parsed sprite symbol for the vendor; absent when the vendor has no icon.
+   */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   if (symbol === undefined) {
     return h({
@@ -431,9 +487,13 @@ export function iconDot({
  * ```
  */
 export function vendorIconEntry(modelId: string,): { readonly icon?: string; } {
-  /** Vendor prefix taken from the slash-delimited model ID. */
+  /**
+   * Vendor prefix taken from the slash-delimited model ID.
+   */
   const vendor = vendorPrefix(modelId,);
-  /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
+  /**
+   * Parsed sprite symbol for the vendor; absent when the vendor has no icon.
+   */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   if (symbol === undefined)
     return {};

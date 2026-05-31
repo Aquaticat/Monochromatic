@@ -9,7 +9,9 @@
 
 import * as v from 'valibot';
 
-/** Per-result content-retrieval flags sent in the `contents` field. */
+/**
+ * Per-result content-retrieval flags sent in the `contents` field.
+ */
 export type ExaContentsOptions = {
   text?: boolean;
   highlights?: boolean;
@@ -21,14 +23,18 @@ export type ExaContentsOptions = {
   };
 };
 
-/** Search options sent alongside `query` in the request body. */
+/**
+ * Search options sent alongside `query` in the request body.
+ */
 export type ExaSearchOptions = {
   type?: 'auto' | 'neural' | 'keyword';
   numResults?: number;
   contents?: ExaContentsOptions;
 };
 
-/** Single result entry in an Exa `/search` response. */
+/**
+ * Single result entry in an Exa `/search` response.
+ */
 export type ExaSearchResult = {
   title: string | null;
   url: string;
@@ -41,13 +47,17 @@ export type ExaSearchResult = {
   image?: string | undefined;
 };
 
-/** Top-level shape of an Exa `/search` response. */
+/**
+ * Top-level shape of an Exa `/search` response.
+ */
 export type ExaSearchResponse = {
   results: ExaSearchResult[];
   costDollars?: { total?: number | undefined; } | undefined;
 };
 
-/** Runtime schema for one Exa search result, used to narrow fetched JSON. */
+/**
+ * Runtime schema for one Exa search result, used to narrow fetched JSON.
+ */
 const ExaSearchResultSchema: v.GenericSchema<ExaSearchResult> = v.object({
   title: v.nullable(v.string(),),
   url: v.string(),
@@ -60,7 +70,9 @@ const ExaSearchResultSchema: v.GenericSchema<ExaSearchResult> = v.object({
   image: v.optional(v.string(),),
 },);
 
-/** Runtime schema for Exa `/search` responses, used to narrow fetched JSON. */
+/**
+ * Runtime schema for Exa `/search` responses, used to narrow fetched JSON.
+ */
 const ExaSearchResponseSchema: v.GenericSchema<ExaSearchResponse> = v.object({
   results: v.array(ExaSearchResultSchema,),
   costDollars: v.optional(
@@ -108,7 +120,9 @@ export async function searchExa({
   query: string;
   options?: ExaSearchOptions;
 },): Promise<ExaSearchResponse> {
-  /** HTTP `Response` retained so the success and error branches share one instance. */
+  /**
+   * HTTP `Response` retained so the success and error branches share one instance.
+   */
   const response = await fetch(
     `${baseUrl}/search`,
     {
@@ -126,14 +140,18 @@ export async function searchExa({
   );
 
   if (!response.ok) {
-    /** Response body text embedded in the thrown error for diagnostic context. */
+    /**
+     * Response body text embedded in the thrown error for diagnostic context.
+     */
     const errorBody = await response.text();
     throw new Error(
       `Exa /search responded ${response.status} ${response.statusText}: ${errorBody}`,
     );
   }
 
-  /** Parsed body typed as `unknown` before Valibot narrows it to the response schema. */
+  /**
+   * Parsed body typed as `unknown` before Valibot narrows it to the response schema.
+   */
   const data: unknown = await response.json();
   return v.parse(
     ExaSearchResponseSchema,

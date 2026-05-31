@@ -100,9 +100,13 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
     return async function wrappedMatcher(
       ...args: Parameters<MatcherSet[K]>
     ): Promise<void> {
-      /** Resolved value pulled out so chai and matcher construction share one realisation of the promise. */
+      /**
+       * Resolved value pulled out so chai and matcher construction share one realisation of the promise.
+       */
       const value = await getValue();
-      /** Fresh sync matcher set rebuilt per call to keep state private to this assertion. */
+      /**
+       * Fresh sync matcher set rebuilt per call to keep state private to this assertion.
+       */
       const matchers = buildMatchers({
         a: chaiExpect(value,),
         actual: value,
@@ -112,7 +116,9 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
     };
   }
 
-  /** Collector populated in the loop below, then cast to the precise `AsyncMatcherSet` shape on return. */
+  /**
+   * Collector populated in the loop below, then cast to the precise `AsyncMatcherSet` shape on return.
+   */
   const result = {} as Record<string, (...args: readonly unknown[]) => Promise<void>>;
 
   for (const key of MATCHER_KEYS) {
@@ -156,27 +162,37 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
     throw new Error('Expected promise to reject, but it resolved',);
   }
 
-  /** Async matcher set bound to the rejection so most matchers can be reused; `toThrow` is then overridden below. */
+  /**
+   * Async matcher set bound to the rejection so most matchers can be reused; `toThrow` is then overridden below.
+   */
   const matchers = buildAsyncMatchers(getRejection,);
 
   matchers.toThrow = async function rejectsToThrow(
     expected?: string | RegExp | (abstract new(...args: never) => unknown),
   ): Promise<void> {
-    /** Captured rejection value reused across the string, regex, and constructor branches. */
+    /**
+     * Captured rejection value reused across the string, regex, and constructor branches.
+     */
     const error = await getRejection();
     if (expected === undefined) {
-      /** getRejection already verified the promise rejected; nothing more to check */
+      /**
+       * getRejection already verified the promise rejected; nothing more to check
+       */
       return;
     }
     if ((typeof expected) === 'string') {
-      /** Stringified rejection used for substring containment when an expected string was supplied. */
+      /**
+       * Stringified rejection used for substring containment when an expected string was supplied.
+       */
       const message = error instanceof Error ? error.message : String(error,);
       chaiExpect(message,)
         .to
         .include(expected,);
     }
     else if (expected instanceof RegExp) {
-      /** Stringified rejection used for regex matching when an expected pattern was supplied. */
+      /**
+       * Stringified rejection used for regex matching when an expected pattern was supplied.
+       */
       const message = error instanceof Error ? error.message : String(error,);
       chaiExpect(message,)
         .to
@@ -224,11 +240,17 @@ function buildResolvesMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
  * and `rejects`/`resolves` for promise assertions.
  */
 export type ExpectResult = MatcherSet & {
-  /** Negated matchers: every method asserts the opposite. */
+  /**
+   * Negated matchers: every method asserts the opposite.
+   */
   readonly not: MatcherSet;
-  /** Async matchers that await rejection, then assert on the rejected value. */
+  /**
+   * Async matchers that await rejection, then assert on the rejected value.
+   */
   readonly rejects: AsyncMatcherSet;
-  /** Async matchers that await resolution, then assert on the resolved value. */
+  /**
+   * Async matchers that await resolution, then assert on the resolved value.
+   */
   readonly resolves: AsyncMatcherSet;
 };
 
@@ -463,11 +485,17 @@ export { expect, };
  * the `it` runner that checks it after the test completes.
  */
 export type AssertionTracker = {
-  /** Number of assertions actually called. */
+  /**
+   * Number of assertions actually called.
+   */
   count: number;
-  /** Expected assertion count set by `expect.assertions(n)`; absent means unchecked. */
+  /**
+   * Expected assertion count set by `expect.assertions(n)`; absent means unchecked.
+   */
   expected?: number;
-  /** Whether `expect.hasAssertions()` was called. */
+  /**
+   * Whether `expect.hasAssertions()` was called.
+   */
   requiresAtLeastOne: boolean;
 };
 
@@ -476,9 +504,13 @@ export type AssertionTracker = {
  * Same API as the global `expect` plus `assertions(n)` and `hasAssertions()`.
  */
 export type ScopedExpect = Expect & {
-  /** Verify that exactly `n` assertions are called during the test. */
+  /**
+   * Verify that exactly `n` assertions are called during the test.
+   */
   assertions: (count: number,) => void;
-  /** Verify that at least one assertion is called during the test. */
+  /**
+   * Verify that at least one assertion is called during the test.
+   */
   hasAssertions: () => void;
 };
 
@@ -501,11 +533,15 @@ function wrapMatchersWithCounter(
     readonly tracker: AssertionTracker;
   },
 ): MatcherSet {
-  /** Sync wrapper collector populated in the loop below, then cast to `MatcherSet` on return. */
+  /**
+   * Sync wrapper collector populated in the loop below, then cast to `MatcherSet` on return.
+   */
   const wrapped = {} as Record<string, (...args: readonly unknown[]) => unknown>;
 
   for (const key of MATCHER_KEYS) {
-    /** Captured reference to the original sync matcher so the counted wrapper can forward to it. */
+    /**
+     * Captured reference to the original sync matcher so the counted wrapper can forward to it.
+     */
     const original = matchers[key];
     wrapped[key] = function countedMatcher(...args: readonly unknown[]): unknown {
       tracker.count += 1;
@@ -538,11 +574,15 @@ function wrapAsyncMatchersWithCounter(
     readonly tracker: AssertionTracker;
   },
 ): AsyncMatcherSet {
-  /** Async wrapper collector populated in the loop below, then cast to `AsyncMatcherSet` on return. */
+  /**
+   * Async wrapper collector populated in the loop below, then cast to `AsyncMatcherSet` on return.
+   */
   const wrapped = {} as Record<string, (...args: readonly unknown[]) => Promise<unknown>>;
 
   for (const key of MATCHER_KEYS) {
-    /** Captured reference to the original async matcher so the counted wrapper can forward to it. */
+    /**
+     * Captured reference to the original async matcher so the counted wrapper can forward to it.
+     */
     const original = matchers[key];
     wrapped[key] = async function countedAsyncMatcher(
       ...args: readonly unknown[]
@@ -576,7 +616,9 @@ export function createScopedExpect(): readonly [
   ScopedExpect,
   AssertionTracker,
 ] {
-  /** Per-test counter shared between every wrapped matcher and the parent `it` runner that checks it. */
+  /**
+   * Per-test counter shared between every wrapped matcher and the parent `it` runner that checks it.
+   */
   const tracker: AssertionTracker = {
     count: 0,
     requiresAtLeastOne: false,
@@ -590,7 +632,9 @@ export function createScopedExpect(): readonly [
    * @returns expect result with counted matchers
    */
   function scopedExpectImpl(actual: unknown,): ExpectResult {
-    /** Underlying unscoped expect result reused as the source for every counted wrapper variant. */
+    /**
+     * Underlying unscoped expect result reused as the source for every counted wrapper variant.
+     */
     const original = expectImpl(actual,);
     return {
       ...wrapMatchersWithCounter({

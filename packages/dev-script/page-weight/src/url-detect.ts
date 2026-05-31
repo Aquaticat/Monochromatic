@@ -26,9 +26,13 @@ export function startsWithUriScheme(s: string,): boolean {
   if (s.length
     < 2)
     return false;
-  /** Lower-cased copy so the alpha range check covers `[A-Za-z]`. */
+  /**
+   * Lower-cased copy so the alpha range check covers `[A-Za-z]`.
+   */
   const lowered = s.toLowerCase();
-  /** First character; must be an ASCII letter to open a scheme. */
+  /**
+   * First character; must be an ASCII letter to open a scheme.
+   */
   const first = lowered.charAt(0,);
   if ((first < 'a') || (first > 'z'))
     return false;
@@ -39,9 +43,13 @@ export function startsWithUriScheme(s: string,): boolean {
   // unit, exactly as the recursion did, in O(n) time and O(1) stack.
   for (let idx = 1; idx < lowered
     .length; idx += 1) {
-    /** Char at cursor; non-scheme characters end the run. */
+    /**
+     * Char at cursor; non-scheme characters end the run.
+     */
     const c = lowered.charAt(idx,);
-    /** Whether the cursor sits on a scheme-body character. */
+    /**
+     * Whether the cursor sits on a scheme-body character.
+     */
     const ok = ((c >= 'a') && (c <= 'z'))
       || ((c >= '0') && (c <= '9'))
       || (c === '+')

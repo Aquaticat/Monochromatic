@@ -34,12 +34,16 @@ export async function convertToWoff2({
   readonly distDir: string;
 },): Promise<void> {
   console.log('Converting to WOFF2 via fonttools...',);
-  /** Output path for the WOFF2 font file. */
+  /**
+   * Output path for the WOFF2 font file.
+   */
   const woff2Path = resolve(
     distDir,
     'Aquaticat-Regular.woff2',
   );
-  /** Python one-liner for fonttools WOFF2 conversion. */
+  /**
+   * Python one-liner for fonttools WOFF2 conversion.
+   */
   const woff2Script =
     `from fontTools.ttLib import TTFont; f = TTFont("${otfPath}"); f.flavor = "woff2"; f.save("${woff2Path}")`;
   try {
@@ -56,7 +60,9 @@ export async function convertToWoff2({
         woff2Script,
       ],
     );
-    /** File stats for the generated WOFF2 file. */
+    /**
+     * File stats for the generated WOFF2 file.
+     */
     const { size, } = statSync(woff2Path,);
     console.log(`Wrote ${woff2Path} (${size} bytes)`,);
   }

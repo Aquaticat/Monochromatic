@@ -8,9 +8,13 @@
 import type { ContextMenuItem, } from '../context-menu/items.ts';
 import type { ContextAction, } from './types.ts';
 
-/** Context menu surface needed by file-tree context actions. */
+/**
+ * Context menu surface needed by file-tree context actions.
+ */
 type ContextMenuHandle = {
-  /** Shows menu items at viewport coordinates. */
+  /**
+   * Shows menu items at viewport coordinates.
+   */
   readonly show: (opts: {
     readonly x: number;
     readonly y: number;

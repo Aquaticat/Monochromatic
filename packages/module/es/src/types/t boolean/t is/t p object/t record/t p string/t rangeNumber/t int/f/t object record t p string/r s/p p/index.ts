@@ -20,7 +20,9 @@ import type {
  * ```
  */
 export function $(value: StringUnknownRecord,): value is RangeNumberInt {
-  /** Bounds destructured for the integer-range validation below. */
+  /**
+   * Bounds destructured for the integer-range validation below.
+   */
   const {
     startInclusive,
     endInclusive,

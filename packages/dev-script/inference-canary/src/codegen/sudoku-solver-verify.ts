@@ -50,13 +50,17 @@ const PARTIAL_CREDIT = 0.1;
  * ```
  */
 export function verifyNormal(stdout: string,): number {
-  /** Per-puzzle output sections split on the `---` separator */
+  /**
+   * Per-puzzle output sections split on the `---` separator
+   */
   const sections = splitOutputSections(stdout,);
   if (sections.length
     < NORMAL_CHECKS)
     return PARTIAL_CREDIT;
 
-  /** Destructured puzzle output sections: solvable, two unsolvables, and multi-solution */
+  /**
+   * Destructured puzzle output sections: solvable, two unsolvables, and multi-solution
+   */
   const [solvableSection, unsolvableBoxSection, unsolvableColSection, multiSection,] =
     sections;
   if ((solvableSection === undefined)
@@ -67,18 +71,26 @@ export function verifyNormal(stdout: string,): number {
     return PARTIAL_CREDIT;
   }
 
-  /** Parsed 9x9 grid from the solvable puzzle output, empty array on parse failure */
+  /**
+   * Parsed 9x9 grid from the solvable puzzle output, empty array on parse failure
+   */
   const solvableGrid = parseGrid(solvableSection,);
-  /** Individual solution blocks from the multi-solution output */
+  /**
+   * Individual solution blocks from the multi-solution output
+   */
   const multiSolutions = splitSolutions(multiSection,);
-  /** Parsed grid from multi-solution output, empty array unless exactly one solution is present and parses */
+  /**
+   * Parsed grid from multi-solution output, empty array unless exactly one solution is present and parses
+   */
   const multiGrid = multiSolutions.length
     === 1
     ? parseGrid(multiSolutions[0]
       ?? '',)
     : [];
 
-  /** Number of checks that passed out of NORMAL_CHECKS total */
+  /**
+   * Number of checks that passed out of NORMAL_CHECKS total
+   */
   const correctCount = [
     // Check 1: solvable puzzle solved correctly
     (solvableGrid.length
@@ -130,13 +142,17 @@ export function verifyNormal(stdout: string,): number {
  * ```
  */
 export function verifyAll(stdout: string,): number {
-  /** Per-puzzle output sections split on the `---` separator */
+  /**
+   * Per-puzzle output sections split on the `---` separator
+   */
   const sections = splitOutputSections(stdout,);
   if (sections.length
     < ALL_CHECKS)
     return PARTIAL_CREDIT;
 
-  /** Destructured --all mode output sections: 2-solution, many-solution, unsolvable */
+  /**
+   * Destructured --all mode output sections: 2-solution, many-solution, unsolvable
+   */
   const [twoSolSection, manySolSection, unsolvableSection,] = sections;
   if ((twoSolSection === undefined)
     || (manySolSection === undefined)
@@ -145,7 +161,9 @@ export function verifyAll(stdout: string,): number {
     return PARTIAL_CREDIT;
   }
 
-  /** Number of checks that passed out of ALL_CHECKS total */
+  /**
+   * Number of checks that passed out of ALL_CHECKS total
+   */
   const correctCount = [
     // Check 1: exactly 2 valid distinct solutions matching clues
     verifySolutionSet({

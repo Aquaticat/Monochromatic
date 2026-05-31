@@ -21,7 +21,9 @@ import type {
  * ```
  */
 export function $(value: StringUnknownRecord,): value is RangeNumber {
-  /** Bounds destructured for the range comparison below. */
+  /**
+   * Bounds destructured for the range comparison below.
+   */
   const {
     startInclusive,
     endInclusive,

@@ -15,7 +15,9 @@ import {
   THREE_QUARTERS,
 } from '@monochromatic-dev/module-const/ts';
 
-/** Fixed Y axis tick values for score plots (0 to 1) */
+/**
+ * Fixed Y axis tick values for score plots (0 to 1)
+ */
 export const Y_TICKS: readonly number[] = [
   0,
   QUARTER,
@@ -37,11 +39,15 @@ export const Y_TICKS: readonly number[] = [
  * ```
  */
 export function renderYAxis(): string {
-  /** Percentage multiplier to convert 0-1 score to 0-100% CSS bottom offset */
+  /**
+   * Percentage multiplier to convert 0-1 score to 0-100% CSS bottom offset
+   */
   const PERCENT = 100;
   return Y_TICKS
     .map(function renderTick(tick,) {
-      /** CSS bottom offset (as percent) corresponding to this tick value. */
+      /**
+       * CSS bottom offset (as percent) corresponding to this tick value.
+       */
       const bottom = tick * PERCENT;
       return h({
         tag: 'span',
@@ -74,26 +80,40 @@ export function renderXAxis(timestamps: readonly string[],): string {
     === 0)
     return '';
 
-  /** Maximum number of X axis labels to show before skipping */
+  /**
+   * Maximum number of X axis labels to show before skipping
+   */
   const MAX_LABELS = 12;
-  /** Index stride between rendered ticks so the axis stays uncluttered. */
+  /**
+   * Index stride between rendered ticks so the axis stays uncluttered.
+   */
   const step = Math.max(
     1,
     Math.ceil(timestamps.length
       / MAX_LABELS,),
   );
 
-  /** Date/time formatter chosen by the data's span. */
+  /**
+   * Date/time formatter chosen by the data's span.
+   */
   const formatter = chooseFormatter(timestamps,);
 
-  /** Percentage multiplier */
+  /**
+   * Percentage multiplier
+   */
   const PERCENT = 100;
-  /** Center position when a single data point exists */
+  /**
+   * Center position when a single data point exists
+   */
   const CENTER_PERCENT = HALF * PERCENT;
-  /** Total point count, used to spread ticks across the inline axis. */
+  /**
+   * Total point count, used to spread ticks across the inline axis.
+   */
   const total = timestamps.length;
 
-  /** Every stride-th timestamp paired with its original position; values come from the callback, so no index lookup is needed. */
+  /**
+   * Every stride-th timestamp paired with its original position; values come from the callback, so no index lookup is needed.
+   */
   const picked = timestamps
     .map(function locate(
       timestamp,
@@ -112,7 +132,9 @@ export function renderXAxis(timestamps: readonly string[],): string {
         === 0;
     },);
 
-  /** Rendered tick spans; consecutive duplicate labels are suppressed against the previous picked tick. */
+  /**
+   * Rendered tick spans; consecutive duplicate labels are suppressed against the previous picked tick.
+   */
   const ticks = picked.map(function renderTick(
     {
       timestamp,
@@ -121,15 +143,23 @@ export function renderXAxis(timestamps: readonly string[],): string {
     idx,
     all,
   ): string {
-    /** Horizontal position percentage for this tick along the inline axis. */
+    /**
+     * Horizontal position percentage for this tick along the inline axis.
+     */
     const left = total === 1
       ? CENTER_PERCENT
       : (position / (total - 1)) * PERCENT;
-    /** Formatted label for this tick. */
+    /**
+     * Formatted label for this tick.
+     */
     const label = formatter(timestamp,);
-    /** Immediately preceding picked tick, or undefined for the first one. */
+    /**
+     * Immediately preceding picked tick, or undefined for the first one.
+     */
     const previous = idx === 0 ? undefined : all[idx - 1];
-    /** Suppress consecutive duplicate labels so the axis stays readable */
+    /**
+     * Suppress consecutive duplicate labels so the axis stays readable
+     */
     const displayLabel = (previous !== undefined) && (formatter(previous.timestamp,)
       === label) ? '' : label;
     return h({
@@ -153,7 +183,9 @@ export function renderXAxis(timestamps: readonly string[],): string {
  * @returns formatter function mapping ISO timestamp to display label
  */
 function chooseFormatter(timestamps: readonly string[],): (ts: string,) => string {
-  /** Distinct YYYY-MM-DD prefixes across the supplied timestamps. */
+  /**
+   * Distinct YYYY-MM-DD prefixes across the supplied timestamps.
+   */
   const uniqueDates = new Set(timestamps.map(function extractDate(ts,) {
     return ts.slice(
       0,
@@ -179,9 +211,13 @@ function chooseFormatter(timestamps: readonly string[],): (ts: string,) => strin
  * ```
  */
 function formatTime(timestamp: string,): string {
-  /** ISO format: YYYY-MM-DDTHH:MM:SS, time starts at index 11 */
+  /**
+   * ISO format: YYYY-MM-DDTHH:MM:SS, time starts at index 11
+   */
   const TIME_START = 11;
-  /** End index for the HH:MM slice extracted from the ISO timestamp. */
+  /**
+   * End index for the HH:MM slice extracted from the ISO timestamp.
+   */
   const TIME_END = 16;
   if (timestamp.length
     < TIME_END)
@@ -209,17 +245,23 @@ function formatDate(timestamp: string,): string {
   if (timestamp.length
     < 10)
     return timestamp;
-  /** Extract YYYY-MM-DD from the ISO string */
+  /**
+   * Extract YYYY-MM-DD from the ISO string
+   */
   const datePart = timestamp.slice(
     0,
     10,
   );
-  /** Local current year used to detect the same-year shortening case. */
+  /**
+   * Local current year used to detect the same-year shortening case.
+   */
   const currentYear = new Date().getFullYear()
     .toString();
   if (datePart.startsWith(currentYear,)) {
     // Same year: show MM-DD only; skip "YYYY-" prefix
-    /** Length of the leading "YYYY-" prefix that gets trimmed for same-year labels. */
+    /**
+     * Length of the leading "YYYY-" prefix that gets trimmed for same-year labels.
+     */
     const YEAR_PREFIX_LENGTH = 5;
     return datePart.slice(YEAR_PREFIX_LENGTH,);
   }

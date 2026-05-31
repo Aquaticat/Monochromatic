@@ -11,7 +11,9 @@ import {
 } from './log.ts';
 import type { ResolvedTerminal, } from './resolve.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'build-command',
   l: parentLogger,
@@ -21,15 +23,25 @@ const l = tagged({
  * Options passed by the user to `xdg-terminal-exec`.
  */
 export type UserOptions = {
-  /** Value for `--app-id=VALUE`. */
+  /**
+   * Value for `--app-id=VALUE`.
+   */
   readonly appId: string;
-  /** Value for `--title=VALUE`. */
+  /**
+   * Value for `--title=VALUE`.
+   */
   readonly title: string;
-  /** Value for `--dir=VALUE`. */
+  /**
+   * Value for `--dir=VALUE`.
+   */
   readonly dir: string;
-  /** Whether `--hold` was passed. */
+  /**
+   * Whether `--hold` was passed.
+   */
   readonly hold: boolean;
-  /** Command and arguments to execute in the terminal. */
+  /**
+   * Command and arguments to execute in the terminal.
+   */
   readonly command: readonly string[];
 };
 
@@ -118,7 +130,9 @@ export function buildCommand({
   readonly terminal: ResolvedTerminal;
   readonly options: UserOptions;
 },): readonly string[] {
-  /** Immutable command: kept exec tokens followed by the tokens each applicable option block contributes. */
+  /**
+   * Immutable command: kept exec tokens followed by the tokens each applicable option block contributes.
+   */
   const args: readonly string[] = [
     ...terminal.execTokens
       .filter(keepToken,),
@@ -168,7 +182,9 @@ export function buildCommand({
       : []),
   ];
 
-  /** Info-level because the resolved command is user-facing diagnostic output. */
+  /**
+   * Info-level because the resolved command is user-facing diagnostic output.
+   */
   l.info(`final command: ${JSON.stringify(args,)}`,);
   return args;
 }

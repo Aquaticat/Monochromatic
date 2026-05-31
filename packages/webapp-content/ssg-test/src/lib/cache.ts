@@ -34,21 +34,27 @@ export {
 
 //region Schema and types
 
-/** Per-file cache entry with content hash and pre-rendered HTML. */
+/**
+ * Per-file cache entry with content hash and pre-rendered HTML.
+ */
 export type CacheEntry = {
   readonly contentHash: string;
   readonly html: string;
   readonly frontmatter: PostFrontmatter;
 };
 
-/** Valibot schema for a single cache entry. */
+/**
+ * Valibot schema for a single cache entry.
+ */
 const cacheEntrySchema = v.object({
   contentHash: v.string(),
   html: v.string(),
   frontmatter: postFrontmatterSchema,
 },);
 
-/** On-disk cache structure at `.cache/build-manifest.json`. */
+/**
+ * On-disk cache structure at `.cache/build-manifest.json`.
+ */
 export type BuildManifest = {
   readonly pipelineHash: string;
   /**
@@ -61,7 +67,9 @@ export type BuildManifest = {
   readonly content: Readonly<Record<string, CacheEntry>>;
 };
 
-/** Valibot schema for the on-disk build manifest. */
+/**
+ * Valibot schema for the on-disk build manifest.
+ */
 const buildManifestSchema = v.object({
   pipelineHash: v.string(),
   headSha: v.string(),
@@ -91,7 +99,9 @@ export const CACHE_MISS: unique symbol = Symbol('cache-miss',);
 
 //endregion Sentinels
 
-/** Default path for the cache manifest file. */
+/**
+ * Default path for the cache manifest file.
+ */
 const CACHE_PATH = '.cache/build-manifest.json';
 
 //region Cache I/O
@@ -116,7 +126,9 @@ export async function readCache(
   { l, }: { readonly l: Logger; },
 ): Promise<BuildManifest | typeof NO_CACHE> {
   try {
-    /** Raw JSON text read before schema validation so parse errors and validation errors share the same catch. */
+    /**
+     * Raw JSON text read before schema validation so parse errors and validation errors share the same catch.
+     */
     const raw = await readFile(
       CACHE_PATH,
       'utf8',
@@ -128,7 +140,9 @@ export async function readCache(
   }
   catch (error) {
     // ENOENT is expected on first build; everything else is worth logging
-    /** Distinguishes the benign first-build case from genuine failures so logs stay quiet on the happy path. */
+    /**
+     * Distinguishes the benign first-build case from genuine failures so logs stay quiet on the happy path.
+     */
     const isFileNotFound = (error instanceof Error)
       && ('code' in error)
       && (error.code
@@ -200,7 +214,9 @@ export function getCachedEntry(
     readonly contentHash: string;
   },
 ): CacheEntry | typeof CACHE_MISS {
-  /** Lookup separated from the hash check so the missing-key and stale-hash branches both early-return. */
+  /**
+   * Lookup separated from the hash check so the missing-key and stale-hash branches both early-return.
+   */
   const entry = manifest.content[filePath];
   if (entry === undefined)
     return CACHE_MISS;

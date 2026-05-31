@@ -38,22 +38,32 @@ import {
 } from './buffer-table.ts';
 import type { Changeset, } from './changeset.ts';
 
-/** Maximum number of inverse changesets retained in the undo stack. */
+/**
+ * Maximum number of inverse changesets retained in the undo stack.
+ */
 const MAX_UNDO = 1_000;
 
-/** Node count above which the piece table collapses to one piece on idle. */
+/**
+ * Node count above which the piece table collapses to one piece on idle.
+ */
 const COLLAPSE_THRESHOLD_NODES = 4_096;
 
-/** Idle delay before a collapse runs, in milliseconds. */
+/**
+ * Idle delay before a collapse runs, in milliseconds.
+ */
 const COLLAPSE_DEBOUNCE_MS = 250;
 
-/** Pending or applied undo entry: (inverse changeset, pre-edit length). */
+/**
+ * Pending or applied undo entry: (inverse changeset, pre-edit length).
+ */
 type UndoEntry = {
   readonly inverse: Changeset;
   readonly preLength: number;
 };
 
-/** Inbound message variants. */
+/**
+ * Inbound message variants.
+ */
 type InboundMessage =
   | {
     readonly kind: 'init';
@@ -83,7 +93,9 @@ type InboundMessage =
     readonly id: number;
   };
 
-/** Outbound message variants. */
+/**
+ * Outbound message variants.
+ */
 type OutboundMessage =
   | {
     readonly kind: 'applied';
@@ -113,7 +125,9 @@ type OutboundMessage =
     readonly message: string;
   };
 
-/** The single piece-table instance for this worker. */
+/**
+ * The single piece-table instance for this worker.
+ */
 const table: Table = {
   original: '',
   add: '',
@@ -121,10 +135,14 @@ const table: Table = {
   length: 0,
 };
 
-/** Inverse changesets stacked for undo (most-recent at the end). */
+/**
+ * Inverse changesets stacked for undo (most-recent at the end).
+ */
 const undoStack: UndoEntry[] = [];
 
-/** Inverse changesets popped by undo, available to redo. Cleared on edit. */
+/**
+ * Inverse changesets popped by undo, available to redo. Cleared on edit.
+ */
 const redoStack: UndoEntry[] = [];
 
 /**
@@ -135,7 +153,9 @@ const redoStack: UndoEntry[] = [];
 const NO_TIMER: unique symbol = Symbol('messages-demo:no-collapse-timer',);
 
 /* oxlint-disable no-restricted-syntax/no-module-root-let -- singleton timer handle: set when a collapse is scheduled, cleared from inside the timeout and from `scheduleCollapseIfNeeded` after re-check; wrapping in a Map adds noise without a key to hang state off */
-/** Pending collapse timer; `NO_TIMER` when no collapse is queued. */
+/**
+ * Pending collapse timer; `NO_TIMER` when no collapse is queued.
+ */
 let collapseTimer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 /* oxlint-enable no-restricted-syntax/no-module-root-let */
 
@@ -208,7 +228,9 @@ function post(message: OutboundMessage,): void {
  * @param event - inbound `message` event
  */
 function onMessage(event: MessageEvent<InboundMessage>,): void {
-  /** Destructured early so the kind switch reads `data.kind` directly without repeated access. */
+  /**
+   * Destructured early so the kind switch reads `data.kind` directly without repeated access.
+   */
   const { data, } = event;
   try {
     if (data.kind
@@ -235,13 +257,17 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
       handleUndoRedo(data,);
   }
   catch (error) {
-    /** Default text overwritten when the caught value has a usable message; sent as the error envelope. */
+    /**
+     * Default text overwritten when the caught value has a usable message; sent as the error envelope.
+     */
     let message = 'unknown buffer-worker error';
     if (error instanceof Error)
       ({ message, } = error);
     else if ((typeof error) === 'string')
       message = error;
-    /** Echoed back so the main thread can resolve the right pending promise; `-1` signals no-id. */
+    /**
+     * Echoed back so the main thread can resolve the right pending promise; `-1` signals no-id.
+     */
     const id = 'id' in data ? data.id : -1;
     post({
       kind: 'error',
@@ -259,9 +285,13 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
  * @param data - apply message
  */
 function handleApply(data: Extract<InboundMessage, { kind: 'apply'; }>,): void {
-  /** Pre-apply length captured so the undo entry remembers the buffer size at edit time. */
+  /**
+   * Pre-apply length captured so the undo entry remembers the buffer size at edit time.
+   */
   const preLength = table.length;
-  /** Inverse changeset returned by the apply helper; consumed by undo and forwarded in the reply. */
+  /**
+   * Inverse changeset returned by the apply helper; consumed by undo and forwarded in the reply.
+   */
   const inverse = applyToTable({
     table,
     changeset: data.changeset,
@@ -323,15 +353,23 @@ function handleSnapshot(
 function handleUndoRedo(
   data: Extract<InboundMessage, { kind: 'undo' | 'redo'; }>,
 ): void {
-  /** Stack to pop the next step from (undo pops undo, redo pops redo). */
+  /**
+   * Stack to pop the next step from (undo pops undo, redo pops redo).
+   */
   const sourceStack = data.kind
     === 'undo' ? undoStack : redoStack;
-  /** Stack to push the inverse re-application onto so the user can reverse direction. */
+  /**
+   * Stack to push the inverse re-application onto so the user can reverse direction.
+   */
   const sinkStack = data.kind
     === 'undo' ? redoStack : undoStack;
-  /** Popped step; undefined means the stack was empty so the reply omits `applied`. */
+  /**
+   * Popped step; undefined means the stack was empty so the reply omits `applied`.
+   */
   const entry = sourceStack.pop();
-  /** Reply discriminant chosen by direction (`undone` or `redone`). */
+  /**
+   * Reply discriminant chosen by direction (`undone` or `redone`).
+   */
   const replyKind = data.kind
     === 'undo' ? 'undone' : 'redone';
   if (entry === undefined) {
@@ -342,7 +380,9 @@ function handleUndoRedo(
     },);
     return;
   }
-  /** Inverse of the popped step; pushed onto the sink stack so the user can reverse direction. */
+  /**
+   * Inverse of the popped step; pushed onto the sink stack so the user can reverse direction.
+   */
   const reapplied = applyToTable({
     table,
     changeset: entry.inverse,
@@ -370,5 +410,7 @@ self.addEventListener(
   },
 );
 
-/** Worker entry has no exports; everything is by message channel. */
+/**
+ * Worker entry has no exports; everything is by message channel.
+ */
 export {};

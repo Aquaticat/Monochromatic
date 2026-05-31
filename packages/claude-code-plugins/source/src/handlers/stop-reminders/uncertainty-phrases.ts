@@ -10,10 +10,14 @@ import { isWordChar, } from '../../lib/text-scan.ts';
 
 //region Apostrophe normalisation
 
-/** Unicode left single quotation mark (`U+2018`). */
+/**
+ * Unicode left single quotation mark (`U+2018`).
+ */
 const LEFT_SINGLE_QUOTE = '‘';
 
-/** Unicode right single quotation mark (`U+2019`). */
+/**
+ * Unicode right single quotation mark (`U+2019`).
+ */
 const RIGHT_SINGLE_QUOTE = '’';
 
 /**
@@ -104,7 +108,9 @@ const UNCERTAINTY_PHRASES: readonly string[] = [
 
 //region Comparative `\wer than most` scan
 
-/** Literal substring scanned for when looking for comparative-suffix `<X>er than most` hedges. */
+/**
+ * Literal substring scanned for when looking for comparative-suffix `<X>er than most` hedges.
+ */
 const ER_THAN_MOST_PHRASE = 'er than most';
 
 /**
@@ -135,7 +141,9 @@ const ER_NOT_FOUND: unique symbol = Symbol('uncertainty-phrases/er-not-found',);
  * ```
  */
 function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
-  /** Lower-cased text used for the case-insensitive substring scan. */
+  /**
+   * Lower-cased text used for the case-insensitive substring scan.
+   */
   const lower = text.toLowerCase();
   // Walk every `er than most` occurrence in order (monotonic `indexOf`, no
   // rescan of earlier text). The first occurrence with a word-char prefix and a
@@ -153,17 +161,23 @@ function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
   ) {
     if (idx === 0)
       continue;
-    /** Character immediately before the `e`; must be a word char for the match. */
+    /**
+     * Character immediately before the `e`; must be a word char for the match.
+     */
     const before = lower.charAt(idx - 1,);
     if (!isWordChar(before,))
       continue;
-    /** Position one past the trailing `t` of `most`; checked for a word boundary below. */
+    /**
+     * Position one past the trailing `t` of `most`; checked for a word boundary below.
+     */
     const endIdx = idx + ER_THAN_MOST_PHRASE
       .length;
     if ((endIdx < lower
       .length) && isWordChar(lower.charAt(endIdx,),))
       continue;
-    /** Inclusive start of the word that ends in `er`, found by scanning back over word chars. */
+    /**
+     * Inclusive start of the word that ends in `er`, found by scanning back over word chars.
+     */
     let wordStart = idx - 1;
     while ((wordStart > 0) && isWordChar(text.charAt(wordStart - 1,),)) {
       wordStart -= 1;

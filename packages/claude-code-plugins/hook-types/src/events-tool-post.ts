@@ -21,16 +21,24 @@ import type { GenericToolInput, } from './tool-inputs-union.ts';
 export type PostToolUseInput = HookInputBase & {
   hook_event_name: 'PostToolUse';
 
-  /** Name of the tool that executed. */
+  /**
+   * Name of the tool that executed.
+   */
   tool_name: string;
 
-  /** Arguments sent to the tool. */
+  /**
+   * Arguments sent to the tool.
+   */
   tool_input: GenericToolInput;
 
-  /** Result the tool returned. Shape depends on the tool. */
+  /**
+   * Result the tool returned. Shape depends on the tool.
+   */
   tool_response: Record<string, unknown>;
 
-  /** Unique identifier for this tool use. */
+  /**
+   * Unique identifier for this tool use.
+   */
   tool_use_id: string;
 };
 
@@ -39,19 +47,27 @@ export type PostToolUseInput = HookInputBase & {
  * Can provide feedback to Claude or replace MCP tool output.
  */
 export type PostToolUseOutput = HookOutputBase & {
-  /** `"block"` prompts Claude with the `reason`. */
+  /**
+   * `"block"` prompts Claude with the `reason`.
+   */
   decision?: 'block';
 
-  /** Explanation shown to Claude when `decision` is `"block"`. */
+  /**
+   * Explanation shown to Claude when `decision` is `"block"`.
+   */
   reason?: string;
 
   hookSpecificOutput?: {
     hookEventName: 'PostToolUse';
 
-    /** Additional context for Claude. */
+    /**
+     * Additional context for Claude.
+     */
     additionalContext?: string;
 
-    /** For MCP tools only: replaces the tool's output. */
+    /**
+     * For MCP tools only: replaces the tool's output.
+     */
     updatedMCPToolOutput?: unknown;
   };
 };
@@ -67,19 +83,29 @@ export type PostToolUseOutput = HookOutputBase & {
 export type PostToolUseFailureInput = HookInputBase & {
   hook_event_name: 'PostToolUseFailure';
 
-  /** Name of the tool that failed. */
+  /**
+   * Name of the tool that failed.
+   */
   tool_name: string;
 
-  /** Arguments sent to the tool. */
+  /**
+   * Arguments sent to the tool.
+   */
   tool_input: GenericToolInput;
 
-  /** Unique identifier for this tool use. */
+  /**
+   * Unique identifier for this tool use.
+   */
   tool_use_id: string;
 
-  /** Description of what went wrong. */
+  /**
+   * Description of what went wrong.
+   */
   error: string;
 
-  /** Whether the failure was caused by user interruption. */
+  /**
+   * Whether the failure was caused by user interruption.
+   */
   is_interrupt?: boolean;
 };
 
@@ -91,7 +117,9 @@ export type PostToolUseFailureOutput = HookOutputBase & {
   hookSpecificOutput?: {
     hookEventName: 'PostToolUseFailure';
 
-    /** Additional context for Claude alongside the error. */
+    /**
+     * Additional context for Claude alongside the error.
+     */
     additionalContext?: string;
   };
 };

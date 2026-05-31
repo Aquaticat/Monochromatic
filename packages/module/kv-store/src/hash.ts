@@ -18,22 +18,34 @@
  * ```
  */
 export async function hashString(value: string,): Promise<string> {
-  /** Text encoder for converting string to UTF-8 bytes */
+  /**
+   * Text encoder for converting string to UTF-8 bytes
+   */
   const encoder = new TextEncoder();
-  /** UTF-8 encoded bytes of the input string */
+  /**
+   * UTF-8 encoded bytes of the input string
+   */
   const data = encoder.encode(value,);
-  /** SHA-256 hash digest as ArrayBuffer */
+  /**
+   * SHA-256 hash digest as ArrayBuffer
+   */
   const hashBuffer = await crypto.subtle
     .digest(
     'SHA-256',
     data,
   );
-  /** Convert ArrayBuffer to array of bytes for processing */
+  /**
+   * Convert ArrayBuffer to array of bytes for processing
+   */
   const hashArray = [...new Uint8Array(hashBuffer,),];
-  /** Convert bytes to hexadecimal string with zero-padding */
+  /**
+   * Convert bytes to hexadecimal string with zero-padding
+   */
   const hashHex = hashArray
     .map(function toHex(b,) {
-      /** Hexadecimal base for byte-to-hex conversion */
+      /**
+       * Hexadecimal base for byte-to-hex conversion
+       */
       const HEX_BASE = 16;
       return b.toString(HEX_BASE,)
         .padStart(

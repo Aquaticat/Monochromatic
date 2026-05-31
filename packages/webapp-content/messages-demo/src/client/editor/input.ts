@@ -34,7 +34,9 @@ import {
   type Selection,
 } from './selection.ts';
 
-/** Input layer destructor. */
+/**
+ * Input layer destructor.
+ */
 type InputCleanup = () => void;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM input layer: every handler takes a `HTMLElement`, `InputEvent`, `CompositionEvent`, or `ClipboardEvent`, all of which expose mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
@@ -63,7 +65,9 @@ export function attachInput(
   },
 ): InputCleanup {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- IME composition guard: flipped by `compositionstart`/`compositionend` listeners and read by `beforeinput` to suspend changeset emission while the IME composes */
-  /** True while an IME composition is in progress. */
+  /**
+   * True while an IME composition is in progress.
+   */
   let composing = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
@@ -89,12 +93,16 @@ export function attachInput(
     from: number;
     to: number;
   } {
-    /** Live selection range; `NO_SELECTION` falls through to the end-of-buffer default. */
+    /**
+     * Live selection range; `NO_SELECTION` falls through to the end-of-buffer default.
+     */
     const selection = input.selection
       .get();
     if (selection !== NO_SELECTION)
       return selection;
-    /** Buffer length used as the default cursor position when no selection exists. */
+    /**
+     * Buffer length used as the default cursor position when no selection exists.
+     */
     const { length, } = input.getMirror();
     return {
       from: length,
@@ -107,7 +115,9 @@ export function attachInput(
    * selection delete when the selection is non-empty.
    */
   function handleBackspace(): void {
-    /** Snapshot of the current selection; the branches read `from`, `to` directly. */
+    /**
+     * Snapshot of the current selection; the branches read `from`, `to` directly.
+     */
     const range = currentRange();
     if (range.from
       < range
@@ -130,9 +140,13 @@ export function attachInput(
     },);
   }
 
-  /** Mirror of `handleBackspace` for the forward-delete key. */
+  /**
+   * Mirror of `handleBackspace` for the forward-delete key.
+   */
   function handleDelete(): void {
-    /** Snapshot of the current selection; the branches read `from`, `to` directly. */
+    /**
+     * Snapshot of the current selection; the branches read `from`, `to` directly.
+     */
     const range = currentRange();
     if (range.from
       < range
@@ -144,7 +158,9 @@ export function attachInput(
       },);
       return;
     }
-    /** Buffer length used to short-circuit deletes at end-of-buffer. */
+    /**
+     * Buffer length used to short-circuit deletes at end-of-buffer.
+     */
     const { length, } = input.getMirror();
     if (range.from
       >= length)
@@ -167,7 +183,9 @@ export function attachInput(
     if (text.length
       === 0)
       return;
-    /** Snapshot of the current selection; the insert spans `from`..`to` for replacements. */
+    /**
+     * Snapshot of the current selection; the insert spans `from`..`to` for replacements.
+     */
     const range = currentRange();
     emit({
       from: range.from,
@@ -218,7 +236,9 @@ export function attachInput(
     }
     if (event.inputType
       === 'insertFromPaste') {
-      /** Plain-text payload; falls back to `event.data` for browsers that fill it there. */
+      /**
+       * Plain-text payload; falls back to `event.data` for browsers that fill it there.
+       */
       const text = event.dataTransfer
         ?.getData('text/plain',)
         ?? event
@@ -229,7 +249,9 @@ export function attachInput(
     }
     if (event.inputType
       === 'deleteByCut') {
-      /** Snapshot of the current selection; the delete spans `from`..`to`. */
+      /**
+       * Snapshot of the current selection; the delete spans `from`..`to`.
+       */
       const range = currentRange();
       if (range.from
         < range
@@ -273,7 +295,9 @@ export function attachInput(
     // The browser has applied the composed text to the contenteditable
     // DOM; we read it out and emit a single changeset, then the next
     // viewport repaint clears the browser's transient nodes.
-    /** Composed text from the IME; empty string skips the no-op insert. */
+    /**
+     * Composed text from the IME; empty string skips the no-op insert.
+     */
     const text = event.data
       ?? '';
     if (text.length
@@ -292,7 +316,9 @@ export function attachInput(
     if (event.clipboardData
       === null)
       return;
-    /** Plain-text payload extracted from the clipboard; empty string short-circuits. */
+    /**
+     * Plain-text payload extracted from the clipboard; empty string short-circuits.
+     */
     const text = event.clipboardData
       .getData('text/plain',);
     if (text.length
@@ -310,13 +336,17 @@ export function attachInput(
    * @param event - the `cut` event
    */
   function onCut(event: ClipboardEvent,): void {
-    /** Snapshot of the current selection; collapsed ranges abort the cut. */
+    /**
+     * Snapshot of the current selection; collapsed ranges abort the cut.
+     */
     const range = currentRange();
     if (range.from
       >= range
       .to)
       return;
-    /** Substring copied to the clipboard before the deletion changeset is emitted. */
+    /**
+     * Substring copied to the clipboard before the deletion changeset is emitted.
+     */
     const slice = input.getMirror()
       .slice(
       range.from,
@@ -347,13 +377,17 @@ export function attachInput(
    * @param event - the `copy` event
    */
   function onCopy(event: ClipboardEvent,): void {
-    /** Snapshot of the current selection; collapsed ranges fall through to the browser default. */
+    /**
+     * Snapshot of the current selection; collapsed ranges fall through to the browser default.
+     */
     const range = currentRange();
     if (range.from
       >= range
       .to)
       return;
-    /** Substring copied to the clipboard. */
+    /**
+     * Substring copied to the clipboard.
+     */
     const slice = input.getMirror()
       .slice(
       range.from,

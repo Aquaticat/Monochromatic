@@ -19,14 +19,20 @@
  * A single put operation supplied to {@link Storage.putBatch}.
  */
 export type StoragePutItem = {
-  /** Storage key. */
+  /**
+   * Storage key.
+   */
   readonly key: string;
 
-  /** Body bytes to write. */
+  /**
+   * Body bytes to write.
+   */
   readonly body: Uint8Array;
 };
 
-/** Object-storage interface implemented by every adapter. */
+/**
+ * Object-storage interface implemented by every adapter.
+ */
 export type Storage = {
   /**
    * Writes a single object. Resolves once the write is durable from the

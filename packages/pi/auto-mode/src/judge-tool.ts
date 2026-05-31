@@ -15,14 +15,18 @@ import {
   type TSchema,
 } from '@earendil-works/pi-ai';
 
-/** Verdict values for the judge tool. */
+/**
+ * Verdict values for the judge tool.
+ */
 const VERDICT_VALUES = [
   'approve',
   'deny',
   'ask',
 ] as const;
 
-/** Schema for the verdict string enum. */
+/**
+ * Schema for the verdict string enum.
+ */
 // oxlint-disable-next-line new-cap -- pi-ai API naming convention
 const VerdictEnum = StringEnum(VERDICT_VALUES,);
 

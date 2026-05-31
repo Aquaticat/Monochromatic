@@ -9,7 +9,9 @@ import * as v from 'valibot';
 
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
 
-/** Exa API proxy configuration with base URL. */
+/**
+ * Exa API proxy configuration with base URL.
+ */
 export const baseUrl = 'https://exa.aquati.cat/api/proxy';
 
 /**
@@ -29,14 +31,18 @@ const bindings = {
         v.transformAsync(async function promptSet(val,): Promise<string> {
           if (val !== null)
             return val;
-          /** Raw prompt response captured before uuid validation gates persistence. */
+          /**
+           * Raw prompt response captured before uuid validation gates persistence.
+           */
           const inputApiKey = nonNullishOrThrow(
             await prompt({ message: 'Set api key', },),
           );
           // Validate BEFORE persisting. The prompt aligns with native window.prompt
           // and resolves '' on OK-with-empty; writing that through to localStorage
           // would leave the page broken on every subsequent load.
-          /** Uuid-validated key persisted to localStorage and returned through the pipeline. */
+          /**
+           * Uuid-validated key persisted to localStorage and returned through the pipeline.
+           */
           const validated = v.parse(
             v.pipe(
               v.string(),
@@ -84,28 +90,44 @@ const bindings = {
   ),
 };
 
-/** Exa API key wrapped in an observable for reactive key changes. */
+/**
+ * Exa API key wrapped in an observable for reactive key changes.
+ */
 export const apiKey: Observable<string> = bindings.apiKey;
 
-/** Search form element. */
+/**
+ * Search form element.
+ */
 export const searchForm: HTMLFormElement = bindings.searchForm;
 
-/** Processing status paragraph. */
+/**
+ * Processing status paragraph.
+ */
 export const processingParagraph: HTMLParagraphElement = bindings.processingParagraph;
 
-/** Cost display span element. */
+/**
+ * Cost display span element.
+ */
 export const costDollarsSpan: HTMLSpanElement = bindings.costDollarsSpan;
 
-/** Number of results input element. */
+/**
+ * Number of results input element.
+ */
 export const numResultsInput: HTMLInputElement = bindings.numResultsInput;
 
-/** Results section container. */
+/**
+ * Results section container.
+ */
 export const resultsSection: HTMLElement = bindings.resultsSection;
 
-/** Total searches count display span. */
+/**
+ * Total searches count display span.
+ */
 export const numTotalSearchesSpan: HTMLSpanElement = bindings.numTotalSearchesSpan;
 
-/** API key change button. */
+/**
+ * API key change button.
+ */
 export const changeApiKeyButton: HTMLButtonElement = bindings.changeApiKeyButton;
 
 /**
@@ -132,7 +154,9 @@ const derived = {
       v.pipe(
         v.unknown(),
         v.transform(function toNumberOrZero(input,) {
-          /** Coerced numeric value checked for NaN before the zero fallback. */
+          /**
+           * Coerced numeric value checked for NaN before the zero fallback.
+           */
           const n = Number(input,);
           return Number.isNaN(n,) ? 0 : n;
         },),
@@ -165,19 +189,29 @@ const derived = {
   },),
 };
 
-/** Search text input element. */
+/**
+ * Search text input element.
+ */
 export const searchInput: HTMLInputElement = derived.searchInput;
 
-/** First result element used as template for cloning. */
+/**
+ * First result element used as template for cloning.
+ */
 export const firstResult: HTMLElement = derived.firstResult;
 
-/** Maximum number of results from the input range constraint. */
+/**
+ * Maximum number of results from the input range constraint.
+ */
 export const exaMaxResults: number = derived.exaMaxResults;
 
-/** Observable counter tracking total searches performed. */
+/**
+ * Observable counter tracking total searches performed.
+ */
 export const numTotalSearches: Observable<number> = derived.numTotalSearches;
 
-/** Observable counter tracking requested number of results. */
+/**
+ * Observable counter tracking requested number of results.
+ */
 export const numResults: Observable<number> = derived.numResults;
 
 // TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
@@ -187,5 +221,7 @@ replicateElementAsContentOf({
   targetCount: exaMaxResults,
 },);
 
-/** Live HTMLCollection of result article elements inside the results section. */
+/**
+ * Live HTMLCollection of result article elements inside the results section.
+ */
 export const resultArticles: HTMLCollection = resultsSection.children;

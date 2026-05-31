@@ -19,11 +19,17 @@ import type { ExecutionStep, } from './interpreter-ops.ts';
  * ```
  */
 export type ResolveJumpTargetOptions = {
-  /** Opcode name for error messages */
+  /**
+   * Opcode name for error messages
+   */
   readonly op: string;
-  /** Label name argument */
+  /**
+   * Label name argument
+   */
   readonly arg?: string;
-  /** Label-to-position mapping from the indexing pass */
+  /**
+   * Label-to-position mapping from the indexing pass
+   */
   readonly labels: ReadonlyMap<string, number>;
 };
 
@@ -54,7 +60,9 @@ export function resolveJumpTarget({
 }: ResolveJumpTargetOptions,): ExecutionStep {
   if (arg === undefined)
     throw new Error(`${op} missing label`,);
-  /** Resolved jump position from the label map; throws below when the label is unknown. */
+  /**
+   * Resolved jump position from the label map; throws below when the label is unknown.
+   */
   const target = labels.get(arg,);
   if (target === undefined)
     throw new Error(`unknown label: ${arg}`,);

@@ -97,13 +97,17 @@ async function execDirect(
     readonly args: readonly string[];
   },
 ): Promise<string> {
-  /** Function-scoped logger tagged with the call site for traceable command logs. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable command logs.
+   */
   const rl = tagged({
     tag: execDirect.name,
     l,
   },);
   rl.debug(`${cmd} ${args.join(' ',)}`,);
-  /** Spawn result; only `stdout` is forwarded to the caller. */
+  /**
+   * Spawn result; only `stdout` is forwarded to the caller.
+   */
   const { stdout, } = await spawn(
     cmd,
     [...args,],
@@ -128,23 +132,33 @@ async function execDirect(
 async function execPlatformAware(
   platformCommands: PlatformCommands,
 ): Promise<string> {
-  /** Predicate outcomes; aligned positionally with `platformCommands` for first-match lookup. */
+  /**
+   * Predicate outcomes; aligned positionally with `platformCommands` for first-match lookup.
+   */
   const results = await Promise.all(
     platformCommands.map(async function checkPredicate(entry,): Promise<boolean> {
-      /** Predicate half of the entry tuple; command half is consulted only on match. */
+      /**
+       * Predicate half of the entry tuple; command half is consulted only on match.
+       */
       const [predicate,] = entry;
       return await evaluatePredicate(predicate,);
     },),
   );
-  /** Index of the first successful predicate, or `-1` if no platform matched. */
+  /**
+   * Index of the first successful predicate, or `-1` if no platform matched.
+   */
   const matchIndex = results.findIndex(Boolean,);
   if (matchIndex === (-1))
     throw new PlatformMatchError(platformCommands,);
-  /** Tuple at the winning index; revalidated since `at`-style access could be `undefined`. */
+  /**
+   * Tuple at the winning index; revalidated since `at`-style access could be `undefined`.
+   */
   const matched = platformCommands[matchIndex];
   if (!matched)
     throw new PlatformMatchError(platformCommands,);
-  /** Command half of the matched tuple; predicate half already consumed for ranking. */
+  /**
+   * Command half of the matched tuple; predicate half already consumed for ranking.
+   */
   const [, cmd,] = matched;
   return await execCommand(cmd,);
 }
@@ -162,7 +176,9 @@ async function execPlatformAware(
 async function execCommand(cmd: Command,): Promise<string> {
   if (isNestedPlatformCommands(cmd,))
     return await execPlatformAware(cmd,);
-  /** Head/tail split so `execDirect` receives executable name and argv separately. */
+  /**
+   * Head/tail split so `execDirect` receives executable name and argv separately.
+   */
   const [executable = '', ...args] = cmd as readonly string[];
   return await execDirect({
     cmd: executable,
@@ -199,7 +215,9 @@ class PlatformMatchError extends Error {
    * @param platformCommands - Entries that were tested and all failed
    */
   constructor(platformCommands: PlatformCommands,) {
-    /** Comma-joined predicate render, embedded into the error message for debuggability. */
+    /**
+     * Comma-joined predicate render, embedded into the error message for debuggability.
+     */
     const predicateList = platformCommands
       .map(function formatOne(entry,): string {
         return formatEntry(entry,);
@@ -220,7 +238,9 @@ class PlatformMatchError extends Error {
  * @returns Human-readable predicate representation
  */
 function formatEntry(entry: PlatformEntry,): string {
-  /** Predicate half of the entry tuple; only this half is rendered for error messages. */
+  /**
+   * Predicate half of the entry tuple; only this half is rendered for error messages.
+   */
   const [predicate,] = entry;
   return `[${
     predicate

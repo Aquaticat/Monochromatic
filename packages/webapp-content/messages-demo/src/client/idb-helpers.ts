@@ -113,7 +113,9 @@ export function idbOpen(
     resolve,
     reject,
   ) {
-    /** Held to attach upgrade, success, and error listeners before the request resolves. */
+    /**
+     * Held to attach upgrade, success, and error listeners before the request resolves.
+     */
     const request = indexedDB.open(
       input.name,
       input.version,

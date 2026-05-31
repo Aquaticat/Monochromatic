@@ -18,7 +18,9 @@ import {
   tagged,
 } from './log.ts';
 
-/** Parsed tsgo result */
+/**
+ * Parsed tsgo result
+ */
 export type TsgoResult = {
   readonly errorCount: number;
   readonly ran: boolean;
@@ -37,9 +39,13 @@ export type TsgoResult = {
  * ```
  */
 type FilterTypeErrorsOptions = {
-  /** Raw tsgo output */
+  /**
+   * Raw tsgo output
+   */
   readonly output: string;
-  /** Subdirectory label within canary-lint/ (e.g. "css-mixin-initial") */
+  /**
+   * Subdirectory label within canary-lint/ (e.g. "css-mixin-initial")
+   */
   readonly subdirId: string;
 };
 
@@ -57,7 +63,9 @@ function filterTypeErrors({
   output,
   subdirId,
 }: FilterTypeErrorsOptions,): readonly string[] {
-  /** Path fragment that uniquely identifies this probe's canary.ts; used to ignore unrelated diagnostics. */
+  /**
+   * Path fragment that uniquely identifies this probe's canary.ts; used to ignore unrelated diagnostics.
+   */
   const marker = `canary-lint/${subdirId}/canary.ts`;
   return output.split('\n',)
     .filter(function matchLine(line,): boolean {
@@ -82,19 +90,25 @@ function filterTypeErrors({
  * ```
  */
 export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult> {
-  /** Filter key: "model-slug/probe-pass" identifies this probe's file uniquely */
+  /**
+   * Filter key: "model-slug/probe-pass" identifies this probe's file uniquely
+   */
   // split() always returns a non-empty array; pop() is therefore never undefined here
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- split always returns non-empty array; pop is safe
   const relativeSuffix = lintDir.split('canary-lint/',)
     .pop() as string;
 
   try {
-    /** Separate tsconfig that only includes src/canary-lint/ to isolate generated code */
+    /**
+     * Separate tsconfig that only includes src/canary-lint/ to isolate generated code
+     */
     const canaryTsconfig = join(
       PACKAGE_DIR,
       'tsconfig.canary-lint.json',
     );
-    /** tsgo stdout from the clean-exit branch; empty when the project has zero type errors. */
+    /**
+     * tsgo stdout from the clean-exit branch; empty when the project has zero type errors.
+     */
     const output = await execPromise({
       command: 'tsgo',
       args: [
@@ -106,7 +120,9 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
         timeout: LINT_TIMEOUT_MS,
       },
     },);
-    /** Diagnostic lines belonging to this probe's canary.ts; other paths are dropped. */
+    /**
+     * Diagnostic lines belonging to this probe's canary.ts; other paths are dropped.
+     */
     const filtered = filterTypeErrors({
       output,
       subdirId: relativeSuffix,
@@ -119,10 +135,14 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
   }
   catch (error) {
     // tsgo exits non-zero when there are type errors; stdout has the diagnostics
-    /** stdout salvaged from the thrown error; carries tsgo diagnostics on the failure branch. */
+    /**
+     * stdout salvaged from the thrown error; carries tsgo diagnostics on the failure branch.
+     */
     const stdout = getStdoutFromError(error,);
     if (stdout.includes('error TS',)) {
-      /** Diagnostic lines belonging to this probe's canary.ts on the failure branch. */
+      /**
+       * Diagnostic lines belonging to this probe's canary.ts on the failure branch.
+       */
       const filtered = filterTypeErrors({
         output: stdout,
         subdirId: relativeSuffix,
@@ -133,7 +153,9 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
         rawOutput: filtered.join('\n',),
       };
     }
-    /** Lint-specific logger for tsgo failure messages. */
+    /**
+     * Lint-specific logger for tsgo failure messages.
+     */
     const rl = tagged({
       tag: 'lint:tsgo',
       l,

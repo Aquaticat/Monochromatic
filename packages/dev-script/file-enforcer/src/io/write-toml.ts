@@ -54,19 +54,27 @@ export async function overwriteTomlKey(
     readonly value: TomlValueInput;
   },
 ): Promise<void> {
-  /** Current file content; MISSING when absent */
+  /**
+   * Current file content; MISSING when absent
+   */
   const existing = await readExisting(dest,);
   if (existing === MISSING)
     throw new Error(`overwriteTomlKey: ${dest} does not exist`,);
-  /** Parsed TOML state for the existing content */
+  /**
+   * Parsed TOML state for the existing content
+   */
   const edit = parseTomlEdit({ source: existing, },);
-  /** Fresh state with the pending edit recorded */
+  /**
+   * Fresh state with the pending edit recorded
+   */
   const edited = tomlSet({
     edit,
     path,
     value,
   },);
-  /** Updated source text; splice mode keeps unmutated regions byte-identical */
+  /**
+   * Updated source text; splice mode keeps unmutated regions byte-identical
+   */
   const newContent = tomlStringify({ edit: edited, },);
   await overwrite({
     dest,

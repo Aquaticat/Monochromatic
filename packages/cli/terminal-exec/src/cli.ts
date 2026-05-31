@@ -12,7 +12,9 @@ import {
   tagged,
 } from './log.ts';
 
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'cli',
   l: parentLogger,
@@ -34,20 +36,32 @@ const l = tagged({
  * ```
  */
 export function parseArgs({ argv, }: { readonly argv: readonly string[]; },): UserOptions {
-  /** Option accumulator mutated by the parse loop below; let because reassigned conditionally. */
+  /**
+   * Option accumulator mutated by the parse loop below; let because reassigned conditionally.
+   */
   let appId = '';
-  /** Same shape as appId; the parse loop populates each option in turn. */
+  /**
+   * Same shape as appId; the parse loop populates each option in turn.
+   */
   let title = '';
-  /** Same shape as appId; the parse loop populates each option in turn. */
+  /**
+   * Same shape as appId; the parse loop populates each option in turn.
+   */
   let dir = '';
-  /** Same shape as appId; the parse loop populates each option in turn. */
+  /**
+   * Same shape as appId; the parse loop populates each option in turn.
+   */
   let hold = false;
-  /** Cursor into argv; advanced as options are consumed and used to slice the command remainder. */
+  /**
+   * Cursor into argv; advanced as options are consumed and used to slice the command remainder.
+   */
   let i = 0;
 
   while (i < argv
     .length) {
-    /** Current argv slot, scoped to the loop iteration. */
+    /**
+     * Current argv slot, scoped to the loop iteration.
+     */
     const arg = argv[i];
     if (arg === undefined)
       break;
@@ -92,12 +106,16 @@ export function parseArgs({ argv, }: { readonly argv: readonly string[]; },): Us
       continue;
     }
 
-    /** First non-option argument starts the command. */
+    /**
+     * First non-option argument starts the command.
+     */
     l.debug(`found non-option '${arg}', treating as command start`,);
     break;
   }
 
-  /** Remainder after the delimiter is the command to execute. */
+  /**
+   * Remainder after the delimiter is the command to execute.
+   */
   const command = argv.slice(i,);
 
   l.debug(
@@ -105,7 +123,9 @@ export function parseArgs({ argv, }: { readonly argv: readonly string[]; },): Us
       String(hold,)
     }, command=${JSON.stringify(command,)}`,
   );
-  /** Bound to a local before return so the helper-shape allowlist accepts the function-root `let` declarations above. */
+  /**
+   * Bound to a local before return so the helper-shape allowlist accepts the function-root `let` declarations above.
+   */
   const result: UserOptions = {
     appId,
     title,

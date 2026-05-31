@@ -34,7 +34,9 @@ import {
  * @returns configured TypeScript parser instance
  */
 async function loadTsParser(): Promise<Parser> {
-  /** Destructured Lezer JavaScript parser; configured for TypeScript dialect below. */
+  /**
+   * Destructured Lezer JavaScript parser; configured for TypeScript dialect below.
+   */
   const { parser, } = await import('@lezer/javascript');
   return parser.configure({ dialect: 'ts', },);
 }
@@ -43,7 +45,9 @@ async function loadTsParser(): Promise<Parser> {
 
 //region Range collection
 
-/** Language class prefix on `<code>` elements. */
+/**
+ * Language class prefix on `<code>` elements.
+ */
 const LANGUAGE_PREFIX = 'language-';
 
 /**
@@ -56,7 +60,9 @@ const LANGUAGE_PREFIX = 'language-';
 function isTsBlock(codeElement: HTMLElement,): boolean {
   for (const cls of codeElement.classList) {
     if (cls.startsWith(LANGUAGE_PREFIX,)) {
-      /** Language identifier extracted from the `language-` class. */
+      /**
+       * Language identifier extracted from the `language-` class.
+       */
       const lang = cls.slice(LANGUAGE_PREFIX.length,);
       if ((lang === 'ts') || (lang === 'typescript'))
         return true;
@@ -91,19 +97,27 @@ function collectRanges({
   readonly tree: Tree;
   readonly codeElement: HTMLElement;
 },): Map<string, Range[]> {
-  /** Flattened text nodes with their start offsets within the full text. */
+  /**
+   * Flattened text nodes with their start offsets within the full text.
+   */
   const textNodes: {
     node: Text;
     start: number;
   }[] = [];
-  /** TreeWalker over text nodes; iterated below to flatten them into `textNodes`. */
+  /**
+   * TreeWalker over text nodes; iterated below to flatten them into `textNodes`.
+   */
   const walker = document.createTreeWalker(
     codeElement,
     NodeFilter.SHOW_TEXT,
   );
-  /** Running text offset across the walked nodes, used to compute Range positions. */
+  /**
+   * Running text offset across the walked nodes, used to compute Range positions.
+   */
   let offset = 0;
-  /** Current node being visited by the TreeWalker; advances each loop iteration. */
+  /**
+   * Current node being visited by the TreeWalker; advances each loop iteration.
+   */
   let current = walker.nextNode();
   while (current !== null) {
     if (current instanceof Text) {
@@ -116,7 +130,9 @@ function collectRanges({
     current = walker.nextNode();
   }
 
-  /** Accumulator that maps each highlight group to the DOM Ranges contributing to it. */
+  /**
+   * Accumulator that maps each highlight group to the DOM Ranges contributing to it.
+   */
   const rangesByGroup = new Map<string, Range[]>();
 
   highlightTree(
@@ -128,7 +144,9 @@ function collectRanges({
       group,
     ) {
       for (const entry of textNodes) {
-        /** End offset of the current text node within the full code text. */
+        /**
+         * End offset of the current text node within the full code text.
+         */
         const nodeEnd = entry.start
           + entry
           .node
@@ -138,13 +156,17 @@ function collectRanges({
           >= to) || (nodeEnd <= from))
           continue;
 
-        /** Range start offset within the current text node, clamped to its bounds. */
+        /**
+         * Range start offset within the current text node, clamped to its bounds.
+         */
         const rangeStart = Math.max(
           0,
           from - entry
             .start,
         );
-        /** Range end offset within the current text node, clamped to its bounds. */
+        /**
+         * Range end offset within the current text node, clamped to its bounds.
+         */
         const rangeEnd = Math.min(
           entry.node
             .length,
@@ -152,7 +174,9 @@ function collectRanges({
             .start,
         );
 
-        /** DOM Range covering the overlap between the highlight span and this text node. */
+        /**
+         * DOM Range covering the overlap between the highlight span and this text node.
+         */
         const range = new Range();
         range.setStart(
           entry.node,
@@ -163,7 +187,9 @@ function collectRanges({
           rangeEnd,
         );
 
-        /** Existing range array for the group; created lazily on first insert. */
+        /**
+         * Existing range array for the group; created lazily on first insert.
+         */
         let groupRanges = rangesByGroup.get(group,);
         if (groupRanges === undefined) {
           groupRanges = [];
@@ -197,11 +223,15 @@ async function highlightAllCodeBlocks(): Promise<void> {
   if (((typeof CSS) === 'undefined') || (!('highlights' in CSS)))
     return;
 
-  /** All language-tagged code blocks on the page; filtered to TypeScript below. */
+  /**
+   * All language-tagged code blocks on the page; filtered to TypeScript below.
+   */
   const codeBlocks = document.querySelectorAll<HTMLElement>(
     'pre > code[class*="language-"]',
   );
-  /** Subset of `codeBlocks` whose language class is `ts` or `typescript`. */
+  /**
+   * Subset of `codeBlocks` whose language class is `ts` or `typescript`.
+   */
   const tsBlocks = [...codeBlocks,].filter(function filterTs(el,) {
     return isTsBlock(el,);
   },);
@@ -210,29 +240,41 @@ async function highlightAllCodeBlocks(): Promise<void> {
     === 0)
     return;
 
-  /** Configured TypeScript parser; loaded only when at least one TS block exists. */
+  /**
+   * Configured TypeScript parser; loaded only when at least one TS block exists.
+   */
   const parser = await loadTsParser();
 
-  /** Accumulated ranges across all code blocks, keyed by highlight group. */
+  /**
+   * Accumulated ranges across all code blocks, keyed by highlight group.
+   */
   const allRanges = new Map<string, Range[]>();
 
   for (const codeElement of tsBlocks) {
-    /** Raw text content of the code block; fed to the Lezer parser. */
+    /**
+     * Raw text content of the code block; fed to the Lezer parser.
+     */
     const text = codeElement.textContent;
     if (text.length
       === 0)
       continue;
 
-    /** Lezer parse tree produced from the block's text. */
+    /**
+     * Lezer parse tree produced from the block's text.
+     */
     const tree = parser.parse(text,);
-    /** Ranges produced from this block alone, grouped by highlight category. */
+    /**
+     * Ranges produced from this block alone, grouped by highlight category.
+     */
     const blockRanges = collectRanges({
       tree,
       codeElement,
     },);
 
     for (const [group, ranges,] of blockRanges) {
-      /** Accumulator slot for this group; created on first encounter. */
+      /**
+       * Accumulator slot for this group; created on first encounter.
+       */
       let existing = allRanges.get(group,);
       if (existing === undefined) {
         existing = [];
@@ -246,9 +288,13 @@ async function highlightAllCodeBlocks(): Promise<void> {
   }
 
   for (const group of HIGHLIGHT_GROUPS) {
-    /** Highlight name used as the key for `CSS.highlights`; matches the `::highlight(...)` pseudo. */
+    /**
+     * Highlight name used as the key for `CSS.highlights`; matches the `::highlight(...)` pseudo.
+     */
     const name = `hl-${group}`;
-    /** Ranges accumulated for this group across all blocks. */
+    /**
+     * Ranges accumulated for this group across all blocks.
+     */
     const ranges = allRanges.get(group,);
     if ((ranges !== undefined) && (ranges.length
       > 0)) {

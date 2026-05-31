@@ -14,7 +14,9 @@
  * ```
  */
 export function injectCSS(css: string,): void {
-  /** Stand-alone style node so the CSS text can be assigned before insertion. */
+  /**
+   * Stand-alone style node so the CSS text can be assigned before insertion.
+   */
   const styleElement = document.createElement('style',);
   styleElement.textContent = css;
   document.head

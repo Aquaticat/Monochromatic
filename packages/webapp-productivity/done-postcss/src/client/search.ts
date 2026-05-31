@@ -18,13 +18,21 @@ import './components/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/search-bar.ts';
 
-/** Shape of the JSON blob embedded in the search page by the server. */
+/**
+ * Shape of the JSON blob embedded in the search page by the server.
+ */
 type SearchPageData = {
-  /** Current search query string. */
+  /**
+   * Current search query string.
+   */
   query: string;
-  /** Matching tasks from search. */
+  /**
+   * Matching tasks from search.
+   */
   results: SearchTask[];
-  /** All unique tags for category browsing. */
+  /**
+   * All unique tags for category browsing.
+   */
   availableTags: string[];
 };
 
@@ -55,15 +63,21 @@ async function completeTask(taskId: string,): Promise<void> {
 injectCSS(styles,);
 injectCSS(searchStyles,);
 
-/** Deserialized page data from the server-rendered JSON blob. */
+/**
+ * Deserialized page data from the server-rendered JSON blob.
+ */
 const pageData = readPageData<SearchPageData>();
 
-/** Root app container element. */
+/**
+ * Root app container element.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Typed reference to the app container. */
+/**
+ * Typed reference to the app container.
+ */
 const app = appElement;
 
 // Listen for search events from the search-bar component
@@ -73,7 +87,9 @@ document
   'search',
   function onSearch(event,) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string */
-    /** Search query lifted from the custom event detail. */
+    /**
+     * Search query lifted from the custom event detail.
+     */
     const { query, } = (event as CustomEvent<{ query: string; }>).detail;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     globalThis.location
@@ -95,7 +111,9 @@ if (pageData.query
     },),
   );
 
-  /** Tag chip list extracted from `pageData`; rendered only when non-empty. */
+  /**
+   * Tag chip list extracted from `pageData`; rendered only when non-empty.
+   */
   const { availableTags, } = pageData;
   if (availableTags.length
     > 0) {
@@ -121,7 +139,9 @@ if (pageData.query
   }
 }
 else {
-  /** List element for search results. */
+  /**
+   * List element for search results.
+   */
   const resultList = h({
     tag: 'ul',
     class: 'task-list',

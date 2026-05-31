@@ -14,23 +14,39 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { nameToOrder, } from './order.ts';
 
-/** Detail payload for the `dir-open` CustomEvent. */
+/**
+ * Detail payload for the `dir-open` CustomEvent.
+ */
 export type DirOpenDetail = {
-  /** Absolute directory path. */
+  /**
+   * Absolute directory path.
+   */
   readonly path: string;
-  /** Container element to populate with children. */
+  /**
+   * Container element to populate with children.
+   */
   readonly childrenContainer: HTMLDivElement;
 };
 
-/** Detail payload for the `show-context` CustomEvent. */
+/**
+ * Detail payload for the `show-context` CustomEvent.
+ */
 export type ShowContextDetail = {
-  /** Horizontal click position in pixels. */
+  /**
+   * Horizontal click position in pixels.
+   */
   readonly x: number;
-  /** Vertical click position in pixels. */
+  /**
+   * Vertical click position in pixels.
+   */
   readonly y: number;
-  /** Absolute entry path. */
+  /**
+   * Absolute entry path.
+   */
   readonly path: string;
-  /** Whether this is a directory or file entry. */
+  /**
+   * Whether this is a directory or file entry.
+   */
   readonly kind: 'dir' | 'file';
 };
 
@@ -53,15 +69,25 @@ function suppressContextMenu(event: Event,): void {
  * ```
  */
 export class TreeDirEntry extends HTMLElement {
-  /** Absolute path of this directory. */
+  /**
+   * Absolute path of this directory.
+   */
   entryPath = '';
-  /** Display name. */
+  /**
+   * Display name.
+   */
   entryName = '';
-  /** Container `<div class="children">` for child entries. */
+  /**
+   * Container `<div class="children">` for child entries.
+   */
   #childrenContainer: HTMLDivElement | null = null;
-  /** Inner `<details>` element that provides native toggle behavior. */
+  /**
+   * Inner `<details>` element that provides native toggle behavior.
+   */
   #details: HTMLDetailsElement | null = null;
-  /** Guards against re-rendering when the element is re-inserted into the DOM. */
+  /**
+   * Guards against re-rendering when the element is re-inserted into the DOM.
+   */
   #initialized = false;
 
   /**
@@ -71,7 +97,9 @@ export class TreeDirEntry extends HTMLElement {
     return this.#childrenContainer;
   }
 
-  /** Builds the `<details><summary>` structure and attaches event handlers. */
+  /**
+   * Builds the `<details><summary>` structure and attaches event handlers.
+   */
   connectedCallback(): void {
     if (this.#initialized)
       return;
@@ -84,9 +112,13 @@ export class TreeDirEntry extends HTMLElement {
       class: 'children',
     },);
 
-    /** Captured for the listener closures because event callbacks rebind `this`. */
+    /**
+     * Captured for the listener closures because event callbacks rebind `this`.
+     */
     const entry = this;
-    /** `<summary>` element wired with the right-click context-menu listener. */
+    /**
+     * `<summary>` element wired with the right-click context-menu listener.
+     */
     const summary = h({
       tag: 'summary',
       attrs: { 'data-path': this.entryPath, },
@@ -127,7 +159,9 @@ export class TreeDirEntry extends HTMLElement {
       on: {
         toggle: function handleToggle(event: Event,) {
           /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- toggle fires on <details> */
-          /** Narrowed event target so the `.open` flag is reachable. */
+          /**
+           * Narrowed event target so the `.open` flag is reachable.
+           */
           const detailsEl = event.currentTarget as HTMLDetailsElement;
           /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
           if (!detailsEl.open)
@@ -177,7 +211,9 @@ export function createTreeDirEntry(
   },
 ): TreeDirEntry {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define */
-  /** Custom element instance returned to the caller. */
+  /**
+   * Custom element instance returned to the caller.
+   */
   const entry = document.createElement('tree-dir-entry',) as TreeDirEntry;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   entry.entryPath = path;

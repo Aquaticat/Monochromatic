@@ -1,2 +1,4 @@
-/** Branded type alias for `never`. */
+/**
+ * Branded type alias for `never`.
+ */
 export type $ = never;

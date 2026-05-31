@@ -7,33 +7,53 @@
  * @module
  */
 
-/** Earliest year representable in DOS date encoding. */
+/**
+ * Earliest year representable in DOS date encoding.
+ */
 const DOS_EPOCH_YEAR = 1_980;
 
-/** Bit position of the year field within a DOS date word. */
+/**
+ * Bit position of the year field within a DOS date word.
+ */
 const DOS_DATE_YEAR_SHIFT = 9;
 
-/** Bit position of the month field within a DOS date word. */
+/**
+ * Bit position of the month field within a DOS date word.
+ */
 const DOS_DATE_MONTH_SHIFT = 5;
 
-/** Bit position of the hour field within a DOS time word. */
+/**
+ * Bit position of the hour field within a DOS time word.
+ */
 const DOS_TIME_HOUR_SHIFT = 11;
 
-/** Bit position of the minute field within a DOS time word. */
+/**
+ * Bit position of the minute field within a DOS time word.
+ */
 const DOS_TIME_MINUTE_SHIFT = 5;
 
-/** Bits dropped to encode seconds (2-second resolution). */
+/**
+ * Bits dropped to encode seconds (2-second resolution).
+ */
 const DOS_TIME_SECOND_SHIFT = 1;
 
-/** JavaScript getUTCMonth is zero-based; ZIP DOS dates are one-based. */
+/**
+ * JavaScript getUTCMonth is zero-based; ZIP DOS dates are one-based.
+ */
 const MONTH_OFFSET_TO_ONE_BASED = 1;
 
-/** Encoded DOS modification timestamp split into time and date words. */
+/**
+ * Encoded DOS modification timestamp split into time and date words.
+ */
 export type DosDateTime = {
-  /** Time-of-day word: `(hour << 11) | (minute << 5) | (second / 2)`. */
+  /**
+   * Time-of-day word: `(hour << 11) | (minute << 5) | (second / 2)`.
+   */
   readonly time: number;
 
-  /** Date word: `((year - 1980) << 9) | (month << 5) | day`. */
+  /**
+   * Date word: `((year - 1980) << 9) | (month << 5) | day`.
+   */
   readonly date: number;
 };
 
@@ -52,18 +72,24 @@ export type DosDateTime = {
  * ```
  */
 export function dosDateTime(date: Date,): DosDateTime {
-  /** Floor-clamped at the DOS epoch so the offset subtraction never underflows. */
+  /**
+   * Floor-clamped at the DOS epoch so the offset subtraction never underflows.
+   */
   const year = Math.max(
     date.getUTCFullYear(),
     DOS_EPOCH_YEAR,
   );
-  /** Packed DOS date word ready to write to the archive. */
+  /**
+   * Packed DOS date word ready to write to the archive.
+   */
   const dosDate = ((year - DOS_EPOCH_YEAR) << DOS_DATE_YEAR_SHIFT)
     | ((date.getUTCMonth()
       + MONTH_OFFSET_TO_ONE_BASED) << DOS_DATE_MONTH_SHIFT)
     | date
     .getUTCDate();
-  /** Packed DOS time word ready to write to the archive. */
+  /**
+   * Packed DOS time word ready to write to the archive.
+   */
   const dosTime = (date.getUTCHours()
     << DOS_TIME_HOUR_SHIFT)
     | (date.getUTCMinutes()

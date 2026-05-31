@@ -4,7 +4,9 @@
 
 import type { CompactionResult, } from '@earendil-works/pi-coding-agent';
 
-/** Metadata stored in the CompactionEntry details field. */
+/**
+ * Metadata stored in the CompactionEntry details field.
+ */
 export type MorphCompactionDetails = {
   backend: 'morph';
   version: 1;
@@ -24,18 +26,24 @@ export type MorphCompactionDetails = {
   modifiedFiles: string[];
 };
 
-/** Shape returned when Morph compaction succeeds. */
+/**
+ * Shape returned when Morph compaction succeeds.
+ */
 export type MorphCompactionSuccess = {
   kind: 'success';
   result: CompactionResult<MorphCompactionDetails>;
 };
 
-/** Shape returned when Morph compaction should fall through to pi default. */
+/**
+ * Shape returned when Morph compaction should fall through to pi default.
+ */
 export type MorphCompactionFallback = {
   kind: 'fallback';
 };
 
-/** Result of a Morph compaction attempt. */
+/**
+ * Result of a Morph compaction attempt.
+ */
 export type MorphCompactionAttempt =
   | MorphCompactionSuccess
   | MorphCompactionFallback;
@@ -48,16 +56,24 @@ export type MorphCompactionAttempt =
  */
 export type MorphBeforeCompactOutcome =
   | {
-    /** Morph produced a compaction result for pi to apply. */
+    /**
+     * Morph produced a compaction result for pi to apply.
+     */
     readonly kind: 'compaction';
-    /** Compaction record forwarded to pi. */
+    /**
+     * Compaction record forwarded to pi.
+     */
     readonly result: CompactionResult<MorphCompactionDetails>;
   }
   | {
-    /** Session is too small to compact; cancel pi's default summarizer. */
+    /**
+     * Session is too small to compact; cancel pi's default summarizer.
+     */
     readonly kind: 'cancel';
   }
   | {
-    /** Defer to pi's default compaction (missing key, abort, or failure). */
+    /**
+     * Defer to pi's default compaction (missing key, abort, or failure).
+     */
     readonly kind: 'fallthrough';
   };

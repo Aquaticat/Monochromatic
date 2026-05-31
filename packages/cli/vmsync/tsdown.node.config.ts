@@ -4,7 +4,9 @@ import {
   type UserConfig,
 } from 'tsdown';
 
-/** Build configuration for vmsync CLI, bundling workspace and optique dependencies. */
+/**
+ * Build configuration for vmsync CLI, bundling workspace and optique dependencies.
+ */
 const config: UserConfig = defineConfig({
   ...base,
   entry: ['./src/index.ts',],

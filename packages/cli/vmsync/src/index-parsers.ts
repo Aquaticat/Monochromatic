@@ -20,7 +20,9 @@ import {
 
 //region Result types: discriminated union for subcommand dispatch
 
-/** Discriminated union of all subcommand parse results. */
+/**
+ * Discriminated union of all subcommand parse results.
+ */
 export type VmsyncArgs =
   | {
     cmd: 'import';

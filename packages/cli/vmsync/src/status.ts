@@ -26,17 +26,23 @@ import {
  * ```
  */
 export async function showStatus(name: string,): Promise<void> {
-  /** Tagged logger so status entries are scoped to `showStatus` in the output. */
+  /**
+   * Tagged logger so status entries are scoped to `showStatus` in the output.
+   */
   const rl = tagged({
     tag: showStatus.name,
     l,
   },);
   rl.info(`reading status for "${name}"`,);
 
-  /** Current VM configuration. */
+  /**
+   * Current VM configuration.
+   */
   const config = await readConfig(name,);
 
-  /** Disk size formatted in GiB. */
+  /**
+   * Disk size formatted in GiB.
+   */
   const sizeGib = (config.diskSizeBytes
     / BYTES_PER_GIB).toFixed(1,);
 

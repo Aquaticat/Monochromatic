@@ -29,7 +29,9 @@ import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 
 export {};
 
-/** Human-readable binary size units, ordered by magnitude. */
+/**
+ * Human-readable binary size units, ordered by magnitude.
+ */
 const BYTE_UNITS = [
   'B',
   'KiB',
@@ -37,10 +39,14 @@ const BYTE_UNITS = [
   'GiB',
 ];
 
-/** Exit code for missing or invalid arguments. */
+/**
+ * Exit code for missing or invalid arguments.
+ */
 const EXIT_USAGE = 1;
 
-/** Exit code for summary succeeded but some references did not resolve. */
+/**
+ * Exit code for summary succeeded but some references did not resolve.
+ */
 const EXIT_MISSING_REFS = 2;
 
 /**
@@ -48,9 +54,13 @@ const EXIT_MISSING_REFS = 2;
  * numeric value with the `BYTE_UNITS` index that names the unit.
  */
 type Scaled = {
-  /** Byte count divided down by `BYTES_PER_KIB` repeatedly until the unit fits. */
+  /**
+   * Byte count divided down by `BYTES_PER_KIB` repeatedly until the unit fits.
+   */
   value: number;
-  /** Position in `BYTE_UNITS` reached by the scaling loop. */
+  /**
+   * Position in `BYTE_UNITS` reached by the scaling loop.
+   */
   unitIndex: number;
 };
 
@@ -70,14 +80,20 @@ type Scaled = {
  * ```
  */
 function humanBytes(bytes: number,): string {
-  /** Scaled byte count and the `BYTE_UNITS` index it lives in after dividing by `BYTES_PER_KIB` until the unit fits. */
+  /**
+   * Scaled byte count and the `BYTE_UNITS` index it lives in after dividing by `BYTES_PER_KIB` until the unit fits.
+   */
   const {
     value,
     unitIndex,
   } = (function scale(): Scaled {
-    /** Working value mutated in-place by the scaling loop; renamed to avoid clashing with the destructured `value`. */
+    /**
+     * Working value mutated in-place by the scaling loop; renamed to avoid clashing with the destructured `value`.
+     */
     let scaledValue = bytes;
-    /** Working position in `BYTE_UNITS`; renamed to avoid clashing with the destructured `unitIndex`. */
+    /**
+     * Working position in `BYTE_UNITS`; renamed to avoid clashing with the destructured `unitIndex`.
+     */
     let scaledIndex = 0;
     while ((scaledValue >= BYTES_PER_KIB) && (scaledIndex < (BYTE_UNITS.length
       - 1))) {
@@ -89,18 +105,24 @@ function humanBytes(bytes: number,): string {
       unitIndex: scaledIndex,
     };
   })();
-  /** Decimals shown in the formatted output; raw bytes are reported as integers. */
+  /**
+   * Decimals shown in the formatted output; raw bytes are reported as integers.
+   */
   const precision = unitIndex === 0 ? 0 : 1;
   return `${value.toFixed(precision,)} ${BYTE_UNITS[unitIndex]}`;
 }
 
 //region Main
 
-/** Command-line arguments after `bun script.ts`. */
+/**
+ * Command-line arguments after `bun script.ts`.
+ */
 const args = process.argv
   .slice(2,);
 
-/** First positional argument: the dist directory to scan. */
+/**
+ * First positional argument: the dist directory to scan.
+ */
 const [distArg,] = args;
 if (distArg === undefined) {
   console.error('usage: page-weight <dist-dir>',);
@@ -108,10 +130,14 @@ if (distArg === undefined) {
   throw new Error('missing dist directory argument',);
 }
 
-/** Resolved absolute dist directory. */
+/**
+ * Resolved absolute dist directory.
+ */
 const root = resolve(distArg,);
 
-/** Discover every `.html` file inside the dist root. */
+/**
+ * Discover every `.html` file inside the dist root.
+ */
 const found = await readdir(
   '**/*.html',
   { cwd: root, },
@@ -124,7 +150,9 @@ if (found.files
   throw new Error('empty page set',);
 }
 
-/** Weighed-page results, computed concurrently. */
+/**
+ * Weighed-page results, computed concurrently.
+ */
 const weights: PageWeight[] = await Promise.all(
   found.files
     .map(function weigh(htmlPath: string,): Promise<PageWeight> {
@@ -135,7 +163,9 @@ const weights: PageWeight[] = await Promise.all(
   },),
 );
 
-/** Page rows sorted largest-first for readability. */
+/**
+ * Page rows sorted largest-first for readability.
+ */
 const sorted = weights.toSorted(function byTotalDescending(
   a: PageWeight,
   b: PageWeight,
@@ -145,14 +175,20 @@ const sorted = weights.toSorted(function byTotalDescending(
     .totalBytes;
 },);
 
-/** Aggregate min/max/mean/median summary over page totals. */
+/**
+ * Aggregate min/max/mean/median summary over page totals.
+ */
 const totals = weights.map(function pageTotal(entry: PageWeight,): number {
   return entry.totalBytes;
 },);
-/** Summary statistics for the page-weight distribution. */
+/**
+ * Summary statistics for the page-weight distribution.
+ */
 const stats = summarize(totals,);
 
-/** Column width for the page path. */
+/**
+ * Column width for the page path.
+ */
 const pageColumnWidth = Math.max(
   'page'.length,
   ...sorted.map(function pageLength(entry: PageWeight,): number {
@@ -160,7 +196,9 @@ const pageColumnWidth = Math.max(
       .length;
   },),
 );
-/** Column width for the bytes column. */
+/**
+ * Column width for the bytes column.
+ */
 const bytesColumnWidth = Math.max(
   'bytes'.length,
   ...sorted.map(function bytesLength(entry: PageWeight,): number {
@@ -168,7 +206,9 @@ const bytesColumnWidth = Math.max(
       .length;
   },),
 );
-/** Column width for the resource count. */
+/**
+ * Column width for the resource count.
+ */
 const resourcesColumnWidth = Math.max(
   'assets'.length,
   ...sorted.map(function resourcesLength(entry: PageWeight,): number {
@@ -177,7 +217,9 @@ const resourcesColumnWidth = Math.max(
   },),
 );
 
-/** Formatted header row. */
+/**
+ * Formatted header row.
+ */
 const header = [
   'page'.padEnd(pageColumnWidth,),
   'bytes'.padStart(bytesColumnWidth,),
@@ -186,7 +228,9 @@ const header = [
   .join('  ',);
 console.log(header,);
 for (const entry of sorted) {
-  /** Pre-padded report row joined for terminal-aligned columns. */
+  /**
+   * Pre-padded report row joined for terminal-aligned columns.
+   */
   const row = [
     entry.page
       .padEnd(pageColumnWidth,),
@@ -206,7 +250,9 @@ console.log(`max:    ${humanBytes(stats.max,)}`,);
 console.log(`mean:   ${humanBytes(stats.mean,)}`,);
 console.log(`median: ${humanBytes(stats.median,)}`,);
 
-/** Unique references that could not be resolved to a file under the root. */
+/**
+ * Unique references that could not be resolved to a file under the root.
+ */
 const missingAll = new Set<string>();
 for (const entry of weights) {
   for (const ref of entry.missing)

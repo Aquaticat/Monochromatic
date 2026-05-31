@@ -7,20 +7,28 @@
  */
 import type { Cancel, } from './lecture-typewriter.ts';
 
-/** Per-mount runtime ref exposing the typewriter cancel handle. */
+/**
+ * Per-mount runtime ref exposing the typewriter cancel handle.
+ */
 export type RuntimeRef = {
-  /** Pending typewriter cancel, cleared after invocation. */
+  /**
+   * Pending typewriter cancel, cleared after invocation.
+   */
   typewriterCancel: Cancel | undefined;
 };
 
-/** Keyboard keys that trigger advance to the next beat. */
+/**
+ * Keyboard keys that trigger advance to the next beat.
+ */
 const ADVANCE_KEYS: ReadonlySet<string> = new Set([
   ' ',
   'Enter',
   'ArrowRight',
 ],);
 
-/** CSS selector used to short-circuit stage clicks on buttons/toolbar. */
+/**
+ * CSS selector used to short-circuit stage clicks on buttons/toolbar.
+ */
 const CONTROLS_SELECTOR = '.stage-controls, .stage-dialogue button';
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- bag carries function callbacks and a mutable runtime ref; deep-readonly cannot describe either, and the handler reads through them on every event. `KeyboardEvent`/`MouseEvent` are Web SDK objects with mutating methods (preventDefault). */

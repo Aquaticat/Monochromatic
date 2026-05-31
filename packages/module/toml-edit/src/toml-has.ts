@@ -31,7 +31,9 @@ export function tomlHas(
     readonly path: TomlPath;
   },
 ): boolean {
-  /** Effective resolution so pending deletes show as absent. */
+  /**
+   * Effective resolution so pending deletes show as absent.
+   */
   const result = effectiveAt({
     edit,
     path,

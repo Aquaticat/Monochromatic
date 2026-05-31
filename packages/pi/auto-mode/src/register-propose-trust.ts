@@ -21,17 +21,25 @@ import { getTrustDirectives, } from './context.ts';
 import { l as parentLogger, } from './log.ts';
 import { TRUST_ENTRY_TYPE, } from './types.ts';
 
-/** Tagged logger for propose_trust registration and execution. */
+/**
+ * Tagged logger for propose_trust registration and execution.
+ */
 const l = tagged({
   tag: 'register-propose-trust',
   l: parentLogger,
 },);
 
-/** Parameters accepted by propose_trust. */
+/**
+ * Parameters accepted by propose_trust.
+ */
 type ProposeTrustParams = {
-  /** Session trust directive requested by agent. */
+  /**
+   * Session trust directive requested by agent.
+   */
   readonly rule: string;
-  /** Optional rationale for why directive is needed. */
+  /**
+   * Optional rationale for why directive is needed.
+   */
   readonly reason?: string;
 };
 
@@ -96,7 +104,9 @@ function registerProposeTrust(
       _onUpdate: unknown,
       ctx: ExtensionContext,
     ): Promise<ProposeTrustResult> {
-      /** Per-call sub-logger so branches are visible without logging rule text. */
+      /**
+       * Per-call sub-logger so branches are visible without logging rule text.
+       */
       const innerL = tagged({
         tag: 'execute',
         l,
@@ -125,7 +135,9 @@ function registerProposeTrust(
       }
 
       innerL.debug('prompting user for new trust rule proposal',);
-      /** Button label selected by user; undefined is treated as rejection. */
+      /**
+       * Button label selected by user; undefined is treated as rejection.
+       */
       const choice = await ctx.ui
         .select(
           buildTrustRulePrompt({ params, },),
@@ -202,7 +214,9 @@ function buildTrustRulePrompt(
     readonly params: ProposeTrustParams;
   },
 ): string {
-  /** Per-line accumulator for prompt text; reason is appended when present. */
+  /**
+   * Per-line accumulator for prompt text; reason is appended when present.
+   */
   const lines = [
     'Trust rule proposed',
     '',

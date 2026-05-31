@@ -19,14 +19,22 @@ export {
   HTTP_OK,
 } from '@monochromatic-dev/module-const/ts';
 
-/** 302 Found: temporary redirect that may change method on follow. */
+/**
+ * 302 Found: temporary redirect that may change method on follow.
+ */
 export const HTTP_FOUND = 302;
 
-/** 303 See Other: response is at the URL in `Location`. */
+/**
+ * 303 See Other: response is at the URL in `Location`.
+ */
 export const HTTP_SEE_OTHER = 303;
 
-/** 410 Gone: resource existed and was deleted. */
+/**
+ * 410 Gone: resource existed and was deleted.
+ */
 export const HTTP_GONE = 410;
 
-/** 413 Payload Too Large: single chunk exceeded the hard cap. */
+/**
+ * 413 Payload Too Large: single chunk exceeded the hard cap.
+ */
 export const HTTP_PAYLOAD_TOO_LARGE = 413;

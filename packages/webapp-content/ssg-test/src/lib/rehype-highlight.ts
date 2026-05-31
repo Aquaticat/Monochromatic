@@ -45,13 +45,19 @@ import {
 
 //region Parser configuration
 
-/** TypeScript parser (JavaScript parser with TS dialect). */
+/**
+ * TypeScript parser (JavaScript parser with TS dialect).
+ */
 const tsParser = jsParser.configure({ dialect: 'ts', },);
 
-/** JSX parser (JavaScript parser with JSX dialect). */
+/**
+ * JSX parser (JavaScript parser with JSX dialect).
+ */
 const jsxParser = jsParser.configure({ dialect: 'jsx', },);
 
-/** TSX parser (JavaScript parser with TS + JSX dialects). */
+/**
+ * TSX parser (JavaScript parser with TS + JSX dialects).
+ */
 const tsxParser = jsParser.configure({ dialect: 'ts jsx', },);
 
 /**
@@ -80,7 +86,9 @@ const PARSERS: Readonly<Record<string, Parser>> = {
   rs: rustParser,
 };
 
-/** Prefix on code element class names identifying the language. */
+/**
+ * Prefix on code element class names identifying the language.
+ */
 const LANGUAGE_PREFIX = 'language-';
 
 /**
@@ -123,12 +131,16 @@ function extractText(node: ElementContent,): string {
  * @returns language name, or {@link NO_LANGUAGE} when no `language-*` class is found
  */
 function getLanguage(codeElement: Element,): string | typeof NO_LANGUAGE {
-  /** Destructured class-list property; rehype puts the language as a `language-*` token here. */
+  /**
+   * Destructured class-list property; rehype puts the language as a `language-*` token here.
+   */
   const { className, } = codeElement.properties;
   if (!Array.isArray(className,))
     return NO_LANGUAGE;
   for (const cls of className) {
-    /** Per-iteration string cast since className entries may be numbers in the hast spec. */
+    /**
+     * Per-iteration string cast since className entries may be numbers in the hast spec.
+     */
     const name = String(cls,);
     if (name.startsWith(LANGUAGE_PREFIX,))
       return name.slice(LANGUAGE_PREFIX.length,);
@@ -161,10 +173,14 @@ function annotateCodeBlock({
   readonly parser: Parser;
   readonly text: string;
 },): void {
-  /** Parsed syntax tree fed to the Lezer highlighter for offset-pair extraction. */
+  /**
+   * Parsed syntax tree fed to the Lezer highlighter for offset-pair extraction.
+   */
   const tree = parser.parse(text,);
 
-  /** Accumulated `from-to` pairs per highlight group. */
+  /**
+   * Accumulated `from-to` pairs per highlight group.
+   */
   const pairsByGroup = new Map<string, string[]>();
 
   highlightTree(
@@ -175,10 +191,14 @@ function annotateCodeBlock({
       to: number,
       classes: string,
     ) {
-      /** Existing pair list for this highlight class group, or a freshly inserted empty array. */
+      /**
+       * Existing pair list for this highlight class group, or a freshly inserted empty array.
+       */
       const pairs = pairsByGroup.get(classes,)
         ?? (function initGroup(): string[] {
-        /** Newly allocated pair list inserted into the shared map. */
+        /**
+         * Newly allocated pair list inserted into the shared map.
+         */
         const fresh: string[] = [];
         pairsByGroup.set(
           classes,
@@ -191,7 +211,9 @@ function annotateCodeBlock({
   );
 
   for (const group of HIGHLIGHT_GROUPS) {
-    /** Pairs for the current highlight group; undefined when no match was found. */
+    /**
+     * Pairs for the current highlight group; undefined when no match was found.
+     */
     const pairs = pairsByGroup.get(group,);
     if ((pairs !== undefined) && (pairs.length
       > 0))
@@ -214,7 +236,9 @@ function visitNode(node: Root | Element,): void {
 
     if (child.tagName
       === 'pre') {
-      /** First child node expected to be the `<code>` block; processed when present. */
+      /**
+       * First child node expected to be the `<code>` block; processed when present.
+       */
       const [firstChild,] = child.children;
       if (
         (firstChild !== undefined)
@@ -223,13 +247,19 @@ function visitNode(node: Root | Element,): void {
           && (firstChild.tagName
             === 'code')
       ) {
-        /** Language detected from the `<code>` class list, or `NO_LANGUAGE` to skip. */
+        /**
+         * Language detected from the `<code>` class list, or `NO_LANGUAGE` to skip.
+         */
         const lang = getLanguage(firstChild,);
         if (lang !== NO_LANGUAGE) {
-          /** Lezer parser bound to the detected language, or undefined when unsupported. */
+          /**
+           * Lezer parser bound to the detected language, or undefined when unsupported.
+           */
           const parser = PARSERS[lang];
           if (parser !== undefined) {
-            /** Plain text extracted from the code element prior to highlighting. */
+            /**
+             * Plain text extracted from the code element prior to highlighting.
+             */
             const text = firstChild.children
               .map(extractText,)
               .join('',);

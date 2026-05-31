@@ -29,7 +29,9 @@ export {}; // module boundary marker
 
 //region Offset-to-Range mapping
 
-/** Flattened text node with its character offset within the parent element. */
+/**
+ * Flattened text node with its character offset within the parent element.
+ */
 type TextEntry = {
   readonly node: Text;
   readonly start: number;
@@ -43,20 +45,30 @@ type TextEntry = {
  * @returns array of text nodes with their start offsets
  */
 function collectTextNodes(element: HTMLElement,): TextEntry[] {
-  /** Sorted list of text nodes with cumulative offsets returned to the caller. */
+  /**
+   * Sorted list of text nodes with cumulative offsets returned to the caller.
+   */
   const entries: TextEntry[] = [];
-  /** Tree walker pinned to text nodes so the SHOW_TEXT cast at the loop body is sound. */
+  /**
+   * Tree walker pinned to text nodes so the SHOW_TEXT cast at the loop body is sound.
+   */
   const walker = document.createTreeWalker(
     element,
     NodeFilter.SHOW_TEXT,
   );
-  /** Running cumulative offset; mutated as nodes are visited. */
+  /**
+   * Running cumulative offset; mutated as nodes are visited.
+   */
   let offset = 0;
-  /** Loop cursor advanced through the tree walker. */
+  /**
+   * Loop cursor advanced through the tree walker.
+   */
   let current = walker.nextNode();
   while (current !== null) {
     /* oxlint-disable no-unsafe-type-assertion -- TreeWalker with SHOW_TEXT guarantees Text nodes */
-    /** Narrowed text node used for the length update and offset tracking. */
+    /**
+     * Narrowed text node used for the length update and offset tracking.
+     */
     const textNode = current as Text;
     /* oxlint-enable no-unsafe-type-assertion */
     entries.push({
@@ -88,14 +100,22 @@ function findFirstOverlap(
     readonly from: number;
   },
 ): number {
-  /** Inclusive lower binary-search bound. */
+  /**
+   * Inclusive lower binary-search bound.
+   */
   let lo = 0;
-  /** Exclusive upper binary-search bound. */
+  /**
+   * Exclusive upper binary-search bound.
+   */
   let hi = textEntries.length;
   while (lo < hi) {
-    /** Unsigned-shift midpoint avoids overflow on long entry lists. */
+    /**
+     * Unsigned-shift midpoint avoids overflow on long entry lists.
+     */
     const mid = (lo + hi) >>> 1;
-    /** Entry inspected at the midpoint of the current search window. */
+    /**
+     * Entry inspected at the midpoint of the current search window.
+     */
     const entry = nonNullishOrThrow(textEntries[mid],);
     if ((entry.start
       + entry
@@ -128,28 +148,42 @@ function createRangesFromPairs({
   readonly textEntries: readonly TextEntry[];
   readonly encoded: string;
 },): Range[] {
-  /** Accumulated DOM Range list returned to the caller. */
+  /**
+   * Accumulated DOM Range list returned to the caller.
+   */
   const ranges: Range[] = [];
 
   for (const pair of encoded.split(';',)) {
-    /** Position of the hyphen splitting `from-to`; `-1` means malformed. */
+    /**
+     * Position of the hyphen splitting `from-to`; `-1` means malformed.
+     */
     const dashIndex = pair.indexOf('-',);
     if (dashIndex === (-1))
       continue;
 
-    /** Substring before the hyphen used as the start offset. */
+    /**
+     * Substring before the hyphen used as the start offset.
+     */
     const fromStr = pair.slice(
       0,
       dashIndex,
     );
-    /** Substring after the hyphen used as the end offset. */
+    /**
+     * Substring after the hyphen used as the end offset.
+     */
     const toStr = pair.slice(dashIndex + 1,);
-    /** Numeric start offset measured in code units. */
+    /**
+     * Numeric start offset measured in code units.
+     */
     const from = Number(fromStr,);
-    /** Numeric end offset measured in code units. */
+    /**
+     * Numeric end offset measured in code units.
+     */
     const to = Number(toStr,);
 
-    /** First text-entry index that may overlap `from`, located via binary search. */
+    /**
+     * First text-entry index that may overlap `from`, located via binary search.
+     */
     const startIdx = findFirstOverlap({
       textEntries,
       from,
@@ -157,19 +191,25 @@ function createRangesFromPairs({
 
     for (let i = startIdx; i < textEntries
       .length; i++) {
-      /** Text entry inspected at the current scan index. */
+      /**
+       * Text entry inspected at the current scan index.
+       */
       const entry = nonNullishOrThrow(textEntries[i],);
       if (entry.start
         >= to)
         break;
 
-      /** Range-local start within `entry.node` clamped to zero. */
+      /**
+       * Range-local start within `entry.node` clamped to zero.
+       */
       const rangeStart = Math.max(
         0,
         from - entry
           .start,
       );
-      /** Range-local end within `entry.node` clamped to the node length. */
+      /**
+       * Range-local end within `entry.node` clamped to the node length.
+       */
       const rangeEnd = Math.min(
         entry.node
           .length,
@@ -177,7 +217,9 @@ function createRangesFromPairs({
           .start,
       );
 
-      /** Fresh DOM Range whose endpoints are set to the computed local offsets. */
+      /**
+       * Fresh DOM Range whose endpoints are set to the computed local offsets.
+       */
       const range = new Range();
       range.setStart(
         entry.node,
@@ -212,24 +254,34 @@ function highlightAllCodeBlocks(): void {
   if (((typeof CSS) === 'undefined') || (!('highlights' in CSS)))
     return;
 
-  /** Code block elements with pre-computed offset data emitted by the SSG. */
+  /**
+   * Code block elements with pre-computed offset data emitted by the SSG.
+   */
   const codeBlocks = document.querySelectorAll<HTMLElement>('pre > code',);
 
-  /** Accumulated ranges across all code blocks, keyed by highlight group. */
+  /**
+   * Accumulated ranges across all code blocks, keyed by highlight group.
+   */
   const allRanges = new Map<string, Range[]>();
 
   for (const codeElement of codeBlocks) {
-    /** Cached text node entries for this code block, reused across every highlight group. */
+    /**
+     * Cached text node entries for this code block, reused across every highlight group.
+     */
     const textEntries = collectTextNodes(codeElement,);
 
     for (const group of HIGHLIGHT_GROUPS) {
-      /** Serialised offset pairs for the current highlight group; null when absent. */
+      /**
+       * Serialised offset pairs for the current highlight group; null when absent.
+       */
       const encoded = codeElement.getAttribute(`data-hl-${group}`,);
       if ((encoded === null) || (encoded.length
         === 0))
         continue;
 
-      /** Decoded DOM ranges for this group's encoded pairs. */
+      /**
+       * Decoded DOM ranges for this group's encoded pairs.
+       */
       const ranges = createRangesFromPairs({
         textEntries,
         encoded,
@@ -238,7 +290,9 @@ function highlightAllCodeBlocks(): void {
         === 0)
         continue;
 
-      /** Existing per-group bucket initialised lazily on first encounter. */
+      /**
+       * Existing per-group bucket initialised lazily on first encounter.
+       */
       let existing = allRanges.get(group,);
       if (existing === undefined) {
         existing = [];
@@ -252,9 +306,13 @@ function highlightAllCodeBlocks(): void {
   }
 
   for (const group of HIGHLIGHT_GROUPS) {
-    /** Highlight registry name following the `hl-<group>` convention. */
+    /**
+     * Highlight registry name following the `hl-<group>` convention.
+     */
     const name = `hl-${group}`;
-    /** Merged range list for the current group, or undefined when no matches were found. */
+    /**
+     * Merged range list for the current group, or undefined when no matches were found.
+     */
     const ranges = allRanges.get(group,);
     if ((ranges !== undefined) && (ranges.length
       > 0)) {

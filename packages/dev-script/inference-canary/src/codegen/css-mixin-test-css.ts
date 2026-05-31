@@ -5,7 +5,9 @@
  * multiple @apply in one block, and mixin bodies containing full rule blocks.
  */
 
-/** Full test CSS covering recursive, nested, and top-level mixin expansion */
+/**
+ * Full test CSS covering recursive, nested, and top-level mixin expansion
+ */
 export const CSS_MIXIN_TEST_CSS: string = [
   '@mixin --flex-center {',
   '  display: flex;',

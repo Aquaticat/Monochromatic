@@ -22,40 +22,62 @@ import {
 
 //region Types and constants
 
-/** Optional starting directory for uncached root finders. */
+/**
+ * Optional starting directory for uncached root finders.
+ */
 type RootSearchOptions = {
-  /** Starting directory for upward search. Defaults to current process cwd. */
+  /**
+   * Starting directory for upward search. Defaults to current process cwd.
+   */
   readonly cwd?: string;
 };
 
-/** Process-lifetime root promise cache used by cached root finders. */
+/**
+ * Process-lifetime root promise cache used by cached root finders.
+ */
 type RootCache = {
-  /** In-flight or resolved root promise captured on first call. */
+  /**
+   * In-flight or resolved root promise captured on first call.
+   */
   root?: Promise<string>;
 };
 
-/** Marker string that identifies the monorepo root `mise.toml`. */
+/**
+ * Marker string that identifies the monorepo root `mise.toml`.
+ */
 const MONOREPO_SECTION_MARKER = '\n[monorepo]\n';
 
-/** Marker path that identifies a Git repository root. */
+/**
+ * Marker path that identifies a Git repository root.
+ */
 const GIT_MARKER_BASENAME = '.git';
 
-/** Manifest path that identifies a pnpm workspace root. */
+/**
+ * Manifest path that identifies a pnpm workspace root.
+ */
 const PNPM_WORKSPACE_MANIFEST = 'pnpm-workspace.yaml';
 
-/** Error text for missing mise monorepo root. */
+/**
+ * Error text for missing mise monorepo root.
+ */
 const MISE_ROOT_MISSING_MESSAGE =
   'Could not find monorepo root (no mise.toml with [monorepo] section found upward)';
 
-/** Error text for missing Git repository root. */
+/**
+ * Error text for missing Git repository root.
+ */
 const GIT_ROOT_MISSING_MESSAGE =
   'Could not find Git repository root (no .git marker found upward)';
 
-/** Error text for missing pnpm workspace root. */
+/**
+ * Error text for missing pnpm workspace root.
+ */
 const PNPM_ROOT_MISSING_MESSAGE =
   'Could not find pnpm workspace root (no pnpm-workspace.yaml found upward)';
 
-/** Tagged logger for public root finder entry points. */
+/**
+ * Tagged logger for public root finder entry points.
+ */
 const rootFinderLogger = tagged({ tag: 'findMonorepoRoot', },);
 
 /**
@@ -95,7 +117,9 @@ async function matchesMiseMonorepoRoot({
   dir,
   fs,
 }: RootMatcherArgs,): Promise<boolean> {
-  /** Candidate `mise.toml` content; the `ABSENT` sentinel when the file is missing. */
+  /**
+   * Candidate `mise.toml` content; the `ABSENT` sentinel when the file is missing.
+   */
   const content = await fs.readTextFile(`${dir}/mise.toml`,);
   return (content !== ABSENT) && content
     .includes(MONOREPO_SECTION_MARKER,);
@@ -165,7 +189,9 @@ function logRootSearchStart({
   readonly functionName: string;
   readonly cwd?: string;
 },): void {
-  /** Logger tagged with current public finder name. */
+  /**
+   * Logger tagged with current public finder name.
+   */
   const functionLogger = tagged({
     tag: functionName,
     l: rootFinderLogger,

@@ -85,12 +85,16 @@ type ChatCompletionResponse = {
  * ```
  */
 function resolveOpenRouterApiKey(): string | typeof ABSENT {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: resolveOpenRouterApiKey.name,
     l,
   },);
-  /** Resolved API key from preferred-then-fallback env var; treated as missing when blank. */
+  /**
+   * Resolved API key from preferred-then-fallback env var; treated as missing when blank.
+   */
   const key = process.env
     .IMAGE_DIFF_OPENROUTER_API_KEY
     ?? process
@@ -133,14 +137,18 @@ export async function describeImageDifference({
   readonly imageA: ImageInput;
   readonly imageB: ImageInput;
 },): Promise<string | typeof ABSENT> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: describeImageDifference.name,
     l,
   },);
 
   // Prefer the native Gemini API: avoids the OpenRouter proxy overhead
-  /** Description from the preferred Gemini backend; `null` when no Gemini key is configured. */
+  /**
+   * Description from the preferred Gemini backend; `null` when no Gemini key is configured.
+   */
   const geminiResult = await describeViaGemini({
     imageA,
     imageB,
@@ -151,19 +159,25 @@ export async function describeImageDifference({
   }
 
   // Fall back to OpenRouter when no Gemini API key is available
-  /** OpenRouter credential; absence triggers an early `ABSENT` return so callers can skip the description step. */
+  /**
+   * OpenRouter credential; absence triggers an early `ABSENT` return so callers can skip the description step.
+   */
   const apiKey = resolveOpenRouterApiKey();
   if (apiKey === ABSENT)
     return ABSENT;
 
   rl.debug('describing image differences via Gemini 3.1 Pro Preview on OpenRouter',);
-  /** Both images encoded as data URIs in parallel so the request body can embed them inline. */
+  /**
+   * Both images encoded as data URIs in parallel so the request body can embed them inline.
+   */
   const [uriA, uriB,] = await Promise.all([
     toImageUri(imageA,),
     toImageUri(imageB,),
   ],);
 
-  /** OpenRouter chat-completions payload pairing the diff prompt with the two image URIs. */
+  /**
+   * OpenRouter chat-completions payload pairing the diff prompt with the two image URIs.
+   */
   const requestBody: ChatCompletionRequest = {
     model: MODEL,
     messages: [
@@ -189,7 +203,9 @@ export async function describeImageDifference({
 
   rl.debug(`calling OpenRouter API with model ${MODEL}`,);
 
-  /** Raw `fetch` response; status checked before parsing JSON so errors surface with their body. */
+  /**
+   * Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
+   */
   const response = await fetch(
     OPENROUTER_API_URL,
     {
@@ -203,20 +219,28 @@ export async function describeImageDifference({
   );
 
   if (!response.ok) {
-    /** Raw response body captured for both the log line and the thrown error message. */
+    /**
+     * Raw response body captured for both the log line and the thrown error message.
+     */
     const errorBody = await response.text();
     rl.error(`OpenRouter API returned ${String(response.status,)}: ${errorBody}`,);
     throw new Error(`OpenRouter API error (${String(response.status,)}): ${errorBody}`,);
   }
 
-  /** Parsed chat-completion payload; structure validated by the discriminating-empty-choices check below. */
+  /**
+   * Parsed chat-completion payload; structure validated by the discriminating-empty-choices check below.
+   */
   const result = await response.json() as ChatCompletionResponse;
-  /** First choice destructured for content access; guarded against the empty-choices case. */
+  /**
+   * First choice destructured for content access; guarded against the empty-choices case.
+   */
   const [choice,] = result.choices;
   if (choice === undefined)
     throw new Error('OpenRouter API returned no choices',);
 
-  /** Model's textual diff description; returned directly to the caller after a debug-log of its length. */
+  /**
+   * Model's textual diff description; returned directly to the caller after a debug-log of its length.
+   */
   const description = choice.message
     .content;
   rl.debug(`received description (${String(description.length,)} chars)`,);

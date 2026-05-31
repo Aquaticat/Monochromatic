@@ -35,7 +35,9 @@ export function mergeOverrides(
     readonly overrideEntries: readonly PackageEntry[];
   },
 ): readonly PackageEntry[] {
-  /** Build lookup map from overrides array, keyed by effname */
+  /**
+   * Build lookup map from overrides array, keyed by effname
+   */
   const overrideMap = new Map<string, PackageEntry>();
   for (const entry of overrideEntries) {
     overrideMap.set(
@@ -45,7 +47,9 @@ export function mergeOverrides(
   }
 
   return generated.map(function applyOverride(entry,): PackageEntry {
-    /** Override entry matched by effname, or `undefined` when none registered. */
+    /**
+     * Override entry matched by effname, or `undefined` when none registered.
+     */
     const override = overrideMap.get(entry.effname,);
     if (!override)
       return entry;

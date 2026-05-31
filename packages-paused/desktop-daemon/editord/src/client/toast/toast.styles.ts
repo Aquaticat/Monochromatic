@@ -20,19 +20,29 @@ import {
   POPUP_FONT_SIZE,
 } from '../styles/tokens.ts';
 
-/** Toast opacity: (10-1)/10. */
+/**
+ * Toast opacity: (10-1)/10.
+ */
 const OPACITY = (10 - 1) / 10;
 
-/** Toast stacking order above other fixed elements. */
+/**
+ * Toast stacking order above other fixed elements.
+ */
 const Z_INDEX = 200;
 
-/** Horizontal centering offset as percentage. */
+/**
+ * Horizontal centering offset as percentage.
+ */
 const CENTER_OFFSET = -50;
 
-/** Horizontal centering position as percentage. */
+/**
+ * Horizontal centering position as percentage.
+ */
 const CENTER_POSITION = 50;
 
-/** Global toast styles with nested variant rules. */
+/**
+ * Global toast styles with nested variant rules.
+ */
 export const STYLES: string = $({
   rule: '.toast',
   decls: {

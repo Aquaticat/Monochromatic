@@ -4,16 +4,24 @@
  * so each per-resource seeding module stays under the max-lines budget.
  */
 
-/** SHA hex string length (40 chars for SHA-1). */
+/**
+ * SHA hex string length (40 chars for SHA-1).
+ */
 export const SHA_HEX_LENGTH = 40;
 
-/** Number base for hex SHA derivation. */
+/**
+ * Number base for hex SHA derivation.
+ */
 export const HEX_RADIX = 16;
 
-/** SHA hex chunk length (8 hex chars per `Number.prototype.toString(16)` round). */
+/**
+ * SHA hex chunk length (8 hex chars per `Number.prototype.toString(16)` round).
+ */
 export const SHA_HEX_CHUNK = 8;
 
-/** PR number offset so generated PRs do not collide with regular issue numbers. */
+/**
+ * PR number offset so generated PRs do not collide with regular issue numbers.
+ */
 export const PR_NUMBER_BASE = 100_000;
 
 /**
@@ -75,7 +83,9 @@ export function fakeSha(seed: number,): string {
         SHA_HEX_LENGTH,
       );
     }
-    /** Next rolling integer derived from the prior state via the SHA mixing step. */
+    /**
+     * Next rolling integer derived from the prior state via the SHA mixing step.
+     */
     const nextValue = Math.trunc(
       Math.imul(
         row.next
@@ -83,7 +93,9 @@ export function fakeSha(seed: number,): string {
         HEX_RADIX,
       ),
     );
-    /** Hex chunk produced from `nextValue` and clipped to the per-round chunk width. */
+    /**
+     * Hex chunk produced from `nextValue` and clipped to the per-round chunk width.
+     */
     const chunk = nextValue
       .toString(HEX_RADIX,)
       .padStart(

@@ -80,7 +80,9 @@ async function handleMorphCompactCommand({
   readonly args: string;
   readonly ctx: ExtensionCommandContext;
 },): Promise<void> {
-  /** Resolved Morph key gates the command early when missing. */
+  /**
+   * Resolved Morph key gates the command early when missing.
+   */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === NO_MORPH_KEY) {
     ctx.ui
@@ -91,14 +93,22 @@ async function handleMorphCompactCommand({
     return;
   }
 
-  /** Read-only branch view fed to the standalone compressor. */
+  /**
+   * Read-only branch view fed to the standalone compressor.
+   */
   const branchEntries = ctx.sessionManager
     .getBranch();
-  /** Snapshot of current context pressure used to choose a ratio. */
+  /**
+   * Snapshot of current context pressure used to choose a ratio.
+   */
   const contextUsage = ctx.getContextUsage();
-  /** Trimmed command-line instructions; empty string maps to undefined below. */
+  /**
+   * Trimmed command-line instructions; empty string maps to undefined below.
+   */
   const instructions = args.trim();
-  /** Optional custom focus forwarded to compressBranch. */
+  /**
+   * Optional custom focus forwarded to compressBranch.
+   */
   const customInstructions = instructions !== ''
     ? instructions
     : undefined;
@@ -110,7 +120,9 @@ async function handleMorphCompactCommand({
   );
 
   try {
-    /** Compressed branch text routed through the right IPC tier below. */
+    /**
+     * Compressed branch text routed through the right IPC tier below.
+     */
     const compressedText = await compressBranch({
       branchEntries,
       ...((contextUsage !== undefined) ? { contextUsage, } : {}),
@@ -144,7 +156,9 @@ async function handleMorphCompactCommand({
     );
   }
   catch (error) {
-    /** Best-effort diagnostic surfaced to the user via UI notify. */
+    /**
+     * Best-effort diagnostic surfaced to the user via UI notify.
+     */
     const message = error instanceof Error
       ? error.message
       : String(error,);
@@ -168,7 +182,9 @@ async function handleMorphCompactCommand({
  * by this handler.
  */
 async function handleSessionStart(): Promise<void> {
-  /** Late-bound pi API captured at extension init; absent before first registration. */
+  /**
+   * Late-bound pi API captured at extension init; absent before first registration.
+   */
   const api = extensionApiSlot.get('value',);
   if (api !== undefined)
     await handleSessionStartInject(api,);
@@ -230,7 +246,9 @@ export default function morphCompact(
       event,
       ctx,
     ) {
-      /** Morph outcome mapped to pi's before-compact result contract. */
+      /**
+       * Morph outcome mapped to pi's before-compact result contract.
+       */
       const outcome = await handleBeforeCompact({
         event,
         ctx,

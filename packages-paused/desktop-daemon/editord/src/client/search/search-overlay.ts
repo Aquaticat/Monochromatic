@@ -31,59 +31,101 @@ import {
 
 export type { ResultSelectDetail, } from './nav.ts';
 
-/** Tagged logger for the search overlay subsystem. */
+/**
+ * Tagged logger for the search overlay subsystem.
+ */
 const l = tagged({
   tag: 'search-overlay',
   l: rootLogger,
 },);
-/** Maximum milliseconds between two Shift keyup events to count as a double-shift. */
+/**
+ * Maximum milliseconds between two Shift keyup events to count as a double-shift.
+ */
 const DOUBLE_SHIFT_THRESHOLD_MS = 400;
 
-/** `<search-overlay>`: self-contained modal search dialog. */
+/**
+ * `<search-overlay>`: self-contained modal search dialog.
+ */
 export class SearchOverlay extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
-  /** Modal dialog element containing the search UI. */
+  /**
+   * Modal dialog element containing the search UI.
+   */
   #dialog: HTMLDialogElement | null = null;
-  /** Text input element for the search query. */
+  /**
+   * Text input element for the search query.
+   */
   #input: HTMLInputElement | null = null;
-  /** Container div for rendered search result elements. */
+  /**
+   * Container div for rendered search result elements.
+   */
   #resultsContainer: HTMLDivElement | null = null;
-  /** 0-based index of the currently highlighted result (-1 = none). */
+  /**
+   * 0-based index of the currently highlighted result (-1 = none).
+   */
   #selectedIndex = -1;
-  /** Cached search results from the last query. */
+  /**
+   * Cached search results from the last query.
+   */
   #results: readonly SearchResult[] = [];
-  /** Root directory path used to compute relative display paths. */
+  /**
+   * Root directory path used to compute relative display paths.
+   */
   #rootDir = '';
-  /** Width of a single monospace character in pixels for budget calculation. */
+  /**
+   * Width of a single monospace character in pixels for budget calculation.
+   */
   #charWidthPx = 0;
-  /** Timestamp of the last Shift keyup event for double-shift detection. */
+  /**
+   * Timestamp of the last Shift keyup event for double-shift detection.
+   */
   #lastShiftUp = 0;
-  /** True if a non-Shift key was pressed between two Shift releases. */
+  /**
+   * True if a non-Shift key was pressed between two Shift releases.
+   */
   #interveningKey = false;
-  /** Mutable debounce state shared across search invocations. */
+  /**
+   * Mutable debounce state shared across search invocations.
+   */
   readonly #searchState: SearchState = {
     debouncedSearch: null,
     searchGeneration: 0,
   };
-  /** Bound global keydown handler for cleanup in disconnectedCallback. */
+  /**
+   * Bound global keydown handler for cleanup in disconnectedCallback.
+   */
   #boundKeydown: ((event: KeyboardEvent,) => void) | null = null;
-  /** Bound global keyup handler for cleanup in disconnectedCallback. */
+  /**
+   * Bound global keyup handler for cleanup in disconnectedCallback.
+   */
   #boundKeyup: ((event: KeyboardEvent,) => void) | null = null;
-  /** Callback that performs a search and returns results. */
+  /**
+   * Callback that performs a search and returns results.
+   */
   onSearch: ((query: string,) => Promise<readonly SearchResult[]>) | null = null;
-  /** Callback that returns the current search scope directory. */
+  /**
+   * Callback that returns the current search scope directory.
+   */
   getRootDir: (() => string) | null = null;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the dialog and attaches keyboard listeners for double-shift. */
+  /**
+   * Renders the dialog and attaches keyboard listeners for double-shift.
+   */
   connectedCallback(): void {
-    /** Local alias for `this`; captured by the input/dialog event handler closures. */
+    /**
+     * Local alias for `this`; captured by the input/dialog event handler closures.
+     */
     const overlay = this;
     this.#input = h({
       tag: 'input',
@@ -109,7 +151,9 @@ export class SearchOverlay extends HTMLElement {
           },);
         },
         blur: function handleInputBlur(event,) {
-          /** Element receiving focus next; null when focus left the document entirely. */
+          /**
+           * Element receiving focus next; null when focus left the document entirely.
+           */
           const related = event.relatedTarget;
           if ((related === null)
             || (!(related instanceof Node))
@@ -155,7 +199,9 @@ export class SearchOverlay extends HTMLElement {
       if (event.key
         !== 'Shift')
         return;
-      /** Current timestamp; compared against `lastShiftUp` to detect a double-shift within the threshold. */
+      /**
+       * Current timestamp; compared against `lastShiftUp` to detect a double-shift within the threshold.
+       */
       const now = Date.now();
       if ((!overlay.#interveningKey)
         && (overlay.#lastShiftUp
@@ -181,7 +227,9 @@ export class SearchOverlay extends HTMLElement {
     );
   }
 
-  /** Removes global keyboard listeners added in connectedCallback. */
+  /**
+   * Removes global keyboard listeners added in connectedCallback.
+   */
   disconnectedCallback(): void {
     if (this.#boundKeydown
       !== null) {
@@ -199,7 +247,9 @@ export class SearchOverlay extends HTMLElement {
     }
   }
 
-  /** Opens the overlay. */
+  /**
+   * Opens the overlay.
+   */
   #show(): void {
     this.#rootDir = this.getRootDir?.()
       ?? '';
@@ -226,7 +276,9 @@ export class SearchOverlay extends HTMLElement {
     l.info('overlay opened',);
   }
 
-  /** Closes the search overlay. */
+  /**
+   * Closes the search overlay.
+   */
   #close(): void {
     if (this.#dialog
       !== null)
@@ -246,11 +298,17 @@ export class SearchOverlay extends HTMLElement {
     if (this.#dialog
       === null)
       return;
-    /** Resolved `font` shorthand for the dialog; passed straight to the canvas context for measurement. */
+    /**
+     * Resolved `font` shorthand for the dialog; passed straight to the canvas context for measurement.
+     */
     const { font, } = getComputedStyle(this.#dialog,);
-    /** Off-screen canvas used as a measurement surface; never attached to the document. */
+    /**
+     * Off-screen canvas used as a measurement surface; never attached to the document.
+     */
     const canvas = document.createElement('canvas',);
-    /** 2D drawing context used for `measureText`; null when the browser denies the canvas. */
+    /**
+     * 2D drawing context used for `measureText`; null when the browser denies the canvas.
+     */
     const ctx = canvas.getContext('2d',);
     if (ctx === null)
       return;
@@ -275,9 +333,13 @@ export class SearchOverlay extends HTMLElement {
       .#charWidthPx,);
   }
 
-  /** Schedules a debounced search. */
+  /**
+   * Schedules a debounced search.
+   */
   #scheduleSearch(): void {
-    /** Local alias for `this`; captured by the `execute` callback so it can call back into the instance. */
+    /**
+     * Local alias for `this`; captured by the `execute` callback so it can call back into the instance.
+     */
     const overlay = this;
     scheduleSearch({
       state: this.#searchState,
@@ -287,13 +349,17 @@ export class SearchOverlay extends HTMLElement {
     },);
   }
 
-  /** Reads the input value, invokes `onSearch`, and renders results. */
+  /**
+   * Reads the input value, invokes `onSearch`, and renders results.
+   */
   async #performSearch(): Promise<void> {
     if ((this.onSearch
       === null) || (this.#input
         === null))
       return;
-    /** Local alias for `this`; captured by the `onResults` callback. */
+    /**
+     * Local alias for `this`; captured by the `onResults` callback.
+     */
     const overlay = this;
     await performSearch({
       raw: this.#input
@@ -306,7 +372,9 @@ export class SearchOverlay extends HTMLElement {
     },);
   }
 
-  /** Renders search results into the results container. */
+  /**
+   * Renders search results into the results container.
+   */
   #renderResults(
     {
       results,
@@ -324,7 +392,9 @@ export class SearchOverlay extends HTMLElement {
       > 0 ? 0 : -1;
     if (results.length
       === 0) {
-      /** True when the input contains non-whitespace text; selects the "No results" message over a blank placeholder. */
+      /**
+       * True when the input contains non-whitespace text; selects the "No results" message over a blank placeholder.
+       */
       const hasInput = (this.#input
         !== null) && (this.#input
           .value
@@ -342,12 +412,18 @@ export class SearchOverlay extends HTMLElement {
       );
       return;
     }
-    /** Local alias for `this`; captured by the `onSelect` callback. */
+    /**
+     * Local alias for `this`; captured by the `onSelect` callback.
+     */
     const overlay = this;
-    /** Root directory with a guaranteed trailing slash; stripped from result paths when displaying them. */
+    /**
+     * Root directory with a guaranteed trailing slash; stripped from result paths when displaying them.
+     */
     const rootPrefix = this.#rootDir
       .endsWith('/',) ? this.#rootDir : `${this.#rootDir}/`;
-    /** Rendered DOM nodes for each result row, ready to swap into `resultsContainer`. */
+    /**
+     * Rendered DOM nodes for each result row, ready to swap into `resultsContainer`.
+     */
     const elements = renderResultElements({
       results,
       query,
@@ -365,7 +441,9 @@ export class SearchOverlay extends HTMLElement {
     },);
   }
 
-  /** Moves the keyboard selection by the given delta. */
+  /**
+   * Moves the keyboard selection by the given delta.
+   */
   #moveSelection({ delta, }: { readonly delta: number; },): void {
     if (this.#resultsContainer
       === null)
@@ -377,13 +455,19 @@ export class SearchOverlay extends HTMLElement {
       container: this.#resultsContainer,
     },);
   }
-  /** Confirms the current selection. */
+  /**
+   * Confirms the current selection.
+   */
   #confirmSelection(): void {
     this.#selectResult({ index: this.#selectedIndex, },);
   }
-  /** Dispatches a `result-select` event for the result at the given index and closes. */
+  /**
+   * Dispatches a `result-select` event for the result at the given index and closes.
+   */
   #selectResult({ index, }: { readonly index: number; },): void {
-    /** Event payload for `result-select`; null when `index` is out of range or `results` is empty. */
+    /**
+     * Event payload for `result-select`; null when `index` is out of range or `results` is empty.
+     */
     const detail = buildResultDetail({
       index,
       results: this.#results,

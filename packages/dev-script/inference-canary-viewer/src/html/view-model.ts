@@ -39,7 +39,9 @@ export function renderByModel({
   readonly entries: readonly ViewerEntry[];
   readonly thresholds: ReadonlyMap<string, number>;
 },): string {
-  /** Unique model labels in the order they first appear */
+  /**
+   * Unique model labels in the order they first appear
+   */
   const labels = [...new Set(entries.map(function getLabel(entry,): string {
     return entry.label;
   },),),];
@@ -52,7 +54,9 @@ export function renderByModel({
     },);
   }
 
-  /** Hide Model and Probe columns since we're within a per-model overall context */
+  /**
+   * Hide Model and Probe columns since we're within a per-model overall context
+   */
   const tableDisplay = {
     showModel: false,
     showProbe: false,
@@ -60,31 +64,45 @@ export function renderByModel({
 
   return labels
     .map(function renderModelSection(label,): string {
-      /** Entries narrowed to the current model label. */
+      /**
+       * Entries narrowed to the current model label.
+       */
       const modelEntries = entries.filter(function matchLabel(entry,): boolean {
         return entry.label
           === label;
       },);
-      /** First entry for this label; always present since `label` came from these entries. */
+      /**
+       * First entry for this label; always present since `label` came from these entries.
+       */
       const [firstEntry,] = modelEntries;
       if (firstEntry === undefined)
         throw new Error(`no entries for model label: ${label}`,);
-      /** OpenRouter model ID from the first entry, used for vendor color/icon */
+      /**
+       * OpenRouter model ID from the first entry, used for vendor color/icon
+       */
       const openrouterId = firstEntry.model;
-      /** Vendor-derived accent color reused across this model's charts. */
+      /**
+       * Vendor-derived accent color reused across this model's charts.
+       */
       const color = vendorColor(openrouterId,);
-      /** Degradation threshold for this model; absent when none was computed. */
+      /**
+       * Degradation threshold for this model; absent when none was computed.
+       */
       const thresholdValue = thresholds.get(label,);
 
       // Overall score chart
-      /** Scatter points feeding the overall-score chart for this model. */
+      /**
+       * Scatter points feeding the overall-score chart for this model.
+       */
       const overallPoints = buildOverallPoints({
         entries: modelEntries,
         label,
         openrouterId,
         color,
       },);
-      /** Rendered overall-score chart markup for this model section. */
+      /**
+       * Rendered overall-score chart markup for this model section.
+       */
       const overallChart = renderScatterChart({
         points: overallPoints,
         ...(thresholdValue !== undefined
@@ -100,16 +118,22 @@ export function renderByModel({
       },);
 
       // Per-probe charts
-      /** Distinct probe slugs scored by this model across its runs. */
+      /**
+       * Distinct probe slugs scored by this model across its runs.
+       */
       const probeNames = [
         ...new Set(modelEntries.flatMap(function probeKeys(entry,): string[] {
           return Object.keys(entry.probeScores,);
         },),),
       ];
-      /** Joined per-probe scatter chart markup for this model's breakdown. */
+      /**
+       * Joined per-probe scatter chart markup for this model's breakdown.
+       */
       const probeCharts = probeNames
         .map(function renderProbeChart(probe,): string {
-          /** Scatter points feeding this probe's per-model chart. */
+          /**
+           * Scatter points feeding this probe's per-model chart.
+           */
           const probePoints = buildProbePoints({
             entries: modelEntries,
             label,

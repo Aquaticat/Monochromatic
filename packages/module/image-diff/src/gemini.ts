@@ -43,35 +43,47 @@ async function geminiEmbed({
   readonly input: ImageInput;
   readonly config: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: geminiEmbed.name,
     l,
   },);
   rl.debug('computing single image embedding via Gemini',);
 
-  /** Resolved Gemini credential; pulled here once and forwarded into the API call. */
+  /**
+   * Resolved Gemini credential; pulled here once and forwarded into the API call.
+   */
   const apiKey = resolveGeminiApiKey(config.apiKey,);
   /**
    * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
   const model = (config.model
     ?? DEFAULT_GEMINI_MODEL) as GeminiModel;
-  /** Gemini-shaped inline data payload converted from the caller's image input. */
+  /**
+   * Gemini-shaped inline data payload converted from the caller's image input.
+   */
   const inlineData = await toGeminiInlineData(input,);
 
-  /** embedContent request body wrapping the inline data in Gemini's `content.parts[]` shape. */
+  /**
+   * embedContent request body wrapping the inline data in Gemini's `content.parts[]` shape.
+   */
   const requestBody: GeminiEmbedContentRequest = {
     content: {
       parts: [{ inline_data: inlineData, },],
     },
   };
 
-  /** Full embedContent endpoint URL with the resolved model interpolated. */
+  /**
+   * Full embedContent endpoint URL with the resolved model interpolated.
+   */
   const url = `${GEMINI_API_BASE}/${model}:embedContent`;
   rl.debug(`calling Gemini API: ${url}`,);
 
-  /** Raw `fetch` response; status checked before parsing JSON so errors surface with their body. */
+  /**
+   * Raw `fetch` response; status checked before parsing JSON so errors surface with their body.
+   */
   const response = await fetch(
     url,
     {
@@ -85,13 +97,17 @@ async function geminiEmbed({
   );
 
   if (!response.ok) {
-    /** Raw response body captured for both the log line and the thrown error message. */
+    /**
+     * Raw response body captured for both the log line and the thrown error message.
+     */
     const errorBody = await response.text();
     rl.error(`Gemini API returned ${String(response.status,)}: ${errorBody}`,);
     throw new Error(`Gemini API error (${String(response.status,)}): ${errorBody}`,);
   }
 
-  /** Parsed embedContent payload; embedding vector lives at `embedding.values`. */
+  /**
+   * Parsed embedContent payload; embedding vector lives at `embedding.values`.
+   */
   const result = await response.json() as GeminiEmbedContentResponse;
   rl.debug(
     `received embedding with ${String(result.embedding

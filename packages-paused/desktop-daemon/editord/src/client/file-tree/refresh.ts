@@ -50,12 +50,16 @@ export function resolveRefreshContainer({
   readonly rootPath: string;
   readonly loadedDirs: ReadonlySet<string>;
 },): HTMLElement | null {
-  /** Container that holds the directory's child entries; resolved branchwise below. */
+  /**
+   * Container that holds the directory's child entries; resolved branchwise below.
+   */
   let container: HTMLElement | null = null;
   if (path === rootPath)
     container = tree;
   else {
-    /** Summary node of the matching `<details>`; the parent of its `.children` sibling. */
+    /**
+     * Summary node of the matching `<details>`; the parent of its `.children` sibling.
+     */
     const summary = tree.querySelector<HTMLElement>(
       `summary[data-path="${CSS.escape(path,)}"]`,
     );
@@ -103,7 +107,9 @@ export async function performRefreshDir({
   if (state.fetchDir
     === null)
     return;
-  /** DOM container for the refreshed directory; null when the path is not currently expanded. */
+  /**
+   * DOM container for the refreshed directory; null when the path is not currently expanded.
+   */
   const container = resolveRefreshContainer({
     tree,
     path,
@@ -171,10 +177,14 @@ export async function refreshDirContents(
     },) => void;
   },
 ): Promise<void> {
-  /** Fresh listing fetched from the server; replaces the current DOM children. */
+  /**
+   * Fresh listing fetched from the server; replaces the current DOM children.
+   */
   const entries = await fetchDir(path,);
 
-  /** Preserve existing `<tree-dir-entry>` elements for subdirs that still exist. */
+  /**
+   * Preserve existing `<tree-dir-entry>` elements for subdirs that still exist.
+   */
   const existingDirs = new Map<string, TreeDirEntry>();
   for (const dirEntry of container.querySelectorAll<TreeDirEntry>(
     ':scope > tree-dir-entry',
@@ -188,18 +198,26 @@ export async function refreshDirContents(
     }
   }
 
-  /** Path-to-index lookup used to render recency markers on file entries. */
+  /**
+   * Path-to-index lookup used to render recency markers on file entries.
+   */
   const recencyMap = buildRecencyIndex({ recentPaths, },);
 
-  /** Final array of child elements; reuses dir nodes where possible to keep expansion state. */
+  /**
+   * Final array of child elements; reuses dir nodes where possible to keep expansion state.
+   */
   const elements = entries.map(function createOrReuseEntry(entry,) {
-    /** Absolute path of the current entry, derived from the parent path and the entry name. */
+    /**
+     * Absolute path of the current entry, derived from the parent path and the entry name.
+     */
     const fullPath = childPath({
       parentPath: path,
       name: entry.name,
     },);
     if (entry.isDirectory) {
-      /** Reused directory entry from the prior render, or undefined when this is a new dir. */
+      /**
+       * Reused directory entry from the prior render, or undefined when this is a new dir.
+       */
       const existing = existingDirs.get(fullPath,);
       if (existing !== undefined) {
         existingDirs.delete(fullPath,);

@@ -7,51 +7,79 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-/** Token value that terminates statement-like syntax under the always-semi rule. */
+/**
+ * Token value that terminates statement-like syntax under the always-semi rule.
+ */
 const SEMICOLON = ';';
 
-/** Parent node types whose variable-declaration left slot does not accept a trailing terminator. */
+/**
+ * Parent node types whose variable-declaration left slot does not accept a trailing terminator.
+ */
 const FOR_LEFT_PARENT_TYPES = new Set([
   'ForInStatement',
   'ForOfStatement',
 ],);
 
-/** Export-default declaration node types that are self-terminated by their own grammar. */
+/**
+ * Export-default declaration node types that are self-terminated by their own grammar.
+ */
 const EXPORT_DEFAULT_DECLARATION_SEMI_EXEMPT_TYPES = new Set([
   'ClassDeclaration',
   'FunctionDeclaration',
   'TSInterfaceDeclaration',
 ],);
 
-/** AST node with a string discriminant. */
+/**
+ * AST node with a string discriminant.
+ */
 type TypedNode = Node & {
-  /** ESTree or Oxlint node type. */
+  /**
+   * ESTree or Oxlint node type.
+   */
   readonly type: string;
 };
 
-/** AST parent shape needed to identify loop-init variable declarations. */
+/**
+ * AST parent shape needed to identify loop-init variable declarations.
+ */
 type VariableDeclarationParent = TypedNode & {
-  /** Initializer slot of `for (...)`, when parent is a `ForStatement`. */
+  /**
+   * Initializer slot of `for (...)`, when parent is a `ForStatement`.
+   */
   readonly init?: unknown;
-  /** Left slot of `for (... in/of ...)`, when parent is a for-in/of statement. */
+  /**
+   * Left slot of `for (... in/of ...)`, when parent is a for-in/of statement.
+   */
   readonly left?: unknown;
 };
 
-/** AST node carrying a parent link. */
+/**
+ * AST node carrying a parent link.
+ */
 type NodeWithParent = Node & {
-  /** Parent AST node, absent only for root-like synthetic nodes. */
+  /**
+   * Parent AST node, absent only for root-like synthetic nodes.
+   */
   readonly parent?: VariableDeclarationParent;
 };
 
-/** Export-default declaration node shape needed for semicolon exemptions. */
+/**
+ * Export-default declaration node shape needed for semicolon exemptions.
+ */
 type ExportDefaultDeclarationNode = Node & {
-  /** Declaration payload of `export default ...`. */
+  /**
+   * Declaration payload of `export default ...`.
+   */
   readonly declaration: TypedNode;
 };
 
-/** Export-named declaration node shape needed to distinguish declaration exports. */
+/**
+ * Export-named declaration node shape needed to distinguish declaration exports.
+ */
 type ExportNamedDeclarationNode = Node & {
-  /** Declaration payload, null for `export { value }`, and undefined for malformed stubs. */
+  /**
+   * Declaration payload, null for `export { value }`, and undefined for malformed stubs.
+   */
   readonly declaration?: unknown;
 };
 
@@ -59,9 +87,13 @@ type ExportNamedDeclarationNode = Node & {
  * Parameters for {@link lastTokenOf}.
  */
 type LastTokenOfParams = {
-  /** Rule context used for source-code token lookup. */
+  /**
+   * Rule context used for source-code token lookup.
+   */
   readonly context: Context;
-  /** AST node requiring a last token. */
+  /**
+   * AST node requiring a last token.
+   */
   readonly node: Node;
 };
 
@@ -69,9 +101,13 @@ type LastTokenOfParams = {
  * Parameters for {@link isForStatementInitializer}.
  */
 type IsForStatementInitializerParams = {
-  /** Variable declaration being checked. */
+  /**
+   * Variable declaration being checked.
+   */
   readonly node: Node;
-  /** Parent node that may own the declaration as a `for` initializer. */
+  /**
+   * Parent node that may own the declaration as a `for` initializer.
+   */
   readonly parent: VariableDeclarationParent;
 };
 
@@ -79,9 +115,13 @@ type IsForStatementInitializerParams = {
  * Parameters for {@link isForInOrOfLeft}.
  */
 type IsForInOrOfLeftParams = {
-  /** Variable declaration being checked. */
+  /**
+   * Variable declaration being checked.
+   */
   readonly node: Node;
-  /** Parent node that may own the declaration as a for-in/of left side. */
+  /**
+   * Parent node that may own the declaration as a for-in/of left side.
+   */
   readonly parent: VariableDeclarationParent;
 };
 
@@ -89,9 +129,13 @@ type IsForInOrOfLeftParams = {
  * Parameters for {@link checkForSemicolon}.
  */
 type CheckForSemicolonParams = {
-  /** Rule context with token lookup and reporting APIs. */
+  /**
+   * Rule context with token lookup and reporting APIs.
+   */
   readonly context: Context;
-  /** Statement-like AST node being checked. */
+  /**
+   * Statement-like AST node being checked.
+   */
   readonly node: Node;
 };
 
@@ -110,11 +154,17 @@ type CheckForSemicolonParams = {
  * ```
  */
 function lastTokenOf(params: Readonly<LastTokenOfParams>,): Token {
-  /** Rule context used for source-code token lookup. */
+  /**
+   * Rule context used for source-code token lookup.
+   */
   const { context, } = params;
-  /** AST node requiring a last token. */
+  /**
+   * AST node requiring a last token.
+   */
   const { node, } = params;
-  /** Last token from Oxlint's token store, or null for malformed synthetic nodes. */
+  /**
+   * Last token from Oxlint's token store, or null for malformed synthetic nodes.
+   */
   const lastToken = context.sourceCode
     .getLastToken(node,);
   if (lastToken === null) {
@@ -137,9 +187,13 @@ function lastTokenOf(params: Readonly<LastTokenOfParams>,): Token {
  * ```
  */
 function isForStatementInitializer(params: Readonly<IsForStatementInitializerParams>,): boolean {
-  /** Variable declaration being checked. */
+  /**
+   * Variable declaration being checked.
+   */
   const { node, } = params;
-  /** Parent node that may be a `ForStatement`. */
+  /**
+   * Parent node that may be a `ForStatement`.
+   */
   const { parent, } = params;
   return (parent.type === 'ForStatement') && (parent.init === node);
 }
@@ -157,9 +211,13 @@ function isForStatementInitializer(params: Readonly<IsForStatementInitializerPar
  * ```
  */
 function isForInOrOfLeft(params: Readonly<IsForInOrOfLeftParams>,): boolean {
-  /** Variable declaration being checked. */
+  /**
+   * Variable declaration being checked.
+   */
   const { node, } = params;
-  /** Parent node that may be a for-in/of statement. */
+  /**
+   * Parent node that may be a for-in/of statement.
+   */
   const { parent, } = params;
   return FOR_LEFT_PARENT_TYPES.has(parent.type,) && (parent.left === node);
 }
@@ -181,7 +239,9 @@ function isForInOrOfLeft(params: Readonly<IsForInOrOfLeftParams>,): boolean {
  * ```
  */
 function shouldCheckVariableDeclaration(node: Node,): boolean {
-  /** Parent link from Oxlint's AST, narrowed to the loop fields this rule reads. */
+  /**
+   * Parent link from Oxlint's AST, narrowed to the loop fields this rule reads.
+   */
   const { parent, } = node as NodeWithParent;
   if (parent === undefined)
     return true;
@@ -218,7 +278,9 @@ function shouldCheckVariableDeclaration(node: Node,): boolean {
  * ```
  */
 function shouldCheckExportDefaultDeclaration(node: Node,): boolean {
-  /** Export-default declaration payload, narrowed to its discriminant. */
+  /**
+   * Export-default declaration payload, narrowed to its discriminant.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint Node omits declaration fields exposed by this visitor node
   const { declaration, } = node as ExportDefaultDeclarationNode;
 
@@ -238,11 +300,17 @@ function shouldCheckExportDefaultDeclaration(node: Node,): boolean {
  * ```
  */
 function checkForSemicolon(params: Readonly<CheckForSemicolonParams>,): void {
-  /** Rule context with token lookup and reporting APIs. */
+  /**
+   * Rule context with token lookup and reporting APIs.
+   */
   const { context, } = params;
-  /** Statement-like AST node being checked. */
+  /**
+   * Statement-like AST node being checked.
+   */
   const { node, } = params;
-  /** Last syntax token determines whether the node is already terminated. */
+  /**
+   * Last syntax token determines whether the node is already terminated.
+   */
   const lastToken = lastTokenOf({
     context,
     node,
@@ -325,7 +393,9 @@ export const semi: CreateOnceRule = {
      * @param node - export-named declaration being checked
      */
     function checkExportNamedDeclaration(node: Node,): void {
-      /** Export-named declaration payload; null for `export { value }`. */
+      /**
+       * Export-named declaration payload; null for `export { value }`.
+       */
       const { declaration, } = node as ExportNamedDeclarationNode;
       if (declaration === null) {
         check(node,);

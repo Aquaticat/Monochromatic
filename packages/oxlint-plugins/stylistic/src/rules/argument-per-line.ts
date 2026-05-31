@@ -7,9 +7,13 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Call-like node shape carrying arguments for this rule. */
+/**
+ * Call-like node shape carrying arguments for this rule.
+ */
 type ArgumentListNode = Span & {
-  /** Arguments passed to call-like syntax. */
+  /**
+   * Arguments passed to call-like syntax.
+   */
   readonly arguments?: readonly Span[];
 };
 
@@ -53,9 +57,13 @@ export const argumentPerLine: CreateOnceRule = {
      * @param node - call expression AST node
      */
     function checkCall(node: Span,): void {
-      /** Narrowed call-like visitor node used for argument access. */
+      /**
+       * Narrowed call-like visitor node used for argument access.
+       */
       const callNode = node as ArgumentListNode;
-      /** Extract arguments from the call-like node. */
+      /**
+       * Extract arguments from the call-like node.
+       */
       const { arguments: args, } = callNode;
       if (args === undefined)
         return;

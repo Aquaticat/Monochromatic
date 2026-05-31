@@ -29,10 +29,14 @@ import {
 
 import { BYTES_PER_MIB, } from '@monochromatic-dev/module-const/ts';
 
-/** Tier-3 character threshold: one mebibyte. */
+/**
+ * Tier-3 character threshold: one mebibyte.
+ */
 const TIER_3_THRESHOLD_BYTES: number = BYTES_PER_MIB;
 
-/** Maximum revisions allowed per message; mirrors `messages.MAX_REVISIONS`. */
+/**
+ * Maximum revisions allowed per message; mirrors `messages.MAX_REVISIONS`.
+ */
 const MAX_REVISIONS_DISPLAY = 10;
 
 /**
@@ -72,10 +76,14 @@ function startingTier(chunkCount: number,): 1 | 2 | 3 {
  * ```
  */
 export async function renderEditPage(messageId: number,): Promise<Response> {
-  /** Snapshot of the message; `ABSENT` branches to 404 / 410 below. */
+  /**
+   * Snapshot of the message; `ABSENT` branches to 404 / 410 below.
+   */
   const snapshot = await getSnapshot(messageId,);
   if (snapshot === ABSENT) {
-    /** Disambiguates 410 Gone (was a message, now deleted) from 404 Not Found. */
+    /**
+     * Disambiguates 410 Gone (was a message, now deleted) from 404 Not Found.
+     */
     const exists = await messageExists(messageId,);
     return new Response(
       renderSimplePage({
@@ -98,7 +106,9 @@ export async function renderEditPage(messageId: number,): Promise<Response> {
     );
   }
 
-  /** Edit shell body HTML (back link, heading, revision label). */
+  /**
+   * Edit shell body HTML (back link, heading, revision label).
+   */
   const body = h({
     tag: 'section',
     attrs: { class: 'edit-shell', },
@@ -126,7 +136,9 @@ export async function renderEditPage(messageId: number,): Promise<Response> {
     ],
   },);
 
-  /** Complete HTML document for the edit page. */
+  /**
+   * Complete HTML document for the edit page.
+   */
   const html = renderPage({
     title: `Edit message ${String(messageId,)}`,
     body,

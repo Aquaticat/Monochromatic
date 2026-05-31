@@ -30,9 +30,13 @@ import type {
  * ```
  */
 export async function nextSequence(row: {
-  /** Resource discriminant. */
+  /**
+   * Resource discriminant.
+   */
   readonly resourceType: ResourceType;
-  /** Resource id. */
+  /**
+   * Resource id.
+   */
   readonly resourceId: string;
 },): Promise<number> {
   await run({
@@ -44,7 +48,9 @@ export async function nextSequence(row: {
       row.resourceId,
     ],
   },);
-  /** Re-read after the upsert returns the post-increment value. */
+  /**
+   * Re-read after the upsert returns the post-increment value.
+   */
   const sequenceRow = await get<{ current: number; }>({
     sql: 'SELECT current FROM sequences WHERE resource_type = ? AND resource_id = ?',
     params: [
@@ -84,7 +90,9 @@ export async function insertEvent(row: {
   readonly sequenceNumber: number;
   readonly createdAt: number;
 },): Promise<number> {
-  /** Insert result; `lastInsertRowid` becomes the returned `events.id`. */
+  /**
+   * Insert result; `lastInsertRowid` becomes the returned `events.id`.
+   */
   const result = await run({
     sql:
       `INSERT INTO events(resource_type, resource_id, kind, payload, sequence_number, created_at)
@@ -114,9 +122,13 @@ export async function insertEvent(row: {
  * ```
  */
 export async function listEventsAfter(row: {
-  /** Exclusive lower bound on `events.id`. */
+  /**
+   * Exclusive lower bound on `events.id`.
+   */
   readonly afterId: number;
-  /** Maximum number of rows to return. */
+  /**
+   * Maximum number of rows to return.
+   */
   readonly limit: number;
 },): Promise<EventRow[]> {
   return await all<EventRow>({

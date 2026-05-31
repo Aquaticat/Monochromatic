@@ -43,7 +43,9 @@ searchForm.addEventListener(
 
         processingParagraph.removeAttribute('hidden',);
 
-        /** Exa search response feeding the cost display and per-result population. */
+        /**
+         * Exa search response feeding the cost display and per-result population.
+         */
         const results = await searchExa({
           apiKey: apiKey.getValue(),
           baseUrl,
@@ -118,7 +120,9 @@ changeApiKeyButton.addEventListener(
   function onChangeApiKey() {
     void (async function promptForNewApiKey(): Promise<void> {
       try {
-        /** Raw prompt response validated against `apiKeySchema` before observable assignment. */
+        /**
+         * Raw prompt response validated against `apiKeySchema` before observable assignment.
+         */
         const inputApiKey = nonNullishOrThrow(
           await prompt({ message: 'Change api key', },),
         );

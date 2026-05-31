@@ -29,13 +29,17 @@ const NO_STEP_GAP = -1;
  * ```
  */
 function assertContiguousSteps(steps: readonly unknown[],): void {
-  /** First missing step slot, or `-1` when all slots are present. */
+  /**
+   * First missing step slot, or `-1` when all slots are present.
+   */
   const firstGap = steps.indexOf(undefined,);
 
   if (firstGap === NO_STEP_GAP)
     return;
 
-  /** Whether any later slot is present after the first missing slot. */
+  /**
+   * Whether any later slot is present after the first missing slot.
+   */
   const hasLaterStep = steps
     .slice(firstGap + 1,)
     .some(function stepIsPresent(step,) {
@@ -87,7 +91,9 @@ function assertNoOverflowStep(overflowStep?: unknown,): void {
  * ```
  */
 export function runPipe(args: RunArgs,): unknown {
-  /** Logger tagged at the synchronous core boundary. */
+  /**
+   * Logger tagged at the synchronous core boundary.
+   */
   const l = tagged(args.l === undefined
     ? { tag: runPipe.name, }
     : {
@@ -97,10 +103,14 @@ export function runPipe(args: RunArgs,): unknown {
   l.debug('entry',);
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- widen each step's `never` input to `unknown` for application; RunCallableArgs preserves `this: void`, so this is parameter-variance widening only and the typed overloads remain the type-safe public surface */
-  /** Callable arguments with step inputs widened for internal invocation. */
+  /**
+   * Callable arguments with step inputs widened for internal invocation.
+   */
   const callableArgs = args as RunCallableArgs;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Callable value and steps destructured so step functions are invoked without method-style `this`. */
+  /**
+   * Callable value and steps destructured so step functions are invoked without method-style `this`.
+   */
   const {
     value,
     fn1,
@@ -114,7 +124,9 @@ export function runPipe(args: RunArgs,): unknown {
     fn9,
     fn10,
   } = callableArgs;
-  /** Ordered step slots used only for runtime contiguity validation. */
+  /**
+   * Ordered step slots used only for runtime contiguity validation.
+   */
   const steps = [
     fn1,
     fn2,
@@ -187,7 +199,9 @@ export function runPipe(args: RunArgs,): unknown {
         fn6(
           fn5(
             fn4(
-              fn3(fn2(fn1(value,),),),
+              fn3(
+                fn2(fn1(value,),),
+              ),
             ),
           ),
         ),
@@ -199,7 +213,9 @@ export function runPipe(args: RunArgs,): unknown {
         fn7(
           fn6(
             fn5(
-              fn4(fn3(fn2(fn1(value,),),),),
+              fn4(
+                fn3(fn2(fn1(value,),),),
+              ),
             ),
           ),
         ),
@@ -211,7 +227,9 @@ export function runPipe(args: RunArgs,): unknown {
       fn8(
         fn7(
           fn6(
-            fn5(fn4(fn3(fn2(fn1(value,),),),),),
+            fn5(
+              fn4(fn3(fn2(fn1(value,),),),),
+            ),
           ),
         ),
       ),
@@ -247,7 +265,9 @@ export function runPipe(args: RunArgs,): unknown {
  * ```
  */
 export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
-  /** Logger tagged at the asynchronous core boundary. */
+  /**
+   * Logger tagged at the asynchronous core boundary.
+   */
   const l = tagged(args.l === undefined
     ? { tag: runPipeAsync.name, }
     : {
@@ -257,10 +277,14 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
   l.debug('entry',);
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- widen each step's `never` input to `unknown` for application; RunCallableArgs preserves `this: void`, so this is parameter-variance widening only and the typed overloads remain the type-safe public surface */
-  /** Callable arguments with step inputs widened for internal invocation. */
+  /**
+   * Callable arguments with step inputs widened for internal invocation.
+   */
   const callableArgs = args as RunCallableArgs;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Callable value and steps destructured so step functions are invoked without method-style `this`. */
+  /**
+   * Callable value and steps destructured so step functions are invoked without method-style `this`.
+   */
   const {
     value,
     fn1,
@@ -274,7 +298,9 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
     fn9,
     fn10,
   } = callableArgs;
-  /** Ordered step slots used only for runtime contiguity validation. */
+  /**
+   * Ordered step slots used only for runtime contiguity validation.
+   */
   const steps = [
     fn1,
     fn2,
@@ -347,7 +373,9 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
         await fn6(
           await fn5(
             await fn4(
-              await fn3(await fn2(await fn1(await value,),),),
+              await fn3(
+                await fn2(await fn1(await value,),),
+              ),
             ),
           ),
         ),

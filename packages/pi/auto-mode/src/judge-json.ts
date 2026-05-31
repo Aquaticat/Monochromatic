@@ -6,7 +6,9 @@
 
 import type { Verdict, } from './types.ts';
 
-/** Maximum characters of judge text to include in error messages. */
+/**
+ * Maximum characters of judge text to include in error messages.
+ */
 const JUDGE_TEXT_ERROR_LIMIT = 200;
 
 /**
@@ -40,7 +42,9 @@ function extractJsonVerdict(
     /* Fall through to balanced-brace scan. */
   }
 
-  /** First balanced `{...}` block found in the free-text output, or empty when none exists. */
+  /**
+   * First balanced `{...}` block found in the free-text output, or empty when none exists.
+   */
   const block = findBalancedJsonObject(text,);
   if (block === '') {
     throw new Error(
@@ -74,23 +78,33 @@ function extractJsonVerdict(
  * ```
  */
 function findBalancedJsonObject(text: string,): string {
-  /** Index of the first `{` in the text; the scan starts here. */
+  /**
+   * Index of the first `{` in the text; the scan starts here.
+   */
   const start = text.indexOf('{',);
   if (start === (-1))
     return '';
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- balanced-brace scanner state machine mutated across the character loop (depth counter, string-mode latch, escape latch) */
-  /** Brace nesting depth; the slice is taken when this returns to 0. */
+  /**
+   * Brace nesting depth; the slice is taken when this returns to 0.
+   */
   let depth = 0;
-  /** True while the scan is inside a double-quoted string literal so braces are ignored. */
+  /**
+   * True while the scan is inside a double-quoted string literal so braces are ignored.
+   */
   let inString = false;
-  /** True after a backslash inside a string so the next character is treated as literal. */
+  /**
+   * True after a backslash inside a string so the next character is treated as literal.
+   */
   let escape = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (let i = start; i < text
     .length; i++) {
-    /** Character at the current scan position, used by the state machine below. */
+    /**
+     * Character at the current scan position, used by the state machine below.
+     */
     const ch = text[i];
 
     if (escape) {
@@ -138,13 +152,19 @@ function findBalancedJsonObject(text: string,): string {
 function parseVerdict(
   args: Readonly<Record<string, string>>,
 ): Verdict {
-  /** Raw verdict string, defaulted to `ask` when missing so the union check below decides. */
+  /**
+   * Raw verdict string, defaulted to `ask` when missing so the union check below decides.
+   */
   const verdict = args.verdict
     ?? 'ask';
-  /** Free-text rationale captured from the judge response. */
+  /**
+   * Free-text rationale captured from the judge response.
+   */
   const reason = args.reason
     ?? '';
-  /** Guidance string to surface back to the agent; empty for approvals. */
+  /**
+   * Guidance string to surface back to the agent; empty for approvals.
+   */
   const guidance = args.guidance
     ?? '';
 

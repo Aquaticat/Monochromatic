@@ -75,7 +75,9 @@ function jsonResponse({
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
-    /** Loosely-typed body validated by `isRecord` before field-by-field access. */
+    /**
+     * Loosely-typed body validated by `isRecord` before field-by-field access.
+     */
     const body: unknown = await req.json();
     if (!isRecord(body,)) {
       return jsonResponse({
@@ -84,7 +86,9 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       },);
     }
 
-    /** Trimmed title; empty string short-circuits to the 400 branch below. */
+    /**
+     * Trimmed title; empty string short-circuits to the 400 branch below.
+     */
     const title = (typeof body.title) === 'string' ? body.title
       .trim() : '';
     if (title.length
@@ -95,33 +99,49 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       },);
     }
 
-    /** Allowed priority values reused for both `priority` and `complexity` parsing. */
+    /**
+     * Allowed priority values reused for both `priority` and `complexity` parsing.
+     */
     const priorities = getPriorities();
-    /** Validated tags; INVALID (not an array) falls back to an empty list. */
+    /**
+     * Validated tags; INVALID (not an array) falls back to an empty list.
+     */
     const parsedTags = parseStringArray(body.tags,);
-    /** Validated locations; INVALID falls back to an empty list. */
+    /**
+     * Validated locations; INVALID falls back to an empty list.
+     */
     const parsedLocations = parseStringArray(body.locations,);
-    /** Validated priority string, or INVALID when absent/unrecognised. */
+    /**
+     * Validated priority string, or INVALID when absent/unrecognised.
+     */
     const parsedPriority = parseEnumValue({
       value: body.priority,
       validValues: priorities,
     },);
-    /** Validated complexity string, or INVALID when absent/unrecognised. */
+    /**
+     * Validated complexity string, or INVALID when absent/unrecognised.
+     */
     const parsedComplexity = parseEnumValue({
       value: body.complexity,
       validValues: priorities,
     },);
-    /** Priority field, included only when a valid value was supplied. */
+    /**
+     * Priority field, included only when a valid value was supplied.
+     */
     const priorityField: { priority?: TaskPriority; } = parsedPriority === INVALID
       ? {}
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- member of the priorities set, which holds exactly the TaskPriority values
       : { priority: parsedPriority as TaskPriority, };
-    /** Complexity field, included only when a valid value was supplied. */
+    /**
+     * Complexity field, included only when a valid value was supplied.
+     */
     const complexityField: { complexity?: TaskComplexity; } = parsedComplexity === INVALID
       ? {}
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- member of the priorities set, whose low/medium/high values are exactly the TaskComplexity values
       : { complexity: parsedComplexity as TaskComplexity, };
-    /** Created row returned by the data layer; serialised below with 201. */
+    /**
+     * Created row returned by the data layer; serialised below with 201.
+     */
     const task = await createTask({
       title,
       ...(((typeof body.description) === 'string') ? { description: body.description, } : {}),
@@ -165,9 +185,13 @@ export async function handleUpdateTask({
   readonly id: string;
 },): Promise<Response> {
   try {
-    /** Loosely-typed body validated by `parseTaskUpdateInput` below. */
+    /**
+     * Loosely-typed body validated by `parseTaskUpdateInput` below.
+     */
     const body: unknown = await req.json();
-    /** Normalised update payload; INVALID indicates the body failed validation. */
+    /**
+     * Normalised update payload; INVALID indicates the body failed validation.
+     */
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === INVALID) {
       return jsonResponse({
@@ -176,7 +200,9 @@ export async function handleUpdateTask({
       },);
     }
 
-    /** Result row; the not-found sentinel is surfaced as 404 below. */
+    /**
+     * Result row; the not-found sentinel is surfaced as 404 below.
+     */
     const task = await updateTask({
       id,
       input: taskUpdateInput,
@@ -211,7 +237,9 @@ export async function handleUpdateTask({
  * ```
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
-  /** Whether a row was actually removed; `false` is surfaced as 404 below. */
+  /**
+   * Whether a row was actually removed; `false` is surfaced as 404 below.
+   */
   const deleted = await deleteTask(id,);
   if (!deleted) {
     return jsonResponse({

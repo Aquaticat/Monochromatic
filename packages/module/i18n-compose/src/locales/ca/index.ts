@@ -37,20 +37,28 @@ export function defineCatalanLocale<
 >(
   input: DefineCatalanLocaleInput<Label, Subject, Verb, Noun>,
 ): LocaleSpec<Label, Subject, Verb, Noun> {
-  /** Noun-phrase renderer closed over the noun + subject tables. */
+  /**
+   * Noun-phrase renderer closed over the noun + subject tables.
+   */
   const renderNounPhrase = makeCatalanNounPhraseRenderer({
     nouns: input.nouns,
     subjects: input.subjects,
   },);
-  /** Adverbial cluster renderer depending on noun-phrase rendering. */
+  /**
+   * Adverbial cluster renderer depending on noun-phrase rendering.
+   */
   const renderAdverbials = makeCatalanAdverbialRenderer({ renderNounPhrase, },);
-  /** Verb-phrase renderer with closure over verbs + sub-renderers. */
+  /**
+   * Verb-phrase renderer with closure over verbs + sub-renderers.
+   */
   const renderVerbPhrase = makeCatalanVerbPhraseRenderer({
     verbs: input.verbs,
     renderNounPhrase,
     renderAdverbials,
   },);
-  /** Sentence renderer dispatching on AST kind. */
+  /**
+   * Sentence renderer dispatching on AST kind.
+   */
   const renderSentence = makeCatalanSentenceRenderer({
     subjects: input.subjects,
     verbs: input.verbs,
@@ -58,7 +66,9 @@ export function defineCatalanLocale<
     renderVerbPhrase,
     renderAdverbials,
   },);
-  /** Fragment renderer dispatching on AST kind. */
+  /**
+   * Fragment renderer dispatching on AST kind.
+   */
   const renderFragment = makeCatalanFragmentRenderer({
     labels: input.labels,
     verbs: input.verbs,

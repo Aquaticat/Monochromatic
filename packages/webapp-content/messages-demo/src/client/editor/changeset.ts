@@ -20,11 +20,17 @@
  * (the empty string for a pure delete).
  */
 export type Changeset = {
-  /** Inclusive start offset in the pre-edit buffer. */
+  /**
+   * Inclusive start offset in the pre-edit buffer.
+   */
   readonly from: number;
-  /** Exclusive end offset in the pre-edit buffer. */
+  /**
+   * Exclusive end offset in the pre-edit buffer.
+   */
   readonly to: number;
-  /** Replacement text. */
+  /**
+   * Replacement text.
+   */
   readonly insert: string;
 };
 
@@ -52,7 +58,9 @@ export function invertChangeset(
     readonly before: string;
   },
 ): Changeset {
-  /** Pre-edit substring captured so the inverse can re-insert it on undo. */
+  /**
+   * Pre-edit substring captured so the inverse can re-insert it on undo.
+   */
   const removed = input.before
     .slice(
     input.changeset
@@ -155,7 +163,9 @@ export function mapOffsetThroughChangeset(
       .changeset
       .insert
       .length;
-  /** Net length change so offsets past the edit window shift by exactly this much. */
+  /**
+   * Net length change so offsets past the edit window shift by exactly this much.
+   */
   const delta = input.changeset
     .insert
     .length
@@ -207,7 +217,9 @@ export function composeChangesets(
     readonly b: Changeset;
   },
 ): Changeset | typeof NOT_COMPOSABLE {
-  /** Offset where `a` ends after its insert; composition is only legal when `b` lands here. */
+  /**
+   * Offset where `a` ends after its insert; composition is only legal when `b` lands here.
+   */
   const insertEnd = input.a
     .from
     + input

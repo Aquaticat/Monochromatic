@@ -22,16 +22,24 @@ import {
   renderChunks,
 } from '../lib/markdown-stream.ts';
 
-/** Maximum length of the preview snippet, in characters. */
+/**
+ * Maximum length of the preview snippet, in characters.
+ */
 const PREVIEW_MAX_LENGTH = 200;
 
-/** Maximum number of PUT retries per chunk. */
+/**
+ * Maximum number of PUT retries per chunk.
+ */
 const PUT_MAX_ATTEMPTS = 3;
 
-/** Initial backoff delay between PUT retries, in milliseconds. */
+/**
+ * Initial backoff delay between PUT retries, in milliseconds.
+ */
 const PUT_BACKOFF_BASE_MS = 250;
 
-/** Inbound message from the composer. */
+/**
+ * Inbound message from the composer.
+ */
 type InboundMessage =
   | {
     readonly kind: 'compile-and-upload';
@@ -43,7 +51,9 @@ type InboundMessage =
     readonly body: string;
   };
 
-/** Outbound message back to the composer. */
+/**
+ * Outbound message back to the composer.
+ */
 type OutboundMessage =
   | {
     readonly kind: 'progress';
@@ -64,13 +74,21 @@ type OutboundMessage =
   }
   | {
     readonly kind: 'metrics';
-    /** Time in ms to render each chunk's HTML (one entry per chunk). */
+    /**
+     * Time in ms to render each chunk's HTML (one entry per chunk).
+     */
     readonly compileMs: readonly number[];
-    /** Time in ms each chunk spent PUT-pending (zero in compile-only). */
+    /**
+     * Time in ms each chunk spent PUT-pending (zero in compile-only).
+     */
     readonly putMs: readonly number[];
-    /** Maximum observed depth of the in-flight PUT queue this session. */
+    /**
+     * Maximum observed depth of the in-flight PUT queue this session.
+     */
     readonly maxPutQueueDepth: number;
-    /** Number of chunk renders discarded before their PUT acked. */
+    /**
+     * Number of chunk renders discarded before their PUT acked.
+     */
     readonly wastedPuts: number;
   }
   | {
@@ -95,7 +113,9 @@ type OutboundMessage =
  * ```
  */
 async function onMessage(event: MessageEvent<InboundMessage>,): Promise<void> {
-  /** Destructured early so the kind switch can read it without repeated `event.data` access. */
+  /**
+   * Destructured early so the kind switch can read it without repeated `event.data` access.
+   */
   const { data, } = event;
   try {
     if (data.kind
@@ -106,7 +126,9 @@ async function onMessage(event: MessageEvent<InboundMessage>,): Promise<void> {
       runCompileOnly(data,);
   }
   catch (error) {
-    /** Default text overwritten when the caught value has a usable message; sent as the error envelope. */
+    /**
+     * Default text overwritten when the caught value has a usable message; sent as the error envelope.
+     */
     let message = 'unknown worker error';
     if (error instanceof Error)
       ({ message, } = error);
@@ -138,26 +160,38 @@ self.addEventListener(
  */
 function runCompileOnly(input: { body: string; },): void {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming compile pipeline: `charCount` sums per-chunk char counts; `firstMd` captures the chunk-0 markdown exactly once; `lastTick` is the previous-boundary timestamp subtracted on every iteration to bill per-chunk compile cost */
-  /** Aggregated rendered chunks, sent on the `done` envelope so the main thread can PUT them in one batch. */
+  /**
+   * Aggregated rendered chunks, sent on the `done` envelope so the main thread can PUT them in one batch.
+   */
   const collected: {
     md: string;
     html: string;
     charCount: number;
   }[] = [];
-  /** Per-chunk compile durations; sent on the `metrics` envelope for the overlay. */
+  /**
+   * Per-chunk compile durations; sent on the `metrics` envelope for the overlay.
+   */
   const compileMs: number[] = [];
-  /** Running sum of char counts; sent on the `done` envelope as the message's total length. */
+  /**
+   * Running sum of char counts; sent on the `done` envelope as the message's total length.
+   */
   let charCount = 0;
-  /** First chunk's markdown, captured once so the preview can be extracted after the loop. */
+  /**
+   * First chunk's markdown, captured once so the preview can be extracted after the loop.
+   */
   let firstMd = '';
   // renderChunks is a lazy generator: each iteration runs the chunker
   // up to the next block boundary and calls micromark on the block.
   // Timing each iteration captures the per-chunk compile cost.
-  /** Tick of the previous boundary; subtracted from `now` to bill per-chunk compile time. */
+  /**
+   * Tick of the previous boundary; subtracted from `now` to bill per-chunk compile time.
+   */
   let lastTick = performance.now();
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   for (const chunk of renderChunks(input.body,)) {
-    /** Tick at the start of this iteration; replaces `lastTick` once the duration is recorded. */
+    /**
+     * Tick at the start of this iteration; replaces `lastTick` once the duration is recorded.
+     */
     const now = performance.now();
     compileMs.push(now - lastTick,);
     lastTick = now;
@@ -203,39 +237,61 @@ async function runCompileAndUpload(
   },
 ): Promise<void> {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming PUT pipeline: `seq`/`charCount`/`firstMd` accumulate across the PUT loop and feed the final `done` envelope; `maxPutQueueDepth`/`pendingPuts` form the in-flight-depth high-watermark recorded in metrics; `chunkTick` is the rolling boundary used to bill per-block compile time */
-  /** Monotonic chunk index used as the PUT seq path segment and progress envelope value. */
+  /**
+   * Monotonic chunk index used as the PUT seq path segment and progress envelope value.
+   */
   let seq = 0;
-  /** Running sum of char counts; sent on the `done` envelope as the message's total length. */
+  /**
+   * Running sum of char counts; sent on the `done` envelope as the message's total length.
+   */
   let charCount = 0;
-  /** First chunk's markdown, captured once so the preview can be extracted after the loop. */
+  /**
+   * First chunk's markdown, captured once so the preview can be extracted after the loop.
+   */
   let firstMd = '';
-  /** Buffer of every PUT'd chunk; sent on the `done` envelope so the main thread can adopt them. */
+  /**
+   * Buffer of every PUT'd chunk; sent on the `done` envelope so the main thread can adopt them.
+   */
   const allChunks: {
     md: string;
     html: string;
     charCount: number;
   }[] = [];
-  /** Per-chunk compile durations recorded inside the chunker loop. */
+  /**
+   * Per-chunk compile durations recorded inside the chunker loop.
+   */
   const compileMs: number[] = [];
-  /** Per-chunk PUT durations recorded around each network call. */
+  /**
+   * Per-chunk PUT durations recorded around each network call.
+   */
   const putMs: number[] = [];
-  /** Max observed in-flight PUT depth this session; sent on the `metrics` envelope. */
+  /**
+   * Max observed in-flight PUT depth this session; sent on the `metrics` envelope.
+   */
   let maxPutQueueDepth = 0;
-  /** In-flight PUT counter; incremented before each PUT and decremented after ack. */
+  /**
+   * In-flight PUT counter; incremented before each PUT and decremented after ack.
+   */
   let pendingPuts = 0;
   // Time the chunker: the iteration cost includes the per-block
   // micromark compile, which is what we want to measure.
-  /** Tick of the previous chunker boundary; subtracted from `now` to bill compile time. */
+  /**
+   * Tick of the previous chunker boundary; subtracted from `now` to bill compile time.
+   */
   let chunkTick = performance.now();
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  /** Pre-PUT staging: chunker fully drains here before any PUT starts so progress totals are exact. */
+  /**
+   * Pre-PUT staging: chunker fully drains here before any PUT starts so progress totals are exact.
+   */
   const chunks: {
     md: string;
     html: string;
     charCount: number;
   }[] = [];
   for (const chunk of renderChunks(input.body,)) {
-    /** Tick at the start of this chunker iteration; replaces `chunkTick` after billing. */
+    /**
+     * Tick at the start of this chunker iteration; replaces `chunkTick` after billing.
+     */
     const now = performance.now();
     compileMs.push(now - chunkTick,);
     chunkTick = now;
@@ -256,9 +312,13 @@ async function runCompileAndUpload(
       maxPutQueueDepth,
       pendingPuts,
     );
-    /** Tick at PUT start; subtracted from the post-await tick to record PUT duration. */
+    /**
+     * Tick at PUT start; subtracted from the post-await tick to record PUT duration.
+     */
     const putStart = performance.now();
-    /** Highest contiguous seq the server acknowledges; forwarded via the `progress` envelope. */
+    /**
+     * Highest contiguous seq the server acknowledges; forwarded via the `progress` envelope.
+     */
     const ack = await putOneChunk({
       draftId: input.draftId,
       seq,
@@ -328,11 +388,15 @@ async function putOneChunk(
     };
   },
 ): Promise<number> {
-  /** Stable URL captured once so every retry attempt targets the same chunk slot. */
+  /**
+   * Stable URL captured once so every retry attempt targets the same chunk slot.
+   */
   const url = `/api/drafts/${encodeURIComponent(input.draftId,)}/chunks/${
     String(input.seq,)
   }`;
-  /** JSON body serialised once outside the retry loop to avoid repeated stringify cost. */
+  /**
+   * JSON body serialised once outside the retry loop to avoid repeated stringify cost.
+   */
   const body = JSON.stringify({
     md: input.chunk
       .md,
@@ -342,7 +406,9 @@ async function putOneChunk(
       .charCount,
   },);
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- retry-loop error capture: the catch arm assigns the latest failure and the post-loop throw rethrows it; replacing with a try-catch-around-each-attempt loses the bounded-retry shape */
-  /** Holds the most recent failure so the post-loop throw can rethrow it. */
+  /**
+   * Holds the most recent failure so the post-loop throw can rethrow it.
+   */
   let lastError: unknown = undefined;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   // Retry loop with exponential backoff: each attempt depends on the
@@ -350,7 +416,9 @@ async function putOneChunk(
   /* oxlint-disable eslint/no-await-in-loop */
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
-      /** Awaited so both the status check and the JSON read can reuse the same response. */
+      /**
+       * Awaited so both the status check and the JSON read can reuse the same response.
+       */
       const response = await fetch(
         url,
         {
@@ -365,14 +433,18 @@ async function putOneChunk(
         );
       }
       /* oxlint-disable typescript/no-unsafe-type-assertion -- json is unknown */
-      /** Server ack envelope; the `ack` field falls back to `input.seq` when missing or non-numeric. */
+      /**
+       * Server ack envelope; the `ack` field falls back to `input.seq` when missing or non-numeric.
+       */
       const parsed = await response.json() as { ack?: unknown; };
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       return (typeof parsed.ack) === 'number' ? parsed.ack : input.seq;
     }
     catch (error) {
       lastError = error;
-      /** Exponential backoff per retry; doubles on each attempt (250 ms, 500 ms, 1 s). */
+      /**
+       * Exponential backoff per retry; doubles on each attempt (250 ms, 500 ms, 1 s).
+       */
       const delay = PUT_BACKOFF_BASE_MS * (1 << attempt);
       // setTimeout is callback-based; the Promise constructor is the only
       // way to await the delay.

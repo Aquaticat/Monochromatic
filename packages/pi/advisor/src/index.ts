@@ -34,7 +34,9 @@ import {
 import { renderAdvisorMessage, } from './rendering.ts';
 import { createAdvisorTool, } from './tool.ts';
 
-/** Tagged logger for the Advisor entry point. */
+/**
+ * Tagged logger for the Advisor entry point.
+ */
 const l = tagged({
   tag: 'index',
   l: parentLogger,
@@ -56,14 +58,20 @@ const l = tagged({
 export default function advisor(
   pi: ExtensionAPI,
 ): void {
-  /** Logger tagged with the extension factory name. */
+  /**
+   * Logger tagged with the extension factory name.
+   */
   const innerL = tagged({
     tag: advisor.name,
     l,
   },);
-  /** Runtime config loaded at extension startup. */
+  /**
+   * Runtime config loaded at extension startup.
+   */
   const config = loadMergedConfig({ cwd: process.cwd(), },);
-  /** Mutable session state controlled by `/advisor on` and `/advisor off`. */
+  /**
+   * Mutable session state controlled by `/advisor on` and `/advisor off`.
+   */
   const state = createAdvisorSessionState(config.enabled,);
 
   innerL.info(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
@@ -119,7 +127,9 @@ export default function advisor(
       if (!state.getEnabled())
         return undefined;
 
-      /** Advisor guidance appended to the main model system prompt. */
+      /**
+       * Advisor guidance appended to the main model system prompt.
+       */
       const guidance = buildMainModelGuidance({
         ctx,
         config,
@@ -158,12 +168,16 @@ function buildMainModelGuidance(
     readonly config: ReturnType<typeof loadMergedConfig>;
   },
 ): string {
-  /** Effective scoped model set. */
+  /**
+   * Effective scoped model set.
+   */
   const scope = resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);
-  /** Default model for empty Advisor params. */
+  /**
+   * Default model for empty Advisor params.
+   */
   const defaultSelection = scope.entries
     .length
     === 0
@@ -173,7 +187,9 @@ function buildMainModelGuidance(
       estimatedInputTokens: 0,
       maxOutputTokens: config.maxAdvisorOutputTokens,
     },);
-  /** Canonical slugs available to Advisor. */
+  /**
+   * Canonical slugs available to Advisor.
+   */
   const scopedSlugs = scope.entries
     .map(function mapEntry(entry,) {
     return entry.canonicalSlug;

@@ -20,14 +20,18 @@ import type {
   TestVerb,
 } from './types.ts';
 
-/** Catalan label table for tests. */
+/**
+ * Catalan label table for tests.
+ */
 export const caLabels: Record<TestLabel, string> = {
   siteName: 'Aquaticat',
   noResults: 'Sense resultats',
   page: 'pàgina',
 };
 
-/** Catalan subject table for tests. */
+/**
+ * Catalan subject table for tests.
+ */
 export const caSubjects: Record<TestSubject, SubjectEntry> = {
   I: {
     surface: 'Jo',
@@ -55,7 +59,9 @@ export const caSubjects: Record<TestSubject, SubjectEntry> = {
   },
 };
 
-/** Catalan noun table for tests. */
+/**
+ * Catalan noun table for tests.
+ */
 export const caNouns: Record<TestNoun, NounEntry> = {
   cat: {
     surface: 'gat',
@@ -124,7 +130,9 @@ function toReadonlyMap<const K extends string, V,>(
   record: Readonly<Record<K, V>>,
 ): ReadonlyMap<K, V> {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() widens keys to string; the record's own `K` is the source of truth, so the cast restores it, routed through `unknown` because the generic key blocks a direct narrowing assertion. */
-  /** Record entries retyped so the resulting Map keeps `K` instead of `string`. */
+  /**
+   * Record entries retyped so the resulting Map keeps `K` instead of `string`.
+   */
   const entries = Object.entries(record,) as unknown as readonly (readonly [
     K,
     V,
@@ -133,7 +141,9 @@ function toReadonlyMap<const K extends string, V,>(
   return new Map(entries,);
 }
 
-/** Catalan verb table for tests. */
+/**
+ * Catalan verb table for tests.
+ */
 export const caVerbs: Record<TestVerb, CatalanVerbEntry> = {
   have: {
     infinitive: 'tenir',

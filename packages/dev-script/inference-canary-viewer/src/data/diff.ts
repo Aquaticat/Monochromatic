@@ -9,7 +9,9 @@ import spawn from 'nano-spawn';
 import { findGitRepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 import dedent from 'string-dedent';
 
-/** Single line in a diff result */
+/**
+ * Single line in a diff result
+ */
 export type DiffLine = {
   readonly type: 'added' | 'removed' | 'unchanged';
   readonly content: string;
@@ -102,9 +104,13 @@ async function captureGitDiffStdout({
     // build task with cwd set to the package directory, so spawn from the
     // resolved repo root instead. The --no-index paths are absolute, so the cwd
     // shift never changes which files git diffs.
-    /** Git repository root, resolved to satisfy cli-git's repo-root guard. */
+    /**
+     * Git repository root, resolved to satisfy cli-git's repo-root guard.
+     */
     const gitRoot = await findGitRepoRootCached();
-    /** Spawn result holding stdout on the success path. */
+    /**
+     * Spawn result holding stdout on the success path.
+     */
     const result = await spawn(
       'git',
       [
@@ -172,7 +178,9 @@ export async function computeDiff({
   readonly initialPath: string;
   readonly fixPath: string;
 },): Promise<readonly DiffLine[]> {
-  /** Raw unified-diff stdout captured from `git diff --no-index`; the differ case carries the diff text, unexpected git failures throw GitDiffError. */
+  /**
+   * Raw unified-diff stdout captured from `git diff --no-index`; the differ case carries the diff text, unexpected git failures throw GitDiffError.
+   */
   const stdout = await captureGitDiffStdout({
     initialPath,
     fixPath,
@@ -190,12 +198,18 @@ export async function computeDiff({
  * @returns parsed diff lines
  */
 function parseDiffOutput(output: string,): readonly DiffLine[] {
-  /** Raw output split into lines so each can be classified against the unified-diff prefixes. */
+  /**
+   * Raw output split into lines so each can be classified against the unified-diff prefixes.
+   */
   const lines = output.split('\n',);
-  /** Accumulator that collects classified diff lines once the parser is inside a hunk. */
+  /**
+   * Accumulator that collects classified diff lines once the parser is inside a hunk.
+   */
   const result: DiffLine[] = [];
 
-  /** Whether we have passed the header and reached actual diff content */
+  /**
+   * Whether we have passed the header and reached actual diff content
+   */
   let inHunk = false;
 
   for (const line of lines) {

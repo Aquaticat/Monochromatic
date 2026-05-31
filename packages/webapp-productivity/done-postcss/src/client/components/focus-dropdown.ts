@@ -6,7 +6,9 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { FOCUS_DROPDOWN_STYLES, } from './focus-dropdown-styles.ts';
 
-/** Default focus preset options. */
+/**
+ * Default focus preset options.
+ */
 const DEFAULT_PRESETS = [
   'Adulting tasks first',
   'Quick wins only',
@@ -17,37 +19,53 @@ const DEFAULT_PRESETS = [
  * `\<focus-dropdown\>` web component for selecting a focus preset.
  */
 class FocusDropdown extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Currently selected preset value. */
+  /**
+   * Currently selected preset value.
+   */
   #value: string;
 
-  /** Initializes the shadow root with empty value. */
+  /**
+   * Initializes the shadow root with empty value.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
     this.#value = '';
   }
 
-  /** Reads initial value from attribute and renders the dropdown. */
+  /**
+   * Reads initial value from attribute and renders the dropdown.
+   */
   connectedCallback(): void {
     this.#value = this.getAttribute('value',)
       ?? 'Select focus...';
     this.#render();
   }
 
-  /** Renders the trigger button and popover menu with preset options. */
+  /**
+   * Renders the trigger button and popover menu with preset options.
+   */
   #render(): void {
-    /** Captured so option-click closures reach this component without `this`-bound functions. */
+    /**
+     * Captured so option-click closures reach this component without `this`-bound functions.
+     */
     const self = this;
-    /** Trigger label span captured so option clicks can update it in place. */
+    /**
+     * Trigger label span captured so option clicks can update it in place.
+     */
     const textSpan = h({
       tag: 'span',
       class: 'text',
       text: this.#value,
     },);
-    /** Popover menu captured so option clicks can call `hidePopover()` after selection. */
+    /**
+     * Popover menu captured so option clicks can call `hidePopover()` after selection.
+     */
     const menu = h({
       tag: 'ul',
       class: 'menu',

@@ -20,14 +20,20 @@
  */
 export type $ = string & { length: 1; };
 
-/** Compile-time test: single character passes via type assertion. */
+/**
+ * Compile-time test: single character passes via type assertion.
+ */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- compile-time test narrowing string literal to branded Char type
 const _one: $ = '1' as $;
 
-/** Compile-time test: multi-character string fails assignment. */
+/**
+ * Compile-time test: multi-character string fails assignment.
+ */
 // @ts-expect-error; Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
 const _two: $ = '12';
 
-/** Compile-time test: empty string fails assignment. */
+/**
+ * Compile-time test: empty string fails assignment.
+ */
 // @ts-expect-error; Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
 const _empty: $ = '';

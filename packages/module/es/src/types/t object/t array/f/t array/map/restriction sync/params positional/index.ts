@@ -84,7 +84,9 @@
     ) => T_mappedElement);
   arrayLike: Iterable<T_element>;
 },): T_mappedElement[] {
-  /** Materialised array used so the union-typed callback can dispatch through Array.map. */
+  /**
+   * Materialised array used so the union-typed callback can dispatch through Array.map.
+   */
   const arr: T_element[] = [...arrayLike,];
   // oxlint-disable-next-line unicorn/no-array-callback-reference -- mappingFn union signature handles all Array.map callback arities
   return arr.map(mappingFn,);

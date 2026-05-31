@@ -80,7 +80,9 @@ function buildUserContent(
     readonly batchContext: readonly BatchEntry[];
   },
 ): string {
-  /** Per-line accumulator for the rendered prompt body; joined with newlines on return. */
+  /**
+   * Per-line accumulator for the rendered prompt body; joined with newlines on return.
+   */
   const lines: string[] = [
     `Working directory: ${cwd}`,
     '',
@@ -137,7 +139,9 @@ function buildJsonRetrySystemPrompt(
     readonly systemPrompt: string;
   },
 ): string {
-  /** System prompt with the unavailable tool-call transport sentence removed. */
+  /**
+   * System prompt with the unavailable tool-call transport sentence removed.
+   */
   const retryBasePrompt = systemPrompt
     .split(TOOL_CALL_TRANSPORT_INSTRUCTION,)
     .join('For this retry, use the direct JSON transport described below.',);
@@ -167,7 +171,9 @@ function buildJsonRetryUserContent(
     readonly firstAttemptTextContent: string;
   },
 ): string {
-  /** Retry prompt lines, optionally extended with first-attempt text for diagnostics. */
+  /**
+   * Retry prompt lines, optionally extended with first-attempt text for diagnostics.
+   */
   const lines = [
     'The previous judge response did not call render_verdict.',
     'Re-evaluate the original action and return the verdict as direct JSON only.',

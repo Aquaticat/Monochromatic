@@ -17,16 +17,24 @@ import {
 
 import { POPUP_HOST_DECLS, } from '../styles/tokens.ts';
 
-/** Maximum width of the references popup in rem. */
+/**
+ * Maximum width of the references popup in rem.
+ */
 const MAX_WIDTH_REM = 30;
 
-/** Maximum height of the references popup in rem. */
+/**
+ * Maximum height of the references popup in rem.
+ */
 const MAX_HEIGHT_REM = 16;
 
-/** Item padding in rem: 1/4. */
+/**
+ * Item padding in rem: 1/4.
+ */
 const ITEM_PADDING = 1 / (2 * 2);
 
-/** Shadow DOM styles for the references popup. */
+/**
+ * Shadow DOM styles for the references popup.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

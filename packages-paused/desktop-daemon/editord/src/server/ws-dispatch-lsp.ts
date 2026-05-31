@@ -72,7 +72,9 @@ export async function dispatchLspMessage(
         },
       },);
     }
-    /** Inlay-hint records returned by the manager; converted to wire form below. */
+    /**
+     * Inlay-hint records returned by the manager; converted to wire form below.
+     */
     const hints = await lspManager.inlayHints({
       path: parsed.path,
       range: parsed
@@ -107,7 +109,9 @@ export async function dispatchLspMessage(
   if (parsed.type
     === 'watchDir') {
     if (dirWatcher !== null) {
-      /** Resolved root-rebased path required by the chokidar watcher. */
+      /**
+       * Resolved root-rebased path required by the chokidar watcher.
+       */
       const absolutePath = assertWithinRoot({
         rootDir,
         path: parsed.path,
@@ -128,7 +132,9 @@ export async function dispatchLspMessage(
         },
       },);
     }
-    /** LSP hover payload; null branch sends an empty result below. */
+    /**
+     * LSP hover payload; null branch sends an empty result below.
+     */
     const hover = await lspManager.hover({
       path: parsed.path,
       line: parsed.line,
@@ -168,7 +174,9 @@ export async function dispatchLspMessage(
         },
       },);
     }
-    /** Completion records returned by the manager; converted to wire form below. */
+    /**
+     * Completion records returned by the manager; converted to wire form below.
+     */
     const items = await lspManager.completion({
       path: parsed.path,
       line: parsed.line,
@@ -196,9 +204,13 @@ export async function dispatchLspMessage(
         },
       },);
     }
-    /** LSP-shape edits converted to the editord wire shape on the next line. */
+    /**
+     * LSP-shape edits converted to the editord wire shape on the next line.
+     */
     const lspEdits = await lspManager.format({ path: parsed.path, },);
-    /** Wire-shape edits sent to the client. */
+    /**
+     * Wire-shape edits sent to the client.
+     */
     const edits: TextEdit[] = lspEdits.map(function convertEdit(edit,) {
       return {
         range: edit.range,

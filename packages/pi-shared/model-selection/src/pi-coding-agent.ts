@@ -8,11 +8,17 @@ import { estimateTokens, } from '@earendil-works/pi-coding-agent';
 
 //region Types
 
-/** Options for estimating Advisor-style request input tokens. */
+/**
+ * Options for estimating Advisor-style request input tokens.
+ */
 export type EstimateAdvisorTokensOptions = {
-  /** Advisor model system prompt. */
+  /**
+   * Advisor model system prompt.
+   */
   readonly systemPrompt: string;
-  /** Serialized conversation context. */
+  /**
+   * Serialized conversation context.
+   */
   readonly contextText: string;
 };
 
@@ -35,7 +41,9 @@ export type EstimateAdvisorTokensOptions = {
 export function estimateAdvisorInputTokens(
   options: EstimateAdvisorTokensOptions,
 ): number {
-  /** Synthetic user message matching secondary Advisor request shape. */
+  /**
+   * Synthetic user message matching secondary Advisor request shape.
+   */
   const message: Parameters<typeof estimateTokens>[0] = {
     role: 'user',
     content: `${options.systemPrompt}\n\n${options.contextText}`,

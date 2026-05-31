@@ -10,7 +10,9 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { STYLES, } from './rename-input.styles.ts';
 
-/** Vertical offset from the cursor to position the input below the symbol. */
+/**
+ * Vertical offset from the cursor to position the input below the symbol.
+ */
 const VERTICAL_OFFSET = 4;
 
 /**
@@ -21,19 +23,27 @@ const VERTICAL_OFFSET = 4;
  * and selects all text on show.
  */
 export class RenameInput extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Text input element. */
+  /**
+   * Text input element.
+   */
   #input: HTMLInputElement | null = null;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the input and wires keyboard handlers. */
+  /**
+   * Renders the input and wires keyboard handlers.
+   */
   connectedCallback(): void {
     this.#input = h({
       tag: 'input',
@@ -58,9 +68,13 @@ export class RenameInput extends HTMLElement {
       'manual',
     );
 
-    /** Local alias for the private input field used by both keydown branches below. */
+    /**
+     * Local alias for the private input field used by both keydown branches below.
+     */
     const input = this.#input;
-    /** Captured for the listener closures because event callbacks rebind `this`. */
+    /**
+     * Captured for the listener closures because event callbacks rebind `this`.
+     */
     const component = this;
 
     input.addEventListener(
@@ -70,7 +84,9 @@ export class RenameInput extends HTMLElement {
         if (event.key
           === 'Enter') {
           event.preventDefault();
-          /** Whitespace-only entries are dropped to avoid no-op renames. */
+          /**
+           * Whitespace-only entries are dropped to avoid no-op renames.
+           */
           const newName = input.value
             .trim();
           if (newName !== '') {
@@ -101,7 +117,9 @@ export class RenameInput extends HTMLElement {
       },
     );
 
-    /** Prevent clicks inside the rename input from propagating to the editor. */
+    /**
+     * Prevent clicks inside the rename input from propagating to the editor.
+     */
     input.addEventListener(
       'mousedown',
       function stopPropagation(event,) {
@@ -154,7 +172,9 @@ export class RenameInput extends HTMLElement {
       .select();
   }
 
-  /** Hides the rename input. */
+  /**
+   * Hides the rename input.
+   */
   hide(): void {
     if (this.matches(':popover-open',))
       this.hidePopover();

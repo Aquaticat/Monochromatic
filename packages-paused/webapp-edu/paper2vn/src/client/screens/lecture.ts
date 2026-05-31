@@ -60,37 +60,55 @@ import {
  */
 type TimerId = ReturnType<typeof setTimeout>;
 
-/** Beat-runtime state (kept on the screen instance). */
+/**
+ * Beat-runtime state (kept on the screen instance).
+ */
 type Runtime = {
-  /** Whether auto-advance is on. */
+  /**
+   * Whether auto-advance is on.
+   */
   auto: boolean;
 
-  /** Current typewriter cancel handle, if a reveal is in progress. */
+  /**
+   * Current typewriter cancel handle, if a reveal is in progress.
+   */
   typewriterCancel: Cancel | undefined;
 
-  /** Pending auto-advance timer id. */
+  /**
+   * Pending auto-advance timer id.
+   */
   autoTimer: TimerId | undefined;
 
-  /** Whether the dialogue is currently hidden (Hide toolbar button). */
+  /**
+   * Whether the dialogue is currently hidden (Hide toolbar button).
+   */
   hidden: boolean;
 
-  /** Current ask form root node, when the panel is open. */
+  /**
+   * Current ask form root node, when the panel is open.
+   */
   askPanel: HTMLElement | undefined;
 };
 
-/** Single-slot container holding the most recent mount's teardown closure. */
+/**
+ * Single-slot container holding the most recent mount's teardown closure.
+ */
 const lectureState: {
   currentTeardown: (() => void) | undefined;
 } = {
   currentTeardown: undefined,
 };
 
-/** Toolbar handler for the Log button: routes to the memory-log screen. */
+/**
+ * Toolbar handler for the Log button: routes to the memory-log screen.
+ */
 function goToLog(): void {
   navigate('log',);
 }
 
-/** Toolbar handler for the Menu button: routes back to the main menu. */
+/**
+ * Toolbar handler for the Menu button: routes back to the main menu.
+ */
 function goBackToMenu(): void {
   navigate('menu',);
 }
@@ -101,7 +119,9 @@ function goBackToMenu(): void {
  * @param entry - log entry to append to the active save's log
  */
 function appendLog(entry: Readonly<LogEntry>,): void {
-  /** Active save snapshot used to append `entry` to its log. */
+  /**
+   * Active save snapshot used to append `entry` to its log.
+   */
   const save = getActiveSave();
   if (save === undefined)
     return;
@@ -119,16 +139,22 @@ function appendLog(entry: Readonly<LogEntry>,): void {
  * @param root - host element the screen mounts into
  */
 function mount(root: HTMLElement,): void {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  /** Active save snapshot; missing means the user landed here without a save. */
+  /**
+   * Active save snapshot; missing means the user landed here without a save.
+   */
   const save = getActiveSave();
   if (save === undefined) {
     navigate('menu',);
     return;
   }
-  /** Per-mount mutable runtime state (auto, timers, hidden, ask panel). */
+  /**
+   * Per-mount mutable runtime state (auto, timers, hidden, ask panel).
+   */
   const runtime: Runtime = {
     auto: false,
     typewriterCancel: undefined,
@@ -137,7 +163,9 @@ function mount(root: HTMLElement,): void {
     askPanel: undefined,
   };
 
-  /** Assembled stage subtree (background, character, dialogue, chapter card, toolbar). */
+  /**
+   * Assembled stage subtree (background, character, dialogue, chapter card, toolbar).
+   */
   const {
     stage,
     characterImg,
@@ -148,7 +176,9 @@ function mount(root: HTMLElement,): void {
     toolbar,
   } = buildLectureStage();
 
-  /** Outer screen container wrapping the assembled stage. */
+  /**
+   * Outer screen container wrapping the assembled stage.
+   */
   const screen = el({
     tag: 'section',
     attrs: {
@@ -159,7 +189,9 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 
-  /** Cancels any in-flight typewriter, auto timer, or speech. */
+  /**
+   * Cancels any in-flight typewriter, auto timer, or speech.
+   */
   function clearTimers(): void {
     if (runtime.typewriterCancel
       !== undefined) {
@@ -174,14 +206,20 @@ function mount(root: HTMLElement,): void {
     stopSpeaking();
   }
 
-  /** Renders the current beat: pose, typewriter reveal, optional speech, auto-advance. */
+  /**
+   * Renders the current beat: pose, typewriter reveal, optional speech, auto-advance.
+   */
   async function showCurrentBeat(): Promise<void> {
     clearTimers();
-    /** Beat to render at the saved indices, or `undefined` when none remains. */
+    /**
+     * Beat to render at the saved indices, or `undefined` when none remains.
+     */
     const beat = currentBeat();
     if (beat === undefined)
       return;
-    /** Active save snapshot read alongside the beat lookup. */
+    /**
+     * Active save snapshot read alongside the beat lookup.
+     */
     const live = getActiveSave();
     if (live === undefined)
       return;
@@ -200,16 +238,22 @@ function mount(root: HTMLElement,): void {
       pose: beat.pose
         ?? 'neutral',
     },);
-    /** Settings snapshot used to pick the typewriter speed. */
+    /**
+     * Settings snapshot used to pick the typewriter speed.
+     */
     const settings = getSettings();
-    /** Typewriter controller exposing cancel and a completion promise. */
+    /**
+     * Typewriter controller exposing cancel and a completion promise.
+     */
     const tw = typewrite({
       target: dialogueText,
       text: beat.text,
       charsPerSecond: settings.textSpeed,
     },);
     runtime.typewriterCancel = tw.cancel;
-    /** Pending speech promise when voice playback is enabled. */
+    /**
+     * Pending speech promise when voice playback is enabled.
+     */
     const speakPromise: Promise<void> | undefined = canSpeak()
       ? speak(beat.text,)
       : undefined;
@@ -222,7 +266,9 @@ function mount(root: HTMLElement,): void {
     persistActiveSave();
     if (!runtime.auto)
       return;
-    /** Fresh settings read after speech/log so the latest values drive auto-advance. */
+    /**
+     * Fresh settings read after speech/log so the latest values drive auto-advance.
+     */
     const settingsAfter = getSettings();
     if (settingsAfter.autoAdvanceByVoice
       && (speakPromise !== undefined)) {
@@ -241,22 +287,30 @@ function mount(root: HTMLElement,): void {
     );
   }
 
-  /** Repaint trigger consumed by `advanceBeat`/`regressBeat` from the runtime helper. */
+  /**
+   * Repaint trigger consumed by `advanceBeat`/`regressBeat` from the runtime helper.
+   */
   function repaint(): void {
     void showCurrentBeat();
   }
 
-  /** Moves to the next beat (or next chapter, or parks at the end). */
+  /**
+   * Moves to the next beat (or next chapter, or parks at the end).
+   */
   function advance(): void {
     advanceBeat({ onAdvanced: repaint, },);
   }
 
-  /** Moves to the previous beat (or end of the previous chapter). */
+  /**
+   * Moves to the previous beat (or end of the previous chapter).
+   */
   function regress(): void {
     regressBeat({ onRegressed: repaint, },);
   }
 
-  /** Toggles auto-advance and immediately advances once when turning on. */
+  /**
+   * Toggles auto-advance and immediately advances once when turning on.
+   */
   function toggleAuto(): void {
     runtime.auto = !runtime.auto;
     autoBtn.dataset
@@ -267,14 +321,18 @@ function mount(root: HTMLElement,): void {
     }
   }
 
-  /** Toggles visibility of dialogue and toolbar to reveal the background. */
+  /**
+   * Toggles visibility of dialogue and toolbar to reveal the background.
+   */
   function toggleHide(): void {
     runtime.hidden = !runtime.hidden;
     dialogueBox.hidden = runtime.hidden;
     toolbar.hidden = runtime.hidden;
   }
 
-  /** Opens the ask-the-persona panel; no-op when one is already open. */
+  /**
+   * Opens the ask-the-persona panel; no-op when one is already open.
+   */
   function openAsk(): void {
     if (runtime.askPanel
       !== undefined)
@@ -299,37 +357,49 @@ function mount(root: HTMLElement,): void {
     },);
   }
 
-  /** Back toolbar button stepping the dialogue cursor backward. */
+  /**
+   * Back toolbar button stepping the dialogue cursor backward.
+   */
   const backBtn = toolbarButton({
     label: ll.back(),
     variant: 'ghost',
     onActivate: regress,
   },);
-  /** Auto toolbar button toggling auto-advance state. */
+  /**
+   * Auto toolbar button toggling auto-advance state.
+   */
   const autoBtn = toolbarButton({
     label: ll.auto(),
     variant: 'ghost',
     onActivate: toggleAuto,
   },);
-  /** Log toolbar button navigating to the memory-log screen. */
+  /**
+   * Log toolbar button navigating to the memory-log screen.
+   */
   const logBtn = toolbarButton({
     label: ll.log(),
     variant: 'ghost',
     onActivate: goToLog,
   },);
-  /** Hide toolbar button toggling dialogue/toolbar visibility. */
+  /**
+   * Hide toolbar button toggling dialogue/toolbar visibility.
+   */
   const hideBtn = toolbarButton({
     label: ll.hide(),
     variant: 'ghost',
     onActivate: toggleHide,
   },);
-  /** Ask toolbar button opening the persona-question panel. */
+  /**
+   * Ask toolbar button opening the persona-question panel.
+   */
   const askBtn = toolbarButton({
     label: ll.ask(),
     variant: 'primary',
     onActivate: openAsk,
   },);
-  /** Menu toolbar button returning to the main menu. */
+  /**
+   * Menu toolbar button returning to the main menu.
+   */
   const menuBtn = toolbarButton({
     label: 'Menu',
     variant: 'ghost',
@@ -344,7 +414,9 @@ function mount(root: HTMLElement,): void {
     askBtn,
   );
 
-  /** Global keyboard handler driving advance/regress shortcuts. */
+  /**
+   * Global keyboard handler driving advance/regress shortcuts.
+   */
   const onKey = lectureKeyHandler({
     runtime,
     advance,
@@ -355,7 +427,9 @@ function mount(root: HTMLElement,): void {
     onKey,
   );
 
-  /** Stage click handler advancing the dialogue while ignoring control clicks. */
+  /**
+   * Stage click handler advancing the dialogue while ignoring control clicks.
+   */
   const onStageClick = lectureStageClickHandler({
     runtime,
     advance,

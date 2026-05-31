@@ -49,13 +49,21 @@ export function createProbeClient(config: RunnerConfig,): OpenAI {
  * ```
  */
 type ExecuteProbeOptions = {
-  /** Canary probe to execute */
+  /**
+   * Canary probe to execute
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** OpenAI SDK client (reused across consistency runs and fix pass; narrow readonly view) */
+  /**
+   * OpenAI SDK client (reused across consistency runs and fix pass; narrow readonly view)
+   */
   readonly client: ChatClient;
-  /** Optional abort signal; cancels the HTTP stream when aborted */
+  /**
+   * Optional abort signal; cancels the HTTP stream when aborted
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -85,7 +93,9 @@ export function executeProbe({
   client,
   signal,
 }: ExecuteProbeOptions,): Promise<CompletionResult> {
-  /** Two-turn chat history (system + user) assembled from the probe's text fields. */
+  /**
+   * Two-turn chat history (system + user) assembled from the probe's text fields.
+   */
   const messages: ChatMessage[] = [
     {
       role: 'system',

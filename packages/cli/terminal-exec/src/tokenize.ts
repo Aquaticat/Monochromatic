@@ -9,7 +9,9 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'tokenize',
   l: parentLogger,
@@ -22,7 +24,9 @@ const l = tagged({
  */
 export const INVALID_EXEC: unique symbol = Symbol('terminal-exec/invalid-exec',);
 
-/** Shell metacharacters that are invalid unquoted in Exec values. */
+/**
+ * Shell metacharacters that are invalid unquoted in Exec values.
+ */
 const UNQUOTED_REJECT = new Set([
   '$',
   '`',
@@ -35,7 +39,9 @@ const UNQUOTED_REJECT = new Set([
   ')',
 ],);
 
-/** Recognized `%` field codes to strip from Exec values. */
+/**
+ * Recognized `%` field codes to strip from Exec values.
+ */
 const FIELD_CODES = new Set([
   'f',
   'F',
@@ -67,18 +73,28 @@ const FIELD_CODES = new Set([
  * ```
  */
 export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly string[] | typeof INVALID_EXEC {
-  /** Output accumulator; pushed when whitespace ends a token. */
+  /**
+   * Output accumulator; pushed when whitespace ends a token.
+   */
   const tokens: string[] = [];
-  /** In-progress token characters; reset on whitespace. */
+  /**
+   * In-progress token characters; reset on whitespace.
+   */
   let current = '';
-  /** Quote-state gate; toggled by unescaped `"` characters. */
+  /**
+   * Quote-state gate; toggled by unescaped `"` characters.
+   */
   let inQuote = false;
-  /** Input cursor; multi-character constructs advance by 2 to skip the escaped second char. */
+  /**
+   * Input cursor; multi-character constructs advance by 2 to skip the escaped second char.
+   */
   let i = 0;
 
   while (i < exec
     .length) {
-    /** Current input character, scoped to the loop iteration. */
+    /**
+     * Current input character, scoped to the loop iteration.
+     */
     const ch = exec[i];
     if (ch === undefined)
       break;
@@ -91,7 +107,9 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
       }
       if ((ch === '\\') && ((i + 1) < exec
         .length)) {
-        /** Lookahead char for the quoted-backslash escape branch. */
+        /**
+         * Lookahead char for the quoted-backslash escape branch.
+         */
         const next = exec[i + 1];
         if (next === undefined)
           break; // unreachable (length checked above)
@@ -132,7 +150,9 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
     //region % field code stripping
     if ((ch === '%') && ((i + 1) < exec
       .length)) {
-      /** Lookahead char for the `%` field-code branch. */
+      /**
+       * Lookahead char for the `%` field-code branch.
+       */
       const next = exec[i + 1];
       if (next === undefined)
         break; // unreachable (length checked above)

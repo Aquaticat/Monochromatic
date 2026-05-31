@@ -30,7 +30,9 @@ type BrowserslistResolver = typeof browserslist;
  * ```
  */
 async function importBrowserslist(): Promise<BrowserslistResolver> {
-  /** CommonJS package namespace exposed through ESM dynamic import. */
+  /**
+   * CommonJS package namespace exposed through ESM dynamic import.
+   */
   const browserslistModule = await import('browserslist') as {
     readonly default: BrowserslistResolver;
   };
@@ -43,7 +45,9 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  * containing _.path entries for all workspace package bin directories.
  */
 async function generateMiseToml(): Promise<void> {
-  /** Dynamic [env] block appended after the static mise.no-env.toml content; wires PATH to every workspace bin dir. */
+  /**
+   * Dynamic [env] block appended after the static mise.no-env.toml content; wires PATH to every workspace bin dir.
+   */
   const envSection = `[env]
 # .env file is optional - mise silently ignores missing files
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
@@ -122,9 +126,13 @@ ${await cat([
  * ```
  */
 async function generateResolvedBrowserslistTargets(): Promise<void> {
-  /** Browserslist resolver loaded lazily so file-enforcer uses real package data. */
+  /**
+   * Browserslist resolver loaded lazily so file-enforcer uses real package data.
+   */
   const resolveBrowserslist = await importBrowserslist();
-  /** Target strings selected by the root `.browserslistrc` file. */
+  /**
+   * Target strings selected by the root `.browserslistrc` file.
+   */
   const targets = resolveBrowserslist(
     undefined,
     { path: process.cwd(), },
@@ -145,7 +153,9 @@ async function generateResolvedBrowserslistTargets(): Promise<void> {
  * for legacy consumers.
  */
 async function mirrorSkills(): Promise<void> {
-  /** Concatenated SKILL.md contents from the canonical .agents/skills tree, mirrored verbatim to legacy consumer dirs. */
+  /**
+   * Concatenated SKILL.md contents from the canonical .agents/skills tree, mirrored verbatim to legacy consumer dirs.
+   */
   const skills = await cat('./.agents/skills/*/*.md',);
   await Promise.all([
     overwriteEach({

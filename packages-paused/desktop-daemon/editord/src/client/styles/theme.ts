@@ -8,7 +8,9 @@
 
 import { hCss as $, } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Dark theme (default) custom property values on `:root`. */
+/**
+ * Dark theme (default) custom property values on `:root`.
+ */
 const DARK = $({
   rule: ':root',
   decls: {
@@ -43,7 +45,9 @@ const DARK = $({
   },
 },);
 
-/** Light theme override custom property values. */
+/**
+ * Light theme override custom property values.
+ */
 const LIGHT = $({
   rule: ':root[data-theme="light"]',
   decls: {
@@ -77,5 +81,7 @@ const LIGHT = $({
   },
 },);
 
-/** Combined dark and light theme custom property rules. */
+/**
+ * Combined dark and light theme custom property rules.
+ */
 export const STYLES: string = DARK + LIGHT;

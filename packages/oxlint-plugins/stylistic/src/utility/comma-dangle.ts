@@ -5,16 +5,24 @@ import type {
   Token,
 } from '@oxlint/plugins';
 
-/** Token value required at list tails. */
+/**
+ * Token value required at list tails.
+ */
 const COMMA = ',';
 
-/** Sentinel for absent AST node values without nullish unions. */
+/**
+ * Sentinel for absent AST node values without nullish unions.
+ */
 export const NO_NODE: unique symbol = Symbol('oxlint-stylistic:comma-dangle:no-node',);
 
-/** Sentinel for absent token lookups without nullish unions. */
+/**
+ * Sentinel for absent token lookups without nullish unions.
+ */
 const NO_TOKEN: unique symbol = Symbol('oxlint-stylistic:comma-dangle:no-token',);
 
-/** Closing delimiters that may follow comma-delimited lists. */
+/**
+ * Closing delimiters that may follow comma-delimited lists.
+ */
 const CLOSE_DELIMITERS: ReadonlySet<string> = new Set([
   ')',
   ']',
@@ -22,71 +30,123 @@ const CLOSE_DELIMITERS: ReadonlySet<string> = new Set([
   '>',
 ],);
 
-/** AST node or absence sentinel accepted by comma-dangle checks. */
+/**
+ * AST node or absence sentinel accepted by comma-dangle checks.
+ */
 export type OptionalNode = Node | typeof NO_NODE;
 
-/** Object value with string-keyed unknown fields. */
+/**
+ * Object value with string-keyed unknown fields.
+ */
 type FieldRecord = Record<string, unknown>;
 
-/** Token view needed for delimiter checks. */
+/**
+ * Token view needed for delimiter checks.
+ */
 type TokenValue = {
-  /** Token text. */
+  /**
+   * Token text.
+   */
   readonly value: string;
 };
 
-/** Parameters for trailing comma checks. */
+/**
+ * Parameters for trailing comma checks.
+ */
 export type CheckTrailingCommaParams = {
-  /** Rule context used for token lookup and reporting. */
+  /**
+   * Rule context used for token lookup and reporting.
+   */
   readonly context: Context;
-  /** Container node whose closing delimiter bounds the list. */
+  /**
+   * Container node whose closing delimiter bounds the list.
+   */
   readonly container: Node;
-  /** Last concrete item in the list, or sentinel for empty lists. */
+  /**
+   * Last concrete item in the list, or sentinel for empty lists.
+   */
   readonly lastItem: OptionalNode;
-  /** Whether token before container close delimiter supplies insertion point. */
+  /**
+   * Whether token before container close delimiter supplies insertion point.
+   */
   readonly useContainerPenultimateToken?: boolean;
 };
 
-/** Parameters for last field node lookup. */
+/**
+ * Parameters for last field node lookup.
+ */
 type LastFieldNodeParams = {
-  /** Node owning list field. */
+  /**
+   * Node owning list field.
+   */
   readonly node: Node;
-  /** Field name whose array value supplies list items. */
+  /**
+   * Field name whose array value supplies list items.
+   */
   readonly fieldName: string;
 };
 
-/** Parameters for following token lookup. */
+/**
+ * Parameters for following token lookup.
+ */
 type TokenAfterParams = {
-  /** Rule context used for token lookup. */
+  /**
+   * Rule context used for token lookup.
+   */
   readonly context: Context;
-  /** Node or token anchoring lookup. */
+  /**
+   * Node or token anchoring lookup.
+   */
   readonly target: Node | Readonly<Token>;
 };
 
-/** Parameters for last token lookup. */
+/**
+ * Parameters for last token lookup.
+ */
 type LastTokenParams = {
-  /** Rule context used for token lookup. */
+  /**
+   * Rule context used for token lookup.
+   */
   readonly context: Context;
-  /** Node whose last token is requested. */
+  /**
+   * Node whose last token is requested.
+   */
   readonly node: Node;
 };
 
-/** Parameters for container-tail token lookup. */
+/**
+ * Parameters for container-tail token lookup.
+ */
 type ContainerPenultimateTokenParams = {
-  /** Rule context used for token lookup. */
+  /**
+   * Rule context used for token lookup.
+   */
   readonly context: Context;
-  /** Container node whose closing delimiter ends the list. */
+  /**
+   * Container node whose closing delimiter ends the list.
+   */
   readonly container: Node;
 };
 
-/** Parameters for insertion token lookup. */
+/**
+ * Parameters for insertion token lookup.
+ */
 type InsertionTokenParams = {
-  /** Rule context used for token lookup. */
+  /**
+   * Rule context used for token lookup.
+   */
   readonly context: Context;
-  /** Container node whose close delimiter may bound insertion. */
+  /**
+   * Container node whose close delimiter may bound insertion.
+   */
   readonly container: Node;
-  /** Last concrete item in list. */
+  /**
+   * Last concrete item in list.
+   */
   readonly lastItem: Node;
-  /** Whether token before close delimiter supplies insertion point. */
+  /**
+   * Whether token before close delimiter supplies insertion point.
+   */
   readonly useContainerPenultimateToken: boolean;
 };
 
@@ -136,7 +196,9 @@ function fieldsOf(node: Node,): FieldRecord {
  * ```
  */
 function nodeType(node: Node,): string {
-  /** Runtime `type` field from oxlint visitor node. */
+  /**
+   * Runtime `type` field from oxlint visitor node.
+   */
   const { type, } = fieldsOf(node,);
   return ((typeof type) === 'string') ? type : '';
 }
@@ -233,7 +295,9 @@ function lastNode(items?: readonly unknown[],): OptionalNode {
     return NO_NODE;
 
   for (let index = items.length - 1; index >= 0; index -= 1) {
-    /** Candidate item from reverse scan. */
+    /**
+     * Candidate item from reverse scan.
+     */
     const item = items[index];
     if (isNode(item,))
       return item;
@@ -260,7 +324,9 @@ export function lastFieldNode({
   node,
   fieldName,
 }: LastFieldNodeParams,): OptionalNode {
-  /** Runtime field value, expected to be an array for supported lists. */
+  /**
+   * Runtime field value, expected to be an array for supported lists.
+   */
   const value = fieldsOf(node,)[fieldName];
   if (!Array.isArray(value,))
     return NO_NODE;
@@ -284,12 +350,16 @@ export function lastFieldNode({
  * ```
  */
 export function lastNamedImportSpecifier(node: Node,): OptionalNode {
-  /** Import declaration specifier field. */
+  /**
+   * Import declaration specifier field.
+   */
   const { specifiers, } = fieldsOf(node,);
   if (!Array.isArray(specifiers,))
     return NO_NODE;
 
-  /** Named specifiers enclosed by import braces. */
+  /**
+   * Named specifiers enclosed by import braces.
+   */
   const namedSpecifiers = specifiers.filter(function keepNamedSpecifier(
     specifier,
   ): boolean {
@@ -311,12 +381,16 @@ export function lastNamedImportSpecifier(node: Node,): OptionalNode {
  * ```
  */
 export function lastEnumMember(node: Node,): OptionalNode {
-  /** Enum body value carrying members in oxlint AST. */
+  /**
+   * Enum body value carrying members in oxlint AST.
+   */
   const { body, } = fieldsOf(node,);
   if (!isFieldRecord(body,))
     return NO_NODE;
 
-  /** Enum member list from body. */
+  /**
+   * Enum member list from body.
+   */
   const { members, } = body;
   if (!Array.isArray(members,))
     return NO_NODE;
@@ -339,12 +413,16 @@ export function lastEnumMember(node: Node,): OptionalNode {
  * ```
  */
 export function lastImportExpressionItem(node: Node,): OptionalNode {
-  /** Dynamic import options expression, present only for two-argument imports. */
+  /**
+   * Dynamic import options expression, present only for two-argument imports.
+   */
   const { options, } = fieldsOf(node,);
   if (isNode(options,))
     return options;
 
-  /** Dynamic import source expression. */
+  /**
+   * Dynamic import source expression.
+   */
   const { source, } = fieldsOf(node,);
   if (isNode(source,))
     return source;
@@ -366,12 +444,16 @@ export function lastImportExpressionItem(node: Node,): OptionalNode {
  * ```
  */
 function tokenAfter(params: Readonly<TokenAfterParams>,): Token | typeof NO_TOKEN {
-  /** Rule context and lookup target. */
+  /**
+   * Rule context and lookup target.
+   */
   const {
     context,
     target,
   } = params;
-  /** Following syntax token, absent at file end. */
+  /**
+   * Following syntax token, absent at file end.
+   */
   const token = context.sourceCode
     .getTokenAfter(target,);
   return token ?? NO_TOKEN;
@@ -391,12 +473,16 @@ function tokenAfter(params: Readonly<TokenAfterParams>,): Token | typeof NO_TOKE
  * ```
  */
 function lastToken(params: Readonly<LastTokenParams>,): Token | typeof NO_TOKEN {
-  /** Rule context and node. */
+  /**
+   * Rule context and node.
+   */
   const {
     context,
     node,
   } = params;
-  /** Last syntax token in node, absent for malformed stubs. */
+  /**
+   * Last syntax token in node, absent for malformed stubs.
+   */
   const token = context.sourceCode
     .getLastToken(node,);
   return token ?? NO_TOKEN;
@@ -417,12 +503,16 @@ function lastToken(params: Readonly<LastTokenParams>,): Token | typeof NO_TOKEN 
 function containerPenultimateToken(
   params: Readonly<ContainerPenultimateTokenParams>,
 ): Token | typeof NO_TOKEN {
-  /** Rule context and container node. */
+  /**
+   * Rule context and container node.
+   */
   const {
     context,
     container,
   } = params;
-  /** Token before closing delimiter, absent for malformed stubs. */
+  /**
+   * Token before closing delimiter, absent for malformed stubs.
+   */
   const token = context.sourceCode
     .getLastToken(
       container,
@@ -460,7 +550,9 @@ function insertionTokenForList({
   useContainerPenultimateToken,
 }: InsertionTokenParams,): Token | typeof NO_TOKEN {
   if (useContainerPenultimateToken) {
-    /** Token immediately before container close delimiter. */
+    /**
+     * Token immediately before container close delimiter.
+     */
     const insertionToken = containerPenultimateToken({
       context,
       container,
@@ -469,7 +561,9 @@ function insertionTokenForList({
       return NO_TOKEN;
     if (insertionToken.value === COMMA)
       return insertionToken;
-    /** Token after insertion point must be close delimiter. */
+    /**
+     * Token after insertion point must be close delimiter.
+     */
     const boundaryToken = tokenAfter({
       context,
       target: insertionToken,
@@ -479,7 +573,9 @@ function insertionTokenForList({
     return insertionToken;
   }
 
-  /** Token after last item determines whether comma already exists. */
+  /**
+   * Token after last item determines whether comma already exists.
+   */
   const boundaryToken = tokenAfter({
     context,
     target: lastItem,
@@ -524,7 +620,9 @@ export function checkTrailingComma({
   if (isRestElement(lastItem,))
     return;
 
-  /** Token that already is a comma or should receive one. */
+  /**
+   * Token that already is a comma or should receive one.
+   */
   const insertionToken = insertionTokenForList({
     context,
     container,

@@ -10,19 +10,29 @@
 import type { Probe, } from '../probe-types.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
-/** A and B run in parallel (~100ms each), then C after both finish (~150ms total) */
+/**
+ * A and B run in parallel (~100ms each), then C after both finish (~150ms total)
+ */
 const TASK_TEST_INPUT = 'A 100\nB 100\nC 50 A B\n';
 
-/** Allowed timing deviation in milliseconds */
+/**
+ * Allowed timing deviation in milliseconds
+ */
 const TIMING_TOLERANCE = 40;
 
-/** Expected completion time for A and B (run in parallel) */
+/**
+ * Expected completion time for A and B (run in parallel)
+ */
 const EXPECTED_AB_TIME = 100;
 
-/** Expected completion time for C (after A+B plus its own 50ms) */
+/**
+ * Expected completion time for C (after A+B plus its own 50ms)
+ */
 const EXPECTED_C_TIME = 150;
 
-/** Total number of timing/ordering checks */
+/**
+ * Total number of timing/ordering checks
+ */
 const TOTAL_CHECKS = 4;
 
 /**
@@ -41,20 +51,28 @@ const TOTAL_CHECKS = 4;
  * ```
  */
 export function extractAtDigits(line: string,): string {
-  /** Position of the at-sign marker; `-1` ends the search. */
+  /**
+   * Position of the at-sign marker; `-1` ends the search.
+   */
   const at = line.indexOf('@',);
   if (at === (-1))
     return '';
-  /** First index of the digit run, just past the at-sign. */
+  /**
+   * First index of the digit run, just past the at-sign.
+   */
   const start = at + 1;
   return (function collectDigits(): string {
     // Walk right past every ASCII digit, then slice the run once: a single
     // linear pass with no recursion and no per-char accumulator rebuild.
-    /** Cursor advanced over each ASCII digit; marks one-past the end of the run. */
+    /**
+     * Cursor advanced over each ASCII digit; marks one-past the end of the run.
+     */
     let end = start;
     while (end < line
       .length) {
-      /** Char at the cursor; the run stops at the first non-digit. */
+      /**
+       * Char at the cursor; the run stops at the first non-digit.
+       */
       const c = line.charAt(end,);
       if ((c < '0') || (c > '9'))
         break;
@@ -102,7 +120,9 @@ export const taskScheduler: Probe = createCodeGenProbe({
   ]
     .join('\n',),
   verify: function verifyTaskScheduler(result,): { correctness: number; } {
-    /** Trimmed output lines split off stdout so each can be matched against expected prefixes. */
+    /**
+     * Trimmed output lines split off stdout so each can be matched against expected prefixes.
+     */
     const lines = result.stdout
       .trim()
       .split('\n',)
@@ -150,11 +170,17 @@ export const taskScheduler: Probe = createCodeGenProbe({
       return digits === '' ? -1 : Number(digits,);
     }
 
-    /** Elapsed ms reported for task A; -1 when the line was missing or malformed. */
+    /**
+     * Elapsed ms reported for task A; -1 when the line was missing or malformed.
+     */
     const timeA = extractTime('A',);
-    /** Elapsed ms reported for task B; -1 when the line was missing or malformed. */
+    /**
+     * Elapsed ms reported for task B; -1 when the line was missing or malformed.
+     */
     const timeB = extractTime('B',);
-    /** Elapsed ms reported for task C; -1 when the line was missing or malformed. */
+    /**
+     * Elapsed ms reported for task C; -1 when the line was missing or malformed.
+     */
     const timeC = extractTime('C',);
 
     if ((timeA < 0) || (timeB < 0)

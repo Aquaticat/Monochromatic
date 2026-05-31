@@ -20,7 +20,9 @@ import type { ReferenceLocation, } from './types.ts';
  * ```
  */
 export function createReferenceAnchor(): HTMLDivElement {
-  /** Invisible anchor element used as the `anchor-name` target for the popover. */
+  /**
+   * Invisible anchor element used as the `anchor-name` target for the popover.
+   */
   const anchor = document.createElement('div',);
   anchor.style
     .setProperty(
@@ -113,7 +115,9 @@ export function renderReferenceItems(
     loc,
     index,
   ) {
-    /** Row element for a single reference; first row is auto-selected via dataset below. */
+    /**
+     * Row element for a single reference; first row is auto-selected via dataset below.
+     */
     const item = h({
       tag: 'div',
       class: 'item',
@@ -131,7 +135,9 @@ export function renderReferenceItems(
           + 1,)}`,
       },),
     );
-    /** Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes. */
+    /**
+     * Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes.
+     */
     if (index === 0)
       item.dataset
         .selected = '';
@@ -158,7 +164,9 @@ export function updateItemSelection({
   readonly list: HTMLDivElement;
   readonly selectedIndex: number;
 },): void {
-  /** Without querySelectorAll: unsafe type assertion from Element to HTMLElement on children. */
+  /**
+   * Without querySelectorAll: unsafe type assertion from Element to HTMLElement on children.
+   */
   const items = list.querySelectorAll<HTMLElement>('.item',);
   for (const [i, item,] of [...items,].entries()) {
     if (i === selectedIndex) {

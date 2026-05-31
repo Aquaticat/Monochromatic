@@ -81,9 +81,13 @@ export function globFilter(
     readonly exclude?: readonly string[];
   },
 ): WatchFilter {
-  /** Compiled include matchers; one per input pattern. */
+  /**
+   * Compiled include matchers; one per input pattern.
+   */
   const includeMatchers: readonly Matcher[] = buildMatchers(include,);
-  /** Compiled exclude matchers; one per input pattern. */
+  /**
+   * Compiled exclude matchers; one per input pattern.
+   */
   const excludeMatchers: readonly Matcher[] = buildMatchers(exclude,);
 
   return function globFilterFn(

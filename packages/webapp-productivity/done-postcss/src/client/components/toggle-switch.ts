@@ -1,7 +1,9 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
-/** Shadow DOM styles for the `\<toggle-switch\>` component. */
+/**
+ * Shadow DOM styles for the `\<toggle-switch\>` component.
+ */
 const STYLES = css(`
   :host {
     display: inline-flex;
@@ -50,17 +52,25 @@ const STYLES = css(`
  * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
 class ToggleSwitch extends HTMLElement {
-  /** Attributes to observe for re-rendering. */
+  /**
+   * Attributes to observe for re-rendering.
+   */
   static observedAttributes = ['on',];
 
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Click handler pre-bound to this instance for stable add/removeEventListener references. */
+  /**
+   * Click handler pre-bound to this instance for stable add/removeEventListener references.
+   */
   readonly #boundHandleClick = this.#handleClick
     .bind(this,);
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -92,7 +102,9 @@ class ToggleSwitch extends HTMLElement {
     }
   }
 
-  /** Renders initial content and attaches the click handler. */
+  /**
+   * Renders initial content and attaches the click handler.
+   */
   connectedCallback(): void {
     this.#render();
     this.addEventListener(
@@ -101,7 +113,9 @@ class ToggleSwitch extends HTMLElement {
     );
   }
 
-  /** Removes the click handler on disconnect. */
+  /**
+   * Removes the click handler on disconnect.
+   */
   disconnectedCallback(): void {
     this.removeEventListener(
       'click',
@@ -109,7 +123,9 @@ class ToggleSwitch extends HTMLElement {
     );
   }
 
-  /** Re-renders when observed attributes change. */
+  /**
+   * Re-renders when observed attributes change.
+   */
   attributeChangedCallback(): void {
     this.#render();
   }
@@ -133,9 +149,13 @@ class ToggleSwitch extends HTMLElement {
     );
   }
 
-  /** Renders the track and thumb into the shadow root. */
+  /**
+   * Renders the track and thumb into the shadow root.
+   */
   #render(): void {
-    /** Current toggle state, used to pick the thumb position class and glyph. */
+    /**
+     * Current toggle state, used to pick the thumb position class and glyph.
+     */
     const isOn = this.on;
     this.#shadow
       .replaceChildren(

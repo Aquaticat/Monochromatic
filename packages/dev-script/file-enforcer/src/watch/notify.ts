@@ -120,19 +120,27 @@ export async function notifyWriteProtection(filePath: string,): Promise<void> {
  * @param filePath - Absolute path shown in the notification body
  */
 async function sendDesktopNotification(filePath: string,): Promise<void> {
-  /** Function-scoped logger tagged with the call site for traceable notification logs. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable notification logs.
+   */
   const rl = tagged({
     tag: sendDesktopNotification.name,
     l,
   },);
-  /** Detected notification backend, or NO_TOOL when no compatible tool is installed. */
+  /**
+   * Detected notification backend, or NO_TOOL when no compatible tool is installed.
+   */
   const tool = await detectNotificationTool();
   if (tool === NO_TOOL)
     return;
 
-  /** Desktop notification body kept short for readability in notification popups */
+  /**
+   * Desktop notification body kept short for readability in notification popups
+   */
   const body = `"${filePath}" was modified externally and has been reverted.`;
-  /** Notification title consistent across platforms */
+  /**
+   * Notification title consistent across platforms
+   */
   const title = 'file-enforcer: write protected';
 
   try {
@@ -158,17 +166,23 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
       return;
     }
     // pwsh or powershell
-    /** Escape single quotes in body/title for PowerShell string literals */
+    /**
+     * Escape single quotes in body/title for PowerShell string literals
+     */
     const safeBody = body.replaceAll(
       "'",
       "''",
     );
-    /** Title with single quotes doubled, matching the PowerShell literal escape used above for `safeBody`. */
+    /**
+     * Title with single quotes doubled, matching the PowerShell literal escape used above for `safeBody`.
+     */
     const safeTitle = title.replaceAll(
       "'",
       "''",
     );
-    /** PowerShell toast notification via WinRT. No external modules needed. */
+    /**
+     * PowerShell toast notification via WinRT. No external modules needed.
+     */
     const script = [
       '[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null',
       `$xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)`,

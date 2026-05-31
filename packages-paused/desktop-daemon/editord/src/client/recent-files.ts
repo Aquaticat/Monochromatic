@@ -11,13 +11,17 @@ import {
   tagged,
 } from './log.ts';
 
-/** Tagged logger for the recent files tracker. */
+/**
+ * Tagged logger for the recent files tracker.
+ */
 const l = tagged({
   tag: 'recent-files',
   l: rootLogger,
 },);
 
-/** Maximum number of recent files to track (indices 0 through 9). */
+/**
+ * Maximum number of recent files to track (indices 0 through 9).
+ */
 const MAX_RECENT = 10;
 
 /**
@@ -37,11 +41,17 @@ const MAX_RECENT = 10;
  * ```
  */
 export type RecentFiles = {
-  /** Ordered paths array, index 0 is most recent. */
+  /**
+   * Ordered paths array, index 0 is most recent.
+   */
   readonly paths: readonly string[];
-  /** Adds or promotes a path to position 0, trimming to 10 entries. */
+  /**
+   * Adds or promotes a path to position 0, trimming to 10 entries.
+   */
   readonly push: (path: string,) => void;
-  /** Replaces all tracked paths during session restore, trimming to 10 entries. */
+  /**
+   * Replaces all tracked paths during session restore, trimming to 10 entries.
+   */
   readonly replaceAll: (paths: readonly string[],) => void;
 };
 
@@ -56,7 +66,9 @@ export type RecentFiles = {
  * ```
  */
 export function createRecentFiles(): RecentFiles {
-  /** Backing array for the ordered recent list. */
+  /**
+   * Backing array for the ordered recent list.
+   */
   const paths: string[] = [];
 
   /**
@@ -67,7 +79,9 @@ export function createRecentFiles(): RecentFiles {
    * @param path - absolute file path to record
    */
   function push(path: string,): void {
-    /** Position of `path` in the recent list; `-1` means new, `0` means already at front. */
+    /**
+     * Position of `path` in the recent list; `-1` means new, `0` means already at front.
+     */
     const existing = paths.indexOf(path,);
     if (existing === 0)
       return;
@@ -97,7 +111,9 @@ export function createRecentFiles(): RecentFiles {
    * ```
    */
   function replaceAll(restoredPaths: readonly string[],): void {
-    /** Trimmed restore payload so the variadic splice call receives a named list. */
+    /**
+     * Trimmed restore payload so the variadic splice call receives a named list.
+     */
     const trimmedPaths = restoredPaths.slice(
       0,
       MAX_RECENT,

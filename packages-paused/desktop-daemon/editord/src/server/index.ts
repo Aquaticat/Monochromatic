@@ -41,10 +41,14 @@ import { createWsHandler, } from './ws.ts';
 
 export {};
 
-/** Default HTTP port when `PORT` env var is not provided. */
+/**
+ * Default HTTP port when `PORT` env var is not provided.
+ */
 const DEFAULT_PORT = 4_400;
 
-/** Radix for decimal integer parsing. */
+/**
+ * Radix for decimal integer parsing.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -53,13 +57,17 @@ const DECIMAL_RADIX = 10;
  * @returns resolved port number
  */
 function resolvePort(): number {
-  /** Raw env value (undefined when unset) gates the parse below. */
+  /**
+   * Raw env value (undefined when unset) gates the parse below.
+   */
   const environmentPort = process.env
     .PORT;
   if (environmentPort === undefined)
     return DEFAULT_PORT;
 
-  /** Decimal-radix parse; NaN falls through to the default. */
+  /**
+   * Decimal-radix parse; NaN falls through to the default.
+   */
   const parsedPort = Number.parseInt(
     environmentPort,
     DECIMAL_RADIX,
@@ -67,7 +75,9 @@ function resolvePort(): number {
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
-/** Resolved HTTP listen port. */
+/**
+ * Resolved HTTP listen port.
+ */
 const PORT = resolvePort();
 
 /**
@@ -85,19 +95,27 @@ const {
   l,
 },);
 
-/** Highest writable ancestor directory, used as the file tree root. */
+/**
+ * Highest writable ancestor directory, used as the file tree root.
+ */
 const ROOT_DIR = await resolveRoot();
 
-/** Stable filesystem identifier for the volume containing ROOT_DIR. */
+/**
+ * Stable filesystem identifier for the volume containing ROOT_DIR.
+ */
 const FS_ID = resolveFsId({ path: ROOT_DIR, },);
 
-/** Tagged logger for the HTTP subsystem. */
+/**
+ * Tagged logger for the HTTP subsystem.
+ */
 const httpLog = tagged({
   tag: 'http',
   l,
 },);
 
-/** Tagged logger for the LSP subsystem. */
+/**
+ * Tagged logger for the LSP subsystem.
+ */
 const lspLog = tagged({
   tag: 'lsp',
   l,
@@ -130,7 +148,9 @@ function handleDiagnostics(
   if (connectedPeers.size
     === 0)
     return;
-  /** Stringified once and reused across all peers in the broadcast loop. */
+  /**
+   * Stringified once and reused across all peers in the broadcast loop.
+   */
   const message = JSON.stringify({
     type: 'diagnostics',
     path,
@@ -140,7 +160,9 @@ function handleDiagnostics(
     peer.send(message,);
 }
 
-/** LSP server coordinator managing oxlint, tsgo, and dprint. */
+/**
+ * LSP server coordinator managing oxlint, tsgo, and dprint.
+ */
 const lspManager = createLspManager({
   ceiling: ROOT_DIR,
   onDiagnostics: handleDiagnostics,
@@ -160,7 +182,9 @@ const dirWatcher = createDirWatcher({
     if (connectedPeers.size
       === 0)
       return;
-    /** Stringified once and reused across all peers in the broadcast loop. */
+    /**
+     * Stringified once and reused across all peers in the broadcast loop.
+     */
     const message = JSON.stringify({
       type: 'fileChanged',
       path: event.path,
@@ -175,10 +199,14 @@ const dirWatcher = createDirWatcher({
 
 //endregion Filesystem watcher
 
-/** h3 application instance. */
+/**
+ * h3 application instance.
+ */
 const app = new H3();
 
-/** Base path for resolving dist and source assets relative to this file. */
+/**
+ * Base path for resolving dist and source assets relative to this file.
+ */
 const packageRoot = join(
   import.meta.dirname,
   '../..',
@@ -207,17 +235,23 @@ app.get(
 
 //endregion WebSocket
 
-/** Running HTTP server instance; closed on SIGINT/SIGTERM by our handler. */
+/**
+ * Running HTTP server instance; closed on SIGINT/SIGTERM by our handler.
+ */
 const server = serve(
   app,
   {
     port: PORT,
-    /** Disable srvx's built-in SIGINT/SIGTERM handler so our async cleanup runs first without racing it. */
+    /**
+     * Disable srvx's built-in SIGINT/SIGTERM handler so our async cleanup runs first without racing it.
+     */
     gracefulShutdown: false,
     plugins: [
       ws({
         resolve: async function resolveWebSocketHooks(request,) {
-          /** h3 response carrying crossws hooks as a non-standard property. */
+          /**
+           * h3 response carrying crossws hooks as a non-standard property.
+           */
           const response = await app.fetch(request,);
           // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return, typescript/no-explicit-any, typescript-eslint/no-unsafe-type-assertion -- crossws attaches hooks as a non-standard property on the Response object
           return (response as any).crossws;
@@ -231,10 +265,14 @@ httpLog.info(`listening on http://localhost:${String(PORT,)}?token=${AUTH_TOKEN}
 
 //region Graceful shutdown
 
-/** Seconds to wait for cleanup before assuming an LSP child has hung the event loop. */
+/**
+ * Seconds to wait for cleanup before assuming an LSP child has hung the event loop.
+ */
 const SHUTDOWN_WATCHDOG_SECONDS = 5;
 
-/** Milliseconds per second for watchdog timeout computation. */
+/**
+ * Milliseconds per second for watchdog timeout computation.
+ */
 const SHUTDOWN_MS_PER_SECOND = 1_000;
 
 /**
@@ -265,7 +303,9 @@ async function shutdownApp(
  * which prints the stack to stderr and exits the process with code 1.
  */
 function startShutdownWatchdog(): void {
-  /** Unref'd timer so it does not by itself keep the event loop alive. */
+  /**
+   * Unref'd timer so it does not by itself keep the event loop alive.
+   */
   const watchdog = setTimeout(
     function shutdownWatchdogTimeout(): void {
       throw new Error(

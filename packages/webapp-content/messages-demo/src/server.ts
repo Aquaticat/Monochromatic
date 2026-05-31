@@ -68,16 +68,22 @@ import { staticHandler, } from './server/static.ts';
 
 await initPromise;
 
-/** Tagged logger for the server boot. */
+/**
+ * Tagged logger for the server boot.
+ */
 const l = tagged({
   tag: 'server',
   l: logger,
 },);
 
-/** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
+/**
+ * Default HTTP port when neither `--port=` nor `PORT` env var is provided.
+ */
 const DEFAULT_PORT = 3_000;
 
-/** Radix used for explicit decimal integer parsing. */
+/**
+ * Radix used for explicit decimal integer parsing.
+ */
 const DECIMAL_RADIX = 10;
 
 /**
@@ -86,18 +92,26 @@ const DECIMAL_RADIX = 10;
  * @returns parsed port
  */
 function resolvePort(): number {
-  /** CLI override; preferred over the env var so the developer's `--port=` wins in foreground runs. */
+  /**
+   * CLI override; preferred over the env var so the developer's `--port=` wins in foreground runs.
+   */
   const argumentPort = getArgumentValue('port',);
-  /** Fallback environment value; used when the CLI did not supply one. */
+  /**
+   * Fallback environment value; used when the CLI did not supply one.
+   */
   const environmentPort = process.env
     .PORT;
-  /** Resolved precedence: CLI \> env; absent on both falls through to the default. */
+  /**
+   * Resolved precedence: CLI \> env; absent on both falls through to the default.
+   */
   const rawPort = argumentPort !== ARG_ABSENT
     ? argumentPort
     : environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
-  /** Parsed value; NaN signals a malformed input, in which case the default wins. */
+  /**
+   * Parsed value; NaN signals a malformed input, in which case the default wins.
+   */
   const parsedPort = Number.parseInt(
     rawPort,
     DECIMAL_RADIX,
@@ -129,7 +143,9 @@ if (!existsSync('./dist/client/index.js',)) {
   );
 }
 
-/** h3 application instance routing HTTP requests to handlers. */
+/**
+ * h3 application instance routing HTTP requests to handlers.
+ */
 const app = new H3();
 
 //region Read pages
@@ -148,7 +164,9 @@ app.get(
   '/p/:cursor',
   defineHandler(
     async function handleFeedPage(event,) {
-      /** Required `:cursor` path param; bails to 400 when missing. */
+      /**
+       * Required `:cursor` path param; bails to 400 when missing.
+       */
       const cursor = requireParam({
         ...paramsInput(event.context
           .params,),
@@ -167,7 +185,9 @@ app.get(
   '/m/:id',
   defineHandler(
     function handleMessageRoot(event,) {
-      /** Parsed `:id` param; redirect target uses this in the chunk-0 URL. */
+      /**
+       * Parsed `:id` param; redirect target uses this in the chunk-0 URL.
+       */
       const id = parseId({
         ...paramsInput(event.context
           .params,),
@@ -185,13 +205,17 @@ app.get(
   '/m/:id/c/:idx',
   defineHandler(
     async function handleMessageChunk(event,) {
-      /** Parsed `:id` param; consumed by `renderMessageChunk` as the message id. */
+      /**
+       * Parsed `:id` param; consumed by `renderMessageChunk` as the message id.
+       */
       const id = parseId({
         ...paramsInput(event.context
           .params,),
         name: 'id',
       },);
-      /** Parsed `:idx` param; chunk index inside the message. */
+      /**
+       * Parsed `:idx` param; chunk index inside the message.
+       */
       const idx = parseId({
         ...paramsInput(event.context
           .params,),
@@ -212,13 +236,17 @@ app.get(
   '/m/:id/c/:idx/raw',
   defineHandler(
     async function handleChunkRaw(event,) {
-      /** Parsed `:id` param; consumed by `renderChunkRaw` as the message id. */
+      /**
+       * Parsed `:id` param; consumed by `renderChunkRaw` as the message id.
+       */
       const id = parseId({
         ...paramsInput(event.context
           .params,),
         name: 'id',
       },);
-      /** Parsed `:idx` param; chunk index inside the message. */
+      /**
+       * Parsed `:idx` param; chunk index inside the message.
+       */
       const idx = parseId({
         ...paramsInput(event.context
           .params,),
@@ -239,13 +267,17 @@ app.get(
   '/m/:id/c/:idx/md',
   defineHandler(
     async function handleChunkMd(event,) {
-      /** Parsed `:id` param; consumed by `renderChunkMd` as the message id. */
+      /**
+       * Parsed `:id` param; consumed by `renderChunkMd` as the message id.
+       */
       const id = parseId({
         ...paramsInput(event.context
           .params,),
         name: 'id',
       },);
-      /** Parsed `:idx` param; chunk index inside the message. */
+      /**
+       * Parsed `:idx` param; chunk index inside the message.
+       */
       const idx = parseId({
         ...paramsInput(event.context
           .params,),
@@ -266,7 +298,9 @@ app.get(
   '/m/:id/edit',
   defineHandler(
     async function handleEdit(event,) {
-      /** Parsed `:id` param; consumed by `renderEditPage`. */
+      /**
+       * Parsed `:id` param; consumed by `renderEditPage`.
+       */
       const id = parseId({
         ...paramsInput(event.context
           .params,),
@@ -338,7 +372,9 @@ app.get(
 
 //endregion
 
-/** Resolved listen port, taken from `--port=` argv or `3000`. */
+/**
+ * Resolved listen port, taken from `--port=` argv or `3000`.
+ */
 const port = resolvePort();
 serve(
   app,

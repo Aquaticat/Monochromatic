@@ -4,7 +4,9 @@ import {
   type PlaywrightTestConfig,
 } from '@playwright/test';
 
-/** End-to-end Playwright configuration with an explicit public export type for isolated declarations. */
+/**
+ * End-to-end Playwright configuration with an explicit public export type for isolated declarations.
+ */
 const config: PlaywrightTestConfig = defineConfig({
   testMatch: '**/*.e2e.test.ts',
   fullyParallel: true,

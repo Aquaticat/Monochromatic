@@ -67,7 +67,9 @@ export const PATH_HAS_NUMERIC: unique symbol = Symbol('toml-edit/path-has-numeri
 export function asStringPath(
   { segs, }: { readonly segs: TomlPath; },
 ): readonly string[] | typeof PATH_HAS_NUMERIC {
-  /** Accumulator so an early numeric segment can short-circuit with the sentinel. */
+  /**
+   * Accumulator so an early numeric segment can short-circuit with the sentinel.
+   */
   const result: string[] = [];
   for (const s of segs) {
     if ((typeof s) !== 'string')
@@ -102,7 +104,9 @@ export function mergeAt(
   if (segments.length
     === 0)
     return base;
-  /** Current segment so each recursion step shrinks `segments` by one. */
+  /**
+   * Current segment so each recursion step shrinks `segments` by one.
+   */
   const [head,] = segments;
   if (head === undefined)
     return base;
@@ -113,9 +117,13 @@ export function mergeAt(
       [head]: value,
     };
   }
-  /** Snapshot the prior subtree so it can be merged into rather than overwritten. */
+  /**
+   * Snapshot the prior subtree so it can be merged into rather than overwritten.
+   */
   const existing = base[head];
-  /** Default to an empty object when the existing slot is not a plain object. */
+  /**
+   * Default to an empty object when the existing slot is not a plain object.
+   */
   const child = isPlainObject(existing,) ? existing : {};
   return {
     ...base,

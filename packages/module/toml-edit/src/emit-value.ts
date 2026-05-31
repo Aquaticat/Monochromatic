@@ -92,7 +92,9 @@ function emitArray(
     readonly depth: number;
   },
 ): string {
-  /** Per-element text so the assembler can join into inline or multi-line form. */
+  /**
+   * Per-element text so the assembler can join into inline or multi-line form.
+   */
   const parts = node.elements
     .map(function each(el,) {
     return emitContentNode({
@@ -135,7 +137,9 @@ export function emitArrayWithoutIndex(
     readonly depth: number;
   },
 ): string {
-  /** Per-element text with the targeted index dropped before encoding. */
+  /**
+   * Per-element text with the targeted index dropped before encoding.
+   */
   const parts = array
     .elements
     .filter(function notSkipped(
@@ -208,9 +212,13 @@ export function emitArrayWithSkipPath(
     );
   }
 
-  /** Current outer index; selects which child array to recurse into. */
+  /**
+   * Current outer index; selects which child array to recurse into.
+   */
   const head = nonNullishOrThrow(skipPath[0],);
-  /** Remaining inner-level indices. */
+  /**
+   * Remaining inner-level indices.
+   */
   const rest = skipPath.slice(1,);
 
   if (rest.length
@@ -223,7 +231,9 @@ export function emitArrayWithSkipPath(
     },);
   }
 
-  /** Per-element text where the matching child gets a recursive skip-path emit. */
+  /**
+   * Per-element text where the matching child gets a recursive skip-path emit.
+   */
   const parts = array.elements
     .map(function each(
     el,
@@ -273,7 +283,9 @@ function assembleArrayParts(
     readonly depth: number;
   },
 ): string {
-  /** Speculative inline form so the column budget check can decide the layout. */
+  /**
+   * Speculative inline form so the column budget check can decide the layout.
+   */
   const inlineCandidate = `[ ${parts.join(', ',)}${parts.length
     === 0 ? '' : ', '}]`;
   if (
@@ -286,10 +298,14 @@ function assembleArrayParts(
   ) {
     return inlineCandidate;
   }
-  /** Indent for each element when the array goes multi-line. */
+  /**
+   * Indent for each element when the array goes multi-line.
+   */
   const indent = ' '.repeat(options.indent
     * (depth + 1),);
-  /** Closing bracket sits at the parent's indent level. */
+  /**
+   * Closing bracket sits at the parent's indent level.
+   */
   const closingIndent = ' '.repeat(options.indent
     * depth,);
   return `[\n${
@@ -323,7 +339,9 @@ function emitInlineTable(
       `emitInlineTable: expected TOMLInlineTable, got ${node.type}`,
     );
   }
-  /** Body entries rendered as `k = v` fragments for the assembler. */
+  /**
+   * Body entries rendered as `k = v` fragments for the assembler.
+   */
   const parts = emitInlineTableBodyParts({
     body: node.body,
     options,
@@ -373,7 +391,9 @@ export function emitInlineTableWithExtra(
       `emitInlineTableWithExtra: expected TOMLInlineTable, got ${node.type}`,
     );
   }
-  /** Existing entries plus the new one so the assembler joins them in order. */
+  /**
+   * Existing entries plus the new one so the assembler joins them in order.
+   */
   const parts = [
     ...emitInlineTableBodyParts({
       body: node.body,
@@ -402,7 +422,9 @@ function emitInlineTableBodyParts(
   },
 ): readonly string[] {
   return body.map(function each(kv,) {
-    /** Encoded key chain joined with `.` so dotted keys reuse their original spelling. */
+    /**
+     * Encoded key chain joined with `.` so dotted keys reuse their original spelling.
+     */
     const keyText = kv
       .key
       .keys
@@ -411,7 +433,9 @@ function emitInlineTableBodyParts(
           === 'TOMLBare' ? k.name : k.value, },);
       },)
       .join('.',);
-    /** Encoded value text so the entry can be composed as `k = v`. */
+    /**
+     * Encoded value text so the entry can be composed as `k = v`.
+     */
     const valueText = emitContentNode({
       node: kv.value,
       options,

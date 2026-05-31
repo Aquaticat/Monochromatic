@@ -44,7 +44,9 @@ import {
 
 export {};
 
-/** Error messages for append operations */
+/**
+ * Error messages for append operations
+ */
 const ERROR_MESSAGES = {
   fileNotFound: function fileNotFound(path: string,): string {
     return `File not found: ${path}`;
@@ -94,9 +96,13 @@ async function validateFile(filePath: string,): Promise<void> {
  * ```
  */
 type AppendLinesToFileOptions = {
-  /** Absolute or relative path to append to */
+  /**
+   * Absolute or relative path to append to
+   */
   readonly filePath: string;
-  /** Lines of text to append */
+  /**
+   * Lines of text to append
+   */
   readonly lines: readonly string[];
 };
 
@@ -116,7 +122,9 @@ async function appendLinesToFile({
   filePath,
   lines,
 }: AppendLinesToFileOptions,): Promise<void> {
-  /** Joined payload with a trailing newline so subsequent appends start on a fresh line. */
+  /**
+   * Joined payload with a trailing newline so subsequent appends start on a fresh line.
+   */
   const content = `${lines.join('\n',)}\n`;
   await appendFile(
     filePath,
@@ -126,7 +134,9 @@ async function appendLinesToFile({
 
 //region Parser definition: required --to option and variadic positional text lines
 
-/** Optique parser for the task-append CLI */
+/**
+ * Optique parser for the task-append CLI
+ */
 const parser = object({
   to: option(
     '-t',
@@ -140,7 +150,9 @@ const parser = object({
 
 //endregion Parser definition
 
-/** Parsed CLI arguments from process.argv */
+/**
+ * Parsed CLI arguments from process.argv
+ */
 const args = runSync(
   parser,
   {

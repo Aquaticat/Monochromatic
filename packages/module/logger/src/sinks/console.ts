@@ -128,11 +128,15 @@ function detectVerbose(): boolean {
  * @returns Whether verbose logging is enabled for this process.
  */
 function getVerbose(): boolean {
-  /** Cached verbose flag; the sentinel means detection has not run yet. */
+  /**
+   * Cached verbose flag; the sentinel means detection has not run yet.
+   */
   const cached = state.verboseCache;
   if (cached !== VERBOSE_UNCOMPUTED)
     return cached;
-  /** Computed verbose flag, stored so subsequent reads skip detection. */
+  /**
+   * Computed verbose flag, stored so subsequent reads skip detection.
+   */
   const computed = detectVerbose();
   state.verboseCache = computed;
   return computed;
@@ -205,16 +209,22 @@ function emitRun(
     readonly level: Level;
   },
 ): void {
-  /** Joined run text; one `\n`-separated string per console call so a long run becomes a single grouped entry rather than N separate ones. */
+  /**
+   * Joined run text; one `\n`-separated string per console call so a long run becomes a single grouped entry rather than N separate ones.
+   */
   const text = records
     .map(function formatOne(r,) {
       return formatRecord(r,);
     },)
     .join('\n',);
   try {
-    /** Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply. */
+    /**
+     * Name (not the function reference) of the matching `console.*` method; resolved lazily so post-import hot patches still apply.
+     */
     const method = LEVEL_TO_CONSOLE_METHOD[level];
-    /** Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles. */
+    /**
+     * Resolved console method looked up by name; may be missing or non-callable in stripped runtimes, which the guard handles.
+     */
     const consoleFn = console[method];
     if ((typeof consoleFn) === 'function') {
       consoleFn.call(
@@ -264,7 +274,9 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
       runs,
       record,
     ) {
-      /** Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened. */
+      /**
+       * Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened.
+       */
       const tail = runs.at(-1,);
       if ((tail !== undefined) && (tail.level
         === record
@@ -343,7 +355,9 @@ export function verifyConsole(): boolean {
       return state.available;
     }
 
-    /** Sample `console.debug` reference used only to check the method actually exists in the host; absent in some stripped runtimes. */
+    /**
+     * Sample `console.debug` reference used only to check the method actually exists in the host; absent in some stripped runtimes.
+     */
     const testFn = console.debug;
     if ((typeof testFn) !== 'function') {
       state.available = false;

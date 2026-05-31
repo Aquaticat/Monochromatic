@@ -41,7 +41,9 @@ import type { ChromeColors, } from './scripts/scheme.ts';
 
 //region Types
 
-/** Data shape for the axis-shaft PathLayer; deck.gl expects mutable nested arrays. */
+/**
+ * Data shape for the axis-shaft PathLayer; deck.gl expects mutable nested arrays.
+ */
 export type PathDatum = {
   path: [
     number,
@@ -50,7 +52,9 @@ export type PathDatum = {
   ][];
 };
 
-/** Data shape for arrowhead mesh-layer instances. */
+/**
+ * Data shape for arrowhead mesh-layer instances.
+ */
 type ArrowheadDatum = {
   position: [
     number,
@@ -112,14 +116,22 @@ function getArrowheadPosition(d: ArrowheadDatum,): [
 
 //region Constants
 
-/** Axis shaft width in pixels (with `widthMinPixels` floor). */
+/**
+ * Axis shaft width in pixels (with `widthMinPixels` floor).
+ */
 const AXIS_SHAFT_WIDTH = 3;
 
-/** Fraction of the axis extent the arrow tip extends past `max`. */
+/**
+ * Fraction of the axis extent the arrow tip extends past `max`.
+ */
 const AXIS_EXTENSION_FRACTION = 0.12;
-/** Cone arrowhead length, as a fraction of the axis extent. */
+/**
+ * Cone arrowhead length, as a fraction of the axis extent.
+ */
 const ARROWHEAD_LENGTH_FRACTION = 0.06;
-/** Cone arrowhead radius, as a fraction of the axis extent. */
+/**
+ * Cone arrowhead radius, as a fraction of the axis extent.
+ */
 const ARROWHEAD_RADIUS_FRACTION = 0.018;
 
 //endregion Constants
@@ -157,26 +169,38 @@ export function computeAxisGeometry(
   tipY: number;
   tipZ: number;
 } {
-  /** Inclusive `[xMin, xMax]` extracted from the X bounds for downstream tip / extent math. */
+  /**
+   * Inclusive `[xMin, xMax]` extracted from the X bounds for downstream tip / extent math.
+   */
   const [
     xMin,
     xMax,
   ] = bounds.x;
-  /** Inclusive `[yMin, yMax]` extracted from the Y bounds. */
+  /**
+   * Inclusive `[yMin, yMax]` extracted from the Y bounds.
+   */
   const [
     yMin,
     yMax,
   ] = bounds.y;
-  /** Inclusive `[zMin, zMax]` extracted from the Z bounds. */
+  /**
+   * Inclusive `[zMin, zMax]` extracted from the Z bounds.
+   */
   const [
     zMin,
     zMax,
   ] = bounds.z;
-  /** X extent of the data box; arrow tips and tick spacings are fractions of this. */
+  /**
+   * X extent of the data box; arrow tips and tick spacings are fractions of this.
+   */
   const dx = xMax - xMin;
-  /** Y extent of the data box. */
+  /**
+   * Y extent of the data box.
+   */
   const dy = yMax - yMin;
-  /** Z extent of the data box. */
+  /**
+   * Z extent of the data box.
+   */
   const dz = zMax - zMin;
   return {
     xMin,
@@ -225,11 +249,15 @@ export function buildAxisShaftLayer(
     readonly chrome: ChromeColors;
   },
 ): Layer {
-  /** Cached axis geometry (mins, extents, arrow tips) shared by every path datum below. */
+  /**
+   * Cached axis geometry (mins, extents, arrow tips) shared by every path datum below.
+   */
   const g = computeAxisGeometry({
     bounds,
   },);
-  /** Three two-point paths, one per axis, running from the origin corner to each arrow tip. */
+  /**
+   * Three two-point paths, one per axis, running from the origin corner to each arrow tip.
+   */
   const data: PathDatum[] = [
     {
       path: [
@@ -312,26 +340,40 @@ export function buildAxisArrowheadLayers(
     readonly chrome: ChromeColors;
   },
 ): readonly Layer[] {
-  /** Cached axis geometry; cone positions and scales derive from its extents. */
+  /**
+   * Cached axis geometry; cone positions and scales derive from its extents.
+   */
   const g = computeAxisGeometry({
     bounds,
   },);
-  /** X arrowhead cone length in world units; scales with X extent so cones stay proportional. */
+  /**
+   * X arrowhead cone length in world units; scales with X extent so cones stay proportional.
+   */
   const coneLengthX = g.dx
     * ARROWHEAD_LENGTH_FRACTION;
-  /** Y arrowhead cone length; same fraction as X but applied to the Y extent. */
+  /**
+   * Y arrowhead cone length; same fraction as X but applied to the Y extent.
+   */
   const coneLengthY = g.dy
     * ARROWHEAD_LENGTH_FRACTION;
-  /** Z arrowhead cone length; same fraction as X but applied to the Z extent. */
+  /**
+   * Z arrowhead cone length; same fraction as X but applied to the Z extent.
+   */
   const coneLengthZ = g.dz
     * ARROWHEAD_LENGTH_FRACTION;
-  /** X arrowhead cone base radius; visually balances the cone length. */
+  /**
+   * X arrowhead cone base radius; visually balances the cone length.
+   */
   const coneRadiusX = g.dx
     * ARROWHEAD_RADIUS_FRACTION;
-  /** Y arrowhead cone base radius. */
+  /**
+   * Y arrowhead cone base radius.
+   */
   const coneRadiusY = g.dy
     * ARROWHEAD_RADIUS_FRACTION;
-  /** Z arrowhead cone base radius. */
+  /**
+   * Z arrowhead cone base radius.
+   */
   const coneRadiusZ = g.dz
     * ARROWHEAD_RADIUS_FRACTION;
   return [

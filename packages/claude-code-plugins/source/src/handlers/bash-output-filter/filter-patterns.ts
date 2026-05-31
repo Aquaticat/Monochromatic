@@ -18,10 +18,14 @@ import {
 
 //region Constants
 
-/** Lines beyond this length are truncated with an ellipsis marker. */
+/**
+ * Lines beyond this length are truncated with an ellipsis marker.
+ */
 const MAX_LINE_LENGTH = 500;
 
-/** Minimum consecutive identical lines before collapsing to `(xN)` notation. */
+/**
+ * Minimum consecutive identical lines before collapsing to `(xN)` notation.
+ */
 const DEDUP_THRESHOLD = 3;
 
 /**
@@ -50,7 +54,9 @@ const REAL_HOME_DIR: string = (function resolveRealHome(): string {
   try {
     if (HOME_DIR === '')
       return '';
-    /** Canonical home path; equal to `HOME_DIR` when there is no symlink, so the IIFE returns ''. */
+    /**
+     * Canonical home path; equal to `HOME_DIR` when there is no symlink, so the IIFE returns ''.
+     */
     const resolved = realpathSync(HOME_DIR,);
     return resolved === HOME_DIR ? '' : resolved;
   }
@@ -66,7 +72,9 @@ const REAL_HOME_DIR: string = (function resolveRealHome(): string {
  */
 const CWD_PREFIX: string = (function resolveCwdPrefix(): string {
   try {
-    /** Current working directory before normalisation; trailing slash is enforced in the return. */
+    /**
+     * Current working directory before normalisation; trailing slash is enforced in the return.
+     */
     const cwd = process.cwd();
     return cwd.endsWith('/',) ? cwd : `${cwd}/`;
   }
@@ -96,7 +104,9 @@ const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
 
 //region Git boilerplate predicates
 
-/** Git verbs that introduce the per-file mode noise lines. */
+/**
+ * Git verbs that introduce the per-file mode noise lines.
+ */
 const GIT_FILE_MODE_VERBS: readonly string[] = [
   'create',
   'delete',
@@ -125,7 +135,9 @@ function isGitFileModeLine(line: string,): boolean {
   },);
 }
 
-/** Literal prefixes for git transport progress lines whose presence alone identifies the noise. */
+/**
+ * Literal prefixes for git transport progress lines whose presence alone identifies the noise.
+ */
 const GIT_TRANSPORT_PROGRESS_PREFIXES: readonly string[] = [
   'Enumerating objects:',
   'Counting objects:',
@@ -156,7 +168,9 @@ function hasGitTransportPrefix(line: string,): boolean {
   );
 }
 
-/** Literal prefix for git `Total <N>` summary lines whose first character after the space must be a digit. */
+/**
+ * Literal prefix for git `Total <N>` summary lines whose first character after the space must be a digit.
+ */
 const TOTAL_PROGRESS_PREFIX = 'Total ';
 
 /**
@@ -178,10 +192,14 @@ function isTotalProgressLine(line: string,): boolean {
   return isDigit(line.charAt(TOTAL_PROGRESS_PREFIX.length,),);
 }
 
-/** Literal prefix for git's `remote: ...` progress lines emitted by the server. */
+/**
+ * Literal prefix for git's `remote: ...` progress lines emitted by the server.
+ */
 const REMOTE_PROGRESS_PREFIX = 'remote: ';
 
-/** Recognised verbs that follow `remote: ` for transport-progress noise. */
+/**
+ * Recognised verbs that follow `remote: ` for transport-progress noise.
+ */
 const REMOTE_PROGRESS_VERBS: readonly string[] = [
   'Enumerating',
   'Counting',
@@ -209,7 +227,9 @@ const REMOTE_PROGRESS_VERBS: readonly string[] = [
 function isRemoteProgressLine(line: string,): boolean {
   if (!line.startsWith(REMOTE_PROGRESS_PREFIX,))
     return false;
-  /** Tail of the line after the `remote: ` prefix; checked against the verb list. */
+  /**
+   * Tail of the line after the `remote: ` prefix; checked against the verb list.
+   */
   const rest = line.slice(REMOTE_PROGRESS_PREFIX.length,);
   return REMOTE_PROGRESS_VERBS.some(function startsWithVerb(verb,): boolean {
     return rest.startsWith(verb,);
@@ -230,13 +250,19 @@ const GIT_TRANSPORT_PROGRESS_PREDICATES: readonly ((line: string,) => boolean)[]
 
 //region Sandbox noise predicates
 
-/** Literal marker the mise sandbox cache-write warning always contains. */
+/**
+ * Literal marker the mise sandbox cache-write warning always contains.
+ */
 const MISE_WARN_TOKEN = 'mise WARN';
 
-/** Literal marker that follows the WARN token and whitespace. */
+/**
+ * Literal marker that follows the WARN token and whitespace.
+ */
 const MISE_WARN_FAILED = 'failed to write cache file:';
 
-/** Literal marker that appears later in the line, after any context segment. */
+/**
+ * Literal marker that appears later in the line, after any context segment.
+ */
 const MISE_WARN_RO_FS = 'Read-only file system';
 
 /**
@@ -267,7 +293,9 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
    * ```
    */
   function skipWs(idx: number,): number {
-    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    /**
+     * Cursor advanced over the whitespace run; returned as the helper-shape binding.
+     */
     let at = idx;
     while ((at < line
       .length) && isWhitespace(line.charAt(at,),)) {
@@ -275,7 +303,9 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
     }
     return at;
   }
-  /** Position after any leading whitespace. */
+  /**
+   * Position after any leading whitespace.
+   */
   const afterLeadingWs = skipWs(0,);
   /**
    * Skips an optional `[...]` token followed by required whitespace. Returns
@@ -295,21 +325,27 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
     if (line.charAt(idx,)
       !== '[')
       return idx;
-    /** Position of the closing bracket of the optional `[...]` segment. */
+    /**
+     * Position of the closing bracket of the optional `[...]` segment.
+     */
     const closeIdx = line.indexOf(
       ']',
       idx + 1,
     );
     if (closeIdx === (-1))
       return idx;
-    /** Position right after the closing bracket. */
+    /**
+     * Position right after the closing bracket.
+     */
     const afterBracket = closeIdx + 1;
     if ((afterBracket >= line
       .length) || (!isWhitespace(line.charAt(afterBracket,),)))
       return idx;
     return skipWs(afterBracket,);
   }
-  /** Position after any optional bracketed prefix. */
+  /**
+   * Position after any optional bracketed prefix.
+   */
   const afterBracket = maybeSkipBracket(afterLeadingWs,);
   if (!line.startsWith(
     MISE_WARN_TOKEN,
@@ -317,10 +353,14 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
   )) {
     return false;
   }
-  /** Position immediately after the `mise WARN` literal. */
+  /**
+   * Position immediately after the `mise WARN` literal.
+   */
   const afterToken = afterBracket + MISE_WARN_TOKEN
     .length;
-  /** Position after the required whitespace following `mise WARN`. */
+  /**
+   * Position after the required whitespace following `mise WARN`.
+   */
   const afterTokenWs = skipWs(afterToken,);
   if (afterTokenWs === afterToken)
     return false;
@@ -330,7 +370,9 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
   )) {
     return false;
   }
-  /** Position right after the `failed to write cache file:` literal. */
+  /**
+   * Position right after the `failed to write cache file:` literal.
+   */
   const afterFailed = afterTokenWs + MISE_WARN_FAILED
     .length;
   return line.slice(afterFailed,)

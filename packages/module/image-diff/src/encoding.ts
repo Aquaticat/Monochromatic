@@ -111,7 +111,9 @@ export function isImageBase64(input: ImageInput,): input is ImageBase64 {
  * ```
  */
 export function inferFormat(filePath: string,): ImageFormat {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: inferFormat.name,
     l,
@@ -121,7 +123,9 @@ export function inferFormat(filePath: string,): ImageFormat {
    */
   const ext = extname(filePath,)
     .toLowerCase();
-  /** Format resolved from the extension; `undefined` for unsupported extensions triggers the explicit error below. */
+  /**
+   * Format resolved from the extension; `undefined` for unsupported extensions triggers the explicit error below.
+   */
   const format = EXTENSION_FORMAT_MAP[ext];
   if (format === undefined) {
     throw new Error(
@@ -149,9 +153,13 @@ export function inferFormat(filePath: string,): ImageFormat {
  * ```
  */
 export function bufferToBase64(buffer: ArrayBuffer,): string {
-  /** Byte-level view over the buffer; `btoa` needs a string of single-byte chars, not the raw buffer. */
+  /**
+   * Byte-level view over the buffer; `btoa` needs a string of single-byte chars, not the raw buffer.
+   */
   const bytes = new Uint8Array(buffer,);
-  /** Binary string assembled byte by byte; one code point per byte is what `btoa` expects. */
+  /**
+   * Binary string assembled byte by byte; one code point per byte is what `btoa` expects.
+   */
   const binary = Array
     .from(
       bytes,
@@ -185,12 +193,16 @@ export function bufferToDataUri({
   readonly buffer: ArrayBuffer;
   readonly format: ImageFormat;
 },): string {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: bufferToDataUri.name,
     l,
   },);
-  /** Raw base64 payload; prefixed below with the media-type header to produce the final data URI. */
+  /**
+   * Raw base64 payload; prefixed below with the media-type header to produce the final data URI.
+   */
   const base64 = bufferToBase64(buffer,);
   rl.debug(
     `encoded ${String(new Uint8Array(buffer,).length,)} bytes as base64 data URI`,
@@ -217,11 +229,17 @@ export function parseDataUri(dataUri: string,): {
   mimeType: string;
   data: string;
 } {
-  /** Literal scheme prefix; everything before the MIME type. */
+  /**
+   * Literal scheme prefix; everything before the MIME type.
+   */
   const SCHEME = 'data:';
-  /** Literal payload separator joining the MIME type and the encoded body. */
+  /**
+   * Literal payload separator joining the MIME type and the encoded body.
+   */
   const SEPARATOR = ';base64,';
-  /** Maximum chars of `dataUri` echoed back in error messages so they stay readable. */
+  /**
+   * Maximum chars of `dataUri` echoed back in error messages so they stay readable.
+   */
   const ERROR_PREVIEW_LENGTH = 50;
 
   /**
@@ -242,16 +260,22 @@ export function parseDataUri(dataUri: string,): {
 
   if (!dataUri.startsWith(SCHEME,))
     reject();
-  /** Cursor at the first MIME-type character. */
+  /**
+   * Cursor at the first MIME-type character.
+   */
   const mimeStart = SCHEME.length;
-  /** Position of `;base64,` separator; `-1` means the URI lacks the base64 marker. */
+  /**
+   * Position of `;base64,` separator; `-1` means the URI lacks the base64 marker.
+   */
   const sepIdx = dataUri.indexOf(
     SEPARATOR,
     mimeStart,
   );
   if ((sepIdx === (-1)) || (sepIdx === mimeStart))
     reject();
-  /** Cursor at the first payload byte after the separator. */
+  /**
+   * Cursor at the first payload byte after the separator.
+   */
   const dataStart = sepIdx + SEPARATOR
     .length;
   if (dataStart >= dataUri

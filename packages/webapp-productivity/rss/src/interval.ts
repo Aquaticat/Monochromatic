@@ -6,16 +6,22 @@ import {
 import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 
-/** Tagged logger for the interval module. */
+/**
+ * Tagged logger for the interval module.
+ */
 const l = tagged({
   tag: 'interval',
   l: parentLogger,
 },);
 
-/** Minutes per fetch interval window. */
+/**
+ * Minutes per fetch interval window.
+ */
 const MINUTES_PER_INTERVAL = 5;
 
-/** Default fetch cache interval: 5 minutes in milliseconds. */
+/**
+ * Default fetch cache interval: 5 minutes in milliseconds.
+ */
 const DEFAULT_FETCH_INTERVAL_MS = MINUTES_PER_INTERVAL
   * SECONDS_PER_MINUTE
   * MS_PER_SECOND;

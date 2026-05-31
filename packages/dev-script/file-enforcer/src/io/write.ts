@@ -85,13 +85,17 @@ async function writeIfChanged(
     readonly sourcePath?: string;
   },
 ): Promise<void> {
-  /** Function-scoped logger tagged with the call site for traceable write logs. */
+  /**
+   * Function-scoped logger tagged with the call site for traceable write logs.
+   */
   const rl = tagged({
     tag: writeIfChanged.name,
     l,
   },);
   trackDest(dest,);
-  /** Current file content, or MISSING if file doesn't exist yet */
+  /**
+   * Current file content, or MISSING if file doesn't exist yet
+   */
   const existing = await readExisting(dest,);
   if (existing === content) {
     rl.debug(
@@ -169,7 +173,9 @@ export async function overwriteIfNotExists(
     readonly content: string;
   },
 ): Promise<void> {
-  /** Existing content, or MISSING if file doesn't exist */
+  /**
+   * Existing content, or MISSING if file doesn't exist
+   */
   const existing = await readExisting(dest,);
   if (existing !== MISSING) {
     trackDest(dest,);
@@ -211,7 +217,9 @@ export async function overwriteEach(
   l.info(`overwriteEach: ${String(files.length,)} files`,);
   await Promise.all(
     files.map(async function writeOneGlobMatch(file,): Promise<void> {
-      /** Concrete destination path from the mirror-glob mapping */
+      /**
+       * Concrete destination path from the mirror-glob mapping
+       */
       const dest = mirrorGlobPath({
         sourcePattern: files.sourceGlob,
         destPattern: destGlob,

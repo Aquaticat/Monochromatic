@@ -34,17 +34,29 @@ import type { Probe, } from './probes.ts';
  * ```
  */
 export type RunAndReportOptions = {
-  /** Models to test */
+  /**
+   * Models to test
+   */
   readonly selectedModels: readonly ModelConfig[];
-  /** Probes to run on each model */
+  /**
+   * Probes to run on each model
+   */
   readonly probes: readonly Probe[];
-  /** Model:probe pairs to skip (tested recently) */
+  /**
+   * Model:probe pairs to skip (tested recently)
+   */
   readonly recentModelProbePairs: ReadonlyMap<string, ReadonlySet<string>>;
-  /** Model labels that had a whole-model failure recently (e.g. 429) */
+  /**
+   * Model labels that had a whole-model failure recently (e.g. 429)
+   */
   readonly recentlyFailedModels: ReadonlySet<string>;
-  /** OpenRouter API key */
+  /**
+   * OpenRouter API key
+   */
   readonly apiKey: string;
-  /** Override for the number of consistency runs (already parsed as integer), omit to use config default */
+  /**
+   * Override for the number of consistency runs (already parsed as integer), omit to use config default
+   */
   readonly runsOverride?: number;
 };
 
@@ -86,7 +98,9 @@ export async function runAndReport({
   apiKey,
   runsOverride,
 }: RunAndReportOptions,): Promise<void> {
-  /** Partial config patch carrying the consistency-runs override, or empty when no override is set. */
+  /**
+   * Partial config patch carrying the consistency-runs override, or empty when no override is set.
+   */
   const consistencyRunsOverride: Pick<RunnerConfigOverrides, 'consistencyRuns'> =
     runsOverride !== undefined ? { consistencyRuns: runsOverride, } : {};
 
@@ -99,7 +113,9 @@ export async function runAndReport({
    */
   const modelsToRun = selectedModels.filter(function shouldRun(model,): boolean {
     if (recentlyFailedModels.has(model.label,)) {
-      /** Model-specific logger for skip messages. */
+      /**
+       * Model-specific logger for skip messages.
+       */
       const rl = tagged({
         tag: model.label,
         l,
@@ -110,7 +126,9 @@ export async function runAndReport({
     return true;
   },);
 
-  /** Canary reports for every kept model; promise fan-out so models run concurrently. */
+  /**
+   * Canary reports for every kept model; promise fan-out so models run concurrently.
+   */
   const reports: readonly CanaryReport[] = await Promise.all(
     modelsToRun.map(function runModel(model,): Promise<CanaryReport> {
       return runCanary({
@@ -127,13 +145,17 @@ export async function runAndReport({
     },),
   );
 
-  /** Reports that produced at least one probe result, including timed-out probes (score 0). */
+  /**
+   * Reports that produced at least one probe result, including timed-out probes (score 0).
+   */
   const reportsWithResults = reports.filter(function hasResults(report,): boolean {
     return report.results
       .length
       > 0;
   },);
-  /** Reports that recorded a whole-model failure such as a 429 or auth error. */
+  /**
+   * Reports that recorded a whole-model failure such as a 429 or auth error.
+   */
   const failedReports = reports.filter(function isFailed(report,): boolean {
     return report.failed;
   },);

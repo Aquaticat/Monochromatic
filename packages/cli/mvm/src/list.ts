@@ -5,7 +5,9 @@ import {
 } from './log.ts';
 import { virsh, } from './virsh.ts';
 
-/** Single VM entry with its display name and current libvirt state. */
+/**
+ * Single VM entry with its display name and current libvirt state.
+ */
 export type VmInfo = {
   name: string;
   state: string;
@@ -83,9 +85,13 @@ function isDigitString(s: string,): boolean {
  */
 export function splitOnWhitespace(s: string,): readonly string[] {
   return (function collect(): readonly string[] {
-    /** Tokens in order; appended once per non-whitespace run so the result is never rebuilt each step. */
+    /**
+     * Tokens in order; appended once per non-whitespace run so the result is never rebuilt each step.
+     */
     const tokens: string[] = [];
-    /** Scan cursor over `s`; advances monotonically to `s.length` (single linear pass: O(n) time, O(1) stack, no recursion). */
+    /**
+     * Scan cursor over `s`; advances monotonically to `s.length` (single linear pass: O(n) time, O(1) stack, no recursion).
+     */
     let idx = 0;
     while (idx < s
       .length) {
@@ -93,7 +99,9 @@ export function splitOnWhitespace(s: string,): readonly string[] {
         idx += 1;
       }
       else {
-        /** Inclusive start of the non-whitespace run under the cursor; the run is sliced out once its end is reached. */
+        /**
+         * Inclusive start of the non-whitespace run under the cursor; the run is sliced out once its end is reached.
+         */
         const start = idx;
         while (idx < s
           .length) {
@@ -101,7 +109,9 @@ export function splitOnWhitespace(s: string,): readonly string[] {
             break;
           idx += 1;
         }
-        /** Non-whitespace run from `start` to the cursor; one slice per token keeps total work linear. */
+        /**
+         * Non-whitespace run from `start` to the cursor; one slice per token keeps total work linear.
+         */
         const token = s.slice(
           start,
           idx,
@@ -142,12 +152,16 @@ function parseVirshRow(
    * differently-shaped tokens.
    */
   const MIN_DATA_ROW_TOKENS = 3;
-  /** Whitespace-separated tokens of `line`. */
+  /**
+   * Whitespace-separated tokens of `line`.
+   */
   const tokens = splitOnWhitespace(line,);
   if (tokens.length
     < MIN_DATA_ROW_TOKENS)
     return NOT_A_DATA_ROW;
-  /** Id column; data rows have digits or a literal `-`. */
+  /**
+   * Id column; data rows have digits or a literal `-`.
+   */
   const [idToken, vmName, ...stateTokens] = tokens;
   if ((idToken === undefined) || (vmName === undefined))
     return NOT_A_DATA_ROW;
@@ -172,31 +186,45 @@ function parseVirshRow(
  * ```
  */
 export async function list(): Promise<readonly VmInfo[]> {
-  /** Logger scoped to this call so debug output is attributable. */
+  /**
+   * Logger scoped to this call so debug output is attributable.
+   */
   const rl = tagged({
     tag: list.name,
     l,
   },);
   rl.debug('querying virsh for all VMs',);
 
-  /** Raw multi-line output from `virsh list --all`; parsed line by line below. */
+  /**
+   * Raw multi-line output from `virsh list --all`; parsed line by line below.
+   */
   const output = await virsh({ args: [
     'list',
     '--all',
   ], },);
-  /** Each row of the virsh table, including the header and separator rows the parser below filters out. */
+  /**
+   * Each row of the virsh table, including the header and separator rows the parser below filters out.
+   */
   const lines = output.split('\n',);
 
-  /** Accumulator for prefixed VMs found in the virsh table; returned as the result. */
+  /**
+   * Accumulator for prefixed VMs found in the virsh table; returned as the result.
+   */
   const vms: VmInfo[] = [];
 
   for (const line of lines) {
-    /** Parsed row fields, or NOT_A_DATA_ROW for header/separator/non-data rows. */
+    /**
+     * Parsed row fields, or NOT_A_DATA_ROW for header/separator/non-data rows.
+     */
     const row = parseVirshRow(line,);
     if (row !== NOT_A_DATA_ROW) {
-      /** VM name column from the parsed data row. */
+      /**
+       * VM name column from the parsed data row.
+       */
       const vmName = row.name;
-      /** State column from the parsed data row; trimmed when emitted because it carries trailing spaces. */
+      /**
+       * State column from the parsed data row; trimmed when emitted because it carries trailing spaces.
+       */
       const vmState = row.state;
       if (vmName.startsWith(VM_PREFIX,)) {
         vms.push({

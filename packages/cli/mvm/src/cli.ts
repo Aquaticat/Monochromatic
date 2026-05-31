@@ -35,7 +35,9 @@ export {};
  */
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
-/** Raw args after the script name. */
+/**
+ * Raw args after the script name.
+ */
 const rawArgs = process.argv
   .slice(2,);
 
@@ -45,7 +47,9 @@ const rawArgs = process.argv
  */
 const doubleDashIndex = rawArgs.indexOf('--',);
 
-/** Boundary past which tokens belong to the VM command and must not be touched. */
+/**
+ * Boundary past which tokens belong to the VM command and must not be touched.
+ */
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
@@ -64,7 +68,9 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
 
 //region Dispatch: parse argv and route to the appropriate handler
 
-/** Parsed CLI result from process.argv */
+/**
+ * Parsed CLI result from process.argv
+ */
 const args = runSync(
   parser,
   {
@@ -95,13 +101,17 @@ else if (args.cmd
   await shell({ name: args.name, },);
 else if (args.cmd
   === 'list') {
-  /** All managed VMs queried from libvirt. */
+  /**
+   * All managed VMs queried from libvirt.
+   */
   const vms = await list();
   if (vms.length
     === 0)
     console.error('no VMs found',);
   else {
-    /** Column width for aligned output. */
+    /**
+     * Column width for aligned output.
+     */
     const NAME_COL_WIDTH = 24;
     vms.forEach(function printVm(vm,) {
       console.log(`${vm.name
@@ -124,7 +134,9 @@ else if (args.cmd
 }
 else if (args.cmd
   === 'exec') {
-  /** Execution result with stdout, stderr, and exit code. */
+  /**
+   * Execution result with stdout, stderr, and exit code.
+   */
   const result = await exec({
     command: args.command,
     name: args.name,
@@ -145,7 +157,9 @@ else if (args.cmd
 }
 else if (args.cmd
   === 'push') {
-  /** Guest path where the file is accessible inside the VM. */
+  /**
+   * Guest path where the file is accessible inside the VM.
+   */
   const guestFilePath = await pushFile({
     name: args.name,
     hostPath: args.hostPath,
@@ -155,12 +169,16 @@ else if (args.cmd
 }
 else if (args.cmd
   === 'pull') {
-  /** File content retrieved from the guest. */
+  /**
+   * File content retrieved from the guest.
+   */
   const content = await pullFile({
     name: args.name,
     guestPath: args.guestPath,
   },);
-  /** Dynamic import keeps the pull-only branch off the cold-start dependency graph. */
+  /**
+   * Dynamic import keeps the pull-only branch off the cold-start dependency graph.
+   */
   const { writeFile, } = await import('node:fs/promises');
   await writeFile(
     args.hostPath,
@@ -169,7 +187,9 @@ else if (args.cmd
   console.log(`pulled ${args.guestPath} -> ${args.hostPath} from VM ${args.name}`,);
 }
 else {
-  /** Execution result from the ephemeral VM. */
+  /**
+   * Execution result from the ephemeral VM.
+   */
   const result = await run({
     command: args.command,
     ...(args.from !== undefined ? { from: args.from, } : {}),

@@ -18,7 +18,9 @@ import { renderPage, } from './layout.ts';
  * ```
  */
 export async function inProgressPage(): Promise<Response> {
-  /** Tasks with active timers, queried fresh on every request for accurate elapsed times. */
+  /**
+   * Tasks with active timers, queried fresh on every request for accurate elapsed times.
+   */
   const tasks = await listInProgressTasks();
 
   return renderPage({

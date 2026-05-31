@@ -46,13 +46,21 @@ import {
   SUPPRESS_MS,
 } from './watch-filesystem-filter.ts';
 
-/** Structured filesystem change event emitted to the watcher's consumer. */
+/**
+ * Structured filesystem change event emitted to the watcher's consumer.
+ */
 export type FsChangeEvent = {
-  /** Absolute path of the changed entry. */
+  /**
+   * Absolute path of the changed entry.
+   */
   readonly path: string;
-  /** Category of the change. */
+  /**
+   * Category of the change.
+   */
   readonly changeType: FsChangeType;
-  /** Whether the changed entry is a directory. */
+  /**
+   * Whether the changed entry is a directory.
+   */
   readonly isDirectory: boolean;
 };
 
@@ -60,9 +68,13 @@ export type FsChangeEvent = {
  * Options for {@link createDirWatcher}.
  */
 export type DirWatcherOptions = {
-  /** Callback invoked for each resolved change event. */
+  /**
+   * Callback invoked for each resolved change event.
+   */
   readonly onChange: (event: FsChangeEvent,) => void;
-  /** Parent logger for tag composition. */
+  /**
+   * Parent logger for tag composition.
+   */
   readonly l: Logger;
 };
 
@@ -70,11 +82,17 @@ export type DirWatcherOptions = {
  * Directory watcher handle returned by {@link createDirWatcher}.
  */
 export type DirWatcher = Readonly<{
-  /** Starts watching a directory for changes. */
+  /**
+   * Starts watching a directory for changes.
+   */
   readonly watchDir: (event: { readonly path: string; },) => void;
-  /** Temporarily suppresses change events for a file path. */
+  /**
+   * Temporarily suppresses change events for a file path.
+   */
   readonly suppressPath: (event: { readonly path: string; },) => void;
-  /** Closes all watchers. */
+  /**
+   * Closes all watchers.
+   */
   readonly close: () => Promise<void>;
 }>;
 
@@ -121,9 +139,13 @@ async function sweepOrphanTemps(
   },
 ): Promise<void> {
   try {
-    /** Snapshot of directory contents prior to filtering for stale temp files. */
+    /**
+     * Snapshot of directory contents prior to filtering for stale temp files.
+     */
     const entries = await readdir(path,);
-    /** Stale temp files left over from interrupted writes; subset of `entries`. */
+    /**
+     * Stale temp files left over from interrupted writes; subset of `entries`.
+     */
     const orphans = entries.filter(
       function isOrphan(name,): boolean {
         return isEditordTempFile(name,);
@@ -132,7 +154,9 @@ async function sweepOrphanTemps(
     if (orphans.length
       === 0)
       return;
-    /** Settled results so a single unlink failure does not mask the rest. */
+    /**
+     * Settled results so a single unlink failure does not mask the rest.
+     */
     const results = await Promise.allSettled(
       orphans.map(
         function removeOrphan(name,): Promise<void> {
@@ -145,7 +169,9 @@ async function sweepOrphanTemps(
         },
       ),
     );
-    /** Rejected promises only; surfaced in the warn branch below. */
+    /**
+     * Rejected promises only; surfaced in the warn branch below.
+     */
     const failed = results.filter(
       function isRejection(r,): boolean {
         return r.status
@@ -197,11 +223,17 @@ export function createDirWatcher(
     l,
   }: DirWatcherOptions,
 ): DirWatcher {
-  /** Active watchers keyed by directory path. */
+  /**
+   * Active watchers keyed by directory path.
+   */
   const watchers = new Map<string, FSWatcher>();
-  /** Paths suppressed from emitting events (e.g. after a self-save). */
+  /**
+   * Paths suppressed from emitting events (e.g. after a self-save).
+   */
   const suppressed = new Set<string>();
-  /** Tagged logger. */
+  /**
+   * Tagged logger.
+   */
   const logger = tagged({
     tag: 'watcher',
     l,
@@ -213,7 +245,9 @@ export function createDirWatcher(
    * @param path - directory path to stop watching
    */
   function removeWatcher({ path, }: { readonly path: string; },): void {
-    /** Already-removed watcher returns silently rather than throwing. */
+    /**
+     * Already-removed watcher returns silently rather than throwing.
+     */
     const fsWatcher = watchers.get(path,);
     if (fsWatcher === undefined)
       return;
@@ -331,7 +365,9 @@ export function createDirWatcher(
     if (watchers.has(path,))
       return;
 
-    /** Per-directory chokidar instance; depth 0 keeps the watch shallow. */
+    /**
+     * Per-directory chokidar instance; depth 0 keeps the watch shallow.
+     */
     const fsWatcher = chokidarWatch(
       path,
       {
@@ -386,9 +422,13 @@ export function createDirWatcher(
     );
   }
 
-  /** Closes all watchers. */
+  /**
+   * Closes all watchers.
+   */
   async function close(): Promise<void> {
-    /** Settled together so one failed watcher close does not block the others. */
+    /**
+     * Settled together so one failed watcher close does not block the others.
+     */
     const closes = [...watchers.values(),].map(
       function closeOne(w,) {
         return w.close();

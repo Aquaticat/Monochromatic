@@ -80,7 +80,9 @@ export type AppState = {
 
 //region Constants
 
-/** Default dim mapping per the plan's recommendation. */
+/**
+ * Default dim mapping per the plan's recommendation.
+ */
 const DEFAULT_DIM_MAPPING: DimMapping = {
   x: 'logSourceBytes',
   y: 'logDaysStale',
@@ -90,7 +92,9 @@ const DEFAULT_DIM_MAPPING: DimMapping = {
   size: 'logDownloads',
 };
 
-/** Default toggle state; every filter "don't care". */
+/**
+ * Default toggle state; every filter "don't care".
+ */
 const DEFAULT_TOGGLES: ToggleState = {
   isLeaf: 'any',
   tsMajority: 'any',
@@ -120,7 +124,9 @@ const DEFAULT_DISPLAY_TOGGLES: DisplayToggleState = {
   showUnknownCluster: true,
 };
 
-/** Default OrbitView angle; slight tilt + slight orbit so 3 axes are distinguishable. */
+/**
+ * Default OrbitView angle; slight tilt + slight orbit so 3 axes are distinguishable.
+ */
 const DEFAULT_VIEW_STATE: ViewState = {
   rotationX: 30,
   rotationOrbit: -45,
@@ -132,7 +138,9 @@ const DEFAULT_VIEW_STATE: ViewState = {
   ],
 };
 
-/** Channel keys, fixed order, used to iterate dim mapping. */
+/**
+ * Channel keys, fixed order, used to iterate dim mapping.
+ */
 const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
   'y',
@@ -169,7 +177,9 @@ function computeExtent(
   number,
   number,
 ] {
-  /** Known dim readings (unknowns stripped) so `Math.min`/`Math.max` see only real numbers. */
+  /**
+   * Known dim readings (unknowns stripped) so `Math.min`/`Math.max` see only real numbers.
+   */
   const values = probes
     .map(function pluck(probe,) {
       return extractDim({
@@ -211,7 +221,9 @@ function computeFullRanges(
     readonly dimMapping: DimMapping;
   },
 ): RangeState {
-  /** Per-channel `[channel, extent]` tuples; feeds `Object.fromEntries` to build the record. */
+  /**
+   * Per-channel `[channel, extent]` tuples; feeds `Object.fromEntries` to build the record.
+   */
   const entries = CHANNEL_KEYS.map(function rangeForChannel(channel,) {
     return [
       channel,
@@ -221,7 +233,9 @@ function computeFullRanges(
       },),
     ] as const;
   },);
-  /** Channel-to-extent record before the unsafe cast back to `RangeState`. */
+  /**
+   * Channel-to-extent record before the unsafe cast back to `RangeState`.
+   */
   const record = Object.fromEntries(entries,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.fromEntries() returns Record<string, V>; the entries above exhaust ChannelKey.
   return record as RangeState;
@@ -326,7 +340,9 @@ export const STATE_INVALID: unique symbol = Symbol('deps-cube/state-invalid',);
 function validateAppState(value: unknown,): AppState | typeof STATE_INVALID {
   if (((typeof value) !== 'object') || (value === null))
     return STATE_INVALID;
-  /** Top-level `AppState` fields that must all be present for the shape check to pass. */
+  /**
+   * Top-level `AppState` fields that must all be present for the shape check to pass.
+   */
   const required: readonly (keyof AppState)[] = [
     'viewState',
     'dimMapping',
@@ -335,7 +351,9 @@ function validateAppState(value: unknown,): AppState | typeof STATE_INVALID {
     'search',
     'displayToggles',
   ];
-  /** `true` only when every required field is present on the parsed object. */
+  /**
+   * `true` only when every required field is present on the parsed object.
+   */
   const has = required.every(function present(key,) {
     return key in value;
   },);
@@ -368,9 +386,13 @@ export function decodeState(
   { encoded, }: { readonly encoded: string; },
 ): AppState | typeof STATE_INVALID {
   try {
-    /** URI-decoded JSON payload extracted from the hash. */
+    /**
+     * URI-decoded JSON payload extracted from the hash.
+     */
     const json = decodeURIComponent(encoded,);
-    /** Untrusted parsed JSON; downgraded to `unknown` so `validateAppState` is the only narrowing path. */
+    /**
+     * Untrusted parsed JSON; downgraded to `unknown` so `validateAppState` is the only narrowing path.
+     */
     const parsed = JSON.parse(json,) as unknown;
     return validateAppState(parsed,);
   }
@@ -383,7 +405,9 @@ export function decodeState(
 
 //region Hash helpers
 
-/** Literal token preceding the URL-encoded payload in the location hash. */
+/**
+ * Literal token preceding the URL-encoded payload in the location hash.
+ */
 const STATE_PARAM = 'state=';
 
 /**
@@ -398,11 +422,15 @@ const STATE_PARAM = 'state=';
  * @returns captured payload, or `''` when no `state=` parameter exists
  */
 function extractStateParam(s: string,): string {
-  /** Cursor at which the payload starts, or `-1` when no parameter is present. */
+  /**
+   * Cursor at which the payload starts, or `-1` when no parameter is present.
+   */
   const payloadStart = s.startsWith(STATE_PARAM,)
     ? STATE_PARAM.length
     : (function findAfterAmp(): number {
-      /** Position of `&state=`; `-1` ends the search. */
+      /**
+       * Position of `&state=`; `-1` ends the search.
+       */
       const ampIdx = s.indexOf(`&${STATE_PARAM}`,);
       return ampIdx === (-1) ? (-1) : (ampIdx + 1
         + STATE_PARAM
@@ -410,7 +438,9 @@ function extractStateParam(s: string,): string {
     })();
   if (payloadStart === (-1))
     return '';
-  /** Exclusive end of the payload at the next `&` (or string end). */
+  /**
+   * Exclusive end of the payload at the next `&` (or string end).
+   */
   const ampEnd = s.indexOf(
     '&',
     payloadStart,
@@ -449,9 +479,13 @@ export function readStateFromHash(
     readonly fallback: AppState;
   },
 ): AppState {
-  /** Hash with the leading `#` removed so `state=` always appears at offset 0 or after `&`. */
+  /**
+   * Hash with the leading `#` removed so `state=` always appears at offset 0 or after `&`.
+   */
   const stripped = hash.startsWith('#',) ? hash.slice(1,) : hash;
-  /** URL-encoded payload from the `state=` parameter; `''` when absent. */
+  /**
+   * URL-encoded payload from the `state=` parameter; `''` when absent.
+   */
   const encoded = extractStateParam(stripped,);
   if (encoded === '')
     return fallback;

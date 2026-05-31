@@ -39,9 +39,13 @@ export async function collectReachable(row: {
   readonly wants: readonly string[];
   readonly haves: readonly string[];
 },): Promise<string[]> {
-  /** Collected OIDs that will be packed for the client. */
+  /**
+   * Collected OIDs that will be packed for the client.
+   */
   const visited = new Set<string>();
-  /** OIDs the client already has; walked first so we can prune below them. */
+  /**
+   * OIDs the client already has; walked first so we can prune below them.
+   */
   const excluded = new Set<string>();
   // Mark every object reachable from haves as excluded.
   for (const haveOid of row.haves) {
@@ -83,11 +87,15 @@ async function markReachable(row: {
   readonly bag: Set<string>;
   readonly excluded: ReadonlySet<string>;
 },): Promise<void> {
-  /** BFS frontier; pop one, push its parents. */
+  /**
+   * BFS frontier; pop one, push its parents.
+   */
   const queue: string[] = [row.oid,];
   while (queue.length
     > 0) {
-    /** Current frontier OID; the empty-queue branch above guards `undefined`. */
+    /**
+     * Current frontier OID; the empty-queue branch above guards `undefined`.
+     */
     const oid = queue.shift();
     if (oid === undefined)
       break;
@@ -99,7 +107,9 @@ async function markReachable(row: {
       continue;
     row.bag
       .add(oid,);
-    /** Resolved commit object, or `undefined` when the OID is a tag/tree/blob. */
+    /**
+     * Resolved commit object, or `undefined` when the OID is a tag/tree/blob.
+     */
     let commit: Awaited<ReturnType<typeof git.readCommit>> | undefined = undefined;
     try {
       // oxlint-disable-next-line no-await-in-loop -- BFS via mutable queue; serial reads are intentional
@@ -153,7 +163,9 @@ async function markTree(row: {
     return;
   row.bag
     .add(row.oid,);
-  /** Resolved tree object; entries drive the per-child branch below. */
+  /**
+   * Resolved tree object; entries drive the per-child branch below.
+   */
   const tree = await git.readTree({
     fs: nodeFs,
     gitdir: row.gitdir,

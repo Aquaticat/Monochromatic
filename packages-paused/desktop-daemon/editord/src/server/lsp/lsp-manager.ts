@@ -58,7 +58,9 @@ export type {
 
 //region LspManager type
 
-/** Manages LSP servers via a lazy pool, routing documents and features. */
+/**
+ * Manages LSP servers via a lazy pool, routing documents and features.
+ */
 export type LspManager = {
   /**
    * Notifies LSP servers that a file was opened.
@@ -71,31 +73,51 @@ export type LspManager = {
     readonly text: string;
     readonly size: number;
   },) => Promise<void>;
-  /** Notifies LSP servers that a file's content changed. */
+  /**
+   * Notifies LSP servers that a file's content changed.
+   */
   readonly didChange: (opts: {
     readonly path: string;
     readonly text: string;
   },) => Promise<void>;
-  /** Notifies LSP servers that a file was saved. */
+  /**
+   * Notifies LSP servers that a file was saved.
+   */
   readonly didSave: (opts: { readonly path: string; },) => Promise<void>;
-  /** Notifies LSP servers that a file was closed. */
+  /**
+   * Notifies LSP servers that a file was closed.
+   */
   readonly didClose: (opts: { readonly path: string; },) => Promise<void>;
-  /** Returns hover content, or null when no client is available. */
+  /**
+   * Returns hover content, or null when no client is available.
+   */
   readonly hover: (opts: FilePosition,) => Promise<LspHover | null>;
-  /** Returns completion items, or empty array when no client is available. */
+  /**
+   * Returns completion items, or empty array when no client is available.
+   */
   readonly completion: (opts: FilePosition,) => Promise<readonly LspCompletionItem[]>;
-  /** Returns text edits, or empty array when no client is available. */
+  /**
+   * Returns text edits, or empty array when no client is available.
+   */
   readonly format: (opts: { readonly path: string; },) => Promise<readonly LspTextEdit[]>;
-  /** Returns definition location, or null when no client is available. */
+  /**
+   * Returns definition location, or null when no client is available.
+   */
   readonly gotoDefinition: (opts: FilePosition,) => Promise<FilePosition | null>;
-  /** Returns reference locations, or empty array when no client is available. */
+  /**
+   * Returns reference locations, or empty array when no client is available.
+   */
   readonly references: (opts: FilePosition,) => Promise<readonly FilePosition[]>;
-  /** Returns inlay hints, or empty array when no client is available. */
+  /**
+   * Returns inlay hints, or empty array when no client is available.
+   */
   readonly inlayHints: (opts: {
     readonly path: string;
     readonly range: Range;
   },) => Promise<readonly LspInlayHint[]>;
-  /** Returns selection ranges, or empty array when no client is available. */
+  /**
+   * Returns selection ranges, or empty array when no client is available.
+   */
   readonly selectionRange: (opts: {
     readonly path: string;
     readonly positions: readonly {
@@ -103,18 +125,26 @@ export type LspManager = {
       readonly character: number;
     }[];
   },) => Promise<readonly LspSelectionRange[]>;
-  /** Returns prepare-rename result, or null when symbol is not renamable. */
+  /**
+   * Returns prepare-rename result, or null when symbol is not renamable.
+   */
   readonly prepareRename: (opts: FilePosition,) => Promise<PrepareRenameResult | null>;
-  /** Returns workspace edit for rename, or null when rename failed. */
+  /**
+   * Returns workspace edit for rename, or null when rename failed.
+   */
   readonly rename: (opts: {
     readonly path: string;
     readonly line: number;
     readonly character: number;
     readonly newName: string;
   },) => Promise<LspWorkspaceEdit | null>;
-  /** Gracefully shuts down all pooled LSP servers and waits for completion. */
+  /**
+   * Gracefully shuts down all pooled LSP servers and waits for completion.
+   */
   readonly shutdown: () => Promise<void>;
-  /** Shuts down LSP servers whose project root covers the given path. */
+  /**
+   * Shuts down LSP servers whose project root covers the given path.
+   */
   readonly shutdownForPath: (opts: { readonly path: string; },) => Promise<void>;
 };
 
@@ -151,16 +181,24 @@ export function createLspManager({
   readonly onDiagnostics: DiagnosticsHandler;
   readonly l: Logger;
 },): LspManager {
-  /** Tagged logger forwarded to all subsystems so log lines stay attributable. */
+  /**
+   * Tagged logger forwarded to all subsystems so log lines stay attributable.
+   */
   const managerLog = tagged({
     tag: 'lsp',
     l,
   },);
-  /** Per-file diagnostic aggregator that fans out to the manager's `onDiagnostics`. */
+  /**
+   * Per-file diagnostic aggregator that fans out to the manager's `onDiagnostics`.
+   */
   const diagnostics = createDiagnosticStore({ onDiagnostics, },);
-  /** URI-keyed document state shared across the didOpen/didChange/didClose helpers. */
+  /**
+   * URI-keyed document state shared across the didOpen/didChange/didClose helpers.
+   */
   const documents = new Map<string, DocumentState>();
-  /** LSP server pool keyed by `<type>:<root>`; each entry is lazy. */
+  /**
+   * LSP server pool keyed by `<type>:<root>`; each entry is lazy.
+   */
   const pool = createLspPool({
     ceiling,
     l: managerLog,

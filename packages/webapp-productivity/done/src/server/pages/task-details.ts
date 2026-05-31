@@ -28,7 +28,9 @@ import { serializePageData, } from './layout.ts';
  * ```
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
-  /** Target task; the not-found sentinel short-circuits to a 404 response below. */
+  /**
+   * Target task; the not-found sentinel short-circuits to a 404 response below.
+   */
   const task = await getTaskById(taskId,);
   if (task === TASK_NOT_FOUND) {
     return new Response(
@@ -37,9 +39,13 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
     );
   }
 
-  /** Candidates eligible to be picked as a new blocker (everything but this task). */
+  /**
+   * Candidates eligible to be picked as a new blocker (everything but this task).
+   */
   const blockerCandidates = await listTasksForBlockerPicker(taskId,);
-  /** Lookup keyed by id so `blockerSummaries` can be built without a second query. */
+  /**
+   * Lookup keyed by id so `blockerSummaries` can be built without a second query.
+   */
   const blockerCandidatesById = Object.fromEntries(
     blockerCandidates.map(function toEntry(candidate,) {
       return [
@@ -48,7 +54,9 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
       ];
     },),
   );
-  /** Already-set blockers reshaped to the summary view the client expects. */
+  /**
+   * Already-set blockers reshaped to the summary view the client expects.
+   */
   const blockerSummaries = task
     .blockedBy
     .map(function lookupBlocker(blockerId,) {
@@ -65,7 +73,9 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
       };
     },);
 
-  /** Bundled payload serialised into the embedded `#page-data` script. */
+  /**
+   * Bundled payload serialised into the embedded `#page-data` script.
+   */
   const pageData = {
     task,
     blockerCandidates: blockerCandidates.map(function toMinimal(candidate,) {
@@ -77,7 +87,9 @@ export async function taskDetailsPage(taskId: string,): Promise<Response> {
     blockerSummaries,
   };
 
-  /** Full HTML document string; returned wrapped in a Response below. */
+  /**
+   * Full HTML document string; returned wrapped in a Response below.
+   */
   const html = `<!DOCTYPE html>
 ${
     h({

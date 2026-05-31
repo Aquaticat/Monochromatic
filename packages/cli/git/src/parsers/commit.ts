@@ -16,7 +16,9 @@ import { PATHSPEC_SEPARATOR, } from '../escape-hatch.ts';
 
 //region Commit escape hatch + inline-value normalization
 
-/** Wrapper-only flag that suppresses `-o` injection for one commit invocation. */
+/**
+ * Wrapper-only flag that suppresses `-o` injection for one commit invocation.
+ */
 export const COMMIT_ESCAPE_HATCH = '--no-enforce-only';
 
 /**
@@ -84,32 +86,44 @@ function normaliseInlineShort(token: string,): readonly string[] {
       <= 2))
     return [token,];
 
-  /** Index of the first value-taking short option inside the cluster. */
+  /**
+   * Index of the first value-taking short option inside the cluster.
+   */
   const valueIndex = findValueOptionIndex(token,);
 
   if (valueIndex === (-1))
     return [token,];
 
-  /** Leading boolean short options (e.g. `a` from `-am`). */
+  /**
+   * Leading boolean short options (e.g. `a` from `-am`).
+   */
   const leading = token.slice(
     1,
     valueIndex,
   );
-  /** Value-taking short option spelled with leading dash. */
+  /**
+   * Value-taking short option spelled with leading dash.
+   */
   const valueOption = `-${
     token.slice(
       valueIndex,
       valueIndex + 1,
     )
   }`;
-  /** Inline value text that follows the value-taking option letter. */
+  /**
+   * Inline value text that follows the value-taking option letter.
+   */
   const inlineValue = token.slice(valueIndex + 1,);
 
   /* oxlint-disable unicorn/prefer-spread -- leading is ASCII short-option letters (constrained by SHORT_VALUE_OPTIONS), so code-point iteration here is correct and equivalent to grapheme iteration. */
-  /** Cluster letters split into individual short-option characters. */
+  /**
+   * Cluster letters split into individual short-option characters.
+   */
   const leadingLetters = Array.from(leading,);
   /* oxlint-enable unicorn/prefer-spread */
-  /** Boolean short options split back into single-letter tokens. */
+  /**
+   * Boolean short options split back into single-letter tokens.
+   */
   const leadingTokens = leadingLetters.map(function asShort(letter,) {
     return `-${letter}`;
   },);
@@ -166,14 +180,20 @@ function findValueOptionIndex(token: string,): number {
  * ```
  */
 function normaliseCommitArgs(args: readonly string[],): readonly string[] {
-  /** Index of the pathspec separator inside the post-subcommand region. */
+  /**
+   * Index of the pathspec separator inside the post-subcommand region.
+   */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
-  /** Argv slice subject to normalisation; pathspecs past `--` are preserved. */
+  /**
+   * Argv slice subject to normalisation; pathspecs past `--` are preserved.
+   */
   const optionRegion = separatorIndex === (-1) ? args : args.slice(
     0,
     separatorIndex,
   );
-  /** Pathspec tail kept verbatim, including the leading `--` separator. */
+  /**
+   * Pathspec tail kept verbatim, including the leading `--` separator.
+   */
   const pathspecTail = separatorIndex === (-1) ? [] : args.slice(separatorIndex,);
 
   return [
@@ -188,11 +208,17 @@ function normaliseCommitArgs(args: readonly string[],): readonly string[] {
 
 //region Commit pathspec scanning
 
-/** Options for scanning a commit option region for positional pathspecs. */
+/**
+ * Options for scanning a commit option region for positional pathspecs.
+ */
 type ScanPathspecOptions = {
-  /** Normalised argv tokens before any pathspec separator. */
+  /**
+   * Normalised argv tokens before any pathspec separator.
+   */
   readonly args: readonly string[];
-  /** Current scan position. */
+  /**
+   * Current scan position.
+   */
   readonly index: number;
 };
 
@@ -237,7 +263,9 @@ function scanOptionRegionForPathspec({
   args,
   index,
 }: ScanPathspecOptions,): boolean {
-  /** Current argv token under the scanner cursor. */
+  /**
+   * Current argv token under the scanner cursor.
+   */
   const arg = args[index];
 
   if (arg === undefined)
@@ -276,7 +304,9 @@ function scanOptionRegionForPathspec({
  * ```
  */
 function hasCommitPathspec(normalised: readonly string[],): boolean {
-  /** Position of pathspec separator after normalisation. */
+  /**
+   * Position of pathspec separator after normalisation.
+   */
   const separatorIndex = normalised.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex !== (-1))
@@ -387,21 +417,37 @@ const commitRegionParser = object({
 
 //region Commit region facts
 
-/** Facts about the post-`commit` argv region used by commit-only policy. */
+/**
+ * Facts about the post-`commit` argv region used by commit-only policy.
+ */
 export type CommitRegion = {
-  /** Whether argv asks git to stage every tracked modification before committing. */
+  /**
+   * Whether argv asks git to stage every tracked modification before committing.
+   */
   readonly hasAllFlag: boolean;
-  /** Whether argv explicitly enables or disables only mode. */
+  /**
+   * Whether argv explicitly enables or disables only mode.
+   */
   readonly hasExplicitOnlyFlag: boolean;
-  /** Whether argv explicitly disables only mode (`--no-only`). */
+  /**
+   * Whether argv explicitly disables only mode (`--no-only`).
+   */
   readonly hasNoOnlyFlag: boolean;
-  /** Whether argv includes a mode where git permits no positional pathspec. */
+  /**
+   * Whether argv includes a mode where git permits no positional pathspec.
+   */
   readonly hasPathlessAllowedFlag: boolean;
-  /** Whether argv asks git to read pathspecs from file or stdin. */
+  /**
+   * Whether argv asks git to read pathspecs from file or stdin.
+   */
   readonly hasPathspecFromFile: boolean;
-  /** Whether argv includes at least one positional pathspec (before or after `--`). */
+  /**
+   * Whether argv includes at least one positional pathspec (before or after `--`).
+   */
   readonly hasPathspec: boolean;
-  /** Whether wrapper-only escape hatch appears as a real flag. */
+  /**
+   * Whether wrapper-only escape hatch appears as a real flag.
+   */
   readonly hasEscapeHatch: boolean;
 };
 
@@ -426,21 +472,31 @@ export type CommitRegion = {
 export function parseCommitRegion(
   postSubcommandArgs: readonly string[],
 ): CommitRegion {
-  /** Normalised argv where inline short-cluster values are split apart. */
+  /**
+   * Normalised argv where inline short-cluster values are split apart.
+   */
   const normalised = normaliseCommitArgs(postSubcommandArgs,);
-  /** Position of pathspec separator after normalisation. */
+  /**
+   * Position of pathspec separator after normalisation.
+   */
   const separatorIndex = normalised.indexOf(PATHSPEC_SEPARATOR,);
-  /** Argv slice handed to optique; pathspec region is excluded. */
+  /**
+   * Argv slice handed to optique; pathspec region is excluded.
+   */
   const region = separatorIndex === (-1)
     ? normalised
     : normalised.slice(
       0,
       separatorIndex,
     );
-  /** Whether the normalised argv supplies a positional pathspec. */
+  /**
+   * Whether the normalised argv supplies a positional pathspec.
+   */
   const hasPathspec = hasCommitPathspec(normalised,);
 
-  /** Optique parse result over the cleaned option region. */
+  /**
+   * Optique parse result over the cleaned option region.
+   */
   const parseResult = parseSync(
     commitRegionParser,
     region,
@@ -458,15 +514,21 @@ export function parseCommitRegion(
     };
   }
 
-  /** Successful parse value with optique-inferred shape. */
+  /**
+   * Successful parse value with optique-inferred shape.
+   */
   const { value, } = parseResult;
-  /** Sum of explicit only-mode flag occurrences (`-o`, `--only`, `--no-only`). */
+  /**
+   * Sum of explicit only-mode flag occurrences (`-o`, `--only`, `--no-only`).
+   */
   const explicitOnlyCount = value.explicitOnlyFlags
     .length
     + value
     .noOnlyFlags
     .length;
-  /** Sum of pathless-allowed flag occurrences (`--amend`, `--allow-empty`). */
+  /**
+   * Sum of pathless-allowed flag occurrences (`--amend`, `--allow-empty`).
+   */
   const pathlessAllowedCount = value.amendFlags
     .length
     + value

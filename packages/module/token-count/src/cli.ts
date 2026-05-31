@@ -15,7 +15,9 @@ import { countFileTokens, } from './client.ts';
 
 //region CLI: parses args and counts tokens in files
 
-/** Column width for right-aligning token counts in output. */
+/**
+ * Column width for right-aligning token counts in output.
+ */
 const PAD_WIDTH = 8;
 
 /**
@@ -37,7 +39,9 @@ const parser = object({
   ),
 },);
 
-/** Parsed CLI arguments */
+/**
+ * Parsed CLI arguments
+ */
 const args = runSync(
   parser,
   {
@@ -51,12 +55,18 @@ if (args.files
   === 0)
   throw new Error('At least one FILE argument is required',);
 
-/** Model override from `--model` flag, or `undefined` for the default. */
+/**
+ * Model override from `--model` flag, or `undefined` for the default.
+ */
 const model = ((typeof args.model) === 'string') ? args.model : undefined;
-/** Configuration object passed to each `countFileTokens` call. */
+/**
+ * Configuration object passed to each `countFileTokens` call.
+ */
 const config = model !== undefined ? { model, } : {};
 
-/** Token count results for all files, resolved concurrently. */
+/**
+ * Token count results for all files, resolved concurrently.
+ */
 const results = await Promise.all(
   args.files
     .map(function countFile(filePath: string,) {
@@ -73,7 +83,9 @@ for (const result of results)
 
 if (results.length
   > 1) {
-  /** Aggregate across files so the trailing summary line matches `wc -l`-style output. */
+  /**
+   * Aggregate across files so the trailing summary line matches `wc -l`-style output.
+   */
   const total = results.reduce(
     function sumTokens(
       sum,

@@ -12,16 +12,28 @@
 // config `package: '@monochromatic-dev/module-logger/types'`) are untouched.
 // Skips files owned by the target itself (self-imports).
 import { Glob } from 'bun';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync
+} from 'node:fs';
+import {
+  dirname,
+  join
+} from 'node:path';
 
 const target = process.argv[2];
-const dry = process.argv.includes('--dry');
-if (!target || target.startsWith('--')) throw new Error('usage: bun mise.rewrite-ts-imports.ts <target-unscoped> [--dry]');
+const dry = process.argv
+  .includes('--dry');
+if ((!target) || target.startsWith('--')) throw new Error('usage: bun mise.rewrite-ts-imports.ts <target-unscoped> [--dry]');
 
 // Archived beside docs/handover/ts-index-imports-build-all.md; the packages/
 // tree this scans lives two directories up from docs/handover/.
-const root = join(import.meta.dir, '..', '..');
+const root = join(
+  import.meta.dir,
+  '..',
+  '..'
+);
 const scoped = `@monochromatic-dev/${target}`;
 const canonical = `${scoped}/ts`;
 
@@ -33,26 +45,40 @@ function ownerOf(file: string): string | null {
   while (d.startsWith(root)) {
     if (ownerCache.has(d)) {
       const cached = ownerCache.get(d)!;
-      for (const s of seen) ownerCache.set(s, cached);
+      for (const s of seen) ownerCache.set(
+        s,
+        cached
+      );
       return cached;
     }
     seen.push(d);
-    const pj = join(d, 'package.json');
+    const pj = join(
+      d,
+      'package.json'
+    );
     if (existsSync(pj)) {
-      const name = JSON.parse(readFileSync(pj, 'utf8')).name ?? null;
-      for (const s of seen) ownerCache.set(s, name);
+      const name = JSON.parse(readFileSync(pj, 'utf8'))
+        .name
+        ?? null;
+      for (const s of seen) ownerCache.set(
+        s,
+        name
+      );
       return name;
     }
     d = dirname(d);
   }
-  for (const s of seen) ownerCache.set(s, null);
+  for (const s of seen) ownerCache.set(
+    s,
+    null
+  );
   return null;
 }
 
 // import/export context + boundary-safe target match; replacement keeps the
 // leading `from `/`import `/`import(` and the quote, swaps only the specifier.
 const re = new RegExp(
-  `(?<![A-Za-z0-9_$])(from|import)(\\s*\\(?\\s*)(['"])${scoped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/[^'"]*)?\\3`,
+  `(?<![A-Za-z0-9_$])(from|import)(\\s*\\(?\\s*)(['"])${scoped.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)}(?:/[^'"]*)?\\3`,
   'g',
 );
 
@@ -60,19 +86,31 @@ const changed: string[] = [];
 let totalHits = 0;
 for (const rel of new Glob('packages/**/*.{ts,tsx,mts}').scanSync(root)) {
   if (rel.includes('/dist/') || rel.includes('/node_modules/')) continue;
-  const file = join(root, rel);
+  const file = join(
+    root,
+    rel
+  );
   if (ownerOf(file) === scoped) continue;
-  const text = readFileSync(file, 'utf8');
+  const text = readFileSync(
+    file,
+    'utf8'
+  );
   if (!text.includes(scoped)) continue;
   let hits = 0;
-  const next = text.replace(re, (_m, kw: string, gap: string, q: string) => {
+  const next = text.replace(
+    re,
+    (_m, kw: string, gap: string, q: string) => {
     hits += 1;
     return `${kw}${gap}${q}${canonical}${q}`;
-  });
+  }
+  );
   if (next !== text) {
     totalHits += hits;
     changed.push(rel);
-    if (!dry) writeFileSync(file, next);
+    if (!dry) writeFileSync(
+      file,
+      next
+    );
   }
 }
 

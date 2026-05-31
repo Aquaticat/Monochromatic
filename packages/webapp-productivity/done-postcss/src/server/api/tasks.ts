@@ -34,7 +34,9 @@ import {
   parseStringArray,
 } from './task-validation.ts';
 
-/** Recognized priority/complexity values for create handler. */
+/**
+ * Recognized priority/complexity values for create handler.
+ */
 const priorities = new Set<string>([
   'low',
   'medium',
@@ -55,7 +57,9 @@ const priorities = new Set<string>([
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
-    /** Parsed JSON body retained as `unknown` until `isRecord` narrows it below. */
+    /**
+     * Parsed JSON body retained as `unknown` until `isRecord` narrows it below.
+     */
     const body: unknown = await req.json();
     if (!isRecord(body,)) {
       return jsonResponse({
@@ -64,7 +68,9 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       },);
     }
 
-    /** Trimmed title; empty trim short-circuits with a 400 response. */
+    /**
+     * Trimmed title; empty trim short-circuits with a 400 response.
+     */
     const title = ((typeof body.title) === 'string') ? body.title
       .trim() : '';
     if (title.length
@@ -75,32 +81,46 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       },);
     }
 
-    /** Validated tags; INVALID (not an array) falls back to an empty list. */
+    /**
+     * Validated tags; INVALID (not an array) falls back to an empty list.
+     */
     const parsedTags = parseStringArray(body.tags,);
-    /** Validated locations; INVALID falls back to an empty list. */
+    /**
+     * Validated locations; INVALID falls back to an empty list.
+     */
     const parsedLocations = parseStringArray(body.locations,);
-    /** Validated priority string, or INVALID when absent/unrecognised. */
+    /**
+     * Validated priority string, or INVALID when absent/unrecognised.
+     */
     const parsedPriority = parseEnumValue({
       value: body.priority,
       validValues: priorities,
     },);
-    /** Validated complexity string, or INVALID when absent/unrecognised. */
+    /**
+     * Validated complexity string, or INVALID when absent/unrecognised.
+     */
     const parsedComplexity = parseEnumValue({
       value: body.complexity,
       validValues: priorities,
     },);
-    /** Priority field, included only when a valid value was supplied. */
+    /**
+     * Priority field, included only when a valid value was supplied.
+     */
     const priorityField: { priority?: TaskPriority; } = parsedPriority === INVALID
       ? {}
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- member of the priorities set, which holds exactly the TaskPriority values
       : { priority: parsedPriority as TaskPriority, };
-    /** Complexity field, included only when a valid value was supplied. */
+    /**
+     * Complexity field, included only when a valid value was supplied.
+     */
     const complexityField: { complexity?: TaskComplexity; } = parsedComplexity === INVALID
       ? {}
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- member of the priorities set, whose low/medium/high values are exactly the TaskComplexity values
       : { complexity: parsedComplexity as TaskComplexity, };
 
-    /** Persisted task returned to the caller as the 201 body. */
+    /**
+     * Persisted task returned to the caller as the 201 body.
+     */
     const task = await createTask({
       title,
       ...(((typeof body.description) === 'string') ? { description: body.description, } : {}),
@@ -146,9 +166,13 @@ export async function handleUpdateTask(
   },
 ): Promise<Response> {
   try {
-    /** Parsed JSON body retained as `unknown` until the update parser narrows the shape. */
+    /**
+     * Parsed JSON body retained as `unknown` until the update parser narrows the shape.
+     */
     const body: unknown = await req.json();
-    /** Validated update payload; INVALID triggers a 400 response. */
+    /**
+     * Validated update payload; INVALID triggers a 400 response.
+     */
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === INVALID) {
       return jsonResponse({
@@ -157,7 +181,9 @@ export async function handleUpdateTask(
       },);
     }
 
-    /** Updated task; `TASK_NOT_FOUND` triggers a 404 when the row was removed concurrently. */
+    /**
+     * Updated task; `TASK_NOT_FOUND` triggers a 404 when the row was removed concurrently.
+     */
     const task = await updateTask({
       id,
       input: taskUpdateInput,
@@ -191,7 +217,9 @@ export async function handleUpdateTask(
  * ```
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
-  /** Whether the delete affected a row; `false` triggers a 404 response. */
+  /**
+   * Whether the delete affected a row; `false` triggers a 404 response.
+   */
   const deleted = await deleteTask(id,);
   if (!deleted) {
     return jsonResponse({

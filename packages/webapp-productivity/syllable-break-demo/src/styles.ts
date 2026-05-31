@@ -14,28 +14,36 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Muted text for descriptions and secondary content. */
+/**
+ * Muted text for descriptions and secondary content.
+ */
 const COLOR_MUTED = cssOklch({
   l: 0.42,
   c: 0,
   h: 0,
 },);
 
-/** Lighter muted text for code previews. */
+/**
+ * Lighter muted text for code previews.
+ */
 const COLOR_MUTED_LIGHT = cssOklch({
   l: 0.48,
   c: 0,
   h: 0,
 },);
 
-/** Faint text for notes and annotations. */
+/**
+ * Faint text for notes and annotations.
+ */
 const COLOR_FAINT = cssOklch({
   l: 0.6,
   c: 0,
   h: 0,
 },);
 
-/** Outline color for the output container. */
+/**
+ * Outline color for the output container.
+ */
 const COLOR_OUTLINE = cssOklch({
   l: 0.63,
   c: 0.26,

@@ -58,18 +58,24 @@ const GLOBAL_CONFIG_FLAGS: ReadonlySet<string> = new Set([
  * ```
  */
 export async function requireRoot(args: readonly string[],): Promise<readonly string[]> {
-  /** Tagged logger for the require-root rule. */
+  /**
+   * Tagged logger for the require-root rule.
+   */
   const rl = tagged({
     tag: requireRoot.name,
     l,
   },);
 
-  /** Effective cwd and subcommand index after walking pre-subcommand `-C` chaining. */
+  /**
+   * Effective cwd and subcommand index after walking pre-subcommand `-C` chaining.
+   */
   const {
     effectiveCwd,
     subcommandIndex,
   } = parseGlobalOptions(args,);
-  /** Subcommand at the located index; `undefined` when args have no subcommand. */
+  /**
+   * Subcommand at the located index; `undefined` when args have no subcommand.
+   */
   const subcommand = args[subcommandIndex];
 
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand ?? '(none)'}`,);
@@ -81,7 +87,9 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
   }
 
   if (subcommand === 'config') {
-    /** True when any global-scope flag (`--global`, `--system`, `--list`, `-l`) appears in args. */
+    /**
+     * True when any global-scope flag (`--global`, `--system`, `--list`, `-l`) appears in args.
+     */
     const hasGlobalFlag = args.some(function isGlobalConfigFlag(arg,) {
       return GLOBAL_CONFIG_FLAGS.has(arg,);
     },);
@@ -91,7 +99,9 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
     }
   }
 
-  /** Absolute path to the nearest `.git`, or `undefined` if not in a repo. */
+  /**
+   * Absolute path to the nearest `.git`, or `undefined` if not in a repo.
+   */
   const gitPath = await findUp(
     '.git',
     {
@@ -105,7 +115,9 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
     return args;
   }
 
-  /** Directory containing the found `.git`. */
+  /**
+   * Directory containing the found `.git`.
+   */
   const repoRoot = dirname(gitPath,);
 
   if (repoRoot !== effectiveCwd) {

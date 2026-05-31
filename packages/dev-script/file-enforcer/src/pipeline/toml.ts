@@ -41,9 +41,13 @@ export function getTomlProperty(
     readonly content: string;
   },
 ): string {
-  /** Parsed TOML state in splice mode; no pending edits */
+  /**
+   * Parsed TOML state in splice mode; no pending edits
+   */
   const edit = parseTomlEdit({ source: content, },);
-  /** Effective JS value at the path, or undefined when missing */
+  /**
+   * Effective JS value at the path, or undefined when missing
+   */
   const value: unknown = tomlGetValue({
     edit,
     path,
@@ -102,9 +106,13 @@ export function editTomlKey(
     readonly value: TomlValueInput;
   },
 ): string {
-  /** Parsed TOML state ready for one mutation */
+  /**
+   * Parsed TOML state ready for one mutation
+   */
   const edit = parseTomlEdit({ source: content, },);
-  /** Fresh state with the pending edit recorded */
+  /**
+   * Fresh state with the pending edit recorded
+   */
   const edited = tomlSet({
     edit,
     path,

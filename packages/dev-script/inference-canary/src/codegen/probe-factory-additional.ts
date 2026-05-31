@@ -33,11 +33,17 @@ import type { WritableCache, } from './probe-factory-types.ts';
  * ```
  */
 type ExecuteAdditionalRunsOptions = {
-  /** Base TypeScript source (after main transformSource) */
+  /**
+   * Base TypeScript source (after main transformSource)
+   */
   readonly source: string;
-  /** Additional run configurations */
+  /**
+   * Additional run configurations
+   */
   readonly runs: readonly AdditionalRun[];
-  /** Abort signal for cancellation */
+  /**
+   * Abort signal for cancellation
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -63,9 +69,13 @@ export function executeAdditionalRuns({
   runs,
   signal,
 }: ExecuteAdditionalRunsOptions,): Promise<ContainerResult[]> {
-  /** Per-run container promises with optional source transforms applied */
+  /**
+   * Per-run container promises with optional source transforms applied
+   */
   const promises = runs.map(function launchRun(run,): Promise<ContainerResult> {
-    /** Source with per-run transform applied (e.g. injected CLI flags) */
+    /**
+     * Source with per-run transform applied (e.g. injected CLI flags)
+     */
     const runSource = run.transformSource
       !== undefined
       ? run.transformSource(source,)
@@ -94,15 +104,25 @@ export function executeAdditionalRuns({
  * ```
  */
 type CacheAdditionalResultsOptions = {
-  /** Container results from executeAdditionalRuns */
+  /**
+   * Container results from executeAdditionalRuns
+   */
   readonly results: readonly ContainerResult[];
-  /** Additional run configurations (for verify functions) */
+  /**
+   * Additional run configurations (for verify functions)
+   */
   readonly runs: readonly AdditionalRun[];
-  /** Per-run container result caches to populate */
+  /**
+   * Per-run container result caches to populate
+   */
   readonly containerCaches: readonly WritableCache<string, ContainerResult>[];
-  /** Per-run verification result caches to populate */
+  /**
+   * Per-run verification result caches to populate
+   */
   readonly verifyCaches: readonly WritableCache<string, VerifyResult>[];
-  /** Model label for cache keys */
+  /**
+   * Model label for cache keys
+   */
   readonly label: string;
 };
 
@@ -139,7 +159,9 @@ export function cacheAdditionalResults({
       label,
       result,
     );
-    /** Run configuration for this index, used to call verify on successful containers */
+    /**
+     * Run configuration for this index, used to call verify on successful containers
+     */
     const run = runs[index];
     if ((run !== undefined) && (result.exitCode
       === 0)
@@ -168,15 +190,25 @@ export function cacheAdditionalResults({
  * ```
  */
 type ComputeAdditionalCorrectnessesOptions = {
-  /** Container results from executeAdditionalRuns */
+  /**
+   * Container results from executeAdditionalRuns
+   */
   readonly results: readonly ContainerResult[];
-  /** Additional run configurations (for names in log messages) */
+  /**
+   * Additional run configurations (for names in log messages)
+   */
   readonly runs: readonly AdditionalRun[];
-  /** Per-run verification caches populated by cacheAdditionalResults (read-only here) */
+  /**
+   * Per-run verification caches populated by cacheAdditionalResults (read-only here)
+   */
   readonly verifyCaches: readonly ReadonlyMap<string, VerifyResult>[];
-  /** Model label for cache lookups and log prefixes */
+  /**
+   * Model label for cache lookups and log prefixes
+   */
   readonly label: string;
-  /** Probe name for log prefixes */
+  /**
+   * Probe name for log prefixes
+   */
   readonly probeName: string;
 };
 
@@ -216,11 +248,15 @@ export function computeAdditionalCorrectnesses({
     if (result.timedOut
       || (result.exitCode
         !== 0)) {
-      /** Run name for the log message, falls back to numeric index */
+      /**
+       * Run name for the log message, falls back to numeric index
+       */
       const runName = runs[index]
         ?.name
         ?? String(index,);
-      /** Run-specific logger for container failure messages. */
+      /**
+       * Run-specific logger for container failure messages.
+       */
       const rl = tagged({
         tag: runName,
         l: tagged({

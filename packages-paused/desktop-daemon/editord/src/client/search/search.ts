@@ -15,20 +15,30 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for the search subsystem. */
+/**
+ * Tagged logger for the search subsystem.
+ */
 const l = tagged({
   tag: 'search-overlay-search',
   l: rootLogger,
 },);
 
-/** Debounce delay for search input in milliseconds. */
+/**
+ * Debounce delay for search input in milliseconds.
+ */
 const DEBOUNCE_MS = 150;
 
-/** Mutable search state shared between the overlay and this module. */
+/**
+ * Mutable search state shared between the overlay and this module.
+ */
 export type SearchState = {
-  /** Debounced search handle. */
+  /**
+   * Debounced search handle.
+   */
   debouncedSearch: DebouncedHandle | null;
-  /** Monotonic counter for stale result detection. */
+  /**
+   * Monotonic counter for stale result detection.
+   */
   searchGeneration: number;
 };
 
@@ -122,7 +132,9 @@ export async function performSearch({
    * Leading `%` toggles content-only mode; stripped from {@link query}.
    */
   const isContentOnly = raw.startsWith('%',);
-  /** Trimmed pattern sent to the server; empty short-circuits to no-op. */
+  /**
+   * Trimmed pattern sent to the server; empty short-circuits to no-op.
+   */
   const query = isContentOnly ? raw.slice(1,)
     .trim() : raw.trim();
   if (query === '') {
@@ -132,15 +144,21 @@ export async function performSearch({
     },);
     return;
   }
-  /** Monotonic counter used to drop stale results from outdated requests. */
+  /**
+   * Monotonic counter used to drop stale results from outdated requests.
+   */
   const generation = ++state.searchGeneration;
   try {
-    /** Raw mixed-kind results before the content-only filter below. */
+    /**
+     * Raw mixed-kind results before the content-only filter below.
+     */
     const results = await onSearch(query,);
     if (generation !== state
       .searchGeneration)
       return;
-    /** Mode-gated subset surfaced to the consumer. */
+    /**
+     * Mode-gated subset surfaced to the consumer.
+     */
     const filtered = isContentOnly
       ? results.filter(function isContent(r,) {
         return r.kind

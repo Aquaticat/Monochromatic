@@ -33,7 +33,9 @@ type StorageLike = {
 
 if (globalThis.localStorage
   === undefined) {
-  /** In-memory backing map used by the polyfilled storage methods. */
+  /**
+   * In-memory backing map used by the polyfilled storage methods.
+   */
   const store = new Map<string, string>();
   /**
    * Web Storage-shaped facade over {@link store} for the smoke harness.
@@ -58,12 +60,16 @@ if (globalThis.localStorage
     clear(): void {
       store.clear();
     },
-    /** Web Storage `length` getter mirroring the backing map size. */
+    /**
+     * Web Storage `length` getter mirroring the backing map size.
+     */
     get length(): number {
       return store.size;
     },
     key(index,): string | null {
-      /** Insertion-ordered snapshot of keys for the by-index lookup. */
+      /**
+       * Insertion-ordered snapshot of keys for the by-index lookup.
+       */
       const keys = [...store.keys(),];
       return keys[index]
         ?? null;

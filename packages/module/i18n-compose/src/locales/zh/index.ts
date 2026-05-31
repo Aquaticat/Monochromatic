@@ -37,20 +37,28 @@ export function defineChineseLocale<
 >(
   input: DefineChineseLocaleInput<Label, Subject, Verb, Noun>,
 ): LocaleSpec<Label, Subject, Verb, Noun> {
-  /** Noun-phrase renderer closed over the noun + subject tables. */
+  /**
+   * Noun-phrase renderer closed over the noun + subject tables.
+   */
   const renderNounPhrase = makeChineseNounPhraseRenderer({
     nouns: input.nouns,
     subjects: input.subjects,
   },);
-  /** Adverbial cluster renderer depending on noun-phrase rendering. */
+  /**
+   * Adverbial cluster renderer depending on noun-phrase rendering.
+   */
   const renderAdverbials = makeChineseAdverbialRenderer({ renderNounPhrase, },);
-  /** Verb-phrase renderer with closure over verbs + sub-renderers. */
+  /**
+   * Verb-phrase renderer with closure over verbs + sub-renderers.
+   */
   const renderVerbPhrase = makeChineseVerbPhraseRenderer({
     verbs: input.verbs,
     renderNounPhrase,
     renderAdverbials,
   },);
-  /** Sentence renderer dispatching on AST kind. */
+  /**
+   * Sentence renderer dispatching on AST kind.
+   */
   const renderSentence = makeChineseSentenceRenderer({
     subjects: input.subjects,
     verbs: input.verbs,
@@ -58,7 +66,9 @@ export function defineChineseLocale<
     renderVerbPhrase,
     renderAdverbials,
   },);
-  /** Fragment renderer dispatching on AST kind. */
+  /**
+   * Fragment renderer dispatching on AST kind.
+   */
   const renderFragment = makeChineseFragmentRenderer({
     labels: input.labels,
     verbs: input.verbs,

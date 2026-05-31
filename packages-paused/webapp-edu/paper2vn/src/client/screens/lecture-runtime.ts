@@ -29,11 +29,15 @@ import type {
  * ```
  */
 export function currentChapter(): Chapter {
-  /** Active save snapshot used to read the chapter index. */
+  /**
+   * Active save snapshot used to read the chapter index.
+   */
   const live = getActiveSave();
   if (live === undefined)
     throw new Error('lecture: active save vanished',);
-  /** Chapter looked up by index; throws on out-of-range. */
+  /**
+   * Chapter looked up by index; throws on out-of-range.
+   */
   const chapter = live.chapters[live.chapterIndex];
   if (chapter === undefined)
     throw new Error('lecture: chapter index out of range',);
@@ -52,7 +56,9 @@ export function currentChapter(): Chapter {
  * ```
  */
 export function currentBeat(): DialogueBeat | undefined {
-  /** Active save snapshot used to read chapter and beat indices. */
+  /**
+   * Active save snapshot used to read chapter and beat indices.
+   */
   const live = getActiveSave();
   if (live === undefined)
     return undefined;
@@ -138,11 +144,15 @@ export function advanceBeat(
     onAdvanced: () => void;
   },
 ): void {
-  /** Active save snapshot, read so the next index can be patched correctly. */
+  /**
+   * Active save snapshot, read so the next index can be patched correctly.
+   */
   const live = getActiveSave();
   if (live === undefined)
     return;
-  /** Current chapter resolved through the throwing helper. */
+  /**
+   * Current chapter resolved through the throwing helper.
+   */
   const chapter = currentChapter();
   if ((live.beatIndex
     + 1)
@@ -189,7 +199,9 @@ export function regressBeat(
     onRegressed: () => void;
   },
 ): void {
-  /** Active save snapshot, read so the previous index can be patched. */
+  /**
+   * Active save snapshot, read so the previous index can be patched.
+   */
   const live = getActiveSave();
   if (live === undefined)
     return;
@@ -202,7 +214,9 @@ export function regressBeat(
   }
   if (live.chapterIndex
     > 0) {
-    /** Previous chapter entry whose final beat becomes the new index. */
+    /**
+     * Previous chapter entry whose final beat becomes the new index.
+     */
     const prev = live.chapters[live.chapterIndex
       - 1];
     if (prev === undefined)

@@ -44,7 +44,9 @@ export function composeFilters(filters: readonly WatchFilter[],): WatchFilter {
     },
   ): Promise<boolean> {
     for (const filter of filters) {
-      /** Per-iteration filter verdict; a `false` short-circuits the AND chain. */
+      /**
+       * Per-iteration filter verdict; a `false` short-circuits the AND chain.
+       */
       /* oxlint-disable-next-line eslint/no-await-in-loop -- intentional short-circuit: filter N+1 must not run when filter N said skip */
       const passed = await filter({
         event,
@@ -92,7 +94,9 @@ export function anyFilter(filters: readonly WatchFilter[],): WatchFilter {
     },
   ): Promise<boolean> {
     for (const filter of filters) {
-      /** Per-iteration filter verdict; a `true` short-circuits the OR chain. */
+      /**
+       * Per-iteration filter verdict; a `true` short-circuits the OR chain.
+       */
       /* oxlint-disable-next-line eslint/no-await-in-loop -- intentional short-circuit: filter N+1 must not run when filter N said fire */
       const passed = await filter({
         event,

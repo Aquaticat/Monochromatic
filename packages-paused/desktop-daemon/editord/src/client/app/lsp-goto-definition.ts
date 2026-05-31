@@ -15,13 +15,17 @@ import type {
   LoadFileFn,
 } from './types.ts';
 
-/** Tagged logger for go-to-definition. */
+/**
+ * Tagged logger for go-to-definition.
+ */
 const gotoLog = tagged({
   tag: 'lsp-goto',
   l,
 },);
 
-/** Result of a go-to-definition attempt. */
+/**
+ * Result of a go-to-definition attempt.
+ */
 export type GotoDefinitionResult = 'navigated' | 'no-definition' | 'already-at-definition'
   | 'error';
 
@@ -60,13 +64,17 @@ export async function doGotoDefinition(
     readonly character: number;
   },
 ): Promise<GotoDefinitionResult> {
-  /** Active file path; `null` when no file is open, in which case there is nothing to look up. */
+  /**
+   * Active file path; `null` when no file is open, in which case there is nothing to look up.
+   */
   const path = getCurrentFilePath();
   if (path === null)
     return 'no-definition';
   gotoLog.info(`requesting definition at ${path}:${line}:${character}`,);
   try {
-    /** Server-resolved definition location; `path === ''` means "no result from any LSP". */
+    /**
+     * Server-resolved definition location; `path === ''` means "no result from any LSP".
+     */
     const def = await ws.request({
       type: 'gotoDefinition',
       path,

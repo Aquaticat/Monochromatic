@@ -19,11 +19,15 @@
  * ```
  */
 export function rng(seed: number,): number {
-  /** Mutable accumulator coerced to int32 so subsequent bitwise math stays in range. */
+  /**
+   * Mutable accumulator coerced to int32 so subsequent bitwise math stays in range.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Mulberry32 PRNG step requires mutating int32 accumulator across the avalanche rounds
   let value = seed | 0;
   value = (value + 0x6D_2B_79_F5) | 0;
-  /** Mixing temporary mutated through the second avalanche step before final reduction. */
+  /**
+   * Mixing temporary mutated through the second avalanche step before final reduction.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- Mulberry32 PRNG step requires mutating mixing temp across the second avalanche round
   let temp = Math.imul(
     value ^ (value >>> 15),

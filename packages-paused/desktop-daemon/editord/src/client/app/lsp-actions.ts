@@ -18,7 +18,9 @@ import type {
 export { doGotoDefinition, };
 export type { GotoDefinitionResult, } from './lsp-goto-definition.ts';
 
-/** Tagged logger for LSP actions. */
+/**
+ * Tagged logger for LSP actions.
+ */
 const actionLog = tagged({
   tag: 'lsp-actions',
   l,
@@ -47,12 +49,16 @@ export async function formatDocument({
   readonly editorPane: EditorPaneHandle;
   readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
-  /** Current file path; null when no buffer is open, in which case formatting has no target. */
+  /**
+   * Current file path; null when no buffer is open, in which case formatting has no target.
+   */
   const path = getCurrentFilePath();
   if (path === null)
     return;
   try {
-    /** Edits returned by the formatter; empty when the document is already well-formed. */
+    /**
+     * Edits returned by the formatter; empty when the document is already well-formed.
+     */
     const { edits, } = await ws.request({
       type: 'format',
       path,
@@ -98,11 +104,15 @@ export function wireGotoDefinition(
   editorPane.addEventListener(
     'click',
     function handleCtrlClick(event,) {
-      /** Click event narrowed to MouseEvent so modifier flags and viewport coords are accessible. */
+      /**
+       * Click event narrowed to MouseEvent so modifier flags and viewport coords are accessible.
+       */
       const me = event as MouseEvent;
       if ((!me.ctrlKey) && (!me.metaKey))
         return;
-      /** Editor-space position under the cursor; null when the click misses any text. */
+      /**
+       * Editor-space position under the cursor; null when the click misses any text.
+       */
       const pos = editorPane.getPositionFromPoint({
         x: me.clientX,
         y: me.clientY,

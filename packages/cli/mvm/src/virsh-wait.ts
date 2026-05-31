@@ -16,16 +16,24 @@ import {
 } from './log.ts';
 import { virsh, } from './virsh.ts';
 
-/** Milliseconds between guest agent ping attempts. */
+/**
+ * Milliseconds between guest agent ping attempts.
+ */
 const AGENT_POLL_INTERVAL_MS = MS_PER_SECOND;
 
-/** Default maximum milliseconds to wait for guest agent before giving up. */
+/**
+ * Default maximum milliseconds to wait for guest agent before giving up.
+ */
 const DEFAULT_AGENT_TIMEOUT_MS = 15_000;
 
-/** Milliseconds between VM state polls when waiting for shutdown. */
+/**
+ * Milliseconds between VM state polls when waiting for shutdown.
+ */
 const SHUTDOWN_POLL_INTERVAL_MS = MS_PER_SECOND;
 
-/** Maximum milliseconds to wait for graceful shutdown. */
+/**
+ * Maximum milliseconds to wait for graceful shutdown.
+ */
 const SHUTDOWN_TIMEOUT_MS = 120_000;
 
 /**
@@ -51,16 +59,24 @@ export async function waitForGuestAgent({
   readonly name: string;
   readonly timeoutMs?: number;
 },): Promise<void> {
-  /** Logger scoped to this call so retry logs are namespaced. */
+  /**
+   * Logger scoped to this call so retry logs are namespaced.
+   */
   const rl = tagged({
     tag: waitForGuestAgent.name,
     l,
   },);
-  /** Prefixed libvirt domain name; what `virsh` expects on the wire. */
+  /**
+   * Prefixed libvirt domain name; what `virsh` expects on the wire.
+   */
   const fullName = `${VM_PREFIX}${name}`;
-  /** Pre-serialised `guest-ping` payload; reused on every poll. */
+  /**
+   * Pre-serialised `guest-ping` payload; reused on every poll.
+   */
   const pingPayload = JSON.stringify({ execute: 'guest-ping', },);
-  /** Wall-clock reference for the timeout check; epoch ms at entry. */
+  /**
+   * Wall-clock reference for the timeout check; epoch ms at entry.
+   */
   const startTime = Date.now();
 
   rl.info(`waiting for guest agent on ${name}...`,);
@@ -77,7 +93,9 @@ export async function waitForGuestAgent({
       return;
     }
     catch {
-      /** Milliseconds since polling began; compared against `timeoutMs` to give up. */
+      /**
+       * Milliseconds since polling began; compared against `timeoutMs` to give up.
+       */
       const elapsed = Date.now()
         - startTime;
       if (elapsed >= timeoutMs) {
@@ -114,14 +132,20 @@ export async function waitForGuestAgent({
  * ```
  */
 export async function shutdownVm({ name, }: { readonly name: string; },): Promise<void> {
-  /** Logger scoped to this shutdown call so the diagnostic catch is namespaced. */
+  /**
+   * Logger scoped to this shutdown call so the diagnostic catch is namespaced.
+   */
   const rl = tagged({
     tag: shutdownVm.name,
     l,
   },);
-  /** Prefixed libvirt domain name; what `virsh` expects on the wire. */
+  /**
+   * Prefixed libvirt domain name; what `virsh` expects on the wire.
+   */
   const fullName = `${VM_PREFIX}${name}`;
-  /** Serialised `guest-shutdown` request; the response is ignored because the agent dies mid-shutdown. */
+  /**
+   * Serialised `guest-shutdown` request; the response is ignored because the agent dies mid-shutdown.
+   */
   const payload = JSON.stringify({ execute: 'guest-shutdown', },);
   try {
     await virsh({ args: [
@@ -150,21 +174,29 @@ export async function shutdownVm({ name, }: { readonly name: string; },): Promis
  * ```
  */
 export async function waitForShutdown({ name, }: { readonly name: string; },): Promise<void> {
-  /** Logger scoped to this call so polling logs are namespaced. */
+  /**
+   * Logger scoped to this call so polling logs are namespaced.
+   */
   const rl = tagged({
     tag: waitForShutdown.name,
     l,
   },);
-  /** Prefixed libvirt domain name; what `virsh domstate` expects on the wire. */
+  /**
+   * Prefixed libvirt domain name; what `virsh domstate` expects on the wire.
+   */
   const fullName = `${VM_PREFIX}${name}`;
-  /** Wall-clock reference for the timeout check; epoch ms at entry. */
+  /**
+   * Wall-clock reference for the timeout check; epoch ms at entry.
+   */
   const startTime = Date.now();
 
   rl.info(`waiting for VM ${name} to shut down...`,);
 
   // oxlint-disable no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
-    /** Current libvirt domain state string; loop exits when it reaches `shut off`. */
+    /**
+     * Current libvirt domain state string; loop exits when it reaches `shut off`.
+     */
     const state = await virsh({ args: [
       'domstate',
       fullName,
@@ -174,7 +206,9 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
       return;
     }
 
-    /** Milliseconds since polling began; compared against the shutdown timeout to give up. */
+    /**
+     * Milliseconds since polling began; compared against the shutdown timeout to give up.
+     */
     const elapsed = Date.now()
       - startTime;
     if (elapsed >= SHUTDOWN_TIMEOUT_MS) {

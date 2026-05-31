@@ -4,11 +4,17 @@
  *  comment travels with the rule in the emitted output so the lossy step
  *  is visible in the example file. */
 export type Relaxation = {
-  /** Human-readable explanation emitted above generated rule. */
+  /**
+   * Human-readable explanation emitted above generated rule.
+   */
   readonly note: string;
-  /** Optional rewrite applied before PCRE-to-resharp conversion. */
+  /**
+   * Optional rewrite applied before PCRE-to-resharp conversion.
+   */
   readonly transform?: (regex: string,) => string;
-  /** Optional rewrite applied after PCRE-to-resharp conversion. */
+  /**
+   * Optional rewrite applied after PCRE-to-resharp conversion.
+   */
   readonly convertedTransform?: (regex: string,) => string;
 };
 

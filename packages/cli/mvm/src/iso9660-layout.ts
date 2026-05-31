@@ -4,102 +4,180 @@
  * dual-endian integers and fixed-width strings into byte buffers.
  */
 
-/** ISO9660 logical sector size in bytes. */
+/**
+ * ISO9660 logical sector size in bytes.
+ */
 export const SECTOR_SIZE = 2_048;
 
 //region ISO 9660 field offsets and sizes
 // These constants correspond to byte offsets within ISO 9660 data structures.
 // Names follow the pattern: <STRUCTURE>_<FIELD>_OFFSET or <FIELD>_SIZE.
 
-/** ASCII space character used to pad fixed-width string fields. */
+/**
+ * ASCII space character used to pad fixed-width string fields.
+ */
 const ASCII_SPACE = 0x20;
 
-/** Size of dual-endian 32-bit values (4 bytes LE + 4 bytes BE). */
+/**
+ * Size of dual-endian 32-bit values (4 bytes LE + 4 bytes BE).
+ */
 const DUAL_32_SIZE = 4;
 
-/** Length of the ISO 9660 standard identifier string `CD001`. */
+/**
+ * Length of the ISO 9660 standard identifier string `CD001`.
+ */
 export const CD001_LENGTH = 5;
 
-/** Length of a fixed-width ISO 9660 string identifier (system id, volume id). */
+/**
+ * Length of a fixed-width ISO 9660 string identifier (system id, volume id).
+ */
 export const ISO_STRING_FIELD_LENGTH = 32;
 
-/** Length of a 17-byte descriptor timestamp (ISO 8.4.26.1) string portion. */
+/**
+ * Length of a 17-byte descriptor timestamp (ISO 8.4.26.1) string portion.
+ */
 const TIMESTAMP_17_STR_LENGTH = 16;
 
 //region Directory entry field offsets (relative to record start)
-/** Offset of extent location (LBA) within a directory record. */
+/**
+ * Offset of extent location (LBA) within a directory record.
+ */
 export const DIR_EXTENT_OFFSET = 2;
-/** Offset of data length within a directory record. */
+/**
+ * Offset of data length within a directory record.
+ */
 export const DIR_SIZE_OFFSET = 10;
-/** Offset of recording timestamp within a directory record. */
+/**
+ * Offset of recording timestamp within a directory record.
+ */
 export const DIR_TIMESTAMP_OFFSET = 18;
-/** Offset of file flags byte within a directory record. */
+/**
+ * Offset of file flags byte within a directory record.
+ */
 export const DIR_FLAGS_OFFSET = 25;
-/** Offset of volume sequence number within a directory record. */
+/**
+ * Offset of volume sequence number within a directory record.
+ */
 export const DIR_VOL_SEQ_OFFSET = 28;
-/** Offset of file identifier length within a directory record. */
+/**
+ * Offset of file identifier length within a directory record.
+ */
 export const DIR_NAME_LEN_OFFSET = 32;
-/** Offset of file identifier string within a directory record. */
+/**
+ * Offset of file identifier string within a directory record.
+ */
 export const DIR_NAME_DATA_OFFSET = 33;
-/** Fixed header size before the file identifier in a directory record. */
+/**
+ * Fixed header size before the file identifier in a directory record.
+ */
 export const DIR_FIXED_HEADER_SIZE = 33;
 //endregion Directory entry field offsets
 
-/** Year value stored in 7-byte timestamps: 2026 minus 1900 base year. */
+/**
+ * Year value stored in 7-byte timestamps: 2026 minus 1900 base year.
+ */
 const TIMESTAMP_YEAR_SINCE_1900 = 126;
 
 //region Primary Volume Descriptor field offsets (relative to PVD start)
-/** PVD sector number within the ISO image. */
+/**
+ * PVD sector number within the ISO image.
+ */
 export const PVD_SECTOR = 16;
-/** Offset of version byte within PVD. */
+/**
+ * Offset of version byte within PVD.
+ */
 export const PVD_VERSION_OFFSET = 6;
-/** Offset of system identifier within PVD. */
+/**
+ * Offset of system identifier within PVD.
+ */
 export const PVD_SYSTEM_ID_OFFSET = 8;
-/** Offset of volume identifier within PVD. */
+/**
+ * Offset of volume identifier within PVD.
+ */
 export const PVD_VOLUME_ID_OFFSET = 40;
-/** Offset of volume space size (total sectors) within PVD. */
+/**
+ * Offset of volume space size (total sectors) within PVD.
+ */
 export const PVD_VOLUME_SPACE_OFFSET = 80;
-/** Offset of volume set size within PVD. */
+/**
+ * Offset of volume set size within PVD.
+ */
 export const PVD_VOLUME_SET_SIZE_OFFSET = 120;
-/** Offset of volume sequence number within PVD. */
+/**
+ * Offset of volume sequence number within PVD.
+ */
 export const PVD_VOLUME_SEQ_OFFSET = 124;
-/** Offset of logical block size within PVD. */
+/**
+ * Offset of logical block size within PVD.
+ */
 export const PVD_BLOCK_SIZE_OFFSET = 128;
-/** Offset of path table size within PVD. */
+/**
+ * Offset of path table size within PVD.
+ */
 export const PVD_PATH_TABLE_SIZE_OFFSET = 132;
-/** Offset of type L path table location within PVD. */
+/**
+ * Offset of type L path table location within PVD.
+ */
 export const PVD_PATH_TABLE_L_OFFSET = 140;
-/** Offset of type M path table location within PVD. */
+/**
+ * Offset of type M path table location within PVD.
+ */
 export const PVD_PATH_TABLE_M_OFFSET = 148;
-/** Offset of root directory record within PVD. */
+/**
+ * Offset of root directory record within PVD.
+ */
 export const PVD_ROOT_DIR_RECORD_OFFSET = 156;
-/** Offset of volume creation timestamp within PVD. */
+/**
+ * Offset of volume creation timestamp within PVD.
+ */
 export const PVD_CREATION_TIMESTAMP_OFFSET = 813;
-/** Offset of volume modification timestamp within PVD. */
+/**
+ * Offset of volume modification timestamp within PVD.
+ */
 export const PVD_MODIFICATION_TIMESTAMP_OFFSET = 830;
-/** Offset of volume expiration timestamp within PVD. */
+/**
+ * Offset of volume expiration timestamp within PVD.
+ */
 export const PVD_EXPIRATION_TIMESTAMP_OFFSET = 847;
-/** Offset of volume effective timestamp within PVD. */
+/**
+ * Offset of volume effective timestamp within PVD.
+ */
 export const PVD_EFFECTIVE_TIMESTAMP_OFFSET = 864;
-/** Offset of file structure version within PVD. */
+/**
+ * Offset of file structure version within PVD.
+ */
 export const PVD_FILE_STRUCTURE_VERSION_OFFSET = 881;
 //endregion Primary Volume Descriptor field offsets
 
-/** VDST sector number (Volume Descriptor Set Terminator). */
+/**
+ * VDST sector number (Volume Descriptor Set Terminator).
+ */
 export const VDST_SECTOR = 17;
 
-/** Path table LE sector number. */
+/**
+ * Path table LE sector number.
+ */
 export const PATH_TABLE_LE_SECTOR = 18;
-/** Path table BE sector number. */
+/**
+ * Path table BE sector number.
+ */
 export const PATH_TABLE_BE_SECTOR = 19;
-/** Offset of parent directory number within a path table entry. */
+/**
+ * Offset of parent directory number within a path table entry.
+ */
 export const PATH_TABLE_PARENT_DIR_OFFSET = 6;
 
-/** Root directory sector number. */
+/**
+ * Root directory sector number.
+ */
 export const ROOT_DIRECTORY_SECTOR = 20;
-/** First sector available for file data. */
+/**
+ * First sector available for file data.
+ */
 export const FIRST_FILE_DATA_SECTOR = 21;
-/** Path table size in bytes (single root entry). */
+/**
+ * Path table size in bytes (single root entry).
+ */
 export const PATH_TABLE_SIZE = 10;
 
 //endregion ISO 9660 field offsets and sizes

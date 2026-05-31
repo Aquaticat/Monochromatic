@@ -8,11 +8,15 @@ import type { Probe, } from '../probes.ts';
 import { CSV_PERF_INPUT, } from './perf-test-data/index.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
-/** Test input covering the hardest RFC 4180 edge cases */
+/**
+ * Test input covering the hardest RFC 4180 edge cases
+ */
 const CSV_TEST_INPUT =
   'name,bio,age\n"O\'Brien, ""Bob""","likes\ntravel",30\nJane,simple,25\n';
 
-/** Number of correctness checks in the output verifier */
+/**
+ * Number of correctness checks in the output verifier
+ */
 const TOTAL_CHECKS = 5;
 
 /**
@@ -45,7 +49,9 @@ export const csvRfc4180: Probe = createCodeGenProbe({
   verify: function verifyCsv(result,): { correctness: number; } {
     try {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse output matched against known test input shape */
-      /** Parsed model output; rejected below when not an array of two rows. */
+      /**
+       * Parsed model output; rejected below when not an array of two rows.
+       */
       const parsed = JSON.parse(result.stdout
         .trim(),) as Record<string, string>[];
       /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -53,7 +59,9 @@ export const csvRfc4180: Probe = createCodeGenProbe({
         !== 2))
         return { correctness: 0.1, };
 
-      /** First and second rows of the parsed model output; each may be undefined when the array is short. */
+      /**
+       * First and second rows of the parsed model output; each may be undefined when the array is short.
+       */
       const [first, second,] = parsed;
       if (first === undefined)
         return { correctness: 0.1, };
@@ -61,7 +69,9 @@ export const csvRfc4180: Probe = createCodeGenProbe({
       if (second === undefined)
         return { correctness: 0.2, };
 
-      /** Number of field-level checks the model output satisfied; divided by the total to yield correctness. */
+      /**
+       * Number of field-level checks the model output satisfied; divided by the total to yield correctness.
+       */
       const correctCount = [
         first.name
           === 'O\'Brien, "Bob"',

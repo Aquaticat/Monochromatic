@@ -11,17 +11,29 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
  * Aggregate description of a numeric sample.
  */
 export type Stats = {
-  /** Number of observations. */
+  /**
+   * Number of observations.
+   */
   count: number;
-  /** Smallest observation. */
+  /**
+   * Smallest observation.
+   */
   min: number;
-  /** Largest observation. */
+  /**
+   * Largest observation.
+   */
   max: number;
-  /** Arithmetic mean (sum / count). */
+  /**
+   * Arithmetic mean (sum / count).
+   */
   mean: number;
-  /** Median; for even samples, the average of the two middle values. */
+  /**
+   * Median; for even samples, the average of the two middle values.
+   */
   median: number;
-  /** Sum of all observations. */
+  /**
+   * Sum of all observations.
+   */
   sum: number;
 };
 
@@ -42,15 +54,21 @@ function medianOfSorted(sorted: readonly number[],): number {
   if (sorted.length
     === 0)
     throw new Error('cannot compute median of empty sample',);
-  /** Index of the upper-middle element; for odd lengths this is the median position. */
+  /**
+   * Index of the upper-middle element; for odd lengths this is the median position.
+   */
   const mid = Math.floor(sorted.length
     / 2,);
   if ((sorted.length
     % 2) === 1)
     return nonNullishOrThrow(sorted[mid],);
-  /** Lower of the two central values for even-length samples. */
+  /**
+   * Lower of the two central values for even-length samples.
+   */
   const low = nonNullishOrThrow(sorted[mid - 1],);
-  /** Upper of the two central values for even-length samples. */
+  /**
+   * Upper of the two central values for even-length samples.
+   */
   const high = nonNullishOrThrow(sorted[mid],);
   return (low + high) / 2;
 }
@@ -78,14 +96,18 @@ export function summarize(sample: readonly number[],): Stats {
   if (sample.length
     === 0)
     throw new Error('cannot summarize an empty sample',);
-  /** Ascending-sorted copy; needed for median computation and for `min`/`max` lookup. */
+  /**
+   * Ascending-sorted copy; needed for median computation and for `min`/`max` lookup.
+   */
   const sorted = sample.toSorted(function ascending(
     a,
     b,
   ) {
     return a - b;
   },);
-  /** Sum of every observation; reused for both the `sum` output and the `mean` computation. */
+  /**
+   * Sum of every observation; reused for both the `sum` output and the `mean` computation.
+   */
   const sum = sorted.reduce(
     function add(
       acc,

@@ -11,13 +11,17 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for the WebSocket handshake. */
+/**
+ * Tagged logger for the WebSocket handshake.
+ */
 const l = tagged({
   tag: 'ws-handshake',
   l: rootLogger,
 },);
 
-/** Maximum time to wait for the server's handshake message before rejecting (milliseconds). */
+/**
+ * Maximum time to wait for the server's handshake message before rejecting (milliseconds).
+ */
 const HANDSHAKE_TIMEOUT_MS = 10_000;
 
 /**
@@ -55,7 +59,9 @@ export function performHandshake({
     function handleFirstMessage(event: MessageEvent,): void {
       clearTimeout(handshakeTimeoutId,);
       try {
-        /** Parsed server message; discriminated below on `data.type`. */
+        /**
+         * Parsed server message; discriminated below on `data.type`.
+         */
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
         const data = JSON.parse(String(event.data,),) as ServerMessage;
         if (data.type

@@ -56,35 +56,49 @@ import {
  * ```
  */
 export async function syncFromKvm(name: string,): Promise<void> {
-  /** Function-tagged logger so post-boot sync steps are traceable per VM. */
+  /**
+   * Function-tagged logger so post-boot sync steps are traceable per VM.
+   */
   const rl = tagged({
     tag: syncFromKvm.name,
     l,
   },);
 
-  /** VM directory containing all managed images. */
+  /**
+   * VM directory containing all managed images.
+   */
   const dir = vmDir(name,);
-  /** Path to the transient overlay created before boot. */
+  /**
+   * Path to the transient overlay created before boot.
+   */
   const overlayPath = join(
     dir,
     OVERLAY_FILENAME,
   );
-  /** Path to the qcow2 base image. */
+  /**
+   * Path to the qcow2 base image.
+   */
   const qcow2Path = join(
     dir,
     QCOW2_FILENAME,
   );
-  /** Path to the vhdx image to patch. */
+  /**
+   * Path to the vhdx image to patch.
+   */
   const vhdxPath = join(
     dir,
     VHDX_FILENAME,
   );
 
   rl.info('reading overlay block map',);
-  /** Full block map of the overlay with backing chain depth info. */
+  /**
+   * Full block map of the overlay with backing chain depth info.
+   */
   const regions = await blockMap(overlayPath,);
 
-  /** Regions at depth 0 with actual data: these were written during the boot session. */
+  /**
+   * Regions at depth 0 with actual data: these were written during the boot session.
+   */
   const changedRegions: readonly QemuMapRegion[] = regions.filter(
     function isOverlayData(r,) {
       return (r.depth
@@ -114,13 +128,17 @@ export async function syncFromKvm(name: string,): Promise<void> {
   await unlink(overlayPath,);
 
   rl.info('computing new checksums',);
-  /** Updated checksums after sync. */
+  /**
+   * Updated checksums after sync.
+   */
   const [qcow2Hash, vhdxHash,] = await Promise.all([
     checksum(qcow2Path,),
     checksum(vhdxPath,),
   ],);
 
-  /** Current config to update with new state. */
+  /**
+   * Current config to update with new state.
+   */
   const config = await readConfig(name,);
   config.state
     .synced = true;
@@ -166,7 +184,9 @@ async function patchVhdxFromOverlay(
 ): Promise<void> {
   await ensureNbdModule();
 
-  /** NBD device for the overlay (source, read-only). */
+  /**
+   * NBD device for the overlay (source, read-only).
+   */
   const sourceDevicePath = await findFreeNbdDevice();
   /**
    * Disposable NBD connection for the source overlay.
@@ -181,7 +201,9 @@ async function patchVhdxFromOverlay(
     format: 'qcow2',
   },);
 
-  /** NBD device for the vhdx (target, read-write). */
+  /**
+   * NBD device for the vhdx (target, read-write).
+   */
   const targetDevicePath = await findFreeNbdDevice();
   /**
    * Disposable NBD connection for the target vhdx.
@@ -221,30 +243,42 @@ async function patchVhdxFromOverlay(
  * ```
  */
 export async function syncFromHyperv(name: string,): Promise<void> {
-  /** Function-tagged logger so post-boot sync steps are traceable per VM. */
+  /**
+   * Function-tagged logger so post-boot sync steps are traceable per VM.
+   */
   const rl = tagged({
     tag: syncFromHyperv.name,
     l,
   },);
 
-  /** VM directory. */
+  /**
+   * VM directory.
+   */
   const dir = vmDir(name,);
-  /** Path to the qcow2 image to patch. */
+  /**
+   * Path to the qcow2 image to patch.
+   */
   const qcow2Path = join(
     dir,
     QCOW2_FILENAME,
   );
-  /** Path to the vhdx that was just booted. */
+  /**
+   * Path to the vhdx that was just booted.
+   */
   const vhdxPath = join(
     dir,
     VHDX_FILENAME,
   );
 
-  /** Current config with pre-boot checksums. */
+  /**
+   * Current config with pre-boot checksums.
+   */
   const config = await readConfig(name,);
 
   rl.info('computing post-boot vhdx checksum',);
-  /** Post-boot checksum to compare against stored value. */
+  /**
+   * Post-boot checksum to compare against stored value.
+   */
   const newVhdxHash = await checksum(vhdxPath,);
 
   if (newVhdxHash
@@ -277,7 +311,9 @@ export async function syncFromHyperv(name: string,): Promise<void> {
     targetFormat: 'qcow2',
   },);
 
-  /** Updated qcow2 checksum after conversion. */
+  /**
+   * Updated qcow2 checksum after conversion.
+   */
   const newQcow2Hash = await checksum(qcow2Path,);
 
   config.state
@@ -309,13 +345,17 @@ export async function syncFromHyperv(name: string,): Promise<void> {
  * ```
  */
 export async function syncVm(name: string,): Promise<void> {
-  /** Function-tagged logger so dispatch and per-hypervisor sync share traces. */
+  /**
+   * Function-tagged logger so dispatch and per-hypervisor sync share traces.
+   */
   const rl = tagged({
     tag: syncVm.name,
     l,
   },);
 
-  /** Current config to determine last boot hypervisor. */
+  /**
+   * Current config to determine last boot hypervisor.
+   */
   const config = await readConfig(name,);
 
   if (config.state

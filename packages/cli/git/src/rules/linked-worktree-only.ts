@@ -30,30 +30,44 @@ import {
 
 //region Guarded command predicates and policy facts
 
-/** Per-subcommand fact set produced by an optique-based region parser. */
+/**
+ * Per-subcommand fact set produced by an optique-based region parser.
+ */
 type GuardedRegion = {
-  /** True when wrapper-only escape hatch appears as a real flag. */
+  /**
+   * True when wrapper-only escape hatch appears as a real flag.
+   */
   readonly hasEscapeHatch: boolean;
-  /** True when invocation can change worktree filesystem state. */
+  /**
+   * True when invocation can change worktree filesystem state.
+   */
   readonly changesWorktree: boolean;
-  /** Options that consume the *next* argv token; used to strip flag-position escape hatches without disturbing values. */
+  /**
+   * Options that consume the *next* argv token; used to strip flag-position escape hatches without disturbing values.
+   */
   readonly separateValueOptions: ReadonlySet<string>;
 };
 
-/** Stash options that consume the next argv token. */
+/**
+ * Stash options that consume the next argv token.
+ */
 const STASH_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '-m',
   '--message',
   '--pathspec-from-file',
 ],);
 
-/** Clean options that consume the next argv token (long form is matched via abbreviation table inside the parser). */
+/**
+ * Clean options that consume the next argv token (long form is matched via abbreviation table inside the parser).
+ */
 const CLEAN_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '-e',
   '--exclude',
 ],);
 
-/** Reset options that consume the next argv token. */
+/**
+ * Reset options that consume the next argv token.
+ */
 const RESET_VALUE_OPTIONS: ReadonlySet<string> = new Set([
   '--pathspec-from-file',
 ],);
@@ -77,11 +91,17 @@ function isGuardedCommand(subcommand: string,): subcommand is GuardedCommand {
     || (subcommand === RESET_SUBCOMMAND);
 }
 
-/** Options for computing per-subcommand facts. */
+/**
+ * Options for computing per-subcommand facts.
+ */
 type ComputeRegionOptions = {
-  /** Guarded git subcommand. */
+  /**
+   * Guarded git subcommand.
+   */
   readonly subcommand: GuardedCommand;
-  /** Arguments strictly after subcommand. */
+  /**
+   * Arguments strictly after subcommand.
+   */
   readonly postSubcommandArgs: readonly string[];
 };
 
@@ -106,7 +126,9 @@ function computeRegion({
   postSubcommandArgs,
 }: ComputeRegionOptions,): GuardedRegion {
   if (subcommand === STASH_SUBCOMMAND) {
-    /** Stash region facts; stash is always destructive when forwarded. */
+    /**
+     * Stash region facts; stash is always destructive when forwarded.
+     */
     const stash = parseStashRegion(postSubcommandArgs,);
     return {
       hasEscapeHatch: stash.hasEscapeHatch,
@@ -116,7 +138,9 @@ function computeRegion({
   }
 
   if (subcommand === CLEAN_SUBCOMMAND) {
-    /** Clean region facts; destructiveness depends on dry-run / interactive flags. */
+    /**
+     * Clean region facts; destructiveness depends on dry-run / interactive flags.
+     */
     const clean = parseCleanRegion(postSubcommandArgs,);
     return {
       hasEscapeHatch: clean.hasEscapeHatch,
@@ -125,7 +149,9 @@ function computeRegion({
     };
   }
 
-  /** Reset region facts; destructive when --hard/--merge/--keep (or abbreviation) appears. */
+  /**
+   * Reset region facts; destructive when --hard/--merge/--keep (or abbreviation) appears.
+   */
   const reset = parseResetRegion(postSubcommandArgs,);
   return {
     hasEscapeHatch: reset.hasEscapeHatch,
@@ -177,12 +203,16 @@ function computeRegion({
 export async function linkedWorktreeOnly(
   args: readonly string[],
 ): Promise<readonly string[]> {
-  /** Effective cwd and subcommand index after walking pre-subcommand `-C` chaining. */
+  /**
+   * Effective cwd and subcommand index after walking pre-subcommand `-C` chaining.
+   */
   const {
     effectiveCwd,
     subcommandIndex,
   } = parseGlobalOptions(args,);
-  /** Subcommand at the located index; `undefined` when args have no subcommand. */
+  /**
+   * Subcommand at the located index; `undefined` when args have no subcommand.
+   */
   const subcommand = args[subcommandIndex];
 
   if (subcommand === undefined)
@@ -191,15 +221,21 @@ export async function linkedWorktreeOnly(
   if (!isGuardedCommand(subcommand,))
     return args;
 
-  /** Tagged logger for the linked-worktree-only rule. */
+  /**
+   * Tagged logger for the linked-worktree-only rule.
+   */
   const rl = tagged({
     tag: linkedWorktreeOnly.name,
     l,
   },);
 
-  /** Slice of args strictly after guarded subcommand. */
+  /**
+   * Slice of args strictly after guarded subcommand.
+   */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
-  /** Facts about the post-subcommand region produced by optique. */
+  /**
+   * Facts about the post-subcommand region produced by optique.
+   */
   const region = computeRegion({
     subcommand,
     postSubcommandArgs,
@@ -221,12 +257,16 @@ export async function linkedWorktreeOnly(
 
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand}`,);
 
-  /** Pre-subcommand argv that captures the caller's repo-selection layer. */
+  /**
+   * Pre-subcommand argv that captures the caller's repo-selection layer.
+   */
   const preSubcommandArgs = args.slice(
     0,
     subcommandIndex,
   );
-  /** Worktree classification driven by real git replaying the caller's repo selection. */
+  /**
+   * Worktree classification driven by real git replaying the caller's repo selection.
+   */
   const target: EffectiveTarget = await classifyEffectiveTarget({
     preSubcommandArgs,
     effectiveCwd,

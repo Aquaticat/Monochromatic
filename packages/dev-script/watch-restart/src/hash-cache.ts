@@ -133,14 +133,20 @@ export class HashCache {
    *   (legitimate race against `unlink`) or escalate; this method does not guess.
    */
   async hashFile(absolutePath: string,): Promise<string | typeof OVERSIZED> {
-    /** File size pulled from `fstat` to gate the read against `#maxHashSize` before allocating bytes. */
+    /**
+     * File size pulled from `fstat` to gate the read against `#maxHashSize` before allocating bytes.
+     */
     const { size, } = await stat(absolutePath,);
     if (size > this
       .#maxHashSize)
       return OVERSIZED;
-    /** File bytes; Buffer extends Uint8Array, accepted directly by SubtleCrypto */
+    /**
+     * File bytes; Buffer extends Uint8Array, accepted directly by SubtleCrypto
+     */
     const bytes = await readFile(absolutePath,);
-    /** Raw SHA-256 digest as an `ArrayBuffer`; hex-encoded immediately below for the cache key. */
+    /**
+     * Raw SHA-256 digest as an `ArrayBuffer`; hex-encoded immediately below for the cache key.
+     */
     const digest = await crypto.subtle
       .digest(
       'SHA-256',

@@ -20,10 +20,14 @@ import {
 } from '@earendil-works/pi-coding-agent';
 import { RELEVANT_TOOLS, } from './constants.ts';
 
-/** Hash algorithm used for approval fingerprints. */
+/**
+ * Hash algorithm used for approval fingerprints.
+ */
 const APPROVAL_FINGERPRINT_HASH_ALGORITHM = 'sha256';
 
-/** Digest encoding used for approval fingerprints. */
+/**
+ * Digest encoding used for approval fingerprints.
+ */
 const APPROVAL_FINGERPRINT_HASH_ENCODING = 'hex';
 
 /**
@@ -53,7 +57,9 @@ function buildApprovalFingerprint(
     readonly cwd: string;
   },
 ): string {
-  /** Serialized call identity with canonical object key order. */
+  /**
+   * Serialized call identity with canonical object key order.
+   */
   const serializedCall = stableSerialize({
     cwd,
     input: event.input,
@@ -101,14 +107,18 @@ function stableSerialize(
       ?? 'null';
   }
 
-  /** Object value narrowed to JSON-like record for key sorting. */
+  /**
+   * Object value narrowed to JSON-like record for key sorting.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Tool inputs are JSON-compatible plain objects after arrays, null, and primitives are handled; this narrows values for Object.entries without changing runtime data.
   const record = value as Readonly<Record<string, unknown>>;
   return `{${
     Object
       .entries(record,)
       .filter(function keepsJsonObjectEntry(entry,) {
-        /** Entry value tested against JSON.stringify object omission semantics. */
+        /**
+         * Entry value tested against JSON.stringify object omission semantics.
+         */
         const [, entryValue,] = entry;
         return entryValue !== undefined;
       },)
@@ -116,14 +126,20 @@ function stableSerialize(
         leftEntry,
         rightEntry,
       ) {
-        /** Left object key. */
+        /**
+         * Left object key.
+         */
         const [leftKey,] = leftEntry;
-        /** Right object key. */
+        /**
+         * Right object key.
+         */
         const [rightKey,] = rightEntry;
         return leftKey.localeCompare(rightKey,);
       },)
       .map(function serializeObjectEntry(entry,) {
-        /** Object key and value serialized into canonical key order. */
+        /**
+         * Object key and value serialized into canonical key order.
+         */
         const [entryKey, entryValue,] = entry;
         return `${JSON.stringify(entryKey,)}:${stableSerialize(entryValue,)}`;
       },)

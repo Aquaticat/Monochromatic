@@ -15,13 +15,21 @@ import {
  * Parameters for {@link paramsNeedFix}.
  */
 export type ParamsNeedFixParams = {
-  /** Full file source text. */
+  /**
+   * Full file source text.
+   */
   readonly sourceText: string;
-  /** Byte offset of opening `(`. */
+  /**
+   * Byte offset of opening `(`.
+   */
   readonly openParen: number;
-  /** Byte offset of closing `)`. */
+  /**
+   * Byte offset of closing `)`.
+   */
   readonly closeParen: number;
-  /** Array of parameter AST nodes. */
+  /**
+   * Array of parameter AST nodes.
+   */
   readonly params: readonly Span[];
 };
 
@@ -41,7 +49,9 @@ export function paramsNeedFix({
   closeParen,
   params,
 }: ParamsNeedFixParams,): boolean {
-  /** First param's range; used to test whether it shares a line with the opening paren. */
+  /**
+   * First param's range; used to test whether it shares a line with the opening paren.
+   */
   const firstRange = rangeOf(at({
     arr: params,
     index: 0,
@@ -57,7 +67,9 @@ export function paramsNeedFix({
     return true;
   }
 
-  /** Last param's range; used to test whether it shares a line with the closing paren. */
+  /**
+   * Last param's range; used to test whether it shares a line with the closing paren.
+   */
   const lastRange = rangeOf(at({
     arr: params,
     index: params.length
@@ -76,12 +88,16 @@ export function paramsNeedFix({
 
   for (let i = 1; i < params
     .length; i++) {
-    /** Range of the previous param; its end offset is compared with the current param's start line. */
+    /**
+     * Range of the previous param; its end offset is compared with the current param's start line.
+     */
     const prevRange = rangeOf(at({
       arr: params,
       index: i - 1,
     },),);
-    /** Range of the current param; its start offset is the other side of the line-equality check. */
+    /**
+     * Range of the current param; its start offset is the other side of the line-equality check.
+     */
     const currRange = rangeOf(at({
       arr: params,
       index: i,
@@ -105,17 +121,29 @@ export function paramsNeedFix({
  * Parameters for {@link buildParamFix}.
  */
 export type BuildParamFixParams = {
-  /** Fixer instance. */
+  /**
+   * Fixer instance.
+   */
   readonly fixer: Fixer;
-  /** Full file source text. */
+  /**
+   * Full file source text.
+   */
   readonly sourceText: string;
-  /** Byte offset of `(`. */
+  /**
+   * Byte offset of `(`.
+   */
   readonly openParen: number;
-  /** Byte offset of `)`. */
+  /**
+   * Byte offset of `)`.
+   */
   readonly closeParen: number;
-  /** Parameter AST nodes. */
+  /**
+   * Parameter AST nodes.
+   */
   readonly params: readonly Span[];
-  /** Lint context for source text access. */
+  /**
+   * Lint context for source text access.
+   */
   readonly context: Context;
 };
 
@@ -137,15 +165,21 @@ export function buildParamFix({
   params,
   context,
 }: BuildParamFixParams,): ReturnType<Fixer['replaceText']> {
-  /** Detect base indentation from the line containing `(`. */
+  /**
+   * Detect base indentation from the line containing `(`.
+   */
   const baseIndent = baseIndentAt({
     sourceText,
     offset: openParen,
   },);
-  /** Two-space continuation indent for params placed inside the parens. */
+  /**
+   * Two-space continuation indent for params placed inside the parens.
+   */
   const childIndent = `${baseIndent}  `;
 
-  /** Trimmed source text for each param; trailing delimiters are re-added uniformly below. */
+  /**
+   * Trimmed source text for each param; trailing delimiters are re-added uniformly below.
+   */
   const paramTexts = params.map(
     function getParamText(p,): string {
       return context.sourceCode
@@ -154,36 +188,50 @@ export function buildParamFix({
     },
   );
 
-  /** Check trailing comma. */
+  /**
+   * Check trailing comma.
+   */
   const lastRange = rangeOf(at({
     arr: params,
     index: params.length
       - 1,
   },),);
-  /** Source slice between the last param and the close paren; inspected for an existing trailing comma. */
+  /**
+   * Source slice between the last param and the close paren; inspected for an existing trailing comma.
+   */
   const between = sourceText.slice(
     lastRange[1],
     closeParen,
   );
-  /** Whether the original source had a trailing comma; preserved verbatim in the rewrite. */
+  /**
+   * Whether the original source had a trailing comma; preserved verbatim in the rewrite.
+   */
   const hasTrailing = between.includes(',',);
 
-  /** Params rendered one per line with `childIndent` and the appropriate comma suffix. */
+  /**
+   * Params rendered one per line with `childIndent` and the appropriate comma suffix.
+   */
   const formatted = paramTexts
     .map(function fmt(
       text,
       idx,
     ): string {
-      /** Whether this is the last param; combined with `hasTrailing` to decide whether to emit a comma. */
+      /**
+       * Whether this is the last param; combined with `hasTrailing` to decide whether to emit a comma.
+       */
       const isLast = idx === (paramTexts.length
         - 1);
-      /** Comma suffix or empty string for the last param without an original trailing comma. */
+      /**
+       * Comma suffix or empty string for the last param without an original trailing comma.
+       */
       const comma = (isLast && (!hasTrailing)) ? '' : ',';
       return `${childIndent}${text}${comma}`;
     },)
     .join('\n',);
 
-  /** Replace from `(` through `)` inclusive. */
+  /**
+   * Replace from `(` through `)` inclusive.
+   */
   const replacement = `(\n${formatted}\n${baseIndent})`;
 
   return fixer.replaceTextRange(

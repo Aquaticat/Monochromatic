@@ -31,14 +31,18 @@ export function encodeWrapped(
   }
   if (wrapped.tomlKind
     === 'float') {
-    /** Numeric form so finiteness and NaN can be checked. */
+    /**
+     * Numeric form so finiteness and NaN can be checked.
+     */
     const n = Number(wrapped.value,);
     if (!Number.isFinite(n,)) {
       if (Number.isNaN(n,))
         return 'nan';
       return n > 0 ? 'inf' : '-inf';
     }
-    /** String form so the float-marker check can scan once. */
+    /**
+     * String form so the float-marker check can scan once.
+     */
     const s = String(n,);
     return s.includes('.',)
       || s
@@ -75,7 +79,9 @@ export function encodeStringWithStyle(
       return `'''\n${value}'''`;
     return `'${value}'`;
   }
-  /** Backslash and control-char escapes shared by single- and multi-line basic strings. */
+  /**
+   * Backslash and control-char escapes shared by single- and multi-line basic strings.
+   */
   const escaped = value
     .replaceAll(
       '\\',
@@ -98,7 +104,9 @@ export function encodeStringWithStyle(
       String.raw`\f`,
     );
   if (multiline) {
-    /** Newlines stay literal so the multi-line string preserves layout. */
+    /**
+     * Newlines stay literal so the multi-line string preserves layout.
+     */
     const escapedKeepNewlines = escaped.replaceAll(
       '\r',
       String.raw`\r`,
@@ -157,7 +165,9 @@ export function isWrappedInput(value: unknown,): value is TomlWrappedInput {
 export function isPlainObject(value: unknown,): value is Record<string, unknown> {
   if (((typeof value) !== 'object') || (value === null))
     return false;
-  /** Prototype lookup so class instances and built-ins are rejected. */
+  /**
+   * Prototype lookup so class instances and built-ins are rejected.
+   */
   const proto: unknown = Object.getPrototypeOf(value,);
   return (proto === Object
     .prototype) || (proto === null);

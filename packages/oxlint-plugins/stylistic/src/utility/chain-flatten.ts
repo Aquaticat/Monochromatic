@@ -11,7 +11,9 @@ import {
   selectBreakOffsets,
 } from './chain-render.ts';
 
-/** Shared attached-segment value: rides on the previous segment's line, never a break point. */
+/**
+ * Shared attached-segment value: rides on the previous segment's line, never a break point.
+ */
 const ATTACHED: ChainSegment = { isBreak: false, };
 
 /**
@@ -44,9 +46,13 @@ function isTransparentWrapper(type: string,): boolean {
  * Parameters for {@link memberDotStart}.
  */
 type MemberDotStartParams = {
-  /** Rule context; its `sourceCode` supplies the property-preceding token lookup. */
+  /**
+   * Rule context; its `sourceCode` supplies the property-preceding token lookup.
+   */
   readonly context: Context;
-  /** Non-computed `MemberExpression` whose `.`/`?.` offset is wanted. */
+  /**
+   * Non-computed `MemberExpression` whose `.`/`?.` offset is wanted.
+   */
   readonly member: ChainNode;
 };
 
@@ -65,12 +71,16 @@ function memberDotStart({
   context,
   member,
 }: MemberDotStartParams,): number {
-  /** Accessed property; its preceding token is the dot punctuator. */
+  /**
+   * Accessed property; its preceding token is the dot punctuator.
+   */
   const { property, } = member;
   if (property === undefined) {
     throw new Error('member step missing property',);
   }
-  /** `.` or `?.` token immediately before the property name. */
+  /**
+   * `.` or `?.` token immediately before the property name.
+   */
   const dot = context.sourceCode
     .getTokenBefore(property,);
   if (dot === null) {
@@ -83,9 +93,13 @@ function memberDotStart({
  * Parameters for {@link operatorTokenStart}.
  */
 type OperatorTokenStartParams = {
-  /** Rule context; its `sourceCode` supplies the operator-token lookup. */
+  /**
+   * Rule context; its `sourceCode` supplies the operator-token lookup.
+   */
   readonly context: Context;
-  /** `BinaryExpression` or `LogicalExpression` whose operator offset is wanted. */
+  /**
+   * `BinaryExpression` or `LogicalExpression` whose operator offset is wanted.
+   */
   readonly node: ChainNode;
 };
 
@@ -106,7 +120,9 @@ function operatorTokenStart({
   context,
   node,
 }: OperatorTokenStartParams,): number {
-  /** Left operand; the operator token is the first matching token after it. */
+  /**
+   * Left operand; the operator token is the first matching token after it.
+   */
   const {
     left,
     operator,
@@ -114,7 +130,9 @@ function operatorTokenStart({
   if ((left === undefined) || (operator === undefined)) {
     throw new Error('operator node missing left operand or operator',);
   }
-  /** First token after the left operand whose value is the operator literal. */
+  /**
+   * First token after the left operand whose value is the operator literal.
+   */
   const token = context.sourceCode
     .getTokenAfter(
     left,
@@ -135,9 +153,13 @@ function operatorTokenStart({
  * Parameters for the chain-walk functions keyed on a single node.
  */
 type ChainWalkParams = {
-  /** Rule context; its `sourceCode` supplies token lookups during the walk. */
+  /**
+   * Rule context; its `sourceCode` supplies token lookups during the walk.
+   */
   readonly context: Context;
-  /** Node currently being walked. */
+  /**
+   * Node currently being walked.
+   */
   readonly node: ChainNode;
 };
 
@@ -222,13 +244,17 @@ export function chainSegments({
   context,
   node,
 }: ChainWalkParams,): ChainSegment[] {
-  /** Nodes that each contribute a trailing step, outermost first; the leaf contributes none. */
+  /**
+   * Nodes that each contribute a trailing step, outermost first; the leaf contributes none.
+   */
   const contributors: ChainNode[] = [];
   for (
     let cursor: ChainNode = node;
     ;
   ) {
-    /** Receiver to descend into; `LEAF` when the cursor is the chain leaf. */
+    /**
+     * Receiver to descend into; `LEAF` when the cursor is the chain leaf.
+     */
     const child = descentChild(cursor,);
     if (child === LEAF) {
       break;
@@ -259,9 +285,13 @@ export function chainSegments({
  * Parameters for {@link collectOperatorChain} and {@link operatorChainBreakOffsets}.
  */
 type OperatorChainParams = {
-  /** Rule context; its `sourceCode` supplies operator-token lookups. */
+  /**
+   * Rule context; its `sourceCode` supplies operator-token lookups.
+   */
   readonly context: Context;
-  /** Operator chain root (`BinaryExpression` or `LogicalExpression`). */
+  /**
+   * Operator chain root (`BinaryExpression` or `LogicalExpression`).
+   */
   readonly root: ChainNode;
 };
 
@@ -274,9 +304,13 @@ type OperatorChainParams = {
  * candidate operator-axis break point.
  */
 type OperatorChainParts = {
-  /** Operand subchains terminating the chain, each flattened independently. */
+  /**
+   * Operand subchains terminating the chain, each flattened independently.
+   */
   readonly operands: readonly ChainNode[];
-  /** Operator token offsets within the chain, root operator included. */
+  /**
+   * Operator token offsets within the chain, root operator included.
+   */
   readonly operatorOffsets: readonly number[];
 };
 
@@ -301,27 +335,39 @@ function collectOperatorChain({
   context,
   root,
 }: OperatorChainParams,): OperatorChainParts {
-  /** Operand nodes terminating the chain. */
+  /**
+   * Operand nodes terminating the chain.
+   */
   const operands: ChainNode[] = [];
-  /** Operator token offsets; the root operator is always present. */
+  /**
+   * Operator token offsets; the root operator is always present.
+   */
   const operatorOffsets: number[] = [
     operatorTokenStart({
       context,
       node: root,
     },),
   ];
-  /** Root operator type; same-type unparenthesised descendants continue the chain. */
+  /**
+   * Root operator type; same-type unparenthesised descendants continue the chain.
+   */
   const { type: rootType, } = root;
-  /** Pending nodes to classify; the root's two operands seed the walk. */
+  /**
+   * Pending nodes to classify; the root's two operands seed the walk.
+   */
   const work: ChainNode[] = [
     nonNullishOrThrow(root.left,),
     nonNullishOrThrow(root.right,),
   ];
   while (work.length
     > 0) {
-    /** Next pending node; the loop guard guarantees the stack is non-empty. */
+    /**
+     * Next pending node; the loop guard guarantees the stack is non-empty.
+     */
     const node = nonNullishOrThrow(work.pop(),);
-    /** Whether the node continues the chain rather than ending it as an operand. */
+    /**
+     * Whether the node continues the chain rather than ending it as an operand.
+     */
     const continues = (node.type
       === rootType)
       && (!parenIsolated({
@@ -363,7 +409,9 @@ function operatorChainBreakOffsets({
   context,
   root,
 }: OperatorChainParams,): readonly number[] {
-  /** Operands and operator offsets, neither ordered; the final sort imposes order. */
+  /**
+   * Operands and operator offsets, neither ordered; the final sort imposes order.
+   */
   const {
     operands,
     operatorOffsets,
@@ -371,17 +419,23 @@ function operatorChainBreakOffsets({
     context,
     root,
   },);
-  /** Break offsets contributed by the operands' own member subchains. */
+  /**
+   * Break offsets contributed by the operands' own member subchains.
+   */
   const operandBreakOffsets = operands.flatMap(function operandBreaks(operand,): readonly number[] {
     return selectBreakOffsets(chainSegments({
       context,
       node: operand,
     },),);
   },);
-  /** Whether any operand's member chain broke; forces every operator onto its own line. */
+  /**
+   * Whether any operand's member chain broke; forces every operator onto its own line.
+   */
   const anyOperandBroke = operandBreakOffsets.length
     > 0;
-  /** Source-first operator offset; it stays on the head line unless an operand broke. */
+  /**
+   * Source-first operator offset; it stays on the head line unless an operand broke.
+   */
   const firstOperatorOffset = operatorOffsets.reduce(
     function smaller(
       smallest,
@@ -393,7 +447,9 @@ function operatorChainBreakOffsets({
     },
     Number.POSITIVE_INFINITY,
   );
-  /** Operator offsets that begin a continuation line. */
+  /**
+   * Operator offsets that begin a continuation line.
+   */
   const operatorBreakOffsets = operatorOffsets.filter(function breaks(offset,): boolean {
     return anyOperandBroke
       || (offset !== firstOperatorOffset);

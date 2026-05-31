@@ -1,2 +1,4 @@
-/** Type alias for `unknown`. */
+/**
+ * Type alias for `unknown`.
+ */
 export type $ = unknown;

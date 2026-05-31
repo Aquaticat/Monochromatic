@@ -21,9 +21,13 @@ import {
   runInContainer,
 } from '../container.ts';
 
-/** Container result bundled with its wall-clock duration */
+/**
+ * Container result bundled with its wall-clock duration
+ */
 export type TimedContainerResult = ContainerResult & {
-  /** Wall-clock milliseconds from start of runInContainer call to resolution */
+  /**
+   * Wall-clock milliseconds from start of runInContainer call to resolution
+   */
   readonly durationMs: number;
 };
 
@@ -32,7 +36,9 @@ export type TimedContainerResult = ContainerResult & {
  * Probes supply the test input and timing thresholds.
  */
 export type PerfTestConfig = {
-  /** Stdin data for the performance test (larger/heavier than the correctness test) */
+  /**
+   * Stdin data for the performance test (larger/heavier than the correctness test)
+   */
   readonly input: string;
   /**
    * Wall-clock duration (ms) at or below which the perf test incurs no penalty.
@@ -59,11 +65,17 @@ export type PerfTestConfig = {
  * ```
  */
 type RunInContainerTimedOptions = {
-  /** TypeScript source to execute */
+  /**
+   * TypeScript source to execute
+   */
   readonly source: string;
-  /** stdin data */
+  /**
+   * stdin data
+   */
   readonly input: string;
-  /** Abort signal */
+  /**
+   * Abort signal
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -89,9 +101,13 @@ export async function runInContainerTimed({
   input,
   signal,
 }: RunInContainerTimedOptions,): Promise<TimedContainerResult> {
-  /** Wall-clock origin for the duration measurement returned alongside the container result. */
+  /**
+   * Wall-clock origin for the duration measurement returned alongside the container result.
+   */
   const start = Date.now();
-  /** Container result; merged below with `durationMs` so callers receive both in one object. */
+  /**
+   * Container result; merged below with `durationMs` so callers receive both in one object.
+   */
   const result = await runInContainer({
     source,
     stdinData: input,
@@ -116,9 +132,13 @@ export async function runInContainerTimed({
  * ```
  */
 type PerfScoreOptions = {
-  /** Timed container result from the perf test */
+  /**
+   * Timed container result from the perf test
+   */
   readonly perfResult: TimedContainerResult;
-  /** Timing thresholds */
+  /**
+   * Timing thresholds
+   */
   readonly config: PerfTestConfig;
 };
 
@@ -183,7 +203,9 @@ export function buildPerfDiagnostic({
   perfResult,
   config,
 }: PerfScoreOptions,): string {
-  /** Perf score for the current run; the diagnostic is suppressed when the run already hit the fast threshold. */
+  /**
+   * Perf score for the current run; the diagnostic is suppressed when the run already hit the fast threshold.
+   */
   const score = computePerfScore({
     perfResult,
     config,

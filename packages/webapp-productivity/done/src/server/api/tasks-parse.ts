@@ -5,7 +5,9 @@
  */
 import { TASK_PRIORITIES, } from '../../lib/types.ts';
 
-/** Recognized priority/complexity values for input validation. */
+/**
+ * Recognized priority/complexity values for input validation.
+ */
 const priorities = new Set<string>(TASK_PRIORITIES,);
 
 /**
@@ -49,7 +51,9 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
 export function parseStringArray(value: unknown,): string[] | typeof INVALID {
   if (!Array.isArray(value,))
     return INVALID;
-  /** Normalised entries: only strings, trimmed, non-empty; returned as the parsed result. */
+  /**
+   * Normalised entries: only strings, trimmed, non-empty; returned as the parsed result.
+   */
   const parsedValues = value
     .filter(function isString(entry,): entry is string {
       return (typeof entry) === 'string';

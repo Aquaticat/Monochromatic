@@ -17,7 +17,9 @@ import { posix, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-/** Module-scoped tagged logger. */
+/**
+ * Module-scoped tagged logger.
+ */
 const l = tagged({ tag: 'path/ensure', },);
 
 /* oxlint-disable eslint/require-await -- delegates to ensureFile/ensureDir which are async */
@@ -38,7 +40,9 @@ const l = tagged({ tag: 'path/ensure', },);
  * ```
  */
 export async function ensurePath(path: string,): Promise<string> {
-  /** Parsed segments used solely to read `ext`, which decides file-vs-directory dispatch. */
+  /**
+   * Parsed segments used solely to read `ext`, which decides file-vs-directory dispatch.
+   */
   const parsed = posix.parse(path,);
 
   if (parsed.ext) {
@@ -67,7 +71,9 @@ export async function ensurePath(path: string,): Promise<string> {
  */
 export async function ensureDir(path: string,): Promise<string> {
   try {
-    /** Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`. */
+    /**
+     * Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`.
+     */
     const stats = await stat(path,);
 
     if (!stats.isDirectory())
@@ -127,11 +133,15 @@ export async function ensureDir(path: string,): Promise<string> {
  * ```
  */
 export async function ensureFile(path: string,): Promise<string> {
-  /** Parsed segments captured up front so the create branch can pass `parsed.dir` to `ensureDir` without re-parsing. */
+  /**
+   * Parsed segments captured up front so the create branch can pass `parsed.dir` to `ensureDir` without re-parsing.
+   */
   const parsed = posix.parse(path,);
 
   try {
-    /** Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`. */
+    /**
+     * Metadata of the existing path; `ENOENT` short-circuits to the create branch via the outer `catch`.
+     */
     const stats = await stat(path,);
 
     if (!stats.isFile())

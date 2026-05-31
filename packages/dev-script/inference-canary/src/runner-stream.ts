@@ -39,15 +39,25 @@ export { PartialCompletionError, } from './runner-stream-helpers.ts';
  * ```
  */
 type StreamCompletionOptions = {
-  /** OpenAI SDK client (narrow readonly view) */
+  /**
+   * OpenAI SDK client (narrow readonly view)
+   */
   readonly client: ChatClient;
-  /** Conversation messages */
+  /**
+   * Conversation messages
+   */
   readonly messages: readonly ChatMessage[];
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** Label for timing logs */
+  /**
+   * Label for timing logs
+   */
   readonly probeName: string;
-  /** Abort signal; cancels the HTTP stream when aborted, or absent to disable */
+  /**
+   * Abort signal; cancels the HTTP stream when aborted, or absent to disable
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -105,7 +115,9 @@ export async function streamCompletion({
    * the for-await scope; tsgo cannot prove the flag stays `false` either way.
    */
   let streamWasAborted = false;
-  /** Sets the abort flag when the signal fires during streaming. */
+  /**
+   * Sets the abort flag when the signal fires during streaming.
+   */
   function onAbort(): void {
     streamWasAborted = true;
   }
@@ -115,10 +127,14 @@ export async function streamCompletion({
     { once: true, },
   );
 
-  /** Wall-clock anchor for the stream; every timing metric below is computed relative to it. */
+  /**
+   * Wall-clock anchor for the stream; every timing metric below is computed relative to it.
+   */
   const startMs = Date.now();
 
-  /** Optional SDK fields (reasoning, verbosity) injected only when set; keeps the request body minimal. */
+  /**
+   * Optional SDK fields (reasoning, verbosity) injected only when set; keeps the request body minimal.
+   */
   const extraBody: Record<string, unknown> = {
     ...(config.reasoning ? { reasoning: { enabled: true, }, } : {}),
     // 'high' is OpenRouter's server-side default, so skip sending it to reduce payload noise
@@ -126,7 +142,9 @@ export async function streamCompletion({
       !== 'high' ? { verbosity: config.verbosity, } : {}),
   };
 
-  /** Async iterator over chat completion chunks; awaited per-chunk in the for-await below. */
+  /**
+   * Async iterator over chat completion chunks; awaited per-chunk in the for-await below.
+   */
   const stream = await client.chat
     .completions
     .create(
@@ -143,26 +161,44 @@ export async function streamCompletion({
 
   // Mutable accumulators are required here: for-await streams are inherently
   // imperative and each chunk must be processed as it arrives.
-  /** Text chunks from `delta.content`; joined into the final completion text. */
+  /**
+   * Text chunks from `delta.content`; joined into the final completion text.
+   */
   const chunks: string[] = [];
-  /** Reasoning trace fragments (text/summary) extracted from OpenRouter's `reasoning_details`. */
+  /**
+   * Reasoning trace fragments (text/summary) extracted from OpenRouter's `reasoning_details`.
+   */
   const reasoningChunks: string[] = [];
-  /** Per-chunk inter-arrival times in ms; used to compute streaming-rate stats. */
+  /**
+   * Per-chunk inter-arrival times in ms; used to compute streaming-rate stats.
+   */
   const interChunkMs: number[] = [];
-  /** Every non-null `finish_reason` seen, in arrival order; the last entry is what the API used to terminate. */
+  /**
+   * Every non-null `finish_reason` seen, in arrival order; the last entry is what the API used to terminate.
+   */
   const finishReasons: string[] = [];
-  /** Every usage payload seen, in arrival order; the last entry is the final cumulative usage. */
+  /**
+   * Every usage payload seen, in arrival order; the last entry is the final cumulative usage.
+   */
   const usages: OpenAI.CompletionUsage[] = [];
   // firstChunkMs, lastChunkMs, chunkCount are let because they are all reassigned inside the for-await loop.
-  /** Latency (ms) from request start to the first chunk; set on the first iteration. */
+  /**
+   * Latency (ms) from request start to the first chunk; set on the first iteration.
+   */
   let firstChunkMs = 0;
-  /** Wall-clock timestamp of the most recent chunk; seed value compares against `startMs`. */
+  /**
+   * Wall-clock timestamp of the most recent chunk; seed value compares against `startMs`.
+   */
   let lastChunkMs = startMs;
-  /** Number of stream chunks observed so far; drives first-chunk detection and metrics. */
+  /**
+   * Number of stream chunks observed so far; drives first-chunk detection and metrics.
+   */
   let chunkCount = 0;
 
   for await (const chunk of stream) {
-    /** Wall-clock timestamp captured once per chunk so first-chunk and inter-chunk arithmetic stay consistent. */
+    /**
+     * Wall-clock timestamp captured once per chunk so first-chunk and inter-chunk arithmetic stay consistent.
+     */
     const now = Date.now();
     chunkCount += 1;
     if (chunkCount === 1)
@@ -171,12 +207,16 @@ export async function streamCompletion({
       interChunkMs.push(now - lastChunkMs,);
     lastChunkMs = now;
 
-    /** First (and typically only) choice from this chunk; rest of the array is unused. */
+    /**
+     * First (and typically only) choice from this chunk; rest of the array is unused.
+     */
     const [
       choice,
     ] = chunk.choices;
     if (choice !== undefined) {
-      /** Delta payload from the choice; carries incremental `content`, reasoning, and finish state. */
+      /**
+       * Delta payload from the choice; carries incremental `content`, reasoning, and finish state.
+       */
       const {
         delta,
       } = choice;
@@ -189,7 +229,9 @@ export async function streamCompletion({
       // objects with `type` ("reasoning.text" | "reasoning.summary" | "reasoning.encrypted")
       // and a type-specific text field (`text`, `summary`, or `data`).
       // The field is not typed in OpenAI SDK v6.22, so access it dynamically.
-      /** OpenRouter's untyped reasoning array on the delta; mined for `reasoning.text`/`reasoning.summary` items. */
+      /**
+       * OpenRouter's untyped reasoning array on the delta; mined for `reasoning.text`/`reasoning.summary` items.
+       */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter extends the SDK delta with reasoning_details
       const reasoningDetails = (delta as Record<string, unknown>).reasoning_details;
       if (Array.isArray(reasoningDetails,)) {
@@ -226,10 +268,14 @@ export async function streamCompletion({
     onAbort,
   );
 
-  /** End-to-end stream duration (ms) from request start to last chunk. */
+  /**
+   * End-to-end stream duration (ms) from request start to last chunk.
+   */
   const totalMs = Date.now()
     - startMs;
-  /** Bundled timing snapshot logged once and stored on the final result for the report. */
+  /**
+   * Bundled timing snapshot logged once and stored on the final result for the report.
+   */
   const timing: StreamTiming = {
     timeToFirstChunkMs: firstChunkMs,
     interChunkMs,
@@ -241,15 +287,23 @@ export async function streamCompletion({
     timing,
   },);
 
-  /** Final usage payload, when the API reported one on the closing chunk. */
+  /**
+   * Final usage payload, when the API reported one on the closing chunk.
+   */
   const lastUsage = usages.at(-1,);
-  /** Final stop reason, when the API reported one. */
+  /**
+   * Final stop reason, when the API reported one.
+   */
   const lastFinishReason = finishReasons.at(-1,);
-  /** Reasoning-token count from the final usage payload; absent when the provider omits it. */
+  /**
+   * Reasoning-token count from the final usage payload; absent when the provider omits it.
+   */
   const reasoningTokens = lastUsage
     ?.completion_tokens_details
     ?.reasoning_tokens;
-  /** Normalized usage built from the final payload; omitted from the result when absent. */
+  /**
+   * Normalized usage built from the final payload; omitted from the result when absent.
+   */
   const usage = lastUsage === undefined
     ? undefined
     : buildStreamUsage({
@@ -258,7 +312,9 @@ export async function streamCompletion({
       totalTokens: lastUsage.total_tokens,
       ...(reasoningTokens !== undefined ? { reasoningTokens, } : {}),
     });
-  /** Assembled completion (text + reasoning + usage + finish reason) returned on success or in PartialCompletionError. */
+  /**
+   * Assembled completion (text + reasoning + usage + finish reason) returned on success or in PartialCompletionError.
+   */
   const result = buildResult({
     chunks,
     reasoningChunks,

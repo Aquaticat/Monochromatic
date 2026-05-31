@@ -19,7 +19,9 @@ import type {
  * ```
  */
 export function $(value: RangeNumber,): value is RangeNumberInt {
-  /** Bounds destructured for the integer narrowing check below. */
+  /**
+   * Bounds destructured for the integer narrowing check below.
+   */
   const {
     startInclusive,
     endInclusive,

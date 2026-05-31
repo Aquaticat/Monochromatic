@@ -14,14 +14,20 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Vertical padding for entry labels and summaries in `rem`: 0.125 = 1 / (2 * 2 * 2). */
+/**
+ * Vertical padding for entry labels and summaries in `rem`: 0.125 = 1 / (2 * 2 * 2).
+ */
 const ENTRY_PADDING_BLOCK = 1 / (2 * 2
   * 2);
 
-/** Horizontal padding for entry labels and summaries in `rem`: 0.5 = 1 / 2. */
+/**
+ * Horizontal padding for entry labels and summaries in `rem`: 0.5 = 1 / 2.
+ */
 const ENTRY_PADDING_INLINE = 1 / 2;
 
-/** Entry-level styles for summaries, file entries, and interaction states. */
+/**
+ * Entry-level styles for summaries, file entries, and interaction states.
+ */
 export const ENTRY_STYLES: string = [
   $({
     rule: 'tree-dir-entry',

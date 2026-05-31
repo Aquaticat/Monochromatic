@@ -37,14 +37,18 @@ export async function spawn(
     readonly command: string;
   },
 ): Promise<string> {
-  /** Tagged logger so spawn entries are scoped to `spawn` in the output. */
+  /**
+   * Tagged logger so spawn entries are scoped to `spawn` in the output.
+   */
   const rl = tagged({
     tag: spawn.name,
     l,
   },);
   rl.debug(`${command} ${args.join(' ',)}`,);
 
-  /** Combined stdout from the child process; trimmed and returned by the caller. */
+  /**
+   * Combined stdout from the child process; trimmed and returned by the caller.
+   */
   const { stdout, } = await nanoSpawn(
     command,
     [...args,],

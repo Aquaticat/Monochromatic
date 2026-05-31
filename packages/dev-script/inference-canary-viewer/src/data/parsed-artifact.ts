@@ -12,7 +12,9 @@ import type {
 
 import type { ProbeDetail, } from './viewer-types.ts';
 
-/** Parsed artifact with metadata, optional source/response, and directory path */
+/**
+ * Parsed artifact with metadata, optional source/response, and directory path
+ */
 export type ParsedArtifact = {
   readonly meta: ArtifactMeta | EnrichedArtifactMeta;
   readonly source?: string;

@@ -3,7 +3,9 @@ import { findUp, } from 'find-up';
 import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 
-/** Tagged logger for the opmls module. */
+/**
+ * Tagged logger for the opmls module.
+ */
 const l = tagged({
   tag: 'opmls',
   l: parentLogger,
@@ -34,7 +36,9 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
       v.url(),
       v.check(
         function isHttpDomainUrl(s,) {
-          /** Parsed URL so the protocol and hostname can be checked independently. */
+          /**
+           * Parsed URL so the protocol and hostname can be checked independently.
+           */
           const u = new URL(s,);
           return ((u.protocol
             === 'http:') || (u.protocol
@@ -51,7 +55,9 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
       v.url(),
       v.check(
         function isFileUrl(s,) {
-          /** Parsed URL so the protocol check happens on a structured value, not a string match. */
+          /**
+           * Parsed URL so the protocol check happens on a structured value, not a string match.
+           */
           const u = new URL(s,);
           if (!u.protocol
             .includes('file',))
@@ -80,12 +86,16 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
  * ```
  */
 export function getOpmls(): v.InferOutput<typeof OPMLS_SCHEMA> {
-  /** Inner logger tagged with this function name for traceable log lines. */
+  /**
+   * Inner logger tagged with this function name for traceable log lines.
+   */
   const innerL = tagged({
     tag: getOpmls.name,
     l,
   },);
-  /** Validated URL list returned to callers so invalid entries fail loud at startup. */
+  /**
+   * Validated URL list returned to callers so invalid entries fail loud at startup.
+   */
   const result = v.parse(
     OPMLS_SCHEMA,
     process.env

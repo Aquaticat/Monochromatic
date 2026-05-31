@@ -19,7 +19,9 @@
 
 import type { Database, } from '@tursodatabase/database';
 
-/** SQL DDL for the four tables and their indexes. */
+/**
+ * SQL DDL for the four tables and their indexes.
+ */
 const MIGRATION_SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (
     id   TEXT PRIMARY KEY,
@@ -66,7 +68,9 @@ const MIGRATION_SCHEMA = `
   CREATE UNIQUE INDEX IF NOT EXISTS messages_draft ON messages(draft_id);
 `;
 
-/** Three demo identities the dropdown will display. */
+/**
+ * Three demo identities the dropdown will display.
+ */
 const SEED_USERS: readonly {
   id: string;
   name: string;
@@ -102,7 +106,9 @@ const SEED_USERS: readonly {
 export async function runMigrations(db: Database,): Promise<void> {
   await db.exec(MIGRATION_SCHEMA,);
 
-  /** Prepared once so the seed-user loop can reuse it per row without re-parsing the SQL. */
+  /**
+   * Prepared once so the seed-user loop can reuse it per row without re-parsing the SQL.
+   */
   const insertUser = db.prepare(
     'INSERT OR IGNORE INTO users(id, name) VALUES (?, ?)',
   );

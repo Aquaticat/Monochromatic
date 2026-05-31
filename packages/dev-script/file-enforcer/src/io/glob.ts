@@ -5,7 +5,9 @@ import {
 } from 'node:path';
 import readdirGlob from 'tiny-readdir-glob';
 
-/** Glob metacharacters that mark where a static prefix ends. */
+/**
+ * Glob metacharacters that mark where a static prefix ends.
+ */
 const GLOB_META_CHARS = '*?{[';
 
 /**
@@ -64,7 +66,9 @@ function splitGlob(
   relativeGlob: string,
   originalPrefix: string,
 ] {
-  /** Position of the first metacharacter */
+  /**
+   * Position of the first metacharacter
+   */
   const metaIndex = firstGlobMetaIndex(pattern,);
 
   if (metaIndex === (-1)) {
@@ -76,12 +80,16 @@ function splitGlob(
     ];
   }
 
-  /** Static prefix up to the last `/` before the first metacharacter */
+  /**
+   * Static prefix up to the last `/` before the first metacharacter
+   */
   const staticPrefix = pattern.slice(
     0,
     metaIndex,
   );
-  /** Index of the last separator in the static prefix */
+  /**
+   * Index of the last separator in the static prefix
+   */
   const lastSep = staticPrefix.lastIndexOf('/',);
 
   if (lastSep === (-1)) {
@@ -93,7 +101,9 @@ function splitGlob(
     ];
   }
 
-  /** Original prefix as written in the pattern (preserves `./` or absolute form) */
+  /**
+   * Original prefix as written in the pattern (preserves `./` or absolute form)
+   */
   const originalPrefix = staticPrefix.slice(
     0,
     lastSep,
@@ -131,7 +141,9 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
   if (relativeGlob === '')
     return [cwd,];
 
-  /** Files matched by the glob suffix under `cwd`; only the `files` field is consumed. */
+  /**
+   * Files matched by the glob suffix under `cwd`; only the `files` field is consumed.
+   */
   const { files, } = await readdirGlob(
     relativeGlob,
     { cwd, },
@@ -141,12 +153,16 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
   // Use string concatenation instead of `join()` to preserve `./` prefixes
   // that `join()` would normalize away (e.g., `./.agents` -> `.agents`).
   return files.map(function toOriginalForm(absolutePath: string,): string {
-    /** Path relative to the resolved cwd */
+    /**
+     * Path relative to the resolved cwd
+     */
     const relPath = relative(
       cwd,
       absolutePath,
     );
-    /** Separator between prefix and relative path */
+    /**
+     * Separator between prefix and relative path
+     */
     const sep = originalPrefix.endsWith('/',) ? '' : '/';
     return `${originalPrefix}${sep}${relPath}`;
   },);
@@ -190,15 +206,23 @@ export function mirrorGlobPath(
     readonly sourcePath: string;
   },
 ): string {
-  /** Segments of the source pattern split by `*` */
+  /**
+   * Segments of the source pattern split by `*`
+   */
   const sourceParts = sourcePattern.split('*',);
-  /** Segments of the dest pattern split by `*` */
+  /**
+   * Segments of the dest pattern split by `*`
+   */
   const destParts = destPattern.split('*',);
 
-  /** Number of wildcards in source vs dest must match for positional substitution */
+  /**
+   * Number of wildcards in source vs dest must match for positional substitution
+   */
   const sourceWildcardCount = sourceParts.length
     - 1;
-  /** Wildcard count on the destination side; compared with source to detect mismatches. */
+  /**
+   * Wildcard count on the destination side; compared with source to detect mismatches.
+   */
   const destWildcardCount = destParts.length
     - 1;
   if (sourceWildcardCount !== destWildcardCount) {
@@ -215,13 +239,19 @@ export function mirrorGlobPath(
    * Wrapped in a named-function IIFE so the loop-mutated `remainder` lives inside the helper.
    */
   const captured: readonly string[] = (function captureSegments(): readonly string[] {
-    /** Wildcard captures appended in source-pattern order. */
+    /**
+     * Wildcard captures appended in source-pattern order.
+     */
     const acc: string[] = [];
-    /** Unconsumed tail of the source path; shrinks as fixed prefixes get peeled off each iteration. */
+    /**
+     * Unconsumed tail of the source path; shrinks as fixed prefixes get peeled off each iteration.
+     */
     let remainder = sourcePath;
     for (let partIndex = 0; partIndex < sourceParts
       .length; partIndex++) {
-      /** Fixed text before (or after) the current wildcard */
+      /**
+       * Fixed text before (or after) the current wildcard
+       */
       const fixedPart = sourceParts[partIndex];
       if (fixedPart === undefined)
         break;
@@ -233,10 +263,14 @@ export function mirrorGlobPath(
       remainder = remainder.slice(fixedPart.length,);
 
       if (partIndex < sourceWildcardCount) {
-        /** Position of the next fixed segment, marking the end of this wildcard capture */
+        /**
+         * Position of the next fixed segment, marking the end of this wildcard capture
+         */
         const nextFixed = sourceParts[partIndex + 1]
           ?? '';
-        /** Index in `remainder` where the next fixed segment begins, or end-of-string when none remains. */
+        /**
+         * Index in `remainder` where the next fixed segment begins, or end-of-string when none remains.
+         */
         const nextFixedPos = (nextFixed === '')
           ? remainder.length
           : remainder.indexOf(nextFixed,);
@@ -255,12 +289,16 @@ export function mirrorGlobPath(
     return acc;
   })();
 
-  /** Reconstructed destination path with wildcards replaced by captured values */
+  /**
+   * Reconstructed destination path with wildcards replaced by captured values
+   */
   const result = destParts.flatMap(function appendDestSegment(
     part,
     destIndex,
   ): readonly string[] {
-    /** Raw fixed text for this position; coalesce missing entries to empty for safe joining. */
+    /**
+     * Raw fixed text for this position; coalesce missing entries to empty for safe joining.
+     */
     const fixed = part ?? '';
     if (destIndex < destWildcardCount) {
       return [

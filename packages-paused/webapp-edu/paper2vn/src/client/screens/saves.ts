@@ -18,7 +18,9 @@ import {
 } from '../state.ts';
 import type { SaveSummary, } from '../types.ts';
 
-/** Navigation handler for the back button: routes back to the menu. */
+/**
+ * Navigation handler for the back button: routes back to the menu.
+ */
 function goBackToMenu(): void {
   navigate('menu',);
 }
@@ -31,7 +33,9 @@ function goBackToMenu(): void {
  * @returns the rendered row element with load and delete actions wired up
  */
 function renderRow(summary: Readonly<SaveSummary>,): HTMLElement {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   return el({
@@ -56,7 +60,9 @@ function renderRow(summary: Readonly<SaveSummary>,): HTMLElement {
         attrs: {
           'data-variant': 'primary',
           onclick: function onClick(): void {
-            /** Loaded save record, `undefined` when the slot is gone. */
+            /**
+             * Loaded save record, `undefined` when the slot is gone.
+             */
             const data = loadSave(summary.id,);
             if (data !== undefined)
               navigate('lecture',);
@@ -78,7 +84,9 @@ function renderRow(summary: Readonly<SaveSummary>,): HTMLElement {
              * canonical case where a synchronous prompt is appropriate.
              */
             /* oxlint-disable no-alert -- intentional confirmation for a destructive local-save delete; documented above. */
-            /** User confirmation result for the destructive delete action. */
+            /**
+             * User confirmation result for the destructive delete action.
+             */
             const ok = globalThis.confirm(
               `${ll.deleteSave()}: ${summary.label}?`,
             );
@@ -101,12 +109,18 @@ function renderRow(summary: Readonly<SaveSummary>,): HTMLElement {
  * @param root - host element the screen mounts into
  */
 function mount(root: HTMLElement,): void {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  /** Index of every save slot, source of the rendered rows. */
+  /**
+   * Index of every save slot, source of the rendered rows.
+   */
   const saves = getSaves();
-  /** Rendered row nodes, or an empty-state placeholder when no saves exist. */
+  /**
+   * Rendered row nodes, or an empty-state placeholder when no saves exist.
+   */
   const rows = saves.length
     === 0
     ? [
@@ -119,7 +133,9 @@ function mount(root: HTMLElement,): void {
     : saves.map(function renderEachRow(summary: Readonly<SaveSummary>,): HTMLElement {
       return renderRow(summary,);
     },);
-  /** Outer screen container with header and the rendered rows. */
+  /**
+   * Outer screen container with header and the rendered rows.
+   */
   const screen = el({
     tag: 'section',
     attrs: {

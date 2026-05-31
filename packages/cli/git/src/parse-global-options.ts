@@ -23,9 +23,13 @@ const VALUE_TAKING_GLOBAL_OPTIONS: ReadonlySet<string> = new Set([
  * Parsed result of walking the pre-subcommand portion of `git`'s args.
  */
 export type GlobalOptionLayout = {
-  /** Working directory the subcommand will see after `-C <path>` chaining. */
+  /**
+   * Working directory the subcommand will see after `-C <path>` chaining.
+   */
   readonly effectiveCwd: string;
-  /** Index of the subcommand within args, or `args.length` if absent. */
+  /**
+   * Index of the subcommand within args, or `args.length` if absent.
+   */
   readonly subcommandIndex: number;
 };
 
@@ -95,7 +99,9 @@ function walkGlobalOptions({
     };
   }
 
-  /** Current argv entry under inspection during the recursive walk. */
+  /**
+   * Current argv entry under inspection during the recursive walk.
+   */
   const arg = args[index];
   if (arg === undefined) {
     return {
@@ -105,7 +111,9 @@ function walkGlobalOptions({
   }
 
   if (arg === '-C') {
-    /** Path argument that follows `-C`; missing when `-C` is the final argv entry. */
+    /**
+     * Path argument that follows `-C`; missing when `-C` is the final argv entry.
+     */
     const path = args[index + 1];
     if (path === undefined) {
       // malformed `-C` at end of args; let real git surface the error

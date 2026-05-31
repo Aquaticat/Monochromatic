@@ -22,32 +22,58 @@ import type { LogEntry, } from '../types.ts';
  * Localised labels and runtime hooks consumed by the ask panel.
  */
 type AskPanelOptions = {
-  /** Translated labels used inside the panel. */
+  /**
+   * Translated labels used inside the panel.
+   */
   labels: {
-    /** Placeholder copy for the textarea. */
+    /**
+     * Placeholder copy for the textarea.
+     */
     placeholder: string;
-    /** Header text shown above the question input. */
+    /**
+     * Header text shown above the question input.
+     */
     prompt: string;
-    /** Send-button label. */
+    /**
+     * Send-button label.
+     */
     send: string;
-    /** Close-button label (typically "Back"). */
+    /**
+     * Close-button label (typically "Back").
+     */
     back: string;
-    /** "Thinking..." status message shown during the LLM round-trip. */
+    /**
+     * "Thinking..." status message shown during the LLM round-trip.
+     */
     thinking: string;
-    /** Prefix prepended to the failure status message. */
+    /**
+     * Prefix prepended to the failure status message.
+     */
     generationErrorPrefix: string;
   };
-  /** Stage container where the panel is appended. */
+  /**
+   * Stage container where the panel is appended.
+   */
   stage: HTMLElement;
-  /** Stage's dialogue-text element updated with the reply when send succeeds. */
+  /**
+   * Stage's dialogue-text element updated with the reply when send succeeds.
+   */
   dialogueText: HTMLElement;
-  /** Stage's speaker-name element restored to the persona name on send. */
+  /**
+   * Stage's speaker-name element restored to the persona name on send.
+   */
   speakerName: HTMLElement;
-  /** Display name of the persona shown in the speaker label. */
+  /**
+   * Display name of the persona shown in the speaker label.
+   */
   personaName: string;
-  /** Callback that appends an entry to the memory log. */
+  /**
+   * Callback that appends an entry to the memory log.
+   */
   onLog: (entry: LogEntry,) => void;
-  /** Cleanup callback fired when the panel is closed (success or cancel). */
+  /**
+   * Cleanup callback fired when the panel is closed (success or cancel).
+   */
   onClose: () => void;
 };
 
@@ -95,17 +121,23 @@ export function mountAskPanel(
     onClose,
   }: AskPanelOptions,
 ): HTMLElement {
-  /** Question input where the user types their query. */
+  /**
+   * Question input where the user types their query.
+   */
   const input = el({
     tag: 'textarea',
     attrs: { placeholder: labels.placeholder, },
   },);
-  /** Inline status paragraph for the thinking and error messages. */
+  /**
+   * Inline status paragraph for the thinking and error messages.
+   */
   const status = el({
     tag: 'p',
     attrs: { class: 'muted', },
   },);
-  /** Send button wired to the local async `send`. */
+  /**
+   * Send button wired to the local async `send`.
+   */
   const sendBtn = el({
     tag: 'button',
     attrs: {
@@ -116,7 +148,9 @@ export function mountAskPanel(
     },
     children: [labels.send,],
   },);
-  /** Close button restoring the dialogue stage. */
+  /**
+   * Close button restoring the dialogue stage.
+   */
   const closeBtn = el({
     tag: 'button',
     attrs: {
@@ -127,7 +161,9 @@ export function mountAskPanel(
     },
     children: [labels.back,],
   },);
-  /** Panel container holding input, status, send, and close. */
+  /**
+   * Panel container holding input, status, send, and close.
+   */
   const panel = el({
     tag: 'div',
     attrs: {
@@ -158,11 +194,15 @@ export function mountAskPanel(
    * Sends the question to the persona LLM and renders the reply.
    */
   async function send(): Promise<void> {
-    /** Active save snapshot, source of the paper text passed to the LLM. */
+    /**
+     * Active save snapshot, source of the paper text passed to the LLM.
+     */
     const live = getActiveSave();
     if (live === undefined)
       return;
-    /** Trimmed question text; empty value short-circuits the send. */
+    /**
+     * Trimmed question text; empty value short-circuits the send.
+     */
     const question = input.value
       .trim();
     if (question.length
@@ -174,7 +214,9 @@ export function mountAskPanel(
       'disabled',
     );
     try {
-      /** LLM-generated persona reply rendered inline once received. */
+      /**
+       * LLM-generated persona reply rendered inline once received.
+       */
       const reply = await askPersona({
         paperText: live.paperText,
         question,
@@ -196,7 +238,9 @@ export function mountAskPanel(
       close();
     }
     catch (err) {
-      /** Normalised error message shown in the panel status paragraph. */
+      /**
+       * Normalised error message shown in the panel status paragraph.
+       */
       const message = err instanceof Error ? err.message : String(err,);
       status.textContent = `${labels.generationErrorPrefix}${message}`;
       status.className = 'error';

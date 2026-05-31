@@ -17,10 +17,14 @@ import { flexColumn, } from '../mixins.ts';
  *  Below this width the sidebar stacks and the inline nav hides. */
 const DESKTOP_BREAKPOINT = '48rem';
 
-/** Full percentage for sidebar block-size. */
+/**
+ * Full percentage for sidebar block-size.
+ */
 const FULL_PERCENT = 100;
 
-/** Compiled CSS rules for the `<side-drawer>` inline sidebar. */
+/**
+ * Compiled CSS rules for the `<side-drawer>` inline sidebar.
+ */
 export const SIDE_DRAWER_SIDEBAR_STYLES: string[] = [
   css({
     rule: '.sidebar',

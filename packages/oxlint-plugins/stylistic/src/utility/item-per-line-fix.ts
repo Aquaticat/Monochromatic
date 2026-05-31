@@ -26,9 +26,13 @@ import {
  * ```
  */
 export type BracketPair = {
-  /** Opening bracket character. */
+  /**
+   * Opening bracket character.
+   */
   readonly open: '(' | '[' | '{';
-  /** Closing bracket character. */
+  /**
+   * Closing bracket character.
+   */
   readonly close: ')' | ']' | '}';
 };
 
@@ -36,13 +40,21 @@ export type BracketPair = {
  * Configuration for generating a per-line autofix.
  */
 export type PerLineFixConfig = {
-  /** Fixer instance from the lint report callback. */
+  /**
+   * Fixer instance from the lint report callback.
+   */
   readonly fixer: Fixer;
-  /** Lint context for source text access. */
+  /**
+   * Lint context for source text access.
+   */
   readonly context: Context;
-  /** Child items to place one per line. */
+  /**
+   * Child items to place one per line.
+   */
   readonly items: readonly Span[];
-  /** Full file source text. */
+  /**
+   * Full file source text.
+   */
   readonly sourceText: string;
   /**
    * Bracket pair that wraps the items.
@@ -100,28 +112,38 @@ export function buildPerLineFix({
   bracketPair,
   delimiter = ',',
 }: PerLineFixConfig,): ReturnType<Fixer['replaceText']> {
-  /** Range of the first item; left edge used to locate the opening bracket. */
+  /**
+   * Range of the first item; left edge used to locate the opening bracket.
+   */
   const firstRange = rangeOf(at({
     arr: items,
     index: 0,
   },),);
-  /** Range of the last item; right edge used to locate the closing bracket. */
+  /**
+   * Range of the last item; right edge used to locate the closing bracket.
+   */
   const lastRange = rangeOf(at({
     arr: items,
     index: items.length
       - 1,
   },),);
 
-  /** Scan backward from first item to find the opening bracket. */
+  /**
+   * Scan backward from first item to find the opening bracket.
+   */
   const openPos = sourceText.lastIndexOf(
     bracketPair.open,
     firstRange[0]
       - 1,
   );
 
-  /** Scan forward from last item to find the closing bracket. */
+  /**
+   * Scan forward from last item to find the closing bracket.
+   */
   const [, lastRangeEnd,] = lastRange;
-  /** Closing bracket position scanned from the last item's end; -1 sentinel handled below. */
+  /**
+   * Closing bracket position scanned from the last item's end; -1 sentinel handled below.
+   */
   const closePos = sourceText.indexOf(
     bracketPair.close,
     lastRangeEnd,
@@ -137,26 +159,38 @@ export function buildPerLineFix({
     );
   }
 
-  /** Compute base indentation from the line containing the opening bracket. */
+  /**
+   * Compute base indentation from the line containing the opening bracket.
+   */
   const lineStart = sourceText.lastIndexOf(
     '\n',
     openPos - 1,
   )
     + 1;
-  /** Substring of the open-bracket line up to the bracket itself; leading whitespace is the existing indent. */
+  /**
+   * Substring of the open-bracket line up to the bracket itself; leading whitespace is the existing indent.
+   */
   const linePrefix = sourceText.slice(
     lineStart,
     openPos,
   );
-  /** Whitespace prefix extracted from the open-bracket line; defaults to empty when the bracket starts the line. */
+  /**
+   * Whitespace prefix extracted from the open-bracket line; defaults to empty when the bracket starts the line.
+   */
   const baseIndent = leadingWhitespace(linePrefix,);
-  /** Two-space continuation indent for items inside the brackets. */
+  /**
+   * Two-space continuation indent for items inside the brackets.
+   */
   const childIndent = `${baseIndent}  `;
 
-  /** Extract each item's source text, stripping any existing trailing delimiter. */
+  /**
+   * Extract each item's source text, stripping any existing trailing delimiter.
+   */
   const itemTexts = items.map(
     function getItemText(item,): string {
-      /** Trimmed source text of the item; the trailing delimiter (if any) is stripped below to be re-added uniformly. */
+      /**
+       * Trimmed source text of the item; the trailing delimiter (if any) is stripped below to be re-added uniformly.
+       */
       const raw = context.sourceCode
         .getText(item,)
         .trim();
@@ -172,32 +206,44 @@ export function buildPerLineFix({
     },
   );
 
-  /** Check whether the original source has a trailing delimiter between last item and close bracket. */
+  /**
+   * Check whether the original source has a trailing delimiter between last item and close bracket.
+   */
   const trailingRegion = new Set(sourceText.slice(
     lastRange[1],
     closePos,
   ),);
-  /** Whether the original source had a trailing delimiter; preserved verbatim in the rewrite to avoid forcing a style change. */
+  /**
+   * Whether the original source had a trailing delimiter; preserved verbatim in the rewrite to avoid forcing a style change.
+   */
   const hasTrailingDelimiter = trailingRegion.has(',',)
     || trailingRegion
     .has(';',);
 
-  /** Items rendered one per line with `childIndent` prefix and the appropriate delimiter suffix. */
+  /**
+   * Items rendered one per line with `childIndent` prefix and the appropriate delimiter suffix.
+   */
   const formattedItems = itemTexts
     .map(function formatItem(
       text,
       idx,
     ): string {
-      /** Whether this is the last item; combined with `hasTrailingDelimiter` to decide the suffix. */
+      /**
+       * Whether this is the last item; combined with `hasTrailingDelimiter` to decide the suffix.
+       */
       const isLast = idx === (itemTexts.length
         - 1);
-      /** Delimiter or empty string for the last item without a trailing delimiter in the original. */
+      /**
+       * Delimiter or empty string for the last item without a trailing delimiter in the original.
+       */
       const suffix = (isLast && (!hasTrailingDelimiter)) ? '' : delimiter;
       return `${childIndent}${text}${suffix}`;
     },)
     .join('\n',);
 
-  /** Replace from opening bracket to closing bracket inclusive. */
+  /**
+   * Replace from opening bracket to closing bracket inclusive.
+   */
   const replacement =
     `${bracketPair.open}\n${formattedItems}\n${baseIndent}${bracketPair.close}`;
   return fixer.replaceTextRange(

@@ -12,7 +12,9 @@ import type { BashAnalysis, } from './types.ts';
 
 //region Public types
 
-/** A command matcher: either command name or command prefix. */
+/**
+ * A command matcher: either command name or command prefix.
+ */
 type CommandMatcher = string | readonly string[];
 
 //endregion Public types
@@ -54,7 +56,9 @@ function matchUserCommands(
         if (cmd.name
           !== matcher[0])
           continue;
-        /** Argument tokens that must appear after command name for matcher to fire. */
+        /**
+         * Argument tokens that must appear after command name for matcher to fire.
+         */
         const prefix = matcher.slice(1,);
         if (prefix.every(
           function argMatches(

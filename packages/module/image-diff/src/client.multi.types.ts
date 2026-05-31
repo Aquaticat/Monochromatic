@@ -22,9 +22,13 @@ import type {
  * ```
  */
 export type MultiProviderComparisonEntry = {
-  /** Provider that produced this result. */
+  /**
+   * Provider that produced this result.
+   */
   readonly provider: Provider;
-  /** Comparison result from this provider. */
+  /**
+   * Comparison result from this provider.
+   */
   readonly result: ComparisonResult;
 };
 
@@ -39,9 +43,13 @@ export type MultiProviderComparisonEntry = {
  * ```
  */
 export type MultiProviderEmbedEntry = {
-  /** Provider that produced this result. */
+  /**
+   * Provider that produced this result.
+   */
   readonly provider: Provider;
-  /** Embedding result from this provider. */
+  /**
+   * Embedding result from this provider.
+   */
   readonly result: EmbeddingResult;
 };
 
@@ -56,8 +64,12 @@ export type MultiProviderEmbedEntry = {
  * ```
  */
 export type MultiProviderBatchEmbedEntry = {
-  /** Provider that produced this result. */
+  /**
+   * Provider that produced this result.
+   */
   readonly provider: Provider;
-  /** Batch embedding result from this provider. */
+  /**
+   * Batch embedding result from this provider.
+   */
   readonly result: BatchEmbeddingResult;
 };

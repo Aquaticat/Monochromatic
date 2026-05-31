@@ -6,7 +6,9 @@ import {
 } from 'h3';
 import * as v from 'valibot';
 
-/** Pre-configured Anthropic client with extended beta features enabled. */
+/**
+ * Pre-configured Anthropic client with extended beta features enabled.
+ */
 const anthropic = new Anthropic({
   maxRetries: 0,
   logLevel: 'info',
@@ -24,7 +26,9 @@ const anthropic = new Anthropic({
   },
 },);
 
-/** Streaming message response from the Claude API with tool use. */
+/**
+ * Streaming message response from the Claude API with tool use.
+ */
 const stream = await anthropic
   .messages
   .create({
@@ -66,9 +70,13 @@ const stream = await anthropic
 for await (const messageStreamEvent of stream)
   console.log(messageStreamEvent,);
 
-/** Default port when AI_TREE_PORT environment variable is not set. */
+/**
+ * Default port when AI_TREE_PORT environment variable is not set.
+ */
 const DEFAULT_PORT = 4_111;
-/** Parsed server port from the AI_TREE_PORT environment variable. */
+/**
+ * Parsed server port from the AI_TREE_PORT environment variable.
+ */
 const PORT = v.parse(
   v.pipe(
     v.unknown(),
@@ -80,7 +88,9 @@ const PORT = v.parse(
     ?? DEFAULT_PORT,
 );
 
-/** H3 application instance for the ai-tree server. */
+/**
+ * H3 application instance for the ai-tree server.
+ */
 const app = new H3();
 
 app.get(
@@ -90,7 +100,9 @@ app.get(
   },),
 );
 
-/** Running HTTP server instance. */
+/**
+ * Running HTTP server instance.
+ */
 const server = serve(
   app,
   { port: PORT, },

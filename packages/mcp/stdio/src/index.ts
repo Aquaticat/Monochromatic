@@ -1,4 +1,6 @@
-/** Public API for \@monochromatic-dev/mcp-stdio. */
+/**
+ * Public API for \@monochromatic-dev/mcp-stdio.
+ */
 export {
   isJsonRpcMessage,
   JSON_RPC_INTERNAL_ERROR,

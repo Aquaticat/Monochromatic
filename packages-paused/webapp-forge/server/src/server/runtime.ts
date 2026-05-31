@@ -13,10 +13,14 @@ import {
   type WriteBuffer,
 } from '../storage/write-buffer.ts';
 
-/** Process-shared storage adapter. */
+/**
+ * Process-shared storage adapter.
+ */
 export const storage: Storage = createMemoryStorage();
 
-/** Process-shared write buffer in front of the storage adapter. */
+/**
+ * Process-shared write buffer in front of the storage adapter.
+ */
 export const writeBuffer: WriteBuffer = createWriteBuffer({ storage, },);
 
 /**

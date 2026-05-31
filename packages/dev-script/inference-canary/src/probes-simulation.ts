@@ -9,7 +9,9 @@ import { stakSimulation, } from './simulation/stak-simulation.ts';
 
 import type { Probe, } from './probes.ts';
 
-/** All simulation probes */
+/**
+ * All simulation probes
+ */
 export const simulationProbes: readonly Probe[] = [
   stakSimulation,
 ];

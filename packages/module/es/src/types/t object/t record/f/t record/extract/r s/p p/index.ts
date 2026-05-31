@@ -51,7 +51,9 @@ import { $ as pick, } from '../../../pick/p n/index.ts';
   obj: TObject;
   extracted: Iterable<TKeys>;
 },): Pick<TObject, TKeys> {
-  /** Keys to extract collected into a Set for O(1) membership inside pick. */
+  /**
+   * Keys to extract collected into a Set for O(1) membership inside pick.
+   */
   const extractedSet = extracted instanceof Set
     ? extracted as ReadonlySet<TKeys>
     : new Set(extracted,);

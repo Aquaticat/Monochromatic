@@ -46,39 +46,59 @@ export function buildViewerData({
   readonly fixByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
   readonly failures: readonly FailureArtifactMeta[];
 },): ArtifactData {
-  /** Per-run viewer entries built up below; one entry per initial-pass run plus one per failure. */
+  /**
+   * Per-run viewer entries built up below; one entry per initial-pass run plus one per failure.
+   */
   const entries: ViewerEntry[] = [];
-  /** Per-probe detail records keyed by `probeKey(label, probeName, timestamp)` for overlay lookup. */
+  /**
+   * Per-probe detail records keyed by `probeKey(label, probeName, timestamp)` for overlay lookup.
+   */
   const probeDetails = new Map<string, ProbeDetail>();
 
   for (const [runKey, probes,] of initialByRun) {
-    /** Fix-pass artifacts for this run; defaults to empty so runs without a fix pass still process. */
+    /**
+     * Fix-pass artifacts for this run; defaults to empty so runs without a fix pass still process.
+     */
     const fixes = fixByRun.get(runKey,)
       ?? new Map<string, ParsedArtifact>();
-    /** Sample probe used to read run-level metadata (model, label, timestamp). */
+    /**
+     * Sample probe used to read run-level metadata (model, label, timestamp).
+     */
     const firstProbe = probes.values()
       .next()
       .value;
     if (firstProbe === undefined)
       continue;
 
-    /** Run-level metadata copied from the first probe in the run. */
+    /**
+     * Run-level metadata copied from the first probe in the run.
+     */
     const {
       model,
       label,
       timestamp,
     } = firstProbe.meta;
-    /** Initial-pass score per probe, populated as the loop processes each probe artifact. */
+    /**
+     * Initial-pass score per probe, populated as the loop processes each probe artifact.
+     */
     const probeScores: Record<string, number> = {};
-    /** Fix-pass (pass 2) score per probe; populated only when a fix artifact has a score. */
+    /**
+     * Fix-pass (pass 2) score per probe; populated only when a fix artifact has a score.
+     */
     const pass2Scores: Record<string, number> = {};
-    /** Probe configuration carried on the run entry; first enriched probe to declare one wins. */
+    /**
+     * Probe configuration carried on the run entry; first enriched probe to declare one wins.
+     */
     let config: ViewerEntry['config'] = undefined;
-    /** Flips to true once any probe contributes a fix-pass score, gating `pass2Scores` on the entry. */
+    /**
+     * Flips to true once any probe contributes a fix-pass score, gating `pass2Scores` on the entry.
+     */
     let hasPass2 = false;
 
     for (const [probeName, artifact,] of probes) {
-      /** Enriched metadata for the initial pass, or undefined if the artifact is raw. */
+      /**
+       * Enriched metadata for the initial pass, or undefined if the artifact is raw.
+       */
       const enriched = isEnriched(artifact.meta,) ? artifact.meta : undefined;
       probeScores[probeName] = enriched?.score
         ?? 0;
@@ -86,9 +106,13 @@ export function buildViewerData({
         !== undefined)
         ({ config, } = enriched);
 
-      /** Matching fix-pass artifact for this probe, if a fix run produced one. */
+      /**
+       * Matching fix-pass artifact for this probe, if a fix run produced one.
+       */
       const fix = fixes.get(probeName,);
-      /** Enriched fix-pass metadata, or undefined when the fix artifact is missing or raw. */
+      /**
+       * Enriched fix-pass metadata, or undefined when the fix artifact is missing or raw.
+       */
       const fixEnriched = (fix !== undefined) && isEnriched(fix.meta,)
         ? fix.meta
         : undefined;
@@ -113,9 +137,13 @@ export function buildViewerData({
       );
     }
 
-    /** Initial-pass scores collected from `probeScores`; averaged below for the run summary. */
+    /**
+     * Initial-pass scores collected from `probeScores`; averaged below for the run summary.
+     */
     const scores = Object.values(probeScores,);
-    /** Mean of `scores`; zero when no probes contributed, used as the run's headline score. */
+    /**
+     * Mean of `scores`; zero when no probes contributed, used as the run's headline score.
+     */
     const overallScore = scores.length
       > 0
       ? scores.reduce(

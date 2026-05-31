@@ -9,11 +9,17 @@ import type { ServerMessage, } from './protocol-server.ts';
 
 //region Directory types
 
-/** Single entry in a directory listing. */
+/**
+ * Single entry in a directory listing.
+ */
 export type DirEntry = {
-  /** File or directory name (no path separator). */
+  /**
+   * File or directory name (no path separator).
+   */
   readonly name: string;
-  /** Whether entry is a directory. */
+  /**
+   * Whether entry is a directory.
+   */
   readonly isDirectory: boolean;
 };
 
@@ -41,72 +47,126 @@ export type SearchResult =
 
 //region LSP types
 
-/** 0-based position in a text document. */
+/**
+ * 0-based position in a text document.
+ */
 export type Position = {
-  /** 0-based line number. */
+  /**
+   * 0-based line number.
+   */
   readonly line: number;
-  /** 0-based character offset. */
+  /**
+   * 0-based character offset.
+   */
   readonly character: number;
 };
 
-/** Position within a specific file, combining a file path with a text position. */
+/**
+ * Position within a specific file, combining a file path with a text position.
+ */
 export type FilePosition = Position & {
-  /** Absolute file path. */
+  /**
+   * Absolute file path.
+   */
   readonly path: string;
 };
 
-/** Range in a text document (start-inclusive, end-exclusive). */
+/**
+ * Range in a text document (start-inclusive, end-exclusive).
+ */
 export type Range = {
-  /** Start position (inclusive). */
+  /**
+   * Start position (inclusive).
+   */
   readonly start: Position;
-  /** End position (exclusive). */
+  /**
+   * End position (exclusive).
+   */
   readonly end: Position;
 };
 
-/** Diagnostic from a language server, ready for wire transport. */
+/**
+ * Diagnostic from a language server, ready for wire transport.
+ */
 export type Diagnostic = {
-  /** Text range where the diagnostic applies. */
+  /**
+   * Text range where the diagnostic applies.
+   */
   readonly range: Range;
-  /** Severity level. */
+  /**
+   * Severity level.
+   */
   readonly severity: 'error' | 'warning' | 'info' | 'hint';
-  /** Human-readable diagnostic message. */
+  /**
+   * Human-readable diagnostic message.
+   */
   readonly message: string;
-  /** Source tool name (e.g. "oxlint", "typescript"). */
+  /**
+   * Source tool name (e.g. "oxlint", "typescript").
+   */
   readonly source: string;
 };
 
-/** Completion item from a language server. */
+/**
+ * Completion item from a language server.
+ */
 export type CompletionItem = {
-  /** Display label. */
+  /**
+   * Display label.
+   */
   readonly label: string;
-  /** Additional detail string. */
+  /**
+   * Additional detail string.
+   */
   readonly detail: string;
-  /** Text to insert when accepted. */
+  /**
+   * Text to insert when accepted.
+   */
   readonly insertText: string;
 };
 
-/** Text edit from a formatting operation. */
+/**
+ * Text edit from a formatting operation.
+ */
 export type TextEdit = {
-  /** Range to replace. */
+  /**
+   * Range to replace.
+   */
   readonly range: Range;
-  /** Replacement text. */
+  /**
+   * Replacement text.
+   */
   readonly newText: string;
 };
 
-/** Inlay hint kind: 1 = Type, 2 = Parameter. */
+/**
+ * Inlay hint kind: 1 = Type, 2 = Parameter.
+ */
 export type InlayHintKind = 1 | 2;
 
-/** Inlay hint from a language server, ready for wire transport. */
+/**
+ * Inlay hint from a language server, ready for wire transport.
+ */
 export type InlayHint = {
-  /** Position where the hint is displayed. */
+  /**
+   * Position where the hint is displayed.
+   */
   readonly position: Position;
-  /** Display label text. */
+  /**
+   * Display label text.
+   */
   readonly label: string;
-  /** Kind of inlay hint (1=Type, 2=Parameter). */
+  /**
+   * Kind of inlay hint (1=Type, 2=Parameter).
+   */
   readonly kind?: InlayHintKind;
-  /** Whether to insert padding space before the hint. */
+  /**
+   * Whether to insert padding space before the hint.
+   */
   readonly paddingLeft?: boolean;
-  /** Whether to insert padding space after the hint. */
+  /**
+   * Whether to insert padding space after the hint.
+   */
   readonly paddingRight?: boolean;
 };
 
@@ -116,9 +176,13 @@ export type InlayHint = {
  * the next larger enclosing syntactic scope.
  */
 export type SelectionRange = {
-  /** Range of this selection level. */
+  /**
+   * Range of this selection level.
+   */
   readonly range: Range;
-  /** Next larger enclosing range, or undefined at the outermost scope. */
+  /**
+   * Next larger enclosing range, or undefined at the outermost scope.
+   */
   readonly parent?: SelectionRange;
 };
 
@@ -127,9 +191,13 @@ export type SelectionRange = {
  * Groups text edits by file path for the client to apply.
  */
 export type WorkspaceFileEdit = {
-  /** Absolute file path. */
+  /**
+   * Absolute file path.
+   */
   readonly path: string;
-  /** Text edits to apply to this file. */
+  /**
+   * Text edits to apply to this file.
+   */
   readonly edits: readonly TextEdit[];
 };
 
@@ -148,7 +216,9 @@ export type FileKind = 'text' | 'image' | 'audio' | 'video' | 'binary';
 
 //region Filesystem change types
 
-/** Category of a filesystem change event from the directory watcher. */
+/**
+ * Category of a filesystem change event from the directory watcher.
+ */
 export type FsChangeType = 'created' | 'modified' | 'deleted';
 
 //endregion Filesystem change types

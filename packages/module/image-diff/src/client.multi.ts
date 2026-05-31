@@ -48,17 +48,23 @@ const ALL_PROVIDERS: readonly Provider[] = [
 export async function embedAll(
   input: ImageInput,
 ): Promise<readonly MultiProviderEmbedEntry[]> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: embedAll.name,
     l,
   },);
   rl.debug(`embedding image across all ${String(ALL_PROVIDERS.length,)} providers`,);
 
-  /** Per-provider embedding entries collected from concurrent calls; one entry per `ALL_PROVIDERS` member. */
+  /**
+   * Per-provider embedding entries collected from concurrent calls; one entry per `ALL_PROVIDERS` member.
+   */
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedWithProvider(provider,) {
-      /** Single-provider embedding result; paired with the provider name in the returned entry. */
+      /**
+       * Single-provider embedding result; paired with the provider name in the returned entry.
+       */
       const result = await embed({
         input,
         config: { provider, },
@@ -90,7 +96,9 @@ export async function embedAll(
 export async function embedBatchAll(
   inputs: readonly ImageInput[],
 ): Promise<readonly MultiProviderBatchEmbedEntry[]> {
-  /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
+  /**
+   * Logger pre-tagged with this function's name so call-site context is preserved across debug lines.
+   */
   const rl = tagged({
     tag: embedBatchAll.name,
     l,
@@ -101,10 +109,14 @@ export async function embedBatchAll(
     } providers`,
   );
 
-  /** Per-provider batch entries collected from concurrent calls; one entry per `ALL_PROVIDERS` member. */
+  /**
+   * Per-provider batch entries collected from concurrent calls; one entry per `ALL_PROVIDERS` member.
+   */
   const results = await Promise.all(
     ALL_PROVIDERS.map(async function embedBatchWithProvider(provider,) {
-      /** Single-provider batch result; paired with the provider name in the returned entry. */
+      /**
+       * Single-provider batch result; paired with the provider name in the returned entry.
+       */
       const result = await embedBatch({
         inputs,
         config: { provider, },

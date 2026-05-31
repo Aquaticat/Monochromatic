@@ -10,17 +10,23 @@ import type {
   Message,
 } from './types.ts';
 
-/** Response shape of `/v1/chat/completions`. */
+/**
+ * Response shape of `/v1/chat/completions`.
+ */
 type ChatCompletionResponse = {
   choices: readonly {
     message: { content: string | null; };
   }[];
 };
 
-/** Default sampling temperature when callers do not supply one. */
+/**
+ * Default sampling temperature when callers do not supply one.
+ */
 const DEFAULT_TEMPERATURE = 0.7;
 
-/** Maximum body snippet length included in error messages on non-2xx responses. */
+/**
+ * Maximum body snippet length included in error messages on non-2xx responses.
+ */
 const ERROR_BODY_PREVIEW_CHARS = 500;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the function only reads. */
@@ -59,22 +65,30 @@ export async function chatOpenAICompatible(
     opts: ChatOptions;
   },
 ): Promise<string> {
-  /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
+  /**
+   * Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly.
+   */
   const trimmedBase = baseUrl.endsWith('/',)
     ? baseUrl.slice(
       0,
       -1,
     )
     : baseUrl;
-  /** Full chat-completions endpoint URL built from the provider base URL. */
+  /**
+   * Full chat-completions endpoint URL built from the provider base URL.
+   */
   const url = `${trimmedBase}/chat/completions`;
-  /** Request headers: JSON content-type, bearer auth, plus provider extras. */
+  /**
+   * Request headers: JSON content-type, bearer auth, plus provider extras.
+   */
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     authorization: `Bearer ${opts.apiKey}`,
     ...extraHeaders,
   };
-  /** Outgoing JSON payload (model, messages, temperature, optional JSON format). */
+  /**
+   * Outgoing JSON payload (model, messages, temperature, optional JSON format).
+   */
   const body: Record<string, unknown> = {
     model: opts.model,
     messages: opts.messages
@@ -95,7 +109,9 @@ export async function chatOpenAICompatible(
   if (opts.expectJson
     === true)
     body.response_format = { type: 'json_object', };
-  /** Raw fetch response so status can gate the JSON read. */
+  /**
+   * Raw fetch response so status can gate the JSON read.
+   */
   const res = await fetch(
     url,
     {
@@ -107,7 +123,9 @@ export async function chatOpenAICompatible(
     },
   );
   if (!res.ok) {
-    /** Best-effort error-body snippet included in the thrown message. */
+    /**
+     * Best-effort error-body snippet included in the thrown message.
+     */
     const text = await (async function safeText(): Promise<string> {
       try {
         return await res.text();
@@ -130,10 +148,14 @@ export async function chatOpenAICompatible(
    * treat fields defensively (`choices[0]?.message.content ?? ''`).
    */
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- documented provider response shape, narrowed at the seam */
-  /** Parsed chat-completions payload, narrowed to the fields we read. */
+  /**
+   * Parsed chat-completions payload, narrowed to the fields we read.
+   */
   const json = await res.json() as ChatCompletionResponse;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-  /** First choice's assistant content, defaulting to empty when missing. */
+  /**
+   * First choice's assistant content, defaulting to empty when missing.
+   */
   const content = json.choices[0]
     ?.message
     .content

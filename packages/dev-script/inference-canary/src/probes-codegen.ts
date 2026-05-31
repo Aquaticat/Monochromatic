@@ -13,7 +13,9 @@ import { taskScheduler, } from './codegen/task-scheduler.ts';
 
 import type { Probe, } from './probes.ts';
 
-/** All probes including slow ones (--slow flag) */
+/**
+ * All probes including slow ones (--slow flag)
+ */
 export const codeGenProbesAll: readonly Probe[] = [
   csvRfc4180,
   expressionEvaluator,
@@ -23,7 +25,9 @@ export const codeGenProbesAll: readonly Probe[] = [
   stakInterpreter,
 ];
 
-/** Fast probes only (default) -- excludes slow probes like task-scheduler */
+/**
+ * Fast probes only (default) -- excludes slow probes like task-scheduler
+ */
 export const codeGenProbes: readonly Probe[] = codeGenProbesAll.filter(
   function isFast(probe,): boolean {
     return probe.slow

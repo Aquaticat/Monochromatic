@@ -43,7 +43,9 @@ export function namePage(
     readonly canonicalUrl: string;
   },
 ): string {
-  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
+  /**
+   * Main element tree composed before the page layout wraps it with `<head>` and friends.
+   */
   const content = h({
     tag: 'main',
     children: [
@@ -70,20 +72,28 @@ export function namePage(
     ],
   },);
 
-  /** Default to the first available translation's language, falling back to 'en'. */
+  /**
+   * Default to the first available translation's language, falling back to 'en'.
+   */
   const [firstPost,] = posts;
-  /** Resolved page locale used for head meta plus the lang switcher. */
+  /**
+   * Resolved page locale used for head meta plus the lang switcher.
+   */
   const lang: Locales = (firstPost !== undefined) && isLocale(firstPost.lang,)
     ? firstPost.lang
     : 'en';
 
-  /** Use the first post's description when available, otherwise the slug name. */
+  /**
+   * Use the first post's description when available, otherwise the slug name.
+   */
   const description = firstPost !== undefined
     ? firstPost.data
       .description
     : name;
 
-  /** Locales in which this slug actually has a translation. */
+  /**
+   * Locales in which this slug actually has a translation.
+   */
   const availableInLangs: readonly Locales[] = posts.map(function pickLang(p,) {
     return p.lang;
   },);

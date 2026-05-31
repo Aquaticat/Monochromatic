@@ -57,7 +57,9 @@ function shouldStripLine(line: string,): boolean {
 
 //region Character collapsing
 
-/** Minimum consecutive identical non-word, non-whitespace characters before collapsing. */
+/**
+ * Minimum consecutive identical non-word, non-whitespace characters before collapsing.
+ */
 const COLLAPSE_THRESHOLD = 10;
 
 /**
@@ -97,27 +99,35 @@ function isCollapseCandidate(c: string,): boolean {
  * ```
  */
 function collapseRepeatedChars(line: string,): string {
-  /** Output segments, joined once at the end so no intermediate string is recopied per character. */
+  /**
+   * Output segments, joined once at the end so no intermediate string is recopied per character.
+   */
   const parts: string[] = [];
   // Single forward pass; `idx` jumps by whole runs, so the stride is variable
   // and the update happens in the body rather than a fixed `for` step.
   for (let idx = 0; idx < line
     .length;) {
-    /** Character under the cursor; gates whether a run is even considered. */
+    /**
+     * Character under the cursor; gates whether a run is even considered.
+     */
     const c = line.charAt(idx,);
     if (!isCollapseCandidate(c,)) {
       parts.push(c,);
       idx += 1;
       continue;
     }
-    /** Exclusive end of the current run of `c`, advanced by a linear scan. */
+    /**
+     * Exclusive end of the current run of `c`, advanced by a linear scan.
+     */
     let runEnd = idx + 1;
     while ((runEnd < line
       .length) && (line.charAt(runEnd,)
         === c)) {
       runEnd += 1;
     }
-    /** Length of the current run; gates the collapse vs. emit-verbatim choice. */
+    /**
+     * Length of the current run; gates the collapse vs. emit-verbatim choice.
+     */
     const runLength = runEnd - idx;
     if (runLength >= COLLAPSE_THRESHOLD) {
       parts.push(`${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength} repeated characters)`,);

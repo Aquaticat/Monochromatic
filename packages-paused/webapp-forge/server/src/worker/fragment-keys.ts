@@ -24,10 +24,14 @@
  * its resource family.
  */
 
-/** Sentinel used for the "any" filter facet (no label filter applied). */
+/**
+ * Sentinel used for the "any" filter facet (no label filter applied).
+ */
 export const ANY_LABEL = '*' as const;
 
-/** Allowed values for the issue state facet. */
+/**
+ * Allowed values for the issue state facet.
+ */
 export type IssueStateFacet = 'open' | 'closed';
 
 /**

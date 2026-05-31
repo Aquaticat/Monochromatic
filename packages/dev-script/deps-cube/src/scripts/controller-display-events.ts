@@ -25,7 +25,9 @@ import { defaultState, } from './state.ts';
 
 //region Types
 
-/** Display-toggle boolean keys controlled by checkboxes. */
+/**
+ * Display-toggle boolean keys controlled by checkboxes.
+ */
 type CheckboxDisplayKey = 'showWireframe' | 'showThresholdPlanes' | 'showAxisLabels'
   | 'showUnknownCluster';
 
@@ -63,7 +65,9 @@ function bindCheckbox(
     commit: Commit;
   },
 ): void {
-  /** Checkbox `<input>` resolved by id; `change` event drives bound display toggle. */
+  /**
+   * Checkbox `<input>` resolved by id; `change` event drives bound display toggle.
+   */
   const input = elInput(id,);
   input.addEventListener(
     'change',
@@ -135,12 +139,16 @@ export function wireDisplay(
     session,
     commit,
   },);
-  /** Name-labels `<select>`; controls how many probe names are rendered as text. */
+  /**
+   * Name-labels `<select>`; controls how many probe names are rendered as text.
+   */
   const nameLabels = elSelect('name-labels',);
   nameLabels.addEventListener(
     'change',
     function onChange() {
-      /** Raw `value` from select; narrowed against allowed name-label modes below. */
+      /**
+       * Raw `value` from select; narrowed against allowed name-label modes below.
+       */
       const raw = nameLabels.value;
       if ((raw !== 'none') && (raw !== 'topN')
         && (raw !== 'all'))
@@ -192,7 +200,9 @@ export function wireReset(
   button.addEventListener(
     'click',
     function onClick() {
-      /** Pristine state derived from source probes; replaces entire session state below. */
+      /**
+       * Pristine state derived from source probes; replaces entire session state below.
+       */
       const next = defaultState({
         probes,
       },);

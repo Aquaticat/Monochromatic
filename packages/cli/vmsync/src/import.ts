@@ -69,7 +69,9 @@ async function validateUefi(
     readonly format: string;
   },
 ): Promise<void> {
-  /** Tagged logger so UEFI-validation entries are scoped to `validateUefi` in the output. */
+  /**
+   * Tagged logger so UEFI-validation entries are scoped to `validateUefi` in the output.
+   */
   const rl = tagged({
     tag: validateUefi.name,
     l,
@@ -77,10 +79,14 @@ async function validateUefi(
   rl.info('checking for EFI System Partition',);
 
   await ensureNbdModule();
-  /** NBD device allocated for this inspection. */
+  /**
+   * NBD device allocated for this inspection.
+   */
   const device = await findFreeNbdDevice();
 
-  /** Auto-disposed NBD connection; bound for its side effect of holding the export open. */
+  /**
+   * Auto-disposed NBD connection; bound for its side effect of holding the export open.
+   */
   await using _conn = await connectDisposable({
     imagePath,
     device,
@@ -88,7 +94,9 @@ async function validateUefi(
     format,
   },);
 
-  /** fdisk output listing partition types. */
+  /**
+   * fdisk output listing partition types.
+   */
   const fdiskOutput = await spawn({
     command: 'fdisk',
     args: [
@@ -146,11 +154,17 @@ function isNameChar(c: string,): boolean {
  * ```
  */
 export function nameFromPath(imagePath: string,): string {
-  /** File-name portion of the path; the input we sanitise. */
+  /**
+   * File-name portion of the path; the input we sanitise.
+   */
   const base = basename(imagePath,);
-  /** Position of the extension separator; `<= 0` means no extension to strip. */
+  /**
+   * Position of the extension separator; `<= 0` means no extension to strip.
+   */
   const dotIdx = base.lastIndexOf('.',);
-  /** Base name with the last extension dropped, or the base itself when no dot is found. */
+  /**
+   * Base name with the last extension dropped, or the base itself when no dot is found.
+   */
   const noExt = (dotIdx <= 0)
     ? base
     : base.slice(
@@ -164,7 +178,9 @@ export function nameFromPath(imagePath: string,): string {
         _: undefined,
         idx: number,
       ): string {
-        /** Char being inspected at this index; replaced when disallowed. */
+        /**
+         * Char being inspected at this index; replaced when disallowed.
+         */
         const c = noExt.charAt(idx,);
         return isNameChar(c,)
           ? c
@@ -203,17 +219,23 @@ export async function importImage(
     readonly name?: string;
   },
 ): Promise<void> {
-  /** Tagged logger so import entries are scoped to `importImage` in the output. */
+  /**
+   * Tagged logger so import entries are scoped to `importImage` in the output.
+   */
   const rl = tagged({
     tag: importImage.name,
     l,
   },);
 
-  /** Resolved absolute path to the source image. */
+  /**
+   * Resolved absolute path to the source image.
+   */
   const absPath = resolve(imagePath,);
   rl.info(`importing ${absPath}`,);
 
-  /** Image metadata from qemu-img. */
+  /**
+   * Image metadata from qemu-img.
+   */
   const info = await imageInfo(absPath,);
   rl.info(
     `detected format: ${info.format}, virtual size: ${
@@ -226,23 +248,31 @@ export async function importImage(
     format: info.format,
   },);
 
-  /** Final VM name, validated for safe characters. */
+  /**
+   * Final VM name, validated for safe characters.
+   */
   const vmName = name ?? nameFromPath(absPath,);
   validateName(vmName,);
 
-  /** Directory where managed images are stored. */
+  /**
+   * Directory where managed images are stored.
+   */
   const dir = vmDir(vmName,);
   await mkdir(
     dir,
     { recursive: true, },
   );
 
-  /** Target path for the KVM format. */
+  /**
+   * Target path for the KVM format.
+   */
   const qcow2Path = join(
     dir,
     QCOW2_FILENAME,
   );
-  /** Target path for the Hyper-V format. */
+  /**
+   * Target path for the Hyper-V format.
+   */
   const vhdxPath = join(
     dir,
     VHDX_FILENAME,
@@ -263,13 +293,17 @@ export async function importImage(
   //region Compute checksums and write config
 
   rl.info('computing checksums',);
-  /** SHA-256 checksums for both managed formats. */
+  /**
+   * SHA-256 checksums for both managed formats.
+   */
   const [qcow2Hash, vhdxHash,] = await Promise.all([
     checksum(qcow2Path,),
     checksum(vhdxPath,),
   ],);
 
-  /** Initial VM configuration. */
+  /**
+   * Initial VM configuration.
+   */
   const config: VmsyncConfig = {
     name: vmName,
     importedFrom: absPath,

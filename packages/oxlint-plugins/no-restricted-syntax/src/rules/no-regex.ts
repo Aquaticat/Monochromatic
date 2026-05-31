@@ -7,10 +7,14 @@ import type {
 
 //region Constants
 
-/** Global constructor name used by both `new RegExp()` and `RegExp()`. */
+/**
+ * Global constructor name used by both `new RegExp()` and `RegExp()`.
+ */
 const REGEXP_CONSTRUCTOR_NAME = 'RegExp';
 
-/** String methods whose first argument accepts a regular expression. */
+/**
+ * String methods whose first argument accepts a regular expression.
+ */
 const REGEX_ACCEPTING_STRING_METHODS = [
   'match',
   'matchAll',
@@ -179,13 +183,17 @@ function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpressi
     .type
     !== 'MemberExpression')
     return false;
-  /** Method name resolved from static or string-literal member syntax. */
+  /**
+   * Method name resolved from static or string-literal member syntax.
+   */
   const methodName = getStaticMethodName({ node: node.callee, },);
   if ((typeof methodName) === 'symbol')
     return false;
   if (!isRegexAcceptingStringMethod({ methodName, },))
     return false;
-  /** First call argument; only this position accepts regex for targeted methods. */
+  /**
+   * First call argument; only this position accepts regex for targeted methods.
+   */
   const [firstArgument,] = node.arguments;
   if (firstArgument === undefined)
     return false;
@@ -209,7 +217,9 @@ function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression
     .type
     !== 'MemberExpression')
     return 'unknown';
-  /** Static method name, or the sentinel when the member is computed dynamically. */
+  /**
+   * Static method name, or the sentinel when the member is computed dynamically.
+   */
   const methodName = getStaticMethodName({ node: node.callee, },);
   if ((typeof methodName) === 'symbol')
     return 'unknown';
@@ -230,7 +240,9 @@ function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression
  * ```
  */
 function isCoveredByParentRegexDiagnostic({ node, }: { readonly node: ESTree.Node; },): boolean {
-  /** Parent expression that may own the more specific diagnostic. */
+  /**
+   * Parent expression that may own the more specific diagnostic.
+   */
   const { parent, } = node;
   if (parent === null)
     return false;

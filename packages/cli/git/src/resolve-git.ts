@@ -58,7 +58,9 @@ type ResolveGitOptions = {
  */
 async function isShimForSelf(candidatePath: string,): Promise<boolean> {
   try {
-    /** Raw file bytes decoded as UTF-8; scanned below for self-shim markers. */
+    /**
+     * Raw file bytes decoded as UTF-8; scanned below for self-shim markers.
+     */
     const content = await readFile(
       candidatePath,
       'utf8',
@@ -94,17 +96,23 @@ export async function resolveGit({
     .PATH
     ?? '',
 }: ResolveGitOptions = {},): Promise<string> {
-  /** Tagged logger for git binary resolution. */
+  /**
+   * Tagged logger for git binary resolution.
+   */
   const rl = tagged({
     tag: resolveGit.name,
     l,
   },);
 
-  /** Individual PATH entries, scanned in order so the first executable git wins. */
+  /**
+   * Individual PATH entries, scanned in order so the first executable git wins.
+   */
   const pathDirs = pathEnv.split(delimiter,);
 
   for (const dir of pathDirs) {
-    /** Candidate git binary path in this PATH entry. */
+    /**
+     * Candidate git binary path in this PATH entry.
+     */
     const candidate = join(
       dir,
       'git',

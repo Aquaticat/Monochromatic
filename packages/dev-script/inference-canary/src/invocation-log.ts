@@ -34,39 +34,69 @@ import { join, } from 'node:path';
 
 import { PACKAGE_DIR, } from './paths.ts';
 
-/** A single frame in the parent-process chain walked from /proc. */
+/**
+ * A single frame in the parent-process chain walked from /proc.
+ */
 type ProcessFrame = {
-  /** Process ID at this level of the chain. */
+  /**
+   * Process ID at this level of the chain.
+   */
   readonly pid: number;
-  /** Resolved /proc/PID/exe symlink (e.g. /usr/bin/bun); empty string if unreadable. */
+  /**
+   * Resolved /proc/PID/exe symlink (e.g. /usr/bin/bun); empty string if unreadable.
+   */
   readonly exe: string;
-  /** Space-separated argv from /proc/PID/cmdline; empty when unreadable. */
+  /**
+   * Space-separated argv from /proc/PID/cmdline; empty when unreadable.
+   */
   readonly cmdline: string;
-  /** Parent PID parsed from /proc/PID/status; 0 at root or when unreadable. */
+  /**
+   * Parent PID parsed from /proc/PID/status; 0 at root or when unreadable.
+   */
   readonly ppid: number;
 };
 
-/** Full invocation provenance record written as one JSONL line. */
+/**
+ * Full invocation provenance record written as one JSONL line.
+ */
 type InvocationRecord = {
-  /** ISO 8601 UTC timestamp at startup. */
+  /**
+   * ISO 8601 UTC timestamp at startup.
+   */
   readonly timestamp: string;
-  /** This process's PID. */
+  /**
+   * This process's PID.
+   */
   readonly pid: number;
-  /** This process's parent PID. */
+  /**
+   * This process's parent PID.
+   */
   readonly ppid: number;
-  /** Resolved /proc/self/exe symlink; empty string if unreadable. */
+  /**
+   * Resolved /proc/self/exe symlink; empty string if unreadable.
+   */
   readonly exe: string;
-  /** Working directory at startup. */
+  /**
+   * Working directory at startup.
+   */
   readonly cwd: string;
-  /** Full argv as launched. */
+  /**
+   * Full argv as launched.
+   */
   readonly argv: readonly string[];
-  /** sha256 of sorted env entries; secret-named keys hash length only. */
+  /**
+   * sha256 of sorted env entries; secret-named keys hash length only.
+   */
   readonly envHash: string;
-  /** Parent chain walked from `ppid` until pid 1, unreadable, or depth limit. */
+  /**
+   * Parent chain walked from `ppid` until pid 1, unreadable, or depth limit.
+   */
   readonly parentChain: readonly ProcessFrame[];
 };
 
-/** Upper-cased substrings whose presence in an env-var key marks the value as secret. */
+/**
+ * Upper-cased substrings whose presence in an env-var key marks the value as secret.
+ */
 const SECRET_KEY_MARKERS: readonly string[] = [
   'KEY',
   'TOKEN',
@@ -88,14 +118,18 @@ const SECRET_KEY_MARKERS: readonly string[] = [
  * @returns whether the value should be hashed by length rather than verbatim
  */
 function isSecretKey(key: string,): boolean {
-  /** Upper-cased key so the marker check matches the prior `/.../i` flag. */
+  /**
+   * Upper-cased key so the marker check matches the prior `/.../i` flag.
+   */
   const upper = key.toUpperCase();
   return SECRET_KEY_MARKERS.some(function carriesMarker(marker,): boolean {
     return upper.includes(marker,);
   },);
 }
 
-/** Maximum depth to walk the parent chain before giving up. */
+/**
+ * Maximum depth to walk the parent chain before giving up.
+ */
 const PARENT_CHAIN_MAX_DEPTH = 32;
 
 /**
@@ -165,7 +199,9 @@ function readProcLink(
 function parsePpid(statusContent: string,): number {
   if (statusContent === '')
     return 0;
-  /** First `PPid:` line from /proc/PID/status, if any; bare `find` returns undefined when missing. */
+  /**
+   * First `PPid:` line from /proc/PID/status, if any; bare `find` returns undefined when missing.
+   */
   const ppidLine = statusContent
     .split('\n',)
     .find(function isPpidLine(line,): boolean {
@@ -173,7 +209,9 @@ function parsePpid(statusContent: string,): number {
     },);
   if (ppidLine === undefined)
     return 0;
-  /** Parsed integer ppid; falls back to 0 below when /proc emits a non-numeric value. */
+  /**
+   * Parsed integer ppid; falls back to 0 below when /proc emits a non-numeric value.
+   */
   const num = Number.parseInt(
     ppidLine.slice('PPid:'.length,)
       .trim(),
@@ -190,31 +228,41 @@ function parsePpid(statusContent: string,): number {
  * @returns single-frame array, or empty array when the process is gone or unreadable
  */
 function readProcessFrame(pid: number,): readonly ProcessFrame[] {
-  /** Raw /proc/PID/status text; empty short-circuits the rest of the frame when the process is gone. */
+  /**
+   * Raw /proc/PID/status text; empty short-circuits the rest of the frame when the process is gone.
+   */
   const status = readProcFile({
     pid,
     name: 'status',
   },);
   if (status === '')
     return [];
-  /** Raw cmdline buffer with NUL separators; empty string when readable but blank (kernel threads) or unreadable. */
+  /**
+   * Raw cmdline buffer with NUL separators; empty string when readable but blank (kernel threads) or unreadable.
+   */
   const cmdlineRaw = readProcFile({
     pid,
     name: 'cmdline',
   },);
-  /** Human-readable cmdline with NULs replaced by spaces and trailing NUL removed. */
+  /**
+   * Human-readable cmdline with NULs replaced by spaces and trailing NUL removed.
+   */
   const cmdline = cmdlineRaw
     .replaceAll(
       '\0',
       ' ',
     )
     .trimEnd();
-  /** Resolved /proc/PID/exe symlink target; empty string when not permitted or when exe was unlinked. */
+  /**
+   * Resolved /proc/PID/exe symlink target; empty string when not permitted or when exe was unlinked.
+   */
   const exe = readProcLink({
     pid,
     name: 'exe',
   },);
-  /** Parent PID extracted from the status text; 0 means "no parent / unparseable". */
+  /**
+   * Parent PID extracted from the status text; 0 means "no parent / unparseable".
+   */
   const ppid = parsePpid(status,);
   return [{
     pid,
@@ -245,7 +293,9 @@ function walkParentChain(
 ): ProcessFrame[] {
   if (remaining <= 0)
     return [];
-  /** Current frame of the parent chain; an empty array terminates the walk on read failure. */
+  /**
+   * Current frame of the parent chain; an empty array terminates the walk on read failure.
+   */
   const [frame,] = readProcessFrame(pid,);
   if (frame === undefined)
     return [];
@@ -272,19 +322,25 @@ function walkParentChain(
  * @returns `sha256:<hex>` digest string
  */
 function hashEnvironment(env: NodeJS.ProcessEnv,): string {
-  /** Sorted `key=value\n` lines; sorting makes the hash stable across env-iteration order. */
+  /**
+   * Sorted `key=value\n` lines; sorting makes the hash stable across env-iteration order.
+   */
   const lines = Object
     .keys(env,)
     .toSorted()
     .map(function envLine(key,): string {
-      /** Env value for `key`; defaults to '' so unset keys still hash deterministically. */
+      /**
+       * Env value for `key`; defaults to '' so unset keys still hash deterministically.
+       */
       const value = env[key]
         ?? '';
       return isSecretKey(key,)
         ? `${key}=<len:${String(value.length,)}>\n`
         : `${key}=${value}\n`;
     },);
-  /** Streaming sha256 instance; updated with concatenated lines and finalised below. */
+  /**
+   * Streaming sha256 instance; updated with concatenated lines and finalised below.
+   */
   const hash = createHash('sha256',);
   hash.update(lines.join('',),);
   return `sha256:${hash.digest('hex',)}`;
@@ -314,7 +370,9 @@ function buildRecord(): InvocationRecord {
   };
 }
 
-/** Path to the JSONL log file at the package root. */
+/**
+ * Path to the JSONL log file at the package root.
+ */
 const logPath = join(
   PACKAGE_DIR,
   '_invocation-log.jsonl',

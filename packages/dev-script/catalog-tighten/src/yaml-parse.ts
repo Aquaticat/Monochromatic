@@ -58,15 +58,21 @@ export function collectIndentedBlock({
   readonly lines: readonly string[];
   readonly from: number;
 },): readonly string[] {
-  /** Indented entry lines collected in source order; returned as the block. */
+  /**
+   * Indented entry lines collected in source order; returned as the block.
+   */
   const block: string[] = [];
   for (const line of lines.slice(from,)) {
-    /** First character of the line; non-space/tab ends the block. */
+    /**
+     * First character of the line; non-space/tab ends the block.
+     */
     const first = line.charAt(0,);
     if ((line.length
       === 0) || (!isSpaceOrTab(first,)))
       break;
-    /** Line body after the leading indent; must be non-empty to count. */
+    /**
+     * Line body after the leading indent; must be non-empty to count.
+     */
     const rest = line.slice(1,);
     if (rest.length
       === 0)
@@ -81,9 +87,13 @@ export function collectIndentedBlock({
  * lines that do not match the expected indented `key: value` form.
  */
 type CatalogEntry = {
-  /** Unquoted key. */
+  /**
+   * Unquoted key.
+   */
   key: string;
-  /** Unquoted value. */
+  /**
+   * Unquoted value.
+   */
   value: string;
 };
 
@@ -124,29 +134,41 @@ function unquote(s: string,): string {
  * @returns parsed entry, or {@link MALFORMED_ENTRY} when the line shape is unexpected
  */
 function parseCatalogEntry(line: string,): CatalogEntry | typeof MALFORMED_ENTRY {
-  /** Whitespace-trimmed line; surrounding indentation and trailing CR/space are dropped. */
+  /**
+   * Whitespace-trimmed line; surrounding indentation and trailing CR/space are dropped.
+   */
   const trimmed = line.trim();
   if (trimmed.length
     === 0)
     return MALFORMED_ENTRY;
-  /** Position of the colon separator; `-1` indicates a malformed line. */
+  /**
+   * Position of the colon separator; `-1` indicates a malformed line.
+   */
   const colonIdx = trimmed.indexOf(':',);
   if (colonIdx <= 0)
     return MALFORMED_ENTRY;
-  /** Raw key segment before the colon, trailing whitespace stripped. */
+  /**
+   * Raw key segment before the colon, trailing whitespace stripped.
+   */
   const rawKey = trimmed
     .slice(
       0,
       colonIdx,
     )
     .trimEnd();
-  /** Raw value segment after the colon, surrounding whitespace stripped. */
+  /**
+   * Raw value segment after the colon, surrounding whitespace stripped.
+   */
   const rawValue = trimmed
     .slice(colonIdx + 1,)
     .trim();
-  /** Key with one layer of wrapping quotes removed if present. */
+  /**
+   * Key with one layer of wrapping quotes removed if present.
+   */
   const key = unquote(rawKey,);
-  /** Value with one layer of wrapping quotes removed if present. */
+  /**
+   * Value with one layer of wrapping quotes removed if present.
+   */
   const value = unquote(rawValue,);
   if ((key.length
     === 0) || (value.length
@@ -174,28 +196,38 @@ function parseCatalogEntry(line: string,): CatalogEntry | typeof MALFORMED_ENTRY
  * ```
  */
 export function parseCatalogFromYaml(content: string,): Record<string, string> {
-  /** Content split into lines; preserves the file's order so the regex anchor semantics translate cleanly. */
+  /**
+   * Content split into lines; preserves the file's order so the regex anchor semantics translate cleanly.
+   */
   const lines = content.split('\n',);
-  /** Index of the first line whose trimmed-right form is exactly `catalog:`; `-1` ends the search. */
+  /**
+   * Index of the first line whose trimmed-right form is exactly `catalog:`; `-1` ends the search.
+   */
   const headerIdx = lines.findIndex(function isCatalogHeader(line,): boolean {
     return line.trimEnd()
       === 'catalog:';
   },);
   if (headerIdx === (-1))
     return {};
-  /** Indented body of the `catalog:` block; each line is one `name: range` entry. */
+  /**
+   * Indented body of the `catalog:` block; each line is one `name: range` entry.
+   */
   const block = collectIndentedBlock({
     lines,
     from: headerIdx + 1,
   },);
-  /** Seed record mutated in place as each parsed entry is appended; typed so `acc` infers a writable map. */
+  /**
+   * Seed record mutated in place as each parsed entry is appended; typed so `acc` infers a writable map.
+   */
   const seed: Record<string, string> = {};
   return block.reduce(
     function appendEntry(
       acc,
       line,
     ): Record<string, string> {
-      /** Parsed entry; `MALFORMED_ENTRY` when the line shape does not match the catalog convention. */
+      /**
+       * Parsed entry; `MALFORMED_ENTRY` when the line shape does not match the catalog convention.
+       */
       const entry = parseCatalogEntry(line,);
       if (entry === MALFORMED_ENTRY)
         return acc;

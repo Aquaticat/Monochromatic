@@ -53,7 +53,9 @@ async function findBudgetModel(
     readonly options?: BudgetModelOptions;
   },
 ): Promise<BudgetModel> {
-  /** Options with defaults applied so strategy branches read fields unconditionally. */
+  /**
+   * Options with defaults applied so strategy branches read fields unconditionally.
+   */
   const opts: BudgetModelOptions = options ?? { ...JUDGE_MODEL_DEFAULTS, };
 
   if (opts.modelOverride
@@ -86,7 +88,9 @@ async function findBudgetModel(
       === null))
     throw new NoBudgetModelError('no active model set',);
 
-  /** Active model handed in by host so cost-ratio gate has a reference point. */
+  /**
+   * Active model handed in by host so cost-ratio gate has a reference point.
+   */
   const activeModel = ctx.model;
 
   return await selectBudgetModel({

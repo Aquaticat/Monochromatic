@@ -34,13 +34,21 @@ import type {
  * ```
  */
 type BuildFixPromptImplOptions = {
-  /** Probe configuration with verify, perfTest, and customizeFixPrompt hooks */
+  /**
+   * Probe configuration with verify, perfTest, and customizeFixPrompt hooks
+   */
   readonly config: CodeGenProbeConfig;
-  /** Raw model response text */
+  /**
+   * Raw model response text
+   */
   readonly response: string;
-  /** Scoring context with model label for cache lookups */
+  /**
+   * Scoring context with model label for cache lookups
+   */
   readonly context: ScoreContext;
-  /** Shared per-model caches for lint, container, perf, and additional runs (read-only) */
+  /**
+   * Shared per-model caches for lint, container, perf, and additional runs (read-only)
+   */
   readonly caches: ReadonlyProbeFactoryCaches;
 };
 
@@ -73,13 +81,19 @@ export async function buildFixPromptImpl({
   context,
   caches,
 }: BuildFixPromptImplOptions,): Promise<string> {
-  /** Reused lint result for this model from the scoring phase, when present. */
+  /**
+   * Reused lint result for this model from the scoring phase, when present.
+   */
   const priorLint = caches.lint
     .get(context.label,);
-  /** Reused container result for this model from the scoring phase, when present. */
+  /**
+   * Reused container result for this model from the scoring phase, when present.
+   */
   const priorContainer = caches.container
     .get(context.label,);
-  /** Base fix prompt from standard lint/runtime diagnostics */
+  /**
+   * Base fix prompt from standard lint/runtime diagnostics
+   */
   const base = await buildCodeGenFixPrompt({
     response,
     context,
@@ -88,7 +102,9 @@ export async function buildFixPromptImpl({
   },);
 
   // Append additional run diagnostics when runs failed or produced incorrect output
-  /** Fix prompt with additional run failure diagnostics appended */
+  /**
+   * Fix prompt with additional run failure diagnostics appended
+   */
   const withAdditional = appendAdditionalRunDiagnostics({
     base,
     runs: config.additionalRuns
@@ -99,7 +115,9 @@ export async function buildFixPromptImpl({
   },);
 
   // Apply probe-specific customization (e.g. constraint violation messages)
-  /** Fix prompt after probe-specific customizeFixPrompt hook */
+  /**
+   * Fix prompt after probe-specific customizeFixPrompt hook
+   */
   const customized = config.customizeFixPrompt
     !== undefined
     ? config.customizeFixPrompt(
@@ -112,12 +130,16 @@ export async function buildFixPromptImpl({
   if (config.perfTest
     === undefined)
     return customized;
-  /** Cached perf result for this model */
+  /**
+   * Cached perf result for this model
+   */
   const perf = caches.perf
     .get(context.label,);
   if (perf === undefined)
     return customized;
-  /** Formatted performance diagnostic text, empty string when perf was acceptable */
+  /**
+   * Formatted performance diagnostic text, empty string when perf was acceptable
+   */
   const perfDiag = buildPerfDiagnostic({
     perfResult: perf,
     config: config.perfTest,

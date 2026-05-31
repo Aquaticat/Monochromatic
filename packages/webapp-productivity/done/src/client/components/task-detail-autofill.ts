@@ -15,22 +15,32 @@ import {
   METADATA_UNSET,
 } from './task-detail-types.ts';
 
-/** Sentinel for "no debounce timer is scheduled". */
+/**
+ * Sentinel for "no debounce timer is scheduled".
+ */
 const NO_TIMER: unique symbol = Symbol('no-timer',);
 
-/** Sentinel for "no request is in flight". */
+/**
+ * Sentinel for "no request is in flight".
+ */
 const NO_ABORT: unique symbol = Symbol('no-abort',);
 
-/** Callback interface for the autofill controller to read and update the host component. */
+/**
+ * Callback interface for the autofill controller to read and update the host component.
+ */
 export type AutofillCallbacks = {
-  /** Returns current metadata values. */
+  /**
+   * Returns current metadata values.
+   */
   readonly getState: () => {
     readonly tags: readonly string[];
     readonly locations: readonly string[];
     readonly priority: TaskPriority | typeof METADATA_UNSET;
     readonly complexity: TaskComplexity | typeof METADATA_UNSET;
   };
-  /** Applies new metadata values; omitted fields are left unchanged. */
+  /**
+   * Applies new metadata values; omitted fields are left unchanged.
+   */
   readonly setState: (
     update: {
       readonly tags?: readonly string[];
@@ -39,19 +49,31 @@ export type AutofillCallbacks = {
       readonly complexity?: TaskComplexity;
     },
   ) => void;
-  /** Refreshes the pill display. */
+  /**
+   * Refreshes the pill display.
+   */
   readonly updateDisplay: () => void;
 };
 
-/** Public surface returned by `createAutofillController`. */
+/**
+ * Public surface returned by `createAutofillController`.
+ */
 export type AutofillController = {
-  /** Debounces an autofill request for the given title. */
+  /**
+   * Debounces an autofill request for the given title.
+   */
   readonly request: (title: string,) => void;
-  /** Whether an autofill request is currently in flight. */
+  /**
+   * Whether an autofill request is currently in flight.
+   */
   readonly loading: boolean;
-  /** Field names that were filled by the most recent AI suggestion. */
+  /**
+   * Field names that were filled by the most recent AI suggestion.
+   */
   readonly autofilled: ReadonlySet<string>;
-  /** Clears the autofilled-field tracking set and any pending request. */
+  /**
+   * Clears the autofilled-field tracking set and any pending request.
+   */
   readonly clearAutofilled: () => void;
 };
 
@@ -72,7 +94,9 @@ export type AutofillController = {
  * ```
  */
 export function createAutofillController(callbacks: AutofillCallbacks,): AutofillController {
-  /** Mutable controller state captured by the closures below. */
+  /**
+   * Mutable controller state captured by the closures below.
+   */
   const state: {
     readonly autofilled: Set<string>;
     loading: boolean;
@@ -91,14 +115,18 @@ export function createAutofillController(callbacks: AutofillCallbacks,): Autofil
    * @param title - Trimmed title text
    */
   async function fetchSuggestions(title: string,): Promise<void> {
-    /** Captured locally so the abort signal can be reused for the in-flight check and abort. */
+    /**
+     * Captured locally so the abort signal can be reused for the in-flight check and abort.
+     */
     const controller = new AbortController();
     state.abort = controller;
     state.loading = true;
     callbacks.updateDisplay();
 
     try {
-      /** Server response containing the AI-suggested metadata payload. */
+      /**
+       * Server response containing the AI-suggested metadata payload.
+       */
       const response = await fetch(
         '/api/ai/autofill',
         {
@@ -111,14 +139,20 @@ export function createAutofillController(callbacks: AutofillCallbacks,): Autofil
 
       if (response.ok) {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape enforced by the server endpoint contract */
-        /** Parsed autofill payload; shape is enforced by the server endpoint contract. */
+        /**
+         * Parsed autofill payload; shape is enforced by the server endpoint contract.
+         */
         const result = (await response.json()) as AutofillResult;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
         state.autofilled
           .clear();
-        /** Current field values from the host so empty-field merging can be done. */
+        /**
+         * Current field values from the host so empty-field merging can be done.
+         */
         const current = callbacks.getState();
-        /** Patch accumulating only fields that were empty before the AI suggestion. */
+        /**
+         * Patch accumulating only fields that were empty before the AI suggestion.
+         */
         const update: {
           tags?: readonly string[];
           locations?: readonly string[];
@@ -204,7 +238,9 @@ export function createAutofillController(callbacks: AutofillCallbacks,): Autofil
     );
   }
 
-  /** Clears the autofilled-field tracking set and cancels any pending request. */
+  /**
+   * Clears the autofilled-field tracking set and cancels any pending request.
+   */
   function clearAutofilled(): void {
     if (state.timer
       !== NO_TIMER) {
@@ -224,11 +260,15 @@ export function createAutofillController(callbacks: AutofillCallbacks,): Autofil
 
   return {
     request,
-    /** Whether an autofill request is currently in flight. */
+    /**
+     * Whether an autofill request is currently in flight.
+     */
     get loading(): boolean {
       return state.loading;
     },
-    /** Field names filled by the most recent AI suggestion. */
+    /**
+     * Field names filled by the most recent AI suggestion.
+     */
     get autofilled(): ReadonlySet<string> {
       return state.autofilled;
     },

@@ -68,14 +68,20 @@ export function computeLocalXBounds({
      * Parsed command list for this path, used to drive {@link resolveAbsolutePoints}.
      */
     const commands = parseSvgPathD(pathData.d,);
-    /** Absolute point coordinates for this path (H/V already expanded). */
+    /**
+     * Absolute point coordinates for this path (H/V already expanded).
+     */
     const points = resolveAbsolutePoints(commands,);
-    /** Half the stroke width: the amount each point's bounding box extends past the centreline. */
+    /**
+     * Half the stroke width: the amount each point's bounding box extends past the centreline.
+     */
     const halfStroke = pathData.strokeWidth
       / 2;
 
     points.forEach(function updateBounds([px,],) {
-      /** Point X translated into cell-local coordinates so bounds are independent of cell position. */
+      /**
+       * Point X translated into cell-local coordinates so bounds are independent of cell position.
+       */
       const localX = px - cellX;
       minX = Math.min(
         minX,

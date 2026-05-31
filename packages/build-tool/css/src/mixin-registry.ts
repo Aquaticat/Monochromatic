@@ -60,10 +60,14 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
       if (isAtRule(node,)
         && (node.name
           === 'apply')) {
-        /** Trimmed at-rule parameter identifying which mixin to inline */
+        /**
+         * Trimmed at-rule parameter identifying which mixin to inline
+         */
         const mixinName = node.params
           .trim();
-        /** Stored body nodes for the referenced mixin */
+        /**
+         * Stored body nodes for the referenced mixin
+         */
         const mixinNodes = mixins.get(mixinName,);
 
         if (mixinNodes === undefined)
@@ -71,7 +75,9 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
 
         if (mixinNodes.length
           > 0) {
-          /** Recursively expanded clones of the mixin body */
+          /**
+           * Recursively expanded clones of the mixin body
+           */
           const expanded = expandApplyInNodes(
             mixinNodes.map(function cloneChild(childNode,) {
               return childNode.clone();
@@ -82,7 +88,9 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
       }
       else if (('nodes' in node) && Array
         .isArray(node.nodes,)) {
-        /** Deep clone so mutations don't affect the original mixin registry */
+        /**
+         * Deep clone so mutations don't affect the original mixin registry
+         */
         const cloned = node.clone();
         cloned.nodes = expandApplyInNodes(node.nodes
           .map(function cloneChild(childNode,) {
@@ -119,13 +127,17 @@ function runSingleMixinPass(): boolean {
        * Result of recursively expanding any nested \@apply in this mixin's body.
        */
       const expanded = expandApplyInNodes(nodes,);
-      /** Serialized original body for change detection */
+      /**
+       * Serialized original body for change detection
+       */
       const originalStr = nodes
         .map(function nodeToString(node,) {
           return node.toString();
         },)
         .join('',);
-      /** Serialized expanded body for change detection */
+      /**
+       * Serialized expanded body for change detection
+       */
       const expandedStr = expanded
         .map(function nodeToString(node,) {
           return node.toString();

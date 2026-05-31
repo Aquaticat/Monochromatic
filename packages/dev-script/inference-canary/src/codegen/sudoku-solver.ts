@@ -20,7 +20,9 @@ import {
 
 //region Prompt: instructs the model to build a backtracking solver with --all support
 
-/** Prompt lines for the sudoku solver task */
+/**
+ * Prompt lines for the sudoku solver task
+ */
 const PROMPT = [
   'Write a TypeScript CLI that solves Sudoku puzzles read from stdin.',
   '',

@@ -17,7 +17,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for fullscreen module. */
+/**
+ * Tagged logger for fullscreen module.
+ */
 const fsLog = tagged({
   tag: 'fullscreen',
   l,
@@ -43,7 +45,9 @@ const FULLSCREEN_ICON_SVG =
  * ```
  */
 export function wireFullscreen({ appElement, }: { readonly appElement: HTMLElement; },): void {
-  /** Floating action button that enters fullscreen + keyboard lock when clicked. */
+  /**
+   * Floating action button that enters fullscreen + keyboard lock when clicked.
+   */
   const fab = document.createElement('button',);
   fab.type = 'button';
   fab.className = 'fullscreen-fab';

@@ -21,27 +21,41 @@ import {
   minTouchTarget,
 } from '../mixins.ts';
 
-/** Full percentage for inline-size. */
+/**
+ * Full percentage for inline-size.
+ */
 const FULL_PERCENT = 100;
 
-/** Minimum block-size for anchor link rows in rem. */
+/**
+ * Minimum block-size for anchor link rows in rem.
+ */
 const LINK_HEIGHT = 3;
 
-/** Font size for navigation links in rem. */
+/**
+ * Font size for navigation links in rem.
+ */
 const NAV_FONT_SIZE = 1 + ((1 / 2) / 2);
 
-/** Font weight for navigation text. */
+/**
+ * Font weight for navigation text.
+ */
 const FONT_WEIGHT_NORMAL = 400;
 
-/** Focus outline offset in rem. */
+/**
+ * Focus outline offset in rem.
+ */
 const FOCUS_OFFSET = -(1 / 2
   / 2
   / 2);
 
-/** Minimum block-size for the header bar in rem. */
+/**
+ * Minimum block-size for the header bar in rem.
+ */
 const HEADER_HEIGHT = 4;
 
-/** Compiled CSS rules for shared `<side-drawer>` navigation elements. */
+/**
+ * Compiled CSS rules for shared `<side-drawer>` navigation elements.
+ */
 export const SIDE_DRAWER_NAV_STYLES: string[] = [
   css({
     rule: '.divider',

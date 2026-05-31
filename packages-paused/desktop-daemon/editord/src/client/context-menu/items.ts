@@ -13,11 +13,17 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * When `defaultValue` is set, an inline text input appears next to the label.
  */
 export type ContextMenuItem = {
-  /** Display label for the menu item. */
+  /**
+   * Display label for the menu item.
+   */
   readonly label: string;
-  /** Callback invoked when the item is activated (click or Enter in input). */
+  /**
+   * Callback invoked when the item is activated (click or Enter in input).
+   */
   readonly action: (value?: string,) => void;
-  /** When set, renders an inline input pre-filled with this value. */
+  /**
+   * When set, renders an inline input pre-filled with this value.
+   */
   readonly defaultValue?: string;
 };
 
@@ -93,7 +99,9 @@ export function renderInputItem({
   readonly item: ContextMenuItem;
   readonly onActivate: (action: () => void,) => void;
 },): HTMLElement {
-  /** Text input element captured into a const so the keydown handler can read its value. */
+  /**
+   * Text input element captured into a const so the keydown handler can read its value.
+   */
   const input = h({
     tag: 'input',
     class: 'ctx-input',
@@ -107,7 +115,9 @@ export function renderInputItem({
         if (event.key
           === 'Enter') {
           event.preventDefault();
-          /** Trimmed input contents; Enter on empty value is a no-op. */
+          /**
+           * Trimmed input contents; Enter on empty value is a no-op.
+           */
           const { value, } = input;
           if (value !== '') {
             onActivate(function fireAction(): void {

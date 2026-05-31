@@ -10,13 +10,21 @@
 
 import type { Changeset, } from './changeset.ts';
 
-/** One piece in the table: a slice of either the original or add buffer. */
+/**
+ * One piece in the table: a slice of either the original or add buffer.
+ */
 export type Piece = {
-  /** Which backing buffer this slice points into. */
+  /**
+   * Which backing buffer this slice points into.
+   */
   readonly source: 'original' | 'add';
-  /** Inclusive start offset within the backing buffer. */
+  /**
+   * Inclusive start offset within the backing buffer.
+   */
   readonly start: number;
-  /** Length of the slice in characters. */
+  /**
+   * Length of the slice in characters.
+   */
   readonly length: number;
 };
 
@@ -27,13 +35,21 @@ export type Piece = {
  * long is the document".
  */
 export type Table = {
-  /** Immutable original document text. */
+  /**
+   * Immutable original document text.
+   */
   original: string;
-  /** Append-only buffer for inserts. */
+  /**
+   * Append-only buffer for inserts.
+   */
   add: string;
-  /** Ordered slices that compose the current document. */
+  /**
+   * Ordered slices that compose the current document.
+   */
   pieces: Piece[];
-  /** Cached sum of `pieces[i].length`. */
+  /**
+   * Cached sum of `pieces[i].length`.
+   */
   length: number;
 };
 
@@ -92,11 +108,15 @@ export function resetTable(
  * ```
  */
 export function materialise(input: { table: Table; },): string {
-  /** Accumulator for the materialised text; grows by `piece.length` per iteration. */
+  /**
+   * Accumulator for the materialised text; grows by `piece.length` per iteration.
+   */
   let out = '';
   for (const piece of input.table
     .pieces) {
-    /** Resolved backing buffer for this piece: `original` for source text, `add` for inserts. */
+    /**
+     * Resolved backing buffer for this piece: `original` for source text, `add` for inserts.
+     */
     const source = piece.source
       === 'original'
       ? input.table
@@ -134,7 +154,9 @@ export function substring(
     to: number;
   },
 ): string {
-  /** Clamped lower bound; protects against negative or beyond-end inputs. */
+  /**
+   * Clamped lower bound; protects against negative or beyond-end inputs.
+   */
   const lo = Math.max(
     0,
     Math.min(
@@ -143,7 +165,9 @@ export function substring(
         .length,
     ),
   );
-  /** Clamped upper bound; guaranteed to be at least `lo` so the slice is well-formed. */
+  /**
+   * Clamped upper bound; guaranteed to be at least `lo` so the slice is well-formed.
+   */
   const hi = Math.max(
     lo,
     Math.min(
@@ -154,13 +178,19 @@ export function substring(
   );
   if (lo === hi)
     return '';
-  /** Accumulator for the requested substring; grows piece by piece. */
+  /**
+   * Accumulator for the requested substring; grows piece by piece.
+   */
   let out = '';
-  /** Running document-relative offset; tracks each piece's start position. */
+  /**
+   * Running document-relative offset; tracks each piece's start position.
+   */
   let cursor = 0;
   for (const piece of input.table
     .pieces) {
-    /** End of the current piece in document space; used to skip pieces fully before `lo`. */
+    /**
+     * End of the current piece in document space; used to skip pieces fully before `lo`.
+     */
     const pieceEnd = cursor + piece
       .length;
     if (pieceEnd <= lo) {
@@ -169,17 +199,23 @@ export function substring(
     }
     if (cursor >= hi)
       break;
-    /** Local slice start inside the current piece, clamped to `0`. */
+    /**
+     * Local slice start inside the current piece, clamped to `0`.
+     */
     const sliceFrom = Math.max(
       0,
       lo - cursor,
     );
-    /** Local slice end inside the current piece, clamped to `piece.length`. */
+    /**
+     * Local slice end inside the current piece, clamped to `piece.length`.
+     */
     const sliceTo = Math.min(
       piece.length,
       hi - cursor,
     );
-    /** Resolved backing buffer for this piece (`original` or `add`). */
+    /**
+     * Resolved backing buffer for this piece (`original` or `add`).
+     */
     const source = piece.source
       === 'original'
       ? input.table
@@ -229,7 +265,9 @@ export function splitAt(
       .pieces
       .length;
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor advanced per iteration: `cursor` tracks the running document offset for the piece-table walk and is reassigned at the end of every loop body that doesn't return */
-  /** Running document offset that tracks the start of `piece` per iteration. */
+  /**
+   * Running document offset that tracks the start of `piece` per iteration.
+   */
   let cursor = 0;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   for (let index = 0; index
@@ -237,12 +275,16 @@ export function splitAt(
     .table
     .pieces
     .length; index += 1) {
-    /** Currently-visited piece; null sentinel breaks the loop on sparse arrays. */
+    /**
+     * Currently-visited piece; null sentinel breaks the loop on sparse arrays.
+     */
     const piece = input.table
       .pieces[index];
     if (piece === undefined)
       break;
-    /** End-of-piece offset used to decide whether the split lands inside this piece. */
+    /**
+     * End-of-piece offset used to decide whether the split lands inside this piece.
+     */
     const pieceEnd = cursor + piece
       .length;
     if (input.at
@@ -250,14 +292,18 @@ export function splitAt(
       return index;
     if (input.at
       < pieceEnd) {
-      /** Left half of the split; retains the original start and shortened length. */
+      /**
+       * Left half of the split; retains the original start and shortened length.
+       */
       const left: Piece = {
         source: piece.source,
         start: piece.start,
         length: input.at
           - cursor,
       };
-      /** Right half of the split; offsets adjusted so it picks up where `left` ends. */
+      /**
+       * Right half of the split; offsets adjusted so it picks up where `left` ends.
+       */
       const right: Piece = {
         source: piece.source,
         start: piece.start
@@ -311,7 +357,9 @@ export function applyToTable(
     changeset: Changeset;
   },
 ): Changeset {
-  /** Destructured up front so the apply body can reference `table` and `changeset` directly. */
+  /**
+   * Destructured up front so the apply body can reference `table` and `changeset` directly.
+   */
   const {
     table,
     changeset,
@@ -333,19 +381,25 @@ export function applyToTable(
     );
   }
 
-  /** Pre-mutation removed substring; needed because the inverse changeset re-inserts it on undo. */
+  /**
+   * Pre-mutation removed substring; needed because the inverse changeset re-inserts it on undo.
+   */
   const removed = substring({
     table,
     from: changeset.from,
     to: changeset.to,
   },);
 
-  /** Piece index at `changeset.from` after splitting; first piece to drop. */
+  /**
+   * Piece index at `changeset.from` after splitting; first piece to drop.
+   */
   const startIndex = splitAt({
     table,
     at: changeset.from,
   },);
-  /** Piece index at `changeset.to` after splitting; one past the last piece to drop. */
+  /**
+   * Piece index at `changeset.to` after splitting; one past the last piece to drop.
+   */
   const endIndex = splitAt({
     table,
     at: changeset.to,
@@ -359,7 +413,9 @@ export function applyToTable(
   if (changeset.insert
     .length
     > 0) {
-    /** Append-buffer offset of the inserted slice before extending `table.add`. */
+    /**
+     * Append-buffer offset of the inserted slice before extending `table.add`.
+     */
     const addStart = table.add
       .length;
     table.add += changeset.insert;

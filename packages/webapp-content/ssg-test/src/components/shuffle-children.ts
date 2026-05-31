@@ -34,7 +34,9 @@ import {
  * Props for {@link ShuffleChildren}.
  */
 type ShuffleChildrenProps = {
-  /** Direct children whose visual order is randomised on each render. */
+  /**
+   * Direct children whose visual order is randomised on each render.
+   */
   readonly children: unknown;
 };
 

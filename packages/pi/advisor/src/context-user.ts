@@ -35,7 +35,9 @@ export const NO_USER_PROMPT: unique symbol = Symbol('advisor/no-user-prompt',);
 export function latestUserPromptExcerpt(
   branch: readonly SessionEntry[],
 ): string | typeof NO_USER_PROMPT {
-  /** Latest user message entry, if present. */
+  /**
+   * Latest user message entry, if present.
+   */
   const latestUserEntry = branch
     .toReversed()
     .find(function findUserEntry(entry,) {
@@ -44,7 +46,9 @@ export function latestUserPromptExcerpt(
   if (latestUserEntry === undefined)
     return NO_USER_PROMPT;
 
-  /** Plain text extracted from user message content. */
+  /**
+   * Plain text extracted from user message content.
+   */
   const text = userMessageText(latestUserEntry.message
     .content,);
   return text.length

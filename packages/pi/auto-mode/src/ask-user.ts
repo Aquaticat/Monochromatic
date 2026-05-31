@@ -22,7 +22,9 @@ import {
   type VerdictData,
 } from './types.ts';
 
-/** Tagged logger for the ask-user module. */
+/**
+ * Tagged logger for the ask-user module.
+ */
 const l = tagged({
   tag: 'ask-user',
   l: parentLogger,
@@ -65,7 +67,9 @@ async function askUser(
     readonly reflectExplanationOnDeny?: boolean;
   },
 ): Promise<GuardDecision> {
-  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
+  /**
+   * Per-call sub-logger so log lines from this entry point carry the function name as a tag.
+   */
   const innerL = tagged({
     tag: askUser.name,
     l,
@@ -91,14 +95,18 @@ async function askUser(
   }
 
   innerL.debug(`prompting user for action: ${action}`,);
-  /** Multi-line prompt body shown to the user; first line is a header, last is the literal action. */
+  /**
+   * Multi-line prompt body shown to the user; first line is a header, last is the literal action.
+   */
   const lines = [
     "Command needs approval. Agent's explanation:",
     `> ${explanation}`,
     '',
     action,
   ];
-  /** Selected button label, used to dispatch between approve / deny / hard-stop branches below. */
+  /**
+   * Selected button label, used to dispatch between approve / deny / hard-stop branches below.
+   */
   const choice = await ctx.ui
     .select(
     lines.join('\n',),
@@ -191,7 +199,9 @@ function updateWidget(
     }[];
   },
 ): void {
-  /** Count of `denied` verdicts, surfaced in the widget summary line. */
+  /**
+   * Count of `denied` verdicts, surfaced in the widget summary line.
+   */
   const denied = verdicts
     .filter(
       function isDenied(v,) {

@@ -15,7 +15,9 @@ import {
 } from './task-card-helpers.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
-/** Sentinel returned by `getChipElement` when no chip matches the prefix. */
+/**
+ * Sentinel returned by `getChipElement` when no chip matches the prefix.
+ */
 const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
 
 /**
@@ -23,16 +25,24 @@ const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
  * Created programmatically via `createTaskCard()`, not placed in server HTML.
  */
 class TaskCard extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Task data to display, set via `configure()`; absent before configure. */
+  /**
+   * Task data to display, set via `configure()`; absent before configure.
+   */
   #task?: Task;
 
-  /** Interaction callbacks and display flags, set via `configure()`; absent before configure. */
+  /**
+   * Interaction callbacks and display flags, set via `configure()`; absent before configure.
+   */
   #options?: TaskCardOptions;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -72,18 +82,28 @@ class TaskCard extends HTMLElement {
     return CHIP_NOT_FOUND;
   }
 
-  /** Renders the card content (checkbox, title, chips) into the shadow root. */
+  /**
+   * Renders the card content (checkbox, title, chips) into the shadow root.
+   */
   #render(): void {
-    /** Snapshot of the configured task; early-returns below if not yet set. */
+    /**
+     * Snapshot of the configured task; early-returns below if not yet set.
+     */
     const task = this.#task;
-    /** Snapshot of the configured options; early-returns below if not yet set. */
+    /**
+     * Snapshot of the configured options; early-returns below if not yet set.
+     */
     const options = this.#options;
     if ((task === undefined) || (options === undefined))
       return;
 
-    /** Chip label strings built from the task fields. */
+    /**
+     * Chip label strings built from the task fields.
+     */
     const chipTexts = buildChipTexts(task,);
-    /** Chip DOM nodes mutated below when the blocked badge needs to be appended. */
+    /**
+     * Chip DOM nodes mutated below when the blocked badge needs to be appended.
+     */
     const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text,) {
       return h({
         tag: 'span',
@@ -176,7 +196,9 @@ export function createTaskCard({
   readonly options: TaskCardOptions;
 },): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard */
-  /** Live `TaskCard` instance so the imperative `configure()` API is reachable. */
+  /**
+   * Live `TaskCard` instance so the imperative `configure()` API is reachable.
+   */
   const card = document.createElement('task-card',) as TaskCard;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   card.configure(
@@ -203,7 +225,9 @@ export function formatRunningTrackedTime(task: Task,): string {
     === undefined)
     return formatTrackedTime(task.trackedTime,);
 
-  /** Live tick since the timer started; clamped so a clock skew never produces negatives. */
+  /**
+   * Live tick since the timer started; clamped so a clock skew never produces negatives.
+   */
   const elapsedSeconds = Math.max(
     0,
     Math.floor((Date.now()

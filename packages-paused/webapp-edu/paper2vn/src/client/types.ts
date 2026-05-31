@@ -4,70 +4,114 @@
  * Persisted shapes live here too so migrations have one place to land.
  */
 
-/** Supported UI / persona language codes. */
+/**
+ * Supported UI / persona language codes.
+ */
 export type Locale = 'en' | 'zh' | 'ja' | 'ru';
 
-/** Speaker pose key, indexed against the active sprite pack. */
+/**
+ * Speaker pose key, indexed against the active sprite pack.
+ */
 export type Pose = 'neutral' | 'thinking' | 'happy';
 
-/** A single beat of dialogue spoken by the persona. */
+/**
+ * A single beat of dialogue spoken by the persona.
+ */
 export type DialogueBeat = {
-  /** Display text shown in the dialogue box. */
+  /**
+   * Display text shown in the dialogue box.
+   */
   text: string;
 
-  /** Pose to show during this beat. Defaults to `neutral` when omitted. */
+  /**
+   * Pose to show during this beat. Defaults to `neutral` when omitted.
+   */
   pose?: Pose;
 };
 
-/** A generated chapter: one logical section of the paper. */
+/**
+ * A generated chapter: one logical section of the paper.
+ */
 export type Chapter = {
-  /** Chapter title, displayed as a card before the first beat. */
+  /**
+   * Chapter title, displayed as a card before the first beat.
+   */
   title: string;
 
-  /** Short prose summary, shown on the chapter card. */
+  /**
+   * Short prose summary, shown on the chapter card.
+   */
   summary: string;
 
-  /** Ordered list of dialogue beats. */
+  /**
+   * Ordered list of dialogue beats.
+   */
   dialogue: readonly DialogueBeat[];
 };
 
-/** Memory log entry shown on the Log screen. */
+/**
+ * Memory log entry shown on the Log screen.
+ */
 export type LogEntry = {
-  /** Speaker label (`Ruka` or `You`). */
+  /**
+   * Speaker label (`Ruka` or `You`).
+   */
   speaker: 'persona' | 'user';
 
-  /** Text content. */
+  /**
+   * Text content.
+   */
   text: string;
 };
 
-/** App-wide settings persisted to localStorage. */
+/**
+ * App-wide settings persisted to localStorage.
+ */
 export type Settings = {
-  /** UI + persona language. */
+  /**
+   * UI + persona language.
+   */
   locale: Locale;
 
-  /** Font scale multiplier (e.g. `1` = 100%). */
+  /**
+   * Font scale multiplier (e.g. `1` = 100%).
+   */
   fontScale: number;
 
-  /** Characters per second for the typewriter reveal. */
+  /**
+   * Characters per second for the typewriter reveal.
+   */
   textSpeed: number;
 
-  /** Web Speech volume between `0` and `1`. */
+  /**
+   * Web Speech volume between `0` and `1`.
+   */
   voiceVolume: number;
 
-  /** BGM volume between `0` and `1` (BGM not implemented in MVP). */
+  /**
+   * BGM volume between `0` and `1` (BGM not implemented in MVP).
+   */
   bgmVolume: number;
 
-  /** Auto-advance delay in milliseconds. */
+  /**
+   * Auto-advance delay in milliseconds.
+   */
   autoAdvanceDelayMs: number;
 
-  /** When `true`, auto mode advances after voice finishes. */
+  /**
+   * When `true`, auto mode advances after voice finishes.
+   */
   autoAdvanceByVoice: boolean;
 
-  /** Whether to speak dialogue aloud. */
+  /**
+   * Whether to speak dialogue aloud.
+   */
   voiceEnabled: boolean;
 };
 
-/** Identifier for a configured LLM provider. */
+/**
+ * Identifier for a configured LLM provider.
+ */
 export type ProviderId = 'openrouter' | 'openai' | 'anthropic' | 'ollama';
 
 /**
@@ -154,53 +198,87 @@ export function coerceProviderId(
   return fallback;
 }
 
-/** Provider configuration persisted to localStorage. */
+/**
+ * Provider configuration persisted to localStorage.
+ */
 export type ProviderConfig = {
-  /** Active provider. */
+  /**
+   * Active provider.
+   */
   id: ProviderId;
 
-  /** Model identifier within the provider. */
+  /**
+   * Model identifier within the provider.
+   */
   model: string;
 
-  /** API key when applicable. Stored in plain text in localStorage. */
+  /**
+   * API key when applicable. Stored in plain text in localStorage.
+   */
   apiKey: string;
 
-  /** Base URL override (used by Ollama, optional for others). */
+  /**
+   * Base URL override (used by Ollama, optional for others).
+   */
   baseUrl: string;
 
-  /** When `true`, the user has opted in to Anthropic's dangerous-browser flag. */
+  /**
+   * When `true`, the user has opted in to Anthropic's dangerous-browser flag.
+   */
   acknowledgedAnthropicWarning: boolean;
 };
 
-/** Save slot summary stored in the saves index. */
+/**
+ * Save slot summary stored in the saves index.
+ */
 export type SaveSummary = {
-  /** Stable id, also used in the storage key. */
+  /**
+   * Stable id, also used in the storage key.
+   */
   id: string;
 
-  /** User-editable label. */
+  /**
+   * User-editable label.
+   */
   label: string;
 
-  /** Paper title from the LLM response. */
+  /**
+   * Paper title from the LLM response.
+   */
   paperTitle: string;
 
-  /** ISO timestamp of last update. */
+  /**
+   * ISO timestamp of last update.
+   */
   updatedAt: string;
 };
 
-/** Full save payload stored under `STORAGE_KEY_SAVE_PREFIX${id}`. */
+/**
+ * Full save payload stored under `STORAGE_KEY_SAVE_PREFIX${id}`.
+ */
 export type SaveData = SaveSummary & {
-  /** Raw extracted paper text (used for the Ask flow). */
+  /**
+   * Raw extracted paper text (used for the Ask flow).
+   */
   paperText: string;
 
-  /** Generated chapters. */
+  /**
+   * Generated chapters.
+   */
   chapters: readonly Chapter[];
 
-  /** Currently displayed chapter index. */
+  /**
+   * Currently displayed chapter index.
+   */
   chapterIndex: number;
 
-  /** Currently displayed beat index within the chapter. */
+  /**
+   * Currently displayed beat index within the chapter.
+   */
   beatIndex: number;
 
-  /** Memory log of every persona/user line so far. */
+  /**
+   * Memory log of every persona/user line so far.
+   */
   log: readonly LogEntry[];
 };

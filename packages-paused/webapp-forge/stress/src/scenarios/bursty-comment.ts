@@ -50,25 +50,37 @@ import {
   wait,
 } from './shared.ts';
 
-/** Tagged logger scoped to the bursty-comment scenario. */
+/**
+ * Tagged logger scoped to the bursty-comment scenario.
+ */
 const l = tagged({
   tag: 'stress.bursty-comment',
   l: logger,
 },);
 
-/** Default burst event count. */
+/**
+ * Default burst event count.
+ */
 const DEFAULT_BURST_EVENTS = 100;
 
-/** Default burst duration (ms). */
+/**
+ * Default burst duration (ms).
+ */
 const DEFAULT_BURST_DURATION_MS = 1_000;
 
-/** User id reserved for the bursty target issue. */
+/**
+ * User id reserved for the bursty target issue.
+ */
 const BURSTY_USER_ID = 'user-bursty';
 
-/** Repo id reserved for the bursty target. */
+/**
+ * Repo id reserved for the bursty target.
+ */
 const BURSTY_REPO_ID = 'repo-bursty';
 
-/** Issue id reserved for the bursty target. */
+/**
+ * Issue id reserved for the bursty target.
+ */
 const BURSTY_ISSUE_ID = 'issue-bursty';
 
 /**
@@ -82,18 +94,24 @@ const BURSTY_ISSUE_ID = 'issue-bursty';
  * ```
  */
 async function run(): Promise<ScenarioResult> {
-  /** Resolved `--burst-events` flag controlling the comment count per burst. */
+  /**
+   * Resolved `--burst-events` flag controlling the comment count per burst.
+   */
   const burstEvents = intFlag({
     name: 'burst-events',
     fallback: DEFAULT_BURST_EVENTS,
   },);
-  /** Resolved `--burst-duration-ms` flag controlling the wall-clock budget for the burst. */
+  /**
+   * Resolved `--burst-duration-ms` flag controlling the wall-clock budget for the burst.
+   */
   const burstDurationMs = intFlag({
     name: 'burst-duration-ms',
     fallback: DEFAULT_BURST_DURATION_MS,
   },);
 
-  /** Shared creation timestamp keeps user, repo, and issue chronologically aligned. */
+  /**
+   * Shared creation timestamp keeps user, repo, and issue chronologically aligned.
+   */
   const now = Date.now();
   await insertUser({
     id: BURSTY_USER_ID,
@@ -116,7 +134,9 @@ async function run(): Promise<ScenarioResult> {
   },);
 
   // Drain initial issue.created event so the scenario only measures comment fanout.
-  /** Cursor advanced past the seed `issue.created` event so the burst is measured in isolation. */
+  /**
+   * Cursor advanced past the seed `issue.created` event so the burst is measured in isolation.
+   */
   const initialCursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
@@ -124,13 +144,21 @@ async function run(): Promise<ScenarioResult> {
   },);
   setEventCursor(initialCursor,);
 
-  /** Wall-clock start used to compute total scenario duration. */
+  /**
+   * Wall-clock start used to compute total scenario duration.
+   */
   const startedAt = Date.now();
-  /** Per-event latency samples feeding the percentile summary. */
+  /**
+   * Per-event latency samples feeding the percentile summary.
+   */
   const samples: number[] = [];
-  /** Invariant breaches collected for the scenario result. */
+  /**
+   * Invariant breaches collected for the scenario result.
+   */
   const violations: string[] = [];
-  /** Target spacing between comment dispatches so the burst covers `burstDurationMs`. */
+  /**
+   * Target spacing between comment dispatches so the burst covers `burstDurationMs`.
+   */
   const intervalMs = burstDurationMs / Math
     .max(
     burstEvents,
@@ -138,7 +166,9 @@ async function run(): Promise<ScenarioResult> {
   );
 
   for (let i = 0; i < burstEvents; i += 1) {
-    /** Per-event start timestamp anchoring both the sample and the sleep delay. */
+    /**
+     * Per-event start timestamp anchoring both the sample and the sleep delay.
+     */
     const t0 = Date.now();
     // oxlint-disable-next-line no-await-in-loop -- paced burst by design
     await createCommentWithEvent({
@@ -149,7 +179,9 @@ async function run(): Promise<ScenarioResult> {
       createdAt: Date.now(),
     },);
     /* oxlint-disable no-await-in-loop -- paced burst by design */
-    /** Advanced cursor after the comment event has been dispatched and flushed. */
+    /**
+     * Advanced cursor after the comment event has been dispatched and flushed.
+     */
     const cursor = await dispatchAndFlush({
       afterEventId: getEventCursor(),
       storage,
@@ -160,7 +192,9 @@ async function run(): Promise<ScenarioResult> {
     samples.push(Date.now()
       - t0,);
     if (intervalMs > 0) {
-      /** Remaining slice of the per-event budget; floored so the sleep never overshoots. */
+      /**
+       * Remaining slice of the per-event budget; floored so the sleep never overshoots.
+       */
       const sleep = Math.max(
         0,
         Math.floor(intervalMs - (Date.now()
@@ -173,37 +207,53 @@ async function run(): Promise<ScenarioResult> {
     }
   }
 
-  /** Storage key whose fragment must match a from-scratch render after the burst. */
+  /**
+   * Storage key whose fragment must match a from-scratch render after the burst.
+   */
   const detailKey = issueDetailKey({
     repoId: BURSTY_REPO_ID,
     issueId: BURSTY_ISSUE_ID,
   },);
-  /** Ground-truth fragment used as the equality reference. */
+  /**
+   * Ground-truth fragment used as the equality reference.
+   */
   const expected = await renderFragment(detailKey,);
-  /** Fragment the dispatcher actually persisted; missing or stale triggers a violation. */
+  /**
+   * Fragment the dispatcher actually persisted; missing or stale triggers a violation.
+   */
   const stored = await storage.get(detailKey,);
   if (stored === undefined)
     violations.push('issue detail fragment missing after burst',);
   else {
-    /** Decoded ground-truth body; text comparison is friendlier for diff failures. */
+    /**
+     * Decoded ground-truth body; text comparison is friendlier for diff failures.
+     */
     const expectedText = new TextDecoder().decode(expected.body,);
-    /** Decoded persisted body for the equality check. */
+    /**
+     * Decoded persisted body for the equality check.
+     */
     const storedText = new TextDecoder().decode(stored,);
     if (expectedText !== storedText)
       violations.push('final issue detail fragment does not match ground truth',);
   }
 
-  /** Median latency over the recorded burst samples. */
+  /**
+   * Median latency over the recorded burst samples.
+   */
   const p50 = percentile({
     samples,
     p: P50,
   },);
-  /** Tail latency; the report uses both medians together. */
+  /**
+   * Tail latency; the report uses both medians together.
+   */
   const p99 = percentile({
     samples,
     p: P99,
   },);
-  /** Wall-clock total used by the summary table. */
+  /**
+   * Wall-clock total used by the summary table.
+   */
   const durationMs = Date.now()
     - startedAt;
   l.info(
@@ -226,7 +276,9 @@ async function run(): Promise<ScenarioResult> {
   };
 }
 
-/** Public scenario record. */
+/**
+ * Public scenario record.
+ */
 export const burstyComment: Scenario = {
   name: 'bursty-comment',
   run,

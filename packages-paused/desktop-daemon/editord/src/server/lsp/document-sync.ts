@@ -35,9 +35,13 @@ function relevantClients(
     dprint,
   }: { readonly languageId: string; } & ServerSlots,
 ): LspClient[] {
-  /** Accumulator filled by language-specific gating below. */
+  /**
+   * Accumulator filled by language-specific gating below.
+   */
   const clients: LspClient[] = [];
-  /** Cached so the gating below does not re-test the language id three times. */
+  /**
+   * Cached so the gating below does not re-test the language id three times.
+   */
   const isJsTs = JS_TS_LANGUAGE_IDS.has(languageId,);
   if (isJsTs && (oxlint !== null)
     && oxlint
@@ -75,7 +79,9 @@ export function didOpen({
   readonly documents: Map<string, DocumentState>;
   readonly servers: ServerSlots;
 },): void {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
   /**
    * Resolved once so {@link relevantClients} and the didOpen payload stay in sync.
@@ -137,9 +143,13 @@ export function didChange({
   readonly documents: Map<string, DocumentState>;
   readonly servers: ServerSlots;
 },): void {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** Skip notifying when the file was never opened to avoid spurious server churn. */
+  /**
+   * Skip notifying when the file was never opened to avoid spurious server churn.
+   */
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
@@ -182,9 +192,13 @@ export function didSave({
   readonly documents: ReadonlyMap<string, DocumentState>;
   readonly servers: ServerSlots;
 },): void {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** Skip notifying when the file was never opened to avoid spurious server churn. */
+  /**
+   * Skip notifying when the file was never opened to avoid spurious server churn.
+   */
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;
@@ -219,9 +233,13 @@ export function didClose({
   readonly documents: Map<string, DocumentState>;
   readonly servers: ServerSlots;
 },): void {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** Skip notifying when the file was never opened to avoid spurious server churn. */
+  /**
+   * Skip notifying when the file was never opened to avoid spurious server churn.
+   */
   const doc = documents.get(uri,);
   if (doc === undefined)
     return;

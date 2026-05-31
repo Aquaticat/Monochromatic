@@ -16,7 +16,9 @@ import {
 
 import base from '@monochromatic-dev/config-oxlint';
 
-/** Root oxlint configuration with an explicit public export type for isolated declarations. */
+/**
+ * Root oxlint configuration with an explicit public export type for isolated declarations.
+ */
 const config: OxlintConfig = defineConfig({
   ...base,
 },);

@@ -23,7 +23,9 @@ const parser = object({
   output: argument(string({ metavar: 'OUTPUT', },),),
 },);
 
-/** Parsed CLI arguments cast to the shared build options type */
+/**
+ * Parsed CLI arguments cast to the shared build options type
+ */
 const args: BuildOptions = runSync(
   parser,
   {

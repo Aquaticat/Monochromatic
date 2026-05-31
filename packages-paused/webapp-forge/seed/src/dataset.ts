@@ -13,10 +13,14 @@ import {
   seedUsers,
 } from './generate.ts';
 
-/** Per-user seed offset to space user ids out of the repo namespace. */
+/**
+ * Per-user seed offset to space user ids out of the repo namespace.
+ */
 const USER_SEED_FACTOR = 1_000;
 
-/** Per-repo seed offset used to keep different repos generating different rows. */
+/**
+ * Per-repo seed offset used to keep different repos generating different rows.
+ */
 const REPO_SEED_FACTOR = 1_000_000;
 
 /**
@@ -54,7 +58,9 @@ export async function seedDataset(row: {
   baseTimestamp: number;
   maxIssuesPerRepo?: number;
 },): Promise<SeedSummary> {
-  /** Namespace offset reserving the user id range from repos sharing the same root seed. */
+  /**
+   * Namespace offset reserving the user id range from repos sharing the same root seed.
+   */
   const userBaseSeed = row.seed
     * USER_SEED_FACTOR;
   await seedUsers({
@@ -62,10 +68,14 @@ export async function seedDataset(row: {
     count: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
-  /** Namespace offset reserving the repo id range from users sharing the same root seed. */
+  /**
+   * Namespace offset reserving the repo id range from users sharing the same root seed.
+   */
   const repoBaseSeed = row.seed
     * REPO_SEED_FACTOR;
-  /** Repo id list returned from seeding; reused to derive per-repo iteration order. */
+  /**
+   * Repo id list returned from seeding; reused to derive per-repo iteration order.
+   */
   const repoIds = await seedRepos({
     seed: repoBaseSeed,
     repoCount: row.repoCount,
@@ -73,7 +83,9 @@ export async function seedDataset(row: {
     userCount: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
-  /** Destructured label totals so the summary can aggregate without re-querying. */
+  /**
+   * Destructured label totals so the summary can aggregate without re-querying.
+   */
   const {
     totalLabels,
     labelsByRepo,
@@ -81,7 +93,9 @@ export async function seedDataset(row: {
     repoIds,
     seed: row.seed,
   },);
-  /** Per-repo partial totals collected serially; reduced into the aggregate below. */
+  /**
+   * Per-repo partial totals collected serially; reduced into the aggregate below.
+   */
   const perRepoTotals: {
     issues: number;
     comments: number;
@@ -92,11 +106,15 @@ export async function seedDataset(row: {
     members: number;
   }[] = [];
   for (const [index, repoId,] of repoIds.entries()) {
-    /** Per-repo label id list defaulted to empty so the seeder receives a concrete array. */
+    /**
+     * Per-repo label id list defaulted to empty so the seeder receives a concrete array.
+     */
     const labels = labelsByRepo.get(repoId,)
       ?? [];
     /* oxlint-disable no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear */
-    /** Phase-1 seeding result reused for the comment/issue totals and to feed phase-2. */
+    /**
+     * Phase-1 seeding result reused for the comment/issue totals and to feed phase-2.
+     */
     const r = await seedIssuesForRepo({
       repoId,
       seed: repoBaseSeed + index,
@@ -112,7 +130,9 @@ export async function seedDataset(row: {
     },);
     /* oxlint-enable no-await-in-loop */
     /* oxlint-disable no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear */
-    /** Phase-2 seeding result aggregated into the per-resource totals. */
+    /**
+     * Phase-2 seeding result aggregated into the per-resource totals.
+     */
     const phase2 = await seedPhase2ForRepo({
       repoId,
       seed: repoBaseSeed + index,
@@ -133,7 +153,9 @@ export async function seedDataset(row: {
       members: phase2.members,
     },);
   }
-  /** Summed per-resource totals across all repos. */
+  /**
+   * Summed per-resource totals across all repos.
+   */
   const aggregated = perRepoTotals.reduce(
     function sumTotals(
       acc,

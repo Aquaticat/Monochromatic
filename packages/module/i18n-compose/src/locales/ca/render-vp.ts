@@ -50,18 +50,24 @@ export function finiteVerbSurface(
     readonly agreement: SubjectAgreement;
   },
 ): string {
-  /** Tense-specific subtable. */
+  /**
+   * Tense-specific subtable.
+   */
   const tenseTable = entry
     .finite
     .get(tense,);
   if (tenseTable === undefined)
     throw new Error(`Catalan verb '${key}' has no finite forms for tense '${tense}'`,);
-  /** Joined person/number lookup key. */
+  /**
+   * Joined person/number lookup key.
+   */
   const pn = personNumberKey({
     person: agreement.person,
     number: agreement.number,
   },);
-  /** Finite surface for the lookup key. */
+  /**
+   * Finite surface for the lookup key.
+   */
   const surface = tenseTable.get(pn,);
   if (surface === undefined) {
     throw new Error(
@@ -112,21 +118,29 @@ export function makeCatalanVerbPhraseRenderer<
    * @returns rendered surface
    */
   function renderVerbPhrase(phrase: VerbPhrase<S, V, N>,): string {
-    /** Infinitive head for non-finite verb-phrase rendering. */
+    /**
+     * Infinitive head for non-finite verb-phrase rendering.
+     */
     const head = verbs[phrase.verb]
       .infinitive;
-    /** Rendered object surface; empty string when absent. */
+    /**
+     * Rendered object surface; empty string when absent.
+     */
     const object = phrase.object
       === undefined
       ? ''
       : renderNounPhrase(phrase.object,);
-    /** Rendered complement (bare infinitive phrase); empty string when absent. */
+    /**
+     * Rendered complement (bare infinitive phrase); empty string when absent.
+     */
     const complement = phrase.complement
       === undefined
       ? ''
       : renderVerbPhrase(phrase.complement
         .phrase,);
-    /** Rendered adverbial cluster; empty string when none. */
+    /**
+     * Rendered adverbial cluster; empty string when none.
+     */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([
       head,

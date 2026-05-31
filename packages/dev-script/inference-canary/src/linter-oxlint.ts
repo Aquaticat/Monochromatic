@@ -19,7 +19,9 @@ import {
 
 //region Types: oxlint JSON output shape and the parsed result type returned to callers
 
-/** Shape of a single oxlint diagnostic in JSON output */
+/**
+ * Shape of a single oxlint diagnostic in JSON output
+ */
 type OxlintDiagnostic = {
   readonly code?: string;
   readonly severity?: string;
@@ -27,7 +29,9 @@ type OxlintDiagnostic = {
   readonly labels?: readonly { readonly span?: { readonly line?: number; }; }[];
 };
 
-/** Parsed oxlint result */
+/**
+ * Parsed oxlint result
+ */
 export type OxlintResult = {
   readonly errors: number;
   readonly warnings: number;
@@ -56,18 +60,26 @@ export type OxlintResult = {
 function formatOxlintDiagnostics(diagnostics: readonly OxlintDiagnostic[],): string {
   return diagnostics
     .map(function formatDiag(diagnostic,): string {
-      /** Source line of the first label, or '?' when oxlint omits the span (e.g. file-level rules). */
+      /**
+       * Source line of the first label, or '?' when oxlint omits the span (e.g. file-level rules).
+       */
       const line = diagnostic.labels?.[0]
         ?.span
         ?.line
         ?? '?';
-      /** Severity word for the human-readable line; defaults to 'error' so unset entries are conservatively flagged. */
+      /**
+       * Severity word for the human-readable line; defaults to 'error' so unset entries are conservatively flagged.
+       */
       const severity = diagnostic.severity
         ?? 'error';
-      /** Rule identifier; falls back to 'unknown' for diagnostics that don't expose a code. */
+      /**
+       * Rule identifier; falls back to 'unknown' for diagnostics that don't expose a code.
+       */
       const code = diagnostic.code
         ?? 'unknown';
-      /** Diagnostic message body; empty string keeps the formatted line shape stable. */
+      /**
+       * Diagnostic message body; empty string keeps the formatted line shape stable.
+       */
       const message = diagnostic.message
         ?? '';
       return `line ${String(line,)}: ${severity} [${code}] ${message}`;
@@ -80,10 +92,14 @@ function formatOxlintDiagnostics(diagnostics: readonly OxlintDiagnostic[],): str
  * @param jsonOutput - raw JSON string from oxlint --format json
  * @returns parsed result with severity breakdown and raw diagnostic text
  */
-/** Points deducted per lint error occurrence (before per-rule capping) */
+/**
+ * Points deducted per lint error occurrence (before per-rule capping)
+ */
 const LINT_ERROR_PENALTY = 0.1;
 
-/** Points deducted per lint warning occurrence (before per-rule capping) */
+/**
+ * Points deducted per lint warning occurrence (before per-rule capping)
+ */
 const LINT_WARNING_PENALTY = 0.05;
 
 /**
@@ -95,29 +111,39 @@ const LINT_WARNING_PENALTY = 0.05;
  */
 function parseOxlintJson(jsonOutput: string,): OxlintResult {
   try {
-    /** Top-level oxlint JSON envelope; only the `diagnostics` array is consumed downstream. */
+    /**
+     * Top-level oxlint JSON envelope; only the `diagnostics` array is consumed downstream.
+     */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output has known structure
     const parsed = JSON.parse(jsonOutput.trim(),) as {
       diagnostics?: readonly OxlintDiagnostic[];
     };
-    /** Diagnostic list flattened from the envelope; empty when oxlint reported no violations. */
+    /**
+     * Diagnostic list flattened from the envelope; empty when oxlint reported no violations.
+     */
     const diagnostics = parsed.diagnostics
       ?? [];
-    /** Total diagnostics with severity 'error'; surfaced as `errors` on the parsed result. */
+    /**
+     * Total diagnostics with severity 'error'; surfaced as `errors` on the parsed result.
+     */
     const errors = diagnostics
       .filter(function isError(d,): boolean {
         return d.severity
           === 'error';
       },)
       .length;
-    /** Total diagnostics with severity 'warning'; surfaced as `warnings` on the parsed result. */
+    /**
+     * Total diagnostics with severity 'warning'; surfaced as `warnings` on the parsed result.
+     */
     const warnings = diagnostics
       .filter(function isWarning(d,): boolean {
         return d.severity
           === 'warning';
       },)
       .length;
-    /** Distinct rule IDs that appear in the diagnostics, minus the 'unknown' fallback. */
+    /**
+     * Distinct rule IDs that appear in the diagnostics, minus the 'unknown' fallback.
+     */
     const violatedRules = [
       ...new Set(diagnostics
         .map(function getCode(d,): string {
@@ -135,15 +161,21 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
      */
     const penaltyAccumulator = new Map<string, number>();
     diagnostics.forEach(function accumPenalty(diagnostic,): void {
-      /** Rule ID used as the accumulator key; 'unknown' bucket catches code-less diagnostics. */
+      /**
+       * Rule ID used as the accumulator key; 'unknown' bucket catches code-less diagnostics.
+       */
       const rule = diagnostic.code
         ?? 'unknown';
-      /** Per-occurrence penalty; warnings cost less than errors. */
+      /**
+       * Per-occurrence penalty; warnings cost less than errors.
+       */
       const penaltyPerOccurrence = diagnostic.severity
         === 'warning'
         ? LINT_WARNING_PENALTY
         : LINT_ERROR_PENALTY;
-      /** Running penalty for this rule before adding the current occurrence. */
+      /**
+       * Running penalty for this rule before adding the current occurrence.
+       */
       const current = penaltyAccumulator.get(rule,)
         ?? 0;
       penaltyAccumulator.set(
@@ -163,7 +195,9 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
     };
   }
   catch (parseError) {
-    /** Lint-specific logger for oxlint parse failure. */
+    /**
+     * Lint-specific logger for oxlint parse failure.
+     */
     const rl = tagged({
       tag: 'lint:oxlint',
       l,
@@ -201,7 +235,9 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
  */
 export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult> {
   try {
-    /** Raw oxlint stdout on success (zero violations); fed straight into the parser. */
+    /**
+     * Raw oxlint stdout on success (zero violations); fed straight into the parser.
+     */
     const output = await execPromise({
       command: 'oxlint',
       args: [
@@ -217,11 +253,15 @@ export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult
   }
   catch (error) {
     // oxlint exits non-zero when there are lint errors; stdout still has valid JSON
-    /** Stdout recovered from the non-zero exit; still holds the diagnostics JSON when oxlint found violations. */
+    /**
+     * Stdout recovered from the non-zero exit; still holds the diagnostics JSON when oxlint found violations.
+     */
     const stdout = getStdoutFromError(error,);
     if (stdout.includes('"diagnostics"',))
       return parseOxlintJson(stdout,);
-    /** Lint-specific logger for oxlint execution failure. */
+    /**
+     * Lint-specific logger for oxlint execution failure.
+     */
     const rl = tagged({
       tag: 'lint:oxlint',
       l,

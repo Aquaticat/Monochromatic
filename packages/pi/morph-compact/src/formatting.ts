@@ -35,9 +35,13 @@ function isTextContentItem(
   // without an explicit type assertion
   if ((!('type' in item)) || (!('text' in item)))
     return false;
-  /** Discriminator value the guard compares to the "text" literal. */
+  /**
+   * Discriminator value the guard compares to the "text" literal.
+   */
   const typeVal = item.type;
-  /** Captured payload validated to be a string before the guard returns true. */
+  /**
+   * Captured payload validated to be a string before the guard returns true.
+   */
   const textVal = item.text;
   return (
     (typeVal === 'text')
@@ -69,7 +73,9 @@ export function textFromContent(
   content: unknown,
 ): string | typeof NO_TEXT {
   if ((typeof content) === 'string') {
-    /** Cheap pre-check so all-whitespace strings collapse to the sentinel. */
+    /**
+     * Cheap pre-check so all-whitespace strings collapse to the sentinel.
+     */
     const trimmed = content.trim();
     if (trimmed === '')
       return NO_TEXT;
@@ -77,7 +83,9 @@ export function textFromContent(
   }
   if (!Array.isArray(content,))
     return NO_TEXT;
-  /** Joined text harvested from typed content items, or empty for none. */
+  /**
+   * Joined text harvested from typed content items, or empty for none.
+   */
   const result = content
     .filter(function checkItem(item,) {
       return isTextContentItem(item,);
@@ -126,23 +134,31 @@ export function extractLatestQuery({
   readonly branchEntries: readonly SessionEntry[];
   readonly customInstructions?: string;
 },): string {
-  /** User-supplied instructions short-circuit branch scanning when present. */
+  /**
+   * User-supplied instructions short-circuit branch scanning when present.
+   */
   const custom = customInstructions?.trim();
   if ((custom !== undefined) && (custom !== ''))
     return custom;
 
   for (let index = branchEntries.length
     - 1; index >= 0; index -= 1) {
-    /** Current entry under inspection in the reverse-walk. */
+    /**
+     * Current entry under inspection in the reverse-walk.
+     */
     const entry = branchEntries[index];
     if (entry === undefined)
       continue;
     if (entry.type
       !== 'message')
       continue;
-    /** Narrowed alias used to access the message payload. */
+    /**
+     * Narrowed alias used to access the message payload.
+     */
     const msgEntry = entry as SessionMessageEntry;
-    /** Loosely typed payload so role/content/command fields can be queried. */
+    /**
+     * Loosely typed payload so role/content/command fields can be queried.
+     */
     const message = msgEntry.message as {
       role?: string;
       content?: unknown;
@@ -151,7 +167,9 @@ export function extractLatestQuery({
     };
     if (message.role
       === 'user') {
-      /** Concatenated user text; first non-empty result becomes the query. */
+      /**
+       * Concatenated user text; first non-empty result becomes the query.
+       */
       const text = textFromContent(message.content,);
       if (text !== NO_TEXT)
         return text;
@@ -234,9 +252,13 @@ export function buildMorphInput({
   readonly serializedConversation: string;
   readonly previousSummary?: string;
 },): string {
-  /** Accumulator for the optional summary block and serialized conversation. */
+  /**
+   * Accumulator for the optional summary block and serialized conversation.
+   */
   const parts: string[] = [];
-  /** Trimmed previous summary; treated as missing when whitespace-only. */
+  /**
+   * Trimmed previous summary; treated as missing when whitespace-only.
+   */
   const previous = previousSummary?.trim();
   if ((previous !== undefined) && (previous !== '')) {
     parts.push('<keepContext>',);

@@ -28,7 +28,9 @@ import type { OsFamily, } from './registry.ts';
  * ```
  */
 export type CdromSpec = {
-  /** Absolute path to the ISO file. */
+  /**
+   * Absolute path to the ISO file.
+   */
   readonly path: string;
 };
 
@@ -97,9 +99,13 @@ export function domainXml(
     seedIsoPath,
     sharedDir,
   }: {
-    /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
+    /**
+     * Boot device: `hd` for normal operation, `cdrom` for ISO-based installation.
+     */
     readonly bootDev?: 'cdrom' | 'hd';
-    /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
+    /**
+     * Additional IDE CDROMs (Windows ISO, autounattend, virtio-win).
+     */
     readonly cdroms?: readonly CdromSpec[];
     /**
      * Bus type for the primary disk.
@@ -109,27 +115,43 @@ export function domainXml(
      * appear offline in WinPE, blocking unattended installation.
      */
     readonly diskBus?: 'sata' | 'virtio';
-    /** Absolute path to the VM disk image. */
+    /**
+     * Absolute path to the VM disk image.
+     */
     readonly diskPath: string;
-    /** VM name without the mvm- prefix. */
+    /**
+     * VM name without the mvm- prefix.
+     */
     readonly name: string;
-    /** Guest OS family for platform-specific optimizations. */
+    /**
+     * Guest OS family for platform-specific optimizations.
+     */
     readonly osFamily?: OsFamily;
-    /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
+    /**
+     * Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows).
+     */
     readonly seedIsoPath?: string;
-    /** Absolute path to a host directory shared via virtiofs. */
+    /**
+     * Absolute path to a host directory shared via virtiofs.
+     */
     readonly sharedDir?: string;
   },
 ): string {
-  /** Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI. */
+  /**
+   * Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI.
+   */
   const features = [h({ tag: 'acpi', },),];
   if (osFamily === 'windows')
     features.push(hypervFeatures(),);
 
-  /** Device name prefix depends on bus type: vda for virtio, sda for sata. */
+  /**
+   * Device name prefix depends on bus type: vda for virtio, sda for sata.
+   */
   const diskDev = diskBus === 'virtio' ? 'vda' : 'sda';
 
-  /** Mutable buffer because optional seed, virtiofs, and CDROM blocks extend the base disk. */
+  /**
+   * Mutable buffer because optional seed, virtiofs, and CDROM blocks extend the base disk.
+   */
   const devices: string[] = [
     h({
       tag: 'disk',
@@ -225,7 +247,9 @@ export function domainXml(
   devices.push(...ideCdromDevices(cdroms,),);
   devices.push(...commonDevices(osFamily,),);
 
-  /** Top-level domain children before devices. */
+  /**
+   * Top-level domain children before devices.
+   */
   const domainChildren: string[] = [
     h({
       tag: 'name',

@@ -58,21 +58,33 @@ import {
  * ```
  */
 export class Watcher {
-  /** Underlying chokidar instance. */
+  /**
+   * Underlying chokidar instance.
+   */
   readonly #fsw: FSWatcher;
-  /** Watch roots resolved to absolute, sorted deepest-first for `#relativePathFor`. */
+  /**
+   * Watch roots resolved to absolute, sorted deepest-first for `#relativePathFor`.
+   */
   readonly #resolvedRoots: readonly string[];
-  /** Shared hash cache; the watcher writes during pre-populate, filters read post-ready. */
+  /**
+   * Shared hash cache; the watcher writes during pre-populate, filters read post-ready.
+   */
   readonly #hashCache: Readonly<HashCache>;
-  /** Live-event callback handed in by the orchestrator; awaited per event. */
+  /**
+   * Live-event callback handed in by the orchestrator; awaited per event.
+   */
   readonly #onEvent: (event: WatchEvent,) => Promise<void>;
-  /** Tagged logger composed onto the parent. */
+  /**
+   * Tagged logger composed onto the parent.
+   */
   readonly #logger: Logger;
   /**
    * In-flight pre-populate promises; drained by {@link untilReady}.
    */
   readonly #prePopulate: Set<Promise<void>> = new Set<Promise<void>>();
-  /** Flips `true` once chokidar emits `ready`; flips event handling from pre-populate to forward. */
+  /**
+   * Flips `true` once chokidar emits `ready`; flips event handling from pre-populate to forward.
+   */
   #ready: boolean = false;
 
   /**
@@ -132,7 +144,9 @@ export class Watcher {
       },
     );
 
-    /** Captured `this` for sync chokidar listeners that void-call async members with their own try/catch. */
+    /**
+     * Captured `this` for sync chokidar listeners that void-call async members with their own try/catch.
+     */
     const self = this;
 
     /**
@@ -413,7 +427,9 @@ export class Watcher {
    * @param path - absolute path to hash and store
    */
   #trackPrePopulate(path: string,): void {
-    /** Hash-and-store job retained in `#prePopulate` so `untilReady()` can drain it. */
+    /**
+     * Hash-and-store job retained in `#prePopulate` so `untilReady()` can drain it.
+     */
     const job = this.#runPrePopulate(path,);
     this.#prePopulate
       .add(job,);
@@ -441,7 +457,9 @@ export class Watcher {
    */
   async #runPrePopulate(path: string,): Promise<void> {
     try {
-      /** Digest computed off the disk read; the OVERSIZED sentinel signals a too-large file that should not be cached. */
+      /**
+       * Digest computed off the disk read; the OVERSIZED sentinel signals a too-large file that should not be cached.
+       */
       const hash = await this.#hashCache
         .hashFile(path,);
       if (hash !== OVERSIZED) {
@@ -477,11 +495,15 @@ export class Watcher {
     kind: WatchEventKind,
     path: string,
   ): Promise<void> {
-    /** Entity derived from kind once; filters reuse rather than re-derive. */
+    /**
+     * Entity derived from kind once; filters reuse rather than re-derive.
+     */
     const entity: WatchEntityType = ((kind === 'addDir') || (kind === 'unlinkDir'))
       ? 'dir'
       : 'file';
-    /** Normalised event handed to the orchestrator's `onEvent` callback. */
+    /**
+     * Normalised event handed to the orchestrator's `onEvent` callback.
+     */
     const event: WatchEvent = {
       kind,
       entity,

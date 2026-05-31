@@ -59,23 +59,39 @@ const DETERMINISTIC_PANIC_RETRY_MS = 1_000;
  */
 const SCRIPT_KIND_PANIC_PATTERN = 'ScriptKind must be specified';
 
-/** Crash tracking state for a single pool key. */
+/**
+ * Crash tracking state for a single pool key.
+ */
 type CrashState = {
-  /** Number of consecutive unexpected exits without a successful request in between. */
+  /**
+   * Number of consecutive unexpected exits without a successful request in between.
+   */
   readonly count: number;
-  /** Timestamp of last crash (milliseconds since epoch). */
+  /**
+   * Timestamp of last crash (milliseconds since epoch).
+   */
   readonly lastCrashAt: number;
-  /** Whether the crash was a known deterministic panic (flat retry, no backoff). */
+  /**
+   * Whether the crash was a known deterministic panic (flat retry, no backoff).
+   */
   readonly deterministic: boolean;
 };
 
-/** Server-initiated notification payload with source already attached. */
+/**
+ * Server-initiated notification payload with source already attached.
+ */
 type PoolNotification = {
-  /** LSP server source name. */
+  /**
+   * LSP server source name.
+   */
   readonly source: string;
-  /** LSP method name. */
+  /**
+   * LSP method name.
+   */
   readonly method: string;
-  /** LSP params. */
+  /**
+   * LSP params.
+   */
   readonly params: unknown;
 };
 
@@ -83,11 +99,17 @@ type PoolNotification = {
  * Options for {@link createLspPool}.
  */
 export type LspPoolOptions = {
-  /** Highest directory for config-file search (file tree root). */
+  /**
+   * Highest directory for config-file search (file tree root).
+   */
   readonly ceiling: string;
-  /** Parent logger. */
+  /**
+   * Parent logger.
+   */
   readonly l: Logger;
-  /** Callback for server-initiated notifications. */
+  /**
+   * Callback for server-initiated notifications.
+   */
   readonly onNotification: (event: PoolNotification,) => void;
 };
 
@@ -95,16 +117,24 @@ export type LspPoolOptions = {
  * LSP client pool handle returned by {@link createLspPool}.
  */
 export type LspPool = Readonly<{
-  /** Finds or creates the LSP client for a server type given a file path. */
+  /**
+   * Finds or creates the LSP client for a server type given a file path.
+   */
   readonly resolve: (opts: {
     readonly type: ServerType;
     readonly filePath: string;
   },) => Promise<LspClient | null>;
-  /** Resolves all three server types for a given file path. */
+  /**
+   * Resolves all three server types for a given file path.
+   */
   readonly resolveAll: (opts: { readonly path: string; },) => Promise<ServerSlots>;
-  /** Shuts down pooled LSP servers whose project root contains the path. */
+  /**
+   * Shuts down pooled LSP servers whose project root contains the path.
+   */
   readonly shutdownForPath: (opts: { readonly path: string; },) => Promise<void>;
-  /** Gracefully shuts down all pooled LSP servers. */
+  /**
+   * Gracefully shuts down all pooled LSP servers.
+   */
   readonly shutdown: () => Promise<void>;
 }>;
 
@@ -133,9 +163,13 @@ export function createLspPool({
   l,
   onNotification,
 }: LspPoolOptions,): LspPool {
-  /** Pool: `"type:root"` to client creation promise. */
+  /**
+   * Pool: `"type:root"` to client creation promise.
+   */
   const pool = new Map<string, Promise<LspClient | null>>();
-  /** Crash tracking per pool key for exponential backoff. */
+  /**
+   * Crash tracking per pool key for exponential backoff.
+   */
   const crashes = new Map<string, CrashState>();
 
   /**
@@ -148,7 +182,9 @@ export function createLspPool({
    * @returns true when the server should not be restarted yet
    */
   function isInBackoff({ key, }: { readonly key: string; },): boolean {
-    /** Crash record for this key, or undefined when the server has never crashed. */
+    /**
+     * Crash record for this key, or undefined when the server has never crashed.
+     */
     const state = crashes.get(key,);
     if (state === undefined)
       return false;
@@ -162,12 +198,16 @@ export function createLspPool({
           - 1)),
         MAX_RESTART_DELAY_MS,
       );
-    /** Time since the last crash; compared against `delay` to decide if the cooldown has elapsed. */
+    /**
+     * Time since the last crash; compared against `delay` to decide if the cooldown has elapsed.
+     */
     const elapsed = Date.now()
       - state
       .lastCrashAt;
     if (elapsed >= delay) {
-      /** Backoff/retry period has elapsed; allow restart. */
+      /**
+       * Backoff/retry period has elapsed; allow restart.
+       */
       return false;
     }
     return true;
@@ -207,11 +247,17 @@ export function createLspPool({
         if (!unexpected)
           return;
         pool.delete(key,);
-        /** True when stderr contains the known tsgo ScriptKind panic; selects flat-retry over exponential backoff. */
+        /**
+         * True when stderr contains the known tsgo ScriptKind panic; selects flat-retry over exponential backoff.
+         */
         const deterministic = recentStderr.includes(SCRIPT_KIND_PANIC_PATTERN,);
-        /** Prior crash record for this key, or undefined on the first crash. */
+        /**
+         * Prior crash record for this key, or undefined on the first crash.
+         */
         const prev = crashes.get(key,);
-        /** Crash counter incremented for this exit; drives exponential backoff in the non-deterministic branch. */
+        /**
+         * Crash counter incremented for this exit; drives exponential backoff in the non-deterministic branch.
+         */
         const count = (prev?.count
           ?? 0) + 1;
         crashes.set(
@@ -222,7 +268,9 @@ export function createLspPool({
             deterministic,
           },
         );
-        /** Delay before the next spawn attempt; flat for known panics, exponential-with-cap otherwise. */
+        /**
+         * Delay before the next spawn attempt; flat for known panics, exponential-with-cap otherwise.
+         */
         const delay = deterministic
           ? DETERMINISTIC_PANIC_RETRY_MS
           : Math.min(
@@ -260,7 +308,9 @@ export function createLspPool({
     readonly filePath: string;
     readonly root: string;
   },): Promise<LspClient | null> {
-    /** tsconfig `include` glob patterns; gate access so non-source files never reach tsgo. */
+    /**
+     * tsconfig `include` glob patterns; gate access so non-source files never reach tsgo.
+     */
     const patterns = await resolveTsconfigIncludes({
       root,
       l,
@@ -273,12 +323,16 @@ export function createLspPool({
       return null;
     }
 
-    /** Pool map key for the tsgo client at this root; distinct from oxlint/dprint keys at the same root. */
+    /**
+     * Pool map key for the tsgo client at this root; distinct from oxlint/dprint keys at the same root.
+     */
     const key = buildPoolKey({
       type: 'tsgo',
       root,
     },);
-    /** Cached tsgo creation promise; reused on subsequent matching-file resolves. */
+    /**
+     * Cached tsgo creation promise; reused on subsequent matching-file resolves.
+     */
     const existing = pool.get(key,);
     if (existing !== undefined) {
       l.info(
@@ -290,7 +344,9 @@ export function createLspPool({
       return null;
 
     l.info(`tsgo resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
-    /** New tsgo client promise; stored in the pool before await so concurrent callers share it. */
+    /**
+     * New tsgo client promise; stored in the pool before await so concurrent callers share it.
+     */
     const promise = spawnWithCrashRecovery({
       type: 'tsgo',
       root,
@@ -323,7 +379,9 @@ export function createLspPool({
       readonly filePath: string;
     },
   ): Promise<LspClient | null> {
-    /** Project root for this server type; null when no config file found up to the ceiling. */
+    /**
+     * Project root for this server type; null when no config file found up to the ceiling.
+     */
     const root = findProjectRoot({
       startDir: dirname(filePath,),
       configFiles: CONFIG_FILES[type],
@@ -347,12 +405,16 @@ export function createLspPool({
       },);
     }
 
-    /** Pool map key encoding `(type, root)` so each pair gets exactly one cached client. */
+    /**
+     * Pool map key encoding `(type, root)` so each pair gets exactly one cached client.
+     */
     const key = buildPoolKey({
       type,
       root,
     },);
-    /** Cached creation promise for this key, or undefined when no client has been spawned yet. */
+    /**
+     * Cached creation promise for this key, or undefined when no client has been spawned yet.
+     */
     const existing = pool.get(key,);
     if (existing !== undefined) {
       l.info(
@@ -366,7 +428,9 @@ export function createLspPool({
     l.info(
       `${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,
     );
-    /** Newly spawned client promise; stored in the pool before awaiting so concurrent callers share it. */
+    /**
+     * Newly spawned client promise; stored in the pool before awaiting so concurrent callers share it.
+     */
     const promise = spawnWithCrashRecovery({
       type,
       root,
@@ -389,7 +453,9 @@ export function createLspPool({
    * @returns server slots with oxlint, tsgo, and dprint clients
    */
   async function resolveAll({ path, }: { readonly path: string; },): Promise<ServerSlots> {
-    /** Resolved clients for all three server types in parallel; each slot may be null. */
+    /**
+     * Resolved clients for all three server types in parallel; each slot may be null.
+     */
     const [oxlint, tsgo, dprint,] = await Promise.all([
       resolve({
         type: 'oxlint',
@@ -426,7 +492,9 @@ export function createLspPool({
     },);
   }
 
-  /** Gracefully shuts down all pooled LSP servers and waits for completion. */
+  /**
+   * Gracefully shuts down all pooled LSP servers and waits for completion.
+   */
   async function shutdown(): Promise<void> {
     await shutdownAllPooled({
       pool,

@@ -14,11 +14,17 @@ import { ABSENT, } from './constants.ts';
  * ```
  */
 export type LruKeySet = {
-  /** Mark a key as recently accessed. Returns evicted key, or `ABSENT` when under capacity. */
+  /**
+   * Mark a key as recently accessed. Returns evicted key, or `ABSENT` when under capacity.
+   */
   readonly touch: (key: string,) => string | typeof ABSENT;
-  /** Remove a key from tracking. */
+  /**
+   * Remove a key from tracking.
+   */
   readonly remove: (key: string,) => void;
-  /** Clear all tracked keys. */
+  /**
+   * Clear all tracked keys.
+   */
   readonly clear: () => void;
 };
 
@@ -41,7 +47,9 @@ export type LruKeySet = {
 export function createLruKeySet(
   maxSize: number,
 ): LruKeySet {
-  /** Ordered set for insertion-order iteration. */
+  /**
+   * Ordered set for insertion-order iteration.
+   */
   const keys = new Set<string>();
 
   return {
@@ -51,7 +59,9 @@ export function createLruKeySet(
 
       if (keys.size
         > maxSize) {
-        /** Iterator step naming the oldest key under insertion order. */
+        /**
+         * Iterator step naming the oldest key under insertion order.
+         */
         const oldest = keys.values()
           .next();
         // oxlint-disable-next-line typescript/strict-boolean-expressions -- IteratorResult.done is boolean|undefined

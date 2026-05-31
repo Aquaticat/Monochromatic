@@ -8,22 +8,32 @@ import { getModelIdLeaf, } from '@monochromatic-dev/pi-shared-model-selection/ts
 
 //region Thinking default constants
 
-/** Thinking levels this extension writes as defaults. */
+/**
+ * Thinking levels this extension writes as defaults.
+ */
 export type ThinkingDefaultLevel = 'high' | 'xhigh';
 
-/** Thinking level used for GPT-shaped model ids. */
+/**
+ * Thinking level used for GPT-shaped model ids.
+ */
 const GPT_THINKING_DEFAULT: ThinkingDefaultLevel = 'xhigh';
 
-/** Thinking level used for all non-GPT model ids. */
+/**
+ * Thinking level used for all non-GPT model ids.
+ */
 const NON_GPT_THINKING_DEFAULT: ThinkingDefaultLevel = 'high';
 
 //endregion Thinking default constants
 
 //region Model shapes
 
-/** Minimal model shape needed by the thinking policy. */
+/**
+ * Minimal model shape needed by the thinking policy.
+ */
 type ModelWithId = {
-  /** Model identifier as passed through pi. */
+  /**
+   * Model identifier as passed through pi.
+   */
   readonly id: string;
 };
 
@@ -54,7 +64,9 @@ export function isGptModelId(
     readonly modelId: string;
   },
 ): boolean {
-  /** Lowercased final segment used for case-insensitive GPT detection. */
+  /**
+   * Lowercased final segment used for case-insensitive GPT detection.
+   */
   const normalizedLeaf = getModelIdLeaf({ modelId, },)
     .toLowerCase();
   return normalizedLeaf.startsWith('gpt-',);

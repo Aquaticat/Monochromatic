@@ -27,9 +27,13 @@ export const ARGUMENT_ABSENT: unique symbol = Symbol('argument-absent',);
  * ```
  */
 export function getArgumentValue(name: string,): string | typeof ARGUMENT_ABSENT {
-  /** Search prefix built once so the predicate closure stays cheap. */
+  /**
+   * Search prefix built once so the predicate closure stays cheap.
+   */
   const prefix = `--${name}=`;
-  /** First argv entry that opens with `--name=`; absent when no match. */
+  /**
+   * First argv entry that opens with `--name=`; absent when no match.
+   */
   const argument = process.argv
     .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);

@@ -41,7 +41,9 @@ export function getPositionFromPoint({
   readonly x: number;
   readonly y: number;
 },): EditorPosition | null {
-  /** Line index and div containing the pointer y, or null when the click missed every line. */
+  /**
+   * Line index and div containing the pointer y, or null when the click missed every line.
+   */
   const lineResult = findLineAtY({
     editor,
     y,
@@ -49,7 +51,9 @@ export function getPositionFromPoint({
   if (lineResult === null)
     return null;
 
-  /** Character offset within `lineResult.lineDiv` that best fits the pointer x. */
+  /**
+   * Character offset within `lineResult.lineDiv` that best fits the pointer x.
+   */
   const character = findCharAtX({
     lineDiv: lineResult.lineDiv,
     x,
@@ -77,7 +81,9 @@ function findLineAtY({
   readonly line: number;
   readonly lineDiv: Element;
 } | null {
-  /** Vertically-ordered children; each is one line div whose bounding rect is checked against `y`. */
+  /**
+   * Vertically-ordered children; each is one line div whose bounding rect is checked against `y`.
+   */
   const { children, } = editor;
   /**
    * Inclusive low bound of the binary-search window over `children`.
@@ -92,13 +98,19 @@ function findLineAtY({
     - 1;
 
   while (lo <= hi) {
-    /** Midpoint index inspected this iteration; unsigned shift avoids overflow for huge documents. */
+    /**
+     * Midpoint index inspected this iteration; unsigned shift avoids overflow for huge documents.
+     */
     const mid = (lo + hi) >>> 1;
-    /** Candidate line div at `mid`; undefined would indicate detached children. */
+    /**
+     * Candidate line div at `mid`; undefined would indicate detached children.
+     */
     const child = children[mid];
     if (child === undefined)
       return null;
-    /** Bounding rect of the candidate; reading it triggers layout but is unavoidable for hit-testing. */
+    /**
+     * Bounding rect of the candidate; reading it triggers layout but is unavoidable for hit-testing.
+     */
     const rect = child.getBoundingClientRect();
 
     if (y < rect

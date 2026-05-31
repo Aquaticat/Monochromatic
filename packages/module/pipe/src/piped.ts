@@ -152,7 +152,9 @@ export function piped<
  * ```
  */
 export function piped(args: RunArgs,): unknown {
-  /** Logger tagged at the eager public API boundary. */
+  /**
+   * Logger tagged at the eager public API boundary.
+   */
   const l = tagged(args.l
     === undefined
     ? { tag: piped.name, }

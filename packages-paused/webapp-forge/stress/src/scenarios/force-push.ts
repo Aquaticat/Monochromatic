@@ -56,37 +56,57 @@ import {
   wait,
 } from './shared.ts';
 
-/** Tagged logger scoped to the force-push scenario. */
+/**
+ * Tagged logger scoped to the force-push scenario.
+ */
 const l = tagged({
   tag: 'stress.force-push',
   l: logger,
 },);
 
-/** Default per-iteration blob size in kibibytes. */
+/**
+ * Default per-iteration blob size in kibibytes.
+ */
 const DEFAULT_BLOB_KIB = 64;
 
-/** Default per-iteration blob size (bytes). */
+/**
+ * Default per-iteration blob size (bytes).
+ */
 const DEFAULT_BLOB_SIZE: number = DEFAULT_BLOB_KIB * BYTES_PER_KIB;
 
-/** Default burst event count (each event = one force-push iteration). */
+/**
+ * Default burst event count (each event = one force-push iteration).
+ */
 const DEFAULT_BURST_EVENTS = 20;
 
-/** Default burst duration (ms). */
+/**
+ * Default burst duration (ms).
+ */
 const DEFAULT_BURST_DURATION_MS = 1_000;
 
-/** Latency budget for force-push application at p99. */
+/**
+ * Latency budget for force-push application at p99.
+ */
 const P99_LATENCY_BUDGET_MS = 5_000;
 
-/** Owner used in the synthetic gitdir tree. */
+/**
+ * Owner used in the synthetic gitdir tree.
+ */
 const OWNER = 'stress';
 
-/** Repo name used in the synthetic gitdir tree. */
+/**
+ * Repo name used in the synthetic gitdir tree.
+ */
 const REPO = 'force-push';
 
-/** Ref everyone pushes to. */
+/**
+ * Ref everyone pushes to.
+ */
 const REF_NAME = 'refs/heads/main';
 
-/** Author timestamp baseline. */
+/**
+ * Author timestamp baseline.
+ */
 const AUTHOR_TS_BASE = 1_700_000_000;
 
 /**
@@ -138,13 +158,19 @@ function readConfig(): ForcePushConfig {
  * ```
  */
 function concat(chunks: readonly Uint8Array[],): Uint8Array {
-  /** Pre-computed total length so the destination buffer is allocated once. */
+  /**
+   * Pre-computed total length so the destination buffer is allocated once.
+   */
   let total = 0;
   for (const chunk of chunks)
     total += chunk.byteLength;
-  /** Destination buffer sized to fit every chunk back-to-back. */
+  /**
+   * Destination buffer sized to fit every chunk back-to-back.
+   */
   const out = new Uint8Array(total,);
-  /** Write offset advanced by each chunk's length. */
+  /**
+   * Write offset advanced by each chunk's length.
+   */
   let cursor = 0;
   for (const chunk of chunks) {
     out.set(
@@ -177,7 +203,9 @@ async function fabricateCommit(row: {
   oid: string;
   packfile: Uint8Array;
 }> {
-  /** Isolated bare gitdir so fabrication does not collide with the forge's own state. */
+  /**
+   * Isolated bare gitdir so fabrication does not collide with the forge's own state.
+   */
   const gitdir = await mkdtemp(join(
     tmpdir(),
     'forge-fp-fab-',
@@ -188,16 +216,22 @@ async function fabricateCommit(row: {
     bare: true,
     defaultBranch: 'main',
   },);
-  /** Filler payload sized to `blobSize`; varied byte value differentiates iterations. */
+  /**
+   * Filler payload sized to `blobSize`; varied byte value differentiates iterations.
+   */
   const blobBytes = new Uint8Array(row.blobSize,);
   blobBytes.fill(row.byteValue,);
-  /** Blob oid referenced from the synthesised tree. */
+  /**
+   * Blob oid referenced from the synthesised tree.
+   */
   const blobOid = await git.writeBlob({
     fs: nodeFs,
     gitdir,
     blob: blobBytes,
   },);
-  /** Tree oid pointing at the freshly written blob. */
+  /**
+   * Tree oid pointing at the freshly written blob.
+   */
   const treeOid = await git.writeTree({
     fs: nodeFs,
     gitdir,
@@ -210,7 +244,9 @@ async function fabricateCommit(row: {
       },
     ],
   },);
-  /** Commit oid the receive-pack body advances `refs/heads/main` to. */
+  /**
+   * Commit oid the receive-pack body advances `refs/heads/main` to.
+   */
   const commitOid = await git.writeCommit({
     fs: nodeFs,
     gitdir,
@@ -234,7 +270,9 @@ async function fabricateCommit(row: {
       message: `iteration ${String(row.iteration,)}\n`,
     },
   },);
-  /** Packfile bundle covering the new commit, tree, and blob for the receive-pack stream. */
+  /**
+   * Packfile bundle covering the new commit, tree, and blob for the receive-pack stream.
+   */
   const result = await git.packObjects({
     fs: nodeFs,
     gitdir,
@@ -272,7 +310,9 @@ function buildReceivePackBody(row: {
   newOid: string;
   packfile: Uint8Array;
 },): Uint8Array {
-  /** Update line carrying the old-new oid pair, ref name, and capability flags. */
+  /**
+   * Update line carrying the old-new oid pair, ref name, and capability flags.
+   */
   const triplet =
     `${row.oldOid} ${row.newOid} ${REF_NAME}\0report-status side-band-64k\n`;
   return concat([
@@ -299,7 +339,9 @@ async function waitInterval(row: {
   if (row.intervalMs
     <= 0)
     return;
-  /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
+  /**
+   * Remaining slack inside the per-event budget; floored to avoid overshoot.
+   */
   const sleep = Math.max(
     0,
     Math.floor(row.intervalMs
@@ -321,12 +363,16 @@ async function waitInterval(row: {
  * ```
  */
 async function run(): Promise<ScenarioResult> {
-  /** Scenario knobs resolved from the `--blob-size`/`--burst-*` flags. */
+  /**
+   * Scenario knobs resolved from the `--blob-size`/`--burst-*` flags.
+   */
   const config = readConfig();
 
   // Isolate the bare gitdir tree so the scenario does not pollute the
   // forge's persistent on-disk state.
-  /** Throwaway directory holding the scenario's gitdir, kept out of the forge's tree. */
+  /**
+   * Throwaway directory holding the scenario's gitdir, kept out of the forge's tree.
+   */
   const gitdirRoot = await mkdtemp(join(
     tmpdir(),
     'forge-fp-root-',
@@ -340,20 +386,30 @@ async function run(): Promise<ScenarioResult> {
     }`,
   );
 
-  /** Wall-clock start used for the duration summary. */
+  /**
+   * Wall-clock start used for the duration summary.
+   */
   const startedAt = Date.now();
-  /** Per-iteration receive-pack latency samples feeding the percentile summary. */
+  /**
+   * Per-iteration receive-pack latency samples feeding the percentile summary.
+   */
   const samples: number[] = [];
-  /** Invariant breaches collected for the scenario result. */
+  /**
+   * Invariant breaches collected for the scenario result.
+   */
   const violations: string[] = [];
-  /** Target spacing between iterations so the burst covers `burstDurationMs`. */
+  /**
+   * Target spacing between iterations so the burst covers `burstDurationMs`.
+   */
   const intervalMs = config.burstDurationMs
     / Math
     .max(
     config.burstEvents,
     1,
   );
-  /** Final ref oid and accepted-update count produced by the burst loop. */
+  /**
+   * Final ref oid and accepted-update count produced by the burst loop.
+   */
   const {
     priorOid,
     appliedTotal,
@@ -361,14 +417,20 @@ async function run(): Promise<ScenarioResult> {
     priorOid: string;
     appliedTotal: number;
   }> {
-    /** Old oid each new force-push targets; seeded to the all-zero (no prior ref) sentinel. */
+    /**
+     * Old oid each new force-push targets; seeded to the all-zero (no prior ref) sentinel.
+     */
     let oid = ZERO_OID;
-    /** Running count of accepted ref updates used by the apply-count invariant. */
+    /**
+     * Running count of accepted ref updates used by the apply-count invariant.
+     */
     let applied = 0;
     for (let i = 0; i < config
       .burstEvents; i += 1) {
       /* oxlint-disable no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state) */
-      /** Fabricated commit oid for this iteration's force-push. */
+      /**
+       * Fabricated commit oid for this iteration's force-push.
+       */
       const {
         oid: nextOid,
         packfile,
@@ -379,23 +441,31 @@ async function run(): Promise<ScenarioResult> {
         iteration: i,
       },);
       /* oxlint-enable no-await-in-loop */
-      /** Receive-pack request body advancing `refs/heads/main` from `oid` to `nextOid`. */
+      /**
+       * Receive-pack request body advancing `refs/heads/main` from `oid` to `nextOid`.
+       */
       const body = buildReceivePackBody({
         oldOid: oid,
         newOid: nextOid,
         packfile,
       },);
-      /** Apply-phase start timestamp anchoring the latency sample. */
+      /**
+       * Apply-phase start timestamp anchoring the latency sample.
+       */
       const t0 = Date.now();
       /* oxlint-disable no-await-in-loop -- paced burst by design */
-      /** Receive-pack outcome whose `applied` length proves the ref update was accepted. */
+      /**
+       * Receive-pack outcome whose `applied` length proves the ref update was accepted.
+       */
       const outcome = await handleReceivePack({
         owner: OWNER,
         repo: REPO,
         body,
       },);
       /* oxlint-enable no-await-in-loop */
-      /** Apply-phase end timestamp; difference with `t0` is the sample. */
+      /**
+       * Apply-phase end timestamp; difference with `t0` is the sample.
+       */
       const t1 = Date.now();
       samples.push(t1 - t0,);
       applied += outcome.applied
@@ -414,7 +484,9 @@ async function run(): Promise<ScenarioResult> {
   })();
 
   // Verify the resulting ref points where we expect, by upload-packing it back.
-  /** Upload-pack response proving the final commit oid is reachable via the smart-HTTP path. */
+  /**
+   * Upload-pack response proving the final commit oid is reachable via the smart-HTTP path.
+   */
   const verifyBody = await handleUploadPack({
     owner: OWNER,
     repo: REPO,
@@ -428,17 +500,23 @@ async function run(): Promise<ScenarioResult> {
     === 0)
     violations.push('upload-pack returned an empty response after force-push burst',);
 
-  /** Median receive-pack latency over the burst. */
+  /**
+   * Median receive-pack latency over the burst.
+   */
   const p50 = percentile({
     samples,
     p: P50,
   },);
-  /** Tail latency compared against `P99_LATENCY_BUDGET_MS`. */
+  /**
+   * Tail latency compared against `P99_LATENCY_BUDGET_MS`.
+   */
   const p99 = percentile({
     samples,
     p: P99,
   },);
-  /** Wall-clock total used by the summary table. */
+  /**
+   * Wall-clock total used by the summary table.
+   */
   const durationMs = Date.now()
     - startedAt;
 
@@ -477,7 +555,9 @@ async function run(): Promise<ScenarioResult> {
   };
 }
 
-/** Public scenario record. */
+/**
+ * Public scenario record.
+ */
 export const forcePush: Scenario = {
   name: 'force-push',
   run,

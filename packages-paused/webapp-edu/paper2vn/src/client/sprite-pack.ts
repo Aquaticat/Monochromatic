@@ -6,40 +6,64 @@
  * exposes lookup helpers.
  */
 
-/** Pose-keyed sprite URLs (data URIs in the placeholder pack). */
+/**
+ * Pose-keyed sprite URLs (data URIs in the placeholder pack).
+ */
 type CharacterPoses = Record<string, string>;
 
-/** Per-character entry in the manifest. */
+/**
+ * Per-character entry in the manifest.
+ */
 type ManifestCharacter = {
-  /** Display name shown in the dialogue box. */
+  /**
+   * Display name shown in the dialogue box.
+   */
   displayName: string;
 
-  /** Theme color used for accents. */
+  /**
+   * Theme color used for accents.
+   */
   color: string;
 
-  /** Pose-keyed image URLs. */
+  /**
+   * Pose-keyed image URLs.
+   */
   poses: CharacterPoses;
 };
 
-/** Top-level manifest shape. */
+/**
+ * Top-level manifest shape.
+ */
 type Manifest = {
-  /** Pack name. */
+  /**
+   * Pack name.
+   */
   name: string;
 
-  /** License string, surfaced in About text. */
+  /**
+   * License string, surfaced in About text.
+   */
   license: string;
 
-  /** Attribution / credits. */
+  /**
+   * Attribution / credits.
+   */
   attribution: string;
 
-  /** Characters keyed by id. */
+  /**
+   * Characters keyed by id.
+   */
   characters: Record<string, ManifestCharacter>;
 
-  /** Background images keyed by id. */
+  /**
+   * Background images keyed by id.
+   */
   backgrounds: Record<string, string>;
 };
 
-/** Singleton-slot container holding the parsed manifest after first load. */
+/**
+ * Singleton-slot container holding the parsed manifest after first load.
+ */
 const manifestCache: { value: Manifest | undefined; } = { value: undefined, };
 
 /**
@@ -59,11 +83,15 @@ export function loadSpritePack(): Manifest {
   if (manifestCache.value
     !== undefined)
     return manifestCache.value;
-  /** JSON island element embedded by the build, source of the manifest text. */
+  /**
+   * JSON island element embedded by the build, source of the manifest text.
+   */
   const island = document.querySelector<HTMLScriptElement>('#sprite-pack',);
   if (island === null)
     throw new Error('[sprite-pack] #sprite-pack island not found',);
-  /** Raw JSON text content of the island, defaulting to empty when missing. */
+  /**
+   * Raw JSON text content of the island, defaulting to empty when missing.
+   */
   const text = island.textContent
     ?? '';
   /*
@@ -102,9 +130,13 @@ export function getCharacterPose(
     pose: string;
   }>,
 ): string {
-  /** Cached manifest used to resolve the character and pose. */
+  /**
+   * Cached manifest used to resolve the character and pose.
+   */
   const m = loadSpritePack();
-  /** Character entry chosen by id, falling back to the first defined character. */
+  /**
+   * Character entry chosen by id, falling back to the first defined character.
+   */
   const character = m.characters[characterId]
     ?? Object
     .values(m.characters,)[0];
@@ -132,7 +164,9 @@ export function getCharacterPose(
  * ```
  */
 export function getCharacterName(characterId: string,): string {
-  /** Cached manifest used to look up the character entry. */
+  /**
+   * Cached manifest used to look up the character entry.
+   */
   const m = loadSpritePack();
   return m.characters[characterId]
     ?.displayName
@@ -152,7 +186,9 @@ export function getCharacterName(characterId: string,): string {
  * ```
  */
 export function getBackground(id: string,): string {
-  /** Cached manifest used to look up the background entry. */
+  /**
+   * Cached manifest used to look up the background entry.
+   */
   const m = loadSpritePack();
   return m.backgrounds[id]
     ?? '';

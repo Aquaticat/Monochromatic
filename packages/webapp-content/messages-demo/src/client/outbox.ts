@@ -31,10 +31,14 @@ import {
   readPersistedQueue,
 } from './outbox-idb.ts';
 
-/** Maximum number of PUT attempts per chunk before pausing. */
+/**
+ * Maximum number of PUT attempts per chunk before pausing.
+ */
 const PUT_MAX_ATTEMPTS = 3;
 
-/** Initial backoff delay between PUT retries, in milliseconds. */
+/**
+ * Initial backoff delay between PUT retries, in milliseconds.
+ */
 const PUT_BACKOFF_BASE_MS = 250;
 
 /**
@@ -64,13 +68,19 @@ export type ChunkUpload = {
   readonly charCount: number;
 };
 
-/** Outbox configuration. */
+/**
+ * Outbox configuration.
+ */
 export type OutboxOptions = {
-  /** Set from `StorageCaps.idb`. When false, the outbox is in-memory. */
+  /**
+   * Set from `StorageCaps.idb`. When false, the outbox is in-memory.
+   */
   readonly idbAvailable: boolean;
 };
 
-/** Outbox public surface. Both in-memory and IDB modes return one. */
+/**
+ * Outbox public surface. Both in-memory and IDB modes return one.
+ */
 export type Outbox = {
   /**
    * Persists the upload (when IDB is available) and schedules its PUT
@@ -86,9 +96,13 @@ export type Outbox = {
    * not proceed to finalize while uploads are still in flight.
    */
   flushed: () => Promise<void>;
-  /** Number of uploads still waiting to ack. */
+  /**
+   * Number of uploads still waiting to ack.
+   */
   pendingCount: () => number;
-  /** Detach event listeners and close IDB. */
+  /**
+   * Detach event listeners and close IDB.
+   */
   destroy: () => void;
 };
 
@@ -126,7 +140,9 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       return NO_IDB;
     }
   }
-  /** Lazily assigned IDB handle; left `NO_IDB` when the probe lied or the open call fails post-probe. */
+  /**
+   * Lazily assigned IDB handle; left `NO_IDB` when the probe lied or the open call fails post-probe.
+   */
   const idb = await maybeOpenIdb();
 
   /**
@@ -146,9 +162,13 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       return [];
     }
   }
-  /** Initial queue populated from IDB when available; pushes from `enqueue` extend it later. */
+  /**
+   * Initial queue populated from IDB when available; pushes from `enqueue` extend it later.
+   */
   const queue = await readInitialQueue();
-  /** Closure-scoped state shared by every helper in this factory; queue and flags live here. */
+  /**
+   * Closure-scoped state shared by every helper in this factory; queue and flags live here.
+   */
   const state: {
     queue: ChunkUpload[];
     idb: IDBDatabase | typeof NO_IDB;
@@ -163,9 +183,13 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
     waiters: [],
   };
 
-  /** Resolves every pending `flushed()` waiter and clears the list. */
+  /**
+   * Resolves every pending `flushed()` waiter and clears the list.
+   */
   function notifyFlushed(): void {
-    /** Snapshot of `state.waiters` so the list can be reset before each resolver runs. */
+    /**
+     * Snapshot of `state.waiters` so the list can be reset before each resolver runs.
+     */
     const pending = state.waiters;
     state.waiters = [];
     for (const resolve of pending)
@@ -185,9 +209,13 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       .destroyed)
       return;
     state.draining = true;
-    /** `using` disposable so the draining flag clears even when the body throws. */
+    /**
+     * `using` disposable so the draining flag clears even when the body throws.
+     */
     using _drainCleanup = {
-      /** Cleared at scope exit (including throws). */
+      /**
+       * Cleared at scope exit (including throws).
+       */
       [Symbol.dispose]: function dispose(): void {
         state.draining = false;
         if (state.queue
@@ -200,11 +228,15 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
     while ((state.queue
       .length
       > 0) && (!state.destroyed)) {
-      /** Destructured head so the next iteration sees the new front element. */
+      /**
+       * Destructured head so the next iteration sees the new front element.
+       */
       const [head,] = state.queue;
       if (head === undefined)
         break;
-      /** Server ack from the PUT; `PUT_FAILED` signals retries exhausted and the loop pauses. */
+      /**
+       * Server ack from the PUT; `PUT_FAILED` signals retries exhausted and the loop pauses.
+       */
       const ack = await tryPutWithBackoff(head,);
       if (ack === PUT_FAILED)
         break;
@@ -218,12 +250,16 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
     /* oxlint-enable eslint/no-await-in-loop */
   }
 
-  /** Idempotent drain trigger. Multiple concurrent calls collapse. */
+  /**
+   * Idempotent drain trigger. Multiple concurrent calls collapse.
+   */
   function kick(): void {
     void drain();
   }
 
-  /** Online/visibility listener: kicks the drain when conditions improve. */
+  /**
+   * Online/visibility listener: kicks the drain when conditions improve.
+   */
   function onOnlineOrVisible(): void {
     if (state.destroyed)
       return;
@@ -326,11 +362,15 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
  * ```
  */
 async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | typeof PUT_FAILED> {
-  /** Stable URL captured once outside the retry loop so each attempt targets the same slot. */
+  /**
+   * Stable URL captured once outside the retry loop so each attempt targets the same slot.
+   */
   const url = `/api/drafts/${encodeURIComponent(upload.draftId,)}/chunks/${
     String(upload.seq,)
   }`;
-  /** JSON body serialised once outside the retry loop to avoid repeated stringify cost. */
+  /**
+   * JSON body serialised once outside the retry loop to avoid repeated stringify cost.
+   */
   const body = JSON.stringify({
     md: upload.md,
     html: upload.html,
@@ -339,7 +379,9 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | typeof 
   /* oxlint-disable eslint/no-await-in-loop -- retry attempts are inherently sequential: each retry must wait for the prior attempt's failure plus its backoff delay before issuing */
   for (let attempt = 0; attempt < PUT_MAX_ATTEMPTS; attempt += 1) {
     try {
-      /** Awaited so both the status check and the JSON read can reuse the same response. */
+      /**
+       * Awaited so both the status check and the JSON read can reuse the same response.
+       */
       const response = await fetch(
         url,
         {
@@ -350,12 +392,16 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | typeof 
       );
       if (!response.ok)
         throw new Error(`PUT returned ${String(response.status,)}`,);
-      /** Server ack envelope; falls back to `upload.seq` when `ack` is missing or non-numeric. */
+      /**
+       * Server ack envelope; falls back to `upload.seq` when `ack` is missing or non-numeric.
+       */
       const parsed = await readJson<{ ack?: unknown; }>(response,);
       return (typeof parsed.ack) === 'number' ? parsed.ack : upload.seq;
     }
     catch {
-      /** Exponential backoff per retry; doubles on each attempt (250 ms, 500 ms, 1 s). */
+      /**
+       * Exponential backoff per retry; doubles on each attempt (250 ms, 500 ms, 1 s).
+       */
       const delay = PUT_BACKOFF_BASE_MS * (1 << attempt);
       await wait(delay,);
     }
@@ -384,11 +430,15 @@ async function dropAcked(
     ack: number;
   },
 ): Promise<void> {
-  /** Pre-sweep length captured so the reverse walk terminates at a known head. */
+  /**
+   * Pre-sweep length captured so the reverse walk terminates at a known head.
+   */
   const before = input.queue
     .length;
   for (let index = before - 1; index >= 0; index -= 1) {
-    /** Currently-visited entry; the guard below treats sparse holes as already-dropped. */
+    /**
+     * Currently-visited entry; the guard below treats sparse holes as already-dropped.
+     */
     const entry = input.queue[index];
     if (entry === undefined)
       continue;

@@ -37,10 +37,14 @@ export async function queryAllBackends({
   BackendResult<StorageBackend>,
   ...BackendResult<StorageBackend>[],
 ]> {
-  /** Per-backend query results gathered concurrently. */
+  /**
+   * Per-backend query results gathered concurrently.
+   */
   const results = await Promise.all(
     backends.map(async function queryBackend(backend,) {
-      /** Raw value returned by this backend before nullish normalisation. */
+      /**
+       * Raw value returned by this backend before nullish normalisation.
+       */
       const raw = await backend.get(key,);
       return {
         value: raw ?? ABSENT,
@@ -75,7 +79,9 @@ export type DefaultBackendsBuilder = (args: Readonly<{
   ...StorageBackend[],
 ]>;
 
-/** Module-level builder registry keyed by a sentinel; one entry max, configured once at module load by platform entry. */
+/**
+ * Module-level builder registry keyed by a sentinel; one entry max, configured once at module load by platform entry.
+ */
 const builderRegistry = new Map<'default', DefaultBackendsBuilder>();
 
 /**
@@ -120,10 +126,14 @@ export async function buildDefaultBackends({
   StorageBackend,
   ...StorageBackend[],
 ]> {
-  /** Platform-specific factory registered via `configureDefaultBackendsBuilder`, present only when an entry file set it. */
+  /**
+   * Platform-specific factory registered via `configureDefaultBackendsBuilder`, present only when an entry file set it.
+   */
   const builder = builderRegistry.get('default',);
   if (builder !== undefined) {
-    /** Backends produced by the registered platform builder. */
+    /**
+     * Backends produced by the registered platform builder.
+     */
     const built = await builder({ storeId, },);
     return built;
   }
@@ -169,7 +179,9 @@ export async function evictLruEntry(
     logger: { readonly debug: (msg: string,) => void; };
   }>,
 ): Promise<void> {
-  /** Key displaced by the LRU touch, or `ABSENT` when nothing was evicted. */
+  /**
+   * Key displaced by the LRU touch, or `ABSENT` when nothing was evicted.
+   */
   const evicted = lru.touch(key,);
   if (evicted === ABSENT)
     return;

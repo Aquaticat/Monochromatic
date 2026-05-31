@@ -29,10 +29,14 @@ import { fnv1a64, } from './render-hash.ts';
 import { tryRenderPhase2, } from './render-phase2.ts';
 
 /* oxlint-disable no-restricted-syntax/no-regex -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
-/** Pattern for issue detail fragment keys. */
+/**
+ * Pattern for issue detail fragment keys.
+ */
 const ISSUE_DETAIL_PATTERN = /^issues\/([^/]+)\/([^/]+)\/detail$/u;
 
-/** Pattern for filter list fragment keys. */
+/**
+ * Pattern for filter list fragment keys.
+ */
 const FILTER_LIST_PATTERN = /^repos\/([^/]+)\/filters\/([^/]+)\/([^/]+)\/list$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
@@ -40,9 +44,13 @@ const FILTER_LIST_PATTERN = /^repos\/([^/]+)\/filters\/([^/]+)\/([^/]+)\/list$/u
  * Result of {@link renderFragment}: the body bytes plus a content hash.
  */
 export type RenderResult = {
-  /** UTF-8 encoded HTML body. */
+  /**
+   * UTF-8 encoded HTML body.
+   */
   readonly body: Uint8Array;
-  /** Content-addressable hash (FNV-1a 64-bit) of the body. */
+  /**
+   * Content-addressable hash (FNV-1a 64-bit) of the body.
+   */
   readonly contentHash: string;
 };
 
@@ -63,19 +71,27 @@ export type RenderResult = {
  * ```
  */
 export async function renderFragment(fragmentKey: string,): Promise<RenderResult> {
-  /** Issue-detail key match; non-null routes to the issue-detail branch. */
+  /**
+   * Issue-detail key match; non-null routes to the issue-detail branch.
+   */
   const issueDetailMatch = ISSUE_DETAIL_PATTERN.exec(fragmentKey,);
   if (issueDetailMatch !== null) {
-    /** Issue id captured by the second group in `ISSUE_DETAIL_PATTERN`. */
+    /**
+     * Issue id captured by the second group in `ISSUE_DETAIL_PATTERN`.
+     */
     const issueId = issueDetailMatch.at(2,);
     if (issueId === undefined)
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
     return await renderIssueDetailByKey(issueId,);
   }
-  /** Filter-list key match; non-null routes to the filter-list branch. */
+  /**
+   * Filter-list key match; non-null routes to the filter-list branch.
+   */
   const filterListMatch = FILTER_LIST_PATTERN.exec(fragmentKey,);
   if (filterListMatch !== null) {
-    /** Destructured filter-list groups: repo, label, state facet. */
+    /**
+     * Destructured filter-list groups: repo, label, state facet.
+     */
     const [, repoId, labelId, stateFacet,] = filterListMatch;
     if (
       (repoId === undefined)
@@ -92,7 +108,9 @@ export async function renderFragment(fragmentKey: string,): Promise<RenderResult
       state: stateFacet,
     },);
   }
-  /** Phase 2 fragment renderer fallback; null means no kind matched the key. */
+  /**
+   * Phase 2 fragment renderer fallback; null means no kind matched the key.
+   */
   const phase2 = await tryRenderPhase2(fragmentKey,);
   if (phase2 !== null)
     return phase2;
@@ -107,37 +125,55 @@ export async function renderFragment(fragmentKey: string,): Promise<RenderResult
  * @returns rendered body + hash
  */
 async function renderIssueDetailByKey(issueId: string,): Promise<RenderResult> {
-  /** Issue row; missing means a race against deletion. */
+  /**
+   * Issue row; missing means a race against deletion.
+   */
   const issue = await getIssue(issueId,);
   if (issue === undefined)
     throw new Error(`issue not found: ${issueId}`,);
-  /** Owning repo row; needed for owner/name fields on the rendered page. */
+  /**
+   * Owning repo row; needed for owner/name fields on the rendered page.
+   */
   const repo = await getRepo(issue.repo_id,);
   if (repo === undefined)
     throw new Error(`repo not found for issue ${issueId}`,);
-  /** Owning user record; provides login for the URL path. */
+  /**
+   * Owning user record; provides login for the URL path.
+   */
   const owner = await getUser(repo.owner_id,);
   if (owner === undefined)
     throw new Error(`owner not found for repo ${repo.id}`,);
-  /** Issue author user record; needed for the byline. */
+  /**
+   * Issue author user record; needed for the byline.
+   */
   const author = await getUser(issue.author_id,);
   if (author === undefined)
     throw new Error(`author not found for issue ${issueId}`,);
-  /** Labels currently attached to the issue. */
+  /**
+   * Labels currently attached to the issue.
+   */
   const labels = await listIssueLabels(issueId,);
-  /** Comments ordered by `created_at`. */
+  /**
+   * Comments ordered by `created_at`.
+   */
   const comments = await listComments(issueId,);
 
-  /** Unique commenter ids drive a single bulk user lookup below. */
+  /**
+   * Unique commenter ids drive a single bulk user lookup below.
+   */
   const distinctAuthorIds = new Set<string>(
     comments.map(function pickAuthorId(comment,) {
       return comment.author_id;
     },),
   );
-  /** Resolved `[authorId, login]` pairs; missing users degrade to 'unknown'. */
+  /**
+   * Resolved `[authorId, login]` pairs; missing users degrade to 'unknown'.
+   */
   const authorEntries = await Promise.all(
     [...distinctAuthorIds,].map(async function loadUser(id,) {
-      /** User row for one commenter, possibly `undefined` for deleted users. */
+      /**
+       * User row for one commenter, possibly `undefined` for deleted users.
+       */
       const user = await getUser(id,);
       return [
         id,
@@ -146,10 +182,14 @@ async function renderIssueDetailByKey(issueId: string,): Promise<RenderResult> {
       ] as const;
     },),
   );
-  /** Lookup map fed to the per-comment renderer for byline display. */
+  /**
+   * Lookup map fed to the per-comment renderer for byline display.
+   */
   const commentAuthorLogins = new Map<string, string>(authorEntries,);
 
-  /** Rendered HTML for the issue-detail fragment. */
+  /**
+   * Rendered HTML for the issue-detail fragment.
+   */
   const { html, } = renderIssueDetail({
     ownerLogin: owner.login,
     repoName: repo.name,
@@ -176,7 +216,9 @@ async function renderIssueDetailByKey(issueId: string,): Promise<RenderResult> {
     },),
   },);
 
-  /** UTF-8 body bytes hashed below for content-addressing. */
+  /**
+   * UTF-8 body bytes hashed below for content-addressing.
+   */
   const body = new TextEncoder().encode(html,);
   return {
     body,
@@ -196,16 +238,22 @@ async function renderFilterListByKey(row: {
   readonly labelId: string;
   readonly state: IssueStateFacet;
 },): Promise<RenderResult> {
-  /** Owning repo row; provides name for the rendered list. */
+  /**
+   * Owning repo row; provides name for the rendered list.
+   */
   const repo = await getRepo(row.repoId,);
   if (repo === undefined)
     throw new Error(`repo not found: ${row.repoId}`,);
-  /** Owning user record; provides login for the URL path. */
+  /**
+   * Owning user record; provides login for the URL path.
+   */
   const owner = await getUser(repo.owner_id,);
   if (owner === undefined)
     throw new Error(`owner not found for repo ${row.repoId}`,);
 
-  /** Issue id rows narrowed by the filter facets. */
+  /**
+   * Issue id rows narrowed by the filter facets.
+   */
   const idRows = await listIssueIdsForFilter({
     repoId: row.repoId,
     labelId: row.labelId
@@ -213,10 +261,14 @@ async function renderFilterListByKey(row: {
     state: row.state,
   },);
 
-  /** Hydrated issue rows in parallel; `null` entries are dropped below. */
+  /**
+   * Hydrated issue rows in parallel; `null` entries are dropped below.
+   */
   const issuesLoaded = await Promise.all(
     idRows.map(async function loadIssue(idRow,) {
-      /** Issue row for one id; `undefined` means concurrent deletion. */
+      /**
+       * Issue row for one id; `undefined` means concurrent deletion.
+       */
       const issue = await getIssue(idRow.id,);
       if (issue === undefined)
         return null;
@@ -229,19 +281,25 @@ async function renderFilterListByKey(row: {
       };
     },),
   );
-  /** Non-null summaries forming the rendered list. */
+  /**
+   * Non-null summaries forming the rendered list.
+   */
   const summaries: FilterListData['issues'][number][] = issuesLoaded
     .filter(function notNull(value,) {
       return value !== null;
     },);
 
-  /** Human-readable facet description for the page heading. */
+  /**
+   * Human-readable facet description for the page heading.
+   */
   const facetLabel = `${row.state} issues${
     row.labelId
       === ANY_LABEL ? '' : ` with label "${row.labelId}"`
   }`;
 
-  /** Rendered HTML for the filter-list fragment. */
+  /**
+   * Rendered HTML for the filter-list fragment.
+   */
   const { html, } = renderFilterList({
     ownerLogin: owner.login,
     repoName: repo.name,
@@ -249,7 +307,9 @@ async function renderFilterListByKey(row: {
     issues: summaries,
   },);
 
-  /** UTF-8 body bytes hashed below for content-addressing. */
+  /**
+   * UTF-8 body bytes hashed below for content-addressing.
+   */
   const body = new TextEncoder().encode(html,);
   return {
     body,
@@ -273,7 +333,9 @@ async function renderFilterListByKey(row: {
 export async function existingContentHash(
   fragmentKey: string,
 ): Promise<string | undefined> {
-  /** Fragment-index row; `undefined` when the fragment has not been built yet. */
+  /**
+   * Fragment-index row; `undefined` when the fragment has not been built yet.
+   */
   const row = await getFragmentIndex(fragmentKey,);
   return row?.content_hash;
 }

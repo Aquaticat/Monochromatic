@@ -30,5 +30,7 @@ export function $(value: unknown,): value is string {
   return (typeof value) === 'string';
 }
 
-/** Compile-time test: function satisfies the type guard interface. */
+/**
+ * Compile-time test: function satisfies the type guard interface.
+ */
 const _$: Is = $;

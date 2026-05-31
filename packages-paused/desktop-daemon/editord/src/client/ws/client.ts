@@ -22,7 +22,9 @@ import {
 } from '../log.ts';
 import { performHandshake, } from './handshake.ts';
 
-/** Tagged logger for the WebSocket client subsystem. */
+/**
+ * Tagged logger for the WebSocket client subsystem.
+ */
 const l = tagged({
   tag: 'ws',
   l: rootLogger,
@@ -30,28 +32,40 @@ const l = tagged({
 
 //region Pending request tracking
 
-/** Pending request awaiting a server response. */
+/**
+ * Pending request awaiting a server response.
+ */
 type PendingRequest = {
   readonly resolve: (message: ServerMessage,) => void;
   readonly reject: (error: Error,) => void;
-  /** Timeout handle that rejects the request after {@link REQUEST_TIMEOUT_MS}. */
+  /**
+   * Timeout handle that rejects the request after {@link REQUEST_TIMEOUT_MS}.
+   */
   readonly timeoutId: number;
 };
 
-/** Maximum time to wait for a server response before rejecting (milliseconds). */
+/**
+ * Maximum time to wait for a server response before rejecting (milliseconds).
+ */
 const REQUEST_TIMEOUT_MS = 30_000;
 
 //endregion Pending request tracking
 
 //region Reconnect constants
 
-/** Initial delay before the first reconnection attempt (milliseconds). */
+/**
+ * Initial delay before the first reconnection attempt (milliseconds).
+ */
 const RECONNECT_BASE_MS = 1_000;
 
-/** Maximum delay between reconnection attempts (milliseconds). */
+/**
+ * Maximum delay between reconnection attempts (milliseconds).
+ */
 const RECONNECT_MAX_MS = 16_000;
 
-/** Multiplier applied to the reconnect delay after each failed attempt. */
+/**
+ * Multiplier applied to the reconnect delay after each failed attempt.
+ */
 const RECONNECT_BACKOFF_FACTOR = 2;
 
 //endregion Reconnect constants
@@ -60,29 +74,51 @@ const RECONNECT_BACKOFF_FACTOR = 2;
  * Options for {@link createEditorWsClient}.
  */
 export type EditorWsClientOptions = {
-  /** Server port number. */
+  /**
+   * Server port number.
+   */
   readonly port: string;
-  /** Authentication token. */
+  /**
+   * Authentication token.
+   */
   readonly token: string;
 };
 
-/** Mutable WebSocket client state captured by the factory closure. */
+/**
+ * Mutable WebSocket client state captured by the factory closure.
+ */
 type EditorWsClientState = {
-  /** Underlying WebSocket connection. */
+  /**
+   * Underlying WebSocket connection.
+   */
   ws: WebSocket;
-  /** Counter for generating unique request IDs. */
+  /**
+   * Counter for generating unique request IDs.
+   */
   nextId: number;
-  /** Root directory path reported by the server on connection. */
+  /**
+   * Root directory path reported by the server on connection.
+   */
   rootDir: string;
-  /** Stable filesystem identifier reported by the server on connection. */
+  /**
+   * Stable filesystem identifier reported by the server on connection.
+   */
   fsId: string;
-  /** Callback invoked when the server pushes a file change notification. */
+  /**
+   * Callback invoked when the server pushes a file change notification.
+   */
   onFileChanged: FileChangedHandler | null;
-  /** Callback invoked when the server pushes diagnostics for a file. */
+  /**
+   * Callback invoked when the server pushes diagnostics for a file.
+   */
   onDiagnostics: ClientDiagnosticsHandler | null;
-  /** Resolves when the WebSocket connection is established and authenticated. */
+  /**
+   * Resolves when the WebSocket connection is established and authenticated.
+   */
   ready: Promise<void>;
-  /** Current reconnect delay in milliseconds; reset on successful connection. */
+  /**
+   * Current reconnect delay in milliseconds; reset on successful connection.
+   */
   reconnectDelay: number;
 };
 
@@ -90,21 +126,35 @@ type EditorWsClientState = {
  * Typed WebSocket client handle returned by {@link createEditorWsClient}.
  */
 export type EditorWsClient = Readonly<{
-  /** Root directory path reported by the server on connection. */
+  /**
+   * Root directory path reported by the server on connection.
+   */
   readonly rootDir: string;
-  /** Stable filesystem identifier reported by the server on connection. */
+  /**
+   * Stable filesystem identifier reported by the server on connection.
+   */
   readonly fsId: string;
-  /** Resolves when the WebSocket connection is established and authenticated. */
+  /**
+   * Resolves when the WebSocket connection is established and authenticated.
+   */
   readonly ready: Promise<void>;
-  /** Installs file-change push handler. */
+  /**
+   * Installs file-change push handler.
+   */
   readonly setFileChangedHandler: (handler: FileChangedHandler | null,) => void;
-  /** Installs diagnostics push handler. */
+  /**
+   * Installs diagnostics push handler.
+   */
   readonly setDiagnosticsHandler: (handler: ClientDiagnosticsHandler | null,) => void;
-  /** Sends a typed request and waits for the correlated response. */
+  /**
+   * Sends a typed request and waits for the correlated response.
+   */
   readonly request: <const TReq extends ClientRequest,>(
     message: TReq,
   ) => Promise<RequestResponseMap[TReq['type']]>;
-  /** Sends a notification to the server. */
+  /**
+   * Sends a notification to the server.
+   */
   readonly notify: (message: ClientNotification,) => Promise<void>;
 }>;
 
@@ -133,11 +183,17 @@ export function createEditorWsClient({
   port,
   token,
 }: EditorWsClientOptions,): EditorWsClient {
-  /** WebSocket URL for connection and reconnection. */
+  /**
+   * WebSocket URL for connection and reconnection.
+   */
   const wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
-  /** Map of pending requests keyed by request ID. */
+  /**
+   * Map of pending requests keyed by request ID.
+   */
   const pending = new Map<string, PendingRequest>();
-  /** Mutable connection and handler state kept private to this client. */
+  /**
+   * Mutable connection and handler state kept private to this client.
+   */
   const state: EditorWsClientState = {
     ws: new WebSocket(wsUrl,),
     nextId: 0,
@@ -201,24 +257,32 @@ export function createEditorWsClient({
   ): Promise<RequestResponseMap[TReq['type']]> {
     await state.ready;
 
-    /** Monotonically increasing correlation ID assigned to this request. */
+    /**
+     * Monotonically increasing correlation ID assigned to this request.
+     */
     const id = String(state.nextId,);
     state.nextId += 1;
-    /** Request payload with the generated `id` attached for server correlation. */
+    /**
+     * Request payload with the generated `id` attached for server correlation.
+     */
     const fullMessage = {
       ...message,
       id,
     };
 
     /* oxlint-disable eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map */
-    /** Promise that resolves with the matching response or rejects on timeout/close. */
+    /**
+     * Promise that resolves with the matching response or rejects on timeout/close.
+     */
     const responsePromise = new Promise<ServerMessage>(
       function awaitResponse(
         resolve,
         reject,
       ) {
         /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded */
-        /** Timer handle stored on the pending entry so the response handler can cancel it. */
+        /**
+         * Timer handle stored on the pending entry so the response handler can cancel it.
+         */
         const timeoutId = globalThis.setTimeout(
           function rejectStale() {
             if (pending.delete(id,)) {
@@ -309,7 +373,9 @@ export function createEditorWsClient({
 
     // Correlated response
     if ('id' in data) {
-      /** Tracked request matching this response's `id`, or undefined if it already timed out. */
+      /**
+       * Tracked request matching this response's `id`, or undefined if it already timed out.
+       */
       const pendingRequest = pending.get(data.id,);
       if (pendingRequest !== undefined) {
         pending.delete(data.id,);
@@ -323,7 +389,9 @@ export function createEditorWsClient({
     }
   }
 
-  /** Performs the server handshake using the extracted handshake module. */
+  /**
+   * Performs the server handshake using the extracted handshake module.
+   */
   function performHandshakeForConnection(): Promise<void> {
     return performHandshake({
       ws: state.ws,
@@ -337,9 +405,13 @@ export function createEditorWsClient({
     },);
   }
 
-  /** Wires message, close, and handshake handlers onto the current WebSocket. */
+  /**
+   * Wires message, close, and handshake handlers onto the current WebSocket.
+   */
   function wireConnection(): Promise<void> {
-    /** Handshake promise returned to the caller so `ready` resolves once authenticated. */
+    /**
+     * Handshake promise returned to the caller so `ready` resolves once authenticated.
+     */
     const handshakePromise = performHandshakeForConnection();
     state.ws
       .addEventListener(
@@ -359,7 +431,9 @@ export function createEditorWsClient({
    * Resets the delay to {@link RECONNECT_BASE_MS} on successful reconnection.
    */
   function scheduleReconnect(): void {
-    /** Current backoff delay captured before being doubled for the next attempt. */
+    /**
+     * Current backoff delay captured before being doubled for the next attempt.
+     */
     const delay = state.reconnectDelay;
     state.reconnectDelay = Math.min(
       delay * RECONNECT_BACKOFF_FACTOR,
@@ -390,7 +464,9 @@ export function createEditorWsClient({
    * then schedules a reconnection attempt with exponential backoff.
    */
   function handleClose(): void {
-    /** Rejection reason shared by every pending request so each caller sees the same close cause. */
+    /**
+     * Rejection reason shared by every pending request so each caller sees the same close cause.
+     */
     const closeError = new Error('WebSocket connection closed',);
     pending.forEach(function rejectPending(pendingRequest,): void {
       clearTimeout(pendingRequest.timeoutId,);

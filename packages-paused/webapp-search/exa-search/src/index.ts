@@ -8,13 +8,17 @@ import { indexHtml, } from './asset.ts';
 import { l as parentLogger, } from './log.ts';
 import { PORT, } from './port.ts';
 
-/** Tagged logger for the server subsystem. */
+/**
+ * Tagged logger for the server subsystem.
+ */
 const l = tagged({
   tag: 'server',
   l: parentLogger,
 },);
 
-/** H3 application instance for the exa-search server. */
+/**
+ * H3 application instance for the exa-search server.
+ */
 const app = new H3();
 
 /**
@@ -40,7 +44,9 @@ app.get(
   defineHandler(serveIndexHtml,),
 );
 
-/** Running HTTP server instance. */
+/**
+ * Running HTTP server instance.
+ */
 const server = serve(
   app,
   { port: PORT, },

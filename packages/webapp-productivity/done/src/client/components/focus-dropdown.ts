@@ -6,7 +6,9 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { FOCUS_DROPDOWN_STYLES, } from './focus-dropdown-styles.ts';
 
-/** Available focus preset labels. */
+/**
+ * Available focus preset labels.
+ */
 const DEFAULT_PRESETS = [
   'Adulting tasks first',
   'Quick wins only',
@@ -19,20 +21,28 @@ const DEFAULT_PRESETS = [
  * Popover-based dropdown that lets users select a focus preset.
  */
 class FocusDropdown extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Currently selected preset value. */
+  /**
+   * Currently selected preset value.
+   */
   #value: string;
 
-  /** Initializes the shadow root with empty value. */
+  /**
+   * Initializes the shadow root with empty value.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
     this.#value = '';
   }
 
-  /** Reads the `value` attribute and renders the dropdown. */
+  /**
+   * Reads the `value` attribute and renders the dropdown.
+   */
   connectedCallback(): void {
     this.#value = this.getAttribute('value',)
       ?? 'Select focus...';
@@ -67,19 +77,27 @@ class FocusDropdown extends HTMLElement {
     );
   }
 
-  /** Renders the trigger button, divider, and popover menu into the shadow root. */
+  /**
+   * Renders the trigger button, divider, and popover menu into the shadow root.
+   */
   #render(): void {
-    /** Trigger label captured so the option callback can update it in place. */
+    /**
+     * Trigger label captured so the option callback can update it in place.
+     */
     const textSpan = h({
       tag: 'span',
       class: 'text',
       text: this.#value,
     },);
-    /** Pre-bound selector so each option click fires with the correct `this`. */
+    /**
+     * Pre-bound selector so each option click fires with the correct `this`.
+     */
     const selectFn = this.#selectPreset
       .bind(this,);
 
-    /** Popover menu captured so the option callback can close it after selection. */
+    /**
+     * Popover menu captured so the option callback can close it after selection.
+     */
     const menu = h({
       tag: 'ul',
       class: 'menu',

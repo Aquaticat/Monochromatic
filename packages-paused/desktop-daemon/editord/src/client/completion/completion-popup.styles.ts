@@ -10,16 +10,24 @@ import {
 
 import { POPUP_HOST_DECLS, } from '../styles/tokens.ts';
 
-/** Maximum height of the completion popup in rem. */
+/**
+ * Maximum height of the completion popup in rem.
+ */
 const MAX_HEIGHT_REM = 16;
 
-/** Width of the completion popup in rem. */
+/**
+ * Width of the completion popup in rem.
+ */
 const WIDTH_REM = 20;
 
-/** Item padding in rem: 1/4. */
+/**
+ * Item padding in rem: 1/4.
+ */
 const ITEM_PADDING = 1 / (2 * 2);
 
-/** Shadow DOM styles for the completion popup. */
+/**
+ * Shadow DOM styles for the completion popup.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

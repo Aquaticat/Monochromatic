@@ -116,7 +116,9 @@ export function html(
     readonly availableInLangs?: readonly Locales[];
   },
 ): string {
-  /** Locale-bound translator reused for every header label across this render. */
+  /**
+   * Locale-bound translator reused for every header label across this render.
+   */
   const t = i18nObject(lang,);
   return h({
     tag: 'site-header',

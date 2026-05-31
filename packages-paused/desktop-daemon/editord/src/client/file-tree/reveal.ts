@@ -10,7 +10,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for the reveal subsystem. */
+/**
+ * Tagged logger for the reveal subsystem.
+ */
 const l = tagged({
   tag: 'file-tree-reveal',
   l: rootLogger,
@@ -37,10 +39,14 @@ export function collectAncestorDirs({
   readonly paths: readonly string[];
   readonly rootLength: number;
 },): Set<string> {
-  /** Set deduplicates ancestors that appear under multiple input paths. */
+  /**
+   * Set deduplicates ancestors that appear under multiple input paths.
+   */
   const dirs = new Set<string>();
   for (const filePath of paths) {
-    /** Mutated upward to the root by the inner loop. */
+    /**
+     * Mutated upward to the root by the inner loop.
+     */
     let current = filePath.slice(
       0,
       filePath.lastIndexOf('/',),
@@ -81,15 +87,21 @@ export function findScrollAnchor({
   readonly element: HTMLElement;
   readonly offsetFromViewport: number;
 } | null {
-  /** Reused as the viewport reference frame for every candidate compare below. */
+  /**
+   * Reused as the viewport reference frame for every candidate compare below.
+   */
   const hostRect = hostElement.getBoundingClientRect();
-  /** Cached top edge so the loop does not re-read the rect property on every iteration. */
+  /**
+   * Cached top edge so the loop does not re-read the rect property on every iteration.
+   */
   const viewportTop = hostRect.top;
 
   for (const candidate of tree.querySelectorAll<HTMLElement>(
     'summary, tree-file-entry',
   )) {
-    /** Per-candidate rect compared against the viewport reference frame. */
+    /**
+     * Per-candidate rect compared against the viewport reference frame.
+     */
     const rect = candidate.getBoundingClientRect();
     if (rect.bottom
       > viewportTop) {
@@ -123,7 +135,9 @@ export function scrollToFile({
   readonly tree: HTMLDivElement;
   readonly path: string;
 },): void {
-  /** Null when the file is not yet rendered; scroll skipped in that case. */
+  /**
+   * Null when the file is not yet rendered; scroll skipped in that case.
+   */
   const label = tree.querySelector<HTMLElement>(
     `tree-file-entry[data-path="${CSS.escape(path,)}"]`,
   );
@@ -170,7 +184,9 @@ export async function revealFiles(
     readonly restoreExpansion: (opts: { readonly dirs: readonly string[]; },) => Promise<void>;
   },
 ): Promise<void> {
-  /** Deduped ancestor directories that need expanding to reveal `paths`. */
+  /**
+   * Deduped ancestor directories that need expanding to reveal `paths`.
+   */
   const dirs = collectAncestorDirs({
     paths,
     rootLength: rootPath.length,
@@ -183,7 +199,9 @@ export async function revealFiles(
       String(paths.length,)
     } recent files`,
   );
-  /** Anchor captured before expansion so its post-expansion shift can be measured. */
+  /**
+   * Anchor captured before expansion so its post-expansion shift can be measured.
+   */
   const anchor = findScrollAnchor({
     tree,
     hostElement,

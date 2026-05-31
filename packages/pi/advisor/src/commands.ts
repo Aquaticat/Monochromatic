@@ -30,9 +30,13 @@ import type { AdvisorConfig, } from './types.ts';
  * mutation remains intentional and centralised in {@link createAdvisorSessionState}.
  */
 export type AdvisorSessionState = {
-  /** Read current session-enable flag. */
+  /**
+   * Read current session-enable flag.
+   */
   readonly getEnabled: () => boolean;
-  /** Update session-enable flag. */
+  /**
+   * Update session-enable flag.
+   */
   readonly setEnabled: (enabled: boolean) => void;
 };
 
@@ -51,9 +55,13 @@ export type AdvisorSessionState = {
 export function createAdvisorSessionState(
   initialEnabled: boolean,
 ): AdvisorSessionState {
-  /** Closure-private session-enable flag. */
+  /**
+   * Closure-private session-enable flag.
+   */
   let enabled = initialEnabled;
-  /** Handle exposing getter and setter over the closure-private flag. */
+  /**
+   * Handle exposing getter and setter over the closure-private flag.
+   */
   const state: AdvisorSessionState = {
     getEnabled: function getEnabled() {
       return enabled;
@@ -65,13 +73,21 @@ export function createAdvisorSessionState(
   return state;
 }
 
-/** Options for command registration. */
+/**
+ * Options for command registration.
+ */
 export type RegisterAdvisorCommandsOptions = {
-  /** Pi extension API. */
+  /**
+   * Pi extension API.
+   */
   readonly pi: ExtensionAPI;
-  /** Runtime config accessor. */
+  /**
+   * Runtime config accessor.
+   */
   readonly getConfig: () => AdvisorConfig;
-  /** Session enablement state. */
+  /**
+   * Session enablement state.
+   */
   readonly state: AdvisorSessionState;
 };
 
@@ -135,9 +151,13 @@ export function syncAdvisorActiveTool(
     readonly enabled: boolean;
   },
 ): void {
-  /** Current active tool names. */
+  /**
+   * Current active tool names.
+   */
   const activeTools = pi.getActiveTools();
-  /** Whether Advisor is active. */
+  /**
+   * Whether Advisor is active.
+   */
   const alreadyActive = activeTools.includes(ADVISOR_TOOL_NAME,);
   if (enabled && (!alreadyActive)) {
     pi.setActiveTools([
@@ -180,12 +200,16 @@ export function buildAdvisorStatus(
     readonly enabled: boolean;
   },
 ): string {
-  /** Effective model scope for status. */
+  /**
+   * Effective model scope for status.
+   */
   const scope = resolveEffectiveScope({
     ctx,
     errorPrefix: 'advisor',
   },);
-  /** Empty-context default ranking for status display. */
+  /**
+   * Empty-context default ranking for status display.
+   */
   const defaultSelection = scope.entries
     .length
     === 0
@@ -195,9 +219,13 @@ export function buildAdvisorStatus(
       estimatedInputTokens: 0,
       maxOutputTokens: config.maxAdvisorOutputTokens,
     },);
-  /** Advisor model system prompt used for budget reserve estimate. */
+  /**
+   * Advisor model system prompt used for budget reserve estimate.
+   */
   const advisorSystemPrompt = buildAdvisorSystemPrompt(config,);
-  /** Effective context budget for status default model. */
+  /**
+   * Effective context budget for status default model.
+   */
   const defaultContextBudget = defaultSelection === undefined
     ? undefined
     : maxContextCharsForAdvisorModel({
@@ -206,11 +234,15 @@ export function buildAdvisorStatus(
         .model,
       advisorSystemPrompt,
     },);
-  /** Effective context budget shown when present. */
+  /**
+   * Effective context budget shown when present.
+   */
   const defaultContextBudgetText = defaultContextBudget === undefined
     ? 'none'
     : `${defaultContextBudget} chars`;
-  /** Configured context cap shown when present. */
+  /**
+   * Configured context cap shown when present.
+   */
   const configuredContextCap = config.maxContextChars
     === undefined
     ? 'none'
@@ -258,17 +290,29 @@ export function buildAdvisorStatus(
 
 //region Handler
 
-/** Options for the command handler. */
+/**
+ * Options for the command handler.
+ */
 type HandleAdvisorCommandOptions = {
-  /** Raw command args. */
+  /**
+   * Raw command args.
+   */
   readonly args: string;
-  /** Command context. */
+  /**
+   * Command context.
+   */
   readonly ctx: ExtensionCommandContext;
-  /** Pi extension API. */
+  /**
+   * Pi extension API.
+   */
   readonly pi: ExtensionAPI;
-  /** Runtime config accessor. */
+  /**
+   * Runtime config accessor.
+   */
   readonly getConfig: () => AdvisorConfig;
-  /** Mutable session state. */
+  /**
+   * Mutable session state.
+   */
   readonly state: AdvisorSessionState;
 };
 
@@ -280,7 +324,9 @@ type HandleAdvisorCommandOptions = {
 async function handleAdvisorCommand(
   options: HandleAdvisorCommandOptions,
 ): Promise<void> {
-  /** Trimmed command args. */
+  /**
+   * Trimmed command args.
+   */
   const trimmed = options.args
     .trim();
   if (trimmed === 'status') {
@@ -344,7 +390,9 @@ async function handleAdvisorCommand(
   },);
 }
 
-/** Run immediate manual Advisor review and append a custom message. */
+/**
+ * Run immediate manual Advisor review and append a custom message.
+ */
 async function runImmediateAdvisor(
   {
     ctx,
@@ -360,7 +408,9 @@ async function runImmediateAdvisor(
 ): Promise<void> {
   await ctx.waitForIdle();
   try {
-    /** Manual Advisor review result. */
+    /**
+     * Manual Advisor review result.
+     */
     const result = await runAdvisor({
       ctx,
       config,

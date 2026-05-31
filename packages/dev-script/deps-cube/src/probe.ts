@@ -63,40 +63,72 @@ export type { LicenseClass, };
  * `null`, since the workspace bans nullish unions.
  */
 export type PackageProbe = Readonly<{
-  /** Original key in the catalog (may be an alias). */
+  /**
+   * Original key in the catalog (may be an alias).
+   */
   catalogKey: string;
-  /** Real npm package name (after alias resolution). */
+  /**
+   * Real npm package name (after alias resolution).
+   */
   npmName: string;
-  /** Concrete version used for all measurements. */
+  /**
+   * Concrete version used for all measurements.
+   */
   resolvedVersion: string;
 
-  /** `true` when `dependencies` is empty / absent; package has no runtime deps. */
+  /**
+   * `true` when `dependencies` is empty / absent; package has no runtime deps.
+   */
   isLeaf: boolean;
-  /** Weekly downloads from npm registry; 0 for niche packages, never null. */
+  /**
+   * Weekly downloads from npm registry; 0 for niche packages, never null.
+   */
   weeklyDownloads: number;
-  /** Self install size (unpacked tarball) in bytes; from `dist.unpackedSize`. */
+  /**
+   * Self install size (unpacked tarball) in bytes; from `dist.unpackedSize`.
+   */
   installSizeBytes: number;
-  /** Days since the package was first published. */
+  /**
+   * Days since the package was first published.
+   */
   packageAgeDays: number;
-  /** License class inferred from the `license` field. */
+  /**
+   * License class inferred from the `license` field.
+   */
   licenseClass: LicenseClass;
-  /** Count of `dependencies` entries in the version manifest. */
+  /**
+   * Count of `dependencies` entries in the version manifest.
+   */
   runtimeDepCount: number;
-  /** Best-effort transitive dep count via depth-bounded registry walk; capped at depth 5. */
+  /**
+   * Best-effort transitive dep count via depth-bounded registry walk; capped at depth 5.
+   */
   transitiveDepCount: number;
 
-  /** TS bytes / total bytes per GitHub Linguist; absent when unknown. */
+  /**
+   * TS bytes / total bytes per GitHub Linguist; absent when unknown.
+   */
   tsRatioOrNull?: number;
-  /** Sum of TypeScript+JavaScript bytes per Linguist; absent when unknown. */
+  /**
+   * Sum of TypeScript+JavaScript bytes per Linguist; absent when unknown.
+   */
   sourceBytesOrNull?: number;
-  /** Days since the most-recent commit (path-scoped for monorepo entries); absent when unknown. */
+  /**
+   * Days since the most-recent commit (path-scoped for monorepo entries); absent when unknown.
+   */
   daysSinceLastCommitOrNull?: number;
 
-  /** Normalised repository URL when parseable; absent if missing/non-URL. */
+  /**
+   * Normalised repository URL when parseable; absent if missing/non-URL.
+   */
   repositoryUrlOrNull?: string;
-  /** `true` when `repository.directory` is set (Linguist measures the wrong scope). */
+  /**
+   * `true` when `repository.directory` is set (Linguist measures the wrong scope).
+   */
   isMonorepoHoused: boolean;
-  /** Reason TS/SLOC/staleness are unknown, if any; absent when all three are known. */
+  /**
+   * Reason TS/SLOC/staleness are unknown, if any; absent when all three are known.
+   */
   unknownReason?: UnknownReason;
 }>;
 
@@ -104,7 +136,9 @@ export type PackageProbe = Readonly<{
 
 //region Constants
 
-/** Concurrency cap for parallel probes. */
+/**
+ * Concurrency cap for parallel probes.
+ */
 const CONCURRENCY = 8;
 
 //endregion Constants
@@ -211,7 +245,9 @@ async function probeOne(
     readonly cache: Cache;
   },
 ): Promise<PackageProbe> {
-  /** npm registry manifest for the package; the source of every static field below. */
+  /**
+   * npm registry manifest for the package; the source of every static field below.
+   */
   const pkg = await probePackageManifest({
     npmName: entry.npmName,
     cache,
@@ -229,35 +265,53 @@ async function probeOne(
    */
   const resolvedVersion = resolved === VERSION_UNRESOLVED ? entry.range : resolved;
 
-  /** Version-scoped sub-manifest for `resolvedVersion`; `{}` when the registry response is incomplete. */
+  /**
+   * Version-scoped sub-manifest for `resolvedVersion`; `{}` when the registry response is incomplete.
+   */
   const versionManifest = pkg.versions?.[resolvedVersion]
     ?? {};
-  /** Runtime dependency map declared in the version manifest. */
+  /**
+   * Runtime dependency map declared in the version manifest.
+   */
   const dependencies = versionManifest.dependencies
     ?? {};
-  /** Count of direct runtime deps; drives the `isLeaf` flag and the runtime-dep visual channel. */
+  /**
+   * Count of direct runtime deps; drives the `isLeaf` flag and the runtime-dep visual channel.
+   */
   const runtimeDepCount = Object.keys(dependencies,)
     .length;
-  /** `true` when the package has no runtime deps; convenience flag derived from `runtimeDepCount`. */
+  /**
+   * `true` when the package has no runtime deps; convenience flag derived from `runtimeDepCount`.
+   */
   const isLeaf = runtimeDepCount === 0;
-  /** Self install size in bytes; `0` when the registry omits `dist.unpackedSize`. */
+  /**
+   * Self install size in bytes; `0` when the registry omits `dist.unpackedSize`.
+   */
   const installSizeBytes = versionManifest.dist
     ?.unpackedSize
     ?? 0;
-  /** Bucketed license class derived from the SPDX-ish `license` field; coarser than the raw string for visualisation. */
+  /**
+   * Bucketed license class derived from the SPDX-ish `license` field; coarser than the raw string for visualisation.
+   */
   const licenseClass = classifyLicense(versionManifest.license,);
 
-  /** ISO timestamp of first publish; missing on some legacy packages. */
+  /**
+   * ISO timestamp of first publish; missing on some legacy packages.
+   */
   const createdAt = pkg.time
     ?.created;
-  /** Days since first publish, computed from `createdAt`; `0` when `createdAt` is missing. */
+  /**
+   * Days since first publish, computed from `createdAt`; `0` when `createdAt` is missing.
+   */
   const packageAgeDays = createdAt === undefined
     ? 0
     : Math.floor((Date.now()
       - new Date(createdAt,)
       .getTime()) / MS_PER_DAY,);
 
-  /** Weekly download count from the npm registry; surfaces popularity as a visual channel. */
+  /**
+   * Weekly download count from the npm registry; surfaces popularity as a visual channel.
+   */
   const weeklyDownloads = await probeDownloads({
     npmName: entry.npmName,
     cache,
@@ -271,17 +325,25 @@ async function probeOne(
    * Repo pointer with {@link REPO_UNPARSEABLE} collapsed to `undefined` so the guards below narrow it cleanly.
    */
   const repo = repoInfo === REPO_UNPARSEABLE ? undefined : repoInfo;
-  /** `true` when the package lives inside a monorepo; Linguist measures the wrong scope here so we skip it. */
+  /**
+   * `true` when the package lives inside a monorepo; Linguist measures the wrong scope here so we skip it.
+   */
   const isMonorepoHoused = (repo !== undefined) && (repo.directory
     !== undefined);
-  /** `true` when the repo is on GitHub; gates the GH-specific probes below. */
+  /**
+   * `true` when the repo is on GitHub; gates the GH-specific probes below.
+   */
   const isGitHub = (repo !== undefined) && (repo.host
     === 'github');
 
-  /** `true` when the package is on GitHub and not buried inside a monorepo; gates the Linguist probe. */
+  /**
+   * `true` when the package is on GitHub and not buried inside a monorepo; gates the Linguist probe.
+   */
   const isStandaloneGitHub = isGitHub && (!isMonorepoHoused);
 
-  /** Tuple of parallel GH/registry probe results: Linguist languages, last-commit ISO, transitive dep count. */
+  /**
+   * Tuple of parallel GH/registry probe results: Linguist languages, last-commit ISO, transitive dep count.
+   */
   const [
     languages,
     lastCommitDate,
@@ -314,9 +376,13 @@ async function probeOne(
     },),
   ],);
 
-  /** Linguist languages record, or `undefined` when the probe was skipped or failed; narrows the symbol away at this seam. */
+  /**
+   * Linguist languages record, or `undefined` when the probe was skipped or failed; narrows the symbol away at this seam.
+   */
   const knownLanguages = languages === LANGUAGES_UNKNOWN ? undefined : languages;
-  /** Sum of Linguist byte counts across every detected language; denominator for the TS ratio, `undefined` when Linguist did not run. */
+  /**
+   * Sum of Linguist byte counts across every detected language; denominator for the TS ratio, `undefined` when Linguist did not run.
+   */
   const totalBytes = knownLanguages === undefined
     ? undefined
     : Object.values(knownLanguages,)
@@ -329,23 +395,33 @@ async function probeOne(
       },
       0,
     );
-  /** Bytes Linguist attributes to TypeScript; `undefined` when Linguist did not run or did not detect TS. */
+  /**
+   * Bytes Linguist attributes to TypeScript; `undefined` when Linguist did not run or did not detect TS.
+   */
   const tsBytes = knownLanguages?.TypeScript;
-  /** Bytes Linguist attributes to JavaScript; `0` when Linguist did not detect JS. */
+  /**
+   * Bytes Linguist attributes to JavaScript; `0` when Linguist did not detect JS.
+   */
   const jsBytes = knownLanguages?.JavaScript
     ?? 0;
 
-  /** TS-share of total source bytes, in `[0, 1]`; `undefined` when Linguist data is missing or unusable. */
+  /**
+   * TS-share of total source bytes, in `[0, 1]`; `undefined` when Linguist data is missing or unusable.
+   */
   const tsRatioOrNull = (totalBytes === undefined)
     || (totalBytes === 0)
     || (tsBytes === undefined)
     ? undefined
     : tsBytes / totalBytes;
-  /** Combined TS+JS bytes; `undefined` when Linguist data is missing. */
+  /**
+   * Combined TS+JS bytes; `undefined` when Linguist data is missing.
+   */
   const sourceBytesOrNull = totalBytes === undefined
     ? undefined
     : (tsBytes ?? 0) + jsBytes;
-  /** Days since the most-recent commit; `undefined` when the last-commit probe failed or was skipped. */
+  /**
+   * Days since the most-recent commit; `undefined` when the last-commit probe failed or was skipped.
+   */
   const daysSinceLastCommitOrNull = lastCommitDate === LAST_COMMIT_UNKNOWN
     ? undefined
     : Math.floor((Date.now()
@@ -414,11 +490,17 @@ export async function probeAll(
     readonly cache: Cache;
   },
 ): Promise<readonly PackageProbe[]> {
-  /** Semaphore that bounds in-flight probes so we don't blow through rate limits. */
+  /**
+   * Semaphore that bounds in-flight probes so we don't blow through rate limits.
+   */
   const limit = pLimit(CONCURRENCY,);
-  /** Total entry count, cached for log messages. */
+  /**
+   * Total entry count, cached for log messages.
+   */
   const total = entries.length;
-  /** Per-entry probe promises queued through `limit`; resolved in input order via `Promise.all`. */
+  /**
+   * Per-entry probe promises queued through `limit`; resolved in input order via `Promise.all`.
+   */
   const tasks = entries.map(function buildTask(
     entry,
     index,

@@ -48,7 +48,9 @@ export function tomlGetNode(
 ): AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable
   | readonly AST.TOMLTable[]
 {
-  /** Direct AST lookup so callers can branch on the resolution kind. */
+  /**
+   * Direct AST lookup so callers can branch on the resolution kind.
+   */
   const result = resolveByPath({
     edit,
     path,

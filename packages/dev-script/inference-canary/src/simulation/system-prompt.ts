@@ -5,7 +5,9 @@
  * to trace program execution mentally, without running any code.
  */
 
-/** System prompt instructing the model to trace execution from interpreter source */
+/**
+ * System prompt instructing the model to trace execution from interpreter source
+ */
 export const SIMULATION_SYSTEM: string = [
   'You are given the TypeScript source of an interpreter for an invented language.',
   'Read the interpreter code carefully, then trace the exact output of each numbered program.',

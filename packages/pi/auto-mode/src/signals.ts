@@ -104,9 +104,13 @@ function shouldFlag(
     readonly event: ToolCallEvent;
     readonly ctx: SignalContext;
     readonly config?: MergedConfig;
-    /** Directories whose contents are safe for read-tool skill activation. */
+    /**
+     * Directories whose contents are safe for read-tool skill activation.
+     */
     readonly readAllowlistedDirs?: readonly string[];
-    /** Private agent temp directories trusted for bash helper execution. */
+    /**
+     * Private agent temp directories trusted for bash helper execution.
+     */
     readonly bashAllowlistedDirs?: readonly string[];
   },
 ): boolean {
@@ -114,7 +118,9 @@ function shouldFlag(
     'bash',
     event,
   )) {
-    /** Parsed bash AST used to walk individual commands and their redirect targets. */
+    /**
+     * Parsed bash AST used to walk individual commands and their redirect targets.
+     */
     const analysis = analyzeBashCommand(event.input
       .command,);
     if (bashSignals({
@@ -135,9 +141,13 @@ function shouldFlag(
     return false;
   }
 
-  /** Path argument extracted from the tool event when one applies (read/write/edit/etc.). */
+  /**
+   * Path argument extracted from the tool event when one applies (read/write/edit/etc.).
+   */
   const filePath = getFilePath(event,);
-  /** Skill directory allowlist applied only to read-tool activation, not writes or shell commands. */
+  /**
+   * Skill directory allowlist applied only to read-tool activation, not writes or shell commands.
+   */
   const pathAllowlistedDirs = isToolCallEventType(
     'read',
     event,
@@ -155,7 +165,9 @@ function shouldFlag(
     return true;
   }
 
-  /** Free text extracted from the tool event (file body, search query) for content/text signals. */
+  /**
+   * Free text extracted from the tool event (file body, search query) for content/text signals.
+   */
   const text = extractToolText(event,);
   if (text !== '') {
     if (contentSignals(text,))
@@ -196,14 +208,18 @@ function bashSignals(
     readonly analysis: BashAnalysis;
     readonly ctx: SignalContext;
     readonly config?: MergedConfig;
-    /** Private agent temp directories trusted for bash helper execution. */
+    /**
+     * Private agent temp directories trusted for bash helper execution.
+     */
     readonly trustedAgentTempDirs?: readonly string[];
   },
 ): boolean {
   if (!analysis.parsed)
     return true;
 
-  /** Whether this command can read project dotenv only to feed trusted temp helper credentials. */
+  /**
+   * Whether this command can read project dotenv only to feed trusted temp helper credentials.
+   */
   const allowProjectDotenvCredentialSource = hasTrustedAgentTempCredentialHandoff({
     analysis,
     ctx,
@@ -284,7 +300,9 @@ function bashSignals(
       return true;
     }
 
-    /** Path-shaped arguments plus redirect targets, each tested for sensitive paths below. */
+    /**
+     * Path-shaped arguments plus redirect targets, each tested for sensitive paths below.
+     */
     const files = [
       ...cmd.args
         .filter(looksLikePath,),

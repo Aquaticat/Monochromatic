@@ -14,9 +14,13 @@
 
 //region Character predicates
 
-/** ASCII code 27 (0x1B) for the ESC byte that opens every ANSI control sequence; named to satisfy `no-magic-numbers`. */
+/**
+ * ASCII code 27 (0x1B) for the ESC byte that opens every ANSI control sequence; named to satisfy `no-magic-numbers`.
+ */
 const ESC_CODE_POINT = 0x1B;
-/** ESC byte string; located via `indexOf(ESC_CHAR, ...)` instead of a regex. */
+/**
+ * ESC byte string; located via `indexOf(ESC_CHAR, ...)` instead of a regex.
+ */
 const ESC_CHAR = String.fromCodePoint(ESC_CODE_POINT,);
 
 /**
@@ -153,14 +157,18 @@ function ansiEscapeLength({
     return -1;
 
   return (function scan(): number {
-    /** Cursor over the parameter bytes; the sequence requires at least one digit before any terminator. */
+    /**
+     * Cursor over the parameter bytes; the sequence requires at least one digit before any terminator.
+     */
     let idx = start + 2;
     if (!isAsciiDigit(text.charAt(idx,),))
       return -1;
     idx += 1;
     while (idx < text
       .length) {
-      /** Current char; drives the digit / terminator / separator transition. */
+      /**
+       * Current char; drives the digit / terminator / separator transition.
+       */
       const c = text.charAt(idx,);
       if (isAsciiDigit(c,)) {
         idx += 1;
@@ -199,12 +207,16 @@ function ansiEscapeLength({
  * ```
  */
 export function stripAnsi(text: string,): string {
-  /** Output segments in order; joined once at the end so no intermediate string is recopied per chunk. */
+  /**
+   * Output segments in order; joined once at the end so no intermediate string is recopied per chunk.
+   */
   const parts: string[] = [];
   // Single forward pass; `idx` jumps by whole ANSI sequences, so the stride is variable and updated in the body.
   for (let idx = 0; idx < text
     .length;) {
-    /** Position of the next ESC byte; `-1` means no further ANSI sequences. */
+    /**
+     * Position of the next ESC byte; `-1` means no further ANSI sequences.
+     */
     const escIdx = text.indexOf(
       ESC_CHAR,
       idx,
@@ -213,7 +225,9 @@ export function stripAnsi(text: string,): string {
       parts.push(text.slice(idx,),);
       break;
     }
-    /** Length of the ANSI sequence at `escIdx`, or `-1` when invalid. */
+    /**
+     * Length of the ANSI sequence at `escIdx`, or `-1` when invalid.
+     */
     const escLen = ansiEscapeLength({
       text,
       start: escIdx,
@@ -307,7 +321,9 @@ function skipWhitespace({
   readonly idx: number;
 },): number {
   return (function walk(): number {
-    /** Cursor advanced across the whitespace run; stops at the first non-whitespace char or the end of `text`. */
+    /**
+     * Cursor advanced across the whitespace run; stops at the first non-whitespace char or the end of `text`.
+     */
     let cursor = idx;
     while ((cursor < text
       .length) && isWhitespace(text.charAt(cursor,),))
@@ -340,7 +356,9 @@ function skipRuleNameChars({
   readonly idx: number;
 },): number {
   return (function walk(): number {
-    /** Cursor advanced across the rule-name char run; stops at the first non-rule-name char or the end of `text`. */
+    /**
+     * Cursor advanced across the rule-name char run; stops at the first non-rule-name char or the end of `text`.
+     */
     let cursor = idx;
     while ((cursor < text
       .length) && isRuleNameChar(text.charAt(cursor,),))
@@ -376,7 +394,9 @@ function allNonWhitespaceBetween({
   readonly end: number;
 },): boolean {
   return (function check(): boolean {
-    /** Cursor scanned across `[start, end)`; any whitespace short-circuits to false. */
+    /**
+     * Cursor scanned across `[start, end)`; any whitespace short-circuits to false.
+     */
     let cursor = start;
     while (cursor < end) {
       if (isWhitespace(text.charAt(cursor,),))
@@ -416,13 +436,17 @@ function matchHeaderAt({
   if (!isWhitespace(text.charAt(punctIdx + 1,),))
     return NO_RULE;
 
-  /** Cursor past the run of whitespace following the punctuation. */
+  /**
+   * Cursor past the run of whitespace following the punctuation.
+   */
   const afterWs = skipWhitespace({
     text,
     idx: punctIdx + 2,
   },);
 
-  /** Position of the `(` that opens the rule name; bounds the plugin-name run. */
+  /**
+   * Position of the `(` that opens the rule name; bounds the plugin-name run.
+   */
   const openParen = text.indexOf(
     '(',
     afterWs,
@@ -439,9 +463,13 @@ function matchHeaderAt({
     return NO_RULE;
   }
 
-  /** Cursor at the first char inside the parens; rule name starts here. */
+  /**
+   * Cursor at the first char inside the parens; rule name starts here.
+   */
   const ruleStart = openParen + 1;
-  /** Exclusive end of the rule-name char run. */
+  /**
+   * Exclusive end of the rule-name char run.
+   */
   const ruleEnd = skipRuleNameChars({
     text,
     idx: ruleStart,
@@ -453,7 +481,9 @@ function matchHeaderAt({
     !== ')')
     return NO_RULE;
 
-  /** Cursor past optional whitespace after `)`; the next char must be `:`. */
+  /**
+   * Cursor past optional whitespace after `)`; the next char must be `:`.
+   */
   const afterRule = skipWhitespace({
     text,
     idx: ruleEnd + 1,
@@ -487,16 +517,22 @@ function matchHeaderAt({
  * ```
  */
 export function extractRuleName(line: string,): string | typeof NO_RULE {
-  /** ANSI-stripped working copy; the matcher operates on plain text. */
+  /**
+   * ANSI-stripped working copy; the matcher operates on plain text.
+   */
   const stripped = stripAnsi(line,);
 
   // Single linear pass over the stripped line; attempt a header match at each `x`/`!` candidate.
   for (let idx = 0; idx < stripped
     .length; idx += 1) {
-    /** Char at the cursor; only `x` or `!` can open a diagnostic header. */
+    /**
+     * Char at the cursor; only `x` or `!` can open a diagnostic header.
+     */
     const c = stripped.charAt(idx,);
     if ((c === 'x') || (c === '!')) {
-      /** Header-match attempt anchored at the candidate; a rule name on the first valid header, else `NO_RULE`. */
+      /**
+       * Header-match attempt anchored at the candidate; a rule name on the first valid header, else `NO_RULE`.
+       */
       const result = matchHeaderAt({
         text: stripped,
         punctIdx: idx,
@@ -531,7 +567,9 @@ export function isHelpLine(line: string,): boolean {
 
 //region Output augmentation
 
-/** Indentation prefix for injected note lines, matching oxlint's `help:` alignment. */
+/**
+ * Indentation prefix for injected note lines, matching oxlint's `help:` alignment.
+ */
 const NOTE_PREFIX = '  ';
 
 /**
@@ -581,20 +619,30 @@ export function augmentOxlintOutput(output: string,): string {
     === 0)
     return '';
 
-  /** Source output split per line so each diagnostic's header, body, and trailing blank can be inspected individually. */
+  /**
+   * Source output split per line so each diagnostic's header, body, and trailing blank can be inspected individually.
+   */
   const lines = output.split('\n',);
-  /** Output buffer assembled in order; guidance lines are spliced in alongside the originals. */
+  /**
+   * Output buffer assembled in order; guidance lines are spliced in alongside the originals.
+   */
   const result: string[] = [];
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: activeGuidance and injected are mutated by four branches across loop iterations, with side effects on `result`. */
-  /** Rule name from the current diagnostic block, `NO_RULE` when unmatched. */
+  /**
+   * Rule name from the current diagnostic block, `NO_RULE` when unmatched.
+   */
   let activeGuidance: string | typeof NO_RULE = NO_RULE;
-  /** Whether guidance has been injected for the current diagnostic block. */
+  /**
+   * Whether guidance has been injected for the current diagnostic block.
+   */
   let injected = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (const line of lines) {
-    /** Rule name extracted from the current line when it matches a diagnostic header; otherwise `NO_RULE`. */
+    /**
+     * Rule name extracted from the current line when it matches a diagnostic header; otherwise `NO_RULE`.
+     */
     const ruleName = extractRuleName(line,);
     if (ruleName !== NO_RULE) {
       activeGuidance = (RULE_GUIDANCE[ruleName]

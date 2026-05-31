@@ -62,7 +62,9 @@ export function wireSessionPersistence(
    * @returns snapshot of file path, expanded dirs, cursor, and scroll offset
    */
   function collectState(): SessionState {
-    /** Current cursor position; defaulted to `{0, 0}` below when no file is open. */
+    /**
+     * Current cursor position; defaulted to `{0, 0}` below when no file is open.
+     */
     const cursor = editorPane.getCursorPosition();
     return {
       filePath: getCurrentFilePath(),
@@ -76,7 +78,9 @@ export function wireSessionPersistence(
     };
   }
 
-  /** Debounced and immediate save functions scoped to this server identity. */
+  /**
+   * Debounced and immediate save functions scoped to this server identity.
+   */
   const {
     debouncedSave,
     saveNow,
@@ -86,13 +90,17 @@ export function wireSessionPersistence(
     getState: collectState,
   },);
 
-  /** Save state synchronously on page unload (tab close, navigation, reload). */
+  /**
+   * Save state synchronously on page unload (tab close, navigation, reload).
+   */
   globalThis.addEventListener(
     'beforeunload',
     saveNow,
   );
 
-  /** Save state when the user switches files. */
+  /**
+   * Save state when the user switches files.
+   */
   fileTree.addEventListener(
     'file-select',
     debouncedSave,
@@ -102,10 +110,14 @@ export function wireSessionPersistence(
     debouncedSave,
   );
 
-  /** Save state when the user scrolls the editor. */
+  /**
+   * Save state when the user scrolls the editor.
+   */
   editorPane.addScrollListener(debouncedSave,);
 
-  /** Save state when a directory is expanded or collapsed. */
+  /**
+   * Save state when a directory is expanded or collapsed.
+   */
   fileTree.addEventListener(
     'toggle',
     debouncedSave,

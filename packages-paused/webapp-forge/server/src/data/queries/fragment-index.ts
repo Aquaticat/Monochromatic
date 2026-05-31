@@ -59,7 +59,9 @@ export async function upsertFragmentIndexIfNewer(row: {
   readonly sourceEventId: number;
   readonly sourceEventSequence: number;
 },): Promise<boolean> {
-  /** Upsert result; `changes > 0` means our row won the sequence guard. */
+  /**
+   * Upsert result; `changes > 0` means our row won the sequence guard.
+   */
   const result = await run({
     sql:
       `INSERT INTO fragment_index(fragment_key, content_hash, last_built_at, source_event_id, source_event_sequence)

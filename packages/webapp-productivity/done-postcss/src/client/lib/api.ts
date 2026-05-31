@@ -19,11 +19,17 @@ export { showToast, };
  * a method, a JSON-string body, and optional extra headers.
  */
 export type ApiRequestOptions = {
-  /** HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`. */
+  /**
+   * HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`.
+   */
   readonly method?: string;
-  /** Request body; callers serialize JSON to a string. */
+  /**
+   * Request body; callers serialize JSON to a string.
+   */
   readonly body?: string;
-  /** Extra request headers merged over the default JSON content type. */
+  /**
+   * Extra request headers merged over the default JSON content type.
+   */
   readonly headers?: Readonly<Record<string, string>>;
 };
 
@@ -51,11 +57,15 @@ export async function api<TResponse = unknown,>(
     readonly options?: ApiRequestOptions;
   },
 ): Promise<TResponse> {
-  /** Combined header set; starts with the JSON content type and absorbs any caller-supplied headers. */
+  /**
+   * Combined header set; starts with the JSON content type and absorbs any caller-supplied headers.
+   */
   const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers
     !== undefined) {
-    /** Caller-supplied headers normalised through the `Headers` ctor before merging. */
+    /**
+     * Caller-supplied headers normalised through the `Headers` ctor before merging.
+     */
     const extra = new Headers({ ...options.headers, },);
     extra.forEach(function applyHeader(
       value: string,
@@ -67,7 +77,9 @@ export async function api<TResponse = unknown,>(
       );
     },);
   }
-  /** Raw fetch response shared by both the error and success paths below. */
+  /**
+   * Raw fetch response shared by both the error and success paths below.
+   */
   const response = await fetch(
     path,
     {
@@ -77,7 +89,9 @@ export async function api<TResponse = unknown,>(
   );
 
   if (!response.ok) {
-    /** Parsed body or fallback object; assigned in `try`, defaulted in `catch`. */
+    /**
+     * Parsed body or fallback object; assigned in `try`, defaulted in `catch`.
+     */
     let error: unknown = undefined;
     try {
       error = await response.json();
@@ -85,7 +99,9 @@ export async function api<TResponse = unknown,>(
     catch {
       error = { error: 'Request failed', };
     }
-    /** Human-readable error surfaced both via toast and the thrown `Error`. */
+    /**
+     * Human-readable error surfaced both via toast and the thrown `Error`.
+     */
     const message = (
         ((typeof error) === 'object')
         && (error !== null)

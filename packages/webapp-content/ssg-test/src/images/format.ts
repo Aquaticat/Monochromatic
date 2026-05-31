@@ -28,7 +28,9 @@ export {}; // module boundary marker
 
 await initPromise;
 
-/** Tagged logger for the image format conversion subsystem. */
+/**
+ * Tagged logger for the image format conversion subsystem.
+ */
 const l = tagged({
   tag: 'format:images',
   l: logger,
@@ -44,7 +46,9 @@ const l = tagged({
 const RASTER_GLOB =
   '**/*.{png,jpg,jpeg,tif,tiff,webp,gif,heic,heif,jxl,jp2,j2k,jpx,ppm,pgm,pbm,pfm,exr,hdr}';
 
-/** Directories to scan for raster images. */
+/**
+ * Directories to scan for raster images.
+ */
 const SCAN_DIRS = [
   'src/content',
   'public',
@@ -54,23 +58,31 @@ const SCAN_DIRS = [
 
 l.info('scanning for raster images',);
 
-/** Scan results from all directories, fetched concurrently. */
+/**
+ * Scan results from all directories, fetched concurrently.
+ */
 const scanResults = await Promise.all(
   SCAN_DIRS.map(function scanDir(dir,) {
     return readdir(`${dir}/${RASTER_GLOB}`,);
   },),
 );
 
-/** Conversion tasks for all discovered raster images across all scanned directories. */
+/**
+ * Conversion tasks for all discovered raster images across all scanned directories.
+ */
 const tasks = scanResults.flatMap(function buildTasks(result,) {
   return result.files
     .map(function createTask(filePath,) {
-    /** Base filename without extension, used to derive the AVIF output path. */
+    /**
+     * Base filename without extension, used to derive the AVIF output path.
+     */
     const nameWithoutExt = basename(
       filePath,
       extname(filePath,),
     );
-    /** Target AVIF path sitting alongside the source raster image. */
+    /**
+     * Target AVIF path sitting alongside the source raster image.
+     */
     const avifPath = join(
       dirname(filePath,),
       `${nameWithoutExt}.avif`,
@@ -83,12 +95,18 @@ const tasks = scanResults.flatMap(function buildTasks(result,) {
   },);
 },);
 
-/** Settled conversion outcomes used to tally converted vs skipped counts. */
+/**
+ * Settled conversion outcomes used to tally converted vs skipped counts.
+ */
 const results = await Promise.all(tasks,);
-/** Number of images that were newly converted to AVIF. */
+/**
+ * Number of images that were newly converted to AVIF.
+ */
 const converted = results.filter(Boolean,)
   .length;
-/** Number of images skipped because an AVIF counterpart already existed. */
+/**
+ * Number of images skipped because an AVIF counterpart already existed.
+ */
 const skipped = results.length
   - converted;
 

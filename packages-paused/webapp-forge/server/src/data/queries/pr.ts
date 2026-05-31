@@ -161,12 +161,16 @@ export async function createPullRequestWithEvent(row: {
         row.headSha,
       ],
     },);
-    /** Per-resource monotonic sequence captured before the event row insert. */
+    /**
+     * Per-resource monotonic sequence captured before the event row insert.
+     */
     const sequenceNumber = await nextSequence({
       resourceType: 'pr',
       resourceId: row.issueId,
     },);
-    /** Generated `events.id` returned to callers for cursor tracking. */
+    /**
+     * Generated `events.id` returned to callers for cursor tracking.
+     */
     const eventId = await insertEvent({
       resourceType: 'pr',
       resourceId: row.issueId,
@@ -227,12 +231,16 @@ export async function pushPullRequestHead(row: {
         row.issueId,
       ],
     },);
-    /** Per-resource monotonic sequence captured before the event row insert. */
+    /**
+     * Per-resource monotonic sequence captured before the event row insert.
+     */
     const sequenceNumber = await nextSequence({
       resourceType: 'pr',
       resourceId: row.issueId,
     },);
-    /** Generated `events.id` returned to callers for cursor tracking. */
+    /**
+     * Generated `events.id` returned to callers for cursor tracking.
+     */
     const eventId = await insertEvent({
       resourceType: 'pr',
       resourceId: row.issueId,

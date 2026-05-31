@@ -54,9 +54,13 @@ export function parseValueFromStart(
   remaining: FragmentStringJsonc;
 } {
   if (value.startsWith('"',)) {
-    /** Result of scanning the leading quoted string, with parsed node and tail. */
+    /**
+     * Result of scanning the leading quoted string, with parsed node and tail.
+     */
     const out = scanQuotedString({ value, },);
-    /** Final value node for string branch after optional comment propagation. */
+    /**
+     * Final value node for string branch after optional comment propagation.
+     */
     const parsed: Jsonc.Value = context?.comment
       ? {
         ...out.parsed,
@@ -69,15 +73,21 @@ export function parseValueFromStart(
     };
   }
 
-  /** Literal token attempt, or a sentinel symbol when the input is not a literal. */
+  /**
+   * Literal token attempt, or a sentinel symbol when the input is not a literal.
+   */
   const literal = parseLiteralToken({ value, },);
   if ((typeof literal) !== 'symbol') {
-    /** Matched literal node and remaining fragment extracted from tokenizer result. */
+    /**
+     * Matched literal node and remaining fragment extracted from tokenizer result.
+     */
     const {
       parsed: litParsed,
       remaining,
     } = literal;
-    /** Final value node for literal branch with optional comment propagation. */
+    /**
+     * Final value node for literal branch with optional comment propagation.
+     */
     const parsed: Jsonc.Value = context?.comment
       ? {
         ...litParsed,
@@ -91,14 +101,18 @@ export function parseValueFromStart(
   }
 
   if (value.startsWith('[',)) {
-    /** Delegated array parse preserving comments; context provides array-level comment. */
+    /**
+     * Delegated array parse preserving comments; context provides array-level comment.
+     */
     const out = context
       ? customParserForArray({
         value,
         context,
       },)
       : customParserForArray({ value, },);
-    /** Strip `remainingContent` to produce standard Value shape for the caller. */
+    /**
+     * Strip `remainingContent` to produce standard Value shape for the caller.
+     */
     const {
       remainingContent,
       ...parsed
@@ -110,14 +124,18 @@ export function parseValueFromStart(
   }
 
   if (value.startsWith('{',)) {
-    /** Delegated object parse preserving comments; context comment applies to record node. */
+    /**
+     * Delegated object parse preserving comments; context comment applies to record node.
+     */
     const out = context
       ? customParserForRecord({
         value,
         context,
       },)
       : customParserForRecord({ value, },);
-    /** Strip `remainingContent` to produce standard Value shape for the caller. */
+    /**
+     * Strip `remainingContent` to produce standard Value shape for the caller.
+     */
     const {
       remainingContent,
       ...parsed
@@ -147,9 +165,13 @@ export function parseValueFromStart(
       },
     ))
   {
-    /** Delegated number token parse; ensures JSON numeric semantics. */
+    /**
+     * Delegated number token parse; ensures JSON numeric semantics.
+     */
     const out = parseNumberToken({ value, },);
-    /** Final value node for number branch with optional comment propagation. */
+    /**
+     * Final value node for number branch with optional comment propagation.
+     */
     const parsed: Jsonc.Value = context?.comment
       ? {
         ...out.parsed,
@@ -165,6 +187,8 @@ export function parseValueFromStart(
   throw new Error('invalid jsonc value start',);
 }
 
-/** Register with dispatch so array/record cores can call back without circular imports. */
+/**
+ * Register with dispatch so array/record cores can call back without circular imports.
+ */
 registerParseValue(parseValueFromStart,);
 //endregion Value dispatcher

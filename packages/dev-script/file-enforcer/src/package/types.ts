@@ -94,13 +94,21 @@ export type PackageEntry = {
    * skips the live `canProvide` check and fails fast.
    */
   readonly available?: ReadonlySet<PackageManager>;
-  /** Binary name to check on PATH. */
+  /**
+   * Binary name to check on PATH.
+   */
   readonly bin: string;
-  /** Flag passed to the binary for existence check (default: `--version`). */
+  /**
+   * Flag passed to the binary for existence check (default: `--version`).
+   */
   readonly check: string;
-  /** Repology canonical project name; fallback package name when no override exists. */
+  /**
+   * Repology canonical project name; fallback package name when no override exists.
+   */
   readonly effname: string;
-  /** Per-manager package name overrides (only entries that differ from effname). */
+  /**
+   * Per-manager package name overrides (only entries that differ from effname).
+   */
   readonly overrides: PackageMapping;
 };
 

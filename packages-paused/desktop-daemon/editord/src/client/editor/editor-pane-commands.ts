@@ -42,22 +42,36 @@ import {
  * that reached into `this.#shadow`.
  */
 type PaneApi = {
-  /** Returns the contenteditable container, or null before connected. */
+  /**
+   * Returns the contenteditable container, or null before connected.
+   */
   readonly getEditorElement: () => HTMLDivElement | null;
-  /** Returns the current caret position, or null. */
+  /**
+   * Returns the current caret position, or null.
+   */
   readonly getCursorPosition: () => EditorPosition | null;
-  /** Places the caret at the specified position. */
+  /**
+   * Places the caret at the specified position.
+   */
   readonly restoreCursor: (pos: {
     readonly line: number;
     readonly character: number;
   },) => void;
-  /** Returns selection coordinates, or null. */
+  /**
+   * Returns selection coordinates, or null.
+   */
   readonly getSelection: () => SelectionCoords | null;
-  /** Sets the editor selection. */
+  /**
+   * Sets the editor selection.
+   */
   readonly setSelection: (coords: SelectionCoords,) => void;
-  /** Triggers deferred syntax highlighting. */
+  /**
+   * Triggers deferred syntax highlighting.
+   */
   readonly requestHighlight: () => void;
-  /** Shadow root for composed range resolution. */
+  /**
+   * Shadow root for composed range resolution.
+   */
   readonly shadowRoot: ShadowRoot | null;
 };
 
@@ -87,15 +101,21 @@ function performLineOp({
     readonly character: number;
   } | null;
 },): void {
-  /** Contenteditable container; null when the pane has not been connected yet. */
+  /**
+   * Contenteditable container; null when the pane has not been connected yet.
+   */
   const editor = pane.getEditorElement();
   if (editor === null)
     return;
-  /** Current caret position; null when no selection is active in the editor. */
+  /**
+   * Current caret position; null when no selection is active in the editor.
+   */
   const pos = pane.getCursorPosition();
   if (pos === null)
     return;
-  /** New caret position returned by the operation, or null when the caret should not move. */
+  /**
+   * New caret position returned by the operation, or null when the caret should not move.
+   */
   const result = fn({
     editor,
     ...pos,
@@ -119,17 +139,25 @@ function performIndentOp({
   readonly pane: PaneApi;
   readonly fn: typeof doIndent;
 },): void {
-  /** Contenteditable container; null when the pane has not been connected yet. */
+  /**
+   * Contenteditable container; null when the pane has not been connected yet.
+   */
   const editor = pane.getEditorElement();
   if (editor === null)
     return;
-  /** Current caret position; null when no selection is active. */
+  /**
+   * Current caret position; null when no selection is active.
+   */
   const pos = pane.getCursorPosition();
   if (pos === null)
     return;
-  /** Raw selection bounds, including collapsed cases that the indent op should ignore. */
+  /**
+   * Raw selection bounds, including collapsed cases that the indent op should ignore.
+   */
   const sel = pane.getSelection();
-  /** Same selection narrowed to multi-position ranges; null when the selection is collapsed. */
+  /**
+   * Same selection narrowed to multi-position ranges; null when the selection is collapsed.
+   */
   const nonCollapsed = (sel !== null)
       && (!((sel.startLine
         === sel
@@ -138,7 +166,9 @@ function performIndentOp({
           .endCharacter)))
     ? sel
     : null;
-  /** Outcome of the indent/unindent run, expressed as either an updated selection or a new caret. */
+  /**
+   * Outcome of the indent/unindent run, expressed as either an updated selection or a new caret.
+   */
   const result = fn({
     editor,
     cursorLine: pos.line,
@@ -230,14 +260,20 @@ export function performSwapUp({ pane, }: { readonly pane: PaneApi; },): void {
  * ```
  */
 export function performSelectAndCopy({ pane, }: { readonly pane: PaneApi; },): boolean {
-  /** Contenteditable container; bail when the pane is not connected or its shadow is detached. */
+  /**
+   * Contenteditable container; bail when the pane is not connected or its shadow is detached.
+   */
   const editor = pane.getEditorElement();
   if ((editor === null) || (pane.shadowRoot
     === null))
     return false;
-  /** Caret position needed to identify which line should be copied. */
+  /**
+   * Caret position needed to identify which line should be copied.
+   */
   const pos = pane.getCursorPosition();
-  /** Composed selection range resolved through the shadow root; null when no caret is set. */
+  /**
+   * Composed selection range resolved through the shadow root; null when no caret is set.
+   */
   const composedRange = getComposedRange({ shadow: pane.shadowRoot, },);
   if ((composedRange === null) || (pos === null))
     return false;

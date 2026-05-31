@@ -5,13 +5,21 @@
  * flexible comparison against model responses that may vary in trailing newlines.
  */
 
-/** Single simulation test case with program source and expected trimmed output */
+/**
+ * Single simulation test case with program source and expected trimmed output
+ */
 export type SimulationCase = {
-  /** Short identifier used in logging */
+  /**
+   * Short identifier used in logging
+   */
   readonly label: string;
-  /** Stak program source (newline-separated tokens) */
+  /**
+   * Stak program source (newline-separated tokens)
+   */
   readonly program: string;
-  /** Expected output after trimming leading/trailing whitespace */
+  /**
+   * Expected output after trimming leading/trailing whitespace
+   */
   readonly expected: string;
 };
 

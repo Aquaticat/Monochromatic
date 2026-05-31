@@ -1,7 +1,9 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
-/** Shadow DOM styles for the `\<section-heading\>` component. */
+/**
+ * Shadow DOM styles for the `\<section-heading\>` component.
+ */
 const STYLES = css(`
   :host {
     @apply --flex-column;
@@ -34,13 +36,19 @@ const STYLES = css(`
  * Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
  */
 class SectionHeading extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Whether the section content is currently expanded. */
+  /**
+   * Whether the section content is currently expanded.
+   */
   #open = true;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -55,7 +63,9 @@ class SectionHeading extends HTMLElement {
     return this.#open;
   }
 
-  /** Renders the heading and attaches the toggle click handler. */
+  /**
+   * Renders the heading and attaches the toggle click handler.
+   */
   connectedCallback(): void {
     this.#render();
     this.#shadow
@@ -87,14 +97,20 @@ class SectionHeading extends HTMLElement {
     );
   }
 
-  /** Updates the toggle indicator and content visibility. */
+  /**
+   * Updates the toggle indicator and content visibility.
+   */
   #updateToggle(): void {
-    /** Toggle indicator span; absent before first render, so the check below guards. */
+    /**
+     * Toggle indicator span; absent before first render, so the check below guards.
+     */
     const toggle = this.#shadow
       .querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)
       toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
-    /** Content wrapper whose display style is flipped to show or hide the slotted content. */
+    /**
+     * Content wrapper whose display style is flipped to show or hide the slotted content.
+     */
     const content = this.#shadow
       .querySelector<HTMLElement>('.content',);
     if (content !== null) {
@@ -103,12 +119,18 @@ class SectionHeading extends HTMLElement {
     }
   }
 
-  /** Renders the heading, toggle indicator, and content slot into the shadow root. */
+  /**
+   * Renders the heading, toggle indicator, and content slot into the shadow root.
+   */
   #render(): void {
-    /** Leading icon glyph from the `icon` attribute. */
+    /**
+     * Leading icon glyph from the `icon` attribute.
+     */
     const icon = this.getAttribute('icon',)
       ?? '';
-    /** Heading text from the `label` attribute, displayed next to the icon. */
+    /**
+     * Heading text from the `label` attribute, displayed next to the icon.
+     */
     const label = this.getAttribute('label',)
       ?? '';
 

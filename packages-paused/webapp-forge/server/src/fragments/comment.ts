@@ -15,13 +15,21 @@ import {
  * View-model fed to the {@link renderComment} renderer.
  */
 export type CommentData = {
-  /** Comment id (used in the permalink anchor). */
+  /**
+   * Comment id (used in the permalink anchor).
+   */
   readonly id: string;
-  /** Author login. */
+  /**
+   * Author login.
+   */
   readonly authorLogin: string;
-  /** Comment body text. */
+  /**
+   * Comment body text.
+   */
   readonly body: string;
-  /** ISO timestamp of creation. */
+  /**
+   * ISO timestamp of creation.
+   */
   readonly createdAt: string;
 };
 

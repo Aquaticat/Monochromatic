@@ -40,17 +40,23 @@ export async function updateConfig(
     readonly cpus?: number;
   },
 ): Promise<void> {
-  /** Tagged logger so config-update entries are scoped to `updateConfig` in the output. */
+  /**
+   * Tagged logger so config-update entries are scoped to `updateConfig` in the output.
+   */
   const rl = tagged({
     tag: updateConfig.name,
     l,
   },);
   rl.info(`updating config for "${name}"`,);
 
-  /** Current configuration to modify. */
+  /**
+   * Current configuration to modify.
+   */
   const config = await readConfig(name,);
 
-  /** Updated boot config with overrides applied. */
+  /**
+   * Updated boot config with overrides applied.
+   */
   const updatedBoot = {
     memory: memory
       ?? config
@@ -62,7 +68,9 @@ export async function updateConfig(
       .cpus,
   };
 
-  /** New config with updated boot settings. */
+  /**
+   * New config with updated boot settings.
+   */
   const updatedConfig = {
     ...config,
     boot: updatedBoot,

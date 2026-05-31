@@ -27,10 +27,14 @@ import { fileURLToPath, } from 'node:url';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-/** Absolute directory of this module, used to locate the sibling codepoints file. */
+/**
+ * Absolute directory of this module, used to locate the sibling codepoints file.
+ */
 const HERE = import.meta.dirname;
 
-/** Raw text contents of the upstream `codepoints` file. */
+/**
+ * Raw text contents of the upstream `codepoints` file.
+ */
 const raw = readFileSync(
   join(
     HERE,
@@ -39,7 +43,9 @@ const raw = readFileSync(
   'utf8',
 );
 
-/** Radix of hex codepoint values in the upstream `codepoints` file. */
+/**
+ * Radix of hex codepoint values in the upstream `codepoints` file.
+ */
 const HEX_RADIX = 16;
 
 /**
@@ -60,7 +66,9 @@ function parseLine(line: string,): readonly [
   string,
   string,
 ] {
-  /** Space-delimited fields; a well-formed line is `name codepoint`, so both fields are required. */
+  /**
+   * Space-delimited fields; a well-formed line is `name codepoint`, so both fields are required.
+   */
   const [name, hex,] = line.split(' ',);
   return [
     nonNullishOrThrow(name,),
@@ -71,7 +79,9 @@ function parseLine(line: string,): readonly [
   ] as const;
 }
 
-/** Complete Material Symbols Outlined icon name → codepoint map. */
+/**
+ * Complete Material Symbols Outlined icon name → codepoint map.
+ */
 export const ICON_CODEPOINTS: Readonly<Record<string, string>> = Object
   .fromEntries(
     raw

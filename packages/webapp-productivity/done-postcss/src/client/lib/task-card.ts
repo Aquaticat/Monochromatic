@@ -14,21 +14,33 @@ import {
 
 export { formatRunningTrackedTime, } from './format-tracked-time.ts';
 
-/** Sentinel returned by `getChipElement` when no chip matches the prefix. */
+/**
+ * Sentinel returned by `getChipElement` when no chip matches the prefix.
+ */
 const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
 
-/** `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips. */
+/**
+ * `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
+ */
 class TaskCard extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Currently displayed task; absent before configuration. */
+  /**
+   * Currently displayed task; absent before configuration.
+   */
   #task?: Task;
 
-  /** Current rendering options; absent before configuration. */
+  /**
+   * Current rendering options; absent before configuration.
+   */
   #options?: TaskCardOptions;
 
-  /** Initializes the shadow root for encapsulated rendering. */
+  /**
+   * Initializes the shadow root for encapsulated rendering.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -68,11 +80,17 @@ class TaskCard extends HTMLElement {
     return CHIP_NOT_FOUND;
   }
 
-  /** Renders the full card content into the shadow root. */
+  /**
+   * Renders the full card content into the shadow root.
+   */
   #render(): void {
-    /** Local snapshot used for the absence guard and the renderer call below. */
+    /**
+     * Local snapshot used for the absence guard and the renderer call below.
+     */
     const task = this.#task;
-    /** Local snapshot used for the absence guard and the renderer call below. */
+    /**
+     * Local snapshot used for the absence guard and the renderer call below.
+     */
     const options = this.#options;
     if ((task === undefined) || (options === undefined))
       return;
@@ -114,7 +132,9 @@ export function createTaskCard(
   },
 ): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element registered as "task-card" */
-  /** Configured custom element returned to the caller for DOM insertion. */
+  /**
+   * Configured custom element returned to the caller for DOM insertion.
+   */
   const card = document.createElement('task-card',) as TaskCard;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   card.configure(

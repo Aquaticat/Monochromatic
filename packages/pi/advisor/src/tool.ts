@@ -38,11 +38,17 @@ import type {
 
 //region Public API
 
-/** Options for creating the registered Advisor tool. */
+/**
+ * Options for creating the registered Advisor tool.
+ */
 export type CreateAdvisorToolOptions = {
-  /** Return current runtime config. */
+  /**
+   * Return current runtime config.
+   */
   readonly getConfig: () => AdvisorConfig;
-  /** Return current session enablement. */
+  /**
+   * Return current session enablement.
+   */
   readonly getSessionEnabled: () => boolean;
 };
 
@@ -90,9 +96,13 @@ export function createAdvisorTool(
         );
       }
 
-      /** Runtime config snapshot for this call. */
+      /**
+       * Runtime config snapshot for this call.
+       */
       const config = toolOptions.getConfig();
-      /** Advisor run result. */
+      /**
+       * Advisor run result.
+       */
       const result = await runAdvisor({
         ctx,
         config,
@@ -157,9 +167,13 @@ export function createAdvisorTool(
 export async function runAdvisor(
   options: AdvisorRunOptions,
 ): Promise<AdvisorRunResult> {
-  /** Start time for duration metadata. */
+  /**
+   * Start time for duration metadata.
+   */
   const startedAt = Date.now();
-  /** Effective scoped model set. */
+  /**
+   * Effective scoped model set.
+   */
   const scope = resolveEffectiveScope({
     ctx: options.ctx,
     errorPrefix: 'advisor',
@@ -172,9 +186,13 @@ export async function runAdvisor(
     );
   }
 
-  /** Advisor model system prompt. */
+  /**
+   * Advisor model system prompt.
+   */
   const advisorSystemPrompt = buildAdvisorSystemPrompt(options.config,);
-  /** Selected Advisor model and model-budgeted serialized context. */
+  /**
+   * Selected Advisor model and model-budgeted serialized context.
+   */
   const selectionContext = selectAdvisorRunContext({
     branch: options
       .ctx
@@ -192,13 +210,17 @@ export async function runAdvisor(
     ...(options.toolCallId
       === undefined ? {} : { toolCallId: options.toolCallId, }),
   },);
-  /** Selected Advisor model and serialized conversation context. */
+  /**
+   * Selected Advisor model and serialized conversation context.
+   */
   const {
     selection,
     advisorContext,
   } = selectionContext;
 
-  /** Provider response from selected secondary model. */
+  /**
+   * Provider response from selected secondary model.
+   */
   const response = await completeAdvisor({
     ctx: options.ctx,
     model: selection.selected
@@ -208,7 +230,9 @@ export async function runAdvisor(
     ...(options.signal
       === undefined ? {} : { signal: options.signal, }),
   },);
-  /** Extracted advisor text. */
+  /**
+   * Extracted advisor text.
+   */
   const text = extractAdvisorText(response,)
     || '(advisor returned no text)';
 

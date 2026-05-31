@@ -106,17 +106,29 @@ export type RangeState = Readonly<Record<ChannelKey, readonly [
 
 //region Constants
 
-/** TS-majority cutoff used by the toggle: TS ratio `>=` this counts as TS-majority. */
+/**
+ * TS-majority cutoff used by the toggle: TS ratio `>=` this counts as TS-majority.
+ */
 const TS_MAJORITY_THRESHOLD = 0.95;
-/** "Large" cutoff used by the toggle: source bytes `>=` this counts as large. */
+/**
+ * "Large" cutoff used by the toggle: source bytes `>=` this counts as large.
+ */
 const LARGE_SOURCE_BYTES_THRESHOLD = 10_000;
-/** "Recent" cutoff used by the toggle: days since last commit `<` this counts as recent. */
+/**
+ * "Recent" cutoff used by the toggle: days since last commit `<` this counts as recent.
+ */
 const RECENT_DAYS_THRESHOLD = 365;
-/** Floor used in log scaling; values `<=` floor map to `log10(floor)` to avoid `-Infinity`. */
+/**
+ * Floor used in log scaling; values `<=` floor map to `log10(floor)` to avoid `-Infinity`.
+ */
 const LOG_FLOOR = 1;
-/** Maximum allowed length of a user-typed `/regex/` body; protects against pathological patterns. */
+/**
+ * Maximum allowed length of a user-typed `/regex/` body; protects against pathological patterns.
+ */
 const MAX_USER_REGEX_LEN = 256;
-/** Numeric code for license classes; matches the `licenseClassNumeric` dim. */
+/**
+ * Numeric code for license classes; matches the `licenseClassNumeric` dim.
+ */
 const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
   permissive: 0,
   copyleft: 1,
@@ -336,7 +348,9 @@ function passesToggles(
   },
 ): boolean {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() loses key type; cast narrows it back. */
-  /** Key/value pairs from the toggle record, retyped so `passOne` sees the discriminated key. */
+  /**
+   * Key/value pairs from the toggle record, retyped so `passOne` sees the discriminated key.
+   */
   const entries = Object.entries(toggles,) as readonly (readonly [
     ToggleKey,
     ToggleValue,
@@ -399,13 +413,19 @@ function passesRanges(
   },
 ): boolean {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.keys() returns `string[]`; ChannelKey is the known set of keys. */
-  /** Channel ids from the dim mapping, retyped so `passOne` sees `ChannelKey`. */
+  /**
+   * Channel ids from the dim mapping, retyped so `passOne` sees `ChannelKey`.
+   */
   const channels = Object.keys(dimMapping,) as readonly ChannelKey[];
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   return channels.every(function passOne(channel,) {
-    /** Data dim currently bound to this channel; used to read the probe's value. */
+    /**
+     * Data dim currently bound to this channel; used to read the probe's value.
+     */
     const dim = dimMapping[channel];
-    /** Lower and upper bounds of the channel's range slider, in displayed-value units. */
+    /**
+     * Lower and upper bounds of the channel's range slider, in displayed-value units.
+     */
     const [
       min,
       max,
@@ -454,7 +474,9 @@ export function searchMatches(
 ): boolean {
   if (search === '')
     return true;
-  /** Lowercased npm name so the substring/regex test is case-insensitive. */
+  /**
+   * Lowercased npm name so the substring/regex test is case-insensitive.
+   */
   const name = probe.npmName
     .toLowerCase();
   if ((search.length
@@ -462,7 +484,9 @@ export function searchMatches(
     .startsWith('/',)
     && search
     .endsWith('/',)) {
-    /** Body between the `/.../` delimiters; capped to a benign length so a pathological pattern cannot hang the page. */
+    /**
+     * Body between the `/.../` delimiters; capped to a benign length so a pathological pattern cannot hang the page.
+     */
     const body = search.slice(
       1,
       -1,
@@ -551,7 +575,9 @@ export function computeVisibleIndices(
       probe,
       index,
     ) {
-      /** Conjunction of every filter check; only fully-passing probes contribute their index. */
+      /**
+       * Conjunction of every filter check; only fully-passing probes contribute their index.
+       */
       const ok = passesToggles({
         probe,
         toggles,

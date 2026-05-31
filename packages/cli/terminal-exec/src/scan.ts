@@ -17,7 +17,9 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-/** Tagged logger for this module. */
+/**
+ * Tagged logger for this module.
+ */
 const l = tagged({
   tag: 'scan',
   l: parentLogger,
@@ -63,9 +65,13 @@ async function readdirOrAbsent(
  * directory (last in the ascending-priority list) wins.
  */
 export type EntryRegistration = {
-  /** Desktop entry ID, e.g. `com.mitchellh.ghostty.desktop`. */
+  /**
+   * Desktop entry ID, e.g. `com.mitchellh.ghostty.desktop`.
+   */
   readonly id: string;
-  /** Absolute path to the `.desktop` file. */
+  /**
+   * Absolute path to the `.desktop` file.
+   */
   readonly path: string;
 };
 
@@ -77,7 +83,9 @@ export type EntryRegistration = {
  * @returns Array of absolute file paths.
  */
 async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<readonly string[]> {
-  /** Mutable accumulator filled by the inner walk function. */
+  /**
+   * Mutable accumulator filled by the inner walk function.
+   */
   const results: string[] = [];
 
   /**
@@ -86,12 +94,16 @@ async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<r
    * @param current - Directory to walk.
    */
   async function walk({ current, }: { readonly current: string; },): Promise<void> {
-    /** DIR_UNREADABLE when readdir throws (e.g. directory missing or unreadable); skip the directory. */
+    /**
+     * DIR_UNREADABLE when readdir throws (e.g. directory missing or unreadable); skip the directory.
+     */
     const entries = await readdirOrAbsent({ current, },);
     if (entries === DIR_UNREADABLE)
       return;
     for (const entry of entries) {
-      /** Absolute candidate for recursion or `.desktop` matching. */
+      /**
+       * Absolute candidate for recursion or `.desktop` matching.
+       */
       const fullPath = join(
         current,
         entry.name,
@@ -130,23 +142,33 @@ export async function scanEntries({ dirs, }: { readonly dirs: readonly string[];
   readonly registry: ReadonlyMap<string, EntryRegistration>;
   readonly fallbackIds: readonly string[];
 }> {
-  /** Mutable map; later dirs override earlier for same ID. */
+  /**
+   * Mutable map; later dirs override earlier for same ID.
+   */
   const registry = new Map<string, EntryRegistration>();
-  /** Tracks insertion order per directory for fallback priority. */
+  /**
+   * Tracks insertion order per directory for fallback priority.
+   */
   const allIds: string[] = [];
 
   for (const dir of dirs) {
     /* oxlint-disable no-await-in-loop -- sequential: later dirs override earlier for same ID */
-    /** Desktop files in one directory; one batch per priority level. */
+    /**
+     * Desktop files in one directory; one batch per priority level.
+     */
     const files = await findDesktopFiles({ dir, },);
     /* oxlint-enable no-await-in-loop */
     for (const filePath of files) {
-      /** Subpath used to derive the entry id. */
+      /**
+       * Subpath used to derive the entry id.
+       */
       const rel = relative(
         dir,
         filePath,
       );
-      /** Entry id per spec: subdir separators become dashes. */
+      /**
+       * Entry id per spec: subdir separators become dashes.
+       */
       const id = rel.replaceAll(
         '/',
         '-',
@@ -158,7 +180,9 @@ export async function scanEntries({ dirs, }: { readonly dirs: readonly string[];
           path: filePath,
         },
       );
-      /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
+      /**
+       * Remove previous occurrence so re-adding puts it at the end (higher priority).
+       */
       const prevIdx = allIds.indexOf(id,);
       if (prevIdx !== (-1)) {
         allIds.splice(
@@ -170,7 +194,9 @@ export async function scanEntries({ dirs, }: { readonly dirs: readonly string[];
     }
   }
 
-  /** Reverse so highest-priority entries come first in fallback ordering. */
+  /**
+   * Reverse so highest-priority entries come first in fallback ordering.
+   */
   const fallbackIds = allIds.toReversed();
 
   l.debug(

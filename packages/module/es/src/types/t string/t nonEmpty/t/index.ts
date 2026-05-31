@@ -16,12 +16,18 @@
 export type $ = `${any}${string}`;
 // oxlint-enable typescript/no-explicit-any
 
-/** Compile-time test: single character passes. */
+/**
+ * Compile-time test: single character passes.
+ */
 const _one: $ = '1';
-/** Compile-time test: multi-character string passes. */
+/**
+ * Compile-time test: multi-character string passes.
+ */
 const _two: $ = '12';
 
-/** Compile-time test: empty string fails assignment. */
+/**
+ * Compile-time test: empty string fails assignment.
+ */
 // @ts-expect-error; Type '""' is not assignable to type '`${any}${string}`'.ts(2322)
 const _empty: $ = '';
 

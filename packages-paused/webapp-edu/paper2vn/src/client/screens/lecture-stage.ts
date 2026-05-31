@@ -12,21 +12,37 @@ import {
   getCharacterPose,
 } from '../sprite-pack.ts';
 
-/** Assembled stage subtree plus the per-element references the screen drives. */
+/**
+ * Assembled stage subtree plus the per-element references the screen drives.
+ */
 export type LectureStage = {
-  /** Outer stage element receiving click events and holding the layered children. */
+  /**
+   * Outer stage element receiving click events and holding the layered children.
+   */
   stage: HTMLElement;
-  /** Character `<img>` whose `src` is swapped per beat pose. */
+  /**
+   * Character `<img>` whose `src` is swapped per beat pose.
+   */
   characterImg: HTMLImageElement;
-  /** Dialogue box (header + text), hidden when the user toggles Hide. */
+  /**
+   * Dialogue box (header + text), hidden when the user toggles Hide.
+   */
   dialogueBox: HTMLElement;
-  /** Inner element receiving the typewriter-revealed dialogue text. */
+  /**
+   * Inner element receiving the typewriter-revealed dialogue text.
+   */
   dialogueText: HTMLElement;
-  /** Speaker-name span shown in the dialogue header. */
+  /**
+   * Speaker-name span shown in the dialogue header.
+   */
   speakerName: HTMLElement;
-  /** Chapter-card overlay; `hidden` is toggled when a chapter begins. */
+  /**
+   * Chapter-card overlay; `hidden` is toggled when a chapter begins.
+   */
   chapterCard: HTMLElement;
-  /** Toolbar row hosting the navigation/auto/log/hide/ask buttons. */
+  /**
+   * Toolbar row hosting the navigation/auto/log/hide/ask buttons.
+   */
   toolbar: HTMLElement;
 };
 
@@ -43,12 +59,16 @@ export type LectureStage = {
  * ```
  */
 export function buildLectureStage(): LectureStage {
-  /** Top-level stage container holding background, character, dialogue, toolbar. */
+  /**
+   * Top-level stage container holding background, character, dialogue, toolbar.
+   */
   const stage = el({
     tag: 'div',
     attrs: { class: 'stage', },
   },);
-  /** Background layer painted with the classroom asset. */
+  /**
+   * Background layer painted with the classroom asset.
+   */
   const bg = el({
     tag: 'div',
     attrs: {
@@ -56,7 +76,9 @@ export function buildLectureStage(): LectureStage {
       style: `background-image: url("${getBackground('classroom',)}")`,
     },
   },);
-  /** Character portrait image whose `src` is swapped per beat pose. */
+  /**
+   * Character portrait image whose `src` is swapped per beat pose.
+   */
   const characterImg = el({
     tag: 'img',
     attrs: {
@@ -67,24 +89,32 @@ export function buildLectureStage(): LectureStage {
       alt: '',
     },
   },);
-  /** Wrapper sized to position the character relative to the stage. */
+  /**
+   * Wrapper sized to position the character relative to the stage.
+   */
   const characterWrap = el({
     tag: 'div',
     attrs: { class: 'stage-character', },
     children: [characterImg,],
   },);
-  /** Inner element receiving the typewriter-revealed dialogue text. */
+  /**
+   * Inner element receiving the typewriter-revealed dialogue text.
+   */
   const dialogueText = el({
     tag: 'div',
     attrs: { class: 'dialogue-text', },
   },);
-  /** Speaker-name span shown in the dialogue header. */
+  /**
+   * Speaker-name span shown in the dialogue header.
+   */
   const speakerName = el({
     tag: 'span',
     attrs: { class: 'speaker-name', },
     children: [getCharacterName('ruka',),],
   },);
-  /** Bottom dialogue box assembled from header + text. */
+  /**
+   * Bottom dialogue box assembled from header + text.
+   */
   const dialogueBox = el({
     tag: 'div',
     attrs: { class: 'stage-dialogue', },
@@ -97,13 +127,17 @@ export function buildLectureStage(): LectureStage {
       dialogueText,
     ],
   },);
-  /** Chapter-card overlay shown before the first beat of each chapter. */
+  /**
+   * Chapter-card overlay shown before the first beat of each chapter.
+   */
   const chapterCard = el({
     tag: 'div',
     attrs: { class: 'chapter-card', },
   },);
   chapterCard.hidden = true;
-  /** Toolbar row hosting the navigation/auto/log/hide/ask buttons. */
+  /**
+   * Toolbar row hosting the navigation/auto/log/hide/ask buttons.
+   */
   const toolbar = el({
     tag: 'div',
     attrs: { class: 'stage-controls', },

@@ -17,17 +17,27 @@ import type {
  * caller wants per-tense overrides; the default rendering uses `surface`.
  */
 export type ChineseVerbEntry = {
-  /** Bare surface form, e.g. `有` for `have`, `看见` for `see`, `删除` for `delete`. */
+  /**
+   * Bare surface form, e.g. `有` for `have`, `看见` for `see`, `删除` for `delete`.
+   */
   readonly surface: string;
-  /** Optional dedicated past-tense surface; falls back to `surface + 了`. */
+  /**
+   * Optional dedicated past-tense surface; falls back to `surface + 了`.
+   */
   readonly past?: string;
-  /** Optional dedicated future surface; falls back to `会 + surface`. */
+  /**
+   * Optional dedicated future surface; falls back to `会 + surface`.
+   */
   readonly future?: string;
-  /** Optional perfective surface, used when the renderer wants explicit completion marking. */
+  /**
+   * Optional perfective surface, used when the renderer wants explicit completion marking.
+   */
   readonly perfective?: string;
 };
 
-/** Input shape accepted by `defineChineseLocale`. */
+/**
+ * Input shape accepted by `defineChineseLocale`.
+ */
 export type DefineChineseLocaleInput<
   Label extends string,
   Subject extends string,
@@ -40,5 +50,7 @@ export type DefineChineseLocaleInput<
   readonly verbs: Readonly<Record<Verb, ChineseVerbEntry>>;
 };
 
-/** Chinese script never recases tokens; the invariant set is empty. */
+/**
+ * Chinese script never recases tokens; the invariant set is empty.
+ */
 export const ZH_CASE_INVARIANTS: ReadonlySet<string> = new Set();

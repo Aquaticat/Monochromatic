@@ -30,7 +30,9 @@ import {
 
 //region Types
 
-/** Wrapper distinguishing rendered HTML from raw text in the JSX tree. */
+/**
+ * Wrapper distinguishing rendered HTML from raw text in the JSX tree.
+ */
 export type SafeHtml = { readonly html: string; };
 
 //endregion Types
@@ -120,7 +122,9 @@ function renderChild(child: unknown,): string {
  * @returns space-prefixed attribute string (empty string if no attributes)
  */
 function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
-  /** Accumulator built up across the prop loop; concatenation matches the simple-serialisation contract. */
+  /**
+   * Accumulator built up across the prop loop; concatenation matches the simple-serialisation contract.
+   */
   let result = '';
   for (const [key, value,] of Object.entries(props,)) {
     if ((key === 'children') || (key === 'dangerouslySetInnerHTML'))
@@ -128,7 +132,9 @@ function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
     if ((value === null) || (value === undefined)
       || (value === false))
       continue;
-    /** Resolved HTML attribute name; PROP_TO_ATTR rewrites JSX-isms like `className` to `class`. */
+    /**
+     * Resolved HTML attribute name; PROP_TO_ATTR rewrites JSX-isms like `className` to `class`.
+     */
     const name = PROP_TO_ATTR[key]
       ?? key;
     if (value === true)
@@ -209,13 +215,17 @@ function jsxImpl(
   if ((typeof type) === 'function')
     return type(props,);
 
-  /** Serialised attribute string shared by both the void and the closed-tag paths. */
+  /**
+   * Serialised attribute string shared by both the void and the closed-tag paths.
+   */
   const attrs = renderAttrs(props,);
 
   if (VOID_ELEMENTS.has(type,))
     return { html: `<${type}${attrs}>`, };
 
-  /** Element body chosen between raw HTML escape hatch and rendered children. */
+  /**
+   * Element body chosen between raw HTML escape hatch and rendered children.
+   */
   const inner = isDangerousHtml(props.dangerouslySetInnerHTML,)
     ? props.dangerouslySetInnerHTML
       .__html

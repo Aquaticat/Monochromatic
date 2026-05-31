@@ -1,4 +1,6 @@
-/** Renders a single RSS feed item as an HTML list-item element. */
+/**
+ * Renders a single RSS feed item as an HTML list-item element.
+ */
 
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from './asset.ts';
@@ -22,18 +24,24 @@ export function itemToFeed(
     readonly index: number;
   },
 ): string {
-  /** Destructured top-level inputs so the body reads without `options.` prefix. */
+  /**
+   * Destructured top-level inputs so the body reads without `options.` prefix.
+   */
   const {
     itemWDate,
     index,
   } = options;
-  /** Destructured nested fields so the JSX-like tree reads directly. */
+  /**
+   * Destructured nested fields so the JSX-like tree reads directly.
+   */
   const {
     item,
     pubDateDate,
     feed,
   } = itemWDate;
-  /** Optional iframe markup omitted when description is absent so empty content stays unrendered. */
+  /**
+   * Optional iframe markup omitted when description is absent so empty content stays unrendered.
+   */
   const descriptionIframe = (item.description
     !== undefined) && (item.description
       !== '')

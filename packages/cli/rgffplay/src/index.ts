@@ -40,7 +40,9 @@ export {};
  * ```
  */
 function bracketFirst(word: string,): string {
-  /** First character isolated so it can be wrapped in a case-insensitive bracket; empty string when word is empty. */
+  /**
+   * First character isolated so it can be wrapped in a case-insensitive bracket; empty string when word is empty.
+   */
   const [first,] = word;
   if (first === undefined)
     return '';
@@ -75,7 +77,9 @@ function buildGlob(words: readonly string[],): string {
 
 //region Music directory resolution: XDG_MUSIC_DIR or xdg-user-dir fallback
 
-/** Tagged logger for music directory resolution. */
+/**
+ * Tagged logger for music directory resolution.
+ */
 const rlMusicDir = tagged({
   tag: resolveMusicDir.name,
   l,
@@ -92,7 +96,9 @@ const rlMusicDir = tagged({
  * @throws When `xdg-user-dir` is not available and `XDG_MUSIC_DIR` is unset.
  */
 async function resolveMusicDir(): Promise<string> {
-  /** User-set XDG override; preferred path when present so callers can point at any directory. */
+  /**
+   * User-set XDG override; preferred path when present so callers can point at any directory.
+   */
   const envDir = process.env
     .XDG_MUSIC_DIR;
   if ((envDir !== undefined) && (envDir.length
@@ -102,12 +108,16 @@ async function resolveMusicDir(): Promise<string> {
   }
 
   rlMusicDir.info('XDG_MUSIC_DIR unset, falling back to xdg-user-dir',);
-  /** Raw stdout from `xdg-user-dir MUSIC`; trimmed below since the helper appends a newline. */
+  /**
+   * Raw stdout from `xdg-user-dir MUSIC`; trimmed below since the helper appends a newline.
+   */
   const { stdout, } = await spawn(
     'xdg-user-dir',
     ['MUSIC',],
   );
-  /** Trimmed music directory path; stripping the trailing newline so the value is a valid filesystem path. */
+  /**
+   * Trimmed music directory path; stripping the trailing newline so the value is a valid filesystem path.
+   */
   const dir = stdout.trim();
   rlMusicDir.info(`xdg-user-dir resolved to "${dir}"`,);
   return dir;
@@ -117,7 +127,9 @@ async function resolveMusicDir(): Promise<string> {
 
 //region File search; rg --files with glob pattern
 
-/** Tagged logger for the file search phase. */
+/**
+ * Tagged logger for the file search phase.
+ */
 const rlSearch = tagged({
   tag: findFiles.name,
   l,
@@ -148,7 +160,9 @@ async function findFiles({
 },): Promise<readonly string[]> {
   rlSearch.info(`searching "${musicDir}" with glob "${glob}"`,);
 
-  /** Raw stdout from rg, null-byte-separated. */
+  /**
+   * Raw stdout from rg, null-byte-separated.
+   */
   const rgOutput = await spawn(
     'rg',
     [
@@ -170,7 +184,9 @@ async function findFiles({
           && ((typeof err) === 'object')
           && ('exitCode' in err))
         {
-          /** Process exit code pulled off the spawn error so the no-match case (1) can be rethrown with a clearer message. */
+          /**
+           * Process exit code pulled off the spawn error so the no-match case (1) can be rethrown with a clearer message.
+           */
           const { exitCode, } = err;
           if (exitCode === 1) {
             throw new Error(
@@ -183,7 +199,9 @@ async function findFiles({
       },
     );
 
-  /** Matched file paths split from the null-separated rg output; empty fragments dropped so the count reflects real matches. */
+  /**
+   * Matched file paths split from the null-separated rg output; empty fragments dropped so the count reflects real matches.
+   */
   const files = rgOutput.split('\0',)
     .filter(function nonEmpty(f,) {
     return f.length
@@ -212,7 +230,9 @@ async function findFiles({
 
 //region Playback: ffplay with matched files
 
-/** Tagged logger for the playback phase. */
+/**
+ * Tagged logger for the playback phase.
+ */
 const rlPlay = tagged({
   tag: 'playback',
   l,
@@ -222,13 +242,17 @@ const rlPlay = tagged({
 
 //region Main execution: parse args, find files, play
 
-/** Tagged logger for the main execution flow. */
+/**
+ * Tagged logger for the main execution flow.
+ */
 const rl = tagged({
   tag: 'main',
   l,
 },);
 
-/** Positional arguments forming the search query. */
+/**
+ * Positional arguments forming the search query.
+ */
 const args = process.argv
   .slice(2,);
 
@@ -241,14 +265,20 @@ if (args.length
 
 rl.info(`query: "${args.join(' ',)}"`,);
 
-/** Ripgrep glob pattern built from the query words. */
+/**
+ * Ripgrep glob pattern built from the query words.
+ */
 const glob = buildGlob(args,);
 rl.info(`glob: "${glob}"`,);
 
-/** Resolved absolute path to the music directory. */
+/**
+ * Resolved absolute path to the music directory.
+ */
 const musicDir = await resolveMusicDir();
 
-/** Matched music file paths from ripgrep. */
+/**
+ * Matched music file paths from ripgrep.
+ */
 const files = await findFiles({
   glob,
   musicDir,

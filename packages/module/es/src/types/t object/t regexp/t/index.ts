@@ -1,2 +1,4 @@
-/** Type alias for `RegExp`. */
+/**
+ * Type alias for `RegExp`.
+ */
 export type $ = RegExp;

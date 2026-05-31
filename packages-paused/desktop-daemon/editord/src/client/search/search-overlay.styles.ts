@@ -14,13 +14,19 @@ import {
 
 import { DIALOG_STYLES, } from './dialog.styles.ts';
 
-/** Result item padding in `rem`: 0.5 = 1 / 2. */
+/**
+ * Result item padding in `rem`: 0.5 = 1 / 2.
+ */
 const RESULT_PADDING = 1 / 2;
 
-/** Result line height multiplier: 1.5 = (2 + 1) / 2. */
+/**
+ * Result line height multiplier: 1.5 = (2 + 1) / 2.
+ */
 const RESULT_LINE_HEIGHT = (2 + 1) / 2;
 
-/** Shadow DOM styles for the search overlay. */
+/**
+ * Shadow DOM styles for the search overlay.
+ */
 export const STYLES: string = DIALOG_STYLES + [
   $({
     rule: '.results',

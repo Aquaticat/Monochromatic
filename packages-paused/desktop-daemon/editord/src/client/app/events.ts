@@ -24,27 +24,43 @@ import type {
   SearchOverlayHandle,
 } from './types.ts';
 
-/** Tagged logger for the app events subsystem. */
+/**
+ * Tagged logger for the app events subsystem.
+ */
 const appLog = tagged({
   tag: 'app-events',
   l: rootLogger,
 },);
 
-/** Mutable app state passed by reference from the main module. */
+/**
+ * Mutable app state passed by reference from the main module.
+ */
 export type AppState = {
-  /** Path of the currently open file. */
+  /**
+   * Path of the currently open file.
+   */
   currentFilePath: string | null;
-  /** Kind of the currently open file. */
+  /**
+   * Kind of the currently open file.
+   */
   currentFileKind: FileKind;
 };
 
-/** Callback surface for current-file state owned by app.ts. */
+/**
+ * Callback surface for current-file state owned by app.ts.
+ */
 export type CurrentFileStateAccess = {
-  /** Reads currently open file path without exposing mutable state. */
+  /**
+   * Reads currently open file path without exposing mutable state.
+   */
   readonly getCurrentFilePath: () => string | null;
-  /** Updates currently open file path without exposing mutable state. */
+  /**
+   * Updates currently open file path without exposing mutable state.
+   */
   readonly setCurrentFilePath: (path: string | null,) => void;
-  /** Reads currently open file kind after a load completes. */
+  /**
+   * Reads currently open file kind after a load completes.
+   */
   readonly getCurrentFileKind: () => FileKind;
 };
 
@@ -134,7 +150,9 @@ export function wireSelectEvents(
     'file-select',
     function handleFileSelect(event,) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree */
-      /** Custom-event detail destructured to read the selected file path. */
+      /**
+       * Custom-event detail destructured to read the selected file path.
+       */
       const { path, } = (event as CustomEvent<{ readonly path: string; }>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       currentFileState.setCurrentFilePath(path,);
@@ -151,7 +169,9 @@ export function wireSelectEvents(
     'result-select',
     function handleResultSelect(event,) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay */
-      /** Custom-event detail destructured to read the selected file path and line. */
+      /**
+       * Custom-event detail destructured to read the selected file path and line.
+       */
       const {
         path,
         line,
@@ -172,7 +192,9 @@ export function wireSelectEvents(
     'reference-select',
     function handleReferenceSelect(event,) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup */
-      /** Custom-event detail destructured to read the navigation target. */
+      /**
+       * Custom-event detail destructured to read the navigation target.
+       */
       const {
         path,
         line,

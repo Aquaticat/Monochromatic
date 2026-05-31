@@ -33,7 +33,9 @@ import { PARSERS, } from './language-parsers.ts';
  * ```
  */
 export function getParserForPath({ path, }: { readonly path: string; },): Parser | null {
-  /** Index of the final `.` in the path; `-1` means no extension. */
+  /**
+   * Index of the final `.` in the path; `-1` means no extension.
+   */
   const dotIndex = path.lastIndexOf('.',);
   if (dotIndex === (-1))
     return null;

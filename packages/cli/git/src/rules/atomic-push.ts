@@ -37,22 +37,30 @@ import { parsePushRegion, } from '../parsers/push.ts';
  * ```
  */
 export function atomicPush(args: readonly string[],): readonly string[] {
-  /** Position of the `push` (or other) subcommand within args. */
+  /**
+   * Position of the `push` (or other) subcommand within args.
+   */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
   if (args[subcommandIndex]
     !== 'push')
     return args;
 
-  /** Tagged logger for the atomic-push rule. */
+  /**
+   * Tagged logger for the atomic-push rule.
+   */
   const rl = tagged({
     tag: atomicPush.name,
     l,
   },);
 
-  /** Slice of args strictly after the `push` token; the place where push flags live. */
+  /**
+   * Slice of args strictly after the `push` token; the place where push flags live.
+   */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
-  /** Push region facts parsed by optique. */
+  /**
+   * Push region facts parsed by optique.
+   */
   const region = parsePushRegion(postSubcommandArgs,);
 
   if (region.hasAtomicChoice) {

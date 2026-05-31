@@ -8,7 +8,9 @@
 import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import { HIGHLIGHT_GROUPS, } from './tags.ts';
 
-/** Maximum file size in bytes for syntax highlighting. */
+/**
+ * Maximum file size in bytes for syntax highlighting.
+ */
 export const MAX_HIGHLIGHT_BYTES: number = FILE_SIZE_WARNING_THRESHOLD;
 
 /**
@@ -27,7 +29,9 @@ export const MAX_HIGHLIGHT_BYTES: number = FILE_SIZE_WARNING_THRESHOLD;
  */
 export function getLineTexts({ editor, }: { readonly editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
-    /** Defensive default keeps empty divs producing the empty string rather than null. */
+    /**
+     * Defensive default keeps empty divs producing the empty string rather than null.
+     */
     const text = div.textContent
       ?? '';
     return text === '\n' ? '' : text;
@@ -71,9 +75,13 @@ export function findLineForOffset({
   let hi = lineStarts.length
     - 1;
   while (lo <= hi) {
-    /** Unsigned right shift halves without overflowing for very long files. */
+    /**
+     * Unsigned right shift halves without overflowing for very long files.
+     */
     const mid = (lo + hi) >>> 1;
-    /** Cumulative offset at the candidate line; undefined breaks the loop. */
+    /**
+     * Cumulative offset at the candidate line; undefined breaks the loop.
+     */
     const start = lineStarts[mid];
     if (start === undefined)
       break;

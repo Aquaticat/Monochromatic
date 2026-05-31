@@ -39,7 +39,9 @@ import type {
  * ```
  */
 export function parseOs(os: string,): ParsedOs {
-  /** Split point between protocol prefix and distro; -1 signals missing prefix. */
+  /**
+   * Split point between protocol prefix and distro; -1 signals missing prefix.
+   */
   const colonIndex = os.indexOf(':',);
 
   if (colonIndex === (-1)) {
@@ -48,12 +50,16 @@ export function parseOs(os: string,): ParsedOs {
     );
   }
 
-  /** Captured separately so the protocol switch below reads as a plain comparison. */
+  /**
+   * Captured separately so the protocol switch below reads as a plain comparison.
+   */
   const protocol = os.slice(
     0,
     colonIndex,
   );
-  /** Remaining suffix; may itself contain a `:` tag (e.g. `fedora:39`), kept intact. */
+  /**
+   * Remaining suffix; may itself contain a `:` tag (e.g. `fedora:39`), kept intact.
+   */
   const distro = os.slice(colonIndex + 1,);
 
   if (protocol === 'container') {
@@ -112,33 +118,49 @@ export function buildContainerCommand({
   readonly combination: Combination;
   readonly monorepoRoot: string;
 },): string {
-  /** Pre-parsed protocol+distro so the downstream lookups stay independent of string parsing. */
+  /**
+   * Pre-parsed protocol+distro so the downstream lookups stay independent of string parsing.
+   */
   const parsed = parseOs(combination.os,);
-  /** Resolved package manager; gates the variant of every install command below. */
+  /**
+   * Resolved package manager; gates the variant of every install command below.
+   */
   const manager = detectPackageManager(parsed.distro,);
-  /** Step 1 of the container script: install curl/unzip/sudo via the distro's package manager. */
+  /**
+   * Step 1 of the container script: install curl/unzip/sudo via the distro's package manager.
+   */
   const prerequisites = prerequisiteCommand({
     manager,
     user: combination.user,
   },);
-  /** Step 2: create the non-root test user when needed; empty string for root. */
+  /**
+   * Step 2: create the non-root test user when needed; empty string for root.
+   */
   const userSetup = userCreationCommand({
     manager,
     user: combination.user,
   },);
-  /** Step 3: install the JS runtime that will execute the test file. */
+  /**
+   * Step 3: install the JS runtime that will execute the test file.
+   */
   const runtimeInstall = runtimeInstallCommand(combination.runtime,);
 
-  /** Path to the test file inside the container (mounted at /workspace). */
+  /**
+   * Path to the test file inside the container (mounted at /workspace).
+   */
   const relativePath = combination.file
     .startsWith(monorepoRoot,)
     ? combination.file
       .slice(monorepoRoot.length
         + 1,)
     : combination.file;
-  /** Container-side absolute path; the host's monorepo is mounted at /workspace. */
+  /**
+   * Container-side absolute path; the host's monorepo is mounted at /workspace.
+   */
   const containerFilePath = `/workspace/${relativePath}`;
-  /** Step 4: actual `runtime run <file>` invocation built from the resolved binary path. */
+  /**
+   * Step 4: actual `runtime run <file>` invocation built from the resolved binary path.
+   */
   const execCommand = runtimeExecCommand({
     runtime: combination.runtime,
     filePath: containerFilePath,
@@ -159,7 +181,9 @@ export function buildContainerCommand({
     ]
       .join('\n',);
 
-    /** Non-root variant: heredoc the inner script so `sudo -u` does not need nested quoting. */
+    /**
+     * Non-root variant: heredoc the inner script so `sudo -u` does not need nested quoting.
+     */
     const parts = [
       prerequisites,
       userSetup,
@@ -171,7 +195,9 @@ export function buildContainerCommand({
     return parts.join(' && ',);
   }
 
-  /** Root variant: runtime install and exec happen inline; no user switching required. */
+  /**
+   * Root variant: runtime install and exec happen inline; no user switching required.
+   */
   const parts = [
     prerequisites,
     runtimeInstall,
@@ -230,22 +256,30 @@ export async function runContainer({
   readonly combination: Combination;
   readonly monorepoRoot: string;
 },): Promise<string> {
-  /** Pre-parsed OS so the vm-protocol guard and the image resolution can both reuse it. */
+  /**
+   * Pre-parsed OS so the vm-protocol guard and the image resolution can both reuse it.
+   */
   const parsed = parseOs(combination.os,);
 
   if (parsed.protocol
     === 'vm')
     throw new Error('vm: protocol not yet implemented',);
 
-  /** Fully tagged image reference suitable for `podman run`. */
+  /**
+   * Fully tagged image reference suitable for `podman run`.
+   */
   const image = resolveImage(parsed.distro,);
-  /** Single shell string passed to `sh -c`; built ahead of time so the spawn call stays readable. */
+  /**
+   * Single shell string passed to `sh -c`; built ahead of time so the spawn call stays readable.
+   */
   const command = buildContainerCommand({
     combination,
     monorepoRoot,
   },);
 
-  /** Spawn result kept in a binding so stderr can be forwarded before returning stdout. */
+  /**
+   * Spawn result kept in a binding so stderr can be forwarded before returning stdout.
+   */
   const result = await spawn(
     'podman',
     [

@@ -36,9 +36,13 @@ export type Deserializer = <const T = unknown,>(toDeserialize: string,) => T;
  * ```
  */
 export type LruEvictionPolicy = {
-  /** Eviction strategy discriminant. */
+  /**
+   * Eviction strategy discriminant.
+   */
   readonly policy: 'lru';
-  /** Maximum entries before the oldest is evicted. */
+  /**
+   * Maximum entries before the oldest is evicted.
+   */
   readonly maxSize: number;
 };
 
@@ -68,16 +72,22 @@ export type EvictionPolicy = LruEvictionPolicy;
  * ```
  */
 export type BaseStoreConfig = {
-  /** Serializer for persisted values. Defaults to `superjson.stringify`. */
+  /**
+   * Serializer for persisted values. Defaults to `superjson.stringify`.
+   */
   readonly serializer?: Serializer;
-  /** Deserializer for loaded values. Defaults to `superjson.parse`. */
+  /**
+   * Deserializer for loaded values. Defaults to `superjson.parse`.
+   */
   readonly deserializer?: Deserializer;
   /**
    * When true, cyclic graphs are decycled and persisted lossy instead of throwing.
    * Defaults to `true`.
    */
   readonly lossyForCircular?: boolean;
-  /** Unique identifier used for namespacing. Defaults to random UUID. */
+  /**
+   * Unique identifier used for namespacing. Defaults to random UUID.
+   */
   readonly storeId?: string;
   /**
    * Eviction policies for bounding store capacity.
@@ -106,15 +116,25 @@ export type BaseStoreConfig = {
  * ```
  */
 export type BaseStoreFields<TBackend,> = {
-  /** Unique identifier for this store instance. */
+  /**
+   * Unique identifier for this store instance.
+   */
   readonly storeId: string;
-  /** Serializer used when persisting values. */
+  /**
+   * Serializer used when persisting values.
+   */
   readonly serializer: Serializer;
-  /** Deserializer used when loading values. */
+  /**
+   * Deserializer used when loading values.
+   */
   readonly deserializer: Deserializer;
-  /** Whether to accept lossy serialization of cyclic graphs. */
+  /**
+   * Whether to accept lossy serialization of cyclic graphs.
+   */
   readonly lossyForCircular: boolean;
-  /** Ordered backends used by this store. */
+  /**
+   * Ordered backends used by this store.
+   */
   readonly backends: readonly [
     TBackend,
     ...TBackend[],

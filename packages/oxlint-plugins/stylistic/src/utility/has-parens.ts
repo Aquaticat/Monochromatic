@@ -4,9 +4,13 @@ import type { Span, } from '@oxlint/plugins';
  * Parameters for {@link hasParens}.
  */
 export type HasParensParams = {
-  /** AST node whose surrounding source is checked. */
+  /**
+   * AST node whose surrounding source is checked.
+   */
   readonly child: Span;
-  /** Full file source text. */
+  /**
+   * Full file source text.
+   */
   readonly sourceText: string;
 };
 
@@ -35,14 +39,18 @@ export function hasParens({
   child,
   sourceText,
 }: HasParensParams,): boolean {
-  /** Source slice before the operand; trailing whitespace stripped so the `(` lands at the end. */
+  /**
+   * Source slice before the operand; trailing whitespace stripped so the `(` lands at the end.
+   */
   const before = sourceText
     .slice(
       0,
       child.start,
     )
     .trimEnd();
-  /** Source slice after the operand; leading whitespace stripped so the `)` lands at the start. */
+  /**
+   * Source slice after the operand; leading whitespace stripped so the `)` lands at the start.
+   */
   const after = sourceText
     .slice(child.end,)
     .trimStart();

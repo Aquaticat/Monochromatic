@@ -20,16 +20,22 @@ import {
 
 //region Reset abbreviation tables (git accepts unambiguous prefixes)
 
-/** Aliases for `--hard`. No other reset long option starts with `--h`. */
+/**
+ * Aliases for `--hard`. No other reset long option starts with `--h`.
+ */
 const HARD_ALIASES = expandAbbreviations({ longOption: '--hard', },);
 
-/** Aliases for `--merge`. Requires `--me` because `--m` is ambiguous with `--mixed`. */
+/**
+ * Aliases for `--merge`. Requires `--me` because `--m` is ambiguous with `--mixed`.
+ */
 const MERGE_ALIASES = expandAbbreviations({
   longOption: '--merge',
   minStemLength: 2,
 },);
 
-/** Aliases for `--keep`. No other reset long option starts with `--k`. */
+/**
+ * Aliases for `--keep`. No other reset long option starts with `--k`.
+ */
 const KEEP_ALIASES = expandAbbreviations({ longOption: '--keep', },);
 
 //endregion Reset abbreviation tables
@@ -63,13 +69,21 @@ const resetRegionParser = object({
 
 //region Reset region facts derived from optique parse
 
-/** Facts about the post-`reset` argv region used by linked-worktree policy. */
+/**
+ * Facts about the post-`reset` argv region used by linked-worktree policy.
+ */
 export type ResetRegion = {
-  /** True when any destructive reset mode (any abbreviation) appears before pathspecs. */
+  /**
+   * True when any destructive reset mode (any abbreviation) appears before pathspecs.
+   */
   readonly hasDestructiveMode: boolean;
-  /** True when wrapper-only escape hatch appears as a real flag. */
+  /**
+   * True when wrapper-only escape hatch appears as a real flag.
+   */
   readonly hasEscapeHatch: boolean;
-  /** True when optique parse failed; rule should be conservative. */
+  /**
+   * True when optique parse failed; rule should be conservative.
+   */
   readonly parseFailed: boolean;
 };
 
@@ -87,7 +101,9 @@ export type ResetRegion = {
  * ```
  */
 function optionRegion(args: readonly string[],): readonly string[] {
-  /** Position of pathspec separator inside post-subcommand region. */
+  /**
+   * Position of pathspec separator inside post-subcommand region.
+   */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex === (-1))
@@ -122,10 +138,14 @@ function optionRegion(args: readonly string[],): readonly string[] {
 export function parseResetRegion(
   postSubcommandArgs: readonly string[],
 ): ResetRegion {
-  /** Argv slice handed to optique; pathspec region is excluded. */
+  /**
+   * Argv slice handed to optique; pathspec region is excluded.
+   */
   const region = optionRegion(postSubcommandArgs,);
 
-  /** Optique parse result over the cleaned option region. */
+  /**
+   * Optique parse result over the cleaned option region.
+   */
   const parseResult = parseSync(
     resetRegionParser,
     region,
@@ -139,9 +159,13 @@ export function parseResetRegion(
     };
   }
 
-  /** Successful parse value with optique-inferred shape. */
+  /**
+   * Successful parse value with optique-inferred shape.
+   */
   const { value, } = parseResult;
-  /** Sum of destructive-mode flag occurrences (`--hard` + `--merge` + `--keep`, any abbreviation). */
+  /**
+   * Sum of destructive-mode flag occurrences (`--hard` + `--merge` + `--keep`, any abbreviation).
+   */
   const destructiveModeCount = value.hardFlags
     .length
     + value

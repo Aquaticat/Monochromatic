@@ -2,9 +2,13 @@
  * Extracts TypeScript source from model responses that may contain markdown fences.
  */
 
-/** Result of attempting to extract code from a model response */
+/**
+ * Result of attempting to extract code from a model response
+ */
 export type ExtractResult = {
-  /** Extracted TypeScript source (from a code block, or the raw response as fallback) */
+  /**
+   * Extracted TypeScript source (from a code block, or the raw response as fallback)
+   */
   readonly source: string;
   /**
    * Whether a code block was found in the response.
@@ -14,7 +18,9 @@ export type ExtractResult = {
   readonly fenced: boolean;
 };
 
-/** Optional language tags accepted between the opening backticks and the newline. */
+/**
+ * Optional language tags accepted between the opening backticks and the newline.
+ */
 const FENCE_LANG_TAGS: readonly string[] = [
   'typescript',
   'ts',
@@ -31,11 +37,15 @@ const FENCE_LANG_TAGS: readonly string[] = [
  * @returns byte offset immediately after the opening fence, or `-1`
  */
 function findOpeningFenceEnd(response: string,): number {
-  /** Position of the first triple-backtick; `-1` ends the search. */
+  /**
+   * Position of the first triple-backtick; `-1` ends the search.
+   */
   const tickIdx = response.indexOf('```',);
   if (tickIdx === (-1))
     return -1;
-  /** Cursor at the byte immediately after the backticks. */
+  /**
+   * Cursor at the byte immediately after the backticks.
+   */
   const afterTicks = tickIdx + '```'
     .length;
   /**
@@ -50,10 +60,14 @@ function findOpeningFenceEnd(response: string,): number {
     if (idx >= FENCE_LANG_TAGS
       .length)
       return -1;
-    /** Candidate language tag; empty string represents the no-tag form. */
+    /**
+     * Candidate language tag; empty string represents the no-tag form.
+     */
     const tag = FENCE_LANG_TAGS[idx]
       ?? '';
-    /** Cursor immediately after the candidate tag in `response`. */
+    /**
+     * Cursor immediately after the candidate tag in `response`.
+     */
     const after = afterTicks + tag
       .length;
     if (
@@ -78,13 +92,19 @@ function findOpeningFenceEnd(response: string,): number {
  */
 type FencedBodyResult =
   | {
-    /** A matching fence was found. */
+    /**
+     * A matching fence was found.
+     */
     readonly found: true;
-    /** Captured body text between the fences (may be empty). */
+    /**
+     * Captured body text between the fences (may be empty).
+     */
     readonly body: string;
   }
   | {
-    /** No matching fence exists in the response. */
+    /**
+     * No matching fence exists in the response.
+     */
     readonly found: false;
   };
 
@@ -107,7 +127,9 @@ function extractFencedBody({
   readonly response: string;
   readonly closing: boolean;
 },): FencedBodyResult {
-  /** Byte offset just past the opening fence; `-1` means no fence at all. */
+  /**
+   * Byte offset just past the opening fence; `-1` means no fence at all.
+   */
   const bodyStart = findOpeningFenceEnd(response,);
   if (bodyStart === (-1))
     return { found: false, };
@@ -116,7 +138,9 @@ function extractFencedBody({
       found: true,
       body: response.slice(bodyStart,),
     };
-  /** Position of the closing backticks; `-1` means the fence is unterminated. */
+  /**
+   * Position of the closing backticks; `-1` means the fence is unterminated.
+   */
   const closeIdx = response.indexOf(
     '```',
     bodyStart,
@@ -168,7 +192,9 @@ export function tryExtractCode(response: string,): ExtractResult {
     };
   }
 
-  /** Open-fence fallback; salvages mid-stream output when the model truncated. */
+  /**
+   * Open-fence fallback; salvages mid-stream output when the model truncated.
+   */
   const open = extractFencedBody({
     response,
     closing: false,

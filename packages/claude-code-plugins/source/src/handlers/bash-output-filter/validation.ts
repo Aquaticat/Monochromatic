@@ -20,7 +20,9 @@ import {
 
 //region Allowlist
 
-/** Non-alphanumeric characters that are still safe as a command's leading char. */
+/**
+ * Non-alphanumeric characters that are still safe as a command's leading char.
+ */
 const ALLOW_LEADING_PUNCT = '_/.~"\'-';
 
 /**
@@ -42,14 +44,18 @@ function startsWithSafeChar(cmd: string,): boolean {
   if (cmd.length
     === 0)
     return false;
-  /** Leading char to test against the allow-list set. */
+  /**
+   * Leading char to test against the allow-list set.
+   */
   const c = cmd.charAt(0,);
   return isAlphaNum(c,)
     || ALLOW_LEADING_PUNCT
     .includes(c,);
 }
 
-/** Predicates a command must satisfy at least one of to be allowed through the filter. */
+/**
+ * Predicates a command must satisfy at least one of to be allowed through the filter.
+ */
 const ALLOW_PREDICATES: readonly ((cmd: string,) => boolean)[] = [
   startsWithSafeChar,
 ];
@@ -77,7 +83,9 @@ function isAllowed(command: string,): boolean {
 
 //region Denylist predicates
 
-/** Binary-handling tools whose output would be mangled by the filter pipeline. */
+/**
+ * Binary-handling tools whose output would be mangled by the filter pipeline.
+ */
 const BINARY_TOOL_NAMES: readonly string[] = [
   'xxd',
   'hexdump',
@@ -144,7 +152,9 @@ function hasFileRedirect(cmd: string,): boolean {
       gtIdx + 1,
     )
   ) {
-    /** Position of the candidate destination char, advanced past whitespace after `>`. */
+    /**
+     * Position of the candidate destination char, advanced past whitespace after `>`.
+     */
     let afterWs = gtIdx + 1;
     while ((afterWs < cmd
       .length) && isWhitespace(cmd.charAt(afterWs,),)) {
@@ -152,7 +162,9 @@ function hasFileRedirect(cmd: string,): boolean {
     }
     if (afterWs < cmd
       .length) {
-      /** Char immediately following the optional whitespace; classified below. */
+      /**
+       * Char immediately following the optional whitespace; classified below.
+       */
       const next = cmd.charAt(afterWs,);
       if ((next !== '|') && (next !== '&')
         && (next !== ';')
@@ -189,7 +201,9 @@ function invokesFilterScript(cmd: string,): boolean {
   },);
 }
 
-/** Marker emitted by the filter to indicate end-of-filter execution. */
+/**
+ * Marker emitted by the filter to indicate end-of-filter execution.
+ */
 const BOF_MARKER = '___BOF_EC:';
 
 /**
@@ -227,7 +241,9 @@ function endsWithBackgroundOp(cmd: string,): boolean {
     .endsWith('&',);
 }
 
-/** Detachment wrapper utilities that take their child off the controlling terminal. */
+/**
+ * Detachment wrapper utilities that take their child off the controlling terminal.
+ */
 const DETACH_WRAPPER_NAMES: readonly string[] = [
   'nohup',
   'setsid',
@@ -253,13 +269,17 @@ function hasDetachWrapper(cmd: string,): boolean {
     !== PHRASE_NOT_FOUND;
 }
 
-/** Container runtimes whose `exec`/`run` subcommands may attach a TTY. */
+/**
+ * Container runtimes whose `exec`/`run` subcommands may attach a TTY.
+ */
 const CONTAINER_RUNTIMES: ReadonlySet<string> = new Set([
   'docker',
   'podman',
 ],);
 
-/** Container subcommands that accept TTY flags. */
+/**
+ * Container subcommands that accept TTY flags.
+ */
 const CONTAINER_TTY_SUBCOMMANDS: ReadonlySet<string> = new Set([
   'exec',
   'run',
@@ -282,18 +302,24 @@ const CONTAINER_TTY_SUBCOMMANDS: ReadonlySet<string> = new Set([
  * ```
  */
 function isTtyFlag(token: string,): boolean {
-  /** Minimum length: leading dash plus at least one body character. */
+  /**
+   * Minimum length: leading dash plus at least one body character.
+   */
   const MIN_FLAG_LENGTH = 2;
   if ((!token.startsWith('-',)) || (token.length
     < MIN_FLAG_LENGTH))
     return false;
-  /** Body after the leading dash; all chars must be lowercase letters. */
+  /**
+   * Body after the leading dash; all chars must be lowercase letters.
+   */
   const body = token.slice(1,);
   for (const c of body) {
     if ((c < 'a') || (c > 'z'))
       return false;
   }
-  /** Final char of the body must be `i` or `t`. */
+  /**
+   * Final char of the body must be `i` or `t`.
+   */
   const last = body.at(-1,)
     ?? '';
   return (last === 'i') || (last === 't');
@@ -317,16 +343,22 @@ function isTtyFlag(token: string,): boolean {
  * ```
  */
 function hasTtyContainerInvoke(cmd: string,): boolean {
-  /** Whitespace-separated tokens of the command. */
+  /**
+   * Whitespace-separated tokens of the command.
+   */
   const tokens = splitWhitespace(cmd,);
   // Scan adjacent token pairs for `(runtime, subcommand)`; on a hit, look for a
   // later TTY flag among the remaining tokens.
   for (let idx = 0; (idx + 1) < tokens
     .length; idx += 1) {
-    /** Candidate container runtime token. */
+    /**
+     * Candidate container runtime token.
+     */
     const runtime = tokens[idx]
       ?? '';
-    /** Candidate subcommand token immediately following the runtime. */
+    /**
+     * Candidate subcommand token immediately following the runtime.
+     */
     const sub = tokens[idx + 1]
       ?? '';
     if (CONTAINER_RUNTIMES.has(runtime,)
@@ -356,7 +388,9 @@ function hasTtyContainerInvoke(cmd: string,): boolean {
  * ```
  */
 function hasBunBuild(cmd: string,): boolean {
-  /** Whitespace-separated tokens of the command. */
+  /**
+   * Whitespace-separated tokens of the command.
+   */
   const tokens = splitWhitespace(cmd,);
   // Scan adjacent token pairs for `bun` immediately followed by `build`.
   for (let idx = 0; (idx + 1) < tokens
@@ -402,11 +436,15 @@ function hasDollarParen(cmd: string,): boolean {
  * ```
  */
 function hasBacktickPair(cmd: string,): boolean {
-  /** Index of the opening backtick, or `-1` when absent. */
+  /**
+   * Index of the opening backtick, or `-1` when absent.
+   */
   const first = cmd.indexOf('`',);
   if (first === (-1))
     return false;
-  /** Index of the closing backtick, or `-1` when unmatched. */
+  /**
+   * Index of the closing backtick, or `-1` when unmatched.
+   */
   const second = cmd.indexOf(
     '`',
     first + 1,
@@ -451,7 +489,9 @@ function hasProcessSubstitution(cmd: string,): boolean {
  * ```
  */
 function hasHeredoc(cmd: string,): boolean {
-  /** Length of the base `<<` opener; characters consumed before any variant marker. */
+  /**
+   * Length of the base `<<` opener; characters consumed before any variant marker.
+   */
   const OPENER_LENGTH = '<<'.length;
   // Walk each `<<` opener in order; skip an optional `<`/`-` variant marker and
   // any whitespace, then require a non-whitespace body char.
@@ -466,14 +506,20 @@ function hasHeredoc(cmd: string,): boolean {
       idx + 1,
     )
   ) {
-    /** Char after the `<<`; may indicate `<<<` or `<<-` variants. */
+    /**
+     * Char after the `<<`; may indicate `<<<` or `<<-` variants.
+     */
     const afterOpener = cmd.charAt(idx + OPENER_LENGTH,);
-    /** Cursor past the optional variant marker. */
+    /**
+     * Cursor past the optional variant marker.
+     */
     const afterMarker = ((afterOpener === '<') || (afterOpener === '-'))
       ? (idx + OPENER_LENGTH
         + 1)
       : (idx + OPENER_LENGTH);
-    /** Position of the candidate body char, advanced past whitespace after the marker. */
+    /**
+     * Position of the candidate body char, advanced past whitespace after the marker.
+     */
     let afterWs = afterMarker;
     while ((afterWs < cmd
       .length) && isWhitespace(cmd.charAt(afterWs,),)) {
@@ -486,7 +532,9 @@ function hasHeredoc(cmd: string,): boolean {
   return false;
 }
 
-/** Shell built-ins that change shell state in ways the filter cannot follow. */
+/**
+ * Shell built-ins that change shell state in ways the filter cannot follow.
+ */
 const STATE_BUILTIN_NAMES: readonly string[] = [
   'cd',
   'pushd',
@@ -532,7 +580,9 @@ function hasStateBuiltin(cmd: string,): boolean {
  * ```
  */
 function isSourceShorthand(cmd: string,): boolean {
-  /** Minimum length: dot plus whitespace. */
+  /**
+   * Minimum length: dot plus whitespace.
+   */
   const MIN_LENGTH = 2;
   return (cmd.length
     >= MIN_LENGTH)
@@ -561,7 +611,9 @@ function hasEval(cmd: string,): boolean {
   },);
 }
 
-/** Predicates whose match marks the command as unsafe to pipe through the filter. */
+/**
+ * Predicates whose match marks the command as unsafe to pipe through the filter.
+ */
 const SKIP_PREDICATES: readonly ((cmd: string,) => boolean)[] = [
   hasBinaryTool,
   hasFileRedirect,

@@ -35,7 +35,9 @@ export async function deleteEntry(
     readonly path: string;
   },
 ): Promise<string> {
-  /** Validated absolute path; throws if the input escapes `rootDir`. */
+  /**
+   * Validated absolute path; throws if the input escapes `rootDir`.
+   */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,

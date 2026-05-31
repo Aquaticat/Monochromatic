@@ -39,7 +39,9 @@ export type { ContainerResult, } from './container-exec.ts';
  * @returns async disposable with the staging directory path
  */
 async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: string; }> {
-  /** Unique staging directory under `LINT_DIR`; exposed on the returned disposable and removed at dispose time. */
+  /**
+   * Unique staging directory under `LINT_DIR`; exposed on the returned disposable and removed at dispose time.
+   */
   const path = join(
     LINT_DIR,
     '_tmp',
@@ -80,11 +82,17 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
  * ```
  */
 type RunInContainerOptions = {
-  /** TypeScript source code to execute */
+  /**
+   * TypeScript source code to execute
+   */
   readonly source: string;
-  /** Optional stdin data to pipe to the script */
+  /**
+   * Optional stdin data to pipe to the script
+   */
   readonly stdinData?: string;
-  /** Abort signal; kills the container immediately when aborted, or absent to disable */
+  /**
+   * Abort signal; kills the container immediately when aborted, or absent to disable
+   */
   readonly signal?: AbortSignal;
 };
 
@@ -114,9 +122,13 @@ export async function runInContainer({
   stdinData,
   signal,
 }: RunInContainerOptions,): Promise<ContainerResult> {
-  /** Disposable staging directory; cleaned up automatically when this function returns. */
+  /**
+   * Disposable staging directory; cleaned up automatically when this function returns.
+   */
   await using stagingResource = await makeStagingDir();
-  /** Host path holding `canary.ts` and (optionally) `stdin.txt`; bind-mounted read-only into the container. */
+  /**
+   * Host path holding `canary.ts` and (optionally) `stdin.txt`; bind-mounted read-only into the container.
+   */
   const stagingDir = stagingResource.path;
 
   await writeFile(
@@ -129,7 +141,9 @@ export async function runInContainer({
   );
 
   // cat preserves content exactly; cp can mangle encoding on some filesystems
-  /** Inline `sh -c` script that copies the read-only source into the tmpfs and runs it, optionally piping stdin from the host. */
+  /**
+   * Inline `sh -c` script that copies the read-only source into the tmpfs and runs it, optionally piping stdin from the host.
+   */
   const shellScript = stdinData !== undefined
     ? 'cat /mnt/canary.ts > /tmp/canary.ts && bun run /tmp/canary.ts < /mnt/stdin.txt'
     : 'cat /mnt/canary.ts > /tmp/canary.ts && bun run /tmp/canary.ts';

@@ -4,9 +4,13 @@
  * Inline image data for the Gemini embedContent API.
  */
 export type GeminiInlineData = {
-  /** MIME type (e.g. `image/png`, `image/jpeg`). */
+  /**
+   * MIME type (e.g. `image/png`, `image/jpeg`).
+   */
   readonly mime_type: string;
-  /** Raw base64-encoded image data (no data URI prefix). */
+  /**
+   * Raw base64-encoded image data (no data URI prefix).
+   */
   readonly data: string;
 };
 

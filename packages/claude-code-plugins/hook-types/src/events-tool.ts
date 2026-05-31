@@ -21,13 +21,19 @@ import type { GenericToolInput, } from './tool-inputs-union.ts';
 export type PreToolUseInput = HookInputBase & {
   hook_event_name: 'PreToolUse';
 
-  /** Name of the tool being invoked (e.g. `"Bash"`, `"Edit"`, `"mcp__memory__create_entities"`). */
+  /**
+   * Name of the tool being invoked (e.g. `"Bash"`, `"Edit"`, `"mcp__memory__create_entities"`).
+   */
   tool_name: string;
 
-  /** Tool-specific input parameters. Shape depends on `tool_name`. */
+  /**
+   * Tool-specific input parameters. Shape depends on `tool_name`.
+   */
   tool_input: GenericToolInput;
 
-  /** Unique identifier for this tool use. */
+  /**
+   * Unique identifier for this tool use.
+   */
   tool_use_id: string;
 };
 
@@ -57,10 +63,14 @@ export type PreToolUseOutput = HookOutputBase & {
      */
     permissionDecisionReason?: string;
 
-    /** Modifies the tool's input parameters before execution. */
+    /**
+     * Modifies the tool's input parameters before execution.
+     */
     updatedInput?: GenericToolInput;
 
-    /** Context added to Claude's conversation before tool execution. */
+    /**
+     * Context added to Claude's conversation before tool execution.
+     */
     additionalContext?: string;
   };
 };
@@ -84,13 +94,19 @@ export type PermissionSuggestion = {
 export type PermissionRequestInput = HookInputBase & {
   hook_event_name: 'PermissionRequest';
 
-  /** Name of the tool requesting permission. */
+  /**
+   * Name of the tool requesting permission.
+   */
   tool_name: string;
 
-  /** Tool-specific input parameters. */
+  /**
+   * Tool-specific input parameters.
+   */
   tool_input: GenericToolInput;
 
-  /** "Always allow" options the user would normally see. */
+  /**
+   * "Always allow" options the user would normally see.
+   */
   permission_suggestions?: PermissionSuggestion[];
 };
 
@@ -102,19 +118,29 @@ export type PermissionRequestOutput = HookOutputBase & {
   hookSpecificOutput?: {
     hookEventName: 'PermissionRequest';
     decision: {
-      /** `"allow"` grants the permission, `"deny"` denies it. */
+      /**
+       * `"allow"` grants the permission, `"deny"` denies it.
+       */
       behavior: 'allow' | 'deny';
 
-      /** For `"allow"` only: modifies the tool's input before execution. */
+      /**
+       * For `"allow"` only: modifies the tool's input before execution.
+       */
       updatedInput?: GenericToolInput;
 
-      /** For `"allow"` only: applies permission rule updates. */
+      /**
+       * For `"allow"` only: applies permission rule updates.
+       */
       updatedPermissions?: unknown;
 
-      /** For `"deny"` only: tells Claude why the permission was denied. */
+      /**
+       * For `"deny"` only: tells Claude why the permission was denied.
+       */
       message?: string;
 
-      /** For `"deny"` only: if `true`, stops Claude. */
+      /**
+       * For `"deny"` only: if `true`, stops Claude.
+       */
       interrupt?: boolean;
     };
   };

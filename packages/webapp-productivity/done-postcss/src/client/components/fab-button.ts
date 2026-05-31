@@ -1,10 +1,14 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import { css, } from '../css.ts';
 
-/** Z-index for the floating action button above page content. */
+/**
+ * Z-index for the floating action button above page content.
+ */
 const FAB_Z_INDEX = 50;
 
-/** Shadow DOM styles for the `\<fab-button\>` component. */
+/**
+ * Shadow DOM styles for the `\<fab-button\>` component.
+ */
 const STYLES = css(`
   :host {
     position: fixed;
@@ -42,18 +46,26 @@ const STYLES = css(`
  * Reads the `label` attribute for accessibility and renders a `\<slot\>` for custom content.
  */
 class FabButton extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the button with aria-label and slot for content. */
+  /**
+   * Renders the button with aria-label and slot for content.
+   */
   connectedCallback(): void {
-    /** Accessibility label from the `label` attribute, with a fallback for missing attribute. */
+    /**
+     * Accessibility label from the `label` attribute, with a fallback for missing attribute.
+     */
     const label = this.getAttribute('label',)
       ?? 'Action';
     this.#shadow

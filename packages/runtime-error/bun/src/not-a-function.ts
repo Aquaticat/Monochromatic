@@ -6,7 +6,9 @@
  */
 export {};
 
-/** String value cast to a callable type to trigger a runtime TypeError. */
+/**
+ * String value cast to a callable type to trigger a runtime TypeError.
+ */
 // oxlint-disable-next-line no-unsafe-type-assertion -- intentional unsafe cast to provoke a runtime TypeError
 const notAFunction = 'I am a string' as unknown as () => void;
 

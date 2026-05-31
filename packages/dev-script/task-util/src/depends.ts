@@ -56,7 +56,9 @@ export {};
 
 //region Parser definition
 
-/** Optique parser for the task-depends CLI */
+/**
+ * Optique parser for the task-depends CLI
+ */
 const parser = object({
   sources: multiple(
     optional(option(
@@ -97,7 +99,9 @@ const parser = object({
 
 //region Argument validation
 
-/** Parsed CLI arguments from process.argv */
+/**
+ * Parsed CLI arguments from process.argv
+ */
 const rawArgs = runSync(
   parser,
   {
@@ -128,7 +132,9 @@ function filterNullish(values: readonly (string | undefined)[],): string[] {
 }
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
-/** Valid builtin time strategy names */
+/**
+ * Valid builtin time strategy names
+ */
 const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
   'newest',
   'oldest',
@@ -149,10 +155,14 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
  */
 type ValidateTimeStrategyOptions = {
   /* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so an omitted `--*-time-strategy` arrives here as `undefined`; this field mirrors that upstream type */
-  /** Raw value from optique (`undefined` when option is omitted) */
+  /**
+   * Raw value from optique (`undefined` when option is omitted)
+   */
   readonly value: string | undefined;
   /* oxlint-enable no-restricted-syntax/no-nullish-union */
-  /** Flag name for error messages */
+  /**
+   * Flag name for error messages
+   */
   readonly flagName: string;
 };
 
@@ -193,7 +203,9 @@ function validateTimeStrategy({
   );
 }
 
-/** Cleaned CLI arguments with nullish values filtered out */
+/**
+ * Cleaned CLI arguments with nullish values filtered out
+ */
 const args = {
   sources: filterNullish(rawArgs.sources,),
   outputs: filterNullish(rawArgs.outputs,),
@@ -210,7 +222,9 @@ const args = {
   rest: rawArgs.rest,
 };
 
-/** Destructured command and its arguments from the rest args after `--` */
+/**
+ * Destructured command and its arguments from the rest args after `--`
+ */
 const [command, ...commandArgs] = args.rest;
 
 if ((command === undefined) || (command === '')) {
@@ -235,7 +249,9 @@ if (args.outputs
 
 //region Staleness check and execution
 
-/** Whether sources are newer than outputs, indicating the command needs to run */
+/**
+ * Whether sources are newer than outputs, indicating the command needs to run
+ */
 const stale = await checkStaleness({
   sources: args.sources,
   outputs: args.outputs,

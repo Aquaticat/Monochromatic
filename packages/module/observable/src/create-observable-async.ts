@@ -11,9 +11,13 @@
  * value, then awaits the registered change handler before resolving.
  */
 export type ObservableAsync<T,> = {
-  /** Reads the current observed value synchronously. */
+  /**
+   * Reads the current observed value synchronously.
+   */
   getValue: () => T;
-  /** Stores a new value, then awaits the change handler before resolving. */
+  /**
+   * Stores a new value, then awaits the change handler before resolving.
+   */
   setValue: (newValue: T,) => Promise<void>;
 };
 
@@ -69,14 +73,18 @@ export async function createObservableAsync<T,>(
     ) => MaybePromise<void>;
   },
 ): Promise<ObservableAsync<T>> {
-  /** Internal store backing the methods; held on an object property so mutation avoids a function-root `let`. */
+  /**
+   * Internal store backing the methods; held on an object property so mutation avoids a function-root `let`.
+   */
   const state: { current: T; } = { current: initialValue, };
   return {
     getValue: function getValue(): T {
       return state.current;
     },
     setValue: async function setValue(newValue: T,): Promise<void> {
-      /** Snapshot of the prior value preserved for the change handler call. */
+      /**
+       * Snapshot of the prior value preserved for the change handler call.
+       */
       const old = state.current;
       state.current = newValue;
       await onChange(

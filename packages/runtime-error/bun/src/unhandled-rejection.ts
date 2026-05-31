@@ -6,7 +6,9 @@
  */
 export {};
 
-/** Milliseconds to keep the event loop alive for unhandled rejection detection. */
+/**
+ * Milliseconds to keep the event loop alive for unhandled rejection detection.
+ */
 const KEEP_ALIVE_MS = 100;
 
 void Promise.reject(new Error('Intentional unhandled rejection',),);

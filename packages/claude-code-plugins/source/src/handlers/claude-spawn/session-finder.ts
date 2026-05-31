@@ -44,12 +44,16 @@ const SESSION_NOT_FOUND: unique symbol = Symbol('claude-spawn/session-not-found'
  */
 function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
   try {
-    /** Raw `/proc/<pid>/status` text whose `PPid:` line carries the parent PID. */
+    /**
+     * Raw `/proc/<pid>/status` text whose `PPid:` line carries the parent PID.
+     */
     const statusContent = readFileSync(
       `/proc/${String(pid,)}/status`,
       'utf8',
     );
-    /** First line beginning with `PPid:`; remains `undefined` on unrecognised status formats. */
+    /**
+     * First line beginning with `PPid:`; remains `undefined` on unrecognised status formats.
+     */
     const ppidLine = statusContent.split('\n',)
       .find(function isPpidLine(line,) {
       return line.startsWith('PPid:',);
@@ -83,13 +87,17 @@ function readParentPid(pid: number,): number | typeof SESSION_NOT_FOUND {
  * ```
  */
 function readPidMapping(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
-  /** Path under `.by-pid/` where the SessionStart hook would have recorded this PID. */
+  /**
+   * Path under `.by-pid/` where the SessionStart hook would have recorded this PID.
+   */
   const pidFilePath = join(
     BY_PID_DIR,
     String(pid,),
   );
   try {
-    /** File contents on disk; parsed below as the mapping JSON. */
+    /**
+     * File contents on disk; parsed below as the mapping JSON.
+     */
     const raw = readFileSync(
       pidFilePath,
       'utf8',
@@ -119,11 +127,15 @@ function readPidMapping(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
 function walkProcessTreeFrom(pid: number,): PidMapping | typeof SESSION_NOT_FOUND {
   if (pid <= 1)
     return SESSION_NOT_FOUND;
-  /** Mapping for `pid` itself; short-circuits the recursion when present. */
+  /**
+   * Mapping for `pid` itself; short-circuits the recursion when present.
+   */
   const direct = readPidMapping(pid,);
   if (direct !== SESSION_NOT_FOUND)
     return direct;
-  /** Parent PID continuing the walk; `SESSION_NOT_FOUND` ends recursion when `/proc` is unreadable. */
+  /**
+   * Parent PID continuing the walk; `SESSION_NOT_FOUND` ends recursion when `/proc` is unreadable.
+   */
   const parentPid = readParentPid(pid,);
   if (parentPid === SESSION_NOT_FOUND)
     return SESSION_NOT_FOUND;
@@ -188,41 +200,55 @@ function readByPidDir(): readonly string[] | typeof SESSION_NOT_FOUND {
  * ```
  */
 function findByMostRecent(): PidMapping | typeof SESSION_NOT_FOUND {
-  /** Filenames in `.by-pid/`, or `SESSION_NOT_FOUND` when the directory cannot be read. */
+  /**
+   * Filenames in `.by-pid/`, or `SESSION_NOT_FOUND` when the directory cannot be read.
+   */
   const entries = readByPidDir();
 
   if (entries === SESSION_NOT_FOUND)
     return SESSION_NOT_FOUND;
 
-  /** Folds the entries to the most recently modified mapping, skipping unreadable files. */
+  /**
+   * Folds the entries to the most recently modified mapping, skipping unreadable files.
+   */
   type NewestMapping = {
     mapping: PidMapping;
     mtime: number;
   } | typeof SESSION_NOT_FOUND;
 
-  /** Accumulator that ends with the latest valid mapping after scanning every entry. */
+  /**
+   * Accumulator that ends with the latest valid mapping after scanning every entry.
+   */
   const newest = entries.reduce<NewestMapping>(
     function pickNewer(
       current,
       filename,
     ) {
-      /** Absolute path to the candidate `.by-pid/` entry being scored. */
+      /**
+       * Absolute path to the candidate `.by-pid/` entry being scored.
+       */
       const filePath = join(
         BY_PID_DIR,
         filename,
       );
 
       try {
-        /** Modification time used to rank against the running accumulator. */
+        /**
+         * Modification time used to rank against the running accumulator.
+         */
         const mtime = statSync(filePath,)
           .mtimeMs;
-        /** Raw file contents parsed below into the candidate mapping. */
+        /**
+         * Raw file contents parsed below into the candidate mapping.
+         */
         const raw = readFileSync(
           filePath,
           'utf8',
         );
         /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
-        /** Parsed mapping that replaces the accumulator when its `mtime` is newer. */
+        /**
+         * Parsed mapping that replaces the accumulator when its `mtime` is newer.
+         */
         const mapping = JSON.parse(raw,) as PidMapping;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
 
@@ -264,7 +290,9 @@ function findByMostRecent(): PidMapping | typeof SESSION_NOT_FOUND {
  * ```
  */
 function findCallingSession(): PidMapping | typeof SESSION_NOT_FOUND {
-  /** Process-tree walk result; falls through to the most-recent scan when not found. */
+  /**
+   * Process-tree walk result; falls through to the most-recent scan when not found.
+   */
   const fromTree = findByProcessTree();
   return fromTree === SESSION_NOT_FOUND
     ? findByMostRecent()

@@ -5,23 +5,31 @@
  * Split from app-keybindings.ts to stay under max-lines.
  */
 
-/** Popup that supports keyboard navigation. */
+/**
+ * Popup that supports keyboard navigation.
+ */
 type NavigablePopup = {
   readonly navigate: (opts: { readonly direction: 'up' | 'down'; },) => void;
   readonly hide: () => void;
 };
 
-/** Completion popup surface needed by keyboard navigation. */
+/**
+ * Completion popup surface needed by keyboard navigation.
+ */
 type CompletionNavPopup = NavigablePopup & {
   readonly accept: () => string | null;
 };
 
-/** References popup surface needed by keyboard navigation. */
+/**
+ * References popup surface needed by keyboard navigation.
+ */
 type ReferencesNavPopup = NavigablePopup & {
   readonly accept: () => void;
 };
 
-/** Key action for a navigable popup. */
+/**
+ * Key action for a navigable popup.
+ */
 type PopupKeyAction =
   | {
     readonly action: 'navigate';
@@ -63,7 +71,9 @@ function handlePopupNav({
   readonly popup: NavigablePopup;
   readonly keyMap: PopupKeyMap;
 },): boolean {
-  /** Action descriptor for the pressed key; absent means we don't handle this key. */
+  /**
+   * Action descriptor for the pressed key; absent means we don't handle this key.
+   */
   const entry = keyMap[event.key];
   if (entry === undefined)
     return false;
@@ -105,9 +115,13 @@ export function handleCompletionNav({
   readonly event: KeyboardEvent;
   readonly completionPopup: CompletionNavPopup;
 },): boolean {
-  /** Tab accepts the selected completion and inserts its text. */
+  /**
+   * Tab accepts the selected completion and inserts its text.
+   */
   function acceptCompletion(): void {
-    /** Selected completion text; `null` when nothing is currently highlighted. */
+    /**
+     * Selected completion text; `null` when nothing is currently highlighted.
+     */
     const text = completionPopup.accept();
     if (text !== null) {
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text preserving the browser undo stack

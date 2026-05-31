@@ -6,7 +6,9 @@
  * These helpers create real `Element` nodes with the same shape.
  */
 
-/** Tag-narrowed element type lookup. */
+/**
+ * Tag-narrowed element type lookup.
+ */
 type TagNameMap = HTMLElementTagNameMap;
 
 /**
@@ -55,7 +57,9 @@ export function el<K extends keyof TagNameMap,>(
     children?: ElChildren;
   },
 ): TagNameMap[K] {
-  /** Newly created element receiving the wired attributes and children. */
+  /**
+   * Newly created element receiving the wired attributes and children.
+   */
   const node = document.createElement(tag,);
   for (
     const [

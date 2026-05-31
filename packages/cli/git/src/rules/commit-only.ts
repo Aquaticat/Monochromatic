@@ -10,7 +10,9 @@ import {
 
 //region Commit-only rule
 
-/** Wrapper-only flag that suppresses `-o` injection for one invocation. */
+/**
+ * Wrapper-only flag that suppresses `-o` injection for one invocation.
+ */
 const ESCAPE_HATCH = COMMIT_ESCAPE_HATCH;
 
 /**
@@ -69,27 +71,37 @@ const ALL_FLAG_MESSAGE =
  * ```
  */
 export function commitOnly(args: readonly string[],): readonly string[] {
-  /** Position of the `commit` (or other) subcommand within args. */
+  /**
+   * Position of the `commit` (or other) subcommand within args.
+   */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
   if (args[subcommandIndex]
     !== 'commit')
     return args;
 
-  /** Tagged logger for the commit-only rule. */
+  /**
+   * Tagged logger for the commit-only rule.
+   */
   const rl = tagged({
     tag: commitOnly.name,
     l,
   },);
 
-  /** Slice of args strictly after the `commit` token; the place where commit flags live. */
+  /**
+   * Slice of args strictly after the `commit` token; the place where commit flags live.
+   */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
-  /** Commit region facts parsed by optique. */
+  /**
+   * Commit region facts parsed by optique.
+   */
   const region = parseCommitRegion(postSubcommandArgs,);
 
   if (region.hasEscapeHatch) {
     rl.debug(`${ESCAPE_HATCH} present, stripping and skipping injection`,);
-    /** Pre-subcommand region kept verbatim so global options survive the strip. */
+    /**
+     * Pre-subcommand region kept verbatim so global options survive the strip.
+     */
     const preAndSubcommand = args.slice(
       0,
       subcommandIndex + 1,
@@ -106,7 +118,9 @@ export function commitOnly(args: readonly string[],): readonly string[] {
     if (region.hasAllFlag)
       throw new Error(ALL_FLAG_MESSAGE,);
 
-    /** True when pathspecs are supplied positionally, through a pathspec file, or by a git mode that permits pathless only commits. */
+    /**
+     * True when pathspecs are supplied positionally, through a pathspec file, or by a git mode that permits pathless only commits.
+     */
     const hasPathspecSource = region.hasPathspec
       || region
       .hasPathspecFromFile

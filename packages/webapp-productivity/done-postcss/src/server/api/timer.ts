@@ -31,7 +31,9 @@ import {
  * ```
  */
 export async function handleStartTimer(id: string,): Promise<Response> {
-  /** Updated task with the freshly set `timerStartedAt`; `TASK_NOT_FOUND` triggers a 404 response. */
+  /**
+   * Updated task with the freshly set `timerStartedAt`; `TASK_NOT_FOUND` triggers a 404 response.
+   */
   const task = await startTaskTimer(id,);
   if (task === TASK_NOT_FOUND) {
     return jsonResponse({
@@ -55,7 +57,9 @@ export async function handleStartTimer(id: string,): Promise<Response> {
  * ```
  */
 export async function handleStopTimer(id: string,): Promise<Response> {
-  /** Updated task with accumulated tracked time; `TASK_NOT_FOUND` triggers a 404 response. */
+  /**
+   * Updated task with accumulated tracked time; `TASK_NOT_FOUND` triggers a 404 response.
+   */
   const task = await stopTaskTimer(id,);
   if (task === TASK_NOT_FOUND) {
     return jsonResponse({
@@ -79,7 +83,9 @@ export async function handleStopTimer(id: string,): Promise<Response> {
  * ```
  */
 export async function handleCompleteTask(id: string,): Promise<Response> {
-  /** Completion outcome carrying both the success flag and any blockers refusing completion. */
+  /**
+   * Completion outcome carrying both the success flag and any blockers refusing completion.
+   */
   const result = await completeTask(id,);
   if (result.notFound) {
     return jsonResponse({

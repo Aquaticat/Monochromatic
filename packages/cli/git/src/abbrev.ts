@@ -1,20 +1,32 @@
 //region Long-option abbreviation expansion
 
-/** Long-option prefix used by git command-line conventions. */
+/**
+ * Long-option prefix used by git command-line conventions.
+ */
 const LONG_OPTION_PREFIX = '--';
 
-/** Default shortest stem accepted by git for unambiguous abbreviations. */
+/**
+ * Default shortest stem accepted by git for unambiguous abbreviations.
+ */
 const DEFAULT_SHORTEST_STEM_LENGTH = 1;
 
-/** Options for expanding a long option into its accepted abbreviations. */
+/**
+ * Options for expanding a long option into its accepted abbreviations.
+ */
 type ExpandAbbreviationsOptions = {
-  /** Full long-option spelling such as `--dry-run`. */
+  /**
+   * Full long-option spelling such as `--dry-run`.
+   */
   readonly longOption: string;
-  /** Shortest stem length accepted by git for this option, excluding the `--`. */
+  /**
+   * Shortest stem length accepted by git for this option, excluding the `--`.
+   */
   readonly minStemLength?: number;
 };
 
-/** Optique-compatible long-option alias literal. */
+/**
+ * Optique-compatible long-option alias literal.
+ */
 export type LongOptionAlias = `--${string}`;
 
 /**
@@ -50,7 +62,9 @@ export function expandAbbreviations({
     );
   }
 
-  /** Option name without leading `--`. */
+  /**
+   * Option name without leading `--`.
+   */
   const stem = longOption.slice(LONG_OPTION_PREFIX.length,);
 
   if (minStemLength <= 0) {
@@ -66,10 +80,14 @@ export function expandAbbreviations({
     );
   }
 
-  /** Number of aliases generated; equals the stem-length range. */
+  /**
+   * Number of aliases generated; equals the stem-length range.
+   */
   const aliasCount = (stem.length
     - minStemLength) + 1;
-  /** Aliases generated in descending stem length, full spelling first. */
+  /**
+   * Aliases generated in descending stem length, full spelling first.
+   */
   const aliases = Array.from(
     { length: aliasCount, },
     function alias(

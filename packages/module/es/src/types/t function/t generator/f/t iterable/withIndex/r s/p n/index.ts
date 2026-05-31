@@ -52,7 +52,9 @@ export function* $<const T,>(
   element: T;
   index: Int & (Positive | 0);
 }> {
-  /** Running zero-based position emitted alongside each element; counter wrapped in an object to keep mutation off the function root. */
+  /**
+   * Running zero-based position emitted alongside each element; counter wrapped in an object to keep mutation off the function root.
+   */
   const counter = { index: 0, };
   for (const element of myIterable) {
     yield {

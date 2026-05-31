@@ -13,7 +13,9 @@ import type {
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type * as Jsonc from '../../../../t/index.ts';
 
-/** Signature of the value dispatcher function. */
+/**
+ * Signature of the value dispatcher function.
+ */
 type ParseValueFn = (
   args: {
     value: FragmentStringJsonc | StringJsonc;
@@ -24,7 +26,9 @@ type ParseValueFn = (
   remaining: FragmentStringJsonc;
 };
 
-/** Late-bound reference container; populated once during module initialization by `customParsers.parseValue.ts`. */
+/**
+ * Late-bound reference container; populated once during module initialization by `customParsers.parseValue.ts`.
+ */
 const refRegistry = new Map<'parseValue', ParseValueFn>();
 
 /**
@@ -69,7 +73,9 @@ export function callParseValue(
   parsed: Jsonc.Value;
   remaining: FragmentStringJsonc;
 } {
-  /** Registered dispatch implementation; must be present because parser init runs before any user call. */
+  /**
+   * Registered dispatch implementation; must be present because parser init runs before any user call.
+   */
   const ref = refRegistry.get('parseValue',);
   if (ref === undefined) {
     throw new Error(

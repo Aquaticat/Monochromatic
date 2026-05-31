@@ -27,23 +27,33 @@ import { serializePageData, } from './layout.ts';
  * ```
  */
 export async function searchPage(url: URL,): Promise<Response> {
-  /** URL search-param query text; empty string when omitted. */
+  /**
+   * URL search-param query text; empty string when omitted.
+   */
   const query = url.searchParams
     .get('q',)
     ?? '';
-  /** FTS results for the query; empty when the query is blank. */
+  /**
+   * FTS results for the query; empty when the query is blank.
+   */
   const results = await searchTasks(query,);
-  /** All known tags surfaced as quick-pick chips on the empty-query screen. */
+  /**
+   * All known tags surfaced as quick-pick chips on the empty-query screen.
+   */
   const availableTags = await listAllTags();
 
-  /** Bundled payload serialised into the embedded `#page-data` script. */
+  /**
+   * Bundled payload serialised into the embedded `#page-data` script.
+   */
   const pageData = {
     query,
     results,
     availableTags,
   };
 
-  /** Full HTML document string; returned wrapped in a Response below. */
+  /**
+   * Full HTML document string; returned wrapped in a Response below.
+   */
   const html = `<!DOCTYPE html>
 ${
     h({

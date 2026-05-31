@@ -20,7 +20,9 @@ import {
 
 //region Mutation tools: VM creation and destruction
 
-/** MCP tool: create a new VM, optionally cloned from an existing one. */
+/**
+ * MCP tool: create a new VM, optionally cloned from an existing one.
+ */
 export const createTool: ToolEntry = defineTool({
   name: 'create_vm',
   entry: {
@@ -46,9 +48,13 @@ export const createTool: ToolEntry = defineTool({
       required: ['name',],
     },
     handler: async function handleCreateVm(args,) {
-      /** New VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding. */
+      /**
+       * New VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding.
+       */
       const name = String(args.name,);
-      /** Optional source VM to clone from; `undefined` selects the create-fresh path below. */
+      /**
+       * Optional source VM to clone from; `undefined` selects the create-fresh path below.
+       */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       /**
        * Optional image template; absence falls back to the default in {@link create}.
@@ -64,7 +70,9 @@ export const createTool: ToolEntry = defineTool({
             name,
             ...(image !== undefined ? { image, } : {}),
           },));
-        /** Trailing fragment appended to the success message to disclose clone provenance when applicable. */
+        /**
+         * Trailing fragment appended to the success message to disclose clone provenance when applicable.
+         */
         const suffix = from !== undefined ? ` (cloned from ${from})` : '';
         return textResponse(
           `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.`,
@@ -80,7 +88,9 @@ export const createTool: ToolEntry = defineTool({
   },
 },);
 
-/** MCP tool: destroy VMs by name or all at once. */
+/**
+ * MCP tool: destroy VMs by name or all at once.
+ */
 export const destroyTool: ToolEntry = defineTool({
   name: 'destroy_vm',
   entry: {
@@ -100,9 +110,13 @@ export const destroyTool: ToolEntry = defineTool({
       },
     },
     handler: async function handleDestroyVm(args,) {
-      /** Optional single-VM target; mutually exclusive with `all` and validated below. */
+      /**
+       * Optional single-VM target; mutually exclusive with `all` and validated below.
+       */
       const name = ((typeof args.name) === 'string') ? args.name : undefined;
-      /** Optional destroy-everything flag; mutually exclusive with `name` and validated below. */
+      /**
+       * Optional destroy-everything flag; mutually exclusive with `name` and validated below.
+       */
       const all = ((typeof args.all) === 'boolean') ? args.all : undefined;
       try {
         if (all === true) {

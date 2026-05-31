@@ -19,12 +19,16 @@ import './components/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/top-nav.ts';
 
-/** Shape of the JSON blob embedded in the in-progress page by the server. */
+/**
+ * Shape of the JSON blob embedded in the in-progress page by the server.
+ */
 type InProgressPageData = {
   tasks: Task[];
 };
 
-/** Timer tick interval in milliseconds. */
+/**
+ * Timer tick interval in milliseconds.
+ */
 const TIMER_INTERVAL_MS = 1_000;
 
 /**
@@ -53,15 +57,21 @@ async function handleStop(taskId: string,): Promise<void> {
 
 injectCSS(globalStyles,);
 
-/** Deserialized page data containing in-progress tasks. */
+/**
+ * Deserialized page data containing in-progress tasks.
+ */
 const pageData = readPageData<InProgressPageData>();
 
-/** Raw DOM element for the `#app` container. */
+/**
+ * Raw DOM element for the `#app` container.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Validated `#app` container element. */
+/**
+ * Validated `#app` container element.
+ */
 const app = appElement;
 
 if (pageData.tasks
@@ -74,7 +84,9 @@ if (pageData.tasks
   },),);
 }
 
-/** UL container for in-progress task cards. */
+/**
+ * UL container for in-progress task cards.
+ */
 const list = h({
   tag: 'ul',
   class: 'task-list',
@@ -100,18 +112,24 @@ if (pageData.tasks
 // Live timer updates: correlate each card with its task by DOM order
 setInterval(
   function updateTimers() {
-    /** Fresh query each tick so newly appended cards participate in the update loop. */
+    /**
+     * Fresh query each tick so newly appended cards participate in the update loop.
+     */
     const cards = list.querySelectorAll<HTMLElement>('task-card',);
     cards.forEach(function updateCard(
       card,
       cardIndex,
     ) {
-      /** Card-to-task correlation by DOM order; index may overshoot during reloads. */
+      /**
+       * Card-to-task correlation by DOM order; index may overshoot during reloads.
+       */
       const task = pageData.tasks[cardIndex];
       if (task === undefined)
         return;
       /* oxlint-disable typescript/no-unsafe-type-assertion -- TaskCard has getChipElement but querySelectorAll returns generic HTMLElement */
-      /** Optional chip lookup typed as `unknown`; narrowed by the `instanceof` check below. */
+      /**
+       * Optional chip lookup typed as `unknown`; narrowed by the `instanceof` check below.
+       */
       const chipEl: unknown = (card as unknown as {
         getChipElement?: (prefix: string,) => unknown;
       })

@@ -16,7 +16,9 @@ import {
   tagged,
 } from '../log.ts';
 
-/** Tagged logger for inlay hints. */
+/**
+ * Tagged logger for inlay hints.
+ */
 const inlayLog = tagged({
   tag: 'inlay',
   l,
@@ -46,25 +48,33 @@ export async function fetchInlayHints({
   readonly editorPane: EditorPaneHandle;
   readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
-  /** Skip when no file is open; LSP needs a target. */
+  /**
+   * Skip when no file is open; LSP needs a target.
+   */
   const path = getCurrentFilePath();
   if (path === null)
     return;
 
   try {
-    /** Whole-document range so the inlay query covers every line. */
+    /**
+     * Whole-document range so the inlay query covers every line.
+     */
     const range = editorPane.getDocumentRange();
     if (range === null)
       return;
 
-    /** Hints destructured directly; the rest of the response is unused here. */
+    /**
+     * Hints destructured directly; the rest of the response is unused here.
+     */
     const { hints, } = await ws.request({
       type: 'inlayHint',
       path,
       range,
     },);
 
-    /** Verify the file hasn't changed while awaiting the response. */
+    /**
+     * Verify the file hasn't changed while awaiting the response.
+     */
     if (path !== getCurrentFilePath())
       return;
 

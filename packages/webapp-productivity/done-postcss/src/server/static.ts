@@ -49,7 +49,9 @@ function readContents(id: string,): Promise<string> {
  */
 async function getMetadata(id: string,): Promise<StaticMeta> {
   try {
-    /** Filesystem stats for the requested asset; drives both the is-file check and meta payload. */
+    /**
+     * Filesystem stats for the requested asset; drives both the is-file check and meta payload.
+     */
     const stats = await stat(
       join(
         '.',

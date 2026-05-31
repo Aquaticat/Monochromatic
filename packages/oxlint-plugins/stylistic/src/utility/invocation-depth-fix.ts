@@ -33,9 +33,13 @@ function isOpenParenToken(token: { readonly value: string; },): boolean {
  * Parameters for {@link findOpenParen}.
  */
 type FindOpenParenParams = {
-  /** Rule context; its `sourceCode` supplies the token lookups. */
+  /**
+   * Rule context; its `sourceCode` supplies the token lookups.
+   */
   readonly context: Context;
-  /** Counted invocation whose argument-list opening bracket is wanted. */
+  /**
+   * Counted invocation whose argument-list opening bracket is wanted.
+   */
   readonly owner: SpineNode;
 };
 
@@ -58,7 +62,9 @@ function findOpenParen({
 }: FindOpenParenParams,): Token {
   if (owner.type
     === 'ImportExpression') {
-    /** `import` keyword token; the call bracket is the first `(` after it. */
+    /**
+     * `import` keyword token; the call bracket is the first `(` after it.
+     */
     const importKeyword = nonNullishOrThrow(context.sourceCode
       .getFirstToken(owner,),);
     return nonNullishOrThrow(context.sourceCode
@@ -67,7 +73,9 @@ function findOpenParen({
       { filter: isOpenParenToken, },
     ),);
   }
-  /** Anchor past type arguments when present, else past the callee. */
+  /**
+   * Anchor past type arguments when present, else past the callee.
+   */
   const anchor = owner.typeArguments ?? nonNullishOrThrow(owner.callee,);
   return nonNullishOrThrow(context.sourceCode
     .getTokenAfter(
@@ -80,9 +88,13 @@ function findOpenParen({
  * Minimal readonly token shape the grouping scan reads.
  */
 type ScannedToken = {
-  /** Token text, classified against `)`. */
+  /**
+   * Token text, classified against `)`.
+   */
   readonly value: string;
-  /** Byte offset just past the token. */
+  /**
+   * Byte offset just past the token.
+   */
   readonly end: number;
 };
 
@@ -91,9 +103,13 @@ type ScannedToken = {
  * prefix, and the effective operand end seen so far.
  */
 type GroupingScan = {
-  /** Whether the scan is still inside the leading run of grouping close parens. */
+  /**
+   * Whether the scan is still inside the leading run of grouping close parens.
+   */
   readonly open: boolean;
-  /** Byte offset just past the last grouping close paren, or the operand end. */
+  /**
+   * Byte offset just past the last grouping close paren, or the operand end.
+   */
   readonly end: number;
 };
 
@@ -101,11 +117,17 @@ type GroupingScan = {
  * Parameters for {@link commaInsertionOffset}.
  */
 type CommaOffsetParams = {
-  /** Rule context; its `sourceCode` supplies the between-token lookup. */
+  /**
+   * Rule context; its `sourceCode` supplies the between-token lookup.
+   */
   readonly context: Context;
-  /** Counted invocation being split. */
+  /**
+   * Counted invocation being split.
+   */
   readonly owner: SpineNode;
-  /** Raw single operand of `owner`. */
+  /**
+   * Raw single operand of `owner`.
+   */
   readonly operand: SpineNode;
 };
 
@@ -127,16 +149,22 @@ function commaInsertionOffset({
   owner,
   operand,
 }: CommaOffsetParams,): number {
-  /** Call's closing bracket token; bounds the between-token lookup. */
+  /**
+   * Call's closing bracket token; bounds the between-token lookup.
+   */
   const closeToken = nonNullishOrThrow(context.sourceCode
     .getLastToken(owner,),);
-  /** Grouping close parens then an optional trailing comma, comments excluded. */
+  /**
+   * Grouping close parens then an optional trailing comma, comments excluded.
+   */
   const between = context.sourceCode
     .getTokensBetween(
     operand,
     closeToken,
   );
-  /** Scan over the leading grouping-close-paren run; its `end` is the offset. */
+  /**
+   * Scan over the leading grouping-close-paren run; its `end` is the offset.
+   */
   const scan = between.reduce(
     function extendGrouping(
       accumulator: GroupingScan,
@@ -166,11 +194,17 @@ function commaInsertionOffset({
  * Parameters for {@link buildSplitFix}.
  */
 export type BuildSplitFixParams = {
-  /** Rule context for source-text and token access. */
+  /**
+   * Rule context for source-text and token access.
+   */
   readonly context: Context;
-  /** Fixer instance from the lint report callback. */
+  /**
+   * Fixer instance from the lint report callback.
+   */
   readonly fixer: Fixer;
-  /** Counted invocation to split; guaranteed to carry a single operand. */
+  /**
+   * Counted invocation to split; guaranteed to carry a single operand.
+   */
   readonly owner: SpineNode;
 };
 
@@ -201,37 +235,51 @@ export function buildSplitFix({
   fixer,
   owner,
 }: BuildSplitFixParams,): ReturnType<Fixer['replaceTextRange']> {
-  /** Full file source text for verbatim operand slicing. */
+  /**
+   * Full file source text for verbatim operand slicing.
+   */
   const sourceText = context.sourceCode
     .getText();
-  /** Raw single operand; present because the rule only reports splittable owners. */
+  /**
+   * Raw single operand; present because the rule only reports splittable owners.
+   */
   const operand = operandOrThrow(owner,);
-  /** Argument-list opening bracket. */
+  /**
+   * Argument-list opening bracket.
+   */
   const openParen = findOpenParen({
     context,
     owner,
   },);
-  /** Offset for the trailing comma, past operand and grouping parens. */
+  /**
+   * Offset for the trailing comma, past operand and grouping parens.
+   */
   const commaOffset = commaInsertionOffset({
     context,
     owner,
     operand,
   },);
-  /** Operand text including grouping parens, leading whitespace trimmed. */
+  /**
+   * Operand text including grouping parens, leading whitespace trimmed.
+   */
   const headText = sourceText
     .slice(
       openParen.end,
       commaOffset,
     )
     .trim();
-  /** Trailing comments after the operand; the comma is placed before them. */
+  /**
+   * Trailing comments after the operand; the comma is placed before them.
+   */
   const trailingComments = context.sourceCode
     .getCommentsInside(owner,)
     .filter(function isTrailing(comment,): boolean {
       return comment.start
         >= commaOffset;
     },);
-  /** Rendered trailing comment text, or empty when none follow the operand. */
+  /**
+   * Rendered trailing comment text, or empty when none follow the operand.
+   */
   const commentSuffix = (trailingComments.length
       === 0)
     ? ''
@@ -245,14 +293,20 @@ export function buildSplitFix({
         },)
         .join(' ',)
     }`;
-  /** Head-line indentation; the closing bracket returns to it. */
+  /**
+   * Head-line indentation; the closing bracket returns to it.
+   */
   const baseIndent = baseIndentAt({
     sourceText,
     offset: owner.start,
   },);
-  /** Operand-line indentation: head-line indent plus two spaces. */
+  /**
+   * Operand-line indentation: head-line indent plus two spaces.
+   */
   const childIndent = `${baseIndent}  `;
-  /** Multi-line argument list replacing the inline bracket pair. */
+  /**
+   * Multi-line argument list replacing the inline bracket pair.
+   */
   const replacement =
     `(\n${childIndent}${headText},${commentSuffix}\n${baseIndent})`;
   return fixer.replaceTextRange(

@@ -7,15 +7,23 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Import specifier shape needed to detect named specifiers. */
+/**
+ * Import specifier shape needed to detect named specifiers.
+ */
 type ImportSpecifierNode = Span & {
-  /** ESTree node type discriminator. */
+  /**
+   * ESTree node type discriminator.
+   */
   readonly type?: string;
 };
 
-/** Import declaration node shape carrying specifiers for this rule. */
+/**
+ * Import declaration node shape carrying specifiers for this rule.
+ */
 type ImportSpecifierListNode = Span & {
-  /** Import specifiers in source order. */
+  /**
+   * Import specifiers in source order.
+   */
   readonly specifiers?: readonly ImportSpecifierNode[];
 };
 
@@ -55,14 +63,20 @@ export const importPerLine: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       ImportDeclaration(node: Span,): void {
-        /** Narrowed import visitor node used for specifier access. */
+        /**
+         * Narrowed import visitor node used for specifier access.
+         */
         const importNode = node as ImportSpecifierListNode;
-        /** Extract specifiers from the import declaration. */
+        /**
+         * Extract specifiers from the import declaration.
+         */
         const { specifiers, } = importNode;
         if (specifiers === undefined)
           return;
 
-        /** Filter to only named import specifiers (skip default and namespace). */
+        /**
+         * Filter to only named import specifiers (skip default and namespace).
+         */
         const namedSpecifiers = specifiers.filter(
           function isNamed(specifier,): boolean {
             return specifier.type

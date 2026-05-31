@@ -18,7 +18,9 @@ const hasNodeFs = ((typeof process) !== 'undefined')
     ?.node
     !== undefined);
 
-/** Computed specifier so browser bundlers cannot statically resolve the import */
+/**
+ * Computed specifier so browser bundlers cannot statically resolve the import
+ */
 const nodeFsSpecifier = `node:fs`;
 
 /**
@@ -56,13 +58,17 @@ const nodeFs: typeof NodeFs | typeof NO_NODE_FS = hasNodeFs
  * ```
  */
 export async function readCssFile(absolutePath: string,): Promise<string> {
-  /** Registry hit shortcuts the filesystem fallback for browser builds. */
+  /**
+   * Registry hit shortcuts the filesystem fallback for browser builds.
+   */
   const cached = fsRegistry.get(absolutePath,);
   if (cached !== undefined)
     return cached;
 
   if (nodeFs !== NO_NODE_FS) {
-    /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
+    /**
+     * Dynamic import keeps `node:fs/promises` out of browser bundles.
+     */
     const { readFile, } = await import('node:fs/promises');
     return readFile(
       absolutePath,
@@ -91,7 +97,9 @@ export async function readCssFile(absolutePath: string,): Promise<string> {
  * ```
  */
 export function readCssFileSync(absolutePath: string,): string {
-  /** Registry hit shortcuts the filesystem fallback for browser builds. */
+  /**
+   * Registry hit shortcuts the filesystem fallback for browser builds.
+   */
   const cached = fsRegistry.get(absolutePath,);
   if (cached !== undefined)
     return cached;

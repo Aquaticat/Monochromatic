@@ -36,7 +36,9 @@ type SubcommandParser = Parser<'sync', ImageDiffArgs, any>;
 
 //region Shared value parsers
 
-/** Recognized provider names. */
+/**
+ * Recognized provider names.
+ */
 const providerValue = choice(
   [
     'voyage',
@@ -45,7 +47,9 @@ const providerValue = choice(
   { metavar: 'PROVIDER', },
 );
 
-/** Recognized embedding model names across providers. */
+/**
+ * Recognized embedding model names across providers.
+ */
 const modelValue = choice(
   [
     'voyage-multimodal-3',
@@ -55,14 +59,18 @@ const modelValue = choice(
   { metavar: 'MODEL', },
 );
 
-/** Value parser for image arguments (file path or URL); URL vs path resolved at runtime. */
+/**
+ * Value parser for image arguments (file path or URL); URL vs path resolved at runtime.
+ */
 const imageValue = string({ metavar: 'IMAGE', },);
 
 //endregion Shared value parsers
 
 //region Subcommand parsers
 
-/** Parser for `compare <imageA> <imageB> [--provider PROVIDER] [--model MODEL]`. */
+/**
+ * Parser for `compare <imageA> <imageB> [--provider PROVIDER] [--model MODEL]`.
+ */
 export const compareCmd: SubcommandParser = command(
   'compare',
   map(
@@ -81,7 +89,9 @@ export const compareCmd: SubcommandParser = command(
       ),),
     },),
     function toCompareArgs(v,): ImageDiffArgs {
-      /** Parsed fields destructured so optional spreads read plain identifiers. */
+      /**
+       * Parsed fields destructured so optional spreads read plain identifiers.
+       */
       const {
         imageA,
         imageB,
@@ -102,7 +112,9 @@ export const compareCmd: SubcommandParser = command(
   },
 );
 
-/** Parser for `embed <image> [--provider PROVIDER] [--model MODEL]`. */
+/**
+ * Parser for `embed <image> [--provider PROVIDER] [--model MODEL]`.
+ */
 export const embedCmd: SubcommandParser = command(
   'embed',
   map(
@@ -120,7 +132,9 @@ export const embedCmd: SubcommandParser = command(
       ),),
     },),
     function toEmbedArgs(v,): ImageDiffArgs {
-      /** Parsed fields destructured so optional spreads read plain identifiers. */
+      /**
+       * Parsed fields destructured so optional spreads read plain identifiers.
+       */
       const {
         image,
         provider,

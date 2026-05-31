@@ -7,9 +7,13 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Object-pattern node shape carrying destructured properties for this rule. */
+/**
+ * Object-pattern node shape carrying destructured properties for this rule.
+ */
 type ObjectPatternListNode = Span & {
-  /** Destructured properties in source order. */
+  /**
+   * Destructured properties in source order.
+   */
   readonly properties?: readonly Span[];
 };
 
@@ -45,9 +49,13 @@ export const destructurePerLine: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       ObjectPattern(node: Span,): void {
-        /** Narrowed object-pattern visitor node used for property access. */
+        /**
+         * Narrowed object-pattern visitor node used for property access.
+         */
         const patternNode = node as ObjectPatternListNode;
-        /** Extract properties from the object pattern. */
+        /**
+         * Extract properties from the object pattern.
+         */
         const { properties, } = patternNode;
         if (properties === undefined)
           return;

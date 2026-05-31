@@ -111,7 +111,9 @@ function renderComplement<S extends string, V extends string, N extends string,>
     readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
   },
 ): string {
-  /** Rendered nested verb phrase before complement marker selection. */
+  /**
+   * Rendered nested verb phrase before complement marker selection.
+   */
   const rendered = renderVerbPhrase(phrase,);
   return complementFormForVerb({ entry, },)
     === 'bare' ? rendered : `to ${rendered}`;
@@ -137,7 +139,9 @@ export function makeEnglishFragmentRenderer<
 >(
   deps: FragmentDeps<L, S, V, N>,
 ): (fragment: Fragment<L, S, V, N>,) => string {
-  /** Destructured locale dependencies captured for use across every sub-renderer below. */
+  /**
+   * Destructured locale dependencies captured for use across every sub-renderer below.
+   */
   const {
     labels,
     verbs,
@@ -156,22 +160,30 @@ export function makeEnglishFragmentRenderer<
   function renderVerbPhraseFragment(
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
-    /** Verb entry used by every non-finite branch. */
+    /**
+     * Verb entry used by every non-finite branch.
+     */
     const entry = verbs[fragment.phrase
       .verb];
-    /** Non-finite surface for the requested form. */
+    /**
+     * Non-finite surface for the requested form.
+     */
     const head = nonFiniteSurface({
       entry,
       form: fragment.form,
     },);
-    /** Rendered object surface; empty string when absent. */
+    /**
+     * Rendered object surface; empty string when absent.
+     */
     const object = fragment.phrase
       .object
       === undefined
       ? ''
       : renderNounPhrase(fragment.phrase
         .object,);
-    /** Rendered infinitive or bare complement; empty string when absent. */
+    /**
+     * Rendered infinitive or bare complement; empty string when absent.
+     */
     const complement = fragment.phrase
       .complement
       === undefined
@@ -183,10 +195,14 @@ export function makeEnglishFragmentRenderer<
           .phrase,
         renderVerbPhrase,
       },);
-    /** Rendered adverbial cluster; empty string when none. */
+    /**
+     * Rendered adverbial cluster; empty string when none.
+     */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
-    /** Joined surface before capitalization fixup. */
+    /**
+     * Joined surface before capitalization fixup.
+     */
     const body = joinTokens([
       head,
       object,
@@ -238,7 +254,9 @@ export function makeEnglishFragmentRenderer<
     if (fragment.kind
       === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
-    /** Rendered sequence parts space-joined. */
+    /**
+     * Rendered sequence parts space-joined.
+     */
     const joined = fragment
       .parts
       .map(function mapPart(part,): string {

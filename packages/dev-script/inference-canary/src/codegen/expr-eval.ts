@@ -9,11 +9,15 @@ import type { Probe, } from '../probes.ts';
 import { EXPR_PERF_INPUT, } from './perf-test-data/index.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
-/** Test input covering precedence, parentheses, negation, and floats */
+/**
+ * Test input covering precedence, parentheses, negation, and floats
+ */
 const EXPR_TEST_INPUT =
   '2 + 3 * 4\n(2 + 3) * 4\n10 / (5 - 5)\n-3 + 4 * -2\n((1 + 2) * (3 + 4))\n3.5 * 2 + 1.5\n';
 
-/** Expected outputs for each expression in EXPR_TEST_INPUT */
+/**
+ * Expected outputs for each expression in EXPR_TEST_INPUT
+ */
 const EXPR_EXPECTED = [
   '14',
   '20',
@@ -23,7 +27,9 @@ const EXPR_EXPECTED = [
   '8.5',
 ] as const;
 
-/** Allowed floating-point comparison tolerance */
+/**
+ * Allowed floating-point comparison tolerance
+ */
 const FLOAT_TOLERANCE = 0.001;
 
 /**
@@ -65,20 +71,26 @@ export const expressionEvaluator: Probe = createCodeGenProbe({
   ]
     .join('\n',),
   verify: function verifyExprEval(result,): { correctness: number; } {
-    /** Per-line model output, trimmed so trailing whitespace does not perturb the float comparison below. */
+    /**
+     * Per-line model output, trimmed so trailing whitespace does not perturb the float comparison below.
+     */
     const lines = result.stdout
       .trim()
       .split('\n',)
       .map(function trimLine(line,): string {
       return line.trim();
     },);
-    /** Number of expected outputs the model produced; divided by the total to yield correctness. */
+    /**
+     * Number of expected outputs the model produced; divided by the total to yield correctness.
+     */
     const correctCount = EXPR_EXPECTED
       .filter(function checkLine(
         exp,
         index,
       ): boolean {
-        /** Model's output for the current expected line; undefined when the model emitted fewer lines than expected. */
+        /**
+         * Model's output for the current expected line; undefined when the model emitted fewer lines than expected.
+         */
         const actual = lines[index];
         if (actual === undefined)
           return false;

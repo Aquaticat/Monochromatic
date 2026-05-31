@@ -39,12 +39,18 @@ import {
  * ```
  */
 export function requireParam(row: {
-  /** h3 route parameter record. */
+  /**
+   * h3 route parameter record.
+   */
   readonly params: Readonly<Record<string, string>> | undefined;
-  /** Parameter name to extract. */
+  /**
+   * Parameter name to extract.
+   */
   readonly name: string;
 },): string {
-  /** Raw param value; missing/empty triggers the 400 below. */
+  /**
+   * Raw param value; missing/empty triggers the 400 below.
+   */
   const value = row.params?.[row.name];
   if ((value === undefined) || (value === '')) {
     throw new HTTPError({
@@ -91,13 +97,17 @@ export type Actor = {
  * ```
  */
 export async function requireActor(event: ActorEvent,): Promise<Actor> {
-  /** Active Better Auth session, when one is present on the request. */
+  /**
+   * Active Better Auth session, when one is present on the request.
+   */
   const session = await auth.api
     .getSession({ headers: event.req
       .headers, },);
   if (session !== null) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Better Auth's session.user shape includes the username plugin's optional `username` field, which the framework's typed surface omits at this entry point */
-    /** Username from the Better Auth session, when the username plugin is configured. */
+    /**
+     * Username from the Better Auth session, when the username plugin is configured.
+     */
     const sessionUsername = (session.user as { username?: string | null; }).username;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return {
@@ -117,7 +127,9 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
       message: 'no session',
     },);
   }
-  /** Dev-only login from the legacy header; missing triggers the 401 below. */
+  /**
+   * Dev-only login from the legacy header; missing triggers the 401 below.
+   */
   const login = event.req
     .headers
     .get('x-forge-user',);
@@ -127,7 +139,9 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
       message: 'no session and missing X-Forge-User dev header',
     },);
   }
-  /** Resolved user row keyed by login; missing triggers the 401 below. */
+  /**
+   * Resolved user row keyed by login; missing triggers the 401 below.
+   */
   const user = await getUserByLogin(login,);
   if (user === undefined) {
     throw new HTTPError({
@@ -152,7 +166,9 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
  * ```
  */
 export async function runDispatch(): Promise<void> {
-  /** New event-id high-water mark returned after the drain completes. */
+  /**
+   * New event-id high-water mark returned after the drain completes.
+   */
   const cursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
@@ -180,5 +196,7 @@ export function parseStateFacet(raw: string,): IssueStateFacet | null {
   return null;
 }
 
-/** Decimal radix used by `parseInt` calls inside route handlers. */
+/**
+ * Decimal radix used by `parseInt` calls inside route handlers.
+ */
 export const DECIMAL_RADIX = 10;

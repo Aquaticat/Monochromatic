@@ -8,13 +8,21 @@ import type { Task, } from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from './format-tracked-time.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
-/** Configuration for a `\<task-card\>` instance, passed via `createTaskCard`. */
+/**
+ * Configuration for a `\<task-card\>` instance, passed via `createTaskCard`.
+ */
 export type TaskCardOptions = {
-  /** Whether to show a red "blocked" badge chip. */
+  /**
+   * Whether to show a red "blocked" badge chip.
+   */
   readonly showBlockedBadge?: boolean;
-  /** Callback when the card body is clicked (navigates to task detail). */
+  /**
+   * Callback when the card body is clicked (navigates to task detail).
+   */
   readonly onOpen: (taskId: string,) => void;
-  /** Callback when the checkbox is clicked (completes the task). */
+  /**
+   * Callback when the checkbox is clicked (completes the task).
+   */
   readonly onToggleComplete?: (taskId: string,) => Promise<void>;
 };
 
@@ -32,7 +40,9 @@ export type TaskCardOptions = {
  * ```
  */
 export function buildChipTexts(task: Task,): string[] {
-  /** Chip strings accumulated in display order; each block below pushes conditionally. */
+  /**
+   * Chip strings accumulated in display order; each block below pushes conditionally.
+   */
   const chips: string[] = [];
   if (task.tags
     .length
@@ -93,7 +103,9 @@ export function renderTaskCardContent(
     readonly options: TaskCardOptions;
   },
 ): void {
-  /** Rendered chip elements; the optional blocked badge is appended below when requested. */
+  /**
+   * Rendered chip elements; the optional blocked badge is appended below when requested.
+   */
   const chipElements: HTMLElement[] = buildChipTexts(task,)
     .map(
     function createChip(text,): HTMLElement {
@@ -133,7 +145,9 @@ export function renderTaskCardContent(
           on: {
             click: function onCheckboxClick(event,): void {
               event.stopPropagation();
-              /** Caller-supplied complete handler; the click is a no-op when not provided. */
+              /**
+               * Caller-supplied complete handler; the click is a no-op when not provided.
+               */
               const { onToggleComplete, } = options;
               if (onToggleComplete !== undefined) {
                 void (async function onCheckboxClickAsync(): Promise<void> {

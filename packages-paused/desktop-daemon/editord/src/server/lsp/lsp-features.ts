@@ -55,9 +55,13 @@ export async function requestHover({
   readonly line: number;
   readonly character: number;
 },): Promise<LspHover | null> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** LSP hover payload; null when no hover is available at the position. */
+  /**
+   * LSP hover payload; null when no hover is available at the position.
+   */
   const result = await client.request({
     method: 'textDocument/hover',
     params: {
@@ -103,9 +107,13 @@ export async function requestCompletion({
   readonly line: number;
   readonly character: number;
 },): Promise<LspCompletionItem[]> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** LSP completion can return null, an array, or a CompletionList; normalised below. */
+  /**
+   * LSP completion can return null, an array, or a CompletionList; normalised below.
+   */
   const result = await client.request({
     method: 'textDocument/completion',
     params: {

@@ -4,7 +4,9 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-/** Text prefix common to every oxlint disable directive. */
+/**
+ * Text prefix common to every oxlint disable directive.
+ */
 const DISABLE_DIRECTIVE_PREFIX = 'oxlint-disable';
 
 /**

@@ -19,7 +19,9 @@ import type {
   Provider,
 } from './types.ts';
 
-/** Registered providers keyed by id. */
+/**
+ * Registered providers keyed by id.
+ */
 const PROVIDERS: Record<ProviderId, Provider> = {
   openrouter,
   openai,
@@ -45,7 +47,9 @@ const PROVIDERS: Record<ProviderId, Provider> = {
  * ```
  */
 export function isProviderReady(): boolean {
-  /** Active provider config snapshot from the settings store. */
+  /**
+   * Active provider config snapshot from the settings store.
+   */
   const cfg = getProvider();
   if (cfg.id
     === 'ollama')
@@ -96,9 +100,13 @@ export function chat(
 ): Promise<string> {
   if (!isProviderReady())
     throw new Error('llm: provider not ready (missing key or pending warning)',);
-  /** Active provider config (id, key, model, base URL). */
+  /**
+   * Active provider config (id, key, model, base URL).
+   */
   const cfg = getProvider();
-  /** Adapter implementation for the active provider id. */
+  /**
+   * Adapter implementation for the active provider id.
+   */
   const provider = PROVIDERS[cfg.id];
   console.error(
     '[llm] dispatching to',
@@ -120,8 +128,12 @@ export function chat(
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/** Re-exports for callers that want the locale string to bind to messages. */
+/**
+ * Re-exports for callers that want the locale string to bind to messages.
+ */
 export type { Message, } from './types.ts';
 
-/** Re-exports settings access for prompt builders. */
+/**
+ * Re-exports settings access for prompt builders.
+ */
 export { getSettings, };

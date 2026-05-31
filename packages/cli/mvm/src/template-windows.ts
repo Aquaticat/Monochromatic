@@ -68,12 +68,16 @@ import {
  * ```
  */
 export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<string> {
-  /** Logger scoped to this template-bake call so log lines carry the function name. */
+  /**
+   * Logger scoped to this template-bake call so log lines carry the function name.
+   */
   const rl = tagged({
     tag: ensureWindowsTemplate.name,
     l,
   },);
-  /** Final on-disk path for the baked template qcow2; written after disk conversion. */
+  /**
+   * Final on-disk path for the baked template qcow2; written after disk conversion.
+   */
   const templatePath = join(
     IMAGES_DIR,
     spec.templateFileName,
@@ -82,14 +86,18 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
   rl.info(`creating Windows template ${spec.templateFileName} from evaluation ISO...`,);
   rl.info('this will take 15-30 minutes for unattended Windows installation',);
 
-  /** Concurrent downloads of the three prerequisites; resolved together to overlap network IO. */
+  /**
+   * Concurrent downloads of the three prerequisites; resolved together to overlap network IO.
+   */
   const [windowsIsoPath, virtioWinPath, winfspMsiPath,] = await Promise.all([
     ensureImage(spec,),
     ensureVirtioWin(),
     ensureWinFsp(),
   ],);
 
-  /** Per-VM scratch directory; holds the install disk and autounattend ISO during the bake. */
+  /**
+   * Per-VM scratch directory; holds the install disk and autounattend ISO during the bake.
+   */
   const vmDir = join(
     VMS_DIR,
     TEMPLATE_VM_NAME,
@@ -99,13 +107,17 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     { recursive: true, },
   );
 
-  /** Path of the empty qcow2 created below; Windows installs onto it then it is converted to the final template. */
+  /**
+   * Path of the empty qcow2 created below; Windows installs onto it then it is converted to the final template.
+   */
   const diskPath = join(
     vmDir,
     'disk.qcow2',
   );
 
-  /** Disposable guard that tears down the template VM on scope exit, even on early throws. */
+  /**
+   * Disposable guard that tears down the template VM on scope exit, even on early throws.
+   */
   await using _cleanup = templateVmGuard(rl,);
 
   rl.info('creating empty disk for Windows installation...',);
@@ -120,12 +132,16 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     ],
   },);
 
-  /** ISO 9660 image carrying Autounattend.xml; consumed by Windows Setup at first boot. */
+  /**
+   * ISO 9660 image carrying Autounattend.xml; consumed by Windows Setup at first boot.
+   */
   const autounattendIso = createAutounattendIso({
     hostname: TEMPLATE_VM_NAME,
     imageIndex: spec.imageIndex,
   },);
-  /** On-disk location of the autounattend ISO; attached as a CDROM to the install VM. */
+  /**
+   * On-disk location of the autounattend ISO; attached as a CDROM to the install VM.
+   */
   const autounattendIsoPath = join(
     vmDir,
     'autounattend.iso',
@@ -135,7 +151,9 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     autounattendIso,
   );
 
-  /** Libvirt domain XML for the install VM; boots from CDROM with SATA disk during Windows install. */
+  /**
+   * Libvirt domain XML for the install VM; boots from CDROM with SATA disk during Windows install.
+   */
   const xml = domainXml({
     bootDev: 'cdrom',
     cdroms: [
@@ -196,7 +214,9 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
 
 //region VirtioFS installation helpers
 
-/** Milliseconds to wait between polling for guest-exec completion. */
+/**
+ * Milliseconds to wait between polling for guest-exec completion.
+ */
 const GUEST_EXEC_POLL_MS = 500;
 
 /**
@@ -218,10 +238,14 @@ async function guestExecWait({
 }: {
   readonly command: string;
 },): Promise<number> {
-  /** Full VM name with prefix. */
+  /**
+   * Full VM name with prefix.
+   */
   const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
 
-  /** Raw JSON returned by `guest-exec`; contains the pid used to poll for completion. */
+  /**
+   * Raw JSON returned by `guest-exec`; contains the pid used to poll for completion.
+   */
   const startResult = await virsh({
     args: [
       'qemu-agent-command',
@@ -241,12 +265,16 @@ async function guestExecWait({
       },),
     ],
   },);
-  /** Guest process id assigned by the QEMU guest agent; used to poll exec status. */
+  /**
+   * Guest process id assigned by the QEMU guest agent; used to poll exec status.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const { pid, } = (JSON.parse(startResult,) as { return: { pid: number; }; }).return;
 
   while (true) {
-    /** Raw `guest-exec-status` response polled each iteration until the process exits. */
+    /**
+     * Raw `guest-exec-status` response polled each iteration until the process exits.
+     */
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
     const statusResult = await virsh({
       args: [
@@ -258,7 +286,9 @@ async function guestExecWait({
         },),
       ],
     },);
-    /** Parsed status payload exposing the `exited` flag and optional `exitcode`. */
+    /**
+     * Parsed status payload exposing the `exited` flag and optional `exitcode`.
+     */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
     const status = (JSON
       .parse(statusResult,) as { return: {
@@ -299,12 +329,18 @@ async function guestFilePush({
   readonly guestPath: string;
   readonly hostPath: string;
 },): Promise<void> {
-  /** Prefixed libvirt domain name; matches what `defineVm` registered. */
+  /**
+   * Prefixed libvirt domain name; matches what `defineVm` registered.
+   */
   const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
-  /** Full host-file payload buffered in memory, then streamed to the guest in chunks. */
+  /**
+   * Full host-file payload buffered in memory, then streamed to the guest in chunks.
+   */
   const data = await readFile(hostPath,);
 
-  /** Open file on guest for writing. */
+  /**
+   * Open file on guest for writing.
+   */
   const openResult = await virsh({
     args: [
       'qemu-agent-command',
@@ -318,22 +354,32 @@ async function guestFilePush({
       },),
     ],
   },);
-  /** Numeric file handle returned by the guest agent; reused for every write and the close. */
+  /**
+   * Numeric file handle returned by the guest agent; reused for every write and the close.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const handle = (JSON.parse(openResult,) as { return: number; }).return;
 
-  /** 48 KiB in bytes. */
+  /**
+   * 48 KiB in bytes.
+   */
   const RAW_CHUNK_KIB = 48;
-  /** Write in 48 KiB raw chunks (~65 KB base64, fits within virsh CLI arg limits). */
+  /**
+   * Write in 48 KiB raw chunks (~65 KB base64, fits within virsh CLI arg limits).
+   */
   const RAW_CHUNK: number = RAW_CHUNK_KIB * BYTES_PER_KIB;
   for (let offset = 0; offset < data
     .length; offset += RAW_CHUNK) {
-    /** Raw byte slice of the current chunk; zero-copy view into `data`. */
+    /**
+     * Raw byte slice of the current chunk; zero-copy view into `data`.
+     */
     const chunk = data.subarray(
       offset,
       offset + RAW_CHUNK,
     );
-    /** Base64-encoded chunk; the QMP protocol only carries text, so binary must be encoded. */
+    /**
+     * Base64-encoded chunk; the QMP protocol only carries text, so binary must be encoded.
+     */
     const b64 = Buffer.from(chunk,)
       .toString('base64',);
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial file transfer
@@ -352,7 +398,9 @@ async function guestFilePush({
     },);
   }
 
-  /** Close the file handle. */
+  /**
+   * Close the file handle.
+   */
   await virsh({
     args: [
       'qemu-agent-command',

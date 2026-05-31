@@ -61,10 +61,14 @@ export function resolveReference(
     readonly ref: string;
   },
 ): string | typeof UNRESOLVABLE_REFERENCE {
-  /** Reference with any `#fragment` removed; fragments do not affect the served file. */
+  /**
+   * Reference with any `#fragment` removed; fragments do not affect the served file.
+   */
   const withoutFragment = nonNullishOrThrow(ref.trim()
     .split('#',)[0],);
-  /** Reference with the query string also stripped; query parameters do not change the path on disk. */
+  /**
+   * Reference with the query string also stripped; query parameters do not change the path on disk.
+   */
   const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
     return UNRESOLVABLE_REFERENCE;
@@ -72,7 +76,9 @@ export function resolveReference(
     || startsWithUriScheme(trimmed,))
     return UNRESOLVABLE_REFERENCE;
 
-  /** Canonical absolute form of the dist root used as the containment boundary. */
+  /**
+   * Canonical absolute form of the dist root used as the containment boundary.
+   */
   const absoluteRoot = pathResolve(root,);
   /**
    * Absolute filesystem path for the reference.
@@ -90,7 +96,9 @@ export function resolveReference(
       trimmed,
     );
 
-  /** Path of `resolved` relative to `absoluteRoot`; used to detect escapes via `..` or absolute output. */
+  /**
+   * Path of `resolved` relative to `absoluteRoot`; used to detect escapes via `..` or absolute output.
+   */
   const relativeToRoot = relative(
     absoluteRoot,
     resolved,

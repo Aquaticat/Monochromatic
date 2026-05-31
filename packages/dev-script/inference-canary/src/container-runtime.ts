@@ -14,14 +14,20 @@ import {
 
 //region Configuration: timeout, image tag, and buffer size shared by container-exec.ts
 
-/** Container execution timeout in seconds */
+/**
+ * Container execution timeout in seconds
+ */
 export const CONTAINER_TIMEOUT_SECONDS = 15;
 
-/** Host-side timeout buffer above the container timeout */
+/**
+ * Host-side timeout buffer above the container timeout
+ */
 export const HOST_TIMEOUT_BUFFER_SECONDS = 5;
 
 // Pin to 1.3 rather than :latest to prevent silent breakage from bun major releases
-/** Container image with bun pre-installed */
+/**
+ * Container image with bun pre-installed
+ */
 export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
 
 //endregion Configuration
@@ -52,7 +58,9 @@ const WHICH_CMD = process.platform
 function whichSync(name: string,): string {
   try {
     // `where.exe` may return multiple lines; take the first match
-    /** First line of which output, containing the resolved binary path. */
+    /**
+     * First line of which output, containing the resolved binary path.
+     */
     const [firstLine,] = execFileSync(
       WHICH_CMD,
       [name,],
@@ -77,7 +85,9 @@ function whichSync(name: string,): string {
  * @throws if neither podman nor docker is found on PATH
  */
 function detectRuntime(): string {
-  /** Container-specific logger for runtime detection messages. */
+  /**
+   * Container-specific logger for runtime detection messages.
+   */
   const rl = tagged({
     tag: 'container',
     l,
@@ -86,7 +96,9 @@ function detectRuntime(): string {
     'podman',
     'docker',
   ] as const) {
-    /** Absolute path of the candidate runtime if installed, or empty string when missing from PATH. */
+    /**
+     * Absolute path of the candidate runtime if installed, or empty string when missing from PATH.
+     */
     const resolved = whichSync(runtime,);
     if (resolved !== '') {
       rl.info(`using runtime: ${resolved}`,);
@@ -99,7 +111,9 @@ function detectRuntime(): string {
   );
 }
 
-/** Resolved container runtime binary name, detected at module load time */
+/**
+ * Resolved container runtime binary name, detected at module load time
+ */
 export const CONTAINER_RUNTIME: string = detectRuntime();
 
 //endregion Runtime detection

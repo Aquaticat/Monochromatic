@@ -5,7 +5,9 @@
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** HTML for the shape legend, displayed once per chart area */
+/**
+ * HTML for the shape legend, displayed once per chart area
+ */
 export const SHAPE_LEGEND: string = h({
   tag: 'div',
   class: 'chart-legend',

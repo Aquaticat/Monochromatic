@@ -5,7 +5,9 @@
  * `db.ts` can pass the result rows through unchanged.
  */
 
-/** Row representing a registered user. */
+/**
+ * Row representing a registered user.
+ */
 export type User = {
   readonly id: string;
   readonly login: string;
@@ -13,7 +15,9 @@ export type User = {
   readonly created_at: number;
 };
 
-/** Row representing a repository. */
+/**
+ * Row representing a repository.
+ */
 export type Repo = {
   readonly id: string;
   readonly owner_id: string;
@@ -23,7 +27,9 @@ export type Repo = {
   readonly created_at: number;
 };
 
-/** Row representing a label attached to issues. */
+/**
+ * Row representing a label attached to issues.
+ */
 export type Label = {
   readonly id: string;
   readonly repo_id: string;
@@ -31,7 +37,9 @@ export type Label = {
   readonly color: string;
 };
 
-/** Row representing an issue. */
+/**
+ * Row representing an issue.
+ */
 export type Issue = {
   readonly id: string;
   readonly repo_id: string;
@@ -44,7 +52,9 @@ export type Issue = {
   readonly updated_at: number;
 };
 
-/** Row representing a comment on an issue. */
+/**
+ * Row representing a comment on an issue.
+ */
 export type Comment = {
   readonly id: string;
   readonly issue_id: string;
@@ -53,7 +63,9 @@ export type Comment = {
   readonly created_at: number;
 };
 
-/** Row representing an event in the append-only log. */
+/**
+ * Row representing an event in the append-only log.
+ */
 export type EventRow = {
   readonly id: number;
   readonly resource_type: string;
@@ -64,13 +76,17 @@ export type EventRow = {
   readonly created_at: number;
 };
 
-/** Lightweight `(id, updated_at)` row used by filter list queries. */
+/**
+ * Lightweight `(id, updated_at)` row used by filter list queries.
+ */
 export type IssueIdRow = {
   readonly id: string;
   readonly updated_at: number;
 };
 
-/** Row stored in `fragment_index`. */
+/**
+ * Row stored in `fragment_index`.
+ */
 export type FragmentIndexRow = {
   readonly fragment_key: string;
   readonly content_hash: string;
@@ -79,7 +95,9 @@ export type FragmentIndexRow = {
   readonly source_event_sequence: number;
 };
 
-/** Resource type discriminant for events and sequences. */
+/**
+ * Resource type discriminant for events and sequences.
+ */
 export type ResourceType = 'issue' | 'repo' | 'comment' | 'pr' | 'review' | 'user';
 
 /**
@@ -103,21 +121,27 @@ export type EventKind =
   | 'push'
   | 'user.renamed';
 
-/** Row representing an organisation. */
+/**
+ * Row representing an organisation.
+ */
 export type Org = {
   readonly id: string;
   readonly name: string;
   readonly created_at: number;
 };
 
-/** Row representing repo membership and role. */
+/**
+ * Row representing repo membership and role.
+ */
 export type RepoMember = {
   readonly repo_id: string;
   readonly user_id: string;
   readonly role: string;
 };
 
-/** Row representing a milestone. */
+/**
+ * Row representing a milestone.
+ */
 export type Milestone = {
   readonly id: string;
   readonly repo_id: string;
@@ -125,7 +149,9 @@ export type Milestone = {
   readonly due_at: number | null;
 };
 
-/** Row representing a pull request (shares identity with `issues.id`). */
+/**
+ * Row representing a pull request (shares identity with `issues.id`).
+ */
 export type PullRequest = {
   readonly issue_id: string;
   readonly base_ref: string;
@@ -134,7 +160,9 @@ export type PullRequest = {
   readonly mergeable: string;
 };
 
-/** Row representing a PR review. */
+/**
+ * Row representing a PR review.
+ */
 export type Review = {
   readonly id: string;
   readonly pr_issue_id: string;

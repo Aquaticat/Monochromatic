@@ -38,12 +38,18 @@ function registerGuardCommand(
         args: string,
         ctx: ExtensionContext,
       ) {
-        /** Dynamically imported context helper; lazy to keep startup cost low when /guard is never used. */
+        /**
+         * Dynamically imported context helper; lazy to keep startup cost low when /guard is never used.
+         */
         const { getTrustDirectives, } = await import('./context.ts');
-        /** Trimmed argument string; empty string falls through to the list-directives branch. */
+        /**
+         * Trimmed argument string; empty string falls through to the list-directives branch.
+         */
         const trimmed = args.trim();
         if (trimmed === '') {
-          /** Current trust directives for the session, listed back to the user when `/guard` is bare. */
+          /**
+           * Current trust directives for the session, listed back to the user when `/guard` is bare.
+           */
           const directives = getTrustDirectives(ctx,);
           if (directives.length
             === 0)

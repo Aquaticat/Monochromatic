@@ -39,7 +39,9 @@ export const CHAIN_END: unique symbol = Symbol('messages-demo:chain-end',);
  * ```
  */
 export async function stepToParent(draftId: string,): Promise<string | typeof CHAIN_END> {
-  /** Parent probe; `has_parent` gates the read of `parent_id` so the empty filler is never observed. */
+  /**
+   * Parent probe; `has_parent` gates the read of `parent_id` so the empty filler is never observed.
+   */
   const parentRow = await get<{
     has_parent: number;
     parent_id: string;

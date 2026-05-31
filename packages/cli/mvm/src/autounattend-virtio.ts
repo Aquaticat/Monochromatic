@@ -57,7 +57,9 @@ const VIRTIO_DRIVER_DIRS = [
  * ```
  */
 export function pnpDriverPaths(): string {
-  /** Storage and network drivers WinPE must load before partitioning becomes possible. */
+  /**
+   * Storage and network drivers WinPE must load before partitioning becomes possible.
+   */
   const driverDirs = [
     'viostor',
     'NetKVM',
@@ -76,7 +78,9 @@ export function pnpDriverPaths(): string {
       letter,
       letterIdx,
     ) {
-      /** Unique 1-based keyValue derived from the driver/letter cross-product position. */
+      /**
+       * Unique 1-based keyValue derived from the driver/letter cross-product position.
+       */
       const keyValue = (driverIdx * VIRTIO_DRIVE_CANDIDATES
         .length) + letterIdx
         + 1;
@@ -116,13 +120,17 @@ ${paths.join('\n',)}
  * ```
  */
 export function virtioInstallCommand(): string {
-  /** Comma-separated quoted drive letter list passed to `Get-ChildItem -Path` for ISO discovery. */
+  /**
+   * Comma-separated quoted drive letter list passed to `Get-ChildItem -Path` for ISO discovery.
+   */
   const driveList = VIRTIO_DRIVE_CANDIDATES
     .map(function formatDriveLetter(d,) {
       return `'${d}:\\'`;
     },)
     .join(',',);
-  /** pnputil calls for each driver directory, targeting the correct OS version. */
+  /**
+   * pnputil calls for each driver directory, targeting the correct OS version.
+   */
   const pnputilCalls = VIRTIO_DRIVER_DIRS
     .map(function formatPnputilCall(dir,) {
       return `pnputil /add-driver (Join-Path $root '${dir}\\${VIRTIO_DRIVER_OS_DIR}\\amd64\\*.inf') /install`;

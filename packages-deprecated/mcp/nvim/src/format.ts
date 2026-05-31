@@ -50,7 +50,9 @@ export function formatDiagnostic(
     indent?: string;
   },
 ): string {
-  /** Bracketed source-and-code suffix, or empty string when no source info is attached. */
+  /**
+   * Bracketed source-and-code suffix, or empty string when no source info is attached.
+   */
   const source = ((diagnostic.source
     !== null) && (diagnostic.source
       !== ''))

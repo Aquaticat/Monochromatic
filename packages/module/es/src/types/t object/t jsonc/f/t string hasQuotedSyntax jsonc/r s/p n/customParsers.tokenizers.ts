@@ -107,14 +107,20 @@ export function parseNumberToken(
    */
   // oxlint-disable-next-line no-restricted-syntax/no-regex -- standard JSON number grammar (sign, integer with no-leading-zero rule, optional fraction, optional exponent); regex is the cleanest expression of "longest valid numeric prefix at position 0" and the input is bounded by the surrounding JSONC parser. No nested quantifiers, linear matching.
   const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[Ee][+-]?\d+)?/;
-  /** Regex match result for numeric token anchored at start. */
+  /**
+   * Regex match result for numeric token anchored at start.
+   */
   const match = NUMBER_RE.exec(value,);
   if ((!match) || (match.index
     !== 0))
     throw new Error('malformed jsonc, non-number after number marker',);
-  /** Span consumed for the number token (kept as fragment for immutability). */
+  /**
+   * Span consumed for the number token (kept as fragment for immutability).
+   */
   const consumed = match[0] as FragmentStringJsonc;
-  /** Exact numeric semantics via JSON.parse; avoids manual float/exp handling. */
+  /**
+   * Exact numeric semantics via JSON.parse; avoids manual float/exp handling.
+   */
   const parsedValue = JSON.parse(consumed,) as number;
   return {
     consumed,

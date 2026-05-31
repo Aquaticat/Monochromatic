@@ -14,19 +14,29 @@ import {
   POPUP_HOST_DECLS,
 } from '../styles/tokens.ts';
 
-/** Invisible bridge that extends upward so the mouse can reach the popup. */
+/**
+ * Invisible bridge that extends upward so the mouse can reach the popup.
+ */
 const BRIDGE_HEIGHT_REM = 1;
 
-/** Maximum width of the hover popup as percentage of viewport. */
+/**
+ * Maximum width of the hover popup as percentage of viewport.
+ */
 const MAX_WIDTH_PERCENT = 60;
 
-/** Maximum height of the hover popup in rem. */
+/**
+ * Maximum height of the hover popup in rem.
+ */
 const MAX_HEIGHT_REM = 20;
 
-/** Padding in rem. */
+/**
+ * Padding in rem.
+ */
 const PADDING = 1 / 2;
 
-/** Shadow DOM styles for the hover popup. */
+/**
+ * Shadow DOM styles for the hover popup.
+ */
 export const STYLES: string = [
   $({
     rule: ':host',

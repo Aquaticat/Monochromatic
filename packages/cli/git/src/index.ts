@@ -21,13 +21,17 @@ export {};
 
 //region Rule pipeline: validate and transform args before forwarding to real git
 
-/** Tagged logger for the main entry point. */
+/**
+ * Tagged logger for the main entry point.
+ */
 const rl = tagged({
   tag: 'main',
   l,
 },);
 
-/** Raw arguments passed after the script name. */
+/**
+ * Raw arguments passed after the script name.
+ */
 const rawArgs: readonly string[] = process.argv
   .slice(2,);
 
@@ -95,19 +99,27 @@ const RULES: readonly ((
 //region Execution: resolve real git, apply rules, spawn
 
 try {
-  /** Layout of `rawArgs` consulted before the rules run so short-circuit flags can be detected on the user's literal input. */
+  /**
+   * Layout of `rawArgs` consulted before the rules run so short-circuit flags can be detected on the user's literal input.
+   */
   const { subcommandIndex: rawSubcommandIndex, } = parseGlobalOptions(rawArgs,);
-  /** Pre-subcommand region of `rawArgs`; scanned for flags that make git ignore the subcommand entirely. */
+  /**
+   * Pre-subcommand region of `rawArgs`; scanned for flags that make git ignore the subcommand entirely.
+   */
   const rawPreSubcommand = rawArgs.slice(
     0,
     rawSubcommandIndex,
   );
-  /** True when git will short-circuit on a pre-subcommand `--version`/`-v`/`--help`/`-h`; rule injections between the flag and the subcommand would be parsed by the wrong git subcommand and error. */
+  /**
+   * True when git will short-circuit on a pre-subcommand `--version`/`-v`/`--help`/`-h`; rule injections between the flag and the subcommand would be parsed by the wrong git subcommand and error.
+   */
   const willShortCircuit = rawPreSubcommand.some(function isShortCircuitFlag(arg,) {
     return SHORT_CIRCUIT_FLAGS.has(arg,);
   },);
 
-  /** Final arguments after all rules have been applied; rules are skipped when git will short-circuit so the wrapper does not corrupt the invocation. */
+  /**
+   * Final arguments after all rules have been applied; rules are skipped when git will short-circuit so the wrapper does not corrupt the invocation.
+   */
   const processedArgs = willShortCircuit
     ? rawArgs
     : await RULES.reduce(
@@ -125,7 +137,9 @@ try {
 
   rl.debug(`final args: [${processedArgs.join(', ',)}]`,);
 
-  /** Absolute path to the real git binary. */
+  /**
+   * Absolute path to the real git binary.
+   */
   const gitPath = await resolveGit();
   rl.debug(`using real git at ${gitPath}`,);
 
@@ -135,26 +149,38 @@ try {
     { stdio: 'inherit', },
   );
 
-  /** Layout of `processedArgs`: where the subcommand sits and what precedes it. */
+  /**
+   * Layout of `processedArgs`: where the subcommand sits and what precedes it.
+   */
   const { subcommandIndex, } = parseGlobalOptions(processedArgs,);
-  /** Subcommand at the located index; `undefined` when args carry no subcommand (e.g. `git --version`). */
+  /**
+   * Subcommand at the located index; `undefined` when args carry no subcommand (e.g. `git --version`).
+   */
   const subcommand = processedArgs[subcommandIndex];
-  /** Pre-subcommand region (global options); scanned for `--version`/`-v` flags that short-circuit git. */
+  /**
+   * Pre-subcommand region (global options); scanned for `--version`/`-v` flags that short-circuit git.
+   */
   const preSubcommand = processedArgs.slice(
     0,
     subcommandIndex,
   );
-  /** Post-subcommand region; scanned for status flags that switch git's output to a machine-readable format. */
+  /**
+   * Post-subcommand region; scanned for status flags that switch git's output to a machine-readable format.
+   */
   const postSubcommand = processedArgs.slice(subcommandIndex + 1,);
 
-  /** True when this invocation asks git for its version, in any of the supported forms (subcommand, global flag, with or without `-C` chaining). */
+  /**
+   * True when this invocation asks git for its version, in any of the supported forms (subcommand, global flag, with or without `-C` chaining).
+   */
   const isVersionRequest = (subcommand === 'version')
     || preSubcommand
     .some(function isVersionFlag(arg,) {
       return VERSION_FLAGS.has(arg,);
     },);
 
-  /** True when `git status` is in a machine-readable mode (`-s`, `--short`, `--porcelain`, `--porcelain=v*`, `-z`); the cli-git note would corrupt this output and is suppressed. */
+  /**
+   * True when `git status` is in a machine-readable mode (`-s`, `--short`, `--porcelain`, `--porcelain=v*`, `-z`); the cli-git note would corrupt this output and is suppressed.
+   */
   const isStatusMachineReadable = postSubcommand.some(
     function isMachineReadableFlag(arg,) {
       return STATUS_MACHINE_READABLE_FLAGS.has(arg,)
@@ -163,10 +189,14 @@ try {
     },
   );
 
-  /** True when the caller has explicitly configured git's status hints (checked on rawArgs so the wrapper's own injection does not register); mirroring the rule's user-override path, the note is also suppressed. */
+  /**
+   * True when the caller has explicitly configured git's status hints (checked on rawArgs so the wrapper's own injection does not register); mirroring the rule's user-override path, the note is also suppressed.
+   */
   const userOverrodeStatusHints = hasExplicitStatusHintsOverride(rawArgs,);
 
-  /** True when this is a human-readable `git status` invocation that did not opt into git's stock hints; the wrapper prints a note explaining the constraints. */
+  /**
+   * True when this is a human-readable `git status` invocation that did not opt into git's stock hints; the wrapper prints a note explaining the constraints.
+   */
   const shouldPrintStatusNote = (subcommand === 'status')
     && (!isStatusMachineReadable)
     && (!userOverrodeStatusHints);

@@ -23,11 +23,15 @@
  * ```
  */
 export function stripAllWhitespace(s: string,): string {
-  /** Non-whitespace chars in order; joined once at the end so the accumulator is never rebuilt per char (single linear pass: O(n) time, no recursion). */
+  /**
+   * Non-whitespace chars in order; joined once at the end so the accumulator is never rebuilt per char (single linear pass: O(n) time, no recursion).
+   */
   const kept: string[] = [];
 
   for (const c of s) {
-    /** Whether the char satisfies regex `\s`; whitespace is dropped, everything else is kept. */
+    /**
+     * Whether the char satisfies regex `\s`; whitespace is dropped, everything else is kept.
+     */
     const ws = (c === ' ')
       || (c === '\t')
       || (c === '\n')
@@ -77,11 +81,17 @@ function isBlankLine(line: string,): boolean {
  * ```
  */
 export function splitOnBlankLines(s: string,): string[] {
-  /** Lines after a primary split on newline; blank-line groups become empty entries. */
+  /**
+   * Lines after a primary split on newline; blank-line groups become empty entries.
+   */
   const lines = s.split('\n',);
-  /** Completed blocks in order; each is a run of consecutive non-blank lines joined by newline. */
+  /**
+   * Completed blocks in order; each is a run of consecutive non-blank lines joined by newline.
+   */
   const blocks: string[] = [];
-  /** Lines since the last blank line; flushed into `blocks` and cleared on each blank line so the accumulator is never copied (O(n) total). */
+  /**
+   * Lines since the last blank line; flushed into `blocks` and cleared on each blank line so the accumulator is never copied (O(n) total).
+   */
   const current: string[] = [];
 
   for (const line of lines) {
@@ -104,13 +114,19 @@ export function splitOnBlankLines(s: string,): string[] {
   return blocks;
 }
 
-/** Standard sudoku grid dimension */
+/**
+ * Standard sudoku grid dimension
+ */
 const GRID_SIZE = 9;
 
-/** Standard sudoku 3x3 box dimension */
+/**
+ * Standard sudoku 3x3 box dimension
+ */
 const BOX_SIZE = 3;
 
-/** Column indices [0..8] for functional iteration over grid columns */
+/**
+ * Column indices [0..8] for functional iteration over grid columns
+ */
 const COLUMN_INDICES = Array.from(
   { length: GRID_SIZE, },
   function indexFromOffset(
@@ -160,7 +176,9 @@ const BOX_ORIGINS: readonly (readonly [
  * ```
  */
 export function parseGrid(text: string,): number[][] {
-  /** Non-empty trimmed lines from the text block */
+  /**
+   * Non-empty trimmed lines from the text block
+   */
   const lines = text
     .trim()
     .split('\n',)
@@ -174,9 +192,13 @@ export function parseGrid(text: string,): number[][] {
   if (lines.length
     !== GRID_SIZE)
     return [];
-  /** Parsed digit rows; an empty row marks a line that failed digit validation. */
+  /**
+   * Parsed digit rows; an empty row marks a line that failed digit validation.
+   */
   const grid = lines.map(function parseLine(line,): number[] {
-    /** Digits extracted by stripping whitespace and converting each character */
+    /**
+     * Digits extracted by stripping whitespace and converting each character
+     */
     // oxlint-disable-next-line unicorn/prefer-spread -- spreading a string triggers no-misused-spread; Array.from is correct for ASCII digit iteration
     const digits = Array
       .from(stripAllWhitespace(line,),)
@@ -207,9 +229,13 @@ export function parseGrid(text: string,): number[][] {
  * ```
  */
 type ExtractColumnOptions = {
-  /** 9x9 grid of digits */
+  /**
+   * 9x9 grid of digits
+   */
   readonly grid: readonly (readonly number[])[];
-  /** Column index (0-8) */
+  /**
+   * Column index (0-8)
+   */
   readonly col: number;
 };
 
@@ -246,11 +272,17 @@ function extractColumn({
  * ```
  */
 type ExtractBoxOptions = {
-  /** 9x9 grid of digits */
+  /**
+   * 9x9 grid of digits
+   */
   readonly grid: readonly (readonly number[])[];
-  /** Top row of the box (0, 3, or 6) */
+  /**
+   * Top row of the box (0, 3, or 6)
+   */
   readonly originRow: number;
-  /** Left column of the box (0, 3, or 6) */
+  /**
+   * Left column of the box (0, 3, or 6)
+   */
   readonly originCol: number;
 };
 
@@ -351,9 +383,13 @@ export function isValidSolution(grid: readonly (readonly number[])[],): boolean 
  * ```
  */
 type MatchesCluesOptions = {
-  /** 9x9 solved grid */
+  /**
+   * 9x9 solved grid
+   */
   readonly grid: readonly (readonly number[])[];
-  /** 9x9 clue grid (0 = empty, non-zero = required digit) */
+  /**
+   * 9x9 clue grid (0 = empty, non-zero = required digit)
+   */
   readonly clues: readonly (readonly number[])[];
 };
 

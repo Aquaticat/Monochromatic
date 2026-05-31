@@ -60,7 +60,9 @@ export async function defineVm(
     readonly xml: string;
   },
 ): Promise<void> {
-  /** XML written to disk because virsh define expects a file path, not stdin. */
+  /**
+   * XML written to disk because virsh define expects a file path, not stdin.
+   */
   const xmlPath = join(
     vmDir,
     'domain.xml',
@@ -138,7 +140,9 @@ export async function undefineVm({ name, }: { readonly name: string; },): Promis
  * ```
  */
 export async function listVms(): Promise<readonly string[]> {
-  /** Raw virsh list output filtered for the mvm- prefix on subsequent lines. */
+  /**
+   * Raw virsh list output filtered for the mvm- prefix on subsequent lines.
+   */
   const output = await virsh({ args: [
     'list',
     '--all',

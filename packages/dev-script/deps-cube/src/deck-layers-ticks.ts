@@ -25,11 +25,17 @@ import type { ChromeColors, } from './scripts/scheme.ts';
 
 //region Constants
 
-/** Axis tick line width in pixels. */
+/**
+ * Axis tick line width in pixels.
+ */
 const AXIS_TICK_WIDTH = 1.5;
-/** Number of tick marks per axis (evenly spaced including endpoints). */
+/**
+ * Number of tick marks per axis (evenly spaced including endpoints).
+ */
 const TICK_COUNT = 5;
-/** Tick mark length, as a fraction of the axis extent. */
+/**
+ * Tick mark length, as a fraction of the axis extent.
+ */
 const TICK_LENGTH_FRACTION = 0.02;
 
 //endregion Constants
@@ -63,17 +69,25 @@ export function buildAxisTickLayer(
     readonly chrome: ChromeColors;
   },
 ): Layer {
-  /** Cached axis geometry; tick positions and lengths derive from its extents. */
+  /**
+   * Cached axis geometry; tick positions and lengths derive from its extents.
+   */
   const g = computeAxisGeometry({
     bounds,
   },);
-  /** Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent. */
+  /**
+   * Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent.
+   */
   const tx = g.dx
     * TICK_LENGTH_FRACTION;
-  /** Tick mark length on the Y axis in world units. */
+  /**
+   * Tick mark length on the Y axis in world units.
+   */
   const ty = g.dy
     * TICK_LENGTH_FRACTION;
-  /** `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks. */
+  /**
+   * `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks.
+   */
   const ts: readonly number[] = Array.from(
     {
       length: TICK_COUNT + 1,
@@ -85,17 +99,25 @@ export function buildAxisTickLayer(
       return i / TICK_COUNT;
     },
   );
-  /** Flattened tick paths: three perpendicular segments per `t` value, one per axis. */
+  /**
+   * Flattened tick paths: three perpendicular segments per `t` value, one per axis.
+   */
   const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
-    /** World-space X coordinate of the tick on the X axis for parameter `t`. */
+    /**
+     * World-space X coordinate of the tick on the X axis for parameter `t`.
+     */
     const xAt = g.xMin
       + (g.dx
         * t);
-    /** World-space Y coordinate of the tick on the Y axis for parameter `t`. */
+    /**
+     * World-space Y coordinate of the tick on the Y axis for parameter `t`.
+     */
     const yAt = g.yMin
       + (g.dy
         * t);
-    /** World-space Z coordinate of the tick on the Z axis for parameter `t`. */
+    /**
+     * World-space Z coordinate of the tick on the Z axis for parameter `t`.
+     */
     const zAt = g.zMin
       + (g.dz
         * t);

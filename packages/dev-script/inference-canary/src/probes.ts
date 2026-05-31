@@ -20,7 +20,9 @@ export type {
 
 //region Simple probes: cheap text-only checks, disabled by default
 
-/** Checks basic arithmetic that should never fail */
+/**
+ * Checks basic arithmetic that should never fail
+ */
 const simpleArithmetic: Probe = {
   name: 'arithmetic',
   category: 'simple',
@@ -35,7 +37,9 @@ const simpleArithmetic: Probe = {
   },
 };
 
-/** Checks if the model follows an exact output format */
+/**
+ * Checks if the model follows an exact output format
+ */
 const simpleFormat: Probe = {
   name: 'exact-format',
   category: 'simple',
@@ -50,7 +54,9 @@ const simpleFormat: Probe = {
   },
 };
 
-/** Checks JSON output compliance; degraded models often break structure */
+/**
+ * Checks JSON output compliance; degraded models often break structure
+ */
 const simpleJson: Probe = {
   name: 'json-output',
   category: 'simple',
@@ -63,12 +69,18 @@ const simpleJson: Probe = {
   ): number {
     try {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse result checked structurally below */
-      /** Decoded JSON response, validated structurally on the following lines. */
+      /**
+       * Decoded JSON response, validated structurally on the following lines.
+       */
       const parsed = JSON.parse(response.trim(),) as Record<string, unknown>;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      /** Expected value in the JSON output */
+      /**
+       * Expected value in the JSON output
+       */
       const EXPECTED_VALUE = 42;
-      /** Partial credit for valid JSON with wrong content */
+      /**
+       * Partial credit for valid JSON with wrong content
+       */
       const PARTIAL_SCORE = 0.5;
       if ((parsed.status
         === 'ok') && (parsed.value
@@ -77,7 +89,9 @@ const simpleJson: Probe = {
       return PARTIAL_SCORE;
     }
     catch (parseError) {
-      /** Probe-specific logger for parse failure. */
+      /**
+       * Probe-specific logger for parse failure.
+       */
       const rl = tagged({
         tag: 'json-output',
         l,
@@ -90,7 +104,9 @@ const simpleJson: Probe = {
 
 //endregion Simple probes
 
-/** Simple probes, disabled by default to save money */
+/**
+ * Simple probes, disabled by default to save money
+ */
 export const simpleProbes: readonly Probe[] = [
   simpleArithmetic,
   simpleFormat,

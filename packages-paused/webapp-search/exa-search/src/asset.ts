@@ -27,7 +27,9 @@ export const js: string = await readFile(
   'utf8',
 );
 
-/** Escaped JS source safe for embedding inside a `<script>` tag. */
+/**
+ * Escaped JS source safe for embedding inside a `<script>` tag.
+ */
 const safeJs: string = js.replaceAll(
   '</script>',
   String.raw`<\/script>`,

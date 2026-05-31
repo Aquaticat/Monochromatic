@@ -31,23 +31,39 @@ export type {
  */
 export type InlayHintKind = 1 | 2;
 
-/** Inlay hint from an LSP server. */
+/**
+ * Inlay hint from an LSP server.
+ */
 export type LspInlayHint = {
-  /** Position in the document where the hint is displayed. */
+  /**
+   * Position in the document where the hint is displayed.
+   */
   readonly position: LspPosition;
-  /** Display label (string or structured label parts). */
+  /**
+   * Display label (string or structured label parts).
+   */
   readonly label: string | readonly LspInlayHintLabelPart[];
-  /** Kind of inlay hint (1=Type, 2=Parameter). */
+  /**
+   * Kind of inlay hint (1=Type, 2=Parameter).
+   */
   readonly kind?: InlayHintKind;
-  /** Whether to insert padding space before the hint. */
+  /**
+   * Whether to insert padding space before the hint.
+   */
   readonly paddingLeft?: boolean;
-  /** Whether to insert padding space after the hint. */
+  /**
+   * Whether to insert padding space after the hint.
+   */
   readonly paddingRight?: boolean;
 };
 
-/** Structured label part for an inlay hint. */
+/**
+ * Structured label part for an inlay hint.
+ */
 export type LspInlayHintLabelPart = {
-  /** Text value of this label part. */
+  /**
+   * Text value of this label part.
+   */
   readonly value: string;
 };
 
@@ -61,9 +77,13 @@ export type LspInlayHintLabelPart = {
  * forming a chain from the innermost to the outermost syntactic scope.
  */
 export type LspSelectionRange = {
-  /** Range of this selection level. */
+  /**
+   * Range of this selection level.
+   */
   readonly range: LspRange;
-  /** Next larger enclosing selection range, or undefined at the outermost scope. */
+  /**
+   * Next larger enclosing selection range, or undefined at the outermost scope.
+   */
   readonly parent?: LspSelectionRange;
 };
 
@@ -71,27 +91,45 @@ export type LspSelectionRange = {
 
 //region Capabilities
 
-/** Server capabilities returned during LSP initialization. */
+/**
+ * Server capabilities returned during LSP initialization.
+ */
 export type LspServerCapabilities = {
-  /** Document sync mode (0=None, 1=Full, 2=Incremental) or detailed options. */
+  /**
+   * Document sync mode (0=None, 1=Full, 2=Incremental) or detailed options.
+   */
   readonly textDocumentSync?: number | {
     readonly openClose?: boolean;
     readonly change?: number;
     readonly save?: boolean | { readonly includeText?: boolean; };
   };
-  /** Whether hover is supported. */
+  /**
+   * Whether hover is supported.
+   */
   readonly hoverProvider?: boolean;
-  /** Completion provider configuration. */
+  /**
+   * Completion provider configuration.
+   */
   readonly completionProvider?: { readonly triggerCharacters?: readonly string[]; };
-  /** Whether document formatting is supported. */
+  /**
+   * Whether document formatting is supported.
+   */
   readonly documentFormattingProvider?: boolean;
-  /** Whether go-to-definition is supported. */
+  /**
+   * Whether go-to-definition is supported.
+   */
   readonly definitionProvider?: boolean;
-  /** Whether inlay hints are supported. */
+  /**
+   * Whether inlay hints are supported.
+   */
   readonly inlayHintProvider?: boolean | { readonly resolveProvider?: boolean; };
-  /** Whether selection range is supported. */
+  /**
+   * Whether selection range is supported.
+   */
   readonly selectionRangeProvider?: boolean;
-  /** Whether rename is supported (optionally with prepareProvider). */
+  /**
+   * Whether rename is supported (optionally with prepareProvider).
+   */
   readonly renameProvider?: boolean | { readonly prepareProvider?: boolean; };
 };
 

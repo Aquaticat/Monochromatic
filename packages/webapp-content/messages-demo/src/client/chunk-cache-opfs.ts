@@ -45,10 +45,14 @@ export async function evictOpfsStale(
     key: ChunkCacheKey;
   },
 ): Promise<void> {
-  /** File-name prefix scoping the walk to the message id under consideration. */
+  /**
+   * File-name prefix scoping the walk to the message id under consideration.
+   */
   const messagePrefix = `${String(input.key
     .messageId,)}-`;
-  /** Extends `messagePrefix` with the current revision; entries starting with this are kept. */
+  /**
+   * Extends `messagePrefix` with the current revision; entries starting with this are kept.
+   */
   const currentRevPrefix = `${messagePrefix}${String(input.key
     .revision,)}-`;
   // FileSystemDirectoryHandle implements AsyncIterable<FileSystemHandle>
@@ -59,7 +63,9 @@ export async function evictOpfsStale(
     .directory))
     return;
   /* oxlint-disable typescript/no-unsafe-type-assertion -- DOM lib lacks the iterator type */
-  /** Narrowed alias so the `for await` loop sees a typed iterator instead of the DOM-lib gap. */
+  /**
+   * Narrowed alias so the `for await` loop sees a typed iterator instead of the DOM-lib gap.
+   */
   const iterable = input.directory as unknown as AsyncIterable<FileSystemHandle>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   for await (const handle of iterable) {

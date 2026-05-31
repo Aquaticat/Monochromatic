@@ -5,7 +5,9 @@
  * ws-dispatch, ws-dispatch-fs, and ws-dispatch-lsp.
  */
 
-/** Peer type used throughout message dispatch. */
+/**
+ * Peer type used throughout message dispatch.
+ */
 export type Peer = { readonly send: (data: string,) => void; };
 
 /**

@@ -56,15 +56,25 @@ export type WatchEntityType = 'file' | 'dir';
  * ```
  */
 export type WatchEvent = {
-  /** Kind of event (see {@link WatchEventKind}). */
+  /**
+   * Kind of event (see {@link WatchEventKind}).
+   */
   readonly kind: WatchEventKind;
-  /** Filesystem entity affected (file or directory). */
+  /**
+   * Filesystem entity affected (file or directory).
+   */
   readonly entity: WatchEntityType;
-  /** Absolute path of the affected file or directory. */
+  /**
+   * Absolute path of the affected file or directory.
+   */
   readonly path: string;
-  /** Path relative to the matching watch root (deepest match when roots nest). */
+  /**
+   * Path relative to the matching watch root (deepest match when roots nest).
+   */
   readonly relativePath: string;
-  /** File extension including the dot, e.g. `'.ts'`; empty string for extension-less files or directories. */
+  /**
+   * File extension including the dot, e.g. `'.ts'`; empty string for extension-less files or directories.
+   */
   readonly ext: string;
 };
 
@@ -89,9 +99,13 @@ export type WatchEvent = {
  * ```
  */
 export type WatchCtx = {
-  /** Tagged logger; filters compose deeper tags with `tagged({ tag, l, },)`. */
+  /**
+   * Tagged logger; filters compose deeper tags with `tagged({ tag, l, },)`.
+   */
   readonly logger: Logger;
-  /** Aborts when the orchestrator stops; long-running filters should respect it. */
+  /**
+   * Aborts when the orchestrator stops; long-running filters should respect it.
+   */
   readonly signal: AbortSignal;
   /**
    * Shared content-hash cache; read by `contentHashFilter`, written by the watcher.

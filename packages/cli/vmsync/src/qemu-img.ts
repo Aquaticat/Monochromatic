@@ -34,14 +34,18 @@ import type {
  * ```
  */
 export async function imageInfo(imagePath: string,): Promise<QemuImgInfo> {
-  /** Function-tagged logger so traces show which qemu-img call produced each line. */
+  /**
+   * Function-tagged logger so traces show which qemu-img call produced each line.
+   */
   const rl = tagged({
     tag: imageInfo.name,
     l,
   },);
   rl.info(`inspecting ${imagePath}`,);
 
-  /** Raw JSON string from qemu-img. */
+  /**
+   * Raw JSON string from qemu-img.
+   */
   const raw = await spawn({
     command: 'qemu-img',
     args: [
@@ -91,7 +95,9 @@ export async function convert(
     readonly targetFormat: string;
   },
 ): Promise<void> {
-  /** Function-tagged logger so traces show which qemu-img call produced each line. */
+  /**
+   * Function-tagged logger so traces show which qemu-img call produced each line.
+   */
   const rl = tagged({
     tag: convert.name,
     l,
@@ -143,7 +149,9 @@ export async function createOverlay(
     readonly backingPath: string;
   },
 ): Promise<void> {
-  /** Function-tagged logger so traces show which qemu-img call produced each line. */
+  /**
+   * Function-tagged logger so traces show which qemu-img call produced each line.
+   */
   const rl = tagged({
     tag: createOverlay.name,
     l,
@@ -183,14 +191,18 @@ export async function createOverlay(
  * ```
  */
 export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegion[]> {
-  /** Function-tagged logger so traces show which qemu-img call produced each line. */
+  /**
+   * Function-tagged logger so traces show which qemu-img call produced each line.
+   */
   const rl = tagged({
     tag: blockMap.name,
     l,
   },);
   rl.info(`reading block map for ${imagePath}`,);
 
-  /** Raw JSON array string from qemu-img map. */
+  /**
+   * Raw JSON array string from qemu-img map.
+   */
   const raw = await spawn({
     command: 'qemu-img',
     args: [
@@ -200,10 +212,14 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
     ],
   },);
 
-  /** Parsed region array. */
+  /**
+   * Parsed region array.
+   */
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- trusted qemu-img JSON output
   const regions = JSON.parse(raw,) as readonly QemuMapRegion[];
-  /** Count of overlay-level (depth 0) regions containing data. */
+  /**
+   * Count of overlay-level (depth 0) regions containing data.
+   */
   const changedCount = regions
     .filter(
       function isOverlayData(r,) {
@@ -237,7 +253,9 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
  * ```
  */
 export async function commitOverlay(overlayPath: string,): Promise<void> {
-  /** Function-tagged logger so traces show which qemu-img call produced each line. */
+  /**
+   * Function-tagged logger so traces show which qemu-img call produced each line.
+   */
   const rl = tagged({
     tag: commitOverlay.name,
     l,
@@ -273,11 +291,15 @@ export async function commitOverlay(overlayPath: string,): Promise<void> {
  * ```
  */
 export function firstWhitespaceIndex(text: string,): number {
-  /** Scan cursor; advances past each leading non-whitespace character in one linear pass. */
+  /**
+   * Scan cursor; advances past each leading non-whitespace character in one linear pass.
+   */
   let cursor = 0;
   while (cursor < text
     .length) {
-    /** Char under the cursor; stops the scan at the first whitespace (space, tab, newline, or carriage return). */
+    /**
+     * Char under the cursor; stops the scan at the first whitespace (space, tab, newline, or carriage return).
+     */
     const c = text.charAt(cursor,);
     if (' \t\n\r'.includes(c,))
       break;
@@ -301,7 +323,9 @@ export function firstWhitespaceIndex(text: string,): number {
  * ```
  */
 export async function checksum(imagePath: string,): Promise<string> {
-  /** Function-tagged logger so traces show which qemu-img call produced each line. */
+  /**
+   * Function-tagged logger so traces show which qemu-img call produced each line.
+   */
   const rl = tagged({
     tag: checksum.name,
     l,
@@ -310,7 +334,9 @@ export async function checksum(imagePath: string,): Promise<string> {
 
   if (process.platform
     === 'win32') {
-    /** certutil output includes the hash on its own line. */
+    /**
+     * certutil output includes the hash on its own line.
+     */
     const raw = await spawn({
       command: 'certutil',
       args: [
@@ -319,7 +345,9 @@ export async function checksum(imagePath: string,): Promise<string> {
         'SHA256',
       ],
     },);
-    /** Second line of certutil output is the hex hash. */
+    /**
+     * Second line of certutil output is the hex hash.
+     */
     const hash = nonNullishOrThrow(
       raw.split('\n',)[1],
     )
@@ -327,12 +355,16 @@ export async function checksum(imagePath: string,): Promise<string> {
     return `sha256:${hash}`;
   }
 
-  /** sha256sum output: "<hash>  <filename>". */
+  /**
+   * sha256sum output: "<hash>  <filename>".
+   */
   const raw = await spawn({
     command: 'sha256sum',
     args: [imagePath,],
   },);
-  /** Hash portion before the filename separator. */
+  /**
+   * Hash portion before the filename separator.
+   */
   const hash = raw.slice(
     0,
     firstWhitespaceIndex(raw,),

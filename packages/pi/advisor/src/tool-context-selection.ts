@@ -27,51 +27,91 @@ import type {
 
 //region Types
 
-/** Selected model paired with serialized context built for that model. */
+/**
+ * Selected model paired with serialized context built for that model.
+ */
 export type AdvisorSelectionContext = {
-  /** Advisor model selection. */
+  /**
+   * Advisor model selection.
+   */
   readonly selection: AdvisorModelSelection;
-  /** Serialized context using selected model budget. */
+  /**
+   * Serialized context using selected model budget.
+   */
   readonly advisorContext: AdvisorContext;
 };
 
-/** Options for selecting model and model-budgeted context together. */
+/**
+ * Options for selecting model and model-budgeted context together.
+ */
 export type SelectAdvisorRunContextOptions = {
-  /** Session branch entries from pi. */
+  /**
+   * Session branch entries from pi.
+   */
   readonly branch: readonly SessionEntry[];
-  /** Runtime Advisor configuration. */
+  /**
+   * Runtime Advisor configuration.
+   */
   readonly config: AdvisorConfig;
-  /** Advisor model system prompt. */
+  /**
+   * Advisor model system prompt.
+   */
   readonly advisorSystemPrompt: string;
-  /** Effective scoped model set. */
+  /**
+   * Effective scoped model set.
+   */
   readonly scope: EffectiveModelScope;
-  /** Global model registry for explicit slug validation. */
+  /**
+   * Global model registry for explicit slug validation.
+   */
   readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
-  /** Optional user-requested model slug. */
+  /**
+   * Optional user-requested model slug.
+   */
   readonly requestedSlug?: string;
-  /** Current Advisor tool call id to omit. */
+  /**
+   * Current Advisor tool call id to omit.
+   */
   readonly toolCallId?: string;
 };
 
-/** Options for building context for one scoped Advisor model. */
+/**
+ * Options for building context for one scoped Advisor model.
+ */
 type BuildContextForScopedModelOptions = {
-  /** Session branch entries from pi. */
+  /**
+   * Session branch entries from pi.
+   */
   readonly branch: readonly SessionEntry[];
-  /** Runtime Advisor configuration. */
+  /**
+   * Runtime Advisor configuration.
+   */
   readonly config: AdvisorConfig;
-  /** Advisor model system prompt. */
+  /**
+   * Advisor model system prompt.
+   */
   readonly advisorSystemPrompt: string;
-  /** Scoped Advisor model. */
+  /**
+   * Scoped Advisor model.
+   */
   readonly scopedModel: ScopedAdvisorModel;
-  /** Current Advisor tool call id to omit. */
+  /**
+   * Current Advisor tool call id to omit.
+   */
   readonly toolCallId?: string;
 };
 
-/** Context candidate for a scoped Advisor model. */
+/**
+ * Context candidate for a scoped Advisor model.
+ */
 type AdvisorContextCandidate = {
-  /** Scoped Advisor model. */
+  /**
+   * Scoped Advisor model.
+   */
   readonly scopedModel: ScopedAdvisorModel;
-  /** Serialized context using scoped model budget. */
+  /**
+   * Serialized context using scoped model budget.
+   */
   readonly advisorContext: AdvisorContext;
 };
 
@@ -96,7 +136,9 @@ export function selectAdvisorRunContext(
 ): AdvisorSelectionContext {
   if (options.requestedSlug
     !== undefined) {
-    /** Explicit Advisor model selection. */
+    /**
+     * Explicit Advisor model selection.
+     */
     const selection = resolveRequestedModel({
       scope: options.scope,
       requestedSlug: options.requestedSlug,
@@ -116,7 +158,9 @@ export function selectAdvisorRunContext(
     };
   }
 
-  /** Context candidates using each scoped model's effective context budget. */
+  /**
+   * Context candidates using each scoped model's effective context budget.
+   */
   const candidates = options
     .scope
     .entries
@@ -133,7 +177,9 @@ export function selectAdvisorRunContext(
       },),
     } satisfies AdvisorContextCandidate;
   },);
-  /** Input token estimates keyed by canonical scoped model slug. */
+  /**
+   * Input token estimates keyed by canonical scoped model slug.
+   */
   const estimatedInputTokensBySlug = new Map(
     candidates.map(function mapCandidate(candidate,) {
       return [
@@ -144,14 +190,18 @@ export function selectAdvisorRunContext(
       ] as const;
     },),
   );
-  /** Default Advisor model selection using each candidate's own estimate. */
+  /**
+   * Default Advisor model selection using each candidate's own estimate.
+   */
   const defaultSelection = selectDefaultModelFromContextEstimates({
     scope: options.scope,
     estimatedInputTokensBySlug,
     maxOutputTokens: options.config
       .maxAdvisorOutputTokens,
   },);
-  /** Context candidate matching selected default model. */
+  /**
+   * Context candidate matching selected default model.
+   */
   const selectedCandidate = candidates.find(function matchesSelection(candidate,) {
     return candidate.scopedModel
       .canonicalSlug
@@ -188,7 +238,9 @@ export function selectAdvisorRunContext(
 function buildContextForScopedModel(
   options: BuildContextForScopedModelOptions,
 ): AdvisorContext {
-  /** Effective serialized-context character budget for selected model. */
+  /**
+   * Effective serialized-context character budget for selected model.
+   */
   const maxContextChars = maxContextCharsForAdvisorModel({
     config: options.config,
     model: options.scopedModel

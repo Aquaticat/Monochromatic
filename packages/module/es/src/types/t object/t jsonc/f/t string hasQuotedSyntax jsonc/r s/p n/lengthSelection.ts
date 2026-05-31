@@ -1,5 +1,7 @@
 /* oxlint-disable eslint/no-magic-numbers -- power-of-two probe sequence is self-documenting */
-/** Power-of-two probe lengths used for binary-search-style length testing. */
+/**
+ * Power-of-two probe lengths used for binary-search-style length testing.
+ */
 export const numberLengthsToTestFirst = [
   1,
   2,
@@ -33,7 +35,9 @@ export function getLengthsToTestFirst(
     lengths: readonly number[];
   },
 ): number[] {
-  /** Selected lengths beginning with the upper bound sentinel. */
+  /**
+   * Selected lengths beginning with the upper bound sentinel.
+   */
   const result = [lengthUpperBound,];
   for (const length of lengths) {
     if (length > lengthUpperBound)

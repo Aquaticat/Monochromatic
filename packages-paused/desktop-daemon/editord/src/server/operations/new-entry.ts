@@ -51,12 +51,16 @@ export async function newEntry({
     .includes('\\',))
     throw new Error(`name must be a bare filename, got: ${name}`,);
 
-  /** Parent rebased through `assertWithinRoot` so `path/..` cannot escape the root. */
+  /**
+   * Parent rebased through `assertWithinRoot` so `path/..` cannot escape the root.
+   */
   const absoluteParent = assertWithinRoot({
     rootDir,
     path: parentPath,
   },);
-  /** Joined child path, re-verified against the root below. */
+  /**
+   * Joined child path, re-verified against the root below.
+   */
   const absolutePath = join(
     absoluteParent,
     name,

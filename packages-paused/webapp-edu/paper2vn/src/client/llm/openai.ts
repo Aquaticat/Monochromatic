@@ -9,11 +9,15 @@ import type {
   Provider,
 } from './types.ts';
 
-/** Default OpenAI API base. */
+/**
+ * Default OpenAI API base.
+ */
 const DEFAULT_BASE = 'https://api.openai.com/v1';
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the call delegates without mutation. */
-/** OpenAI provider implementation. */
+/**
+ * OpenAI provider implementation.
+ */
 export const openai: Provider = {
   id: 'openai',
   chat: function chat(opts: ChatOptions,): Promise<string> {

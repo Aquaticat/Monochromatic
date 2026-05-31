@@ -29,7 +29,9 @@ import {
 
 export { clearHighlights, };
 
-/** Tagged logger for the highlighting subsystem. */
+/**
+ * Tagged logger for the highlighting subsystem.
+ */
 const highlightLog = tagged({
   tag: 'highlight',
   l,
@@ -58,9 +60,13 @@ export function applyHighlights({
   readonly editor: HTMLDivElement;
   readonly parser: Parser;
 },): void {
-  /** Per-line text content; needed to map Lezer offsets back to per-line DOM nodes. */
+  /**
+   * Per-line text content; needed to map Lezer offsets back to per-line DOM nodes.
+   */
   const lines = getLineTexts({ editor, },);
-  /** Full document text passed to the parser; newline-joined to match Lezer's offset model. */
+  /**
+   * Full document text passed to the parser; newline-joined to match Lezer's offset model.
+   */
   const text = lines.join('\n',);
 
   if (text.length
@@ -74,20 +80,30 @@ export function applyHighlights({
     return;
   }
 
-  /** Lezer syntax tree built from the full text; walked to derive token offsets. */
+  /**
+   * Lezer syntax tree built from the full text; walked to derive token offsets.
+   */
   const tree = parser.parse(text,);
-  /** Per-highlight-group DOM ranges; one bucket per token category, suitable for registering as a `Highlight`. */
+  /**
+   * Per-highlight-group DOM ranges; one bucket per token category, suitable for registering as a `Highlight`.
+   */
   const rangesByGroup = collectHighlightRanges({
     tree,
     lines,
     editor,
   },);
 
-  /** Register highlights with the CSS Custom Highlight API. */
+  /**
+   * Register highlights with the CSS Custom Highlight API.
+   */
   for (const group of HIGHLIGHT_GROUPS) {
-    /** CSS highlight name; matches the `::highlight(hl-<group>)` selector used by stylesheets. */
+    /**
+     * CSS highlight name; matches the `::highlight(hl-<group>)` selector used by stylesheets.
+     */
     const name = `hl-${group}`;
-    /** Ranges collected for this group, or undefined when no token of this kind appeared. */
+    /**
+     * Ranges collected for this group, or undefined when no token of this kind appeared.
+     */
     const ranges = rangesByGroup.get(group,);
     if ((ranges !== undefined) && (ranges.length
       > 0)) {

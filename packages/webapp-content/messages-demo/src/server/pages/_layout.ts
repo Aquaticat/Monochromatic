@@ -11,7 +11,9 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { all, } from '../../lib/db.ts';
 
-/** A user record exposed in the identity dropdown. */
+/**
+ * A user record exposed in the identity dropdown.
+ */
 type SeedUser = {
   readonly id: string;
   readonly name: string;
@@ -55,15 +57,25 @@ export function getSeedUsers(): readonly SeedUser[] {
   return seedUsers;
 }
 
-/** Options accepted by `renderPage`. */
+/**
+ * Options accepted by `renderPage`.
+ */
 type PageOptions = {
-  /** Document `<title>`. */
+  /**
+   * Document `<title>`.
+   */
   readonly title: string;
-  /** Pre-built HTML for `<main>`'s contents. */
+  /**
+   * Pre-built HTML for `<main>`'s contents.
+   */
   readonly body: string;
-  /** When set, the composer mounts in edit mode for this message. */
+  /**
+   * When set, the composer mounts in edit mode for this message.
+   */
   readonly editMessageId?: number;
-  /** Tier hint for the client to skip its initial size probe. */
+  /**
+   * Tier hint for the client to skip its initial size probe.
+   */
   // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
   readonly initialTier?: 1 | 2 | 3;
 };
@@ -165,7 +177,9 @@ function renderComposerFooter(
     readonly initialTier?: 1 | 2 | 3;
   },
 ): string {
-  /** Pre-rendered `<option>` HTML for the identity select, in seed-list order. */
+  /**
+   * Pre-rendered `<option>` HTML for the identity select, in seed-list order.
+   */
   const userOptions = seedUsers
     .map(function toOption(user,) {
       return h({
@@ -176,12 +190,16 @@ function renderComposerFooter(
     },)
     .join('',);
 
-  /** Optional `data-edit-message-id` attribute used by the composer to enter edit mode. */
+  /**
+   * Optional `data-edit-message-id` attribute used by the composer to enter edit mode.
+   */
   const editAttr = options.editMessageId
     === undefined
     ? ''
     : ` data-edit-message-id="${String(options.editMessageId,)}"`;
-  /** Optional `data-initial-tier` attribute that seeds the composer's tier discriminant. */
+  /**
+   * Optional `data-initial-tier` attribute that seeds the composer's tier discriminant.
+   */
   const tierAttr = options.initialTier
     === undefined
     ? ''
@@ -217,7 +235,9 @@ function renderComposerFooter(
  * ```
  */
 export function renderPage(options: PageOptions,): string {
-  /** Composed `<body>` HTML; embedded inside the doctype envelope below. */
+  /**
+   * Composed `<body>` HTML; embedded inside the doctype envelope below.
+   */
   const bodyHtml = renderSiteHeader()
     + h({
       tag: 'main',

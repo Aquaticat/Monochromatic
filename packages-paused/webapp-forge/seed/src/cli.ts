@@ -13,22 +13,32 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import { seedDataset, } from './dataset.ts';
 
-/** Tagged logger scoped to the seed CLI. */
+/**
+ * Tagged logger scoped to the seed CLI.
+ */
 const l = tagged({
   tag: 'seed',
   l: logger,
 },);
 
-/** Decimal radix for `parseInt` calls. */
+/**
+ * Decimal radix for `parseInt` calls.
+ */
 const DECIMAL_RADIX = 10;
 
-/** Default seed value when `--seed=` is not supplied. */
+/**
+ * Default seed value when `--seed=` is not supplied.
+ */
 const DEFAULT_SEED = 1;
 
-/** Default user count when `--users=` is not supplied. */
+/**
+ * Default user count when `--users=` is not supplied.
+ */
 const DEFAULT_USERS = 10;
 
-/** Default repo count when `--repos=` is not supplied. */
+/**
+ * Default repo count when `--repos=` is not supplied.
+ */
 const DEFAULT_REPOS = 3;
 
 /**
@@ -44,9 +54,13 @@ const DEFAULT_REPOS = 3;
  * ```
  */
 function getFlag(name: string,): string | undefined {
-  /** Match-prefix derived from the flag name so the find call locates the right argv entry. */
+  /**
+   * Match-prefix derived from the flag name so the find call locates the right argv entry.
+   */
   const prefix = `--${name}=`;
-  /** First matching argv entry, or undefined when the flag was not passed. */
+  /**
+   * First matching argv entry, or undefined when the flag was not passed.
+   */
   const argument = process.argv
     .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
@@ -70,11 +84,15 @@ function intFlag(row: {
   name: string;
   fallback: number;
 },): number {
-  /** Raw flag string lifted from argv before integer parsing. */
+  /**
+   * Raw flag string lifted from argv before integer parsing.
+   */
   const raw = getFlag(row.name,);
   if (raw === undefined)
     return row.fallback;
-  /** Decimal-parsed flag value; reused twice in the finite check and return. */
+  /**
+   * Decimal-parsed flag value; reused twice in the finite check and return.
+   */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,
@@ -82,34 +100,46 @@ function intFlag(row: {
   return Number.isFinite(parsed,) ? parsed : row.fallback;
 }
 
-/** CLI `--out=` arg, used to override `DB_PATH`. */
+/**
+ * CLI `--out=` arg, used to override `DB_PATH`.
+ */
 const out = getFlag('out',);
 if (out !== undefined)
   process.env
     .DB_PATH = out;
 
-/** Resolved seed flag. */
+/**
+ * Resolved seed flag.
+ */
 const seed = intFlag({
   name: 'seed',
   fallback: DEFAULT_SEED,
 },);
 
-/** Resolved `--users=` flag. */
+/**
+ * Resolved `--users=` flag.
+ */
 const userCount = intFlag({
   name: 'users',
   fallback: DEFAULT_USERS,
 },);
 
-/** Resolved `--repos=` flag. */
+/**
+ * Resolved `--repos=` flag.
+ */
 const repoCount = intFlag({
   name: 'repos',
   fallback: DEFAULT_REPOS,
 },);
 
-/** Raw `--max-issues-per-repo=` flag string, before parsing. */
+/**
+ * Raw `--max-issues-per-repo=` flag string, before parsing.
+ */
 const maxIssuesPerRepoRaw = getFlag('max-issues-per-repo',);
 
-/** Parsed `--max-issues-per-repo=`, or `undefined` if absent. */
+/**
+ * Parsed `--max-issues-per-repo=`, or `undefined` if absent.
+ */
 const maxIssuesPerRepo = maxIssuesPerRepoRaw === undefined
   ? undefined
   : Number.parseInt(

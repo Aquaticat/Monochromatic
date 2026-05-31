@@ -35,7 +35,9 @@ export function collectMixins(root: Root,): void {
   root.walkAtRules(
     'mixin',
     function processMixin(node: AtRule,) {
-      /** Trimmed at-rule parameter used as the mixin identifier */
+      /**
+       * Trimmed at-rule parameter used as the mixin identifier
+       */
       const mixinName = node.params
         .trim();
 
@@ -77,14 +79,18 @@ export function expandApplyRules(root: Root,): void {
   root.walkAtRules(
     'apply',
     function processApply(node: AtRule,) {
-      /** Trimmed at-rule parameter identifying which mixin to inline */
+      /**
+       * Trimmed at-rule parameter identifying which mixin to inline
+       */
       const mixinName = node.params
         .trim();
 
       if (!mixinName)
         throw node.error('Mixin name is required: @apply --name;',);
 
-      /** Stored body nodes for the referenced mixin */
+      /**
+       * Stored body nodes for the referenced mixin
+       */
       const mixinNodes = mixins.get(mixinName,);
 
       if (mixinNodes === undefined)
@@ -111,7 +117,9 @@ export function expandApplyRules(root: Root,): void {
        * Cloned mixin body with source locations pointing back to the \@apply site.
        */
       const clonedNodes = mixinNodes.map(function cloneWithSource(child,) {
-        /** Cloning isolates the registry's body from per-call source rewrites. */
+        /**
+         * Cloning isolates the registry's body from per-call source rewrites.
+         */
         const cloned = child.clone();
         cloned.source = source;
         return cloned;

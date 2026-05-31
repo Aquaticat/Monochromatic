@@ -16,7 +16,9 @@ import type {
  * ```
  */
 export function initFormatters(_locale: Locales,): Formatters {
-  /** Placeholder map awaiting future locale-specific formatter wiring. */
+  /**
+   * Placeholder map awaiting future locale-specific formatter wiring.
+   */
   const formatters: Formatters = {};
 
   return formatters;

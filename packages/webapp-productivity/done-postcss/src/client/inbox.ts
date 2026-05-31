@@ -34,28 +34,42 @@ import './components/focus-dropdown.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/fab-button.ts';
 
-/** Shape of the JSON blob embedded in the inbox page by the server. */
+/**
+ * Shape of the JSON blob embedded in the inbox page by the server.
+ */
 type InboxPageData = {
-  /** Tasks suggested based on context. */
+  /**
+   * Tasks suggested based on context.
+   */
   suggestedTasks: Task[];
-  /** All inbox tasks. */
+  /**
+   * All inbox tasks.
+   */
   allTasks: Task[];
-  /** Blocked tasks grouped by their blocker task ID. */
+  /**
+   * Blocked tasks grouped by their blocker task ID.
+   */
   blockedTasksByBlocker: BlockedTasksByBlocker;
 };
 
 injectCSS(styles,);
 injectCSS(inboxStyles,);
 
-/** Deserialized page data from the server-rendered JSON blob. */
+/**
+ * Deserialized page data from the server-rendered JSON blob.
+ */
 const pageData = readPageData<InboxPageData>();
 
-/** Root app container element where client-rendered content is appended. */
+/**
+ * Root app container element where client-rendered content is appended.
+ */
 const appElement = document.querySelector<HTMLElement>('#app',);
 if (!(appElement instanceof HTMLElement))
   throw new Error('Missing app element',);
 
-/** Typed reference to the app container. */
+/**
+ * Typed reference to the app container.
+ */
 const app = appElement;
 
 /**
@@ -111,7 +125,9 @@ function buildTaskList(
     readonly blockedTasksByBlocker: BlockedTasksByBlocker;
   },
 ): HTMLUListElement {
-  /** Top-level list element; child tasks are appended as nested sub-lists. */
+  /**
+   * Top-level list element; child tasks are appended as nested sub-lists.
+   */
   const list = h({
     tag: 'ul',
     class: 'task-list',
@@ -126,7 +142,9 @@ function buildTaskList(
         },
       },),
     );
-    /** Blocked-by children for the current task, defaulted to empty when none exist. */
+    /**
+     * Blocked-by children for the current task, defaulted to empty when none exist.
+     */
     const childLinks = blockedTasksByBlocker[task.id]
       ?? [];
     if (childLinks.length
@@ -165,7 +183,9 @@ app.append(h({
   class: 'divider',
 },),);
 
-/** Collapsible section heading for all tasks. */
+/**
+ * Collapsible section heading for all tasks.
+ */
 const allSection = h({
   tag: 'section-heading',
   attrs: {
@@ -197,7 +217,9 @@ allSection.append(h({
 },),);
 app.append(allSection,);
 
-/** New-task panel and FAB button created by the dialog module. */
+/**
+ * New-task panel and FAB button created by the dialog module.
+ */
 const {
   panel: newTaskPanel,
   fab: newTaskFab,

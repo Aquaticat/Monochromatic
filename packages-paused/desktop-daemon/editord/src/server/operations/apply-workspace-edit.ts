@@ -75,13 +75,17 @@ function applyEditsToString({
   readonly text: string;
   readonly edits: readonly TextEdit[];
 },): string {
-  /** Sort edits in reverse document order (end of file first). */
+  /**
+   * Sort edits in reverse document order (end of file first).
+   */
   const sorted = edits.toSorted(
     function compareReverse(
       a,
       b,
     ) {
-      /** Negative line difference (b - a) for reverse-document ordering; falls through to character compare on ties. */
+      /**
+       * Negative line difference (b - a) for reverse-document ordering; falls through to character compare on ties.
+       */
       const lineDiff = b.range
         .start
         .line
@@ -101,10 +105,14 @@ function applyEditsToString({
     },
   );
 
-  /** Working text mutated in place by each edit; reverse-ordered edits keep earlier offsets valid. */
+  /**
+   * Working text mutated in place by each edit; reverse-ordered edits keep earlier offsets valid.
+   */
   let result = text;
   for (const edit of sorted) {
-    /** Start offset of the edit, recomputed against the current `result` since prior edits may have shifted it. */
+    /**
+     * Start offset of the edit, recomputed against the current `result` since prior edits may have shifted it.
+     */
     const start = positionToOffset({
       text: result,
       line: edit.range
@@ -114,7 +122,9 @@ function applyEditsToString({
         .start
         .character,
     },);
-    /** End offset of the edit, recomputed against the current `result` for the same reason as `start`. */
+    /**
+     * End offset of the edit, recomputed against the current `result` for the same reason as `start`.
+     */
     const end = positionToOffset({
       text: result,
       line: edit.range
@@ -170,12 +180,16 @@ async function applyEditsToFile({
   readonly filePath: string;
   readonly wireEdits: readonly TextEdit[];
 },): Promise<void> {
-  /** Pre-edit file contents loaded from disk; basis for applying `wireEdits`. */
+  /**
+   * Pre-edit file contents loaded from disk; basis for applying `wireEdits`.
+   */
   const content = await readFile(
     filePath,
     'utf8',
   );
-  /** Post-edit file contents to write back; reverse-ordered application keeps positions stable. */
+  /**
+   * Post-edit file contents to write back; reverse-ordered application keeps positions stable.
+   */
   const modified = applyEditsToString({
     text: content,
     edits: wireEdits,
@@ -222,26 +236,38 @@ export async function applyWorkspaceEdit({
   readonly currentFilePath: string;
   readonly dirWatcher: DirWatcher | null;
 },): Promise<WorkspaceFileEdit[]> {
-  /** URI-keyed edit map carried by the LSP workspace edit; undefined for no-op edits. */
+  /**
+   * URI-keyed edit map carried by the LSP workspace edit; undefined for no-op edits.
+   */
   const { changes, } = workspaceEdit;
   if (changes === undefined)
     return [];
 
-  /** Output accumulator: edits grouped by absolute file path for the client to mirror. */
+  /**
+   * Output accumulator: edits grouped by absolute file path for the client to mirror.
+   */
   const result: WorkspaceFileEdit[] = [];
-  /** Promises for the disk writes performed for non-current files; awaited together at the end. */
+  /**
+   * Promises for the disk writes performed for non-current files; awaited together at the end.
+   */
   const writePromises: Promise<void>[] = [];
 
   for (const uri of Object.keys(changes,)) {
-    /** Edits targeting this URI; undefined or empty when LSP returned nothing for that file. */
+    /**
+     * Edits targeting this URI; undefined or empty when LSP returned nothing for that file.
+     */
     const lspEdits = changes[uri];
     if ((lspEdits === undefined) || (lspEdits.length
       === 0))
       continue;
 
-    /** Absolute path decoded from the LSP `file://` URI for use with `node:fs` APIs. */
+    /**
+     * Absolute path decoded from the LSP `file://` URI for use with `node:fs` APIs.
+     */
     const filePath = uriToPath({ uri, },);
-    /** Wire-format edits passed to the writer; copies into a mutable array since `LspWorkspaceEdit.changes` holds `readonly LspTextEdit[]`. */
+    /**
+     * Wire-format edits passed to the writer; copies into a mutable array since `LspWorkspaceEdit.changes` holds `readonly LspTextEdit[]`.
+     */
     const wireEdits: TextEdit[] = lspEdits.map(
       function convertEdit(edit,): TextEdit {
         return {
@@ -256,7 +282,9 @@ export async function applyWorkspaceEdit({
       edits: wireEdits,
     },);
 
-    /** Skip disk write for the current file; the client applies those edits. */
+    /**
+     * Skip disk write for the current file; the client applies those edits.
+     */
     if (filePath === currentFilePath)
       continue;
 

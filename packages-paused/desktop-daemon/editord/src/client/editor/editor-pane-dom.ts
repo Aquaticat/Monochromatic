@@ -20,7 +20,9 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
  * ```
  */
 export function createEditorElement(): HTMLDivElement {
-  /** Container element with paste-listener wired below. */
+  /**
+   * Container element with paste-listener wired below.
+   */
   const editor = h({
     tag: 'div',
     class: 'editor',
@@ -95,7 +97,9 @@ export function setTextContent({
 export function getTextContent({ editor, }: { readonly editor: HTMLDivElement; },): string {
   return [...editor.children,]
     .map(function readLine(child,) {
-      /** Defensive default keeps empty divs producing the empty string rather than null. */
+      /**
+       * Defensive default keeps empty divs producing the empty string rather than null.
+       */
       const t = child.textContent
         ?? '';
       return t === '\n' ? '' : t;
@@ -124,11 +128,15 @@ export function getLineText({
   readonly editor: HTMLDivElement;
   readonly line: number;
 },): string | null {
-  /** Out-of-range line index returns null rather than throwing. */
+  /**
+   * Out-of-range line index returns null rather than throwing.
+   */
   const child = editor.children[line];
   if (child === undefined)
     return null;
-  /** Defensive default keeps empty divs producing the empty string rather than null. */
+  /**
+   * Defensive default keeps empty divs producing the empty string rather than null.
+   */
   const t = child.textContent
     ?? '';
   return t === '\n' ? '' : t;
@@ -157,7 +165,9 @@ export function scrollLineIntoView({
   readonly editor: HTMLDivElement;
   readonly line: number;
 },): void {
-  /** Clamped lookup so out-of-range line numbers fall back to first/last instead of throwing. */
+  /**
+   * Clamped lookup so out-of-range line numbers fall back to first/last instead of throwing.
+   */
   const child = editor.children[
     Math.max(
       0,

@@ -27,11 +27,15 @@ import type { SelectionCoords, } from './indent.ts';
 export function getComposedRange(
   { shadow, }: { readonly shadow: ShadowRoot; },
 ): StaticRange | null {
-  /** Document-wide selection object; null when no document is currently focused. */
+  /**
+   * Document-wide selection object; null when no document is currently focused.
+   */
   const selection = document.getSelection();
   if (selection === null)
     return null;
-  /** Composed ranges that pierce the shadow root; entry 0 is the active selection range. */
+  /**
+   * Composed ranges that pierce the shadow root; entry 0 is the active selection range.
+   */
   const ranges = selection.getComposedRanges({ shadowRoots: [shadow,], },);
   return ranges[0]
     ?? null;
@@ -58,7 +62,9 @@ export function getCursorPosition({
   readonly editor: HTMLDivElement;
   readonly shadow: ShadowRoot;
 },): EditorPosition | null {
-  /** Shadow-composed selection range; null when no selection exists. */
+  /**
+   * Shadow-composed selection range; null when no selection exists.
+   */
   const range = getComposedRange({ shadow, },);
   if (range === null)
     return null;
@@ -82,11 +88,15 @@ export function getCursorPosition({
  * ```
  */
 export function getCursorRect({ shadow, }: { readonly shadow: ShadowRoot; },): DOMRect | null {
-  /** Shadow-composed selection range; null when no selection exists. */
+  /**
+   * Shadow-composed selection range; null when no selection exists.
+   */
   const sRange = getComposedRange({ shadow, },);
   if (sRange === null)
     return null;
-  /** Live `Range` rebuilt from the composed endpoints; required because `getBoundingClientRect` lives on `Range`, not `StaticRange`. */
+  /**
+   * Live `Range` rebuilt from the composed endpoints; required because `getBoundingClientRect` lives on `Range`, not `StaticRange`.
+   */
   const range = document.createRange();
   range.setStart(
     sRange.startContainer,
@@ -122,11 +132,15 @@ export function restoreCursor({
   readonly line: number;
   readonly character: number;
 },): void {
-  /** Document-wide selection object; null when no document is focused. */
+  /**
+   * Document-wide selection object; null when no document is focused.
+   */
   const selection = document.getSelection();
   if (selection === null)
     return;
-  /** Resolved text node and offset for `(line, character)`; null when coordinates fall outside the editor. */
+  /**
+   * Resolved text node and offset for `(line, character)`; null when coordinates fall outside the editor.
+   */
   const resolved = resolveTextPosition({
     editor,
     lineIndex: line,
@@ -161,17 +175,23 @@ export function setSelection({
   readonly editor: HTMLDivElement;
   readonly coords: SelectionCoords;
 },): void {
-  /** Document-wide selection object; null when no document is focused. */
+  /**
+   * Document-wide selection object; null when no document is focused.
+   */
   const selection = document.getSelection();
   if (selection === null)
     return;
-  /** Anchor endpoint as text-node and offset; null when the start coordinates are out of range. */
+  /**
+   * Anchor endpoint as text-node and offset; null when the start coordinates are out of range.
+   */
   const start = resolveTextPosition({
     editor,
     lineIndex: coords.startLine,
     character: coords.startCharacter,
   },);
-  /** Focus endpoint as text-node and offset; null when the end coordinates are out of range. */
+  /**
+   * Focus endpoint as text-node and offset; null when the end coordinates are out of range.
+   */
   const end = resolveTextPosition({
     editor,
     lineIndex: coords.endLine,
@@ -208,17 +228,23 @@ export function getSelection({
   readonly editor: HTMLDivElement;
   readonly shadow: ShadowRoot;
 },): SelectionCoords | null {
-  /** Shadow-composed selection range; null when no selection exists. */
+  /**
+   * Shadow-composed selection range; null when no selection exists.
+   */
   const range = getComposedRange({ shadow, },);
   if (range === null)
     return null;
-  /** Selection start translated to `(line, character)` for the editor's coordinate space. */
+  /**
+   * Selection start translated to `(line, character)` for the editor's coordinate space.
+   */
   const start = resolveLineCharacter({
     editor,
     container: range.startContainer,
     offset: range.startOffset,
   },);
-  /** Selection end translated to `(line, character)` for the editor's coordinate space. */
+  /**
+   * Selection end translated to `(line, character)` for the editor's coordinate space.
+   */
   const end = resolveLineCharacter({
     editor,
     container: range.endContainer,

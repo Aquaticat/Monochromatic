@@ -181,7 +181,9 @@ export function measureInlayOffsets({ editor, }: { readonly editor: HTMLElement;
       === undefined))
       continue;
 
-    /** Rendered height of the `::before` annotation; drives the line-number offset variable. */
+    /**
+     * Rendered height of the `::before` annotation; drives the line-number offset variable.
+     */
     const beforeHeight = getComputedStyle(
       child,
       '::before',

@@ -4,7 +4,9 @@
 import { css, } from '../css.ts';
 import { TASK_DETAIL_BUTTON_STYLES, } from './task-detail-button-styles.ts';
 
-/** Shadow DOM styles for `\<task-detail\>`. */
+/**
+ * Shadow DOM styles for `\<task-detail\>`.
+ */
 export const TASK_DETAIL_STYLES: string = css(`
   :host {
     @apply --flex-column;

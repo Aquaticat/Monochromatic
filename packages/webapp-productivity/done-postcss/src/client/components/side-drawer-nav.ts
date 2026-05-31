@@ -58,7 +58,9 @@ export function buildNav(): HTMLElement {
  * ```
  */
 export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
-  /** Initial children list; the optional close button is appended only when supplied. */
+  /**
+   * Initial children list; the optional close button is appended only when supplied.
+   */
   const children: HTMLElement[] = [
     h({
       tag: 'span',
@@ -88,7 +90,9 @@ export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
  * ```
  */
 export function buildCloseButton(label: string,): HTMLElement {
-  /** Button element built first so its innerHTML can be set imperatively below. */
+  /**
+   * Button element built first so its innerHTML can be set imperatively below.
+   */
   const button = h({
     tag: 'button',
     class: 'close',

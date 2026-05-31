@@ -12,10 +12,14 @@ import {
   BYTE_VALUES,
 } from './constants.ts';
 
-/** CRC-32 polynomial in reflected form (used by ZIP, gzip, PNG). */
+/**
+ * CRC-32 polynomial in reflected form (used by ZIP, gzip, PNG).
+ */
 const CRC32_POLYNOMIAL = 0xED_B8_83_20;
 
-/** Initial CRC-32 register value. */
+/**
+ * Initial CRC-32 register value.
+ */
 const CRC32_INIT = 0xFF_FF_FF_FF;
 
 /**
@@ -25,10 +29,14 @@ const CRC32_INIT = 0xFF_FF_FF_FF;
  * @returns Filled lookup table indexed by input byte value
  */
 function buildCrc32Table(): Uint32Array {
-  /** Lookup table populated in place and returned once filled. */
+  /**
+   * Lookup table populated in place and returned once filled.
+   */
   const table = new Uint32Array(BYTE_VALUES,);
   for (let byte = 0; byte < BYTE_VALUES; byte += 1) {
-    /** Per-byte CRC register cycled through eight rounds of polynomial mixing. */
+    /**
+     * Per-byte CRC register cycled through eight rounds of polynomial mixing.
+     */
     let c = byte;
     for (let bit = 0; bit < BYTE_BITS; bit += 1)
       c = (c & 1) === 1 ? CRC32_POLYNOMIAL ^ (c >>> 1) : c >>> 1;
@@ -41,7 +49,9 @@ function buildCrc32Table(): Uint32Array {
   return table;
 }
 
-/** Precomputed CRC-32 lookup table. Built once at module load. */
+/**
+ * Precomputed CRC-32 lookup table. Built once at module load.
+ */
 const CRC32_TABLE = buildCrc32Table();
 
 /**
@@ -58,17 +68,23 @@ const CRC32_TABLE = buildCrc32Table();
  * ```
  */
 export function crc32(data: Uint8Array,): number {
-  /** CRC register accumulating across the input bytes. */
+  /**
+   * CRC register accumulating across the input bytes.
+   */
   let c = CRC32_INIT;
   for (const byte of data) {
-    /** Indexed lookup checked because strict index-access typing widens to `undefined`. */
+    /**
+     * Indexed lookup checked because strict index-access typing widens to `undefined`.
+     */
     const tableEntry = CRC32_TABLE[(c ^ byte) & BYTE_MASK];
     if (tableEntry === undefined)
       throw new Error('zip-writer: CRC32 table corrupted',);
     c = tableEntry ^ (c >>> BYTE_BITS);
   }
   /* oxlint-disable eslint-plugin-unicorn/prefer-math-trunc -- See note on `>>> 0` in buildCrc32Table. */
-  /** Final CRC value after the standard finalize XOR; reinterpreted as unsigned 32-bit. */
+  /**
+   * Final CRC value after the standard finalize XOR; reinterpreted as unsigned 32-bit.
+   */
   const result = (c ^ CRC32_INIT) >>> 0;
   /* oxlint-enable eslint-plugin-unicorn/prefer-math-trunc */
   return result;

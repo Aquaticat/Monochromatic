@@ -10,9 +10,13 @@ import type { VerbosityLevel, } from './runner.ts';
 
 //region Model config type: per-model overrides for verbosity and display label
 
-/** Per-model configuration for canary probes */
+/**
+ * Per-model configuration for canary probes
+ */
 export type ModelConfig = {
-  /** OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
+  /**
+   * OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6")
+   */
   readonly openrouterId: OpenRouterModelId;
   /**
    * Short human-readable label for reports.
@@ -30,7 +34,9 @@ export type ModelConfig = {
 
 //region Model registry: the canonical list of models tested by default; add/remove models here
 
-/** All models to test in parallel */
+/**
+ * All models to test in parallel
+ */
 export const models: readonly ModelConfig[] = [
   // Claude 4.6 models use adaptive effort: even at "low", the model decides how much to
   // think based on problem difficulty. Scoring poorly on hard probes at low effort is the

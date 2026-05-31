@@ -33,15 +33,23 @@ const NO_THINKING_LEVEL: unique symbol = Symbol('model-selection/no-thinking-lev
 
 //region Types and constants
 
-/** Result of parsing a single model scope pattern. */
+/**
+ * Result of parsing a single model scope pattern.
+ */
 export type PatternResolution<TModel extends ModelIdentity = ModelIdentity,> = {
-  /** Matched model, omitted when no model matched. */
+  /**
+   * Matched model, omitted when no model matched.
+   */
   readonly model?: TModel;
-  /** Thinking level suffix, when present. */
+  /**
+   * Thinking level suffix, when present.
+   */
   readonly thinkingLevel?: ScopedThinkingLevel;
 };
 
-/** Valid pi thinking-level suffixes. */
+/**
+ * Valid pi thinking-level suffixes.
+ */
 const THINKING_LEVELS = [
   'off',
   'minimal',
@@ -51,16 +59,24 @@ const THINKING_LEVELS = [
   'xhigh',
 ] as const satisfies readonly ScopedThinkingLevel[];
 
-/** Valid pi thinking-level suffixes as strings for runtime checks. */
+/**
+ * Valid pi thinking-level suffixes as strings for runtime checks.
+ */
 const THINKING_LEVEL_SET: ReadonlySet<string> = new Set(THINKING_LEVELS,);
 
-/** Digits in pi model date suffixes. */
+/**
+ * Digits in pi model date suffixes.
+ */
 const DATE_SUFFIX_DIGITS = 8;
 
-/** Total characters in pi model date suffix including leading hyphen. */
+/**
+ * Total characters in pi model date suffix including leading hyphen.
+ */
 const DATE_SUFFIX_TOTAL_LENGTH = DATE_SUFFIX_DIGITS + 1;
 
-/** ASCII digit characters accepted in pi model date suffixes. */
+/**
+ * ASCII digit characters accepted in pi model date suffixes.
+ */
 const ASCII_DIGITS: ReadonlySet<string> = new Set([
   '0',
   '1',
@@ -109,7 +125,9 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
     let currentPattern = pattern, thinkingLevel: ScopedThinkingLevel | typeof NO_THINKING_LEVEL = NO_THINKING_LEVEL;
     ;
   ) {
-    /** Exact or fuzzy match for current pattern body. */
+    /**
+     * Exact or fuzzy match for current pattern body.
+     */
     const exactMatch = tryMatchModel({
       pattern: currentPattern,
       availableModels,
@@ -121,12 +139,16 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
       };
     }
 
-    /** Last colon, used for optional thinking suffix parsing. */
+    /**
+     * Last colon, used for optional thinking suffix parsing.
+     */
     const lastColonIndex = currentPattern.lastIndexOf(':',);
     if (lastColonIndex === (-1))
       return {};
 
-    /** Candidate suffix after last colon. */
+    /**
+     * Candidate suffix after last colon.
+     */
     const suffix = currentPattern.slice(lastColonIndex + 1,);
     if ((thinkingLevel === NO_THINKING_LEVEL) && isThinkingLevel(suffix,))
       thinkingLevel = suffix;
@@ -155,12 +177,16 @@ export function splitThinkingSuffix(
   readonly pattern: string;
   readonly thinkingLevel?: ScopedThinkingLevel;
 } {
-  /** Last colon, used for optional suffix parsing. */
+  /**
+   * Last colon, used for optional suffix parsing.
+   */
   const colonIndex = pattern.lastIndexOf(':',);
   if (colonIndex === (-1))
     return { pattern, };
 
-  /** Candidate suffix after last colon. */
+  /**
+   * Candidate suffix after last colon.
+   */
   const suffix = pattern.slice(colonIndex + 1,);
   return isThinkingLevel(suffix,)
     ? {
@@ -284,14 +310,18 @@ export function hasDateSuffix(
     < DATE_SUFFIX_TOTAL_LENGTH)
     return false;
 
-  /** Index of leading hyphen for suffix candidate. */
+  /**
+   * Index of leading hyphen for suffix candidate.
+   */
   const suffixHyphenIndex = id.length
     - DATE_SUFFIX_TOTAL_LENGTH;
   if (id.at(suffixHyphenIndex,)
     !== '-')
     return false;
 
-  /** Candidate date suffix without leading hyphen. */
+  /**
+   * Candidate date suffix without leading hyphen.
+   */
   const dateSuffix = id.slice(suffixHyphenIndex + 1,);
   return isAsciiDigitString(dateSuffix,);
 }
@@ -318,7 +348,9 @@ function tryMatchModel<TModel extends ModelIdentity,>(
     readonly availableModels: readonly TModel[];
   },
 ): TModel | typeof NO_PATTERN_MATCH {
-  /** Exact match by canonical slug or bare id. */
+  /**
+   * Exact match by canonical slug or bare id.
+   */
   const exact = findExactModelReferenceMatch({
     modelReference: pattern,
     availableModels,
@@ -326,9 +358,13 @@ function tryMatchModel<TModel extends ModelIdentity,>(
   if (exact !== NO_EXACT_MATCH)
     return exact;
 
-  /** Lowercase pattern for fuzzy id and name matching. */
+  /**
+   * Lowercase pattern for fuzzy id and name matching.
+   */
   const normalizedPattern = pattern.toLowerCase();
-  /** Fuzzy matches by model id or display name. */
+  /**
+   * Fuzzy matches by model id or display name.
+   */
   const matches = availableModels.filter(function fuzzyMatches(model,) {
     return model
       .id
@@ -343,14 +379,20 @@ function tryMatchModel<TModel extends ModelIdentity,>(
     === 0)
     return NO_PATTERN_MATCH;
 
-  /** Alias matches, preferred over dated versions. */
+  /**
+   * Alias matches, preferred over dated versions.
+   */
   const aliases = matches.filter(function keepAlias(model,) {
     return isAlias(model.id,);
   },);
-  /** Candidate list before sorting. */
+  /**
+   * Candidate list before sorting.
+   */
   const candidates = aliases.length
     > 0 ? aliases : matches;
-  /** Candidate list sorted by pi's descending id tie-break. */
+  /**
+   * Candidate list sorted by pi's descending id tie-break.
+   */
   const sortedCandidates = candidates.toSorted(function compareByIdDesc(
     left,
     right,
@@ -358,7 +400,9 @@ function tryMatchModel<TModel extends ModelIdentity,>(
     return right.id
       .localeCompare(left.id,);
   },);
-  /** First candidate after sorting. */
+  /**
+   * First candidate after sorting.
+   */
   const [firstCandidate,] = sortedCandidates;
   return firstCandidate ?? NO_PATTERN_MATCH;
 }

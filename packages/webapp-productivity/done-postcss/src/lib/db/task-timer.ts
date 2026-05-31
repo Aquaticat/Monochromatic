@@ -20,21 +20,35 @@ import {
   SQL_STOP_TIMER,
 } from './task-sql.ts';
 
-/** Summary of a single blocker task, used to report why completion was refused. */
+/**
+ * Summary of a single blocker task, used to report why completion was refused.
+ */
 export type BlockerSummary = {
-  /** UUID of the blocking task. */
+  /**
+   * UUID of the blocking task.
+   */
   blockerId: string;
-  /** Title of the blocking task. */
+  /**
+   * Title of the blocking task.
+   */
   blockerTitle: string;
 };
 
-/** Outcome of a `completeTask()` call: carries blockers when completion is refused. */
+/**
+ * Outcome of a `completeTask()` call: carries blockers when completion is refused.
+ */
 export type CompleteTaskResult = {
-  /** Whether the task was successfully completed and deleted. */
+  /**
+   * Whether the task was successfully completed and deleted.
+   */
   completed: boolean;
-  /** Whether the task ID was not found in the database. */
+  /**
+   * Whether the task ID was not found in the database.
+   */
   notFound: boolean;
-  /** List of active blockers that prevented completion. */
+  /**
+   * List of active blockers that prevented completion.
+   */
   blockedBy: BlockerSummary[];
 };
 
@@ -51,7 +65,9 @@ export type CompleteTaskResult = {
  * ```
  */
 export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
-  /** Single ISO timestamp reused for both `timer_started_at` and `updated_at` to keep them aligned. */
+  /**
+   * Single ISO timestamp reused for both `timer_started_at` and `updated_at` to keep them aligned.
+   */
   const timestamp = nowIso();
   await db.prepare(SQL_START_TIMER,)
     .run(
@@ -75,12 +91,16 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
  * ```
  */
 export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
-  /** Existing task; absent task short-circuits with `TASK_NOT_FOUND`. */
+  /**
+   * Existing task; absent task short-circuits with `TASK_NOT_FOUND`.
+   */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND)
     return TASK_NOT_FOUND;
 
-  /** Seconds the running timer accumulated; zero when no timer was active. */
+  /**
+   * Seconds the running timer accumulated; zero when no timer was active.
+   */
   const elapsedSeconds = currentTask.timerStartedAt
     === undefined
     ? 0
@@ -92,7 +112,9 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
           .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
-  /** ISO timestamp for the `updated_at` column on the stop write. */
+  /**
+   * ISO timestamp for the `updated_at` column on the stop write.
+   */
   const timestamp = nowIso();
   await db.prepare(SQL_STOP_TIMER,)
     .run(
@@ -118,7 +140,9 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
  * ```
  */
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
-  /** Existing task; absent task short-circuits with `notFound: true`. */
+  /**
+   * Existing task; absent task short-circuits with `notFound: true`.
+   */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND) {
     return {
@@ -129,14 +153,18 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   }
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns blocker join columns */
-  /** Raw blocker rows; emptiness implies completion is allowed. */
+  /**
+   * Raw blocker rows; emptiness implies completion is allowed.
+   */
   const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,)
     .all(id,) as {
     blocker_id: string;
     blocker_title: string;
   }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Application-shaped blocker summaries returned to the caller when completion is refused. */
+  /**
+   * Application-shaped blocker summaries returned to the caller when completion is refused.
+   */
   const blockedBy = blockingRows.map(function toSummary(row,) {
     return {
       blockerId: row.blocker_id,

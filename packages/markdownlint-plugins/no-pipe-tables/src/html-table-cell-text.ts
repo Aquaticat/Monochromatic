@@ -1,9 +1,13 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-/** Prefix used by Markdown backslash escapes. */
+/**
+ * Prefix used by Markdown backslash escapes.
+ */
 const MARKDOWN_ESCAPE_PREFIX = '\\';
 
-/** HTML text characters whose Markdown escape marker must not survive into raw HTML. */
+/**
+ * HTML text characters whose Markdown escape marker must not survive into raw HTML.
+ */
 const MARKDOWN_HTML_TEXT_ESCAPE_TARGETS: ReadonlySet<string> = new Set([
   '|',
   '&',
@@ -45,15 +49,23 @@ function isMarkdownHtmlTextEscapeTarget(character: string,): boolean {
  * ```
  */
 function normalizeMarkdownEscapes(markdownCellText: string,): string {
-  /** Source text scanned by UTF-16 index; only ASCII escape sentinels matter. */
+  /**
+   * Source text scanned by UTF-16 index; only ASCII escape sentinels matter.
+   */
   const characters = markdownCellText;
-  /** Text after Markdown escape markers have been consumed. */
+  /**
+   * Text after Markdown escape markers have been consumed.
+   */
   const normalized: string[] = [];
 
   for (let index = 0; index < characters.length; index += 1) {
-    /** Current character under the cursor. */
+    /**
+     * Current character under the cursor.
+     */
     const character = nonNullishOrThrow(characters[index],);
-    /** Next character, used to decide whether a backslash is an escape marker. */
+    /**
+     * Next character, used to decide whether a backslash is an escape marker.
+     */
     const nextCharacter = characters[index + 1];
 
     if (character !== MARKDOWN_ESCAPE_PREFIX) {
@@ -122,7 +134,9 @@ function htmlTextCharacter(character: string,): string {
  * ```
  */
 function escapeHtmlText(text: string,): string {
-  /** Characters escaped for HTML text context. */
+  /**
+   * Characters escaped for HTML text context.
+   */
   const escaped: string[] = [];
   for (const character of text) {
     escaped.push(

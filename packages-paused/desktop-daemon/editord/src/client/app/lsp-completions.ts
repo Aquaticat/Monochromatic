@@ -19,7 +19,9 @@ import type {
   GetCurrentFilePathFn,
 } from './types.ts';
 
-/** Tagged logger for completions. */
+/**
+ * Tagged logger for completions.
+ */
 const completionLog = tagged({
   tag: 'completions',
   l,
@@ -66,7 +68,9 @@ function isInsideStringLiteral({
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser-cursor state machine: `i` advances asymmetrically (1 or 2) based on backslash branch
   let i = 0;
   while (i < character) {
-    /** Character at the walker's current position; undefined past the end of the line. */
+    /**
+     * Character at the walker's current position; undefined past the end of the line.
+     */
     const ch = line[i];
     if (ch === '\\') {
       i += 2;
@@ -117,24 +121,32 @@ export async function requestCompletions(
     readonly getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): Promise<void> {
-  /** Currently-open file path, or null when no document is loaded. */
+  /**
+   * Currently-open file path, or null when no document is loaded.
+   */
   const path = getCurrentFilePath();
   if (path === null)
     return;
-  /** Cursor position at request time; used later to drop responses whose cursor has since moved. */
+  /**
+   * Cursor position at request time; used later to drop responses whose cursor has since moved.
+   */
   const requestPos = editorPane.getCursorPosition();
   if (requestPos === null)
     return;
 
   try {
-    /** Completion items returned by the LSP; destructured so the response shape stays narrow. */
+    /**
+     * Completion items returned by the LSP; destructured so the response shape stays narrow.
+     */
     const { items, } = await ws.request({
       type: 'completion',
       path,
       line: requestPos.line,
       character: requestPos.character,
     },);
-    /** Cursor position when the response lands; compared against `requestPos` to reject stale responses. */
+    /**
+     * Cursor position when the response lands; compared against `requestPos` to reject stale responses.
+     */
     const responsePos = editorPane.getCursorPosition();
     if (responsePos === null)
       return;
@@ -148,7 +160,9 @@ export async function requestCompletions(
     ) {
       return;
     }
-    /** Caret rectangle in viewport coordinates; popup is anchored to its bottom-left corner. */
+    /**
+     * Caret rectangle in viewport coordinates; popup is anchored to its bottom-left corner.
+     */
     const rect = editorPane.getCursorRect();
     if ((items.length
       === 0) || (rect === null))
@@ -190,29 +204,39 @@ export function wireCompletionTrigger({
   editorPane.addEventListener(
     'keydown',
     function handleDotKey(event,) {
-      /** Narrowed view of the event so `.key` is reachable without `unknown` checks. */
+      /**
+       * Narrowed view of the event so `.key` is reachable without `unknown` checks.
+       */
       const ke = event as KeyboardEvent;
       if (ke.key
         !== '.')
         return;
       globalThis.setTimeout(
         function deferredTrigger() {
-          /** Cursor position after the dot is inserted; null when the editor has lost focus. */
+          /**
+           * Cursor position after the dot is inserted; null when the editor has lost focus.
+           */
           const pos = editorPane.getCursorPosition();
           if (pos === null)
             return;
-          /** Editor container element; null while the editor is still mounting. */
+          /**
+           * Editor container element; null while the editor is still mounting.
+           */
           const editorEl = editorPane.getEditorElement();
           if (editorEl === null)
             return;
-          /** Text of the line the cursor is on; null when the line div has not yet been created. */
+          /**
+           * Text of the line the cursor is on; null when the line div has not yet been created.
+           */
           const lineText = getLineText({
             editor: editorEl,
             line: pos.line,
           },);
           if (lineText === null)
             return;
-          /** The dot has already been inserted; check the position before it. */
+          /**
+           * The dot has already been inserted; check the position before it.
+           */
           const dotIndex = pos.character
             - 1;
           if (dotIndex < 0)
@@ -257,11 +281,15 @@ export function wireCompletionDismiss({
     function handleSelectionChange() {
       if (!completionPopup.visible)
         return;
-      /** Trigger cursor position captured at the last `show()`; null when popup is hidden mid-handler. */
+      /**
+       * Trigger cursor position captured at the last `show()`; null when popup is hidden mid-handler.
+       */
       const { shownAt, } = completionPopup;
       if (shownAt === null)
         return;
-      /** Cursor position right now; popup hides when this differs from the captured `shownAt`. */
+      /**
+       * Cursor position right now; popup hides when this differs from the captured `shownAt`.
+       */
       const pos = editorPane.getCursorPosition();
       if (pos === null)
         return;

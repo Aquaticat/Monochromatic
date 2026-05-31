@@ -67,7 +67,9 @@ declare global {
    * literal injected by `../render-html.ts` at HTML-composition time.
    */
   interface Window {
-    /** Probe array embedded by `render-html.ts` as a JS literal. */
+    /**
+     * Probe array embedded by `render-html.ts` as a JS literal.
+     */
     __PROBES__?: readonly PackageProbe[];
   }
   /* oxlint-enable typescript-eslint/consistent-type-definitions */
@@ -77,7 +79,9 @@ declare global {
 
 //region Types
 
-/** Mutable working state of the controller. The binding is `const`. */
+/**
+ * Mutable working state of the controller. The binding is `const`.
+ */
 type Session = {
   state: AppState;
   bounds: SceneBounds;
@@ -101,7 +105,9 @@ type Session = {
  */
 function getProbes(): readonly PackageProbe[] {
   /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- accessing the `Window`-augmented `__PROBES__` field requires the named global, not `globalThis`. */
-  /** Probe array injected onto `window` by `render-html.ts`; `undefined` signals a broken bundle. */
+  /**
+   * Probe array injected onto `window` by `render-html.ts`; `undefined` signals a broken bundle.
+   */
   const probes = window.__PROBES__;
   /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
   if (probes === undefined)
@@ -176,7 +182,9 @@ function recomputeVisibility(
     dimMapping: session.state
       .dimMapping,
   },);
-  /** Counter element under the canvas; missing in tests / partial pages, so we no-op when absent. */
+  /**
+   * Counter element under the canvas; missing in tests / partial pages, so we no-op when absent.
+   */
   const counter = document.querySelector<HTMLElement>('#visibility-counter',);
   if (counter !== null) {
     counter.textContent =
@@ -204,7 +212,9 @@ function rerenderLayers(
     probes: readonly PackageProbe[];
   },
 ): void {
-  /** Layer list rebuilt from current session inputs; pushed to `Deck` via `setProps`. */
+  /**
+   * Layer list rebuilt from current session inputs; pushed to `Deck` via `setProps`.
+   */
   const layers = buildLayers({
     probes,
     state: session.state,
@@ -305,7 +315,9 @@ function createSession(
   { probes, }: { readonly probes: readonly PackageProbe[]; },
 ): Session {
   /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- `window.location` is the canonical name; aliasing to `globalThis.location` only obscures intent for a browser-only file. */
-  /** Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults. */
+  /**
+   * Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults.
+   */
   const initial = readStateFromHash({
     hash: window.location
       .hash,
@@ -314,12 +326,16 @@ function createSession(
     },),
   },);
   /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
-  /** Per-channel data extents used by every layer factory; recomputed only when the dim mapping changes. */
+  /**
+   * Per-channel data extents used by every layer factory; recomputed only when the dim mapping changes.
+   */
   const bounds = computeSceneBounds({
     probes,
     dimMapping: initial.dimMapping,
   },);
-  /** Set of probe indices that pass the initial filter combination; drives full-vs-faded opacity. */
+  /**
+   * Set of probe indices that pass the initial filter combination; drives full-vs-faded opacity.
+   */
   const visibleIndices = computeVisibleIndices({
     probes,
     toggles: initial.toggles,
@@ -327,9 +343,13 @@ function createSession(
     search: initial.search,
     dimMapping: initial.dimMapping,
   },);
-  /** Current light/dark scheme snapshot; passed through to layer factories for colour selection. */
+  /**
+   * Current light/dark scheme snapshot; passed through to layer factories for colour selection.
+   */
   const chrome = detectScheme();
-  /** deck.gl `Deck` instance bound to the `#deck-canvas` element; layers, view state, and tooltips wire through this. */
+  /**
+   * deck.gl `Deck` instance bound to the `#deck-canvas` element; layers, view state, and tooltips wire through this.
+   */
   const deck = new Deck<OrbitView>({
     canvas: 'deck-canvas',
     views: orbitView,
@@ -357,7 +377,9 @@ function createSession(
     getTooltip: getTooltipForInfo,
     onClick: onCanvasClick,
   },);
-  /** Mutable session bundle; every wire handler reads and writes through this single object. */
+  /**
+   * Mutable session bundle; every wire handler reads and writes through this single object.
+   */
   const session: Session = {
     state: initial,
     bounds,
@@ -367,7 +389,9 @@ function createSession(
   };
   deck.setProps({
     onViewStateChange: function onViewStateChange(params,) {
-      /** Latest view-state delta from deck.gl; copied into the session so hash sync can serialise it. */
+      /**
+       * Latest view-state delta from deck.gl; copied into the session so hash sync can serialise it.
+       */
       const v = params.viewState;
       session.state = {
         ...session.state,
@@ -402,7 +426,9 @@ function start(): void {
    * Embedded probe payload; throws via {@link getProbes} when the global is missing.
    */
   const probes = getProbes();
-  /** Hydrated session for this page load. */
+  /**
+   * Hydrated session for this page load.
+   */
   const session = createSession({
     probes,
   },);

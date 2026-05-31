@@ -1,2 +1,4 @@
-/** Branded type alias for `object`. */
+/**
+ * Branded type alias for `object`.
+ */
 export type $ = object;

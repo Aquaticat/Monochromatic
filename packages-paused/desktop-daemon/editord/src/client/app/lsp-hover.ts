@@ -22,7 +22,9 @@ import type {
   ReferencesPopupHandle,
 } from './types.ts';
 
-/** Tagged logger for hover. */
+/**
+ * Tagged logger for hover.
+ */
 const hoverLog = tagged({
   tag: 'hover',
   l,
@@ -80,20 +82,26 @@ export function wireHover(
     latestMouseEvent: null,
   };
 
-  /** Hides the popup and resets position tracking. */
+  /**
+   * Hides the popup and resets position tracking.
+   */
   function resetHover(): void {
     hoverPopup.hide();
     hoverState.lastLine = -1;
     hoverState.lastChar = -1;
   }
 
-  /** Debounced hover trigger plus its cancel handle, both wired to mouse events below. */
+  /**
+   * Debounced hover trigger plus its cancel handle, both wired to mouse events below.
+   */
   const {
     debounced: scheduleHover,
     cancel: cancelHover,
   } = createDebounced({
     fn: function doHover() {
-      /** Latest mousemove captured by the listener; null means the cursor left the pane. */
+      /**
+       * Latest mousemove captured by the listener; null means the cursor left the pane.
+       */
       const me = hoverState.latestMouseEvent;
       if (me === null)
         return;
@@ -101,11 +109,15 @@ export function wireHover(
         || referencesPopup
         .visible)
         return;
-      /** Skip when no file is open; LSP needs a target. */
+      /**
+       * Skip when no file is open; LSP needs a target.
+       */
       const path = getCurrentFilePath();
       if (path === null)
         return;
-      /** Resolved cursor coords; null means the point was outside any text node. */
+      /**
+       * Resolved cursor coords; null means the point was outside any text node.
+       */
       const pos = editorPane.getPositionFromPoint({
         x: me.clientX,
         y: me.clientY,

@@ -1,4 +1,6 @@
-/** Union of uppercase ASCII letter characters (`'A'` through `'Z'`). */
+/**
+ * Union of uppercase ASCII letter characters (`'A'` through `'Z'`).
+ */
 export type $ =
   | 'A'
   | 'B'

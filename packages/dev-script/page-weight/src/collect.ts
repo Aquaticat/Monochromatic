@@ -24,13 +24,21 @@ import {
  * Result of weighing a single HTML page.
  */
 export type PageWeight = {
-  /** Path of the HTML file relative to the dist root. */
+  /**
+   * Path of the HTML file relative to the dist root.
+   */
   readonly page: string;
-  /** Sum of wire sizes of the HTML and every asset it references. */
+  /**
+   * Sum of wire sizes of the HTML and every asset it references.
+   */
   readonly totalBytes: number;
-  /** Number of unique assets contributing to the total (including the HTML). */
+  /**
+   * Number of unique assets contributing to the total (including the HTML).
+   */
   readonly resourceCount: number;
-  /** References the walker saw but could not resolve to a file under root. */
+  /**
+   * References the walker saw but could not resolve to a file under root.
+   */
   readonly missing: readonly string[];
 };
 
@@ -104,35 +112,49 @@ async function walkCss(
   readonly assets: readonly string[];
   readonly missing: readonly string[];
 }> {
-  /** Accumulator of unique asset paths discovered through the CSS graph. */
+  /**
+   * Accumulator of unique asset paths discovered through the CSS graph.
+   */
   const collected: string[] = [];
-  /** Accumulator of references that could not be resolved to a file under root. */
+  /**
+   * Accumulator of references that could not be resolved to a file under root.
+   */
   const missing: string[] = [];
-  /** Local dedup view seeded from the caller's counted set; grows as new assets are discovered. */
+  /**
+   * Local dedup view seeded from the caller's counted set; grows as new assets are discovered.
+   */
   const counted = new Set<string>(seen,);
   /**
    * BFS frontier so chained `@import`s are followed before the function returns.
    */
   const queue: string[] = [startPath,];
-  /** Cycle guard so a CSS file reached twice is not re-parsed. */
+  /**
+   * Cycle guard so a CSS file reached twice is not re-parsed.
+   */
   const visited = new Set<string>();
 
   while (queue.length
     > 0) {
-    /** Next stylesheet to process; the while-condition guarantees a value. */
+    /**
+     * Next stylesheet to process; the while-condition guarantees a value.
+     */
     const cssPath = nonNullishOrThrow(queue.shift(),);
     if (visited.has(cssPath,))
       continue;
     visited.add(cssPath,);
 
-    /** CSS text, or `CSS_UNREADABLE` when the file cannot be read so dead links don't abort the walk. */
+    /**
+     * CSS text, or `CSS_UNREADABLE` when the file cannot be read so dead links don't abort the walk.
+     */
     // oxlint-disable-next-line eslint/no-await-in-loop -- BFS over a queue that grows as each iteration parses imports; each step depends on the previous shift and the shared `visited` set, so parallelisation would race on dedup state.
     const source = await readCssOrAbsent(cssPath,);
     if (source === CSS_UNREADABLE)
       continue;
 
     for (const ref of extractCssUrls(source,)) {
-      /** Absolute asset path, or `UNRESOLVABLE_REFERENCE` when the reference escapes the dist root. */
+      /**
+       * Absolute asset path, or `UNRESOLVABLE_REFERENCE` when the reference escapes the dist root.
+       */
       const resolved = resolveReference({
         root,
         fromFile: cssPath,
@@ -195,23 +217,35 @@ export async function weighPage(
     readonly root: string;
   },
 ): Promise<PageWeight> {
-  /** Accumulator for unresolvable references, surfaced on the returned record. */
+  /**
+   * Accumulator for unresolvable references, surfaced on the returned record.
+   */
   const missing: string[] = [];
-  /** Dedup set seeded with the HTML so it is not re-added via a self-reference. */
+  /**
+   * Dedup set seeded with the HTML so it is not re-added via a self-reference.
+   */
   const seen = new Set<string>([htmlPath,],);
-  /** Ordered list of unique asset paths, beginning with the HTML itself. */
+  /**
+   * Ordered list of unique asset paths, beginning with the HTML itself.
+   */
   const assets: string[] = [htmlPath,];
 
-  /** Raw HTML scanned for asset references. */
+  /**
+   * Raw HTML scanned for asset references.
+   */
   const htmlSource = await readText(htmlPath,);
-  /** Destructured pair so direct URLs and inline `<style>` blocks can be walked separately. */
+  /**
+   * Destructured pair so direct URLs and inline `<style>` blocks can be walked separately.
+   */
   const {
     urls,
     inlineStyles,
   } = extractHtmlRefs(htmlSource,);
 
   for (const ref of urls) {
-    /** Absolute path of the referenced asset, or `UNRESOLVABLE_REFERENCE` when it escapes the dist root. */
+    /**
+     * Absolute path of the referenced asset, or `UNRESOLVABLE_REFERENCE` when it escapes the dist root.
+     */
     const resolved = resolveReference({
       root,
       fromFile: htmlPath,
@@ -248,7 +282,9 @@ export async function weighPage(
 
   for (const inline of inlineStyles) {
     for (const ref of extractCssUrls(inline,)) {
-      /** Absolute asset path for an inline `<style>` reference, or `UNRESOLVABLE_REFERENCE` when it escapes the dist root. */
+      /**
+       * Absolute asset path for an inline `<style>` reference, or `UNRESOLVABLE_REFERENCE` when it escapes the dist root.
+       */
       const resolved = resolveReference({
         root,
         fromFile: htmlPath,
@@ -265,13 +301,17 @@ export async function weighPage(
     }
   }
 
-  /** Wire sizes per asset, computed in parallel; `WIRE_SIZE_UNAVAILABLE` slots are surfaced via `missing` below. */
+  /**
+   * Wire sizes per asset, computed in parallel; `WIRE_SIZE_UNAVAILABLE` slots are surfaced via `missing` below.
+   */
   const sizes = await Promise.all(
     assets.map(function measure(asset: string,): Promise<number | typeof WIRE_SIZE_UNAVAILABLE> {
       return wireSize(asset,);
     },),
   );
-  /** Sum of every successfully measured asset, with unmeasurable assets recorded into `missing`. */
+  /**
+   * Sum of every successfully measured asset, with unmeasurable assets recorded into `missing`.
+   */
   const totalBytes = sizes.reduce(
     function sumNonNull(
       acc: number,
@@ -287,7 +327,9 @@ export async function weighPage(
     0,
   );
 
-  /** Page path stripped of the dist root prefix so the report stays readable. */
+  /**
+   * Page path stripped of the dist root prefix so the report stays readable.
+   */
   const relativePage = htmlPath.startsWith(root,)
     ? htmlPath.slice(root.length
       + 1,)

@@ -24,35 +24,53 @@ import {
   rngPick,
 } from './rng.ts';
 
-/** Allowed repo-member roles. */
+/**
+ * Allowed repo-member roles.
+ */
 const ROLES: readonly string[] = [
   'reader',
   'member',
   'owner',
 ];
 
-/** Maximum milestones per repo (sampled per-repo). */
+/**
+ * Maximum milestones per repo (sampled per-repo).
+ */
 const MAX_MILESTONES_PER_REPO = 3;
 
-/** Maximum assignees per issue. */
+/**
+ * Maximum assignees per issue.
+ */
 const MAX_ASSIGNEES_PER_ISSUE = 3;
 
-/** Maximum members per repo (excluding owner). */
+/**
+ * Maximum members per repo (excluding owner).
+ */
 const MAX_MEMBERS_PER_REPO = 5;
 
-/** RNG offset to derive milestone seeds from a repo seed. */
+/**
+ * RNG offset to derive milestone seeds from a repo seed.
+ */
 const MILESTONE_SEED_OFFSET = 7_001;
 
-/** RNG offset to derive PR seeds from a repo seed. */
+/**
+ * RNG offset to derive PR seeds from a repo seed.
+ */
 const PR_SEED_OFFSET = 8_002;
 
-/** RNG offset to derive review seeds. */
+/**
+ * RNG offset to derive review seeds.
+ */
 const REVIEW_SEED_OFFSET = 9_003;
 
-/** RNG offset to derive assignee seeds. */
+/**
+ * RNG offset to derive assignee seeds.
+ */
 const ASSIGNEE_SEED_OFFSET = 10_004;
 
-/** RNG offset to derive member seeds. */
+/**
+ * RNG offset to derive member seeds.
+ */
 const MEMBER_SEED_OFFSET = 11_005;
 
 /**
@@ -93,14 +111,18 @@ export async function seedPhase2ForRepo(row: {
   baseTimestamp: number;
   issueIds: readonly string[];
 },): Promise<Phase2RepoSeedResult> {
-  /** Milestone count returned from the seeder; folded into the aggregate result. */
+  /**
+   * Milestone count returned from the seeder; folded into the aggregate result.
+   */
   const milestones = await seedMilestones({
     repoId: row.repoId,
     seed: row.seed
       + MILESTONE_SEED_OFFSET,
     baseTimestamp: row.baseTimestamp,
   },);
-  /** PR seeding result; its issue ids feed the subsequent reviews pass. */
+  /**
+   * PR seeding result; its issue ids feed the subsequent reviews pass.
+   */
   const prs = await seedPullRequestsForRepo({
     repoId: row.repoId,
     seed: row.seed
@@ -109,7 +131,9 @@ export async function seedPhase2ForRepo(row: {
     userCount: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
-  /** Review count returned from the seeder; folded into the aggregate result. */
+  /**
+   * Review count returned from the seeder; folded into the aggregate result.
+   */
   const reviews = await seedReviewsForPrs({
     prIssueIds: prs.issueIds,
     seed: row.seed
@@ -118,7 +142,9 @@ export async function seedPhase2ForRepo(row: {
     userCount: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
-  /** Issue-assignee count returned from the seeder; folded into the aggregate result. */
+  /**
+   * Issue-assignee count returned from the seeder; folded into the aggregate result.
+   */
   const assignees = await seedAssigneesForIssues({
     issueIds: row.issueIds,
     seed: row.seed
@@ -126,7 +152,9 @@ export async function seedPhase2ForRepo(row: {
     userBaseSeed: row.userBaseSeed,
     userCount: row.userCount,
   },);
-  /** Repo-member count returned from the seeder; folded into the aggregate result. */
+  /**
+   * Repo-member count returned from the seeder; folded into the aggregate result.
+   */
   const members = await seedRepoMembers({
     repoId: row.repoId,
     seed: row.seed
@@ -160,7 +188,9 @@ async function seedMilestones(row: {
   seed: number;
   baseTimestamp: number;
 },): Promise<number> {
-  /** Milestone count drawn from the seed; bounds the insertion loop. */
+  /**
+   * Milestone count drawn from the seed; bounds the insertion loop.
+   */
   const count = rngInt({
     seed: row.seed,
     lo: 0,
@@ -200,11 +230,15 @@ async function seedAssigneesForIssues(row: {
   userBaseSeed: number;
   userCount: number;
 },): Promise<number> {
-  /** Running assignment count returned to the caller after the per-issue loops finish. */
+  /**
+   * Running assignment count returned to the caller after the per-issue loops finish.
+   */
   let total = 0;
   for (const [index, issueId,] of row.issueIds
     .entries()) {
-    /** Per-issue assignment count drawn from the seed; bounds the inner loop. */
+    /**
+     * Per-issue assignment count drawn from the seed; bounds the inner loop.
+     */
     const count = rngInt({
       seed: row.seed
         + index,
@@ -212,7 +246,9 @@ async function seedAssigneesForIssues(row: {
       hi: MAX_ASSIGNEES_PER_ISSUE + 1,
     },);
     for (let a = 0; a < count; a += 1) {
-      /** Deterministic user-table index used to pick the assignee. */
+      /**
+       * Deterministic user-table index used to pick the assignee.
+       */
       const userIndex = rngInt({
         seed: row.seed
           + index
@@ -220,7 +256,9 @@ async function seedAssigneesForIssues(row: {
         lo: 0,
         hi: row.userCount,
       },);
-      /** Composed assignee id mapped through the user namespace offset. */
+      /**
+       * Composed assignee id mapped through the user namespace offset.
+       */
       const userId = deterministicId({
         prefix: 'user',
         index: row.userBaseSeed
@@ -255,27 +293,35 @@ async function seedRepoMembers(row: {
   userBaseSeed: number;
   userCount: number;
 },): Promise<number> {
-  /** Member count drawn from the seed; bounds the insertion loop. */
+  /**
+   * Member count drawn from the seed; bounds the insertion loop.
+   */
   const count = rngInt({
     seed: row.seed,
     lo: 0,
     hi: MAX_MEMBERS_PER_REPO + 1,
   },);
   for (let i = 0; i < count; i += 1) {
-    /** Deterministic user-table index used to pick the member. */
+    /**
+     * Deterministic user-table index used to pick the member.
+     */
     const userIndex = rngInt({
       seed: row.seed
         + i,
       lo: 0,
       hi: row.userCount,
     },);
-    /** Composed member id mapped through the user namespace offset. */
+    /**
+     * Composed member id mapped through the user namespace offset.
+     */
     const userId = deterministicId({
       prefix: 'user',
       index: row.userBaseSeed
         + userIndex,
     },);
-    /** Role string sampled from the allowed set, defaulted to reader when picking fails. */
+    /**
+     * Role string sampled from the allowed set, defaulted to reader when picking fails.
+     */
     const role = rngPick({
       seed: row.seed
         + i,

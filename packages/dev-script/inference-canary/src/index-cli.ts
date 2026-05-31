@@ -15,7 +15,9 @@ import { runSync, } from '@optique/run';
 
 //region Parser definition: defines all recognized CLI flags and their value parsers
 
-/** Optique object parser covering every supported CLI flag */
+/**
+ * Optique object parser covering every supported CLI flag
+ */
 const parser = object({
   model: optional(option(
     '--model',
@@ -38,7 +40,9 @@ const parser = object({
 
 //region Parsed arguments: module-level exports consumed by index.ts
 
-/** Parsed CLI arguments from process.argv */
+/**
+ * Parsed CLI arguments from process.argv
+ */
 const cliArgs = runSync(
   parser,
   {
@@ -90,12 +94,16 @@ function parseProbeNames(raw: string,): ReadonlySet<string> {
     },),);
 }
 
-/** Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium"); empty string when unset */
+/**
+ * Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium"); empty string when unset
+ */
 export const modelOverride: string = ((typeof cliArgs.model) === 'string')
   ? cliArgs.model
   : '';
 
-/** Consistency runs override from --runs flag, validated to be \>= 1 to prevent empty score arrays; 0 when unset */
+/**
+ * Consistency runs override from --runs flag, validated to be \>= 1 to prevent empty score arrays; 0 when unset
+ */
 export const runsOverride: number = ((typeof cliArgs.runs) === 'number')
   ? validatedRuns(cliArgs.runs,)
   : 0;
@@ -109,14 +117,20 @@ export const probeFilter: ReadonlySet<string> = ((typeof cliArgs.probe) === 'str
   ? parseProbeNames(cliArgs.probe,)
   : new Set<string>();
 
-/** Whether to run simple probes instead of code-gen */
+/**
+ * Whether to run simple probes instead of code-gen
+ */
 export const useSimple: boolean = cliArgs.simple;
 
-/** Whether to include slow probes */
+/**
+ * Whether to include slow probes
+ */
 export const includeSlow: boolean = cliArgs.slow;
 
 /* oxlint-disable eslint/prefer-destructuring -- exported const with explicit type annotation is incompatible with destructuring in TS */
-/** Retest all models even if they have recent (less than 24h) results */
+/**
+ * Retest all models even if they have recent (less than 24h) results
+ */
 export const retestAll: boolean = cliArgs.retestAll;
 /* oxlint-enable eslint/prefer-destructuring */
 

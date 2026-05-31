@@ -17,7 +17,9 @@ import {
 
 //region File-path predicate
 
-/** Recognised source-file extensions for the citation check. */
+/**
+ * Recognised source-file extensions for the citation check.
+ */
 const FILE_EXTENSIONS: readonly string[] = [
   'ts',
   'tsx',
@@ -72,7 +74,9 @@ function isPathChar(c: string,): boolean {
  * ```
  */
 function hasFilePathWithExtension(line: string,): boolean {
-  /** Lower-cased line used for case-insensitive extension matches. */
+  /**
+   * Lower-cased line used for case-insensitive extension matches.
+   */
   const lower = line.toLowerCase();
   /**
    * Checks whether `line` contains `.<ext>` matching the regex's
@@ -88,7 +92,9 @@ function hasFilePathWithExtension(line: string,): boolean {
    * ```
    */
   function checkExt(ext: string,): boolean {
-    /** Search token: leading dot plus the extension. */
+    /**
+     * Search token: leading dot plus the extension.
+     */
     const token = `.${ext}`;
     // Walk every `.<ext>` occurrence in order (monotonic `indexOf`). A valid
     // path context (path-char prefix, word boundary after the extension)
@@ -106,11 +112,15 @@ function hasFilePathWithExtension(line: string,): boolean {
     ) {
       if (idx === 0)
         continue;
-      /** Char immediately before the dot; must be a path char per the original regex. */
+      /**
+       * Char immediately before the dot; must be a path char per the original regex.
+       */
       const before = line.charAt(idx - 1,);
       if (!isPathChar(before,))
         continue;
-      /** Position one past the extension; checked below for a word boundary. */
+      /**
+       * Position one past the extension; checked below for a word boundary.
+       */
       const endIdx = idx + token
         .length;
       if ((endIdx < line
@@ -129,10 +139,14 @@ function hasFilePathWithExtension(line: string,): boolean {
 
 //region Line-number predicate
 
-/** Minimum number of digits accepted for the line-number suffix (matches `\d{1,5}`'s lower bound). */
+/**
+ * Minimum number of digits accepted for the line-number suffix (matches `\d{1,5}`'s lower bound).
+ */
 const LINE_NUMBER_MIN_DIGITS = 1;
 
-/** Maximum number of digits accepted for the line-number suffix (matches `\d{1,5}`'s upper bound). */
+/**
+ * Maximum number of digits accepted for the line-number suffix (matches `\d{1,5}`'s upper bound).
+ */
 const LINE_NUMBER_MAX_DIGITS = 5;
 
 /**
@@ -166,7 +180,9 @@ function hasLineNumberSuffix(line: string,): boolean {
    * ```
    */
   function countDigits(at: number,): number {
-    /** Running digit tally; returned as the helper-shape binding. */
+    /**
+     * Running digit tally; returned as the helper-shape binding.
+     */
     let count = 0;
     while (
       (count < LINE_NUMBER_MAX_DIGITS)
@@ -191,12 +207,16 @@ function hasLineNumberSuffix(line: string,): boolean {
       colonIdx + 1,
     )
   ) {
-    /** Number of digits found right after the colon. */
+    /**
+     * Number of digits found right after the colon.
+     */
     const digitCount = countDigits(colonIdx + 1,);
     if ((digitCount >= LINE_NUMBER_MIN_DIGITS)
       && (digitCount <= LINE_NUMBER_MAX_DIGITS))
     {
-      /** Position one past the digit run; checked for a word boundary below. */
+      /**
+       * Position one past the digit run; checked for a word boundary below.
+       */
       const afterIdx = colonIdx + 1
         + digitCount;
       if ((afterIdx >= line

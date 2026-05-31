@@ -77,9 +77,13 @@ function isCommandBoundary(c: string,): boolean {
  * ```
  */
 function invokesBunTest(command: string,): boolean {
-  /** Literal segment-leading word the matcher looks for. */
+  /**
+   * Literal segment-leading word the matcher looks for.
+   */
   const BUN = 'bun';
-  /** Literal subcommand the matcher looks for after `bun` + whitespace. */
+  /**
+   * Literal subcommand the matcher looks for after `bun` + whitespace.
+   */
   const TEST = 'test';
   /**
    * Advances past consecutive whitespace from `idx`.
@@ -94,7 +98,9 @@ function invokesBunTest(command: string,): boolean {
    * ```
    */
   function skipWhitespace(idx: number,): number {
-    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    /**
+     * Cursor advanced over the whitespace run; returned as the helper-shape binding.
+     */
     let at = idx;
     while ((at < command
       .length) && isWhitespace(command.charAt(at,),)) {
@@ -116,7 +122,9 @@ function invokesBunTest(command: string,): boolean {
    * ```
    */
   function matchesAt(pos: number,): boolean {
-    /** Position of the `bun` token candidate. */
+    /**
+     * Position of the `bun` token candidate.
+     */
     const bunStart = skipWhitespace(pos,);
     if (!command.startsWith(
       BUN,
@@ -124,13 +132,17 @@ function invokesBunTest(command: string,): boolean {
     )) {
       return false;
     }
-    /** Position immediately after the candidate `bun`. */
+    /**
+     * Position immediately after the candidate `bun`.
+     */
     const afterBun = bunStart + BUN
       .length;
     if ((afterBun >= command
       .length) || (!isWhitespace(command.charAt(afterBun,),)))
       return false;
-    /** Position of the `test` token candidate. */
+    /**
+     * Position of the `test` token candidate.
+     */
     const testStart = skipWhitespace(afterBun,);
     if (!command.startsWith(
       TEST,
@@ -138,7 +150,9 @@ function invokesBunTest(command: string,): boolean {
     )) {
       return false;
     }
-    /** Position immediately after the candidate `test`. */
+    /**
+     * Position immediately after the candidate `test`.
+     */
     const afterTest = testStart + TEST
       .length;
     return (afterTest >= command
@@ -216,7 +230,9 @@ type GuardrailOutput = PreToolUseOutput;
 function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutput {
   if (event.tool_name
     === 'Bash') {
-    /** Bash command string extracted defensively; `undefined` when the field is absent. */
+    /**
+     * Bash command string extracted defensively; `undefined` when the field is absent.
+     */
     const command = 'command' in event
       .tool_input
       ? event.tool_input
@@ -249,7 +265,9 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
     !== 'Agent')
     return {};
 
-  /** Agent's `subagent_type` field, fed to `isGeneralPurpose` to detect the banned default. */
+  /**
+   * Agent's `subagent_type` field, fed to `isGeneralPurpose` to detect the banned default.
+   */
   const subagentType = 'subagent_type' in event
     .tool_input
     ? event.tool_input
@@ -272,7 +290,9 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
     };
   }
 
-  /** Agent's `resume` field; presence triggers the no-polling deny path. */
+  /**
+   * Agent's `resume` field; presence triggers the no-polling deny path.
+   */
   const resume = 'resume' in event
     .tool_input
     ? event.tool_input

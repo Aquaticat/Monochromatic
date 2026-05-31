@@ -24,10 +24,14 @@ import {
  * replaces the previous content.
  */
 export class BinaryViewer extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Creates the shadow DOM and injects component styles. */
+  /**
+   * Creates the shadow DOM and injects component styles.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
@@ -123,16 +127,22 @@ export class BinaryViewer extends HTMLElement {
       .display = 'flex';
   }
 
-  /** Hides the viewer and removes displayed content. */
+  /**
+   * Hides the viewer and removes displayed content.
+   */
   hide(): void {
     this.#clear();
     this.style
       .display = 'none';
   }
 
-  /** Removes all content nodes from the shadow root, keeping the style element. */
+  /**
+   * Removes all content nodes from the shadow root, keeping the style element.
+   */
   #clear(): void {
-    /** Captured `<style>` node so it can be re-attached after `replaceChildren()` wipes the shadow root. */
+    /**
+     * Captured `<style>` node so it can be re-attached after `replaceChildren()` wipes the shadow root.
+     */
     const style = this.#shadow
       .querySelector<HTMLStyleElement>('style',);
     this.#shadow

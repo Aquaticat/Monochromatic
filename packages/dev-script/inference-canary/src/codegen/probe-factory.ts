@@ -55,7 +55,9 @@ export type { CodeGenProbeConfig, } from './probe-factory-types.ts';
  * ```
  */
 export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
-  /** Per-model caches shared between buildFixPrompt and score closures */
+  /**
+   * Per-model caches shared between buildFixPrompt and score closures
+   */
   const caches: ProbeFactoryCaches = {
     lint: new Map<string, LintResult>(),
     container: new Map<string, ContainerResult>(),
@@ -74,7 +76,9 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
     ),
   };
 
-  /** Spread-friendly slow property, omitted when config.slow is undefined */
+  /**
+   * Spread-friendly slow property, omitted when config.slow is undefined
+   */
   const slowProp = config.slow
     !== undefined ? { slow: config.slow, } : {};
 

@@ -21,7 +21,9 @@
  * ```
  */
 export function vendorColor(modelId: string,): string {
-  /** OpenRouter prefix segment used as the lookup key into the color table. */
+  /**
+   * OpenRouter prefix segment used as the lookup key into the color table.
+   */
   const vendor = modelId.includes('/',)
     ? modelId.slice(
       0,
@@ -32,7 +34,9 @@ export function vendorColor(modelId: string,): string {
     ?? FALLBACK_COLOR;
 }
 
-/** Fallback gray for unrecognized vendors */
+/**
+ * Fallback gray for unrecognized vendors
+ */
 const FALLBACK_COLOR = '#6B7280';
 
 /**

@@ -26,7 +26,9 @@ const NO_CONFIG_FILE: unique symbol = Symbol('advisor/no-config-file',);
 
 //region Defaults
 
-/** Default runtime config before user files are merged. */
+/**
+ * Default runtime config before user files are merged.
+ */
 export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
   enabled: true,
   timeoutMs: DEFAULT_TIMEOUT_MS,
@@ -38,11 +40,17 @@ export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
 
 //region Public API
 
-/** Options for loading Advisor config. */
+/**
+ * Options for loading Advisor config.
+ */
 export type LoadConfigOptions = {
-  /** Current working directory used for project config lookup. */
+  /**
+   * Current working directory used for project config lookup.
+   */
   readonly cwd: string;
-  /** Home directory override for tests. */
+  /**
+   * Home directory override for tests.
+   */
   readonly home?: string;
 };
 
@@ -63,19 +71,27 @@ export type LoadConfigOptions = {
 export function loadMergedConfig(
   options: LoadConfigOptions,
 ): AdvisorConfig {
-  /** Path metadata for both config scopes. */
+  /**
+   * Path metadata for both config scopes.
+   */
   const paths = getConfigPaths(options,);
-  /** Global config file contents, when present. */
+  /**
+   * Global config file contents, when present.
+   */
   const global = loadConfigFile({
     path: paths.globalPath,
     label: 'global',
   },);
-  /** Project config file contents, when present. */
+  /**
+   * Project config file contents, when present.
+   */
   const project = loadConfigFile({
     path: paths.projectPath,
     label: 'project',
   },);
-  /** Config values merged with project scalar overrides. */
+  /**
+   * Config values merged with project scalar overrides.
+   */
   const merged = mergeConfigFiles({
     defaults: DEFAULT_CONFIG,
     configs: [
@@ -113,7 +129,9 @@ export function getConfigPaths(
   readonly globalPath: string;
   readonly projectPath: string;
 } {
-  /** Home directory used by pi for global agent config. */
+  /**
+   * Home directory used by pi for global agent config.
+   */
   const home = options.home
     ?? process
     .env
@@ -165,7 +183,9 @@ function mergeConfigFiles(
     ) {
       if (config === NO_CONFIG_FILE)
         return accumulator;
-      /** Merged context cap, omitted when neither scope configures one. */
+      /**
+       * Merged context cap, omitted when neither scope configures one.
+       */
       const maxContextChars = config.maxContextChars
         ?? accumulator
         .maxContextChars;
@@ -211,7 +231,9 @@ function loadConfigFile(
     readonly label: string;
   },
 ): AdvisorConfigFile | typeof NO_CONFIG_FILE {
-  /** Raw JSON data, or `undefined` when file is absent. */
+  /**
+   * Raw JSON data, or `undefined` when file is absent.
+   */
   const raw = readJsonFile({
     path,
     label,
@@ -283,7 +305,9 @@ function parseConfigFile(
     readonly label: string;
   },
 ): AdvisorConfigFile {
-  /** Validation result from valibot. */
+  /**
+   * Validation result from valibot.
+   */
   const result = v.safeParse(
     AdvisorConfigFileSchema,
     raw,

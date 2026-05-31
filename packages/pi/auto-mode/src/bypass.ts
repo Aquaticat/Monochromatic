@@ -14,61 +14,101 @@ import type {
 
 //region Constants
 
-/** Discriminator for bypass toggle and bypass-allow session audit entries. */
+/**
+ * Discriminator for bypass toggle and bypass-allow session audit entries.
+ */
 const BYPASS_ENTRY_TYPE = 'auto-mode:bypass';
 
-/** Keyboard shortcut used by auto-mode to toggle bypass mode. */
+/**
+ * Keyboard shortcut used by auto-mode to toggle bypass mode.
+ */
 const BYPASS_SHORTCUT = 'shift+tab';
 
-/** Footer status key used for the bypass indicator. */
+/**
+ * Footer status key used for the bypass indicator.
+ */
 const BYPASS_STATUS_KEY = 'auto-mode:bypass';
 
-/** Footer status text displayed while bypass mode is active. */
+/**
+ * Footer status text displayed while bypass mode is active.
+ */
 const BYPASS_STATUS_TEXT = 'auto-mode: bypass';
 
-/** Session-entry kind for toggling bypass mode. */
+/**
+ * Session-entry kind for toggling bypass mode.
+ */
 const BYPASS_TOGGLE_KIND = 'toggle';
 
-/** Session-entry kind for tool calls allowed while bypass mode is active. */
+/**
+ * Session-entry kind for tool calls allowed while bypass mode is active.
+ */
 const BYPASS_ALLOW_KIND = 'allow';
 
-/** Source label for shortcut-driven bypass toggles. */
+/**
+ * Source label for shortcut-driven bypass toggles.
+ */
 const BYPASS_SOURCE_SHORTCUT = 'shortcut';
 
-/** Audit reason stored on tool calls allowed by bypass mode. */
+/**
+ * Audit reason stored on tool calls allowed by bypass mode.
+ */
 const BYPASS_ALLOW_REASON = 'auto-mode bypass enabled';
 
 //endregion Constants
 
 //region Types
 
-/** Minimal custom session entry shape needed for bypass state restoration. */
+/**
+ * Minimal custom session entry shape needed for bypass state restoration.
+ */
 type SessionCustomEntry = {
-  /** Session entry discriminator. */
+  /**
+   * Session entry discriminator.
+   */
   readonly type: string;
-  /** Custom entry type emitted through `pi.appendEntry`. */
+  /**
+   * Custom entry type emitted through `pi.appendEntry`.
+   */
   readonly customType?: unknown;
-  /** Custom entry payload. */
+  /**
+   * Custom entry payload.
+   */
   readonly data?: unknown;
 };
 
-/** Session payload recorded when bypass mode is toggled. */
+/**
+ * Session payload recorded when bypass mode is toggled.
+ */
 type BypassToggleData = {
-  /** Entry kind so future bypass audit payloads can share the same custom type. */
+  /**
+   * Entry kind so future bypass audit payloads can share the same custom type.
+   */
   readonly kind: typeof BYPASS_TOGGLE_KIND;
-  /** New bypass state after the toggle. */
+  /**
+   * New bypass state after the toggle.
+   */
   readonly enabled: boolean;
-  /** UI action that produced this toggle. */
+  /**
+   * UI action that produced this toggle.
+   */
   readonly source: typeof BYPASS_SOURCE_SHORTCUT;
 };
 
-/** Session payload recorded when a tool call is allowed under bypass mode. */
+/**
+ * Session payload recorded when a tool call is allowed under bypass mode.
+ */
 type BypassAllowData = {
-  /** Entry kind for per-tool bypass audit rows. */
+  /**
+   * Entry kind for per-tool bypass audit rows.
+   */
   readonly kind: typeof BYPASS_ALLOW_KIND;
-  /** Human-readable tool action that bypass mode allowed. */
+  /**
+   * Human-readable tool action that bypass mode allowed.
+   */
   readonly action: string;
-  /** Reason explaining why the guardrail did not evaluate the action. */
+  /**
+   * Reason explaining why the guardrail did not evaluate the action.
+   */
   readonly reason: typeof BYPASS_ALLOW_REASON;
 };
 
@@ -174,7 +214,9 @@ function findLatestBypassEnabled(
     readonly ctx: ExtensionContext;
   },
 ): boolean {
-  /** Session branch entries normalized to the custom-entry subset used by bypass restoration. */
+  /**
+   * Session branch entries normalized to the custom-entry subset used by bypass restoration.
+   */
   const branchEntries: SessionCustomEntry[] = ctx.sessionManager
     .getBranch()
     .map(
@@ -186,7 +228,9 @@ function findLatestBypassEnabled(
         };
       },
     );
-  /** Latest bypass-toggle entry on the active branch, if any. */
+  /**
+   * Latest bypass-toggle entry on the active branch, if any.
+   */
   const latestEntry = branchEntries
     .toReversed()
     .find(
@@ -196,7 +240,9 @@ function findLatestBypassEnabled(
     );
   if (latestEntry === undefined)
     return false;
-  /** Payload from the latest bypass-toggle entry. */
+  /**
+   * Payload from the latest bypass-toggle entry.
+   */
   const latestData = latestEntry.data;
   return latestData.enabled;
 }

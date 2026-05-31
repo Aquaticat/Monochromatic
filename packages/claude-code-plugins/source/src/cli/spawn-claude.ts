@@ -74,7 +74,9 @@ const parser = object({
   ),
 },);
 
-/** Parsed CLI arguments from the spawn-claude command invocation. */
+/**
+ * Parsed CLI arguments from the spawn-claude command invocation.
+ */
 const args = runSync(
   parser,
   {
@@ -85,7 +87,9 @@ const args = runSync(
   },
 );
 
-/** Resolved session identity of the calling Claude instance. */
+/**
+ * Resolved session identity of the calling Claude instance.
+ */
 const identity = findCallingSession();
 
 if (identity === SESSION_NOT_FOUND) {
@@ -95,14 +99,20 @@ if (identity === SESSION_NOT_FOUND) {
   process.exitCode = 1;
 }
 else {
-  /** Unique identifier for this spawn, used to coordinate state between parent and child. */
+  /**
+   * Unique identifier for this spawn, used to coordinate state between parent and child.
+   */
   const spawnId = randomUUID();
-  /** Working directory for the child session, defaulting to the current directory. */
+  /**
+   * Working directory for the child session, defaulting to the current directory.
+   */
   const cwd = args.cwd
     ?? process
     .cwd();
 
-  /** Extra args split on whitespace, filtering empty strings. */
+  /**
+   * Extra args split on whitespace, filtering empty strings.
+   */
   const extraArgs = splitWhitespace(args.extraArguments
     ?? '',);
 
@@ -135,7 +145,9 @@ else {
     JSON.stringify(initialState,),
   );
 
-  /** Detached child process running the spawned Claude session in a terminal window. */
+  /**
+   * Detached child process running the spawned Claude session in a terminal window.
+   */
   const proc = spawn(
     'terminal-exec',
     [

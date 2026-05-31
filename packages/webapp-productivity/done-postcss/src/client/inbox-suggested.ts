@@ -43,7 +43,9 @@ export function buildSuggestedSection(
     ) => HTMLUListElement;
   },
 ): HTMLElement {
-  /** Collapsible section heading for suggested tasks. */
+  /**
+   * Collapsible section heading for suggested tasks.
+   */
   const suggestedSection = h({
     tag: 'section-heading',
     attrs: {
@@ -52,7 +54,9 @@ export function buildSuggestedSection(
     },
   },);
 
-  /** Content container for the suggested tasks section. */
+  /**
+   * Content container for the suggested tasks section.
+   */
   const suggestedContent = h({
     tag: 'div',
     style: {

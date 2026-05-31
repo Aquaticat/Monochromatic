@@ -33,9 +33,13 @@ export async function requestFormat({
   readonly client: LspClient;
   readonly path: string;
 },): Promise<LspTextEdit[]> {
-  /** `file://` URI form required by LSP `textDocument` identifiers. */
+  /**
+   * `file://` URI form required by LSP `textDocument` identifiers.
+   */
   const uri = pathToUri({ path, },);
-  /** Raw LSP response; cast below because servers return `TextEdit[] | null`. */
+  /**
+   * Raw LSP response; cast below because servers return `TextEdit[] | null`.
+   */
   const result = await client.request({
     method: 'textDocument/formatting',
     params: {

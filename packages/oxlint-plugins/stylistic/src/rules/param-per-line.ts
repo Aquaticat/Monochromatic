@@ -15,9 +15,13 @@ import {
   rangeOf,
 } from '../utility/range.ts';
 
-/** Function-like node shape carrying parameters for this rule. */
+/**
+ * Function-like node shape carrying parameters for this rule.
+ */
 type FunctionParamListNode = Span & {
-  /** Function parameters in source order. */
+  /**
+   * Function parameters in source order.
+   */
   readonly params?: readonly Span[];
 };
 
@@ -79,9 +83,13 @@ export const paramPerLine: CreateOnceRule = {
      * @param node - function declaration or expression AST node
      */
     function checkFunction(node: Span,): void {
-      /** Narrowed function-like visitor node used for parameter access. */
+      /**
+       * Narrowed function-like visitor node used for parameter access.
+       */
       const fnNode = node as FunctionParamListNode;
-      /** Extract params from the function-like node. */
+      /**
+       * Extract params from the function-like node.
+       */
       const { params, } = fnNode;
       if ((params === undefined)
         || (params.length
@@ -90,27 +98,37 @@ export const paramPerLine: CreateOnceRule = {
         return;
       }
 
-      /** Source text is needed for boundary-paren lookup and the fixer call below. */
+      /**
+       * Source text is needed for boundary-paren lookup and the fixer call below.
+       */
       const sourceText = context.sourceCode
         .getText();
-      /** Range of the first param; used to find the `(` to its left. */
+      /**
+       * Range of the first param; used to find the `(` to its left.
+       */
       const firstRange = rangeOf(at({
         arr: params,
         index: 0,
       },),);
-      /** Range of the last param; used to find the `)` to its right. */
+      /**
+       * Range of the last param; used to find the `)` to its right.
+       */
       const lastRange = rangeOf(at({
         arr: params,
         index: params.length
           - 1,
       },),);
 
-      /** Find the `(` before the first param. */
+      /**
+       * Find the `(` before the first param.
+       */
       const openParen = sourceText.lastIndexOf(
         '(',
         firstRange[0],
       );
-      /** Find the `)` after the last param. */
+      /**
+       * Find the `)` after the last param.
+       */
       const closeParen = sourceText.indexOf(
         ')',
         lastRange[1],

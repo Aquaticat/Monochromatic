@@ -70,7 +70,9 @@ export const AGENT_TEMP_READ_DIR = '/tmp/agent';
 
 //region Privilege commands
 
-/** Commands that escalate privileges. */
+/**
+ * Commands that escalate privileges.
+ */
 export const PRIVILEGE_COMMANDS = new Set([
   'sudo',
   'su',
@@ -82,7 +84,9 @@ export const PRIVILEGE_COMMANDS = new Set([
 
 //region Mutating commands
 
-/** Commands that mutate the filesystem. */
+/**
+ * Commands that mutate the filesystem.
+ */
 export const MUTATING_COMMANDS = new Set([
   'rm',
   'chmod',
@@ -96,7 +100,9 @@ export const MUTATING_COMMANDS = new Set([
 
 //region Network commands
 
-/** Commands that make network connections. */
+/**
+ * Commands that make network connections.
+ */
 export const NETWORK_COMMANDS = new Set([
   'curl',
   'wget',
@@ -114,7 +120,9 @@ export const NETWORK_COMMANDS = new Set([
 
 //region Environment dump commands
 
-/** Commands that dump environment variables. */
+/**
+ * Commands that dump environment variables.
+ */
 export const ENV_DUMP_COMMANDS = new Set([
   'printenv',
   'env',
@@ -125,7 +133,9 @@ export const ENV_DUMP_COMMANDS = new Set([
 
 //region Interpreter commands
 
-/** Interpreter commands that can execute inline code. */
+/**
+ * Interpreter commands that can execute inline code.
+ */
 export const INTERPRETER_COMMANDS = new Set([
   'eval',
   'bash',
@@ -143,7 +153,9 @@ export const INTERPRETER_COMMANDS = new Set([
 
 //region Interpreter inline flags
 
-/** Flag arguments that cause interpreters to execute inline code. */
+/**
+ * Flag arguments that cause interpreters to execute inline code.
+ */
 export const INTERPRETER_INLINE_FLAGS: Record<string, string[]> = {
   eval: [],
   bash: [
@@ -180,7 +192,9 @@ export const INTERPRETER_INLINE_FLAGS: Record<string, string[]> = {
 
 //region Long flags mapping
 
-/** Mapping from short flag characters to their long flag names. */
+/**
+ * Mapping from short flag characters to their long flag names.
+ */
 export const LONG_FLAGS: Record<string, string> = {
   r: 'recursive',
   R: 'recursive',
@@ -193,10 +207,14 @@ export const LONG_FLAGS: Record<string, string> = {
 
 //region Content signal patterns
 
-/** Pattern matching private key PEM headers. */
+/**
+ * Pattern matching private key PEM headers.
+ */
 export const PRIVATE_KEY_PATTERN: RegExp = /-----BEGIN\s[\w\s]*PRIVATE\sKEY-----/u;
 
-/** Patterns matching known secret formats (tokens, keys). */
+/**
+ * Patterns matching known secret formats (tokens, keys).
+ */
 export const SECRET_FORMAT_PATTERNS: readonly RegExp[] = [
   /ghp_[A-Za-z0-9_]{36,}/u,
   /gho_[A-Za-z0-9_]{36,}/u,
@@ -214,7 +232,9 @@ export const SECRET_FORMAT_PATTERNS: readonly RegExp[] = [
 
 //region Text signal patterns
 
-/** Built-in text patterns that always trigger flagging. */
+/**
+ * Built-in text patterns that always trigger flagging.
+ */
 export const BUILTIN_TEXT_PATTERNS: readonly RegExp[] = [
   /\bsudo\b/u,
   /\bauto-mode\b/u,
@@ -238,7 +258,9 @@ export const SECRET_VAR_PATTERN: RegExp =
 
 //region Secret path pattern
 
-/** Pattern matching secret-related keywords in file paths. */
+/**
+ * Pattern matching secret-related keywords in file paths.
+ */
 export const SECRET_PATH_PATTERN: RegExp =
   /(?:^|[/\\._-])(?:secret|credential|password|passwd|token|private[._-]?key|\.env(?:\.|$)|\.dev\.vars(?:$|[/\\])|id_rsa|id_ed25519|id_ecdsa|authorized_keys|known_hosts)|\.(?:pem|key)$/iu;
 
@@ -248,7 +270,9 @@ export const SECRET_PATH_PATTERN: RegExp =
 
 //region Relevant tools
 
-/** Tools that could be used for circumvention after a denial. */
+/**
+ * Tools that could be used for circumvention after a denial.
+ */
 export const RELEVANT_TOOLS: readonly string[] = [
   'bash',
   'read',

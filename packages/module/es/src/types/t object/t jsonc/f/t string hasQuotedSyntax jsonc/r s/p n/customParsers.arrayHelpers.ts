@@ -69,9 +69,13 @@ export function expectArraySeparatorOrEnd(
   kind: 'next';
   tailStart: FragmentStringJsonc;
 } {
-  /** Leading comments/whitespace after previous element value. */
+  /**
+   * Leading comments/whitespace after previous element value.
+   */
   const after = startsWithComment({ value, },);
-  /** Tail trimmed to detect ',' or ']' token. */
+  /**
+   * Tail trimmed to detect ',' or ']' token.
+   */
   const rc = after.remainingContent
     .trimStart() as FragmentStringJsonc;
 
@@ -83,11 +87,17 @@ export function expectArraySeparatorOrEnd(
   }
 
   if (rc.startsWith(',',)) {
-    /** Tail after the element separator comma. */
+    /**
+     * Tail after the element separator comma.
+     */
     const afterComma = rc.slice(1,) as FragmentStringJsonc;
-    /** Comments/whitespace before the next potential element. */
+    /**
+     * Comments/whitespace before the next potential element.
+     */
     const next = startsWithComment({ value: afterComma, },);
-    /** Start of the next token inside the array. */
+    /**
+     * Start of the next token inside the array.
+     */
     const nextToken = next.remainingContent
       .trimStart() as FragmentStringJsonc;
     if (nextToken.startsWith(']',)) {
@@ -102,9 +112,13 @@ export function expectArraySeparatorOrEnd(
     };
   }
 
-  /** Maximum characters for error preview snippet */
+  /**
+   * Maximum characters for error preview snippet
+   */
   const ERROR_PREVIEW_LENGTH = 32;
-  /** Truncated snippet of the remaining content surfaced inside the error message. */
+  /**
+   * Truncated snippet of the remaining content surfaced inside the error message.
+   */
   const preview = rc.slice(
     0,
     ERROR_PREVIEW_LENGTH,

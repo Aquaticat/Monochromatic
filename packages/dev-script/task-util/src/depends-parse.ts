@@ -11,7 +11,9 @@ import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 
 //region Constants
 
-/** Prefix that identifies a shell command item */
+/**
+ * Prefix that identifies a shell command item
+ */
 export const SH_PREFIX = 'sh:';
 
 /**
@@ -105,13 +107,17 @@ export function parseTimestamp(value: string,): number | typeof UNPARSEABLE_TIME
   if (value === '-Infinity')
     return -Infinity;
 
-  /** Numeric coercion of the input; finite values are interpreted as a Unix timestamp before falling through to date parsing. */
+  /**
+   * Numeric coercion of the input; finite values are interpreted as a Unix timestamp before falling through to date parsing.
+   */
   const num = Number(value,);
   if ((!Number.isNaN(num,)) && Number
     .isFinite(num,))
     return (num >= SECONDS_MS_BOUNDARY) ? num : (num * MS_PER_SECOND);
 
-  /** Date coercion of the input; used as a fallback when the value is a date string rather than a numeric timestamp. */
+  /**
+   * Date coercion of the input; used as a fallback when the value is a date string rather than a numeric timestamp.
+   */
   const date = new Date(value,);
   if (!Number.isNaN(date.getTime(),))
     return date.getTime();

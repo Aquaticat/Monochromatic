@@ -7,15 +7,25 @@
  * cancel call in `disconnectedCallback`, and the two sides drifted apart.
  */
 
-/** rAF IDs tracked by an editor pane instance. */
+/**
+ * rAF IDs tracked by an editor pane instance.
+ */
 export type EditorPaneFrames = {
-  /** Pending syntax highlight rAF ID. */
+  /**
+   * Pending syntax highlight rAF ID.
+   */
   highlight: number;
-  /** Pending resize re-measurement rAF ID. */
+  /**
+   * Pending resize re-measurement rAF ID.
+   */
   resizeMeasure: number;
-  /** Pending diagnostic highlight rAF ID. */
+  /**
+   * Pending diagnostic highlight rAF ID.
+   */
   diagnosticHighlight: number;
-  /** Pending inlay annotation rAF ID. */
+  /**
+   * Pending inlay annotation rAF ID.
+   */
   inlayAnnotation: number;
 };
 

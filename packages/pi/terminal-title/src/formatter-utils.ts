@@ -9,7 +9,9 @@
 
 import { basename, } from 'node:path';
 
-/** Maximum length for pattern and query strings displayed in the title. */
+/**
+ * Maximum length for pattern and query strings displayed in the title.
+ */
 const MAX_PATTERN_LENGTH = 30;
 
 /**

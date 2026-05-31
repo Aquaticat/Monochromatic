@@ -64,11 +64,15 @@ export const noMixedOperators: CreateOnceRule = {
      * @param node - parent BinaryExpression or LogicalExpression
      */
     function check(node: Span,): void {
-      /** Source text is needed for `hasParens` to peek at bytes surrounding the operand spans. */
+      /**
+       * Source text is needed for `hasParens` to peek at bytes surrounding the operand spans.
+       */
       const sourceText = context.sourceCode
         .getText();
       /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint Span omits operator and operand fields exposed by these visitor nodes */
-      /** Parent expression narrowed to operator-bearing child fields. */
+      /**
+       * Parent expression narrowed to operator-bearing child fields.
+       */
       const parent = node as Span & {
         readonly operator?: string;
         readonly left: Span & { readonly operator?: string; };
@@ -92,7 +96,9 @@ export const noMixedOperators: CreateOnceRule = {
         },)) {
           continue;
         }
-        /** Alias so the fixer closure captures the loop value rather than `child` (which TypeScript widens across the for-of). */
+        /**
+         * Alias so the fixer closure captures the loop value rather than `child` (which TypeScript widens across the for-of).
+         */
         const offender = child;
         context.report({
           node,

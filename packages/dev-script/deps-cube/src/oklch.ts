@@ -23,14 +23,18 @@
 
 //region Types
 
-/** Three-component OKLCH colour. `L` ∈ [0, 1] is lightness, `C` ∈ [0, ~0.4] is chroma, `H` is hue in degrees (0, 360). */
+/**
+ * Three-component OKLCH colour. `L` ∈ [0, 1] is lightness, `C` ∈ [0, ~0.4] is chroma, `H` is hue in degrees (0, 360).
+ */
 export type Oklch = {
   readonly L: number;
   readonly C: number;
   readonly H: number;
 };
 
-/** Clamped 8-bit sRGB triple. */
+/**
+ * Clamped 8-bit sRGB triple.
+ */
 export type Rgb8 = readonly [
   number,
   number,
@@ -41,27 +45,43 @@ export type Rgb8 = readonly [
 
 //region Constants
 
-/** Degrees in a half-circle; the denominator of the radians conversion. */
+/**
+ * Degrees in a half-circle; the denominator of the radians conversion.
+ */
 const HALF_CIRCLE_DEGREES = 180;
-/** Degrees-to-radians factor; π/180. */
+/**
+ * Degrees-to-radians factor; π/180.
+ */
 const DEG_TO_RAD = Math.PI
   / HALF_CIRCLE_DEGREES;
-/** sRGB encoding piecewise boundary; values below take the linear segment. */
+/**
+ * sRGB encoding piecewise boundary; values below take the linear segment.
+ */
 const SRGB_LINEAR_THRESHOLD = 0.003_130_8;
-/** sRGB encoding linear-segment slope (standard). */
+/**
+ * sRGB encoding linear-segment slope (standard).
+ */
 const SRGB_LINEAR_SLOPE = 12.92;
-/** sRGB encoding gamma exponent (standard, ≈1/0.4167). */
+/**
+ * sRGB encoding gamma exponent (standard, ≈1/0.4167).
+ */
 const SRGB_GAMMA_EXPONENT = 2.4;
 /**
  * Reciprocal of {@link SRGB_GAMMA_EXPONENT}; used directly in the
  * exponentiation.
  */
 const SRGB_GAMMA_EXPONENT_RECIP = 1 / SRGB_GAMMA_EXPONENT;
-/** sRGB encoding offset constant (standard). */
+/**
+ * sRGB encoding offset constant (standard).
+ */
 const SRGB_GAMMA_OFFSET = 0.055;
-/** sRGB encoding gain constant (standard). */
+/**
+ * sRGB encoding gain constant (standard).
+ */
 const SRGB_GAMMA_GAIN = 1.055;
-/** RGB channel maximum used for clamping and scaling. */
+/**
+ * RGB channel maximum used for clamping and scaling.
+ */
 const RGB_MAX = 255;
 
 //endregion Constants
@@ -89,7 +109,9 @@ function linearToSrgb(x: number,): number {
  * @returns Integer in `[0, 255]`.
  */
 function to8Bit(x: number,): number {
-  /** Source value pinned to the valid `[0, 1]` range before scaling. */
+  /**
+   * Source value pinned to the valid `[0, 1]` range before scaling.
+   */
   const clamped = Math.min(
     1,
     Math.max(
@@ -122,59 +144,83 @@ function to8Bit(x: number,): number {
  * ```
  */
 export function oklchToSrgb(color: Oklch,): Rgb8 {
-  /** Polar OKLCH components broken out for the trig conversion to Cartesian OKLab. */
+  /**
+   * Polar OKLCH components broken out for the trig conversion to Cartesian OKLab.
+   */
   const {
     L,
     C,
     H,
   } = color;
-  /** OKLab `a` axis (green→red); the Cartesian projection of chroma at the hue angle. */
+  /**
+   * OKLab `a` axis (green→red); the Cartesian projection of chroma at the hue angle.
+   */
   const a = C * Math
     .cos(H * DEG_TO_RAD,);
-  /** OKLab `b` axis (blue→yellow); the Cartesian projection of chroma at the hue angle. */
+  /**
+   * OKLab `b` axis (blue→yellow); the Cartesian projection of chroma at the hue angle.
+   */
   const b = C * Math
     .sin(H * DEG_TO_RAD,);
 
   /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators -- Ottosson 2020 OKLab→linear-sRGB matrix coefficients; naming or regrouping each obscures the math. */
-  /** Ottosson stage 1: long-cone response in pre-cube-root form. */
+  /**
+   * Ottosson stage 1: long-cone response in pre-cube-root form.
+   */
   const lPrime = L + 0.3963377774
     * a
     + 0.2158037573
     * b;
-  /** Ottosson stage 1: medium-cone response in pre-cube-root form. */
+  /**
+   * Ottosson stage 1: medium-cone response in pre-cube-root form.
+   */
   const mPrime = L - 0.1055613458
     * a
     - 0.0638541728
     * b;
-  /** Ottosson stage 1: short-cone response in pre-cube-root form. */
+  /**
+   * Ottosson stage 1: short-cone response in pre-cube-root form.
+   */
   const sPrime = L - 0.0894841775
     * a
     - 1.291485548
     * b;
 
-  /** Ottosson stage 2: long-cone response cubed; undoes the OKLab cube-root step. */
+  /**
+   * Ottosson stage 2: long-cone response cubed; undoes the OKLab cube-root step.
+   */
   const lCubed = lPrime * lPrime
     * lPrime;
-  /** Ottosson stage 2: medium-cone response cubed. */
+  /**
+   * Ottosson stage 2: medium-cone response cubed.
+   */
   const mCubed = mPrime * mPrime
     * mPrime;
-  /** Ottosson stage 2: short-cone response cubed. */
+  /**
+   * Ottosson stage 2: short-cone response cubed.
+   */
   const sCubed = sPrime * sPrime
     * sPrime;
 
-  /** Ottosson stage 3: linear-sRGB red channel projected from cone responses. */
+  /**
+   * Ottosson stage 3: linear-sRGB red channel projected from cone responses.
+   */
   const rLin = 4.0767416621 * lCubed
     - 3.3077115913
     * mCubed
     + 0.2309699292
     * sCubed;
-  /** Ottosson stage 3: linear-sRGB green channel. */
+  /**
+   * Ottosson stage 3: linear-sRGB green channel.
+   */
   const gLin = -1.2684380046 * lCubed
     + 2.6097574011
     * mCubed
     - 0.3413193965
     * sCubed;
-  /** Ottosson stage 3: linear-sRGB blue channel. */
+  /**
+   * Ottosson stage 3: linear-sRGB blue channel.
+   */
   const bLin = -0.0041960863 * lCubed
     - 0.7034186147
     * mCubed

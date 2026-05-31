@@ -68,7 +68,9 @@ export type { ObjectsMergeRules, } from './rules.ts';
     return objs[0] as UnknownRecord;
   }
 
-  /** Union of every property name observed across the input objects; drives the per-property merge loop below. */
+  /**
+   * Union of every property name observed across the input objects; drives the per-property merge loop below.
+   */
   const allKeys = new Set<string>();
   for (const obj of objs) {
     for (const key of Object.keys(obj,))
@@ -122,7 +124,9 @@ function resolveProperty({
   objs: readonly UnknownRecord[];
   rules: Partial<ObjectsMergeRules> | undefined;
 },): unknown {
-  /** Values seen at `key` across every input object that defined the property; basis for consensus and conflict checks. */
+  /**
+   * Values seen at `key` across every input object that defined the property; basis for consensus and conflict checks.
+   */
   const allValuesForKey: unknown[] = objs
     .filter(function hasKey(obj,) {
       return key in obj;
@@ -140,7 +144,9 @@ function resolveProperty({
      * Discriminator used as the {@link valuesByType} key; intentionally `typeof` so the merge rules can target it by name.
      */
     const valueType = typeof value;
-    /** Existing bucket for this type, or undefined when this is the first value of that type. */
+    /**
+     * Existing bucket for this type, or undefined when this is the first value of that type.
+     */
     const existing = valuesByType.get(valueType,);
     if (existing !== undefined)
       existing.push(value,);
@@ -166,7 +172,9 @@ function resolveProperty({
    * Materialised entries of {@link valuesByType}; needed because Map iteration is consumed in a single pass.
    */
   const entries = [...valuesByType.entries(),];
-  /** Only entry in the map (the mixed-types guard above ruled out more than one), or undefined when no object defined the key. */
+  /**
+   * Only entry in the map (the mixed-types guard above ruled out more than one), or undefined when no object defined the key.
+   */
   const [firstEntry,] = entries;
   if (firstEntry === undefined)
     return undefined;

@@ -40,7 +40,9 @@ export type {
  * @returns array of 1 or 2 scores
  */
 function collectScores(result: ProbeResult,): number[] {
-  /** Scores contributed by this probe: mean of initial runs plus optional fix-pass score. */
+  /**
+   * Scores contributed by this probe: mean of initial runs plus optional fix-pass score.
+   */
   const scores = [
     result.meanScore,
   ];
@@ -59,7 +61,9 @@ function collectScores(result: ProbeResult,): number[] {
  * @returns mean score per category
  */
 function computeCategoryScores(results: readonly ProbeResult[],): Record<string, number> {
-  /** Distinct probe categories observed in the results; one map entry is emitted per category. */
+  /**
+   * Distinct probe categories observed in the results; one map entry is emitted per category.
+   */
   const categories = [...new Set(results.map(function getCategory(result,): string {
     return result.category;
   },),),];
@@ -68,7 +72,9 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
       string,
       number,
     ] {
-      /** Probe results scoped to one category; their scores are averaged for that bucket. */
+      /**
+       * Probe results scoped to one category; their scores are averaged for that bucket.
+       */
       const categoryResults = results.filter(function matchCategory(result,): boolean {
         return result.category
           === category;
@@ -95,9 +101,13 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
  * ```
  */
 type RunCanaryOptions = {
-  /** Canary probes to execute */
+  /**
+   * Canary probes to execute
+   */
   readonly probes: readonly Probe[];
-  /** Runner configuration overrides (merged with defaults) */
+  /**
+   * Runner configuration overrides (merged with defaults)
+   */
   readonly config?: RunnerConfigOverrides;
 };
 
@@ -127,15 +137,21 @@ export async function runCanary({
     ...defaultConfig,
     ...config,
   };
-  /** Model-specific logger for progress and result messages. */
+  /**
+   * Model-specific logger for progress and result messages.
+   */
   const rl = tagged({
     tag: mergedConfig.label,
     l,
   },);
-  /** Authoritative server timestamp; consumed for artifact directory naming so retries collide deterministically. */
+  /**
+   * Authoritative server timestamp; consumed for artifact directory naming so retries collide deterministically.
+   */
   const timestamp = await fetchServerTimestamp();
 
-  /** Probes left after filtering against the recent-artifact skip list. */
+  /**
+   * Probes left after filtering against the recent-artifact skip list.
+   */
   const probesToRun = probes.filter(
     function notSkipped(probe,): boolean {
       return mergedConfig.skipProbes
@@ -166,13 +182,17 @@ export async function runCanary({
      */
     const results = await Promise.all(
       probesToRun.map(async function runOne(probe,): Promise<ProbeResult> {
-        /** Completed probe result; the per-probe `info` log below summarises its mean. */
+        /**
+         * Completed probe result; the per-probe `info` log below summarises its mean.
+         */
         const result = await runProbe({
           probe,
           config: mergedConfig,
           timestamp,
         },);
-        /** Probe-specific logger for result summary. */
+        /**
+         * Probe-specific logger for result summary.
+         */
         const pl = tagged({
           tag: probe.name,
           l: rl,
@@ -188,7 +208,9 @@ export async function runCanary({
       },),
     );
 
-    /** Aggregate score across all probes (initial + fix scores treated equally). */
+    /**
+     * Aggregate score across all probes (initial + fix scores treated equally).
+     */
     const overallScore = mean(results.flatMap(function extractScores(result,): number[] {
       return collectScores(result,);
     },),);

@@ -42,7 +42,9 @@ import type { ChromeColors, } from './scripts/scheme.ts';
 
 //region Types
 
-/** Data shape for the TextLayer. */
+/**
+ * Data shape for the TextLayer.
+ */
 type TextDatum = {
   position: [
     number,
@@ -101,16 +103,22 @@ function getDatumText(d: TextDatum,): string {
 
 //region Constants
 
-/** Axis-tip capital-letter font size in pixels. Larger than subtitles for hierarchy. */
+/**
+ * Axis-tip capital-letter font size in pixels. Larger than subtitles for hierarchy.
+ */
 const TIP_LABEL_SIZE_PX = 24;
 /**
  * Axis dim-name subtitle font size in pixels. Smaller than iteration-1
  * (was 12) so the secondary text doesn't compete with the capitals.
  */
 const SUBTITLE_LABEL_SIZE_PX = 10;
-/** Origin marker font size in pixels. */
+/**
+ * Origin marker font size in pixels.
+ */
 const ORIGIN_LABEL_SIZE_PX = 18;
-/** Half-coefficient used for centring helpers. */
+/**
+ * Half-coefficient used for centring helpers.
+ */
 const HALF = 1 / 2;
 
 /**
@@ -157,17 +165,23 @@ function axisExtents(
   dy: number;
   dz: number;
 } {
-  /** X-axis min and max destructured from `bounds.x` for use in delta math. */
+  /**
+   * X-axis min and max destructured from `bounds.x` for use in delta math.
+   */
   const [
     xMin,
     xMax,
   ] = bounds.x;
-  /** Y-axis min and max destructured from `bounds.y` for use in delta math. */
+  /**
+   * Y-axis min and max destructured from `bounds.y` for use in delta math.
+   */
   const [
     yMin,
     yMax,
   ] = bounds.y;
-  /** Z-axis min and max destructured from `bounds.z` for use in delta math. */
+  /**
+   * Z-axis min and max destructured from `bounds.z` for use in delta math.
+   */
   const [
     zMin,
     zMax,
@@ -219,20 +233,30 @@ export function buildAxisCapitalsLayer(
     readonly chrome: ChromeColors;
   },
 ): Layer {
-  /** Per-axis min/max/delta extents shared across position computations. */
+  /**
+   * Per-axis min/max/delta extents shared across position computations.
+   */
   const g = axisExtents({
     bounds,
   },);
-  /** X-axis offset past the arrow tip so capital `X` clears the cone. */
+  /**
+   * X-axis offset past the arrow tip so capital `X` clears the cone.
+   */
   const offX = g.dx
     * TIP_LABEL_OFFSET_FRACTION;
-  /** Y-axis offset past the arrow tip so capital `Y` clears the cone. */
+  /**
+   * Y-axis offset past the arrow tip so capital `Y` clears the cone.
+   */
   const offY = g.dy
     * TIP_LABEL_OFFSET_FRACTION;
-  /** Z-axis offset past the arrow tip so capital `Z` clears the cone. */
+  /**
+   * Z-axis offset past the arrow tip so capital `Z` clears the cone.
+   */
   const offZ = g.dz
     * TIP_LABEL_OFFSET_FRACTION;
-  /** Three capital-letter labels, one per axis tip. */
+  /**
+   * Three capital-letter labels, one per axis tip.
+   */
   const data: TextDatum[] = [
     {
       position: [
@@ -312,17 +336,25 @@ export function buildAxisSubtitlesLayer(
     readonly chrome: ChromeColors;
   },
 ): Layer {
-  /** Per-axis min/max/delta extents shared across position computations. */
+  /**
+   * Per-axis min/max/delta extents shared across position computations.
+   */
   const g = axisExtents({
     bounds,
   },);
-  /** Perpendicular X offset that pushes subtitles outward from the data box. */
+  /**
+   * Perpendicular X offset that pushes subtitles outward from the data box.
+   */
   const offX = g.dx
     * SUBTITLE_OFFSET_FRACTION;
-  /** Perpendicular Y offset that pushes subtitles outward from the data box. */
+  /**
+   * Perpendicular Y offset that pushes subtitles outward from the data box.
+   */
   const offY = g.dy
     * SUBTITLE_OFFSET_FRACTION;
-  /** Three dim-name subtitle labels positioned at each axis midpoint. */
+  /**
+   * Three dim-name subtitle labels positioned at each axis midpoint.
+   */
   const data: TextDatum[] = [
     {
       position: [
@@ -404,20 +436,30 @@ export function buildOriginLabelLayer(
     readonly chrome: ChromeColors;
   },
 ): Layer {
-  /** Per-axis min/max/delta extents shared across position computations. */
+  /**
+   * Per-axis min/max/delta extents shared across position computations.
+   */
   const g = axisExtents({
     bounds,
   },);
-  /** X-axis offset that nudges `O` behind the min corner so it clears the shaft. */
+  /**
+   * X-axis offset that nudges `O` behind the min corner so it clears the shaft.
+   */
   const offX = g.dx
     * ORIGIN_OFFSET_FRACTION;
-  /** Y-axis offset that nudges `O` behind the min corner so it clears the shaft. */
+  /**
+   * Y-axis offset that nudges `O` behind the min corner so it clears the shaft.
+   */
   const offY = g.dy
     * ORIGIN_OFFSET_FRACTION;
-  /** Z-axis offset that nudges `O` behind the min corner so it clears the shaft. */
+  /**
+   * Z-axis offset that nudges `O` behind the min corner so it clears the shaft.
+   */
   const offZ = g.dz
     * ORIGIN_OFFSET_FRACTION;
-  /** Single-entry data array; only the origin marker is rendered by this layer. */
+  /**
+   * Single-entry data array; only the origin marker is rendered by this layer.
+   */
   const data: TextDatum[] = [
     {
       position: [

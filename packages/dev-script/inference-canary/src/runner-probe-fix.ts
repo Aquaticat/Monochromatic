@@ -42,19 +42,33 @@ import type { ChatClient, } from './runner-types.ts';
  * ```
  */
 type RunAndEnrichFixPassOptions = {
-  /** Canary probe that produced the first-pass response */
+  /**
+   * Canary probe that produced the first-pass response
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** OpenAI SDK client (reused from first pass; narrow readonly view) */
+  /**
+   * OpenAI SDK client (reused from first pass; narrow readonly view)
+   */
   readonly client: ChatClient;
-  /** Authoritative server timestamp for artifact naming */
+  /**
+   * Authoritative server timestamp for artifact naming
+   */
   readonly timestamp: string;
-  /** Abort signal for cancellation */
+  /**
+   * Abort signal for cancellation
+   */
   readonly signal: AbortSignal;
-  /** Raw text from the last consistency run */
+  /**
+   * Raw text from the last consistency run
+   */
   readonly lastCompletionText: string;
-  /** Mean score across consistency runs, used for delta logging */
+  /**
+   * Mean score across consistency runs, used for delta logging
+   */
   readonly meanScore: number;
 };
 
@@ -95,7 +109,9 @@ export async function runAndEnrichFixPass({
   lastCompletionText,
   meanScore,
 }: RunAndEnrichFixPassOptions,): Promise<number | typeof FIX_PASS_SKIPPED> {
-  /** Probe-specific logger for fix pass messages. */
+  /**
+   * Probe-specific logger for fix pass messages.
+   */
   const rl = tagged({
     tag: probe.name,
     l: tagged({
@@ -104,14 +120,18 @@ export async function runAndEnrichFixPass({
     },),
   },);
   try {
-    /** Context object handed to the second-pass scoring run; identifies pass kind and carries cancellation. */
+    /**
+     * Context object handed to the second-pass scoring run; identifies pass kind and carries cancellation.
+     */
     const fixContext: ScoreContext = {
       label: config.label,
       pass: 'fix',
       timestamp,
       signal,
     };
-    /** Result of the fix pass; null when the probe declined to run a second pass. */
+    /**
+     * Result of the fix pass; null when the probe declined to run a second pass.
+     */
     const pass2Result = await runSecondPass({
       probe,
       config,
@@ -123,10 +143,14 @@ export async function runAndEnrichFixPass({
     if (pass2Result === FIX_PASS_SKIPPED)
       return FIX_PASS_SKIPPED;
 
-    /** Score change between mean first-pass score and fix-pass score; positive means improvement. */
+    /**
+     * Score change between mean first-pass score and fix-pass score; positive means improvement.
+     */
     const delta = pass2Result.score
       - meanScore;
-    /** Signed delta string used for log output: `+0.20`, `-0.10`. */
+    /**
+     * Signed delta string used for log output: `+0.20`, `-0.10`.
+     */
     const deltaStr = delta >= 0 ? `+${delta.toFixed(2,)}` : delta.toFixed(2,);
     rl.info(
       `pass2: score=${
@@ -152,13 +176,17 @@ export async function runAndEnrichFixPass({
     return pass2Result.score;
   }
   catch (fixError) {
-    /** Human-readable error string for log output; unwraps Error to its message field. */
+    /**
+     * Human-readable error string for log output; unwraps Error to its message field.
+     */
     const errorMessage = fixError instanceof Error
       ? fixError.message
       : String(fixError,);
     rl.error(`pass2 failed: ${errorMessage}`,);
 
-    /** Partial response text recovered when the stream was aborted mid-completion. */
+    /**
+     * Partial response text recovered when the stream was aborted mid-completion.
+     */
     const partialFix = extractPartialCompletion(fixError,);
     if (partialFix !== NO_PARTIAL) {
       try {

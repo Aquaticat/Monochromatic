@@ -53,9 +53,13 @@ export async function requestInlayHints({
     };
   };
 },): Promise<LspInlayHint[]> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** LSP inlayHint returns InlayHint[] | null; null falls through to []. */
+  /**
+   * LSP inlayHint returns InlayHint[] | null; null falls through to [].
+   */
   const result = await client.request({
     method: 'textDocument/inlayHint',
     params: {
@@ -106,9 +110,13 @@ export async function requestSelectionRange({
     readonly character: number;
   }[];
 },): Promise<LspSelectionRange[]> {
-  /** LSP wire format expects a URI, not a filesystem path. */
+  /**
+   * LSP wire format expects a URI, not a filesystem path.
+   */
   const uri = pathToUri({ path, },);
-  /** LSP selectionRange returns SelectionRange[] | null; null falls through to []. */
+  /**
+   * LSP selectionRange returns SelectionRange[] | null; null falls through to [].
+   */
   const result = await client.request({
     method: 'textDocument/selectionRange',
     params: {

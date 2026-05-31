@@ -26,7 +26,9 @@ import {
 } from './args.ts';
 import { runMigrations, } from './db/migrations.ts';
 
-/** Default SQLite path when neither `--db=` nor `DB_PATH` env var is provided. */
+/**
+ * Default SQLite path when neither `--db=` nor `DB_PATH` env var is provided.
+ */
 const DEFAULT_DATABASE_PATH = './data/messages-demo.db';
 
 /**
@@ -57,12 +59,18 @@ function normalizeDatabasePath(value: string,): string {
  * @returns resolved filesystem path
  */
 function resolveDatabasePath(): string {
-  /** CLI override; preferred over the env var when both are set. */
+  /**
+   * CLI override; preferred over the env var when both are set.
+   */
   const argumentPath = getArgumentValue('db',);
-  /** Fallback environment value; used when the CLI did not supply one. */
+  /**
+   * Fallback environment value; used when the CLI did not supply one.
+   */
   const environmentPath = process.env
     .DB_PATH;
-  /** Resolved precedence: CLI \> env \> default. */
+  /**
+   * Resolved precedence: CLI \> env \> default.
+   */
   const rawPath = argumentPath !== ARG_ABSENT
     ? argumentPath
     : (environmentPath ?? DEFAULT_DATABASE_PATH);
@@ -84,11 +92,15 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   );
 }
 
-/** Resolved filesystem path for the SQLite database file. */
+/**
+ * Resolved filesystem path for the SQLite database file.
+ */
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
-/** Open Turso database connection used by every data-access module. */
+/**
+ * Open Turso database connection used by every data-access module.
+ */
 const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },
@@ -125,7 +137,9 @@ export async function run(
   changes: number;
   lastInsertRowid: number;
 }> {
-  /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
+  /**
+   * Prepared once for this call; not memoised because the SQL string is the caller's responsibility.
+   */
   const stmt = db.prepare(input.sql,);
   return await stmt.run(...(input.params
     ?? []),) as {
@@ -154,10 +168,14 @@ export async function get<T = Record<string, unknown>,>(
     readonly params?: readonly unknown[];
   },
 ): Promise<T | typeof NO_ROW> {
-  /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
+  /**
+   * Prepared once for this call; not memoised because the SQL string is the caller's responsibility.
+   */
   const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Turso returns any */
-  /** Raw row returned by Turso; widened to `unknown` here and asserted to `T` below. */
+  /**
+   * Raw row returned by Turso; widened to `unknown` here and asserted to `T` below.
+   */
   const value = await stmt.get(...(input.params
     ?? []),);
   return ((value === undefined) || (value === null)) ? NO_ROW : value as T;
@@ -182,7 +200,9 @@ export async function all<T = Record<string, unknown>,>(
     readonly params?: readonly unknown[];
   },
 ): Promise<T[]> {
-  /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
+  /**
+   * Prepared once for this call; not memoised because the SQL string is the caller's responsibility.
+   */
   const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed rows */
   return await stmt.all(...(input.params

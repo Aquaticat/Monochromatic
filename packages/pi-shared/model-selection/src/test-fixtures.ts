@@ -6,41 +6,69 @@
 
 import type { ReadonlyModel, } from './types.ts';
 
-/** Cheap input token price. */
+/**
+ * Cheap input token price.
+ */
 export const CHEAP_INPUT = 1;
 
-/** Cheap output token price. */
+/**
+ * Cheap output token price.
+ */
 export const CHEAP_OUTPUT = 2;
 
-/** Mid input token price. */
+/**
+ * Mid input token price.
+ */
 export const MID_INPUT = 3;
 
-/** Mid output token price. */
+/**
+ * Mid output token price.
+ */
 export const MID_OUTPUT = 4;
 
-/** Expensive input token price. */
+/**
+ * Expensive input token price.
+ */
 export const EXPENSIVE_INPUT = 5;
 
-/** Expensive output token price. */
+/**
+ * Expensive output token price.
+ */
 export const EXPENSIVE_OUTPUT = 8;
 
-/** Fixture context window. */
+/**
+ * Fixture context window.
+ */
 const CONTEXT_WINDOW = 128_000;
 
-/** Fixture maximum output tokens. */
+/**
+ * Fixture maximum output tokens.
+ */
 const MAX_TOKENS = 4_096;
 
-/** Options for building fixture models. */
+/**
+ * Options for building fixture models.
+ */
 export type FixtureModelOptions = {
-  /** Provider slug. */
+  /**
+   * Provider slug.
+   */
   readonly provider: string;
-  /** Model id. */
+  /**
+   * Model id.
+   */
   readonly id: string;
-  /** Display name. */
+  /**
+   * Display name.
+   */
   readonly name?: string;
-  /** Input-token price. */
+  /**
+   * Input-token price.
+   */
   readonly inputCost?: number;
-  /** Output-token price. */
+  /**
+   * Output-token price.
+   */
   readonly outputCost?: number;
 };
 

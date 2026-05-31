@@ -37,7 +37,9 @@ export function withEditOn(
     readonly delta: Edit;
   },
 ): TomlEditState {
-  /** Flattened tuples so `Map` can rebuild without mutating the previous instance. */
+  /**
+   * Flattened tuples so `Map` can rebuild without mutating the previous instance.
+   */
   const entries: [
     AST.TOMLNode,
     Edit,

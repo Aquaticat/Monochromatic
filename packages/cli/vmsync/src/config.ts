@@ -27,7 +27,9 @@ import {
 
 //region Data directories
 
-/** Root data directory for all vmsync-managed VMs. */
+/**
+ * Root data directory for all vmsync-managed VMs.
+ */
 export const DATA_DIR: string = join(
   homedir(),
   '.local',
@@ -185,23 +187,33 @@ export function validateName(name: string,): void {
  * ```
  */
 export function stripJsoncComments(text: string,): string {
-  /** Result accumulator built character-by-character. */
+  /**
+   * Result accumulator built character-by-character.
+   */
   const result: string[] = [];
-  /** Current position in the source text. */
+  /**
+   * Current position in the source text.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser cursor advances by 1 or 2 depending on which side-effecting branch fires
   let i = 0;
-  /** Whether we are currently inside a double-quoted string. */
+  /**
+   * Whether we are currently inside a double-quoted string.
+   */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- string-mode flag toggled across multiple branches of the parser state machine
   let inString = false;
 
   while (i < text
     .length) {
-    /** Character at the current position. */
+    /**
+     * Character at the current position.
+     */
     const ch = nonNullishOrThrow(text[i],);
 
     if (inString) {
       if (ch === '\\') {
-        /** Escaped character pair. */
+        /**
+         * Escaped character pair.
+         */
         const next = nonNullishOrThrow(text[i + 1],);
         result.push(
           ch,
@@ -267,17 +279,23 @@ export function stripJsoncComments(text: string,): string {
  * ```
  */
 export async function readConfig(name: string,): Promise<VmsyncConfig> {
-  /** Tagged logger so read-config entries are scoped to `readConfig` in the output. */
+  /**
+   * Tagged logger so read-config entries are scoped to `readConfig` in the output.
+   */
   const rl = tagged({
     tag: readConfig.name,
     l,
   },);
-  /** Raw JSONC content from disk. */
+  /**
+   * Raw JSONC content from disk.
+   */
   const raw = await readFile(
     vmConfigPath(name,),
     'utf8',
   );
-  /** Parsed configuration object. */
+  /**
+   * Parsed configuration object.
+   */
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- trusted JSONC config we wrote
   const config = JSON.parse(stripJsoncComments(raw,),) as VmsyncConfig;
   rl.info(`loaded config for "${name}"`,);
@@ -308,18 +326,24 @@ export async function writeConfig(
     };
   },
 ): Promise<void> {
-  /** Tagged logger so write-config entries are scoped to `writeConfig` in the output. */
+  /**
+   * Tagged logger so write-config entries are scoped to `writeConfig` in the output.
+   */
   const rl = tagged({
     tag: writeConfig.name,
     l,
   },);
-  /** Target directory for this VM. */
+  /**
+   * Target directory for this VM.
+   */
   const dir = vmDir(name,);
   await mkdir(
     dir,
     { recursive: true, },
   );
-  /** Formatted JSON with 2-space indent. */
+  /**
+   * Formatted JSON with 2-space indent.
+   */
   const serialized = JSON.stringify(
     config,
     undefined,
@@ -366,10 +390,14 @@ export function detectHypervisor(): Hypervisor {
 
 //region Default boot config
 
-/** Default memory allocation for new VMs. */
+/**
+ * Default memory allocation for new VMs.
+ */
 export const DEFAULT_MEMORY = '4G';
 
-/** Default number of virtual CPUs for new VMs. */
+/**
+ * Default number of virtual CPUs for new VMs.
+ */
 export const DEFAULT_CPUS = 4;
 
 //endregion Default boot config

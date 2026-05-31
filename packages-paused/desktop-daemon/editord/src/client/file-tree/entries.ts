@@ -52,7 +52,9 @@ export function childPath(
 export function buildRecencyIndex(
   { recentPaths, }: { readonly recentPaths: readonly string[]; },
 ): Map<string, number> {
-  /** Position-keyed map; lower index means more recent. */
+  /**
+   * Position-keyed map; lower index means more recent.
+   */
   const index = new Map<string, number>();
   recentPaths.forEach(function indexRecent(
     path,
@@ -66,7 +68,9 @@ export function buildRecencyIndex(
   return index;
 }
 
-/** Maximum number of directory listings to keep in the prefetch cache. */
+/**
+ * Maximum number of directory listings to keep in the prefetch cache.
+ */
 const MAX_PREFETCH_CACHE_SIZE = 200;
 
 /**
@@ -175,7 +179,9 @@ export async function preloadChildren({
         return !isTransientDirName({ name: entry.name, },);
       },)
       .map(async function prefetchDir(entry,) {
-        /** Joined parent + entry name; cache key for the prefetched listing. */
+        /**
+         * Joined parent + entry name; cache key for the prefetched listing.
+         */
         const fullPath = childPath({
           parentPath,
           name: entry.name,

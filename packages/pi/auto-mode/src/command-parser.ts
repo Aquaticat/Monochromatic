@@ -24,7 +24,9 @@ import type {
   CommandInfo,
 } from './types.ts';
 
-/** `findIndex` result when no command word follows leading assignments. */
+/**
+ * `findIndex` result when no command word follows leading assignments.
+ */
 const NO_COMMAND_WORD_INDEX = -1;
 
 //region Public API
@@ -48,7 +50,9 @@ const NO_COMMAND_WORD_INDEX = -1;
 function analyzeBashCommand(
   cmd: string,
 ): BashAnalysis {
-  /** Fallback result spread into the early-return when `shell-quote` throws on malformed input. */
+  /**
+   * Fallback result spread into the early-return when `shell-quote` throws on malformed input.
+   */
   const empty: BashAnalysis = {
     parsed: false,
     commands: [],
@@ -57,10 +61,14 @@ function analyzeBashCommand(
     allParamRefs: [],
   };
 
-  /** Param references harvested via regex before parsing so the catch-branch still surfaces them. */
+  /**
+   * Param references harvested via regex before parsing so the catch-branch still surfaces them.
+   */
   const preScanRefs = extractParamRefs(cmd,);
 
-  /** Tokens emitted by `shell-quote` for the command; `ok` is false when the parse threw. */
+  /**
+   * Tokens emitted by `shell-quote` for the command; `ok` is false when the parse threw.
+   */
   const parsed = tryParseEntries(cmd,);
   if (!parsed.ok) {
     return {
@@ -68,25 +76,41 @@ function analyzeBashCommand(
       allParamRefs: preScanRefs,
     };
   }
-  /** Successfully-parsed token stream from `shell-quote`, walked below. */
+  /**
+   * Successfully-parsed token stream from `shell-quote`, walked below.
+   */
   const { entries, } = parsed;
 
-  /** Accumulator for parsed `CommandInfo` entries; one push per `|`, `&&`, `||`, `;`, `&`, or `;;` boundary. */
+  /**
+   * Accumulator for parsed `CommandInfo` entries; one push per `|`, `&&`, `||`, `;`, `&`, or `;;` boundary.
+   */
   const commands: CommandInfo[] = [];
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- sequential parser state mutated across loop iterations (isPipeline latch, current-command accumulators, redirect-target latch) */
-  /** True once a `|` operator has been seen anywhere in the command; surfaced verbatim on the return. */
+  /**
+   * True once a `|` operator has been seen anywhere in the command; surfaced verbatim on the return.
+   */
   let isPipeline = false;
-  /** Word tokens belonging to the command currently being assembled; reset at every command boundary. */
+  /**
+   * Word tokens belonging to the command currently being assembled; reset at every command boundary.
+   */
   let currentArgs: string[] = [];
-  /** Paths recorded after `>`, `>>`, `<`, `>&`, or `|&` for the current command; reset at every boundary. */
+  /**
+   * Paths recorded after `>`, `>>`, `<`, `>&`, or `|&` for the current command; reset at every boundary.
+   */
   let currentRedirectTargets: string[] = [];
-  /** True for one tick after a redirect operator so the very next string token is captured as the target path. */
+  /**
+   * True for one tick after a redirect operator so the very next string token is captured as the target path.
+   */
   let nextIsRedirectTarget = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
-  /** Flush the current-command accumulators into `commands`; no-op when nothing is pending. */
+  /**
+   * Flush the current-command accumulators into `commands`; no-op when nothing is pending.
+   */
   function flushInto(): void {
-    /** Discriminated flush result for the tokens accumulated since the last boundary. */
+    /**
+     * Discriminated flush result for the tokens accumulated since the last boundary.
+     */
     const result = flushCurrentCommand({
       args: currentArgs,
       redirectTargets: currentRedirectTargets,
@@ -109,7 +133,9 @@ function analyzeBashCommand(
 
     if (!('op' in entry))
       continue;
-    /** Operator string from the non-word `shell-quote` entry; dispatched on by the branches below. */
+    /**
+     * Operator string from the non-word `shell-quote` entry; dispatched on by the branches below.
+     */
     const { op, } = entry;
 
     if (
@@ -168,7 +194,9 @@ function analyzeBashCommand(
 
   flushInto();
 
-  /** Union of every path-shaped argument and every redirect target across all commands, in source order. */
+  /**
+   * Union of every path-shaped argument and every redirect target across all commands, in source order.
+   */
   const allFiles = commands.flatMap(
     function collectFiles(c,) {
       return [
@@ -193,7 +221,9 @@ function analyzeBashCommand(
       ];
     },
   );
-  /** Deduplicated param references aggregated across all commands; falls back to the pre-scan set below. */
+  /**
+   * Deduplicated param references aggregated across all commands; falls back to the pre-scan set below.
+   */
   const allParamRefs = [...new Set(
     commands.flatMap(
       function collectRefs(c,) {
@@ -257,9 +287,13 @@ function flushCurrentCommand(
       === 0))
     return { flushed: false, };
 
-  /** Environment-assignment prefixes and remaining command words. */
+  /**
+   * Environment-assignment prefixes and remaining command words.
+   */
   const split = splitLeadingAssignments(args,);
-  /** Command name (first non-assignment word, empty string on assignment-only or redirect-only commands) plus remaining word arguments. */
+  /**
+   * Command name (first non-assignment word, empty string on assignment-only or redirect-only commands) plus remaining word arguments.
+   */
   const [name = '', ...cmdArgs] = split.commandWords;
 
   return {
@@ -293,23 +327,31 @@ function splitLeadingAssignments(
   readonly envAssignments: readonly CommandInfo['envAssignments'][number][];
   readonly commandWords: readonly string[];
 } {
-  /** First word that is not a shell environment assignment. */
+  /**
+   * First word that is not a shell environment assignment.
+   */
   const commandIndex = args.findIndex(
     function isCommandWord(word,) {
       return parseShellAssignmentWord(word,)
         === NO_SHELL_ASSIGNMENT;
     },
   );
-  /** Whether every word in segment is an assignment prefix. */
+  /**
+   * Whether every word in segment is an assignment prefix.
+   */
   const hasOnlyAssignments = commandIndex === NO_COMMAND_WORD_INDEX;
-  /** Words before command name; each must parse as assignment. */
+  /**
+   * Words before command name; each must parse as assignment.
+   */
   const assignmentWords = hasOnlyAssignments
     ? args
     : args.slice(
       0,
       commandIndex,
     );
-  /** Remaining words after environment assignments. */
+  /**
+   * Remaining words after environment assignments.
+   */
   const commandWords = hasOnlyAssignments
     ? []
     : args.slice(commandIndex,);
@@ -317,7 +359,9 @@ function splitLeadingAssignments(
   return {
     envAssignments: assignmentWords.map(
       function parseAssignmentWord(word,) {
-        /** Parsed assignment; sentinel would contradict commandIndex split above. */
+        /**
+         * Parsed assignment; sentinel would contradict commandIndex split above.
+         */
         const assignment = parseShellAssignmentWord(word,);
         if (assignment === NO_SHELL_ASSIGNMENT)
           throw new Error(`Expected shell assignment word: ${word}`);

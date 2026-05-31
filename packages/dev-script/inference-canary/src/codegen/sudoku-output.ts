@@ -69,11 +69,17 @@ function isDashLine(line: string,): boolean {
  * ```
  */
 export function splitOnDashLines(s: string,): string[] {
-  /** Lines after a primary newline split; separator lines are detected by `isDashLine`. */
+  /**
+   * Lines after a primary newline split; separator lines are detected by `isDashLine`.
+   */
   const lines = s.split('\n',);
-  /** Completed sections in order; a separator (and the final line) always flushes one, even when empty, so consecutive and edge separators yield empty sections. */
+  /**
+   * Completed sections in order; a separator (and the final line) always flushes one, even when empty, so consecutive and edge separators yield empty sections.
+   */
   const sections: string[] = [];
-  /** Lines since the last separator; flushed into `sections` and cleared on each separator so the accumulator is never copied (O(n) total). */
+  /**
+   * Lines since the last separator; flushed into `sections` and cleared on each separator so the accumulator is never copied (O(n) total).
+   */
   const current: string[] = [];
 
   for (const line of lines) {

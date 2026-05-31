@@ -53,7 +53,9 @@ export {};
 
 //region Parser definition: defines CLI flags and rest arguments after --
 
-/** Optique parser for the task-command CLI */
+/**
+ * Optique parser for the task-command CLI
+ */
 const parser = object({
   allowFailure: option(
     '-a',
@@ -75,7 +77,9 @@ const parser = object({
 
 //endregion Parser definition
 
-/** Parsed CLI arguments from process.argv */
+/**
+ * Parsed CLI arguments from process.argv
+ */
 const args = runSync(
   parser,
   {
@@ -84,7 +88,9 @@ const args = runSync(
   },
 );
 
-/** Destructured command and its arguments from the rest args after `--` */
+/**
+ * Destructured command and its arguments from the rest args after `--`
+ */
 const [command, ...commandArgs] = args.rest;
 
 if ((command === undefined) || (command === '')) {

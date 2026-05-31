@@ -10,7 +10,9 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { STYLES, } from './hover-popup.styles.ts';
 
-/** Vertical offset from the cursor in pixels to avoid covering the text. */
+/**
+ * Vertical offset from the cursor in pixels to avoid covering the text.
+ */
 const VERTICAL_OFFSET = 8;
 
 /**
@@ -20,19 +22,27 @@ const VERTICAL_OFFSET = 8;
  * at a specified screen position. Controlled via `show()` and `hide()`.
  */
 export class HoverPopup extends HTMLElement {
-  /** Shadow root for encapsulated rendering. */
+  /**
+   * Shadow root for encapsulated rendering.
+   */
   readonly #shadow: ShadowRoot;
 
-  /** Content container for the hover text. */
+  /**
+   * Content container for the hover text.
+   */
   #content: HTMLDivElement | null = null;
 
-  /** Initializes the shadow root. */
+  /**
+   * Initializes the shadow root.
+   */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the hover container and sets up popover behavior. */
+  /**
+   * Renders the hover container and sets up popover behavior.
+   */
   connectedCallback(): void {
     this.#content = h({
       tag: 'div',
@@ -90,7 +100,9 @@ export class HoverPopup extends HTMLElement {
       this.showPopover();
   }
 
-  /** Hides the hover popup. */
+  /**
+   * Hides the hover popup.
+   */
   hide(): void {
     if (this.matches(':popover-open',))
       this.hidePopover();

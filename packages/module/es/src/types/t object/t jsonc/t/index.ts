@@ -1,15 +1,21 @@
 import type { JsonValue, } from 'type-fest';
 
-/** Branded string type for JSONC fragments (partial JSONC content). */
+/**
+ * Branded string type for JSONC fragments (partial JSONC content).
+ */
 export type FragmentStringJsonc = string & { __brand: { jsonc: 'fragment'; }; };
 
 /**
  * Comment attached to a JSONC value
  */
 export type Comment = {
-  /** Type of comment */
+  /**
+   * Type of comment
+   */
   type: 'inline' | 'block' | 'mixed';
-  /** Untrimmed comment content without delimiters */
+  /**
+   * Untrimmed comment content without delimiters
+   */
   commentValue: string;
 };
 
@@ -17,7 +23,9 @@ export type Comment = {
  * Base structure for all parsed JSONC values
  */
 export type ValueBase = {
-  /** Optional comment attached to this value */
+  /**
+   * Optional comment attached to this value
+   */
   comment?: Comment;
 };
 
@@ -66,7 +74,9 @@ export type RecordKey = StringBase & ValueBase;
  */
 export type RecordBase = { value: Map<RecordKey, Value>; };
 
-/** Wrapper for plain JSON values that passed through without JSONC-specific parsing. */
+/**
+ * Wrapper for plain JSON values that passed through without JSONC-specific parsing.
+ */
 export type PlainJsonBase = {
   json: JsonValue;
 };
@@ -86,20 +96,36 @@ export type Value =
   )
   & ValueBase;
 
-/** Union of all parsed JSONC value types. */
+/**
+ * Union of all parsed JSONC value types.
+ */
 export type $ = Value;
 
-/** Narrowed JSONC string node. */
+/**
+ * Narrowed JSONC string node.
+ */
 export type String = StringBase & ValueBase;
-/** Narrowed JSONC number node. */
+/**
+ * Narrowed JSONC number node.
+ */
 export type Number = NumberBase & ValueBase;
-/** Narrowed JSONC boolean node. */
+/**
+ * Narrowed JSONC boolean node.
+ */
 export type Boolean = BooleanBase & ValueBase;
-/** Narrowed JSONC null node. */
+/**
+ * Narrowed JSONC null node.
+ */
 export type Null = NullBase & ValueBase;
-/** Narrowed JSONC array node. */
+/**
+ * Narrowed JSONC array node.
+ */
 export type Array = ArrayBase & ValueBase;
-/** Narrowed JSONC record (object) node. */
+/**
+ * Narrowed JSONC record (object) node.
+ */
 export type Record = RecordBase & ValueBase;
-/** Narrowed JSONC plain JSON node. */
+/**
+ * Narrowed JSONC plain JSON node.
+ */
 export type PlainJson = PlainJsonBase & ValueBase;

@@ -7,9 +7,13 @@ import {
 
 //region Linked worktree diagnostics
 
-/** Options for message construction for rejected guarded invocations. */
+/**
+ * Options for message construction for rejected guarded invocations.
+ */
 type CommandMessageOptions = {
-  /** Guarded git subcommand. */
+  /**
+   * Guarded git subcommand.
+   */
   readonly command: GuardedCommand;
 };
 

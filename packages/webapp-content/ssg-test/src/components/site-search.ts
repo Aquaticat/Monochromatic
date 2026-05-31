@@ -35,13 +35,19 @@ import {
 
 //region Constants
 
-/** Collapsed search input size in rem (matches touch target). */
+/**
+ * Collapsed search input size in rem (matches touch target).
+ */
 const SEARCH_COLLAPSED = TOUCH_TARGET;
 
-/** Expanded search input width in rem. */
+/**
+ * Expanded search input width in rem.
+ */
 const SEARCH_EXPANDED = 16;
 
-/** Transition duration for the search input expand/collapse. */
+/**
+ * Transition duration for the search input expand/collapse.
+ */
 const SEARCH_TRANSITION = cssS(1 / 2
   / 2,);
 

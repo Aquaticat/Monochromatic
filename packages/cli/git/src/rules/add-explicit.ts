@@ -10,7 +10,9 @@ import {
 
 //region Add-explicit rule
 
-/** Wrapper-only flag that suppresses bulk-add enforcement for one invocation. */
+/**
+ * Wrapper-only flag that suppresses bulk-add enforcement for one invocation.
+ */
 const ESCAPE_HATCH = ADD_ESCAPE_HATCH;
 
 /**
@@ -50,27 +52,37 @@ const ESCAPE_HATCH = ADD_ESCAPE_HATCH;
  * ```
  */
 export function addExplicit(args: readonly string[],): readonly string[] {
-  /** Position of the `add` (or other) subcommand within args. */
+  /**
+   * Position of the `add` (or other) subcommand within args.
+   */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
   if (args[subcommandIndex]
     !== 'add')
     return args;
 
-  /** Tagged logger for the add-explicit rule. */
+  /**
+   * Tagged logger for the add-explicit rule.
+   */
   const rl = tagged({
     tag: addExplicit.name,
     l,
   },);
 
-  /** Slice of args strictly after the `add` token; the place where pathspecs and flags live. */
+  /**
+   * Slice of args strictly after the `add` token; the place where pathspecs and flags live.
+   */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
-  /** Add region facts parsed by optique. */
+  /**
+   * Add region facts parsed by optique.
+   */
   const region = parseAddRegion(postSubcommandArgs,);
 
   if (region.hasEscapeHatch) {
     rl.debug(`${ESCAPE_HATCH} present, stripping and skipping check`,);
-    /** Pre-subcommand region kept verbatim so global options survive the strip. */
+    /**
+     * Pre-subcommand region kept verbatim so global options survive the strip.
+     */
     const preAndSubcommand = args.slice(
       0,
       subcommandIndex + 1,

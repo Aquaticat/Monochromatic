@@ -65,7 +65,9 @@ export function jsValueToTomlText(
     readonly existing?: ExistingNode;
   },
 ): string {
-  /** Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`. */
+  /**
+   * Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`.
+   */
   const existingArg = existing === undefined ? {} : { existing, };
   return encodeValue({
     input,
@@ -99,7 +101,9 @@ function encodeValue(
     );
   }
 
-  /** Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`. */
+  /**
+   * Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`.
+   */
   const existingArg = existing === undefined ? {} : { existing, };
 
   if (isWrappedInput(input,))
@@ -182,7 +186,9 @@ function encodeString(
         .multiline,
     },);
   }
-  /** Multi-line content selects triple-quoted output to avoid splitting. */
+  /**
+   * Multi-line content selects triple-quoted output to avoid splitting.
+   */
   const hasNewline = value.includes('\n',);
   if (hasNewline) {
     return encodeStringWithStyle({
@@ -259,21 +265,29 @@ function encodeArray(
     readonly existing?: ExistingNode;
   },
 ): string {
-  /** Existing per-element AST so encoder can reuse spelling when value matches. */
+  /**
+   * Existing per-element AST so encoder can reuse spelling when value matches.
+   */
   const elementExistings = (existing !== undefined) && (existing.node
     .type
     === 'TOMLArray')
     ? existing.node
       .elements
     : null;
-  /** Encoded element strings so the result can be both inline-tested and multi-line-emitted. */
+  /**
+   * Encoded element strings so the result can be both inline-tested and multi-line-emitted.
+   */
   const encoded = input.map(function each(
     el,
     i,
   ) {
-    /** Existing element node at this index, if the parent array carried one. */
+    /**
+     * Existing element node at this index, if the parent array carried one.
+     */
     const elementExisting = elementExistings === null ? undefined : elementExistings[i];
-    /** Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot. */
+    /**
+     * Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot.
+     */
     const elementExistingArg = elementExisting === undefined ? {} : { existing: { node: elementExisting, }, };
     return encodeValue({
       input: el,
@@ -282,7 +296,9 @@ function encodeArray(
       ...elementExistingArg,
     },);
   },);
-  /** Speculative inline form so the column budget check can decide the layout. */
+  /**
+   * Speculative inline form so the column budget check can decide the layout.
+   */
   const inlineCandidate = `[ ${encoded.join(', ',)}${encoded.length
     === 0 ? '' : ', '}]`;
   if (
@@ -295,10 +311,14 @@ function encodeArray(
   ) {
     return inlineCandidate;
   }
-  /** Indent for each element when the array goes multi-line. */
+  /**
+   * Indent for each element when the array goes multi-line.
+   */
   const indent = ' '.repeat(options.indent
     * (depth + 1),);
-  /** Closing bracket sits at the parent's indent level for legibility. */
+  /**
+   * Closing bracket sits at the parent's indent level for legibility.
+   */
   const closingIndent = ' '.repeat(options.indent
     * depth,);
   return `[\n${
@@ -326,9 +346,13 @@ function encodeInlineTable(
     readonly depth: number;
   },
 ): string {
-  /** Entries so iteration is keyed and ordering is deterministic. */
+  /**
+   * Entries so iteration is keyed and ordering is deterministic.
+   */
   const entries = Object.entries(input,);
-  /** Each entry becomes its own `k = v` fragment so the joiner can comma-separate. */
+  /**
+   * Each entry becomes its own `k = v` fragment so the joiner can comma-separate.
+   */
   const parts = entries.map(function each([k, v,],) {
     return `${encodeKey({ key: k, },)} = ${
       encodeValue({

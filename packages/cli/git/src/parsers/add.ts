@@ -16,7 +16,9 @@ import { PATHSPEC_SEPARATOR, } from '../escape-hatch.ts';
 
 //region Add escape hatch constants
 
-/** Wrapper-only flag that suppresses bulk-add enforcement for one invocation. */
+/**
+ * Wrapper-only flag that suppresses bulk-add enforcement for one invocation.
+ */
 export const ADD_ESCAPE_HATCH = '--no-enforce-bulk-add';
 
 //endregion Add escape hatch constants
@@ -38,7 +40,9 @@ const BULK_TOKENS: ReadonlySet<string> = new Set([
   '--update',
 ],);
 
-/** Bulk pathspec tokens that remain broad after `--` turns later tokens into pathspecs instead of options. */
+/**
+ * Bulk pathspec tokens that remain broad after `--` turns later tokens into pathspecs instead of options.
+ */
 const BULK_PATHSPEC_TOKENS: ReadonlySet<string> = new Set([
   '.',
   './',
@@ -70,11 +74,17 @@ const addRegionParser = object({
 
 //region Add region facts
 
-/** Facts about the post-`add` argv region used by add-explicit policy. */
+/**
+ * Facts about the post-`add` argv region used by add-explicit policy.
+ */
 export type AddRegion = {
-  /** Literal bulk-staging tokens that appear in option or pathspec positions. */
+  /**
+   * Literal bulk-staging tokens that appear in option or pathspec positions.
+   */
   readonly bulkMatches: readonly string[];
-  /** True when wrapper-only escape hatch appears as a real flag. */
+  /**
+   * True when wrapper-only escape hatch appears as a real flag.
+   */
   readonly hasEscapeHatch: boolean;
 };
 
@@ -92,7 +102,9 @@ export type AddRegion = {
  * ```
  */
 function optionRegion(args: readonly string[],): readonly string[] {
-  /** Position of pathspec separator inside post-subcommand region. */
+  /**
+   * Position of pathspec separator inside post-subcommand region.
+   */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex === (-1))
@@ -118,7 +130,9 @@ function optionRegion(args: readonly string[],): readonly string[] {
  * ```
  */
 function pathspecRegion(args: readonly string[],): readonly string[] {
-  /** Position of pathspec separator inside post-subcommand region. */
+  /**
+   * Position of pathspec separator inside post-subcommand region.
+   */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
   if (separatorIndex === (-1))
@@ -127,17 +141,29 @@ function pathspecRegion(args: readonly string[],): readonly string[] {
   return args.slice(separatorIndex + 1,);
 }
 
-/** Options for the bulk-pattern scan. */
+/**
+ * Options for the bulk-pattern scan.
+ */
 type BulkScanOptions = {
-  /** Argv slice being scanned for broad git add tokens. */
+  /**
+   * Argv slice being scanned for broad git add tokens.
+   */
   readonly region: readonly string[];
-  /** Index where scanning resumes. */
+  /**
+   * Index where scanning resumes.
+   */
   readonly index: number;
-  /** Accumulated literal bulk-pattern matches. */
+  /**
+   * Accumulated literal bulk-pattern matches.
+   */
   readonly matches: readonly string[];
-  /** Tokens considered broad in the current argv region. */
+  /**
+   * Tokens considered broad in the current argv region.
+   */
   readonly bulkTokens: ReadonlySet<string>;
-  /** True when `--pathspec-from-file` consumes the next token as an option value. */
+  /**
+   * True when `--pathspec-from-file` consumes the next token as an option value.
+   */
   readonly skipPathspecFromFileValues: boolean;
 };
 
@@ -178,7 +204,9 @@ function scanBulkTokens({
   bulkTokens,
   skipPathspecFromFileValues,
 }: BulkScanOptions,): readonly string[] {
-  /** Current argv token at scan position. */
+  /**
+   * Current argv token at scan position.
+   */
   const arg = region[index];
 
   if (arg === undefined)
@@ -246,24 +274,34 @@ function scanBulkTokens({
 export function parseAddRegion(
   postSubcommandArgs: readonly string[],
 ): AddRegion {
-  /** Argv slice handed to optique; pathspec region is excluded. */
+  /**
+   * Argv slice handed to optique; pathspec region is excluded.
+   */
   const optionArgs = optionRegion(postSubcommandArgs,);
-  /** Pathspecs after `--`; broad pathspecs here still stage many files. */
+  /**
+   * Pathspecs after `--`; broad pathspecs here still stage many files.
+   */
   const pathspecArgs = pathspecRegion(postSubcommandArgs,);
 
-  /** Optique parse result over the option region; the only fact taken from optique is the escape-hatch presence. */
+  /**
+   * Optique parse result over the option region; the only fact taken from optique is the escape-hatch presence.
+   */
   const parseResult = parseSync(
     addRegionParser,
     optionArgs,
   );
-  /** Whether wrapper-only escape hatch appears in flag position. */
+  /**
+   * Whether wrapper-only escape hatch appears in flag position.
+   */
   const hasEscapeHatch = (parseResult.success)
     && (parseResult.value
       .escape
       .length
       > 0);
 
-  /** Literal bulk-staging tokens detected by the value-aware scan. */
+  /**
+   * Literal bulk-staging tokens detected by the value-aware scan.
+   */
   const bulkMatches = [
     ...scanBulkTokens({
       region: optionArgs,

@@ -31,9 +31,10 @@ import {
 } from 'node:path';
 import { existsSync, } from 'node:fs';
 
-const [pkgDir, pkgName, dryFlag,] = process.argv.slice(2,);
+const [pkgDir, pkgName, dryFlag,] = process.argv
+  .slice(2,);
 
-if (!pkgDir || !pkgName) {
+if ((!pkgDir) || (!pkgName)) {
   throw new Error('usage: bun mise.switch-tests-byname.ts <pkgDir> <pkgName> [--dry]',);
 }
 
@@ -46,48 +47,80 @@ const dry = dryFlag === '--dry';
  * so the caller can splice a replacement without disturbing the rest of the line.
  *
  * @param line - One source line to inspect
+ *
  * @returns Specifier and quote offsets, or null when the line has no `from '...'`
  *   / `import '...'` clause
  */
-function extractSpecifier(line: string,): { spec: string; openQuote: number; closeQuote: number; } | null {
+function extractSpecifier(line: string,): {
+  spec: string;
+  openQuote: number;
+  closeQuote: number
+} | null {
   const fromIdx = line.indexOf('from ',);
-  const sideEffectIdx = line.trimStart().startsWith('import ',) && line.includes('\'',) && !line.includes('{',)
+  const sideEffectIdx = line.trimStart()
+    .startsWith('import ',)
+    && line.includes('\'',)
+    && !line.includes('{',)
     ? line.indexOf('import ',)
     : -1;
-  const anchor = fromIdx >= 0 ? fromIdx : sideEffectIdx;
+  const anchor = fromIdx !== -1 ? fromIdx : sideEffectIdx;
   if (anchor < 0) {
     return null;
   }
-  const singleOpen = line.indexOf('\'', anchor,);
-  const doubleOpen = line.indexOf('"', anchor,);
-  const openQuote = singleOpen >= 0 && (doubleOpen < 0 || singleOpen < doubleOpen) ? singleOpen : doubleOpen;
+  const singleOpen = line.indexOf(
+    '\'',
+    anchor,
+  );
+  const doubleOpen = line.indexOf(
+    '"',
+    anchor,
+  );
+  const openQuote = (singleOpen >= 0) && ((doubleOpen < 0) || (singleOpen < doubleOpen)) ? singleOpen : doubleOpen;
   if (openQuote < 0) {
     return null;
   }
   const quoteChar = line[openQuote];
-  const closeQuote = line.indexOf(quoteChar, openQuote + 1,);
-  if (closeQuote < 0) {
+  const closeQuote = line.indexOf(
+    quoteChar,
+    openQuote + 1,
+  );
+  if (closeQuote === -1) {
     return null;
   }
-  return { spec: line.slice(openQuote + 1, closeQuote,), openQuote, closeQuote, };
+  return {
+    spec: line.slice(openQuote + 1, closeQuote,),
+    openQuote,
+    closeQuote,
+  };
 }
 
 /**
  * Decide whether a specifier targets an own non-test sibling source module.
  *
  * @param spec - Module specifier text
+ *
  * @param fileDir - Directory of the importing test file (for relative resolution)
+ *
  * @returns True when spec is a relative `.ts` (not `.unit.test.ts`) resolving to
  *   an existing file
  */
-function isOwnSourceImport({ spec, fileDir, }: { spec: string; fileDir: string; },): boolean {
+function isOwnSourceImport({
+  spec,
+  fileDir,
+}: {
+  spec: string;
+  fileDir: string
+},): boolean {
   if (!spec.startsWith('.',)) {
     return false;
   }
-  if (!spec.endsWith('.ts',) || spec.endsWith('.unit.test.ts',)) {
+  if ((!spec.endsWith('.ts',)) || spec.endsWith('.unit.test.ts',)) {
     return false;
   }
-  return existsSync(resolve(fileDir, spec,),);
+  return existsSync(resolve(
+    fileDir,
+    spec,
+  ),);
 }
 
 const glob = new Glob('src/**/*.unit.test.ts',);
@@ -95,13 +128,23 @@ const switched: string[] = [];
 const skippedMulti: string[] = [];
 
 for await (const rel of glob.scan(pkgDir,)) {
-  const filePath = resolve(pkgDir, rel,);
+  const filePath = resolve(
+    pkgDir,
+    rel,
+  );
   const fileDir = dirname(filePath,);
-  const text = await Bun.file(filePath,).text();
+  const text = await Bun.file(filePath,)
+    .text();
   const lines = text.split('\n',);
-  const ownSourceLineIndexes = lines.flatMap(function collectOwnSourceLine(line, index,) {
+  const ownSourceLineIndexes = lines.flatMap(function collectOwnSourceLine(
+    line,
+    index,
+  ) {
     const extracted = extractSpecifier(line,);
-    if (extracted && isOwnSourceImport({ spec: extracted.spec, fileDir, },)) {
+    if (extracted && isOwnSourceImport({
+      spec: extracted.spec,
+      fileDir,
+    },)) {
       return [index,];
     }
     return [];
@@ -118,10 +161,14 @@ for await (const rel of glob.scan(pkgDir,)) {
   const lineIndex = ownSourceLineIndexes[0]!;
   const line = lines[lineIndex]!;
   const extracted = extractSpecifier(line,)!;
-  const rewritten = line.slice(0, extracted.openQuote + 1,) + pkgName + line.slice(extracted.closeQuote,);
+  const rewritten = line.slice(0, extracted.openQuote + 1,) + pkgName
+    + line.slice(extracted.closeQuote,);
   lines[lineIndex] = rewritten;
   if (!dry) {
-    await Bun.write(filePath, lines.join('\n',),);
+    await Bun.write(
+      filePath,
+      lines.join('\n',),
+    );
   }
   switched.push(`${rel}: ${extracted.spec} -> ${pkgName}`,);
 }

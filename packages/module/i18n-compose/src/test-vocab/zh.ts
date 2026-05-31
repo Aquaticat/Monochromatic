@@ -16,14 +16,18 @@ import type {
   TestVerb,
 } from './types.ts';
 
-/** Chinese label table for tests. */
+/**
+ * Chinese label table for tests.
+ */
 export const zhLabels: Record<TestLabel, string> = {
   siteName: 'Aquaticat',
   noResults: '无结果',
   page: '页面',
 };
 
-/** Chinese subject table for tests. */
+/**
+ * Chinese subject table for tests.
+ */
 export const zhSubjects: Record<TestSubject, SubjectEntry> = {
   I: {
     surface: '我',
@@ -51,7 +55,9 @@ export const zhSubjects: Record<TestSubject, SubjectEntry> = {
   },
 };
 
-/** Chinese noun table for tests. */
+/**
+ * Chinese noun table for tests.
+ */
 export const zhNouns: Record<TestNoun, NounEntry> = {
   cat: {
     surface: '猫',
@@ -67,7 +73,9 @@ export const zhNouns: Record<TestNoun, NounEntry> = {
   },
 };
 
-/** Chinese verb table for tests. */
+/**
+ * Chinese verb table for tests.
+ */
 export const zhVerbs: Record<TestVerb, ChineseVerbEntry> = {
   have: { surface: '有', },
   see: { surface: '看见', },

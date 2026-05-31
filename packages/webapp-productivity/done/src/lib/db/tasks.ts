@@ -48,9 +48,13 @@ export {
  * ```
  */
 export async function createTask(input: TaskCreateInput,): Promise<Task> {
-  /** Fresh UUID used as both the primary key and the read-back lookup key. */
+  /**
+   * Fresh UUID used as both the primary key and the read-back lookup key.
+   */
   const id = crypto.randomUUID();
-  /** Captured once so `created_at` and `updated_at` start at the same value. */
+  /**
+   * Captured once so `created_at` and `updated_at` start at the same value.
+   */
   const timestamp = nowIso();
 
   await db.prepare(SQL_INSERT_TASK,)
@@ -80,7 +84,9 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
     timestamp,
   );
 
-  /** Read-back so callers receive the canonical row including server-applied defaults. */
+  /**
+   * Read-back so callers receive the canonical row including server-applied defaults.
+   */
   const createdTask = await getTaskById(id,);
   if (createdTask === TASK_NOT_FOUND)
     throw new Error('Failed to read created task',);
@@ -109,13 +115,17 @@ export async function updateTask({
   readonly id: string;
   readonly input: TaskUpdateInput;
 },): Promise<Task | typeof TASK_NOT_FOUND> {
-  /** Existing row used as the merge baseline; the sentinel short-circuits not-found. */
+  /**
+   * Existing row used as the merge baseline; the sentinel short-circuits not-found.
+   */
   const currentTask = await getTaskById(id,);
   if (currentTask === TASK_NOT_FOUND)
     return TASK_NOT_FOUND;
 
   // Spread-merge: present `input` keys override; absent optional keys inherit from `currentTask`
-  /** Merged shape: input wins, falling back to the current row, with a fresh updated-at. */
+  /**
+   * Merged shape: input wins, falling back to the current row, with a fresh updated-at.
+   */
   const updatedTask: Task = {
     ...currentTask,
     ...input,
@@ -162,7 +172,9 @@ export async function updateTask({
  * ```
  */
 export async function deleteTask(id: string,): Promise<boolean> {
-  /** Run result; `changes` distinguishes a real delete from a missing row. */
+  /**
+   * Run result; `changes` distinguishes a real delete from a missing row.
+   */
   const result = await db.prepare(SQL_DELETE_TASK,)
     .run(id,);
   return result.changes

@@ -7,9 +7,13 @@
  * can be organized by model and pass (initial vs fix).
  */
 export type ScoreContext = {
-  /** Human-readable model label used for cache keys and log prefixes */
+  /**
+   * Human-readable model label used for cache keys and log prefixes
+   */
   readonly label: string;
-  /** Which pass produced this response */
+  /**
+   * Which pass produced this response
+   */
   readonly pass: 'initial' | 'fix';
   /**
    * Authoritative run timestamp from the OpenRouter server.
@@ -24,15 +28,25 @@ export type ScoreContext = {
   readonly signal?: AbortSignal;
 };
 
-/** Single canary probe with prompt, expected behavior, and scoring function */
+/**
+ * Single canary probe with prompt, expected behavior, and scoring function
+ */
 export type Probe = {
-  /** Human-readable label for reporting */
+  /**
+   * Human-readable label for reporting
+   */
   readonly name: string;
-  /** Which degradation axis this probe targets */
+  /**
+   * Which degradation axis this probe targets
+   */
   readonly category: 'simple' | 'code-gen' | 'simulation';
-  /** System prompt sent alongside the user message */
+  /**
+   * System prompt sent alongside the user message
+   */
   readonly system: string;
-  /** User message that forms the probe */
+  /**
+   * User message that forms the probe
+   */
   readonly prompt: string;
   /**
    * Scores the model response on a 0-1 scale.

@@ -5,10 +5,14 @@ import type { CaptureSet, } from './analyze/memory.ts';
 import { API_URL, } from './analyze/llama.ts';
 import { log, } from './log.ts';
 
-/** Maximum number of capture sets sent to the LLM in a single request. */
+/**
+ * Maximum number of capture sets sent to the LLM in a single request.
+ */
 const MAX_CAPTURE_SETS = 3;
 
-/** System prompt instructing the vision LLM how to evaluate productivity. */
+/**
+ * System prompt instructing the vision LLM how to evaluate productivity.
+ */
 const SYSTEM_PROMPT =
   `You are a strict productivity monitor for a user with ADHD. You analyze desktop screenshots and webcam captures taken at 5-minute intervals.
 
@@ -28,9 +32,13 @@ OUTPUT FORMAT:
  * Shape of the OpenAI-compatible chat message content array.
  */
 type ChatMessage = {
-  /** Role of the message sender. */
+  /**
+   * Role of the message sender.
+   */
   role: string;
-  /** Array of text and image content parts. */
+  /**
+   * Array of text and image content parts.
+   */
   content: (
     | {
       type: 'text';
@@ -47,9 +55,13 @@ type ChatMessage = {
  * Shape of the OpenAI-compatible chat completion response.
  */
 type CompletionResponse = {
-  /** Array of completion choices. */
+  /**
+   * Array of completion choices.
+   */
   choices: { message: { content: string; }; }[];
-  /** Token usage statistics. */
+  /**
+   * Token usage statistics.
+   */
   usage: {
     prompt_tokens: number;
     completion_tokens: number;
@@ -76,7 +88,9 @@ function buildImageEntry(
   };
 }
 
-/** Literal keyword that prefixes the canonical verdict line in LLM output. */
+/**
+ * Literal keyword that prefixes the canonical verdict line in LLM output.
+ */
 const VERDICT_PREFIX = 'VERDICT:';
 
 /**
@@ -111,7 +125,9 @@ export function skipSpacesAndTabs({
   readonly from: number;
 },): number {
   return (function scan(): number {
-    /** Cursor walked forward past each leading space or tab; the first non-blank position. */
+    /**
+     * Cursor walked forward past each leading space or tab; the first non-blank position.
+     */
     let cursor = from;
     while (
       (cursor < s
@@ -133,17 +149,23 @@ export function skipSpacesAndTabs({
  * @returns `'PRODUCTIVE'` / `'UNPRODUCTIVE'` when present; {@link NO_VERDICT} otherwise
  */
 function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeof NO_VERDICT {
-  /** Index of the canonical `VERDICT:` literal; -1 means the line is missing. */
+  /**
+   * Index of the canonical `VERDICT:` literal; -1 means the line is missing.
+   */
   const idx = upper.indexOf(VERDICT_PREFIX,);
   if (idx === (-1))
     return NO_VERDICT;
-  /** Cursor after `VERDICT:` and any inline whitespace; verdict word starts here. */
+  /**
+   * Cursor after `VERDICT:` and any inline whitespace; verdict word starts here.
+   */
   const start = skipSpacesAndTabs({
     s: upper,
     from: idx + VERDICT_PREFIX
       .length,
   },);
-  /** Substring beginning at `start`; checked against the longer alternative first. */
+  /**
+   * Substring beginning at `start`; checked against the longer alternative first.
+   */
   const tail = upper.slice(start,);
   if (tail.startsWith('UNPRODUCTIVE',))
     return 'UNPRODUCTIVE';
@@ -167,7 +189,9 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeo
  * ```
  */
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
-  /** Upper-cased copy of the response so verdict matching is case-insensitive. */
+  /**
+   * Upper-cased copy of the response so verdict matching is case-insensitive.
+   */
   const upper = result.toUpperCase();
   /**
    * Parsed verdict from the canonical line; {@link NO_VERDICT} when only fallback keyword matching can apply.
@@ -205,13 +229,19 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
     0,
     MAX_CAPTURE_SETS,
   );
-  /** Cached length so the prompt-tail branch does not re-walk `capped`. */
+  /**
+   * Cached length so the prompt-tail branch does not re-walk `capped`.
+   */
   const numSets = capped.length;
 
-  /** Build content array by flat-mapping each capture into its message entries. */
+  /**
+   * Build content array by flat-mapping each capture into its message entries.
+   */
   const content: ChatMessage['content'] = capped.flatMap(
     function captureEntries(capture,) {
-      /** Human-readable local time used to label each capture in the prompt. */
+      /**
+       * Human-readable local time used to label each capture in the prompt.
+       */
       const ts = new Date(capture.timestamp,).toLocaleTimeString();
       return [
         {
@@ -239,7 +269,9 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
       : 'Analyze this capture. Is the user focused on productive work or distracted? Provide your verdict.',
   },);
 
-  /** OpenAI-compatible chat completion request body sent to the local llama-server. */
+  /**
+   * OpenAI-compatible chat completion request body sent to the local llama-server.
+   */
   const payload = {
     model: 'lfm2.5-vl-1.6b',
     messages: [
@@ -258,9 +290,13 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
     top_k: 20,
   };
 
-  /** Monotonic timestamp captured before the request so elapsed time can be logged. */
+  /**
+   * Monotonic timestamp captured before the request so elapsed time can be logged.
+   */
   const start = performance.now();
-  /** Response handle from llama-server; checked for non-OK status before reading the body. */
+  /**
+   * Response handle from llama-server; checked for non-OK status before reading the body.
+   */
   const res = await fetch(
     API_URL,
     {
@@ -271,18 +307,26 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   );
 
   if (!res.ok) {
-    /** Raw error body included in the thrown error so callers can diagnose API failures. */
+    /**
+     * Raw error body included in the thrown error so callers can diagnose API failures.
+     */
     const text = await res.text();
     throw new Error(`LLM API error ${res.status}: ${text}`,);
   }
 
-  /** Parsed completion response carrying both the verdict text and token-usage stats. */
+  /**
+   * Parsed completion response carrying both the verdict text and token-usage stats.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
-  /** Wall-clock seconds spent on the request, rounded to one decimal for log output. */
+  /**
+   * Wall-clock seconds spent on the request, rounded to one decimal for log output.
+   */
   const elapsed = ((performance.now()
     - start) / MS_PER_SECOND).toFixed(1,);
-  /** Token-usage fields pulled out for the debug log line. */
+  /**
+   * Token-usage fields pulled out for the debug log line.
+   */
   const {
     prompt_tokens,
     completion_tokens,
@@ -291,7 +335,9 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   log.debug(
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,
   );
-  /** First completion choice; treated as the canonical response since `n=1`. */
+  /**
+   * First completion choice; treated as the canonical response since `n=1`.
+   */
   const [firstChoice,] = data.choices;
   if (firstChoice === undefined)
     throw new Error('OpenAI API returned empty choices array',);

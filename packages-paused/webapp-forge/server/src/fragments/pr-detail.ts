@@ -18,33 +18,61 @@ import {
  * View-model fed to the {@link renderPrDetail} renderer.
  */
 export type PrDetailData = {
-  /** Repo owner login. */
+  /**
+   * Repo owner login.
+   */
   readonly ownerLogin: string;
-  /** Repo name. */
+  /**
+   * Repo name.
+   */
   readonly repoName: string;
-  /** PR number (shared with the issue number). */
+  /**
+   * PR number (shared with the issue number).
+   */
   readonly prNumber: number;
-  /** PR title. */
+  /**
+   * PR title.
+   */
   readonly title: string;
-  /** PR body (rendered as text in Phase 2). */
+  /**
+   * PR body (rendered as text in Phase 2).
+   */
   readonly body: string;
-  /** Author login. */
+  /**
+   * Author login.
+   */
   readonly authorLogin: string;
-  /** ISO timestamp of opening. */
+  /**
+   * ISO timestamp of opening.
+   */
   readonly createdAt: string;
-  /** PR state: `open`, `closed`, `merged`. */
+  /**
+   * PR state: `open`, `closed`, `merged`.
+   */
   readonly state: string;
-  /** Base ref (e.g. `refs/heads/main`). */
+  /**
+   * Base ref (e.g. `refs/heads/main`).
+   */
   readonly baseRef: string;
-  /** Head ref (e.g. `refs/heads/feat-x`). */
+  /**
+   * Head ref (e.g. `refs/heads/feat-x`).
+   */
   readonly headRef: string;
-  /** Head commit SHA. */
+  /**
+   * Head commit SHA.
+   */
   readonly headSha: string;
-  /** Mergeability discriminant: `unknown` | `clean` | `conflicts`. */
+  /**
+   * Mergeability discriminant: `unknown` | `clean` | `conflicts`.
+   */
   readonly mergeable: string;
-  /** Approved review count. */
+  /**
+   * Approved review count.
+   */
   readonly approvedCount: number;
-  /** Changes-requested review count. */
+  /**
+   * Changes-requested review count.
+   */
   readonly changesRequestedCount: number;
 };
 

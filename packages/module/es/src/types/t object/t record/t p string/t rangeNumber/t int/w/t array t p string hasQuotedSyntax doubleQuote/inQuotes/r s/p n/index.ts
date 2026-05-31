@@ -36,26 +36,34 @@ export function $({
   strs: DoubleQuote[];
 },): Value {
   // Create new map for quote status results
-  /** Per-string in-quotes verdicts computed in this call. */
+  /**
+   * Per-string in-quotes verdicts computed in this call.
+   */
   const newQuoteStatusMap = new Map<string, boolean>();
 
   // For each string, check if effective (unescaped) quotes before value.startInclusive are evenly paired
   for (const str of strs) {
-    /** Substring up to the start index used to count preceding quotes. */
+    /**
+     * Substring up to the start index used to count preceding quotes.
+     */
     const strBefore = str.slice(
       0,
       value.startInclusive,
     );
 
     // Count effective double quotes using regex that handles escaped quotes properly
-    /** Count of unescaped quotes preceding the start index. */
+    /**
+     * Count of unescaped quotes preceding the start index.
+     */
     // oxlint-disable-next-line no-restricted-syntax/no-regex -- canonical unescaped-quote enumeration; the lookbehind `(?<!\\)(?:\\\\)*` matches a `"` not preceded by an odd number of backslashes — expressing the escape-counting rule via index walk is significantly more code and equally bounded. Input length bounds runtime linearly; no nested quantifiers, no backtracking.
     const effectiveDoubleQuotesInStrBefore = [...strBefore
       .matchAll(/(?<!\\)(?:\\\\)*"/g,),]
       .length;
 
     // Odd count means inside quotes, even count means outside quotes
-    /** Parity verdict for whether the range starts inside a quoted span. */
+    /**
+     * Parity verdict for whether the range starts inside a quoted span.
+     */
     const isInsideQuotes = (effectiveDoubleQuotesInStrBefore % 2) !== 0;
 
     // Use the original branded string as the key
@@ -66,11 +74,15 @@ export function $({
   }
 
   // Merge new map with original
-  /** Pre-existing quote map carried on the input, defaulted to empty when absent. */
+  /**
+   * Pre-existing quote map carried on the input, defaulted to empty when absent.
+   */
   const existingQuoteMap = value.__brand
     .inQuotes
     ?? new Map<string, boolean>();
-  /** Combined map preferring fresh per-string verdicts over the pre-existing entries. */
+  /**
+   * Combined map preferring fresh per-string verdicts over the pre-existing entries.
+   */
   const mergedQuoteMap = new Map<string, boolean>([
     ...existingQuoteMap,
     ...newQuoteStatusMap,

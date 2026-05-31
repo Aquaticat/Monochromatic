@@ -122,7 +122,9 @@ export async function gitignoreFilter(
     readonly extraFiles?: readonly string[];
   },
 ): Promise<WatchFilter> {
-  /** Gitignore file paths to attempt: one per root + each explicit extra file. */
+  /**
+   * Gitignore file paths to attempt: one per root + each explicit extra file.
+   */
   const rootGitignorePaths: readonly string[] = roots.map(
     function toRootGitignore(root,): string {
       return join(

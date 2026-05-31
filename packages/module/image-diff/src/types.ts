@@ -15,9 +15,13 @@ export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'gif';
  * ```
  */
 export type ImageBuffer = {
-  /** Raw image bytes. */
+  /**
+   * Raw image bytes.
+   */
   readonly buffer: ArrayBuffer;
-  /** Image format for the data URI media type. */
+  /**
+   * Image format for the data URI media type.
+   */
   readonly format: ImageFormat;
 };
 
@@ -30,7 +34,9 @@ export type ImageBuffer = {
  * ```
  */
 export type ImagePath = {
-  /** Absolute or relative file path to an image. */
+  /**
+   * Absolute or relative file path to an image.
+   */
   readonly path: string;
 };
 
@@ -43,7 +49,9 @@ export type ImagePath = {
  * ```
  */
 export type ImageUrl = {
-  /** URL pointing to an image. */
+  /**
+   * URL pointing to an image.
+   */
   readonly url: string;
 };
 
@@ -56,7 +64,9 @@ export type ImageUrl = {
  * ```
  */
 export type ImageBase64 = {
-  /** Base64-encoded data URI (e.g. `data:image/png;base64,...`). */
+  /**
+   * Base64-encoded data URI (e.g. `data:image/png;base64,...`).
+   */
   readonly base64: string;
 };
 
@@ -112,7 +122,9 @@ export type Provider = 'voyage' | 'gemini';
  * ```
  */
 export type ImageDiffConfig = {
-  /** Embedding provider backend. Defaults to `'voyage'`. */
+  /**
+   * Embedding provider backend. Defaults to `'voyage'`.
+   */
   readonly provider?: Provider;
   /**
    * API key for the selected provider.
@@ -120,7 +132,9 @@ export type ImageDiffConfig = {
    * or `IMAGE_DIFF_GEMINI_API_KEY` for Gemini.
    */
   readonly apiKey?: string;
-  /** Model to use for embeddings. Defaults to the latest model for the selected provider. */
+  /**
+   * Model to use for embeddings. Defaults to the latest model for the selected provider.
+   */
   readonly model?: EmbeddingModel;
 };
 
@@ -139,13 +153,21 @@ export type ImageDiffConfig = {
  * ```
  */
 export type ComparisonResult = {
-  /** Cosine similarity between the two image embeddings, ranging from -1 to 1. Higher means more similar. */
+  /**
+   * Cosine similarity between the two image embeddings, ranging from -1 to 1. Higher means more similar.
+   */
   readonly similarity: number;
-  /** Perceptual distance derived as `1 - similarity`, ranging from 0 to 2. Lower means more similar. */
+  /**
+   * Perceptual distance derived as `1 - similarity`, ranging from 0 to 2. Lower means more similar.
+   */
   readonly distance: number;
-  /** Embedding vector for the first image. */
+  /**
+   * Embedding vector for the first image.
+   */
   readonly embeddingA: readonly number[];
-  /** Embedding vector for the second image. */
+  /**
+   * Embedding vector for the second image.
+   */
   readonly embeddingB: readonly number[];
   /**
    * Natural-language description of visual differences between the two images,
@@ -165,9 +187,13 @@ export type ComparisonResult = {
  * ```
  */
 export type EmbeddingResult = {
-  /** Embedding vector for the image. */
+  /**
+   * Embedding vector for the image.
+   */
   readonly embedding: readonly number[];
-  /** Token usage reported by the API. */
+  /**
+   * Token usage reported by the API.
+   */
   readonly usage: {
     readonly textTokens: number;
     readonly imagePixels: number;
@@ -184,9 +210,13 @@ export type EmbeddingResult = {
  * ```
  */
 export type BatchEmbeddingResult = {
-  /** Embedding vectors, one per input image, in the same order. */
+  /**
+   * Embedding vectors, one per input image, in the same order.
+   */
   readonly embeddings: readonly (readonly number[])[];
-  /** Token usage reported by the API for the entire batch. */
+  /**
+   * Token usage reported by the API for the entire batch.
+   */
   readonly usage: {
     readonly textTokens: number;
     readonly imagePixels: number;
@@ -220,9 +250,13 @@ export type EmbedBatchParams = {
  * calls the embedding API, and returns normalized results.
  */
 export type EmbeddingProvider = {
-  /** Compute a single image embedding. */
+  /**
+   * Compute a single image embedding.
+   */
   readonly embed: (params: EmbedParams,) => Promise<EmbeddingResult>;
-  /** Compute embeddings for multiple images in a batch. */
+  /**
+   * Compute embeddings for multiple images in a batch.
+   */
   readonly embedBatch: (params: EmbedBatchParams,) => Promise<BatchEmbeddingResult>;
 };
 

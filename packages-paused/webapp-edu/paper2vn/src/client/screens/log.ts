@@ -14,7 +14,9 @@ import { getCharacterName, } from '../sprite-pack.ts';
 import { getActiveSave, } from '../state.ts';
 import type { LogEntry, } from '../types.ts';
 
-/** Navigation handler for the back button: routes to the lecture screen. */
+/**
+ * Navigation handler for the back button: routes to the lecture screen.
+ */
 function goBackToLecture(): void {
   navigate('lecture',);
 }
@@ -25,17 +27,27 @@ function goBackToLecture(): void {
  * @param root - host element the screen mounts into
  */
 function mount(root: HTMLElement,): void {
-  /** Current locale's translation accessors. */
+  /**
+   * Current locale's translation accessors.
+   */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  /** Active save record, source of the log entries to render. */
+  /**
+   * Active save record, source of the log entries to render.
+   */
   const save = getActiveSave();
-  /** Persona display name, used to label persona lines. */
+  /**
+   * Persona display name, used to label persona lines.
+   */
   const ruka = getCharacterName('ruka',);
-  /** Log entries from the active save, defaulting to empty when none. */
+  /**
+   * Log entries from the active save, defaulting to empty when none.
+   */
   const entries = save?.log
     ?? [];
-  /** Rendered row nodes, or an empty-state placeholder when no entries. */
+  /**
+   * Rendered row nodes, or an empty-state placeholder when no entries.
+   */
   const rows = entries.length
     === 0
     ? [
@@ -66,7 +78,9 @@ function mount(root: HTMLElement,): void {
         ],
       },);
     },);
-  /** Outer screen container with header and the rendered rows. */
+  /**
+   * Outer screen container with header and the rendered rows.
+   */
   const screen = el({
     tag: 'section',
     attrs: {

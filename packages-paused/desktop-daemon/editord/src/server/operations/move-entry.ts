@@ -43,12 +43,16 @@ export async function moveEntry(
   readonly source: string;
   readonly dest: string;
 }> {
-  /** Source rebased so `path/..` cannot escape the root. */
+  /**
+   * Source rebased so `path/..` cannot escape the root.
+   */
   const absoluteSource = assertWithinRoot({
     rootDir,
     path,
   },);
-  /** Dest rebased so the move target stays within the root. */
+  /**
+   * Dest rebased so the move target stays within the root.
+   */
   const absoluteDest = assertWithinRoot({
     rootDir,
     path: destPath,

@@ -12,7 +12,9 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import { basename, } from 'node:path';
 
-/** Maximum length for pattern and query strings displayed in the title. */
+/**
+ * Maximum length for pattern and query strings displayed in the title.
+ */
 const MAX_PATTERN_LENGTH = 30;
 
 /**
@@ -124,7 +126,9 @@ function stringField(
     readonly key: string;
   },
 ): string | typeof FIELD_ABSENT {
-  /** Property value read from the tool input; non-string shapes fall through to `FIELD_ABSENT`. */
+  /**
+   * Property value read from the tool input; non-string shapes fall through to `FIELD_ABSENT`.
+   */
   const value = input[key];
   if ((typeof value) === 'string')
     return value;
@@ -212,7 +216,9 @@ function quotedFormat(
   };
 }
 
-/** Wrapper commands stripped together with the following argument token. */
+/**
+ * Wrapper commands stripped together with the following argument token.
+ */
 const COMMAND_NOISE_WRAPPERS: ReadonlySet<string> = new Set([
   'timeout',
   'env',
@@ -275,7 +281,9 @@ function stripCommandNoise(command: string,): string {
    * ```
    */
   function findTokenEnd(at: number,): number {
-    /** Cursor advanced to the token's end; returned as the helper-shape binding. */
+    /**
+     * Cursor advanced to the token's end; returned as the helper-shape binding.
+     */
     let end = at;
     while ((end < command
       .length) && (!isShellWs(command.charAt(end,),))) {
@@ -296,7 +304,9 @@ function stripCommandNoise(command: string,): string {
    * ```
    */
   function skipWs(at: number,): number {
-    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    /**
+     * Cursor advanced over the whitespace run; returned as the helper-shape binding.
+     */
     let cursor = at;
     while ((cursor < command
       .length) && isShellWs(command.charAt(cursor,),)) {
@@ -304,22 +314,30 @@ function stripCommandNoise(command: string,): string {
     }
     return cursor;
   }
-  /** Cursor advanced past each stripped prefix; bound to a name so the helper-function shape suppresses the root `let`. */
+  /**
+   * Cursor advanced past each stripped prefix; bound to a name so the helper-function shape suppresses the root `let`.
+   */
   let idx = 0;
   // Strip leading env-var assignments (`FOO=bar`) and wrapper-plus-argument
   // pairs (`timeout 5`, `env ...`) until the cursor reaches a token that is
   // neither, then return the remainder verbatim.
   while (idx < command
     .length) {
-    /** Exclusive end of the candidate first token. */
+    /**
+     * Exclusive end of the candidate first token.
+     */
     const tokenEnd = findTokenEnd(idx,);
     if (tokenEnd === idx)
       break;
-    /** Position past the token's trailing whitespace; must advance for a match. */
+    /**
+     * Position past the token's trailing whitespace; must advance for a match.
+     */
     const afterTokenWs = skipWs(tokenEnd,);
     if (afterTokenWs === tokenEnd)
       break;
-    /** Candidate first token. */
+    /**
+     * Candidate first token.
+     */
     const token = command.slice(
       idx,
       tokenEnd,
@@ -331,17 +349,23 @@ function stripCommandNoise(command: string,): string {
     }
     if (!COMMAND_NOISE_WRAPPERS.has(token,))
       break;
-    /** Exclusive end of the wrapper's argument token. */
+    /**
+     * Exclusive end of the wrapper's argument token.
+     */
     const argEnd = findTokenEnd(afterTokenWs,);
     if (argEnd === afterTokenWs)
       break;
-    /** Position past the argument's trailing whitespace; required for the match. */
+    /**
+     * Position past the argument's trailing whitespace; required for the match.
+     */
     const afterArgWs = skipWs(argEnd,);
     if (afterArgWs === argEnd)
       break;
     idx = afterArgWs;
   }
-  /** Remainder after every stripped prefix; empty when the cursor ran past the end. */
+  /**
+   * Remainder after every stripped prefix; empty when the cursor ran past the end.
+   */
   const result = (idx >= command
     .length)
     ? ''

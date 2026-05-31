@@ -50,19 +50,33 @@ function snapshotConfig(config: RunnerConfig,): ConfigSnapshot {
  * ```
  */
 export type EnrichArtifactOptions = {
-  /** Probe that produced the response */
+  /**
+   * Probe that produced the response
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** Authoritative server timestamp */
+  /**
+   * Authoritative server timestamp
+   */
   readonly timestamp: string;
-  /** Which pass produced the response */
+  /**
+   * Which pass produced the response
+   */
   readonly pass: 'initial' | 'fix';
-  /** Full completion result from the API */
+  /**
+   * Full completion result from the API
+   */
   readonly completion: CompletionResult;
-  /** Computed score for this response */
+  /**
+   * Computed score for this response
+   */
   readonly score: number;
-  /** Optional fields for fix prompt, partial flag, and error message */
+  /**
+   * Optional fields for fix prompt, partial flag, and error message
+   */
   readonly options?: {
     readonly fixPrompt?: string;
     readonly partial?: boolean;
@@ -101,12 +115,16 @@ export async function enrichArtifact({
   score,
   options,
 }: EnrichArtifactOptions,): Promise<void> {
-  /** Token usage and stop reason, spread into the artifact only when present so absent keys stay out of the JSON. */
+  /**
+   * Token usage and stop reason, spread into the artifact only when present so absent keys stay out of the JSON.
+   */
   const {
     usage,
     finishReason,
   } = completion;
-  /** Full enriched artifact written to disk; optional fields are spread in conditionally to keep absent fields out of JSON. */
+  /**
+   * Full enriched artifact written to disk; optional fields are spread in conditionally to keep absent fields out of JSON.
+   */
   const enriched: EnrichedArtifactMeta = {
     model: config.model,
     label: config.label,
@@ -178,21 +196,37 @@ export function extractPartialCompletion(error: unknown,): CompletionResult | ty
  * ```
  */
 type SaveFailureArtifactsOptions = {
-  /** Probe being executed */
+  /**
+   * Probe being executed
+   */
   readonly probe: Probe;
-  /** Runner configuration */
+  /**
+   * Runner configuration
+   */
   readonly config: RunnerConfig;
-  /** Authoritative server timestamp */
+  /**
+   * Authoritative server timestamp
+   */
   readonly timestamp: string;
-  /** The caught error */
+  /**
+   * The caught error
+   */
   readonly error: unknown;
-  /** Completion from the last successful consistency run, absent when none completed */
+  /**
+   * Completion from the last successful consistency run, absent when none completed
+   */
   readonly lastCompletion?: CompletionResult;
-  /** Partial completion extracted from a PartialCompletionError, {@link NO_PARTIAL} when absent */
+  /**
+   * Partial completion extracted from a PartialCompletionError, {@link NO_PARTIAL} when absent
+   */
   readonly partialCompletion: CompletionResult | typeof NO_PARTIAL;
-  /** Score from the last successful consistency run */
+  /**
+   * Score from the last successful consistency run
+   */
   readonly lastScore: number;
-  /** Whether the initial-pass artifact was already enriched */
+  /**
+   * Whether the initial-pass artifact was already enriched
+   */
   readonly enrichedInitial: boolean;
 };
 
@@ -234,7 +268,9 @@ export async function saveFailureArtifacts({
   lastScore,
   enrichedInitial,
 }: SaveFailureArtifactsOptions,): Promise<void> {
-  /** Human-readable error string written into the failure artifact for post-hoc inspection. */
+  /**
+   * Human-readable error string written into the failure artifact for post-hoc inspection.
+   */
   const errorMessage = error instanceof Error ? error.message : String(error,);
 
   // If we have a partial completion from an aborted stream, save it.

@@ -37,7 +37,9 @@ export function replicateElementAsParentContent(
     targetCount: number;
   }>,
 ): void {
-  /** Parent of the template; required because replication targets its children. */
+  /**
+   * Parent of the template; required because replication targets its children.
+   */
   const parent = templateElement.parentElement;
 
   // If the element has no parent, we can't replace children.
@@ -47,7 +49,9 @@ export function replicateElementAsParentContent(
     );
   }
 
-  /** Independent deep clones of the template; one per slot in the parent. */
+  /**
+   * Independent deep clones of the template; one per slot in the parent.
+   */
   const clones = Array.from(
     { length: targetCount, },
     function wrapper() {
@@ -114,7 +118,9 @@ export function replicateElementAsContentOf(
     targetCount: number;
   }>,
 ): void {
-  /** Independent deep clones of the template; one per slot in the explicit parent. */
+  /**
+   * Independent deep clones of the template; one per slot in the explicit parent.
+   */
   const clones = Array.from(
     { length: targetCount, },
     function wrapper() {

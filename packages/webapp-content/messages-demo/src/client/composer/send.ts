@@ -24,7 +24,9 @@ import {
 import type { ComposerState, } from './state.ts';
 import { saveCurrentTier3Chunk, } from './tier3.ts';
 
-/** Maximum length of the message preview, in characters. */
+/**
+ * Maximum length of the message preview, in characters.
+ */
 const PREVIEW_MAX_LENGTH = 200;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM send dispatcher: every entry takes `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLSelectElement`/`HTMLButtonElement`/`HTMLElement` with mutating DOM methods (disabled flag, value writes) and folds chunks via Array callbacks; readonly wrappers would misdescribe the API contract */
@@ -50,10 +52,14 @@ export async function handleSend(
     status: HTMLElement;
   },
 ): Promise<void> {
-  /** Snapshot of the body at send time; the textarea may mutate during the await chain. */
+  /**
+   * Snapshot of the body at send time; the textarea may mutate during the await chain.
+   */
   const body = input.textarea
     .value;
-  /** Active identity at send time; the select may change while uploads are in flight. */
+  /**
+   * Active identity at send time; the select may change while uploads are in flight.
+   */
   const userId = input.select
     .value;
   if (body.length
@@ -137,7 +143,9 @@ async function sendNew(
     status: input.status,
     message: 'creating draft...',
   },);
-  /** Allocated once so the create-draft POST, chunk PUTs, and finalize all share the same id. */
+  /**
+   * Allocated once so the create-draft POST, chunk PUTs, and finalize all share the same id.
+   */
   const draftId = randomId();
   await postCreateDraft({
     id: draftId,
@@ -147,7 +155,9 @@ async function sendNew(
     status: input.status,
     message: 'compiling...',
   },);
-  /** Tier-1 inline compile or tier-2/3 worker compile result; both expose `chunks`, `charCount`, etc. */
+  /**
+   * Tier-1 inline compile or tier-2/3 worker compile result; both expose `chunks`, `charCount`, etc.
+   */
   const compiled = input.state
     .tier
     === 1
@@ -186,7 +196,9 @@ async function sendNew(
     status: input.status,
     message: 'finalising...',
   },);
-  /** Awaited so the JSON body read below can read the same response object. */
+  /**
+   * Awaited so the JSON body read below can read the same response object.
+   */
   const finalize = await fetch(
     `/api/drafts/${encodeURIComponent(draftId,)}/finalize`,
     {
@@ -200,7 +212,9 @@ async function sendNew(
       },),
     },
   );
-  /** Finalize envelope: `location` redirects to the new message page. */
+  /**
+   * Finalize envelope: `location` redirects to the new message page.
+   */
   const result = await readJson<{
     location?: string;
     messageId?: number;
@@ -252,10 +266,14 @@ async function sendTier3New(
     .outbox
     .flushed();
 
-  /** Destructured so the aggregate-walk reads the cached chunks directly. */
+  /**
+   * Destructured so the aggregate-walk reads the cached chunks directly.
+   */
   const { localChunks, } = input.state
     .tier3;
-  /** Aggregate character count across every cached chunk; passed to finalize. */
+  /**
+   * Aggregate character count across every cached chunk; passed to finalize.
+   */
   const charCount = localChunks.reduce(
     function sumCharCount(
       acc,
@@ -266,7 +284,9 @@ async function sendTier3New(
     },
     0,
   );
-  /** First chunk's markdown captured for the finalize preview field. */
+  /**
+   * First chunk's markdown captured for the finalize preview field.
+   */
   const firstMd = localChunks[0]
     ?.md
     ?? '';
@@ -275,7 +295,9 @@ async function sendTier3New(
     status: input.status,
     message: 'finalising...',
   },);
-  /** Tier-3 finalize fetch; awaited so both the status check and the JSON read use the same response. */
+  /**
+   * Tier-3 finalize fetch; awaited so both the status check and the JSON read use the same response.
+   */
   const finalize = await fetch(
     `/api/drafts/${encodeURIComponent(input.state
       .tier3
@@ -295,11 +317,15 @@ async function sendTier3New(
     },
   );
   if (!finalize.ok) {
-    /** Server-supplied error body folded into the thrown message. */
+    /**
+     * Server-supplied error body folded into the thrown message.
+     */
     const message = await finalize.text();
     throw new Error(`finalize failed: ${message}`,);
   }
-  /** Finalize envelope: `location` redirects to the new message page. */
+  /**
+   * Finalize envelope: `location` redirects to the new message page.
+   */
   const result = await readJson<{ location?: string; }>(finalize,);
   if ((typeof result.location) !== 'string')
     throw new Error('finalize returned no location',);

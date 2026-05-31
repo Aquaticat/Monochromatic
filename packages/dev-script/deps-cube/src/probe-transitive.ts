@@ -32,11 +32,17 @@ import {
 
 //region Constants
 
-/** Depth cap for transitive dep walks. */
+/**
+ * Depth cap for transitive dep walks.
+ */
 const TRANSITIVE_DEPTH_CAP = 5;
-/** Number of days the cached transitive count remains valid. */
+/**
+ * Number of days the cached transitive count remains valid.
+ */
 const TTL_DAYS = 30;
-/** TTL for cached transitive counts. */
+/**
+ * TTL for cached transitive counts.
+ */
 const TTL_MS = TTL_DAYS * MS_PER_DAY;
 
 //endregion Constants
@@ -150,18 +156,26 @@ export async function probeTransitive(
   },);
   if (manifest === MANIFEST_FETCH_FAILED)
     return 0;
-  /** Manifest entry for the exact requested version, falling back to any first version when the requested version is missing. */
+  /**
+   * Manifest entry for the exact requested version, falling back to any first version when the requested version is missing.
+   */
   const versionManifest = manifest.versions?.[version]
     ?? Object
     .values(manifest.versions
       ?? {},)[0];
-  /** Direct `dependencies` map from the version manifest; empty when none declared. */
+  /**
+   * Direct `dependencies` map from the version manifest; empty when none declared.
+   */
   const deps = versionManifest?.dependencies
     ?? {};
-  /** Direct dependency package names; each recurses into its own latest manifest. */
+  /**
+   * Direct dependency package names; each recurses into its own latest manifest.
+   */
   const directNames = Object.keys(deps,);
 
-  /** Per-direct-dep subtree counts (each direct dep contributes `1 + transitive_below`). */
+  /**
+   * Per-direct-dep subtree counts (each direct dep contributes `1 + transitive_below`).
+   */
   const subCounts = await Promise.all(directNames.map(
     async function recurseOne(depName,) {
       /**
@@ -173,7 +187,9 @@ export async function probeTransitive(
       },);
       if (depPkg === MANIFEST_FETCH_FAILED)
         return 0;
-      /** Concrete version string for the direct dep, used as the cache key for the recursive call. */
+      /**
+       * Concrete version string for the direct dep, used as the cache key for the recursive call.
+       */
       const depVersion = depPkg['dist-tags']
         ?.latest;
       if (depVersion === undefined)
@@ -187,7 +203,9 @@ export async function probeTransitive(
       },);
     },
   ),);
-  /** Sum across every direct dep's subtree; the final transitive count stored in the cache. */
+  /**
+   * Sum across every direct dep's subtree; the final transitive count stored in the cache.
+   */
   const total = subCounts.reduce(
     function add(
       a,

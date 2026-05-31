@@ -53,7 +53,9 @@ export function registerRoutes({
   app.get(
     '/',
     defineHandler(async function handleIndex() {
-      /** Index HTML loaded once per request; small enough that caching isn't worth the staleness risk. */
+      /**
+       * Index HTML loaded once per request; small enough that caching isn't worth the staleness risk.
+       */
       const html = await readFile(
         join(
           packageRoot,
@@ -85,13 +87,17 @@ export function registerRoutes({
             ),);
           },
           getMeta: async function getMetadata(id,) {
-            /** Absolute path resolved against package root before reading filesystem metadata. */
+            /**
+             * Absolute path resolved against package root before reading filesystem metadata.
+             */
             const fullPath = join(
               packageRoot,
               id,
             );
             try {
-              /** Filesystem stat used to derive size and mtime for h3's caching headers. */
+              /**
+               * Filesystem stat used to derive size and mtime for h3's caching headers.
+               */
               const stats = await stat(fullPath,);
               if (!stats.isFile())
                 return undefined;
@@ -101,7 +107,9 @@ export function registerRoutes({
               };
             }
             catch (error) {
-              /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
+              /**
+               * Only swallow ENOENT (file not found); rethrow unexpected errors.
+               */
               const isNotFound = (error instanceof Error)
                 && ('code' in error)
                 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
@@ -124,7 +132,9 @@ export function registerRoutes({
   app.get(
     '/_raw',
     defineHandler(async function handleRawFile(event,) {
-      /** Parsed query string carrying `token` (auth) and `path` (target file). */
+      /**
+       * Parsed query string carrying `token` (auth) and `path` (target file).
+       */
       const query = getQuery(event,);
       if (query.token
         !== authToken) {
@@ -133,7 +143,9 @@ export function registerRoutes({
           { status: 401, },
         );
       }
-      /** Requested file path; null when the client did not supply a string `path` query parameter. */
+      /**
+       * Requested file path; null when the client did not supply a string `path` query parameter.
+       */
       const filePath = (typeof query.path) === 'string' ? query.path : null;
       if (filePath === null) {
         return new Response(
@@ -141,14 +153,20 @@ export function registerRoutes({
           { status: 400, },
         );
       }
-      /** Resolved absolute path; throws if `filePath` escapes the configured root directory. */
+      /**
+       * Resolved absolute path; throws if `filePath` escapes the configured root directory.
+       */
       const absolutePath = assertWithinRoot({
         rootDir,
         path: filePath,
       },);
-      /** Full file bytes; raw endpoint serves binary media so the body must be a Buffer. */
+      /**
+       * Full file bytes; raw endpoint serves binary media so the body must be a Buffer.
+       */
       const buffer = await readFile(absolutePath,);
-      /** Content-Type inferred from the file extension; controls how the browser renders the response. */
+      /**
+       * Content-Type inferred from the file extension; controls how the browser renders the response.
+       */
       const contentType = getContentType({ path: absolutePath, },);
       return new Response(
         buffer,

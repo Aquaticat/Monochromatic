@@ -43,7 +43,9 @@ import {
 
 //region API key resolution: validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 
-/** OpenRouter API key from environment, required for all inference calls. */
+/**
+ * OpenRouter API key from environment, required for all inference calls.
+ */
 const apiKey = process.env
   .INFERENCE_VALIDATION_OPENROUTER_API_KEY;
 if ((apiKey === undefined) || (apiKey === ''))
@@ -53,9 +55,13 @@ if ((apiKey === undefined) || (apiKey === ''))
 
 //region Model selection: resolves the set of models to test and which probes to skip from recent artifacts
 
-/** Models selected for this run based on CLI flags. */
+/**
+ * Models selected for this run based on CLI flags.
+ */
 const selectedModels = selectModels();
-/** Recent probe results and failures used to skip recently-tested pairs. */
+/**
+ * Recent probe results and failures used to skip recently-tested pairs.
+ */
 const {
   probePairs: recentModelProbePairs,
   failedModels: recentlyFailedModels,
@@ -74,20 +80,30 @@ if (selectedModels.length
   === 0)
   l.info('no models selected for testing.',);
 else {
-  /** Code generation probe set, including slow probes when `--slow` is passed. */
+  /**
+   * Code generation probe set, including slow probes when `--slow` is passed.
+   */
   const codeGenSet = includeSlow ? codeGenProbesAll : codeGenProbes;
-  /** Combined probe list from selected code-gen tier and simulation probes. */
+  /**
+   * Combined probe list from selected code-gen tier and simulation probes.
+   */
   const allProbes = useSimple ? simpleProbes : [
     ...codeGenSet,
     ...simulationProbes,
   ];
 
-  /** Local copy of probe filter for TypeScript narrowing inside callbacks. */
+  /**
+   * Local copy of probe filter for TypeScript narrowing inside callbacks.
+   */
   const activeProbeFilter = probeFilter;
-  /** Number of names in the probe filter; zero means no `--probe` was given, so all probes run. */
+  /**
+   * Number of names in the probe filter; zero means no `--probe` was given, so all probes run.
+   */
   const filterSize = activeProbeFilter.size;
 
-  /** Probes to run, filtered by `--probe` if specified (empty filter set means run all). */
+  /**
+   * Probes to run, filtered by `--probe` if specified (empty filter set means run all).
+   */
   const probes = filterSize > 0
     ? allProbes.filter(function matchFilter(probe,): boolean {
       return activeProbeFilter.has(probe.name,);
@@ -96,7 +112,9 @@ else {
 
   if (probes.length
     === 0) {
-    /** Comma-separated list of all available probe names for the error message. */
+    /**
+     * Comma-separated list of all available probe names for the error message.
+     */
     const available = allProbes
       .map(function getName(probe,): string {
         return probe.name;
@@ -107,7 +125,9 @@ else {
 
   // When targeting specific probes, bypass the recent-result cache for those probes so
   // they always re-run regardless of how recently they last executed.
-  /** Recent pairs with targeted probes excluded so they always re-run. */
+  /**
+   * Recent pairs with targeted probes excluded so they always re-run.
+   */
   const effectiveRecentPairs = activeProbeFilter !== undefined
     ? new Map(
       [...recentModelProbePairs.entries(),].map(
@@ -148,13 +168,19 @@ else {
 // event loop from draining after all work completes. This watchdog detects when
 // the process should have exited but hasn't, dumps the active handles for diagnosis,
 // then force-exits so CI pipelines don't hang indefinitely.
-/** Seconds to wait before assuming the process is stuck on leaked async resources */
+/**
+ * Seconds to wait before assuming the process is stuck on leaked async resources
+ */
 const WATCHDOG_TIMEOUT_SECONDS = 5;
 
-/** Milliseconds per second for watchdog timeout computation */
+/**
+ * Milliseconds per second for watchdog timeout computation
+ */
 const WATCHDOG_MS_PER_SECOND = 1_000;
 
-/** Watchdog timer that force-exits after stale async resources prevent natural shutdown. */
+/**
+ * Watchdog timer that force-exits after stale async resources prevent natural shutdown.
+ */
 const watchdog = setTimeout(
   function watchdogTimeout(): void {
     l.error(

@@ -28,7 +28,9 @@ export type SubjectAgreement = {
   readonly number: GrammaticalNumber;
 };
 
-/** Agreement used for `subject.externalName` references; opaque names default to third-person singular. */
+/**
+ * Agreement used for `subject.externalName` references; opaque names default to third-person singular.
+ */
 const EXTERNAL_NAME_AGREEMENT: SubjectAgreement = {
   person: 3,
   number: 'singular',
@@ -60,7 +62,9 @@ export function subjectAgreement<S extends string,>(
 ): SubjectAgreement {
   if (ref.kind
     === 'subject.key') {
-    /** Resolved subject entry from the locale vocabulary. */
+    /**
+     * Resolved subject entry from the locale vocabulary.
+     */
     const meta = subjects[ref.subject];
     return {
       person: meta.person,
@@ -101,7 +105,9 @@ export function subjectSurface<S extends string,>(
     : ref.text;
 }
 
-/** Agreement constant used by wh-subject renderers: English `who`, Catalan `Qui`, Chinese `谁`. */
+/**
+ * Agreement constant used by wh-subject renderers: English `who`, Catalan `Qui`, Chinese `谁`.
+ */
 export const WH_SUBJECT_AGREEMENT: SubjectAgreement = {
   person: 3,
   number: 'singular',

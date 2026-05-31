@@ -22,9 +22,13 @@ import {
   reviewThreadKey,
 } from './fragment-keys.ts';
 
-/** Discriminated event-input shape consumed by the dependency graph. */
+/**
+ * Discriminated event-input shape consumed by the dependency graph.
+ */
 export type EventInput = {
-  /** Event-kind discriminant. */
+  /**
+   * Event-kind discriminant.
+   */
   readonly kind: EventKind;
 
   /**
@@ -50,20 +54,30 @@ export type EventInput = {
  * `(label, state)` filter list whose membership might have changed).
  */
 export type ResolvedEventContext = {
-  /** Owning repository id of the issue this event targets. */
+  /**
+   * Owning repository id of the issue this event targets.
+   */
   readonly repoId: string;
 
-  /** Current labels on the issue. */
+  /**
+   * Current labels on the issue.
+   */
   readonly issueLabelIds: readonly string[];
 
-  /** All labels defined in the owning repo. */
+  /**
+   * All labels defined in the owning repo.
+   */
   readonly repoLabelIds: readonly string[];
 
-  /** Current state of the issue. */
+  /**
+   * Current state of the issue.
+   */
   readonly issueState: IssueStateFacet;
 };
 
-/** Both states get a filter-list fragment per label facet. */
+/**
+ * Both states get a filter-list fragment per label facet.
+ */
 const ALL_STATES: readonly IssueStateFacet[] = [
   'open',
   'closed',
@@ -101,17 +115,25 @@ const ALL_STATES: readonly IssueStateFacet[] = [
  * ```
  */
 export function dependenciesFor(row: {
-  /** Event header used for routing decisions. */
+  /**
+   * Event header used for routing decisions.
+   */
   readonly event: EventInput;
-  /** Issue context (repo, labels, state) needed for fanning out filter-list keys. */
+  /**
+   * Issue context (repo, labels, state) needed for fanning out filter-list keys.
+   */
   readonly context: ResolvedEventContext;
 },): Set<string> {
-  /** Aliases destructured up front so the fanning-out branches stay readable. */
+  /**
+   * Aliases destructured up front so the fanning-out branches stay readable.
+   */
   const {
     event,
     context,
   } = row;
-  /** Dependency keys accumulating as branches below resolve. */
+  /**
+   * Dependency keys accumulating as branches below resolve.
+   */
   const keysIterable: string[] = [
     issueDetailKey({
       repoId: context.repoId,

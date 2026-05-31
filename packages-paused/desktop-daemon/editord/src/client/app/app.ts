@@ -76,49 +76,81 @@ import { wireFullscreen, } from './fullscreen.ts';
 import { wireKeybindings, } from './keybindings.ts';
 import { wireLsp, } from './lsp.ts';
 
-/** Tagged logger for the app. */
+/**
+ * Tagged logger for the app.
+ */
 const appLog = tagged({
   tag: 'app',
   l,
 },);
-/** URL query parameters from the page URL. */
+/**
+ * URL query parameters from the page URL.
+ */
 const params = new URLSearchParams(globalThis.location
   .search,);
-/** Auth token passed by editord on startup. */
+/**
+ * Auth token passed by editord on startup.
+ */
 const token = nonNullishOrThrow(params.get('token',),);
-/** File path to open, passed as `?file=...` query parameter. */
+/**
+ * File path to open, passed as `?file=...` query parameter.
+ */
 const filePath = params.get('file',);
-/** Port derived from the current page origin. */
+/**
+ * Port derived from the current page origin.
+ */
 const { port, } = globalThis.location;
-/** WebSocket client instance. */
+/**
+ * WebSocket client instance.
+ */
 const ws = createEditorWsClient({
   port,
   token,
 },);
-/** App container element. */
+/**
+ * App container element.
+ */
 const appElement = nonNullishOrThrow(document.querySelector<HTMLElement>('#app',),);
 
 // oxlint-disable typescript-eslint/no-unsafe-type-assertion -- custom elements registered via define
-/** File tree sidebar component. */
+/**
+ * File tree sidebar component.
+ */
 const fileTree = document.createElement('file-tree',) as FileTree;
-/** Contenteditable text editor component. */
+/**
+ * Contenteditable text editor component.
+ */
 const editorPane = document.createElement('editor-pane',) as EditorPane;
-/** Modal search dialog component. */
+/**
+ * Modal search dialog component.
+ */
 const searchOverlay = document.createElement('search-overlay',) as SearchOverlay;
-/** Hover tooltip component. */
+/**
+ * Hover tooltip component.
+ */
 const hoverPopup = document.createElement('hover-popup',) as HoverPopup;
-/** Autocomplete popup component. */
+/**
+ * Autocomplete popup component.
+ */
 const completionPopup = document.createElement('completion-popup',) as CompletionPopup;
-/** References popup component. */
+/**
+ * References popup component.
+ */
 const referencesPopup = document.createElement('references-popup',) as ReferencesPopup;
-/** Rename input component. */
+/**
+ * Rename input component.
+ */
 const renameInput = document.createElement('rename-input',) as RenameInput;
-/** Binary/media file viewer component. */
+/**
+ * Binary/media file viewer component.
+ */
 const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 // oxlint-enable typescript-eslint/no-unsafe-type-assertion
 
 fileTree.fetchDir = async function fetchDir(path: string,): Promise<readonly DirEntry[]> {
-  /** Directory listing returned by the server; surface goes back as the fetchDir result. */
+  /**
+   * Directory listing returned by the server; surface goes back as the fetchDir result.
+   */
   const { entries, } = await ws.request({
     type: 'listDir',
     path,
@@ -146,9 +178,13 @@ searchOverlay.getRootDir = function getScope(): string {
 searchOverlay.onSearch = async function handleSearch(
   query: string,
 ): Promise<readonly SearchResult[]> {
-  /** Directory the search is scoped to; either the file-tree selection or the project root. */
+  /**
+   * Directory the search is scoped to; either the file-tree selection or the project root.
+   */
   const scope = resolveSearchScope();
-  /** Search hits returned by the server for the given query and scope. */
+  /**
+   * Search hits returned by the server for the given query and scope.
+   */
   const { results, } = await ws.request({
     type: 'search',
     query,
@@ -169,7 +205,9 @@ appElement.append(
 );
 wireFullscreen({ appElement, },);
 
-/** Mutable app state shared with event handlers. */
+/**
+ * Mutable app state shared with event handlers.
+ */
 const state: AppState = {
   currentFilePath: filePath,
   currentFileKind: 'text',
@@ -217,14 +255,18 @@ function getCurrentFileKind(): FileKind {
   return state.currentFileKind;
 }
 
-/** Current-file capability passed to modules that should not own app state. */
+/**
+ * Current-file capability passed to modules that should not own app state.
+ */
 const currentFileState: CurrentFileStateAccess = {
   getCurrentFilePath,
   setCurrentFilePath,
   getCurrentFileKind,
 };
 
-/** Tracks recently opened files for recency markers in the file tree. */
+/**
+ * Tracks recently opened files for recency markers in the file tree.
+ */
 const recentFiles = createRecentFiles();
 
 /**
@@ -238,7 +280,9 @@ function recordFileOpen(path: string,): void {
   void fileTree.revealFiles({ paths: [path,], },);
 }
 
-/** Loads a file and updates the current file state. */
+/**
+ * Loads a file and updates the current file state.
+ */
 async function loadFileSafe(
   {
     path,
@@ -250,7 +294,9 @@ async function loadFileSafe(
     readonly character?: number | undefined;
   },
 ): Promise<void> {
-  /** Loaded file's category (`text` vs binary variants); null when the load was rejected. */
+  /**
+   * Loaded file's category (`text` vs binary variants); null when the load was rejected.
+   */
   const kind = await loadFile({
     ws,
     editorPane,
@@ -264,7 +310,9 @@ async function loadFileSafe(
     state.currentFileKind = kind;
 }
 
-/** LSP feature callbacks returned from wiring. */
+/**
+ * LSP feature callbacks returned from wiring.
+ */
 const {
   formatDocument,
   requestCompletions,
@@ -294,7 +342,9 @@ wireSelectEvents({
   refreshInlayHints,
 },);
 
-/** Saves the current editor content to the server. Skips non-text files. */
+/**
+ * Saves the current editor content to the server. Skips non-text files.
+ */
 async function saveCurrentFile(): Promise<void> {
   if ((state.currentFilePath
     === null) || (state.currentFileKind
@@ -369,7 +419,9 @@ wireKeybindings({
     performSwapUp({ pane: editorPane, },);
   },
   openTerminalAtCurrentFile: function openTerminal() {
-    /** Directory to spawn the terminal in: the open file's parent, or the project root when nothing is open. */
+    /**
+     * Directory to spawn the terminal in: the open file's parent, or the project root when nothing is open.
+     */
     const dir = state.currentFilePath
       !== null
       ? state.currentFilePath
@@ -388,7 +440,9 @@ wireKeybindings({
   expandSelection,
   shrinkSelection,
   navigateToRecentFile: function navigateToRecent(index: number,) {
-    /** Path at the given recency slot; undefined when the user requested a slot the history has not filled yet. */
+    /**
+     * Path at the given recency slot; undefined when the user requested a slot the history has not filled yet.
+     */
     const path = recentFiles.paths[index];
     if (path === undefined)
       return;

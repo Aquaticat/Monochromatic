@@ -13,15 +13,23 @@ import {
   join,
 } from 'node:path';
 
-/** Cache entry with a timestamp for TTL-based eviction. */
+/**
+ * Cache entry with a timestamp for TTL-based eviction.
+ */
 type CacheEntry = {
-  /** Cached result: project root path or null. */
+  /**
+   * Cached result: project root path or null.
+   */
   readonly value: string | null;
-  /** Timestamp when the entry was stored (milliseconds since epoch). */
+  /**
+   * Timestamp when the entry was stored (milliseconds since epoch).
+   */
   readonly storedAt: number;
 };
 
-/** Time-to-live for cache entries (milliseconds). */
+/**
+ * Time-to-live for cache entries (milliseconds).
+ */
 const CACHE_TTL_MS = 60_000;
 
 /**
@@ -47,11 +55,15 @@ const joinedConfigFilesCache = new WeakMap<readonly string[], string>();
  * @returns null-separated string of file names
  */
 function getJoinedConfigFiles(configFiles: readonly string[],): string {
-  /** Cached joined form; avoids re-joining when the same array is reused. */
+  /**
+   * Cached joined form; avoids re-joining when the same array is reused.
+   */
   const cached = joinedConfigFilesCache.get(configFiles,);
   if (cached !== undefined)
     return cached;
-  /** Null byte cannot appear in filenames, so it is safe as a delimiter. */
+  /**
+   * Null byte cannot appear in filenames, so it is safe as a delimiter.
+   */
   const joined = configFiles.join('\0',);
   joinedConfigFilesCache.set(
     configFiles,
@@ -87,9 +99,13 @@ export function findProjectRoot({
   readonly configFiles: readonly string[];
   readonly ceiling: string;
 },): string | null {
-  /** Composite key encodes startDir, ceiling, and the joined config-file set. */
+  /**
+   * Composite key encodes startDir, ceiling, and the joined config-file set.
+   */
   const cacheKey = `${startDir}\0${ceiling}\0${getJoinedConfigFiles(configFiles,)}`;
-  /** TTL-gated reuse below avoids hitting the filesystem for recently-resolved paths. */
+  /**
+   * TTL-gated reuse below avoids hitting the filesystem for recently-resolved paths.
+   */
   const cached = rootCache.get(cacheKey,);
   if ((cached !== undefined) && ((Date.now()
     - cached
@@ -117,10 +133,14 @@ export function findProjectRoot({
         return dir;
       }
     }
-    /** Stop if we've reached the ceiling or filesystem root. */
+    /**
+     * Stop if we've reached the ceiling or filesystem root.
+     */
     if (dir === ceiling)
       break;
-    /** Same-as-self means we hit the filesystem root; break to avoid infinite loop. */
+    /**
+     * Same-as-self means we hit the filesystem root; break to avoid infinite loop.
+     */
     const parent = dirname(dir,);
     if (parent === dir)
       break;

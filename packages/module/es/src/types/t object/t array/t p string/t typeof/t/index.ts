@@ -1,22 +1,32 @@
-/** Discriminated union type representing detailed type information for JavaScript values */
+/**
+ * Discriminated union type representing detailed type information for JavaScript values
+ */
 export type $ =
-  /** Represents the `undefined` primitive type */
+  /**
+   * Represents the `undefined` primitive type
+   */
   | 'undefined'
-  /** Represents the `bigint` primitive type with sign information */
+  /**
+   * Represents the `bigint` primitive type with sign information
+   */
   | [
     'bigint',
     {
       sign: 0 | 'negative' | 'positive';
     },
   ]
-  /** Represents the `boolean` primitive type with truthiness information */
+  /**
+   * Represents the `boolean` primitive type with truthiness information
+   */
   | [
     'boolean',
     {
       true: boolean;
     },
   ]
-  /** Represents function types with generator and async flags */
+  /**
+   * Represents function types with generator and async flags
+   */
   | [
     'function',
     {
@@ -24,7 +34,9 @@ export type $ =
       async: boolean;
     },
   ]
-  /** Represents the `number` primitive type with sign and float information */
+  /**
+   * Represents the `number` primitive type with sign and float information
+   */
   | [
     'number',
     {
@@ -37,20 +49,28 @@ export type $ =
       ];
     },
   ]
-  /** Represents object types with prototype information */
+  /**
+   * Represents object types with prototype information
+   */
   | [
     'object',
     {
       prototype:
-        /** Represents `null` values (special object case) */
+        /**
+         * Represents `null` values (special object case)
+         */
         // > Object.prototype.toString.call(null)
         // '[object Null]'
         | 'Null'
-        /** Represents array objects */
+        /**
+         * Represents array objects
+         */
         // > Object.prototype.toString.call([])
         // '[object Array]'
         | 'Array'
-        /** Represents plain objects with iterability flag */
+        /**
+         * Represents plain objects with iterability flag
+         */
         // > Object.prototype.toString.call({*[Symbol.iterator]() {}})
         // '[object Object]'
         // > Object.prototype.toString.call({})
@@ -70,23 +90,33 @@ export type $ =
             ];
           },
         ]
-        /** Represents Date objects */
+        /**
+         * Represents Date objects
+         */
         // > Object.prototype.toString.call(new Date())
         // '[object Date]'
         | 'Date'
-        /** Represents Map objects */
+        /**
+         * Represents Map objects
+         */
         // > Object.prototype.toString.call(new Map())
         // '[object Map]'
         | 'Map'
-        /** Represents Set objects */
+        /**
+         * Represents Set objects
+         */
         // > Object.prototype.toString.call(new Set())
         // '[object Set]'
         | 'Set'
-        /** Represents Promise objects */
+        /**
+         * Represents Promise objects
+         */
         // > Object.prototype.toString.call(new Promise(() => {}))
         // '[object Promise]'
         | 'Promise'
-        /** Represents RegExp objects with global flag */
+        /**
+         * Represents RegExp objects with global flag
+         */
         // > Object.prototype.toString.call(new RegExp())
         // '[object RegExp]'
         | [
@@ -97,7 +127,9 @@ export type $ =
         ];
     },
   ]
-  /** Represents string types with emptiness and character information */
+  /**
+   * Represents string types with emptiness and character information
+   */
   | [
     'string',
     | { empty: true; }

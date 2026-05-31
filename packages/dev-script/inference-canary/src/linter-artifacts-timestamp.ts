@@ -8,24 +8,40 @@
 
 import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';
 
-/** 24 hours in milliseconds */
+/**
+ * 24 hours in milliseconds
+ */
 export const TWENTY_FOUR_HOURS_MS: number = MS_PER_DAY;
 
 //region Date-format constants
 
-/** Number of digits in the year portion (`YYYY`). */
+/**
+ * Number of digits in the year portion (`YYYY`).
+ */
 const YEAR_DIGITS = 4;
-/** Position of the separator char immediately after the year. */
+/**
+ * Position of the separator char immediately after the year.
+ */
 const YEAR_END = YEAR_DIGITS;
-/** Minimum slug length: year digits + 1-char separator. */
+/**
+ * Minimum slug length: year digits + 1-char separator.
+ */
 const YEAR_HYPHEN_PREFIX_LENGTH = YEAR_DIGITS + 1;
-/** Position of the first month digit. */
+/**
+ * Position of the first month digit.
+ */
 const MONTH_START = YEAR_HYPHEN_PREFIX_LENGTH;
-/** Position of the separator char immediately after the month (`YYYY:MM` is 7 chars). */
+/**
+ * Position of the separator char immediately after the month (`YYYY:MM` is 7 chars).
+ */
 const MONTH_END = 7;
-/** Position of the first day digit. */
+/**
+ * Position of the first day digit.
+ */
 const DAY_START = 8;
-/** Position immediately after the day digits (`YYYY:MM:DD` is 10 chars). */
+/**
+ * Position immediately after the day digits (`YYYY:MM:DD` is 10 chars).
+ */
 const DAY_END = 10;
 
 //endregion Date-format constants
@@ -36,11 +52,17 @@ const DAY_END = 10;
  * Options for {@link isAsciiDigitRun}.
  */
 type IsAsciiDigitRunOptions = {
-  /** String whose chars are inspected. */
+  /**
+   * String whose chars are inspected.
+   */
   readonly s: string;
-  /** Inclusive start index of the run. */
+  /**
+   * Inclusive start index of the run.
+   */
   readonly start: number;
-  /** Number of chars to check from `start`. */
+  /**
+   * Number of chars to check from `start`.
+   */
   readonly count: number;
 };
 
@@ -71,10 +93,14 @@ function isAsciiDigitRun({
   count,
 }: IsAsciiDigitRunOptions,): boolean {
   return (function scanDigits(): boolean {
-    /** Offset into the run; advances one char per iteration. */
+    /**
+     * Offset into the run; advances one char per iteration.
+     */
     let offset = 0;
     while (offset < count) {
-      /** Char at the absolute index; only ASCII digits keep the run alive. */
+      /**
+       * Char at the absolute index; only ASCII digits keep the run alive.
+       */
       const c = s.charAt(start + offset,);
       if ((c < '0') || (c > '9'))
         return false;
@@ -123,9 +149,13 @@ function hasYearHyphenPrefix(s: string,): boolean {
  * skip probes that were already attempted (successfully or not) within 24 hours.
  */
 export type RecentArtifactScan = {
-  /** Map from model label to set of recently-tested probe names */
+  /**
+   * Map from model label to set of recently-tested probe names
+   */
   readonly probePairs: ReadonlyMap<string, ReadonlySet<string>>;
-  /** Model labels that had a whole-model failure (e.g. 429, auth error) within 24 hours */
+  /**
+   * Model labels that had a whole-model failure (e.g. 429, auth error) within 24 hours
+   */
   readonly failedModels: ReadonlySet<string>;
 };
 
@@ -134,11 +164,17 @@ export type RecentArtifactScan = {
  * directory name does not follow the `probe-pass-timestamp` convention.
  */
 export type ArtifactDirParts = {
-  /** Probe name (everything up to the pass marker). */
+  /**
+   * Probe name (everything up to the pass marker).
+   */
   probe: string;
-  /** Pass marker, one of `'initial'` or `'fix'`. */
+  /**
+   * Pass marker, one of `'initial'` or `'fix'`.
+   */
   pass: 'initial' | 'fix';
-  /** Filesystem-safe timestamp slug starting with a four-digit year. */
+  /**
+   * Filesystem-safe timestamp slug starting with a four-digit year.
+   */
   timestamp: string;
 };
 
@@ -182,17 +218,23 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | typeof NO_MA
       // prefix wins, matching the original regex's greedy `.+` capture) in a
       // single linear pass: each step moves the cursor strictly left of the
       // previous match, so no frame stacks up the way the recursion did.
-      /** Search end index; `lastIndexOf` stops at or before it, then moves left of each non-matching occurrence. */
+      /**
+       * Search end index; `lastIndexOf` stops at or before it, then moves left of each non-matching occurrence.
+       */
       let from = name.length;
       while (from >= 0) {
-        /** Right-most occurrence of `marker` at or before `from`; `-1` (and index 0, an empty probe) ends the search. */
+        /**
+         * Right-most occurrence of `marker` at or before `from`; `-1` (and index 0, an empty probe) ends the search.
+         */
         const idx = name.lastIndexOf(
           marker,
           from,
         );
         if (idx <= 0)
           return NO_MATCH;
-        /** Slug after the marker; must satisfy the year-prefix shape to count. */
+        /**
+         * Slug after the marker; must satisfy the year-prefix shape to count.
+         */
         const tail = name.slice(idx + marker
           .length,);
         if (hasYearHyphenPrefix(tail,)) {
@@ -210,7 +252,9 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | typeof NO_MA
       return NO_MATCH;
     })();
   }
-  /** Initial-pass match attempt; falls through to the fix-pass marker on no match. */
+  /**
+   * Initial-pass match attempt; falls through to the fix-pass marker on no match.
+   */
   const initial = tryMarker('-initial-',);
   return initial !== NO_MATCH ? initial : tryMarker('-fix-',);
 }
@@ -233,11 +277,15 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | typeof NO_MA
  * ```
  */
 export function parseFailureDir(name: string,): { timestamp: string; } | typeof NO_MATCH {
-  /** Literal prefix consumed before the timestamp slug. */
+  /**
+   * Literal prefix consumed before the timestamp slug.
+   */
   const PREFIX = 'failure-';
   if (!name.startsWith(PREFIX,))
     return NO_MATCH;
-  /** Slug after the prefix; must start with four digits and a hyphen. */
+  /**
+   * Slug after the prefix; must start with four digits and a hyphen.
+   */
   const tail = name.slice(PREFIX.length,);
   if (!hasYearHyphenPrefix(tail,))
     return NO_MATCH;
@@ -254,7 +302,9 @@ export function parseFailureDir(name: string,): { timestamp: string; } | typeof 
  * @returns ISO 8601 timestamp string, or undefined if parsing fails
  */
 function restoreTimestamp(rawTimestamp: string,): string {
-  /** Slug with hyphens swapped back to colons; the date portion is fixed up to hyphens by the return expression. */
+  /**
+   * Slug with hyphens swapped back to colons; the date portion is fixed up to hyphens by the return expression.
+   */
   const withColons = rawTimestamp
     .replaceAll(
       '-',
@@ -336,9 +386,13 @@ function rewriteDateColons(s: string,): string {
  * ```
  */
 type IsRecentTimestampOptions = {
-  /** Filesystem-safe timestamp slug */
+  /**
+   * Filesystem-safe timestamp slug
+   */
   readonly rawTimestamp: string;
-  /** Cutoff time in milliseconds since epoch */
+  /**
+   * Cutoff time in milliseconds since epoch
+   */
   readonly cutoff: number;
 };
 
@@ -361,9 +415,13 @@ export function isRecentTimestamp({
   rawTimestamp,
   cutoff,
 }: IsRecentTimestampOptions,): boolean {
-  /** Restored ISO 8601 timestamp; parsed by `Date` below for the cutoff comparison. */
+  /**
+   * Restored ISO 8601 timestamp; parsed by `Date` below for the cutoff comparison.
+   */
   const fixed = restoreTimestamp(rawTimestamp,);
-  /** Epoch milliseconds for the artifact's timestamp; NaN when the slug failed to parse. */
+  /**
+   * Epoch milliseconds for the artifact's timestamp; NaN when the slug failed to parse.
+   */
   const entryTime = new Date(fixed,).getTime();
   return (!Number.isNaN(entryTime,)) && (entryTime >= cutoff);
 }

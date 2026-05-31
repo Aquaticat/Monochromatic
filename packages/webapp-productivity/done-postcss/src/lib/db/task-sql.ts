@@ -13,74 +13,126 @@ import type {
 } from '../types.ts';
 
 /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors `@tursodatabase/database` `.get()/.all()` raw row shape: SQLite NULL columns materialize as JS `null` values on the returned row object, so the honest type for a nullable column is `T | null`. `mapTask` converts these to absent (`?:`) at the application boundary. */
-/** Raw SQLite row shape before mapping to the application-level `Task` type. */
+/**
+ * Raw SQLite row shape before mapping to the application-level `Task` type.
+ */
 export type TaskRow = {
-  /** Primary key UUID. */
+  /**
+   * Primary key UUID.
+   */
   id: string;
-  /** Task title text. */
+  /**
+   * Task title text.
+   */
   title: string;
-  /** Optional task description. */
+  /**
+   * Optional task description.
+   */
   description: string | null;
-  /** JSON-encoded string array (`'["tag1","tag2"]'`). */
+  /**
+   * JSON-encoded string array (`'["tag1","tag2"]'`).
+   */
   tags: string;
-  /** JSON-encoded string array. */
+  /**
+   * JSON-encoded string array.
+   */
   locations: string;
-  /** Task priority level or null. */
+  /**
+   * Task priority level or null.
+   */
   priority: TaskPriority | null;
-  /** ISO date string for due date or null. */
+  /**
+   * ISO date string for due date or null.
+   */
   due_date: string | null;
-  /** Task complexity level or null. */
+  /**
+   * Task complexity level or null.
+   */
   complexity: TaskComplexity | null;
-  /** JSON-encoded string array. */
+  /**
+   * JSON-encoded string array.
+   */
   reminders: string;
-  /** JSON-encoded string array of blocker task IDs. */
+  /**
+   * JSON-encoded string array of blocker task IDs.
+   */
   blocked_by: string;
-  /** Total tracked seconds. */
+  /**
+   * Total tracked seconds.
+   */
   tracked_time: number;
-  /** ISO timestamp when timer was started, or null. */
+  /**
+   * ISO timestamp when timer was started, or null.
+   */
   timer_started_at: string | null;
-  /** Current task workflow status. */
+  /**
+   * Current task workflow status.
+   */
   status: TaskStatus;
-  /** Source system that created this task. */
+  /**
+   * Source system that created this task.
+   */
   source: Task['source'];
-  /** External source identifier. */
+  /**
+   * External source identifier.
+   */
   source_id: string | null;
-  /** Additional source metadata as JSON. */
+  /**
+   * Additional source metadata as JSON.
+   */
   source_meta: string | null;
-  /** ISO timestamp of creation. */
+  /**
+   * ISO timestamp of creation.
+   */
   created_at: string;
-  /** ISO timestamp of last update. */
+  /**
+   * ISO timestamp of last update.
+   */
   updated_at: string;
 };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
-/** SQL to select a single task by primary key. */
+/**
+ * SQL to select a single task by primary key.
+ */
 export const SQL_SELECT_TASK_BY_ID = 'SELECT * FROM tasks WHERE id = ?';
 
-/** SQL to select unblocked inbox tasks ordered by creation date. */
+/**
+ * SQL to select unblocked inbox tasks ordered by creation date.
+ */
 export const SQL_SELECT_INBOX_UNBLOCKED =
   "SELECT * FROM tasks WHERE status = 'inbox' AND blocked_by = '[]' ORDER BY created_at DESC";
 
-/** SQL to select blocked inbox tasks with blocker IDs via JSON expansion. */
+/**
+ * SQL to select blocked inbox tasks with blocker IDs via JSON expansion.
+ */
 export const SQL_SELECT_BLOCKED_INBOX = `
   SELECT tasks.*, blocker.value AS blocker_id
   FROM tasks, json_each(tasks.blocked_by) AS blocker
   WHERE tasks.status = 'inbox' AND tasks.blocked_by != '[]'
   ORDER BY tasks.created_at DESC`;
 
-/** SQL to select in-progress tasks ordered by update date. */
+/**
+ * SQL to select in-progress tasks ordered by update date.
+ */
 export const SQL_SELECT_IN_PROGRESS =
   "SELECT * FROM tasks WHERE status = 'in_progress' ORDER BY updated_at DESC";
 
-/** SQL to select non-done tasks excluding a given task for blocker selection. */
+/**
+ * SQL to select non-done tasks excluding a given task for blocker selection.
+ */
 export const SQL_SELECT_FOR_BLOCKER_PICKER =
   "SELECT * FROM tasks WHERE id != ? AND status != 'done' ORDER BY title ASC";
 
-/** SQL to select all unique tags across all tasks. */
+/**
+ * SQL to select all unique tags across all tasks.
+ */
 export const SQL_SELECT_ALL_TAGS =
   'SELECT DISTINCT tag.value AS tag FROM tasks, json_each(tasks.tags) AS tag ORDER BY tag.value ASC';
 
-/** SQL for full-text search across task title, description, and tags. */
+/**
+ * SQL for full-text search across task title, description, and tags.
+ */
 export const SQL_SEARCH_FTS = `
   SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
   FROM tasks_fts
@@ -88,14 +140,18 @@ export const SQL_SEARCH_FTS = `
   WHERE tasks_fts MATCH ?
   ORDER BY rank`;
 
-/** SQL fallback search using LIKE matching on title and description. */
+/**
+ * SQL fallback search using LIKE matching on title and description.
+ */
 export const SQL_SEARCH_LIKE = `
   SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
   FROM tasks
   WHERE tasks.title LIKE ? OR tasks.description LIKE ?
   ORDER BY tasks.updated_at DESC`;
 
-/** SQL to insert a new task with all columns. */
+/**
+ * SQL to insert a new task with all columns.
+ */
 export const SQL_INSERT_TASK = `
   INSERT INTO tasks (
     id, title, description, tags, locations, priority, due_date,
@@ -103,25 +159,35 @@ export const SQL_INSERT_TASK = `
     status, source, source_id, source_meta, created_at, updated_at
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-/** SQL to update mutable task fields by ID. */
+/**
+ * SQL to update mutable task fields by ID.
+ */
 export const SQL_UPDATE_TASK = `
   UPDATE tasks
   SET title = ?, description = ?, tags = ?, locations = ?, priority = ?, due_date = ?,
       complexity = ?, reminders = ?, blocked_by = ?, status = ?, updated_at = ?
   WHERE id = ?`;
 
-/** SQL to delete a task by ID. */
+/**
+ * SQL to delete a task by ID.
+ */
 export const SQL_DELETE_TASK = 'DELETE FROM tasks WHERE id = ?';
 
-/** SQL to start a timer on a task, setting status to in_progress. */
+/**
+ * SQL to start a timer on a task, setting status to in_progress.
+ */
 export const SQL_START_TIMER =
   "UPDATE tasks SET timer_started_at = ?, status = 'in_progress', updated_at = ? WHERE id = ?";
 
-/** SQL to stop a timer, accumulating tracked time and resetting status to inbox. */
+/**
+ * SQL to stop a timer, accumulating tracked time and resetting status to inbox.
+ */
 export const SQL_STOP_TIMER =
   "UPDATE tasks SET tracked_time = ?, timer_started_at = NULL, status = 'inbox', updated_at = ? WHERE id = ?";
 
-/** SQL to select active blockers for a task via JSON expansion. */
+/**
+ * SQL to select active blockers for a task via JSON expansion.
+ */
 export const SQL_SELECT_BLOCKERS = `
   SELECT blocker.value AS blocker_id, tasks.title AS blocker_title
   FROM json_each((SELECT blocked_by FROM tasks WHERE id = ?)) AS blocker

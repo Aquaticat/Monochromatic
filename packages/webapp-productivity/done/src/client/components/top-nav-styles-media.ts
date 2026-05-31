@@ -8,7 +8,9 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from '../css.ts';
 
-/** Desktop breakpoint overrides for `<top-nav>`: shows full nav, hides hamburger. */
+/**
+ * Desktop breakpoint overrides for `<top-nav>`: shows full nav, hides hamburger.
+ */
 export const TOP_NAV_MEDIA_STYLES: string = css({
   at: 'media',
   params: '(min-width: 48rem)',

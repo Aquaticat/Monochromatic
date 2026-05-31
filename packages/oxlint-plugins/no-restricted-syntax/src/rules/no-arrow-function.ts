@@ -78,23 +78,35 @@ export const noArrowFunction: CreateOnceRule = {
           return;
         }
 
-        /** Variable name from the declarator (e.g. `foo` in `const foo = ...`). */
+        /**
+         * Variable name from the declarator (e.g. `foo` in `const foo = ...`).
+         */
         const { name, } = parent.id;
 
-        /** Node containing the `VariableDeclaration`; inspected to detect an `export` wrapper. */
+        /**
+         * Node containing the `VariableDeclaration`; inspected to detect an `export` wrapper.
+         */
         const grandparent = parent.parent
           .parent;
-        /** True when the declaration is exported, so the replacement keeps the `export` prefix. */
+        /**
+         * True when the declaration is exported, so the replacement keeps the `export` prefix.
+         */
         const isExported = grandparent.type
           === 'ExportNamedDeclaration';
 
-        /** The full declaration node to replace (including `export` if present). */
+        /**
+         * The full declaration node to replace (including `export` if present).
+         */
         const replaceNode = isExported ? grandparent : parent.parent;
 
-        /** Async prefix if the arrow is async. */
+        /**
+         * Async prefix if the arrow is async.
+         */
         const asyncPrefix = node.async ? 'async ' : '';
 
-        /** Generic type parameters if present. */
+        /**
+         * Generic type parameters if present.
+         */
         const typeParamsText =
           (node.typeParameters
             !== null) && (node.typeParameters
@@ -114,7 +126,9 @@ export const noArrowFunction: CreateOnceRule = {
           node,
         },);
 
-        /** Return type annotation if present. */
+        /**
+         * Return type annotation if present.
+         */
         const returnTypeText =
           (node.returnType
             !== null) && (node.returnType
@@ -123,17 +137,23 @@ export const noArrowFunction: CreateOnceRule = {
               .getText(node.returnType,)
             : '';
 
-        /** Body text, wrapping expression bodies in `{ return ...; }`. */
+        /**
+         * Body text, wrapping expression bodies in `{ return ...; }`.
+         */
         const bodyText = node.expression
           ? `{ return ${context.sourceCode
             .getText(node.body,)} }`
           : context.sourceCode
             .getText(node.body,);
 
-        /** Export keyword prefix. */
+        /**
+         * Export keyword prefix.
+         */
         const exportPrefix = isExported ? 'export ' : '';
 
-        /** Assembled function declaration. */
+        /**
+         * Assembled function declaration.
+         */
         const replacement =
           `${exportPrefix}${asyncPrefix}function ${name}${typeParamsText}${paramsText}${returnTypeText} ${bodyText}`;
 

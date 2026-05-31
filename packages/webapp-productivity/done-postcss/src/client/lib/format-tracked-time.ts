@@ -18,7 +18,9 @@ import {
 
 import type { Task, } from '../../lib/types.ts';
 
-/** Cached formatter; `Intl.DurationFormat` is safe to reuse across calls. */
+/**
+ * Cached formatter; `Intl.DurationFormat` is safe to reuse across calls.
+ */
 const DIGITAL_FORMATTER = new Intl.DurationFormat(
   undefined,
   { style: 'digital', },
@@ -38,16 +40,24 @@ const DIGITAL_FORMATTER = new Intl.DurationFormat(
  * formatTrackedTime(263_400); // '73:10:00'
  */
 export function formatTrackedTime(seconds: number,): string {
-  /** Non-negative integer seconds; negative or fractional inputs are clamped here. */
+  /**
+   * Non-negative integer seconds; negative or fractional inputs are clamped here.
+   */
   const totalSeconds = Math.max(
     0,
     Math.floor(seconds,),
   );
-  /** Whole-hour portion; days roll into hours so the digital format stays stopwatch-like. */
+  /**
+   * Whole-hour portion; days roll into hours so the digital format stays stopwatch-like.
+   */
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
-  /** Whole-minute portion of the remainder after extracting hours. */
+  /**
+   * Whole-minute portion of the remainder after extracting hours.
+   */
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
-  /** Remaining seconds after extracting hours and minutes. */
+  /**
+   * Remaining seconds after extracting hours and minutes.
+   */
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
   return DIGITAL_FORMATTER.format({
     hours,
@@ -72,7 +82,9 @@ export function formatRunningTrackedTime(task: Task,): string {
     === undefined)
     return formatTrackedTime(task.trackedTime,);
 
-  /** Seconds elapsed since the timer started; clamped to non-negative for clock skew safety. */
+  /**
+   * Seconds elapsed since the timer started; clamped to non-negative for clock skew safety.
+   */
   const elapsedSeconds = Math.max(
     0,
     Math.floor((Date.now()

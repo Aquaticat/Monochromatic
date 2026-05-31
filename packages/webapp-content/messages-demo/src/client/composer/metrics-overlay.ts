@@ -27,7 +27,9 @@ import type {
   ComposerState,
 } from './state.ts';
 
-/** Maximum number of compile samples to retain in the rolling buffer. */
+/**
+ * Maximum number of compile samples to retain in the rolling buffer.
+ */
 const SAMPLE_BUFFER = 200;
 
 /**
@@ -88,7 +90,9 @@ function mountMetricsOverlay(
     state: ComposerState;
   },
 ): () => void {
-  /** Overlay container appended to the parent; re-rendered on every metrics update. */
+  /**
+   * Overlay container appended to the parent; re-rendered on every metrics update.
+   */
   const overlay = document.createElement('div',);
   overlay.className = 'composer-metrics-overlay';
   overlay.dataset
@@ -96,7 +100,9 @@ function mountMetricsOverlay(
   input.parent
     .append(overlay,);
   return function render(): void {
-    /** Snapshot of state metrics, falling back to empty when not yet seeded. */
+    /**
+     * Snapshot of state metrics, falling back to empty when not yet seeded.
+     */
     const m = input.state
       .metrics
       ?? emptyMetrics();
@@ -141,7 +147,9 @@ function mountMetricsOverlay(
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/** Folded shape of the worker `metrics` payload after type narrowing. */
+/**
+ * Folded shape of the worker `metrics` payload after type narrowing.
+ */
 type WorkerMetricsPayload = {
   compileMs?: readonly unknown[];
   maxPutQueueDepth?: unknown;
@@ -167,7 +175,9 @@ function asMetricsPayload(data: unknown,): WorkerMetricsPayload | typeof NOT_MET
   if (((typeof data) !== 'object') || (data === null)
     || (!('kind' in data)))
     return NOT_METRICS;
-  /** Narrowed alias so the `kind` check reads `message.kind` rather than a type-cast. */
+  /**
+   * Narrowed alias so the `kind` check reads `message.kind` rather than a type-cast.
+   */
   const message: { kind: unknown; } = data;
   if (message.kind
     !== 'metrics')
@@ -193,7 +203,9 @@ function foldCounters(
     readonly payload: Readonly<WorkerMetricsPayload>;
   },
 ): CompilePipelineMetrics {
-  /** Running snapshot; replaced with widened copies as each payload field folds in. */
+  /**
+   * Running snapshot; replaced with widened copies as each payload field folds in.
+   */
   let next = input.current;
   if ((typeof input.payload
     .maxPutQueueDepth) === 'number') {
@@ -246,27 +258,37 @@ export function attachMetricsOverlay(
    * and re-renders. Other message kinds are ignored.
    */
   onWorkerMessage: (data: unknown,) => void;
-  /** Records one tier 2 -\> 3 transition wall-clock time. */
+  /**
+   * Records one tier 2 -\> 3 transition wall-clock time.
+   */
   recordTransition: (ms: number,) => void;
 } {
   input.state
     .metrics = emptyMetrics();
-  /** Rolling buffer of per-chunk compile times; folded into the median/p99 stats. */
+  /**
+   * Rolling buffer of per-chunk compile times; folded into the median/p99 stats.
+   */
   const samples: number[] = [];
-  /** Imperative re-render callback; called after every fold. */
+  /**
+   * Imperative re-render callback; called after every fold.
+   */
   const render = mountMetricsOverlay({
     parent: input.parent,
     state: input.state,
   },);
   render();
 
-  /** Recomputes derived stats from the rolling buffer and re-renders. */
+  /**
+   * Recomputes derived stats from the rolling buffer and re-renders.
+   */
   function refresh(): void {
     if (input.state
       .metrics
       === undefined)
       return;
-    /** Ascending copy of `samples`; fed to median/percentile helpers. */
+    /**
+     * Ascending copy of `samples`; fed to median/percentile helpers.
+     */
     const sorted = samples.toSorted(function asc(
       a,
       b,
@@ -289,7 +311,9 @@ export function attachMetricsOverlay(
 
   return {
     onWorkerMessage(data,) {
-      /** Narrowed worker metrics payload; `NOT_METRICS` skips non-metrics messages. */
+      /**
+       * Narrowed worker metrics payload; `NOT_METRICS` skips non-metrics messages.
+       */
       const payload = asMetricsPayload(data,);
       if (payload === NOT_METRICS)
         return;

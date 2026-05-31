@@ -49,7 +49,9 @@ function writeOneLocalFileHeader(
     startOffset: number;
   }>,
 ): number {
-  /** Local cursor tracking each successive little-endian write. */
+  /**
+   * Local cursor tracking each successive little-endian write.
+   */
   let offset = startOffset;
   view.setUint32(
     offset,
@@ -168,7 +170,9 @@ export function writeLocalFileHeaders(
     startOffset: number;
   }>,
 ): number {
-  /** Running cursor advancing through successive local file headers. */
+  /**
+   * Running cursor advancing through successive local file headers.
+   */
   let offset = startOffset;
   for (const { entry, } of positioned) {
     offset = writeOneLocalFileHeader({
@@ -211,7 +215,9 @@ function writeOneCentralDirectoryHeader(
     startOffset: number;
   }>,
 ): number {
-  /** Local cursor tracking each successive little-endian write. */
+  /**
+   * Local cursor tracking each successive little-endian write.
+   */
   let offset = startOffset;
   view.setUint32(
     offset,
@@ -360,7 +366,9 @@ export function writeCentralDirectory(
     startOffset: number;
   }>,
 ): number {
-  /** Running cursor advancing through successive central directory headers. */
+  /**
+   * Running cursor advancing through successive central directory headers.
+   */
   let offset = startOffset;
   for (const {
     entry,

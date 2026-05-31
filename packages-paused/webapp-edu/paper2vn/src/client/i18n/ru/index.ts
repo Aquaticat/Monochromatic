@@ -1,6 +1,8 @@
 import type { Translation, } from '../i18n-types.ts';
 
-/** Russian translations. */
+/**
+ * Russian translations.
+ */
 const ru: Translation = {
   appName: 'paper2vn',
   start: 'Начать',

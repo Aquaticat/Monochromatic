@@ -3,7 +3,9 @@ import type {
   Sink,
 } from '../types.ts';
 
-/** Prefix for sessionStorage keys to namespace log entries. */
+/**
+ * Prefix for sessionStorage keys to namespace log entries.
+ */
 const STORAGE_KEY_PREFIX = 'monochromatic.log';
 
 /**
@@ -41,16 +43,22 @@ export function verifySessionStorage(): boolean {
   state.verified = true;
 
   try {
-    /** Sentinel key used only for the probe write/read; removed afterward to avoid polluting real log entries. */
+    /**
+     * Sentinel key used only for the probe write/read; removed afterward to avoid polluting real log entries.
+     */
     const testKey = '__monochromatic_verify__';
-    /** Timestamp-based probe value so concurrent verifications never read each other's writes. */
+    /**
+     * Timestamp-based probe value so concurrent verifications never read each other's writes.
+     */
     const testValue = `test-${Date.now()}`;
     globalThis.sessionStorage
       .setItem(
       testKey,
       testValue,
     );
-    /** Probe value read back from storage; equality with `testValue` proves writes actually persist. */
+    /**
+     * Probe value read back from storage; equality with `testValue` proves writes actually persist.
+     */
     const readBack = globalThis.sessionStorage
       .getItem(testKey,);
     globalThis.sessionStorage
@@ -73,7 +81,9 @@ function write(record: LogRecord,): Promise<void> {
     return Promise.resolve();
 
   try {
-    /** Counter-incremented storage key so each log entry occupies its own slot; the prefix namespaces them. */
+    /**
+     * Counter-incremented storage key so each log entry occupies its own slot; the prefix namespaces them.
+     */
     const key = `${STORAGE_KEY_PREFIX}.${state.lineCounter++}`;
     globalThis.sessionStorage
       .setItem(

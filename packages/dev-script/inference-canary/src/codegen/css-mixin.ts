@@ -68,11 +68,15 @@ function skipInlineWhitespace({
   readonly from: number;
 },): number {
   return (function advance(): number {
-    /** Cursor advanced over each whitespace char; the first non-whitespace index is returned. */
+    /**
+     * Cursor advanced over each whitespace char; the first non-whitespace index is returned.
+     */
     let pos = from;
     while (pos < s
       .length) {
-      /** Char at the cursor; only the six ASCII whitespace chars advance the scan. */
+      /**
+       * Char at the cursor; only the six ASCII whitespace chars advance the scan.
+       */
       const c = s.charAt(pos,);
       if (
         (c !== ' ')
@@ -101,16 +105,22 @@ function skipInlineWhitespace({
  * @returns whether `source` shows a `new RegExp` invocation
  */
 function hasRegexConstructorCall(source: string,): boolean {
-  /** Constructor identifier whose `(`-after-whitespace continuation marks an invocation. */
+  /**
+   * Constructor identifier whose `(`-after-whitespace continuation marks an invocation.
+   */
   const TOKEN = 'new RegExp';
   return (function scanTokens(): boolean {
-    /** Index of the candidate `new RegExp`; advances one past each non-matching occurrence. */
+    /**
+     * Index of the candidate `new RegExp`; advances one past each non-matching occurrence.
+     */
     let idx = source.indexOf(
       TOKEN,
       0,
     );
     while (idx !== (-1)) {
-      /** First non-whitespace index after the token; its char must be `(` to count as a call. */
+      /**
+       * First non-whitespace index after the token; its char must be `(` to count as a call.
+       */
       const afterWs = skipInlineWhitespace({
         s: source,
         from: idx + TOKEN
@@ -145,24 +155,34 @@ function hasSingleCharRegexLiteral(source: string,): boolean {
   // The match shape is: opener `/`, then either one non-`/` non-`\n` char OR
   // a `\<any>` escape (2 chars), then a closing `/`.
   return (function scanSlashes(): boolean {
-    /** Index of the candidate opener `/`; advances one past each occurrence that fails the shape. */
+    /**
+     * Index of the candidate opener `/`; advances one past each occurrence that fails the shape.
+     */
     let open = source.indexOf(
       '/',
       0,
     );
     while (open !== (-1)) {
-      /** Body length: `2` for `\X`, `1` for a plain char. */
+      /**
+       * Body length: `2` for `\X`, `1` for a plain char.
+       */
       const bodyLen = source.charAt(open + 1,)
         === '\\' ? 2 : 1;
-      /** Index of the closing-slash slot, just past the body. */
+      /**
+       * Index of the closing-slash slot, just past the body.
+       */
       const bodyEnd = open + 1
         + bodyLen;
       if (bodyEnd >= source
         .length)
         return false;
-      /** Body char (or escape lead) checked against the `[^/\n]` constraint. */
+      /**
+       * Body char (or escape lead) checked against the `[^/\n]` constraint.
+       */
       const body = source.charAt(open + 1,);
-      /** Whether a one-char body is itself `/` or newline, which the shape forbids. */
+      /**
+       * Whether a one-char body is itself `/` or newline, which the shape forbids.
+       */
       const bodyIsForbidden = (bodyLen === 1) && ((body === '/') || (body === '\n'));
       if ((!bodyIsForbidden) && (source.charAt(bodyEnd,)
         === '/'))
@@ -176,7 +196,9 @@ function hasSingleCharRegexLiteral(source: string,): boolean {
   })();
 }
 
-/** Constraint violation message prepended to the fix prompt when regex is detected */
+/**
+ * Constraint violation message prepended to the fix prompt when regex is detected
+ */
 const REGEX_CONSTRAINT_MSG = [
   'CONSTRAINT VIOLATION: Your solution used regular expressions, which is explicitly forbidden by the prompt.',
   'Your score was 0. Rewrite the solution using character-by-character parsing or string index operations instead.',
@@ -202,7 +224,9 @@ export const cssMixinTranspiler: Probe = createCodeGenProbe({
     reject: boolean;
     source: string;
   } {
-    /** Whether the model's source violates the no-regex constraint stated in the prompt. */
+    /**
+     * Whether the model's source violates the no-regex constraint stated in the prompt.
+     */
     const usesRegex = detectsRegexUsage(source,);
     regexViolationCache.set(
       context.label,

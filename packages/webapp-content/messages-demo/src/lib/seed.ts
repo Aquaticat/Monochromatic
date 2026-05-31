@@ -37,95 +37,153 @@ import {
   renderChunks,
 } from './markdown-stream.ts';
 
-/** Default `--count=` when not supplied. */
+/**
+ * Default `--count=` when not supplied.
+ */
 const DEFAULT_MESSAGE_COUNT = 10_000;
 
-/** Decimal radix for `parseInt`. */
+/**
+ * Decimal radix for `parseInt`.
+ */
 const DECIMAL_RADIX = 10;
 
-/** Maximum length of the preview snippet, in characters. */
+/**
+ * Maximum length of the preview snippet, in characters.
+ */
 const PREVIEW_MAX_LENGTH = 200;
 
-/** Progress-print interval in messages. */
+/**
+ * Progress-print interval in messages.
+ */
 const PROGRESS_INTERVAL = 1_000;
 
-/** Distribution thresholds (cumulative probability) for body-size buckets. */
+/**
+ * Distribution thresholds (cumulative probability) for body-size buckets.
+ */
 const P50_THRESHOLD = 0.5;
 
-/** 95th percentile threshold. */
+/**
+ * 95th percentile threshold.
+ */
 const P95_THRESHOLD = 0.95;
 
-/** 99th percentile threshold. */
+/**
+ * 99th percentile threshold.
+ */
 const P99_THRESHOLD = 0.99;
 
-/** Lower bound (chars) for the P50 size bucket. */
+/**
+ * Lower bound (chars) for the P50 size bucket.
+ */
 const SIZE_P50_BASE = 200;
 
-/** Range (chars) for the P50 bucket. */
+/**
+ * Range (chars) for the P50 bucket.
+ */
 const SIZE_P50_RANGE = 600;
 
-/** Lower bound (chars) for the P95 bucket. */
+/**
+ * Lower bound (chars) for the P95 bucket.
+ */
 const SIZE_P95_BASE = 500;
 
-/** Range (chars) for the P95 bucket. */
+/**
+ * Range (chars) for the P95 bucket.
+ */
 const SIZE_P95_RANGE = 5_000;
 
-/** Lower bound (chars) for the P99 bucket. */
+/**
+ * Lower bound (chars) for the P99 bucket.
+ */
 const SIZE_P99_BASE = 5_000;
 
-/** Range (chars) for the P99 bucket. */
+/**
+ * Range (chars) for the P99 bucket.
+ */
 const SIZE_P99_RANGE = 45_000;
 
-/** Lower bound (chars) for the tail bucket. */
+/**
+ * Lower bound (chars) for the tail bucket.
+ */
 const SIZE_TAIL_BASE = 50_000;
 
-/** Range (chars) for the tail bucket. */
+/**
+ * Range (chars) for the tail bucket.
+ */
 const SIZE_TAIL_RANGE = 50_000;
 
-/** Number of distinct block kinds in the synthesizer. */
+/**
+ * Number of distinct block kinds in the synthesizer.
+ */
 const BLOCK_KIND_COUNT = 10;
 
-/** Block-kind discriminant for "heading". */
+/**
+ * Block-kind discriminant for "heading".
+ */
 const BLOCK_KIND_HEADING = 6;
 
-/** Block-kind discriminant for "fenced code". */
+/**
+ * Block-kind discriminant for "fenced code".
+ */
 const BLOCK_KIND_CODE = 7;
 
-/** Maximum heading level (1..3). */
+/**
+ * Maximum heading level (1..3).
+ */
 const HEADING_LEVEL_MAX = 3;
 
-/** Heading word-count base. */
+/**
+ * Heading word-count base.
+ */
 const HEADING_WORD_BASE = 3;
 
-/** Heading word-count range. */
+/**
+ * Heading word-count range.
+ */
 const HEADING_WORD_RANGE = 5;
 
-/** Code-block line-count base. */
+/**
+ * Code-block line-count base.
+ */
 const CODE_LINE_BASE = 3;
 
-/** Code-block line-count range. */
+/**
+ * Code-block line-count range.
+ */
 const CODE_LINE_RANGE = 8;
 
-/** Code-block word-count per line. */
+/**
+ * Code-block word-count per line.
+ */
 const CODE_WORDS_PER_LINE = 4;
 
-/** Paragraph word-count base. */
+/**
+ * Paragraph word-count base.
+ */
 const PARAGRAPH_WORD_BASE = 8;
 
-/** Paragraph word-count range. */
+/**
+ * Paragraph word-count range.
+ */
 const PARAGRAPH_WORD_RANGE = 60;
 
-/** Per-message rng seed multiplier so adjacent indexes diverge quickly. */
+/**
+ * Per-message rng seed multiplier so adjacent indexes diverge quickly.
+ */
 const SEED_MULTIPLIER = 1_000;
 
-/** Cycled user ids. Migrations seed all three. */
+/**
+ * Cycled user ids. Migrations seed all three.
+ */
 const SEED_USER_IDS = [
   'user-a',
   'user-b',
   'user-c',
 ] as const;
 
-/** Words used to compose synthetic messages. */
+/**
+ * Words used to compose synthetic messages.
+ */
 const LOREM_WORDS = (
   'lorem ipsum dolor sit amet consectetur adipiscing elit sed do '
   + 'eiusmod tempor incididunt ut labore et dolore magna aliqua enim '
@@ -146,10 +204,14 @@ const LOREM_WORDS = (
 /* oxlint-disable eslint/no-magic-numbers, unicorn/prefer-math-trunc, no-restricted-syntax/no-function-root-let -- Mulberry32 PRNG: bitwise int coercion, algorithmic constants, and the canonical two-variable state-machine form (`value` and `temp` are mutated step by step through the integer hash) */
 function rng(seed: number,): number {
   // Mulberry32 step. Cheap and good enough for content distribution.
-  /** Seed coerced to int32 via `| 0` so the bitwise math stays well-defined. */
+  /**
+   * Seed coerced to int32 via `| 0` so the bitwise math stays well-defined.
+   */
   let value = seed | 0;
   value = (value + 0x6D_2B_79_F5) | 0;
-  /** Intermediate Mulberry32 step value. */
+  /**
+   * Intermediate Mulberry32 step value.
+   */
   let temp = Math.imul(
     value ^ (value >>> 15),
     value | 1,
@@ -191,12 +253,18 @@ function synthesizeBody(
    * @returns rendered block string with the trailing blank-line separator
    */
   function buildBlock(cursor: number,): string {
-    /** Pseudo-random value in `[0, 1)` driving the block-kind switch. */
+    /**
+     * Pseudo-random value in `[0, 1)` driving the block-kind switch.
+     */
     const r = rng(cursor,);
-    /** Block-kind discriminant; one of the named constants above. */
+    /**
+     * Block-kind discriminant; one of the named constants above.
+     */
     const kind = Math.floor(r * BLOCK_KIND_COUNT,);
     if (kind === BLOCK_KIND_HEADING) {
-      /** Heading level in `[1, HEADING_LEVEL_MAX]`. */
+      /**
+       * Heading level in `[1, HEADING_LEVEL_MAX]`.
+       */
       const level = 1 + Math
         .floor(rng(cursor + 1,)
           * HEADING_LEVEL_MAX,);
@@ -210,11 +278,15 @@ function synthesizeBody(
       }\n\n`;
     }
     if (kind === BLOCK_KIND_CODE) {
-      /** Code-block line count drawn from the configured base + range. */
+      /**
+       * Code-block line count drawn from the configured base + range.
+       */
       const lineCount = CODE_LINE_BASE + Math
         .floor(rng(cursor + 1,)
           * CODE_LINE_RANGE,);
-      /** Accumulator of synthesised code lines; joined with `\n` below. */
+      /**
+       * Accumulator of synthesised code lines; joined with `\n` below.
+       */
       const lines = [];
       for (let i = 0; i < lineCount; i += 1) {
         lines.push(`  ${
@@ -226,7 +298,9 @@ function synthesizeBody(
       }
       return `\`\`\`\n${lines.join('\n',)}\n\`\`\`\n\n`;
     }
-    /** Paragraph word count drawn from the configured base + range. */
+    /**
+     * Paragraph word count drawn from the configured base + range.
+     */
     const wordCount = PARAGRAPH_WORD_BASE
       + Math
       .floor(rng(cursor + 1,)
@@ -240,15 +314,23 @@ function synthesizeBody(
   }
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming byte-budget loop: `total` accumulates the synthesised length and `cursor` is the rng seed advanced once per block; both feed back into the loop condition and the next-block call */
-  /** Accumulator of synthesised block strings; joined at the end. */
+  /**
+   * Accumulator of synthesised block strings; joined at the end.
+   */
   const parts: string[] = [];
-  /** Running byte length so the loop stops at `targetBytes`. */
+  /**
+   * Running byte length so the loop stops at `targetBytes`.
+   */
   let total = 0;
-  /** Local seed advanced once per block so adjacent blocks diverge. */
+  /**
+   * Local seed advanced once per block so adjacent blocks diverge.
+   */
   let cursor = seed;
   while (total < targetBytes) {
     cursor += 1;
-    /** Block text built by the helper; appended to `parts`. */
+    /**
+     * Block text built by the helper; appended to `parts`.
+     */
     const block = buildBlock(cursor,);
     parts.push(block,);
     total += block.length;
@@ -273,12 +355,18 @@ function pickWords({
   readonly seed: number;
   readonly count: number;
 },): string {
-  /** Accumulator of selected words; joined with spaces below. */
+  /**
+   * Accumulator of selected words; joined with spaces below.
+   */
   const words: string[] = [];
   for (let i = 0; i < count; i += 1) {
-    /** Per-word pseudo-random value driving the lorem-word index. */
+    /**
+     * Per-word pseudo-random value driving the lorem-word index.
+     */
     const r = rng(seed + i,);
-    /** Picked word, defaulted to empty when the lorem corpus is empty. */
+    /**
+     * Picked word, defaulted to empty when the lorem corpus is empty.
+     */
     const picked = LOREM_WORDS[Math.floor(r * LOREM_WORDS
       .length,)]
       ?? '';
@@ -302,19 +390,29 @@ async function createMessage(
     readonly userId: string;
   },
 ): Promise<number> {
-  /** Pre-allocated draft id reused by chunk PUTs and finalize. */
+  /**
+   * Pre-allocated draft id reused by chunk PUTs and finalize.
+   */
   const draftId = randomUUID();
   await createDraft({
     id: draftId,
     userId: input.userId,
   },);
-  /** Monotonically incrementing chunk index forwarded to `putChunk`. */
+  /**
+   * Monotonically incrementing chunk index forwarded to `putChunk`.
+   */
   let seq = 0;
-  /** Accumulated char count across all chunks; passed to finalize. */
+  /**
+   * Accumulated char count across all chunks; passed to finalize.
+   */
   let charCount = 0;
-  /** First chunk's markdown captured once for the preview field. */
+  /**
+   * First chunk's markdown captured once for the preview field.
+   */
   let firstMd = '';
-  /** Total chunk count returned by the chunker; passed to finalize. */
+  /**
+   * Total chunk count returned by the chunker; passed to finalize.
+   */
   let chunkCount = 0;
   // Sequential PUTs are required because seq increments per iteration.
   /* oxlint-disable no-await-in-loop */
@@ -333,7 +431,9 @@ async function createMessage(
   /* oxlint-enable no-await-in-loop */
   if (chunkCount === 0)
     throw new Error('seed produced empty body',);
-  /** New messages.id; `REJECTED` is invalid here so the helper throws on a failed finalize. */
+  /**
+   * New messages.id; `REJECTED` is invalid here so the helper throws on a failed finalize.
+   */
   const messageId = await finalizeDraft({
     draftId,
     userId: input.userId,
@@ -359,25 +459,37 @@ async function createMessage(
  * ```
  */
 export async function runSeed(): Promise<void> {
-  /** `--huge=` CLI value if present; defines the single-message stress mode. */
+  /**
+   * `--huge=` CLI value if present; defines the single-message stress mode.
+   */
   const huge = getArgumentValue('huge',);
-  /** `--count=` CLI value if present; defines the mixed-corpus mode. */
+  /**
+   * `--count=` CLI value if present; defines the mixed-corpus mode.
+   */
   const count = getArgumentValue('count',);
 
   if (huge !== ARG_ABSENT) {
-    /** Parsed gigabyte size from `--huge=`; positive number required. */
+    /**
+     * Parsed gigabyte size from `--huge=`; positive number required.
+     */
     const gigabytes = Number.parseFloat(huge,);
     if ((!Number.isFinite(gigabytes,)) || (gigabytes <= 0))
       throw new Error(`invalid --huge=${huge}; expected a positive number of gigabytes`,);
-    /** Target body length in bytes derived from `gigabytes`. */
+    /**
+     * Target body length in bytes derived from `gigabytes`.
+     */
     const targetBytes = Math.floor(gigabytes * BYTES_PER_GIB,);
     console.log(`seeding one ~${gigabytes.toFixed(2,)} GB message...`,);
-    /** Synthesised body for the huge-message stress run. */
+    /**
+     * Synthesised body for the huge-message stress run.
+     */
     const body = synthesizeBody({
       targetBytes,
       seed: 0,
     },);
-    /** Created message id; logged below for the operator. */
+    /**
+     * Created message id; logged below for the operator.
+     */
     const id = await createMessage({
       body,
       userId: SEED_USER_IDS[0],
@@ -386,11 +498,15 @@ export async function runSeed(): Promise<void> {
     return;
   }
 
-  /** `--count=` value or the default literal when the flag is absent; fed to `parseInt`. */
+  /**
+   * `--count=` value or the default literal when the flag is absent; fed to `parseInt`.
+   */
   const countRaw = count !== ARG_ABSENT
     ? count
     : String(DEFAULT_MESSAGE_COUNT,);
-  /** Parsed message count; defaulted to `DEFAULT_MESSAGE_COUNT` when `--count=` is absent. */
+  /**
+   * Parsed message count; defaulted to `DEFAULT_MESSAGE_COUNT` when `--count=` is absent.
+   */
   const messageCount = Number.parseInt(
     countRaw,
     DECIMAL_RADIX,
@@ -403,10 +519,14 @@ export async function runSeed(): Promise<void> {
   // overwhelming the SQLite WAL with concurrent writers.
   /* oxlint-disable no-await-in-loop */
   for (let index = 0; index < messageCount; index += 1) {
-    /** Per-index pseudo-random value driving the size-bucket switch. */
+    /**
+     * Per-index pseudo-random value driving the size-bucket switch.
+     */
     const r = rng(index,);
     // Size distribution: P50 ~500, P95 ~5 KB, P99 ~50 KB.
-    /** Target body length for this iteration; chosen from the bucket below. */
+    /**
+     * Target body length for this iteration; chosen from the bucket below.
+     */
     let bytes = 0;
     if (r < P50_THRESHOLD)
       bytes = SIZE_P50_BASE + Math
@@ -424,12 +544,16 @@ export async function runSeed(): Promise<void> {
       bytes = SIZE_TAIL_BASE + Math
         .floor(rng(index + 1,)
           * SIZE_TAIL_RANGE,);
-    /** Synthesised body sized to the chosen bucket. */
+    /**
+     * Synthesised body sized to the chosen bucket.
+     */
     const body = synthesizeBody({
       targetBytes: bytes,
       seed: index * SEED_MULTIPLIER,
     },);
-    /** Cycled seed user; falls back to user-a when the modulo lookup misses. */
+    /**
+     * Cycled seed user; falls back to user-a when the modulo lookup misses.
+     */
     const userId = SEED_USER_IDS[index % SEED_USER_IDS
       .length]
       ?? SEED_USER_IDS[0];

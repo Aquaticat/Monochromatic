@@ -4,15 +4,21 @@
 import { cssRem, } from '@monochromatic-dev/module-hyperscript/ts';
 import { $ as css, } from './css.ts';
 
-/** Minimum touch target size in rem. */
+/**
+ * Minimum touch target size in rem.
+ */
 const MIN_TARGET = 3;
 
-/** Minimum spacing padding in rem (1/2). */
+/**
+ * Minimum spacing padding in rem (1/2).
+ */
 const MIN_PADDING = 1 / 2;
 
 //region Primitive color tokens (raw color values that never change between modes)
 
-/** Raw color values that never change between light and dark modes. */
+/**
+ * Raw color values that never change between light and dark modes.
+ */
 export const primitiveTokens: string = css({
   rule: ':root',
   decls: {
@@ -46,7 +52,9 @@ export const primitiveTokens: string = css({
 
 //region Semantic color tokens (aliases that flip between light and dark modes)
 
-/** Semantic aliases that map to primitives, plus spacing/sizing tokens. */
+/**
+ * Semantic aliases that map to primitives, plus spacing/sizing tokens.
+ */
 export const semanticTokens: string = css({
   rule: ':root',
   decls: {

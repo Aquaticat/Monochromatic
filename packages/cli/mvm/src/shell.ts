@@ -24,12 +24,16 @@ import {
  */
 export async function shell({ name, }: { readonly name: string; },): Promise<void> {
   validateName(name,);
-  /** Tagged logger so console-session messages name the call site. */
+  /**
+   * Tagged logger so console-session messages name the call site.
+   */
   const rl = tagged({
     tag: shell.name,
     l,
   },);
-  /** Fully prefixed VM name expected by virsh commands. */
+  /**
+   * Fully prefixed VM name expected by virsh commands.
+   */
   const fullName = `${VM_PREFIX}${name}`;
 
   rl.info(`connecting to VM ${name} via console (press Ctrl+] to disconnect, not exit)`,);
@@ -56,7 +60,9 @@ export async function shell({ name, }: { readonly name: string; },): Promise<voi
       && ((typeof error) === 'object')
       && ('exitCode' in error))
     {
-      /** Forwarded so the shell exit code reflects the virsh console outcome. */
+      /**
+       * Forwarded so the shell exit code reflects the virsh console outcome.
+       */
       const exitCode = ((typeof error.exitCode) === 'number')
         ? error.exitCode
         : undefined;

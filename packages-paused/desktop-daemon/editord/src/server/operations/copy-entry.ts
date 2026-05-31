@@ -40,12 +40,16 @@ export async function copyEntry(
     readonly destPath: string;
   },
 ): Promise<string> {
-  /** Validated absolute source path; throws if the input escapes `rootDir`. */
+  /**
+   * Validated absolute source path; throws if the input escapes `rootDir`.
+   */
   const absoluteSource = assertWithinRoot({
     rootDir,
     path,
   },);
-  /** Validated absolute destination path; throws if the input escapes `rootDir`. */
+  /**
+   * Validated absolute destination path; throws if the input escapes `rootDir`.
+   */
   const absoluteDest = assertWithinRoot({
     rootDir,
     path: destPath,

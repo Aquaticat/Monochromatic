@@ -20,14 +20,20 @@ import {
   POPUP_BORDER_RADIUS,
 } from '../styles/tokens.ts';
 
-/** Minimum width of the popup in rem: 10 = 2 * (2 * 2 + 1). */
+/**
+ * Minimum width of the popup in rem: 10 = 2 * (2 * 2 + 1).
+ */
 const MIN_WIDTH = 2 * ((2 * 2) + 1);
 
-/** Input field opacity: (10 - 2 - 1) / 10 = 7/10 for subtle appearance. */
+/**
+ * Input field opacity: (10 - 2 - 1) / 10 = 7/10 for subtle appearance.
+ */
 const INPUT_OPACITY = (10 - 2
   - 1) / 10;
 
-/** Global context menu styles. */
+/**
+ * Global context menu styles.
+ */
 export const STYLES: string = [
   $({
     rule: '.ctx-anchor',

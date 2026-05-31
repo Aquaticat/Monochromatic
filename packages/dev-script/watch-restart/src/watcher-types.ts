@@ -24,9 +24,13 @@ export type IgnoredPredicate = (path: string,) => boolean;
  * Splitting it out keeps the {@link WatcherOptions} shape narrow.
  */
 export type AwaitWriteFinishOptions = {
-  /** Milliseconds the file size must hold steady before an event emits. */
+  /**
+   * Milliseconds the file size must hold steady before an event emits.
+   */
   readonly stabilityThreshold: number;
-  /** Milliseconds between size re-stats during the stability window. */
+  /**
+   * Milliseconds between size re-stats during the stability window.
+   */
   readonly pollInterval: number;
 };
 
@@ -58,7 +62,9 @@ export const DEFAULT_AWAIT_WRITE_FINISH: AwaitWriteFinishOptions = {
  * Construction options for `Watcher`.
  */
 export type WatcherOptions = {
-  /** Roots to watch. Resolved to absolute on construction. */
+  /**
+   * Roots to watch. Resolved to absolute on construction.
+   */
   readonly paths: readonly string[];
   /**
    * Shared content-hash cache; pre-populated during the initial walk.
@@ -67,11 +73,17 @@ export type WatcherOptions = {
    * constructor within `typescript/prefer-readonly-parameter-types`.
    */
   readonly hashCache: Readonly<HashCache>;
-  /** Predicates that skip files/directories during traversal (efficiency only; not a filter substitute). */
+  /**
+   * Predicates that skip files/directories during traversal (efficiency only; not a filter substitute).
+   */
   readonly ignored?: readonly IgnoredPredicate[];
-  /** Forwarded to chokidar's `atomic` option; defaults to `true`. */
+  /**
+   * Forwarded to chokidar's `atomic` option; defaults to `true`.
+   */
   readonly atomic?: boolean | number;
-  /** Forwarded to chokidar's `awaitWriteFinish`; defaults to `{ stabilityThreshold: 50, pollInterval: 10 }`. */
+  /**
+   * Forwarded to chokidar's `awaitWriteFinish`; defaults to `{ stabilityThreshold: 50, pollInterval: 10 }`.
+   */
   readonly awaitWriteFinish?: AwaitWriteFinishOptions;
   /**
    * Maximum subdirectory depth chokidar will descend from each root.
@@ -100,6 +112,8 @@ export type WatcherOptions = {
    * does not await it.
    */
   readonly onEvent: (event: WatchEvent,) => Promise<void>;
-  /** Parent logger; the watcher composes a `Watcher` tag on top. */
+  /**
+   * Parent logger; the watcher composes a `Watcher` tag on top.
+   */
   readonly logger?: Logger;
 };

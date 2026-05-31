@@ -67,7 +67,9 @@ export type SceneBounds = Readonly<Record<ChannelKey, readonly [
 
 //region Constants
 
-/** Channel keys, fixed order for iteration. */
+/**
+ * Channel keys, fixed order for iteration.
+ */
 const CHANNEL_KEYS: readonly ChannelKey[] = [
   'x',
   'y',
@@ -77,10 +79,14 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
   'size',
 ];
 
-/** Camera FOV in degrees; OrbitView default is 50. */
+/**
+ * Camera FOV in degrees; OrbitView default is 50.
+ */
 const CAMERA_FOVY = 50;
 
-/** Fallback extent when a channel has no known values across the probe set. */
+/**
+ * Fallback extent when a channel has no known values across the probe set.
+ */
 const FALLBACK_EXTENT: readonly [
   number,
   number,
@@ -134,7 +140,9 @@ export function computeSceneBounds(
     readonly dimMapping: DimMapping;
   },
 ): SceneBounds {
-  /** Per-channel `[key, extent]` pairs ready to feed `Object.fromEntries` into a SceneBounds record. */
+  /**
+   * Per-channel `[key, extent]` pairs ready to feed `Object.fromEntries` into a SceneBounds record.
+   */
   const entries = CHANNEL_KEYS.map(function extentFor(channel,) {
     /**
      * Known values across every probe for this channel; unknowns ({@link DIM_UNKNOWN}) are dropped before min/max.
@@ -164,7 +172,9 @@ export function computeSceneBounds(
       ] as const,
     ] as const;
   },);
-  /** Object built from `entries`; widened by `Object.fromEntries` to `Record<string, ...>` and re-asserted below. */
+  /**
+   * Object built from `entries`; widened by `Object.fromEntries` to `Record<string, ...>` and re-asserted below.
+   */
   const record = Object.fromEntries(entries,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- entries exhaust ChannelKey; Object.fromEntries widens to Record<string, V>.
   return record as SceneBounds;
@@ -227,7 +237,9 @@ export function buildLayers(
     readonly chrome: ChromeColors;
   },
 ): readonly Layer[] {
-  /** Unknown-cluster scatter layers when the toggle is on; empty otherwise so the group flattens to nothing. */
+  /**
+   * Unknown-cluster scatter layers when the toggle is on; empty otherwise so the group flattens to nothing.
+   */
   const unknownCluster = state.displayToggles
     .showUnknownCluster
     ? buildUnknownClusterLayer({
@@ -247,7 +259,9 @@ export function buildLayers(
       dimMapping: state.dimMapping,
     },)
     : NO_THRESHOLD_LAYER;
-  /** Layer groups in back-to-front order; flattened below into the final layer array deck.gl renders. */
+  /**
+   * Layer groups in back-to-front order; flattened below into the final layer array deck.gl renders.
+   */
   const groups: readonly (readonly Layer[])[] = [
     state.displayToggles
       .showWireframe

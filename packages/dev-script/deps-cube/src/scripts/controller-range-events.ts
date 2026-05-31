@@ -56,7 +56,9 @@ function computeRangeExtent(
   number,
   number,
 ] {
-  /** Known non-null values for `dim` across `probes`; basis for `[min, max]` extent. */
+  /**
+   * Known non-null values for `dim` across `probes`; basis for `[min, max]` extent.
+   */
   const values = probes
     .map(function pluck(probe,) {
       return extractDim({
@@ -114,7 +116,9 @@ export function wireDimDropdowns(
   },
 ): void {
   CHANNEL_KEYS.forEach(function bind(channel,) {
-    /** Dim-dropdown `<select>` for this channel; source of `change` event below. */
+    /**
+     * Dim-dropdown `<select>` for this channel; source of `change` event below.
+     */
     const select = elSelect(`dim-${channel}`,);
     select.addEventListener(
       'change',
@@ -123,18 +127,24 @@ export function wireDimDropdowns(
          * Raw `value` attribute from dropdown; validated against {@link DIM_KEYS}.
          */
         const raw = select.value;
-        /** Narrowed `DataDimKey` matching `raw`; `undefined` rejects stale values. */
+        /**
+         * Narrowed `DataDimKey` matching `raw`; `undefined` rejects stale values.
+         */
         const nextDim = DIM_KEYS.find(function match(candidate,) {
           return candidate === raw;
         },);
         if (nextDim === undefined)
           return;
-        /** Fresh `[min, max]` for newly-selected dim. */
+        /**
+         * Fresh `[min, max]` for newly-selected dim.
+         */
         const extent = computeRangeExtent({
           probes,
           dim: nextDim,
         },);
-        /** Dim mapping with this channel repointed at the newly-selected dim; feeds bounds recompute below. */
+        /**
+         * Dim mapping with this channel repointed at the newly-selected dim; feeds bounds recompute below.
+         */
         const nextDimMapping = {
           ...session.state
             .dimMapping,
@@ -149,9 +159,13 @@ export function wireDimDropdowns(
             [channel]: extent,
           },
         };
-        /** Min-slider for this channel; min/max/value rewritten to new dim's extent below. */
+        /**
+         * Min-slider for this channel; min/max/value rewritten to new dim's extent below.
+         */
         const minSlider = elInput(`range-${channel}-min`,);
-        /** Max-slider for this channel; min/max/value rewritten to new dim's extent below. */
+        /**
+         * Max-slider for this channel; min/max/value rewritten to new dim's extent below.
+         */
         const maxSlider = elInput(`range-${channel}-max`,);
         minSlider.min = extent[0]
           .toString();
@@ -200,15 +214,25 @@ export function wireRanges(
   },
 ): void {
   CHANNEL_KEYS.forEach(function bind(channel,) {
-    /** Min-slider for this channel; closed over by `onInput`. */
+    /**
+     * Min-slider for this channel; closed over by `onInput`.
+     */
     const minSlider = elInput(`range-${channel}-min`,);
-    /** Max-slider for this channel; closed over by `onInput`. */
+    /**
+     * Max-slider for this channel; closed over by `onInput`.
+     */
     const maxSlider = elInput(`range-${channel}-max`,);
-    /** Normalises slider order so crossing handles still yields valid range. */
+    /**
+     * Normalises slider order so crossing handles still yields valid range.
+     */
     function onInput(): void {
-      /** Numeric form of min-slider's current value. */
+      /**
+       * Numeric form of min-slider's current value.
+       */
       const minVal = Number.parseFloat(minSlider.value,);
-      /** Numeric form of max-slider's current value. */
+      /**
+       * Numeric form of max-slider's current value.
+       */
       const maxVal = Number.parseFloat(maxSlider.value,);
       session.state = {
         ...session.state,

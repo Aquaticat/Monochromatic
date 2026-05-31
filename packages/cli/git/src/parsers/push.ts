@@ -33,9 +33,13 @@ const pushRegionParser = object({
 
 //region Push region facts
 
-/** Facts about the post-`push` argv region used by atomic-push policy. */
+/**
+ * Facts about the post-`push` argv region used by atomic-push policy.
+ */
 export type PushRegion = {
-  /** True when caller has chosen atomic or non-atomic mode explicitly. */
+  /**
+   * True when caller has chosen atomic or non-atomic mode explicitly.
+   */
   readonly hasAtomicChoice: boolean;
 };
 
@@ -57,7 +61,9 @@ export type PushRegion = {
 export function parsePushRegion(
   postSubcommandArgs: readonly string[],
 ): PushRegion {
-  /** Optique parse result over the post-subcommand region. */
+  /**
+   * Optique parse result over the post-subcommand region.
+   */
   const parseResult = parseSync(
     pushRegionParser,
     postSubcommandArgs,

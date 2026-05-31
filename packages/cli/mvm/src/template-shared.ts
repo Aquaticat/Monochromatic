@@ -12,7 +12,9 @@ import {
   undefineVm,
 } from './virsh.ts';
 
-/** Name used for the temporary VM during template creation. */
+/**
+ * Name used for the temporary VM during template creation.
+ */
 export const TEMPLATE_VM_NAME = 'template-setup';
 
 /**

@@ -19,7 +19,9 @@ import type {
   WorkerOut,
 } from './state.ts';
 
-/** Maximum length of the message preview, in characters. */
+/**
+ * Maximum length of the message preview, in characters.
+ */
 const PREVIEW_MAX_LENGTH = 200;
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- callbacks receive `RenderedChunk` and `MessageEvent`, both shaped by external APIs (`Array.map`/`reduce` and `Worker.postMessage`); `state.worker` is also mutated to hold the lazy worker handle */
@@ -39,7 +41,9 @@ const PREVIEW_MAX_LENGTH = 200;
  * ```
  */
 export function compileInline(body: string,): Compiled {
-  /** Per-chunk rendered output; returned on the `chunks` field so the caller can PUT each row. */
+  /**
+   * Per-chunk rendered output; returned on the `chunks` field so the caller can PUT each row.
+   */
   const chunks = [...renderChunks(body,),].map(function copy(chunk,) {
     return {
       md: chunk.md,
@@ -47,11 +51,15 @@ export function compileInline(body: string,): Compiled {
       charCount: chunk.charCount,
     };
   },);
-  /** First chunk's markdown captured once for the preview field. */
+  /**
+   * First chunk's markdown captured once for the preview field.
+   */
   const firstMd = chunks[0]
     ?.md
     ?? '';
-  /** Accumulated character count across all chunks; passed to finalize. */
+  /**
+   * Accumulated character count across all chunks; passed to finalize.
+   */
   const charCount = chunks.reduce(
     function sumCharCount(
       acc,
@@ -62,7 +70,9 @@ export function compileInline(body: string,): Compiled {
     },
     0,
   );
-  /** Concatenated HTML; tier-1 sends inspect this for empty-result fallbacks. */
+  /**
+   * Concatenated HTML; tier-1 sends inspect this for empty-result fallbacks.
+   */
   const html = chunks
     .map(function pickHtml(chunk,) {
       return chunk.html;
@@ -115,12 +125,16 @@ export function compileViaWorker(
       ),
       { type: 'module', },
     );
-    /** Non-null after the lazy-create above; destructured so the listener wiring reads it directly. */
+    /**
+     * Non-null after the lazy-create above; destructured so the listener wiring reads it directly.
+     */
     const { worker, } = input.state;
     // Pipe every worker message through the metrics hooks (when the
     // overlay is mounted). The hook discriminates on `kind` and only
     // folds `metrics` payloads, so non-metrics messages are no-ops.
-    /** Optional metrics hook; present causes the tee listener to fold metrics envelopes. */
+    /**
+     * Optional metrics hook; present causes the tee listener to fold metrics envelopes.
+     */
     const { metricsHooks, } = input.state;
     if (metricsHooks !== undefined) {
       worker.addEventListener(
@@ -142,7 +156,9 @@ export function compileViaWorker(
      * ```
      */
     function onMessage(event: MessageEvent<WorkerOut>,): void {
-      /** Destructured early so the kind switch reads `data.kind` without repeated access. */
+      /**
+       * Destructured early so the kind switch reads `data.kind` without repeated access.
+       */
       const { data, } = event;
       if (data.kind
         === 'done') {

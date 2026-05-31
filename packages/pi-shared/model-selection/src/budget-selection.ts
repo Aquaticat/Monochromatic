@@ -27,7 +27,9 @@ export const NO_CANDIDATE: unique symbol = Symbol('model-selection/no-candidate'
 
 //region Internal types
 
-/** Options shared by concrete budget-model strategy helpers. */
+/**
+ * Options shared by concrete budget-model strategy helpers.
+ */
 type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
   BudgetModelSelectionOptions<TModel>,
   'strategy'
@@ -102,16 +104,22 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
     readonly hasConfiguredAuth: (options: { readonly model: TModel; }) => boolean;
   },
 ): BudgetModelCandidate | typeof NO_CANDIDATE {
-  /** Provider name to its list of models. */
+  /**
+   * Provider name to its list of models.
+   */
   const byProvider = groupModelsByProvider(allModels,);
 
-  /** Cheapest per-provider head for every provider that yielded a candidate. */
+  /**
+   * Cheapest per-provider head for every provider that yielded a candidate.
+   */
   const providerHeads: {
     readonly model: TModel;
     readonly provider: string;
   }[] = [];
   for (const [provider, models,] of byProvider) {
-    /** Per-provider candidates already sorted by cost then version. */
+    /**
+     * Per-provider candidates already sorted by cost then version.
+     */
     const firstCandidate = findCheapestInMajorVersions({
       models,
       majorVersions,
@@ -125,18 +133,28 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
     }
   }
 
-  /** Overall cheapest provider head by input cost. */
+  /**
+   * Overall cheapest provider head by input cost.
+   */
   const best = providerHeads.toSorted(function byInputCost(
     left,
     right,
   ) {
-    /** Models being compared. */
+    /**
+     * Models being compared.
+     */
     const { model: leftModel, } = left;
-    /** Model being compared against. */
+    /**
+     * Model being compared against.
+     */
     const { model: rightModel, } = right;
-    /** Left candidate input price. */
+    /**
+     * Left candidate input price.
+     */
     const { input: leftInputCost, } = leftModel.cost;
-    /** Right candidate input price. */
+    /**
+     * Right candidate input price.
+     */
     const { input: rightInputCost, } = rightModel.cost;
     return leftInputCost - rightInputCost;
   },)
@@ -181,9 +199,13 @@ async function findSameProvider<TModel extends ModelPricing,>(
     hasConfiguredAuth,
   }: BudgetStrategyOptions<TModel>,
 ): Promise<BudgetModel<TModel>> {
-  /** Active provider name used to filter registry. */
+  /**
+   * Active provider name used to filter registry.
+   */
   const activeProvider = activeModel.provider;
-  /** Subset of all models sharing active provider. */
+  /**
+   * Subset of all models sharing active provider.
+   */
   const providerModels = allModels.filter(function sameProvider(model,) {
     return model.provider
       === activeProvider;
@@ -197,7 +219,9 @@ async function findSameProvider<TModel extends ModelPricing,>(
   function cheapestOverallContext(): {
     readonly cheapestOverall?: BudgetModelCandidate;
   } {
-    /** Cheapest cross-provider candidate result. */
+    /**
+     * Cheapest cross-provider candidate result.
+     */
     const candidate = findCheapestCandidate({
       allModels,
       majorVersions,
@@ -216,7 +240,9 @@ async function findSameProvider<TModel extends ModelPricing,>(
     );
   }
 
-  /** Same-provider candidates ranked by cost then version. */
+  /**
+   * Same-provider candidates ranked by cost then version.
+   */
   const candidates = findCheapestInMajorVersions({
     models: providerModels,
     majorVersions,
@@ -230,7 +256,9 @@ async function findSameProvider<TModel extends ModelPricing,>(
     );
   }
 
-  /** Cheapest same-provider candidate. */
+  /**
+   * Cheapest same-provider candidate.
+   */
   const cheapestCandidate = candidates.at(0,);
   if (cheapestCandidate === undefined) {
     throw new NoBudgetModelError(
@@ -243,7 +271,9 @@ async function findSameProvider<TModel extends ModelPricing,>(
     >= (activeModel.cost
       .input
       * costRatio)) {
-    /** Same-provider report row for too-expensive error. */
+    /**
+     * Same-provider report row for too-expensive error.
+     */
     const sameProvider = toBudgetModelCandidate({
       model: cheapestCandidate,
       hasConfiguredAuth: hasConfiguredAuth({ model: cheapestCandidate, },),
@@ -267,7 +297,9 @@ async function findSameProvider<TModel extends ModelPricing,>(
         * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential auth walk must stop at first successful candidate. */
-    /** Resolved auth for current candidate. */
+    /**
+     * Resolved auth for current candidate.
+     */
     const auth = await resolveAuth({ model: candidate, },);
     /* oxlint-enable no-await-in-loop */
     if (auth !== NO_AUTH) {
@@ -278,7 +310,9 @@ async function findSameProvider<TModel extends ModelPricing,>(
     }
   }
 
-  /** Same-provider report row after every candidate failed auth. */
+  /**
+   * Same-provider report row after every candidate failed auth.
+   */
   const sameProvider = toBudgetModelCandidate({
     model: cheapestCandidate,
     hasConfiguredAuth: hasConfiguredAuth({ model: cheapestCandidate, },),
@@ -320,10 +354,14 @@ async function findAnyProvider<TModel extends ModelPricing,>(
     resolveAuth,
   }: BudgetStrategyOptions<TModel>,
 ): Promise<BudgetModel<TModel>> {
-  /** Provider name to its list of models. */
+  /**
+   * Provider name to its list of models.
+   */
   const byProvider = groupModelsByProvider(allModels,);
 
-  /** Flat union of every provider's top candidates. */
+  /**
+   * Flat union of every provider's top candidates.
+   */
   const allCandidates: TModel[] = [];
   for (const [, models,] of byProvider) {
     allCandidates.push(...findCheapestInMajorVersions({
@@ -331,21 +369,31 @@ async function findAnyProvider<TModel extends ModelPricing,>(
       majorVersions,
     },),);
   }
-  /** Cross-provider candidates sorted by input cost ascending. */
+  /**
+   * Cross-provider candidates sorted by input cost ascending.
+   */
   const sortedCandidates = allCandidates.toSorted(function byCost(
     left,
     right,
   ) {
-    /** Left candidate input price. */
+    /**
+     * Left candidate input price.
+     */
     const { input: leftInputCost, } = left.cost;
-    /** Right candidate input price. */
+    /**
+     * Right candidate input price.
+     */
     const { input: rightInputCost, } = right.cost;
     return leftInputCost - rightInputCost;
   },);
 
-  /** Cheapest candidate, when any candidate exists. */
+  /**
+   * Cheapest candidate, when any candidate exists.
+   */
   const cheapestCandidate = sortedCandidates.at(0,);
-  /** Input cost of cheapest candidate, or infinity so empty case fails ratio gate. */
+  /**
+   * Input cost of cheapest candidate, or infinity so empty case fails ratio gate.
+   */
   const cheapestCost = cheapestCandidate !== undefined
     ? cheapestCandidate.cost
       .input
@@ -368,7 +416,9 @@ async function findAnyProvider<TModel extends ModelPricing,>(
         * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential auth walk must stop at first successful candidate. */
-    /** Resolved auth for current candidate. */
+    /**
+     * Resolved auth for current candidate.
+     */
     const auth = await resolveAuth({ model, },);
     /* oxlint-enable no-await-in-loop */
     if (auth !== NO_AUTH) {
@@ -398,10 +448,14 @@ async function findAnyProvider<TModel extends ModelPricing,>(
 function groupModelsByProvider<TModel extends ModelPricing,>(
   models: readonly TModel[],
 ): Map<string, TModel[]> {
-  /** Provider name to models. */
+  /**
+   * Provider name to models.
+   */
   const byProvider = new Map<string, TModel[]>();
   for (const model of models) {
-    /** Provider name keying grouping map. */
+    /**
+     * Provider name keying grouping map.
+     */
     const { provider, } = model;
     if (!byProvider.has(provider,)) {
       byProvider.set(
@@ -409,7 +463,9 @@ function groupModelsByProvider<TModel extends ModelPricing,>(
         [],
       );
     }
-    /** Bucket current model goes into. */
+    /**
+     * Bucket current model goes into.
+     */
     const list = byProvider.get(provider,);
     if (list !== undefined)
       list.push(model,);

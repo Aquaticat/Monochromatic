@@ -7,18 +7,26 @@
 
 import spawn from 'nano-spawn';
 
-/** Result of a spawned command (never throws; callers inspect exitCode) */
+/**
+ * Result of a spawned command (never throws; callers inspect exitCode)
+ */
 export type BunExecResult = {
   readonly stdout: string;
   readonly stderr: string;
   readonly exitCode: number;
-  /** True when the process was killed by our timeout, not by a natural exit */
+  /**
+   * True when the process was killed by our timeout, not by a natural exit
+   */
   readonly killed: boolean;
 };
 
-/** Options for Bun-native command execution */
+/**
+ * Options for Bun-native command execution
+ */
 export type BunExecOptions = {
-  /** Milliseconds before the process is forcibly killed */
+  /**
+   * Milliseconds before the process is forcibly killed
+   */
   readonly timeout?: number;
   /**
    * Abort signal; kills the process immediately when aborted.
@@ -40,11 +48,17 @@ export type BunExecOptions = {
  * ```
  */
 type ExecBunOptions = {
-  /** Executable name or absolute path */
+  /**
+   * Executable name or absolute path
+   */
   readonly command: string;
-  /** Command arguments */
+  /**
+   * Command arguments
+   */
   readonly args: readonly string[];
-  /** Optional timeout and abort signal */
+  /**
+   * Optional timeout and abort signal
+   */
   readonly options?: BunExecOptions;
 };
 
@@ -86,7 +100,9 @@ export async function execBun({
 
   try {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array */
-    /** Successful spawn result; reshaped into a `BunExecResult` so callers see the same shape on success and failure. */
+    /**
+     * Successful spawn result; reshaped into a `BunExecResult` so callers see the same shape on success and failure.
+     */
     const result = await spawn(
       command,
       args as string[],
@@ -112,7 +128,9 @@ export async function execBun({
       && ('exitCode' in error))
     {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError has known shape */
-      /** Narrowed view of the caught nano-spawn `SubprocessError`; carries stdout, stderr, exit code, and signal name. */
+      /**
+       * Narrowed view of the caught nano-spawn `SubprocessError`; carries stdout, stderr, exit code, and signal name.
+       */
       const subprocessError = error as {
         stdout: string;
         stderr: string;
@@ -122,7 +140,9 @@ export async function execBun({
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       // Killed if the signal was aborted (race: it may have become true after spawn started)
       // or the process received a termination signal
-      /** True when the abort signal fired or the process received a termination signal; surfaced to callers as `BunExecResult.killed`. */
+      /**
+       * True when the abort signal fired or the process received a termination signal; surfaced to callers as `BunExecResult.killed`.
+       */
       const wasKilled = Boolean(options.signal
         ?.aborted,)
         || (subprocessError.signalName
@@ -138,7 +158,9 @@ export async function execBun({
     }
 
     // Unexpected error (e.g. command not found)
-    /** Human-readable error text for the synthetic non-zero result returned to callers. */
+    /**
+     * Human-readable error text for the synthetic non-zero result returned to callers.
+     */
     const message = error instanceof Error ? error.message : String(error,);
 
     return {

@@ -20,7 +20,9 @@ import { chainBreakOffsets, } from '../utility/chain-flatten.ts';
 import { renderCanonical, } from '../utility/chain-render.ts';
 import { baseIndentAt, } from '../utility/indent.ts';
 
-/** Per-file cache of full source text, keyed by the file's `SourceCode` identity. */
+/**
+ * Per-file cache of full source text, keyed by the file's `SourceCode` identity.
+ */
 const sourceTextCache = new WeakMap<SourceCode, string>();
 
 /**
@@ -38,13 +40,19 @@ const sourceTextCache = new WeakMap<SourceCode, string>();
  * @returns full source text of the file `context.sourceCode` describes
  */
 function sourceTextOf(context: Context,): string {
-  /** Source code accessor identifying the current file. */
+  /**
+   * Source code accessor identifying the current file.
+   */
   const { sourceCode, } = context;
-  /** Cached text for this file, if already computed. */
+  /**
+   * Cached text for this file, if already computed.
+   */
   const cached = sourceTextCache.get(sourceCode,);
   if (cached !== undefined)
     return cached;
-  /** Full source text, computed once and memoised against this `SourceCode`. */
+  /**
+   * Full source text, computed once and memoised against this `SourceCode`.
+   */
   const text = sourceCode.getText();
   sourceTextCache.set(
     sourceCode,
@@ -118,7 +126,9 @@ export const chainPerLine: CreateOnceRule = {
      */
     function check(node: Span,): void {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- visitor nodes always carry the type/object/callee/left/right/operator/parent fields ChainNode reads; oxlint types them only as bare Span */
-      /** Node narrowed to the structural view the chain walk reads. */
+      /**
+       * Node narrowed to the structural view the chain walk reads.
+       */
       const root = node as ChainNode;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (!isChainRoot({
@@ -127,7 +137,9 @@ export const chainPerLine: CreateOnceRule = {
       },)) {
         return;
       }
-      /** Break offsets that begin a continuation line; empty when the chain fits on one line. */
+      /**
+       * Break offsets that begin a continuation line; empty when the chain fits on one line.
+       */
       const breakOffsets = chainBreakOffsets({
         context,
         node: root,
@@ -135,22 +147,34 @@ export const chainPerLine: CreateOnceRule = {
       if (breakOffsets.length
         === 0)
         return;
-      /** Full source text, cached per file. */
+      /**
+       * Full source text, cached per file.
+       */
       const sourceText = sourceTextOf(context,);
-      /** Outermost region node, past any trailing `!`/`as`/`satisfies` wrapper. */
+      /**
+       * Outermost region node, past any trailing `!`/`as`/`satisfies` wrapper.
+       */
       const top = effectiveTop(root,);
-      /** Byte offset where the chain region begins. */
+      /**
+       * Byte offset where the chain region begins.
+       */
       const regionStart = root.start;
-      /** Byte offset where the chain region ends, past trailing wrapper text. */
+      /**
+       * Byte offset where the chain region ends, past trailing wrapper text.
+       */
       const regionEnd = top.end;
-      /** Continuation indent: the head line's indentation plus two spaces. */
+      /**
+       * Continuation indent: the head line's indentation plus two spaces.
+       */
       const childIndent = `${
         baseIndentAt({
           sourceText,
           offset: regionStart,
         },)
       }  `;
-      /** Canonical multi-line layout of the region. */
+      /**
+       * Canonical multi-line layout of the region.
+       */
       const canonical = renderCanonical({
         sourceText,
         regionStart,
@@ -165,9 +189,13 @@ export const chainPerLine: CreateOnceRule = {
         === canonical) {
         return;
       }
-      /** First break offset; defined because an empty `breakOffsets` returned above. */
+      /**
+       * First break offset; defined because an empty `breakOffsets` returned above.
+       */
       const firstBreak = nonNullishOrThrow(breakOffsets[0],);
-      /** Whether the region is free of comments the render would reflow. */
+      /**
+       * Whether the region is free of comments the render would reflow.
+       */
       const fixable = !hasReflowableComment({
         context,
         node: top,

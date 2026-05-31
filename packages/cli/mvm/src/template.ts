@@ -42,12 +42,16 @@ export {
  * ```
  */
 export async function ensureTemplate(spec: ImageSpec,): Promise<string> {
-  /** Tagged logger so template-baking messages name the call site. */
+  /**
+   * Tagged logger so template-baking messages name the call site.
+   */
   const rl = tagged({
     tag: ensureTemplate.name,
     l,
   },);
-  /** Cached template location reused when present, baked when missing. */
+  /**
+   * Cached template location reused when present, baked when missing.
+   */
   const templatePath = join(
     IMAGES_DIR,
     spec.templateFileName,

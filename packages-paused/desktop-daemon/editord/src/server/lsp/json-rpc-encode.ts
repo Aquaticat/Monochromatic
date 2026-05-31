@@ -7,7 +7,9 @@
 
 //region Types
 
-/** JSON-RPC request message (client-initiated, expects a response). */
+/**
+ * JSON-RPC request message (client-initiated, expects a response).
+ */
 export type JsonRpcRequest = {
   readonly jsonrpc: '2.0';
   readonly id: number;
@@ -15,14 +17,18 @@ export type JsonRpcRequest = {
   readonly params?: unknown;
 };
 
-/** JSON-RPC notification message (no response expected). */
+/**
+ * JSON-RPC notification message (no response expected).
+ */
 export type JsonRpcNotification = {
   readonly jsonrpc: '2.0';
   readonly method: string;
   readonly params?: unknown;
 };
 
-/** JSON-RPC response message (server reply to a request). */
+/**
+ * JSON-RPC response message (server reply to a request).
+ */
 export type JsonRpcResponse = {
   readonly jsonrpc: '2.0';
   readonly id: number;
@@ -34,7 +40,9 @@ export type JsonRpcResponse = {
   };
 };
 
-/** Any JSON-RPC message that can arrive from an LSP server. */
+/**
+ * Any JSON-RPC message that can arrive from an LSP server.
+ */
 export type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcResponse;
 
 //endregion Types
@@ -55,14 +63,20 @@ export type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcRespo
  * ```
  */
 export function encodeLspMessage({ message, }: { readonly message: unknown; },): Buffer {
-  /** Stringified message; serves as the JSON-RPC body before UTF-8 encoding. */
+  /**
+   * Stringified message; serves as the JSON-RPC body before UTF-8 encoding.
+   */
   const json = JSON.stringify(message,);
-  /** UTF-8 encoded body; needed for the Content-Length byte count below. */
+  /**
+   * UTF-8 encoded body; needed for the Content-Length byte count below.
+   */
   const content = Buffer.from(
     json,
     'utf8',
   );
-  /** LSP-style framing header preceded by an empty line per the spec. */
+  /**
+   * LSP-style framing header preceded by an empty line per the spec.
+   */
   const header = `Content-Length: ${content.byteLength}\r\n\r\n`;
   return Buffer.concat([
     Buffer.from(

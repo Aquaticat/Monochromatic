@@ -10,22 +10,34 @@ import {
 
 import { log, } from '../log.ts';
 
-/** Abstract Unix socket name used for single-instance enforcement. */
+/**
+ * Abstract Unix socket name used for single-instance enforcement.
+ */
 const SOCKET_NAME = '\0hall-monitor';
 
-/** Index of the inode field in /proc/net/unix output lines. */
+/**
+ * Index of the inode field in /proc/net/unix output lines.
+ */
 const INODE_FIELD_INDEX = 6;
 
-/** Milliseconds to wait between lock acquisition retries. */
+/**
+ * Milliseconds to wait between lock acquisition retries.
+ */
 const RETRY_DELAY_MS = 300;
 
-/** Maximum SIGTERM retry attempts before escalating to SIGKILL. */
+/**
+ * Maximum SIGTERM retry attempts before escalating to SIGKILL.
+ */
 const SIGTERM_RETRIES = 10;
 
-/** Maximum SIGKILL retry attempts before giving up. */
+/**
+ * Maximum SIGKILL retry attempts before giving up.
+ */
 const SIGKILL_RETRIES = 7;
 
-/** Module-singleton mutable state for the lock-server handle; wrapped so it satisfies no-module-root-let. */
+/**
+ * Module-singleton mutable state for the lock-server handle; wrapped so it satisfies no-module-root-let.
+ */
 const state: { lockServer?: Server; } = {};
 
 /**
@@ -38,7 +50,9 @@ const state: { lockServer?: Server; } = {};
  * ```
  */
 export function closeLock(): void {
-  /** Current lock-server handle, if any; closed to release the held abstract socket. */
+  /**
+   * Current lock-server handle, if any; closed to release the held abstract socket.
+   */
   const { lockServer, } = state;
   if (lockServer)
     lockServer.close();
@@ -60,7 +74,9 @@ export function closeLock(): void {
 export function acquireLock(): Promise<boolean> {
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js callback-based Server API
   return new Promise(function tryListen(resolve,) {
-    /** Local handle to the freshly created server so listeners can be attached before assigning into `state`. */
+    /**
+     * Local handle to the freshly created server so listeners can be attached before assigning into `state`.
+     */
     const server = createServer();
     state.lockServer = server;
     server.on(
@@ -124,15 +140,23 @@ function isAllDigits(s: string,): boolean {
  */
 export function splitOnWhitespace(s: string,): string[] {
   return (function build(): string[] {
-    /** Completed tokens in order; one push and one slice per token keeps the build O(n). */
+    /**
+     * Completed tokens in order; one push and one slice per token keeps the build O(n).
+     */
     const tokens: string[] = [];
-    /** Start index of the in-progress token, or `(-1)` while between tokens. */
+    /**
+     * Start index of the in-progress token, or `(-1)` while between tokens.
+     */
     let tokenStart = -1;
-    /** Scan cursor advanced one character at a time across `s`. */
+    /**
+     * Scan cursor advanced one character at a time across `s`.
+     */
     let idx = 0;
     while (idx < s
       .length) {
-      /** Current char; whitespace closes the in-progress token. */
+      /**
+       * Current char; whitespace closes the in-progress token.
+       */
       const c = s.charAt(idx,);
       if (
         (c === ' ')
@@ -169,32 +193,44 @@ export function splitOnWhitespace(s: string,): string[] {
  * @throws when no process is found holding the hall-monitor socket
  */
 async function findSocketOwnerPid(): Promise<number> {
-  /** Snapshot of `/proc/net/unix` listing every Unix socket on the system. */
+  /**
+   * Snapshot of `/proc/net/unix` listing every Unix socket on the system.
+   */
   const unix = await readFile(
     '/proc/net/unix',
     'utf8',
   );
-  /** First `/proc/net/unix` row whose path matches the hall-monitor abstract socket. */
+  /**
+   * First `/proc/net/unix` row whose path matches the hall-monitor abstract socket.
+   */
   const line = unix.split('\n',)
     .find(function matchHallMonitor(l,) {
     return l.includes('@hall-monitor',);
   },);
   if (line === undefined)
     throw new Error('Socket in use but could not find owner PID.',);
-  /** Whitespace-separated `/proc/net/unix` columns used to extract the inode. */
+  /**
+   * Whitespace-separated `/proc/net/unix` columns used to extract the inode.
+   */
   const fields = splitOnWhitespace(line.trim(),);
-  /** Inode number that links the socket row to a `/proc/{pid}/fd` symlink target. */
+  /**
+   * Inode number that links the socket row to a `/proc/{pid}/fd` symlink target.
+   */
   const inode = fields[INODE_FIELD_INDEX];
 
   for (const pid of await readdir('/proc',)) {
     if (!isAllDigits(pid,))
       continue;
     try {
-      /** Open file descriptors of the candidate process; scanned for a matching socket inode. */
+      /**
+       * Open file descriptors of the candidate process; scanned for a matching socket inode.
+       */
       // oxlint-disable-next-line no-await-in-loop -- sequential /proc traversal; parallel reads would race with process exits
       const fds = await readdir(`/proc/${pid}/fd`,);
       for (const fd of fds) {
-        /** Resolved fd symlink target; equals `socket:[<inode>]` for socket descriptors. */
+        /**
+         * Resolved fd symlink target; equals `socket:[<inode>]` for socket descriptors.
+         */
         // oxlint-disable-next-line no-await-in-loop -- sequential readlink for each fd
         const link = await readlink(`/proc/${pid}/fd/${fd}`,);
         if (link === `socket:[${inode}]`) {
@@ -226,7 +262,9 @@ async function findSocketOwnerPid(): Promise<number> {
  * ```
  */
 export async function killExisting(): Promise<void> {
-  /** PID of the existing hall-monitor instance that must be terminated before the lock is free. */
+  /**
+   * PID of the existing hall-monitor instance that must be terminated before the lock is free.
+   */
   const pid = await findSocketOwnerPid();
 
   log.debug(`[lock] Sending SIGTERM to existing instance (PID ${pid})...`,);

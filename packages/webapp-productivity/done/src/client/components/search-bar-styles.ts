@@ -17,18 +17,26 @@ import {
   shadowDomGlobals,
 } from '../mixins.ts';
 
-/** Back button and heading font size in rem. */
+/**
+ * Back button and heading font size in rem.
+ */
 const BACK_FONT_SIZE = 1 + (1 / 2);
 
-/** Focus outline offset in rem (-1/8). */
+/**
+ * Focus outline offset in rem (-1/8).
+ */
 const FOCUS_OFFSET = -(1 / 2
   / 2
   / 2);
 
-/** Full percentage for input block-size. */
+/**
+ * Full percentage for input block-size.
+ */
 const FULL_PERCENT = 100;
 
-/** Compiled CSS string for `<search-bar>` Shadow DOM. */
+/**
+ * Compiled CSS string for `<search-bar>` Shadow DOM.
+ */
 export const SEARCH_BAR_STYLES: string = [
   css({
     rule: ':host',

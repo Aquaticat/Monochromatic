@@ -80,7 +80,9 @@ export function toWireCompletionItems(
  */
 export function toWireInlayHints({ hints, }: { readonly hints: readonly LspInlayHint[]; },): InlayHint[] {
   return hints.map(function convertHint(hint,) {
-    /** Flat label text; structured `label` parts are concatenated since the wire format is plain string. */
+    /**
+     * Flat label text; structured `label` parts are concatenated since the wire format is plain string.
+     */
     const label = (typeof hint.label) === 'string'
       ? hint.label
       : hint
@@ -89,7 +91,9 @@ export function toWireInlayHints({ hints, }: { readonly hints: readonly LspInlay
           return part.value;
         },)
         .join('',);
-    /** Wire payload with optional LSP fields omitted when absent. */
+    /**
+     * Wire payload with optional LSP fields omitted when absent.
+     */
     return {
       position: hint.position,
       label,
@@ -119,7 +123,9 @@ export function toWireInlayHints({ hints, }: { readonly hints: readonly LspInlay
 export function toWireSelectionRange(
   { lspRange, }: { readonly lspRange: LspSelectionRange; },
 ): SelectionRange {
-  /** Wire payload; optional `parent` stays omitted when the LSP value omits it. */
+  /**
+   * Wire payload; optional `parent` stays omitted when the LSP value omits it.
+   */
   return {
     range: lspRange.range,
     ...(lspRange.parent

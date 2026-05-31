@@ -29,7 +29,9 @@ import { dirname, } from 'node:path';
 
 import { getArgumentValue, } from '../lib/args.ts';
 
-/** Default database path when neither `--db=` nor `DB_PATH` env var is set. */
+/**
+ * Default database path when neither `--db=` nor `DB_PATH` env var is set.
+ */
 const DEFAULT_DATABASE_PATH = './data/forge.db';
 
 /**
@@ -53,12 +55,18 @@ function normalizeDatabasePath(value: string,): string {
  * @returns resolved filesystem path
  */
 function resolveDatabasePath(): string {
-  /** `--db=PATH` CLI argument when supplied; highest priority source. */
+  /**
+   * `--db=PATH` CLI argument when supplied; highest priority source.
+   */
   const argumentPath = getArgumentValue('db',);
-  /** `DB_PATH` environment variable; second priority source. */
+  /**
+   * `DB_PATH` environment variable; second priority source.
+   */
   const environmentPath = process.env
     .DB_PATH;
-  /** Selected raw path; falls back to the compile-time default. */
+  /**
+   * Selected raw path; falls back to the compile-time default.
+   */
   const rawPath = argumentPath ?? environmentPath
     ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
@@ -80,11 +88,15 @@ function ensureDatabaseDirectoryExists(databasePath: string,): void {
   );
 }
 
-/** Resolved filesystem path for the libSQL database file. */
+/**
+ * Resolved filesystem path for the libSQL database file.
+ */
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath,);
 
-/** Open libSQL database connection used by every data-access module. */
+/**
+ * Open libSQL database connection used by every data-access module.
+ */
 const db: Database = await connect(
   databasePath,
   { experimental: ['triggers',], },
@@ -116,7 +128,9 @@ const reposSchemaStmt = db.prepare(
 
 /* oxlint-disable typescript/no-unsafe-type-assertion -- libSQL prepared statement returns a typed row */
 
-/** Schema text of the current `repos` table, or `undefined` on a fresh DB. */
+/**
+ * Schema text of the current `repos` table, or `undefined` on a fresh DB.
+ */
 const reposSchemaRow = await reposSchemaStmt.get(
   'table',
   'repos',
@@ -127,7 +141,7 @@ if (
   (reposSchemaRow === undefined)
     || (reposSchemaRow
     .s
-    .includes('REFERENCES users',))
+      .includes('REFERENCES users',))
 ) {
   await db.exec(migration0004,);
 }
@@ -150,15 +164,21 @@ export default db;
  * ```
  */
 export async function run(row: {
-  /** SQL with `?` parameter placeholders. */
+  /**
+   * SQL with `?` parameter placeholders.
+   */
   readonly sql: string;
-  /** Bind parameters; defaults to none. */
+  /**
+   * Bind parameters; defaults to none.
+   */
   readonly params?: readonly unknown[];
 },): Promise<{
   changes: number;
   lastInsertRowid: number;
 }> {
-  /** Prepared statement for the one-shot execution. */
+  /**
+   * Prepared statement for the one-shot execution.
+   */
   const stmt = db.prepare(row.sql,);
   return await stmt.run(...(row.params
     ?? []),) as {
@@ -183,15 +203,23 @@ export async function run(row: {
  * ```
  */
 export async function get<T = Record<string, unknown>,>(row: {
-  /** SQL with `?` parameter placeholders. */
+  /**
+   * SQL with `?` parameter placeholders.
+   */
   readonly sql: string;
-  /** Bind parameters; defaults to none. */
+  /**
+   * Bind parameters; defaults to none.
+   */
   readonly params?: readonly unknown[];
 },): Promise<T | undefined> {
-  /** Prepared statement for the single-row fetch. */
+  /**
+   * Prepared statement for the single-row fetch.
+   */
   const stmt = db.prepare(row.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment -- libSQL returns any */
-  /** First row returned by the statement; undefined when no rows match. */
+  /**
+   * First row returned by the statement; undefined when no rows match.
+   */
   const value = await stmt.get(...(row.params
     ?? []),);
   /* oxlint-enable typescript/no-unsafe-assignment */
@@ -215,12 +243,18 @@ export async function get<T = Record<string, unknown>,>(row: {
  * ```
  */
 export async function all<T = Record<string, unknown>,>(row: {
-  /** SQL with `?` parameter placeholders. */
+  /**
+   * SQL with `?` parameter placeholders.
+   */
   readonly sql: string;
-  /** Bind parameters; defaults to none. */
+  /**
+   * Bind parameters; defaults to none.
+   */
   readonly params?: readonly unknown[];
 },): Promise<T[]> {
-  /** Prepared statement for the multi-row fetch. */
+  /**
+   * Prepared statement for the multi-row fetch.
+   */
   const stmt = db.prepare(row.sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed rows
   return await stmt.all(...(row.params

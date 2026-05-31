@@ -42,13 +42,17 @@ export async function handleToolCall(
     readonly request: JsonRpcRequest;
   },
 ): Promise<JsonRpcOutbound> {
-  /** Echoed back in the response so the client can correlate the call with the result. */
+  /**
+   * Echoed back in the response so the client can correlate the call with the result.
+   */
   const {
     id,
     params,
   } = request;
 
-  /** Tool name extracted from untrusted params; `undefined` triggers an invalid-params error below. */
+  /**
+   * Tool name extracted from untrusted params; `undefined` triggers an invalid-params error below.
+   */
   const toolName = ((typeof params?.name) === 'string') ? params.name : undefined;
   if (toolName === undefined) {
     return respondError({
@@ -58,9 +62,13 @@ export async function handleToolCall(
     },);
   }
 
-  /** Raw `arguments` value from params, validated below before being handed to the tool. */
+  /**
+   * Raw `arguments` value from params, validated below before being handed to the tool.
+   */
   const rawArgs = params?.arguments;
-  /** Validated argument bag: empty object when params arrived missing, null, an array, or a non-object. */
+  /**
+   * Validated argument bag: empty object when params arrived missing, null, an array, or a non-object.
+   */
   const toolArgs: Record<string, unknown> = (rawArgs !== undefined)
       && (rawArgs !== null)
     && ((typeof rawArgs) === 'object')
@@ -69,7 +77,9 @@ export async function handleToolCall(
     ? (rawArgs as Record<string, unknown>)
     : {};
 
-  /** Tool entry resolved from the registry; `undefined` means the client requested an unknown tool. */
+  /**
+   * Tool entry resolved from the registry; `undefined` means the client requested an unknown tool.
+   */
   const registered = toolMap.get(toolName,);
   if (registered === undefined) {
     return respondError({
@@ -82,7 +92,9 @@ export async function handleToolCall(
   // Deliberate catch-and-return: in a server context, tool handler errors must be
   // reported as JSON-RPC error responses rather than crashing the server process.
   try {
-    /** Tool handler output, wrapped below into a JSON-RPC success response. */
+    /**
+     * Tool handler output, wrapped below into a JSON-RPC success response.
+     */
     const result: ToolCallResult = await registered.handler(toolArgs,);
     return respondSuccess({
       id,
@@ -90,7 +102,9 @@ export async function handleToolCall(
     },);
   }
   catch (error: unknown) {
-    /** Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`. */
+    /**
+     * Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`.
+     */
     const message = (error instanceof Error) ? error.message : String(error,);
     console.error(
       `[mcp-stdio] tool "${toolName}" threw:`,

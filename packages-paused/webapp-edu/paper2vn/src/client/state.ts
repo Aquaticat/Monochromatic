@@ -75,7 +75,9 @@ function readJson<T,>(
   }>,
 ): T {
   try {
-    /** Raw stored JSON string, or `null` when the key is missing. */
+    /**
+     * Raw stored JSON string, or `null` when the key is missing.
+     */
     const raw = globalThis.localStorage
       .getItem(key,);
     if (raw === null)
@@ -157,7 +159,9 @@ function removeKey(key: string,): void {
   }
 }
 
-/** Listener notified after any state mutation. */
+/**
+ * Listener notified after any state mutation.
+ */
 type Listener = () => void;
 
 /**
@@ -165,7 +169,9 @@ type Listener = () => void;
  */
 const listeners = new Set<Listener>();
 
-/** Notifies every subscriber. Errors in one listener do not stop others. */
+/**
+ * Notifies every subscriber. Errors in one listener do not stop others.
+ */
 function emit(): void {
   for (const fn of listeners) {
     try {
@@ -210,15 +216,25 @@ export function onChange(fn: Listener,): () => void {
  * without violating `no-module-root-let`.
  */
 const store: {
-  /** Current settings snapshot. */
+  /**
+   * Current settings snapshot.
+   */
   settings: Settings;
-  /** Current provider config snapshot. */
+  /**
+   * Current provider config snapshot.
+   */
   provider: ProviderConfig;
-  /** Save slots index. */
+  /**
+   * Save slots index.
+   */
   saves: readonly SaveSummary[];
-  /** Save id of the active save, when one is loaded. */
+  /**
+   * Save id of the active save, when one is loaded.
+   */
   activeSaveId: string | undefined;
-  /** Active save payload, materialized when loaded from storage or just created. */
+  /**
+   * Active save payload, materialized when loaded from storage or just created.
+   */
   activeSave: SaveData | undefined;
 } = {
   settings: {
@@ -393,7 +409,9 @@ export function persistActiveSave(): void {
   if (store.activeSave
     === undefined)
     return;
-  /** Active save with refreshed `updatedAt` so the persisted copy reflects the write. */
+  /**
+   * Active save with refreshed `updatedAt` so the persisted copy reflects the write.
+   */
   const updated: SaveData = {
     ...store.activeSave,
     updatedAt: new Date().toISOString(),
@@ -403,14 +421,18 @@ export function persistActiveSave(): void {
     key: `${STORAGE_KEY_SAVE_PREFIX}${updated.id}`,
     value: updated,
   },);
-  /** Index entry rebuilt from `updated` so listings stay current. */
+  /**
+   * Index entry rebuilt from `updated` so listings stay current.
+   */
   const summary: SaveSummary = {
     id: updated.id,
     label: updated.label,
     paperTitle: updated.paperTitle,
     updatedAt: updated.updatedAt,
   };
-  /** Existing index minus the entry being replaced. */
+  /**
+   * Existing index minus the entry being replaced.
+   */
   const next = store.saves
     .filter(function isOther(s: Readonly<SaveSummary>,): boolean {
     return s.id
@@ -442,7 +464,9 @@ export function persistActiveSave(): void {
  * ```
  */
 export function loadSave(id: string,): SaveData | undefined {
-  /** Loaded save payload, or `null` when the storage key is absent. */
+  /**
+   * Loaded save payload, or `null` when the storage key is absent.
+   */
   const data = readJson<SaveData | null>({
     key: `${STORAGE_KEY_SAVE_PREFIX}${id}`,
     fallback: null,

@@ -7,9 +7,13 @@ import type {
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
-/** Array-expression node shape carrying element spans for this rule. */
+/**
+ * Array-expression node shape carrying element spans for this rule.
+ */
 type ArrayElementListNode = Span & {
-  /** Array elements as read by the existing rule behavior. */
+  /**
+   * Array elements as read by the existing rule behavior.
+   */
   readonly elements?: readonly Span[];
 };
 
@@ -48,9 +52,13 @@ export const arrayElementPerLine: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       ArrayExpression(node: Span,): void {
-        /** Narrowed array visitor node used for element access. */
+        /**
+         * Narrowed array visitor node used for element access.
+         */
         const arrayNode = node as ArrayElementListNode;
-        /** Extract elements from the array node. */
+        /**
+         * Extract elements from the array node.
+         */
         const { elements, } = arrayNode;
         if (elements === undefined)
           return;

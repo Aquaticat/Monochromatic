@@ -19,9 +19,13 @@
  * ```
  */
 export function getArgumentValue(name: string,): string | undefined {
-  /** Literal argv prefix for the named CLI argument. */
+  /**
+   * Literal argv prefix for the named CLI argument.
+   */
   const prefix = `--${name}=`;
-  /** First matching argv entry, or `undefined` when the flag is absent. */
+  /**
+   * First matching argv entry, or `undefined` when the flag is absent.
+   */
   const argument = process.argv
     .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);

@@ -35,19 +35,29 @@ type PermissionMode =
  * ```
  */
 type HookInputBase = {
-  /** Current session identifier. */
+  /**
+   * Current session identifier.
+   */
   session_id: string;
 
-  /** Path to the conversation transcript JSONL file. */
+  /**
+   * Path to the conversation transcript JSONL file.
+   */
   transcript_path: string;
 
-  /** Working directory when the hook was invoked. */
+  /**
+   * Working directory when the hook was invoked.
+   */
   cwd: string;
 
-  /** Permission mode active in the session. */
+  /**
+   * Permission mode active in the session.
+   */
   permission_mode: PermissionMode;
 
-  /** Name of the hook event that fired. */
+  /**
+   * Name of the hook event that fired.
+   */
   hook_event_name: HookEventName;
 
   /**
@@ -88,7 +98,9 @@ type HookOutputBase = {
    */
   continue?: boolean;
 
-  /** Message shown to the user when `continue` is `false`. Not shown to Claude. */
+  /**
+   * Message shown to the user when `continue` is `false`. Not shown to Claude.
+   */
   stopReason?: string;
 
   /**
@@ -98,7 +110,9 @@ type HookOutputBase = {
    */
   suppressOutput?: boolean;
 
-  /** Warning message shown to the user. */
+  /**
+   * Warning message shown to the user.
+   */
   systemMessage?: string;
 };
 
