@@ -47,10 +47,14 @@ export async function renderPageCanvas({
   readonly container: HTMLDivElement;
   readonly overlay: HTMLDivElement;
 },): Promise<OffscreenCanvas> {
-  /** Set overlay to this page's SVG for layout computation */
+  /**
+   * Set overlay to this page's SVG for layout computation
+   */
   overlay.innerHTML = svgBackground;
 
-  /** Device pixel ratio for high-DPI rendering */
+  /**
+   * Device pixel ratio for high-DPI rendering
+   */
   const dpr = globalThis.devicePixelRatio;
 
   /**

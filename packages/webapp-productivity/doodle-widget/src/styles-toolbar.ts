@@ -75,7 +75,9 @@ export function renderToolbarStyles(): string[] {
       decls: { 'font-weight': FONT_WEIGHT_BOLD, },
     },),
 
-    /** Base styling shared by all interactive toolbar controls */
+    /**
+     * Base styling shared by all interactive toolbar controls
+     */
     $({
       rule: CONTROL_SELECTOR,
       decls: {

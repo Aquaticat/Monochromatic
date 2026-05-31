@@ -14,10 +14,14 @@ import {
 } from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
-/** Fallback base repository URL when git remote is unavailable */
+/**
+ * Fallback base repository URL when git remote is unavailable
+ */
 const FALLBACK_REPO_URL = 'https://github.com/Aquaticat/Monochromatic';
 
-/** Fallback subdirectory when `repository.directory` is missing from package.json */
+/**
+ * Fallback subdirectory when `repository.directory` is missing from package.json
+ */
 const FALLBACK_DIRECTORY = 'packages/webapp-productivity/doodle-widget';
 
 /**
@@ -27,9 +31,13 @@ const FALLBACK_DIRECTORY = 'packages/webapp-productivity/doodle-widget';
  */
 async function resolveRepoUrl(): Promise<string> {
   try {
-    /** Monorepo root so `git remote` runs against the correct working tree. */
+    /**
+     * Monorepo root so `git remote` runs against the correct working tree.
+     */
     const repoRoot = await findMiseMonorepoRootCached();
-    /** Captured so the trailing `.git` can be trimmed before returning. */
+    /**
+     * Captured so the trailing `.git` can be trimmed before returning.
+     */
     const result = await spawn(
       'git',
       [
@@ -39,7 +47,9 @@ async function resolveRepoUrl(): Promise<string> {
       ],
       { cwd: repoRoot, },
     );
-    /** Trimmed remote URL; the trailing `.git` suffix is stripped if present so the result is browsable. */
+    /**
+     * Trimmed remote URL; the trailing `.git` suffix is stripped if present so the result is browsable.
+     */
     const trimmed = result.output
       .trim();
     return trimmed.endsWith('.git',)
@@ -74,7 +84,9 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
  */
 async function resolveDirectory(packageDir: string,): Promise<string> {
   try {
-    /** Raw manifest text so the JSON parse error stays scoped to this function. */
+    /**
+     * Raw manifest text so the JSON parse error stays scoped to this function.
+     */
     const raw = await readFile(
       join(
         packageDir,
@@ -89,12 +101,16 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
     if (!isRecord(parsed,))
       return FALLBACK_DIRECTORY;
 
-    /** Repository field destructured so the runtime shape is checked before reading `directory`. */
+    /**
+     * Repository field destructured so the runtime shape is checked before reading `directory`.
+     */
     const { repository, } = parsed;
     if (!isRecord(repository,))
       return FALLBACK_DIRECTORY;
 
-    /** Directory field destructured so a non-string value falls through to the fallback. */
+    /**
+     * Directory field destructured so a non-string value falls through to the fallback.
+     */
     const { directory, } = repository;
     if ((typeof directory) !== 'string')
       return FALLBACK_DIRECTORY;
@@ -123,7 +139,9 @@ async function resolveDirectory(packageDir: string,): Promise<string> {
  * ```
  */
 export async function resolveSourceUrl(packageDir: string,): Promise<string> {
-  /** Two halves resolved together so the slower I/O paths overlap. */
+  /**
+   * Two halves resolved together so the slower I/O paths overlap.
+   */
   const [repoUrl, directory,] = await Promise.all([
     resolveRepoUrl(),
     resolveDirectory(packageDir,),

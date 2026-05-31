@@ -33,13 +33,17 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   const {
     textLayer,
   } = deps;
-  /** Export dimensions resolved once so both rendering and text placement agree on the canvas size. */
+  /**
+   * Export dimensions resolved once so both rendering and text placement agree on the canvas size.
+   */
   const {
     cw,
     ch,
   } = getExportSize();
 
-  /** Composited base canvas plus its drawing context, retained so the text layer can be painted on top. */
+  /**
+   * Composited base canvas plus its drawing context, retained so the text layer can be painted on top.
+   */
   const {
     canvas,
     ctx,
@@ -48,7 +52,9 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   //region Layer 4: text annotations
   ctx.textBaseline = 'top';
 
-  /** Text snapshot pulled before download so DOM mutations during await cannot reorder it. */
+  /**
+   * Text snapshot pulled before download so DOM mutations during await cannot reorder it.
+   */
   const textEntries = readTextEntries({ textLayer, },);
   for (const entry of textEntries) {
     ctx.font = `${String(entry.fontSizePx,)}px system-ui, sans-serif`;
@@ -63,7 +69,9 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   }
   //endregion Layer 4
 
-  /** PNG-encoded blob the browser can stream into the download anchor. */
+  /**
+   * PNG-encoded blob the browser can stream into the download anchor.
+   */
   const blob = await canvas.convertToBlob({ type: 'image/png', },);
   triggerDownload({
     blob,

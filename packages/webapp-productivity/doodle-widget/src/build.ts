@@ -26,14 +26,18 @@ import { renderStyles, } from './styles.ts';
 
 export {};
 
-/** Absolute path to this package's root directory */
+/**
+ * Absolute path to this package's root directory
+ */
 const PACKAGE_DIR: string = new URL(
   '..',
   import.meta.url,
 )
   .pathname;
 
-/** Output directory for the generated site */
+/**
+ * Output directory for the generated site
+ */
 const DIST_DIR = join(
   PACKAGE_DIR,
   'dist',
@@ -53,10 +57,14 @@ const svgBackgrounds = [
   pageSvg2,
 ];
 
-/** Minified CSS stylesheet */
+/**
+ * Minified CSS stylesheet
+ */
 const css = renderStyles();
 
-/** Client-side canvas drawing and background management script, pre-bundled by tsdown */
+/**
+ * Client-side canvas drawing and background management script, pre-bundled by tsdown
+ */
 const js = await readFile(
   join(
     PACKAGE_DIR,
@@ -67,10 +75,14 @@ const js = await readFile(
   'utf8',
 );
 
-/** Source code URL resolved from git remote and package.json */
+/**
+ * Source code URL resolved from git remote and package.json
+ */
 const sourceUrl = await resolveSourceUrl(PACKAGE_DIR,);
 
-/** Complete self-contained HTML document */
+/**
+ * Complete self-contained HTML document
+ */
 const html = renderPage({
   css,
   js,

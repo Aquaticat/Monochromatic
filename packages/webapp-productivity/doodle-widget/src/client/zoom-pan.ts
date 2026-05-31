@@ -12,7 +12,9 @@ import {
   setPan,
 } from './zoom.ts';
 
-/** Minimum pointer movement in pixels to distinguish drag from click */
+/**
+ * Minimum pointer movement in pixels to distinguish drag from click
+ */
 const DRAG_THRESHOLD = 4;
 
 //region State
@@ -24,17 +26,29 @@ const DRAG_THRESHOLD = 4;
  * container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const panState: {
-  /** Whether a pan drag gesture is active */
+  /**
+   * Whether a pan drag gesture is active
+   */
   panning: boolean;
-  /** Pointer X at pan start in screen pixels */
+  /**
+   * Pointer X at pan start in screen pixels
+   */
   panStartPointerX: number;
-  /** Pointer Y at pan start in screen pixels */
+  /**
+   * Pointer Y at pan start in screen pixels
+   */
   panStartPointerY: number;
-  /** Pan offset X at drag start */
+  /**
+   * Pan offset X at drag start
+   */
   panStartOffsetX: number;
-  /** Pan offset Y at drag start */
+  /**
+   * Pan offset Y at drag start
+   */
   panStartOffsetY: number;
-  /** Whether pointer moved enough to count as drag (not click) */
+  /**
+   * Whether pointer moved enough to count as drag (not click)
+   */
   dragExceededThreshold: boolean;
 } = {
   panning: false,
@@ -110,7 +124,9 @@ export function continuePan({
   if (!panState.panning)
     return false;
 
-  /** Pointer displacement on the x axis since the gesture began. */
+  /**
+   * Pointer displacement on the x axis since the gesture began.
+   */
   const dx = event.clientX
     - panState
     .panStartPointerX;
@@ -156,7 +172,9 @@ export function continuePan({
  */
 export function endPan(): boolean {
   panState.panning = false;
-  /** Captured before resetting so the caller can distinguish a drag from a click. */
+  /**
+   * Captured before resetting so the caller can distinguish a drag from a click.
+   */
   const wasDrag = panState.dragExceededThreshold;
   panState.dragExceededThreshold = false;
   return wasDrag;

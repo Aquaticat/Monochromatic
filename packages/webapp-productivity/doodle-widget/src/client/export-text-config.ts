@@ -9,19 +9,29 @@ import type { TextEntryData, } from './text-page.ts';
 
 //region Constants
 
-/** Font size for text inputs in rem, matching `.text-input` CSS */
+/**
+ * Font size for text inputs in rem, matching `.text-input` CSS
+ */
 export const TEXT_FONT_SIZE_REM = 1.25;
 
-/** Fallback root font size in pixels when computed value is unavailable */
+/**
+ * Fallback root font size in pixels when computed value is unavailable
+ */
 export const DEFAULT_ROOT_FONT_SIZE_PX = 16;
 
-/** Divisor for converting percentage positions to the 0..1 range */
+/**
+ * Divisor for converting percentage positions to the 0..1 range
+ */
 export const PERCENT_DIVISOR = 100;
 
-/** Text fill color as oklch string, matching `.text-input` CSS */
+/**
+ * Text fill color as oklch string, matching `.text-input` CSS
+ */
 export const TEXT_COLOR = 'oklch(0.3 0 0)';
 
-/** Approximate sRGB components for oklch(0.3 0 0), used by jsPDF */
+/**
+ * Approximate sRGB components for oklch(0.3 0 0), used by jsPDF
+ */
 export const TEXT_COLOR_RGB = {
   r: 46,
   g: 46,
@@ -66,15 +76,25 @@ export function getRootFontSizePx(): number {
  * ```
  */
 export type ExportTextEntry = {
-  /** Non-empty text content */
+  /**
+   * Non-empty text content
+   */
   readonly value: string;
-  /** Horizontal position as 0..1 fraction */
+  /**
+   * Horizontal position as 0..1 fraction
+   */
   readonly xFraction: number;
-  /** Vertical position as 0..1 fraction */
+  /**
+   * Vertical position as 0..1 fraction
+   */
   readonly yFraction: number;
-  /** Font size in pixels */
+  /**
+   * Font size in pixels
+   */
   readonly fontSizePx: number;
-  /** CSS color string */
+  /**
+   * CSS color string
+   */
   readonly color: string;
 };
 
@@ -85,15 +105,25 @@ export type ExportTextEntry = {
  * logic runs once in {@link resolveExportEntry}.
  */
 type RawEntryFields = {
-  /** Text content */
+  /**
+   * Text content
+   */
   readonly value: string;
-  /** CSS percentage string for horizontal position */
+  /**
+   * CSS percentage string for horizontal position
+   */
   readonly insetInlineStart: string;
-  /** CSS percentage string for vertical position */
+  /**
+   * CSS percentage string for vertical position
+   */
   readonly insetBlockStart: string;
-  /** Font size in pixels as numeric string; absent when unset */
+  /**
+   * Font size in pixels as numeric string; absent when unset
+   */
   readonly fontSize?: string;
-  /** CSS color string; absent when unset */
+  /**
+   * CSS color string; absent when unset
+   */
   readonly color?: string;
 };
 
@@ -118,13 +148,17 @@ function resolveExportEntry(
     readonly defaultFontSizePx: number;
   },
 ): ExportTextEntry {
-  /** Per-entry font size, falling back to CSS default */
+  /**
+   * Per-entry font size, falling back to CSS default
+   */
   const fontSizePx = ((raw.fontSize
     !== undefined) && (raw.fontSize
       !== ''))
     ? Number.parseFloat(raw.fontSize,)
     : defaultFontSizePx;
-  /** Per-entry color, falling back to CSS default */
+  /**
+   * Per-entry color, falling back to CSS default
+   */
   const color = ((raw.color
     !== undefined) && (raw.color
       !== ''))
@@ -153,9 +187,13 @@ function resolveExportEntry(
  * @returns array of parsed text entries ready for export
  */
 function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[] {
-  /** Default text font size in pixels */
+  /**
+   * Default text font size in pixels
+   */
   const defaultFontSizePx = TEXT_FONT_SIZE_REM * getRootFontSizePx();
-  /** Output array filled as raws stream through, so empty entries can be silently dropped. */
+  /**
+   * Output array filled as raws stream through, so empty entries can be silently dropped.
+   */
   const entries: ExportTextEntry[] = [];
 
   for (const raw of raws) {
@@ -200,7 +238,9 @@ export function readTextEntries({ textLayer, }: {
     Array.from(
       inputs,
       function toRaw(input,): RawEntryFields {
-        /** Pulled out so each dataset value can be spread in only when present (exactOptionalPropertyTypes). */
+        /**
+         * Pulled out so each dataset value can be spread in only when present (exactOptionalPropertyTypes).
+         */
         const {
           fontSize,
           color,

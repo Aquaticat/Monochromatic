@@ -14,7 +14,9 @@
  */
 const DEFAULT_STROKE_COLOR = '#c24e2e';
 
-/** Default stroke width in CSS pixels */
+/**
+ * Default stroke width in CSS pixels
+ */
 const DEFAULT_STROKE_WIDTH = 10;
 
 //endregion Constants

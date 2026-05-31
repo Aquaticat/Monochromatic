@@ -35,11 +35,17 @@ import {
  * ```
  */
 export type PageState = {
-  /** Drawing strokes on this page */
+  /**
+   * Drawing strokes on this page
+   */
   strokes: StrokeData[];
-  /** Serialized text input entries */
+  /**
+   * Serialized text input entries
+   */
   textEntries: TextEntryData[];
-  /** SVG overlay innerHTML for this page's background */
+  /**
+   * SVG overlay innerHTML for this page's background
+   */
   svgBackground: string;
 };
 
@@ -50,9 +56,13 @@ export type PageState = {
  * container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const pagesState: {
-  /** All page states indexed by page number */
+  /**
+   * All page states indexed by page number
+   */
   pages: PageState[];
-  /** Zero-based index of the currently active page */
+  /**
+   * Zero-based index of the currently active page
+   */
   currentIndex: number;
 } = {
   pages: [],
@@ -89,7 +99,9 @@ export function initPages({
     };
   },);
   pagesState.currentIndex = 0;
-  /** First page state for initial background rendering */
+  /**
+   * First page state for initial background rendering
+   */
   const [firstPage,] = pagesState.pages;
   if (firstPage === undefined)
     throw new Error('No page backgrounds provided',);
@@ -127,7 +139,9 @@ function saveCurrentPage({
   readonly overlay: HTMLElement;
   readonly textLayer: HTMLDivElement;
 },): void {
-  /** Live page slot, or `undefined` when state has been wiped mid-switch. */
+  /**
+   * Live page slot, or `undefined` when state has been wiped mid-switch.
+   */
   const page = pagesState.pages[pagesState.currentIndex];
   if (page === undefined)
     return;
@@ -190,7 +204,9 @@ export function switchToPage({
   },);
 
   //region Restore target page
-  /** Destination page state; the surrounding bounds check guarantees presence. */
+  /**
+   * Destination page state; the surrounding bounds check guarantees presence.
+   */
   const targetPage = pagesState.pages[index];
   if (targetPage === undefined)
     throw new Error(`Page state missing for target index ${String(index,)}`,);

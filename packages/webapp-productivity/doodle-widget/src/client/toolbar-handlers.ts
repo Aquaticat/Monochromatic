@@ -20,7 +20,9 @@ import type {
 } from './export.ts';
 import { clearTextEntries, } from './text.ts';
 
-/** Valid export formats, keyed for the isExportFormat membership test */
+/**
+ * Valid export formats, keyed for the isExportFormat membership test
+ */
 const EXPORT_FORMATS: Record<ExportFormat, true> = {
   pdf: true,
   png: true,
@@ -72,38 +74,68 @@ async function runExport({
  * Dependencies for toolbar handler setup.
  */
 type ToolbarHandlerDeps = {
-  /** Color picker input */
+  /**
+   * Color picker input
+   */
   readonly colorPicker: HTMLInputElement;
-  /** Stroke width slider */
+  /**
+   * Stroke width slider
+   */
   readonly sizeSlider: HTMLInputElement;
-  /** Clear button */
+  /**
+   * Clear button
+   */
   readonly clearBtn: HTMLButtonElement;
-  /** Export button */
+  /**
+   * Export button
+   */
   readonly exportBtn: HTMLButtonElement;
-  /** Export format dropdown */
+  /**
+   * Export format dropdown
+   */
   readonly formatSelect: HTMLSelectElement;
-  /** Upload trigger button */
+  /**
+   * Upload trigger button
+   */
   readonly uploadBtn: HTMLButtonElement;
-  /** Hidden file input */
+  /**
+   * Hidden file input
+   */
   readonly uploadInput: HTMLInputElement;
-  /** Page element (coordinate reference for export sizing) */
+  /**
+   * Page element (coordinate reference for export sizing)
+   */
   readonly page: HTMLDivElement;
-  /** SVG overlay element */
+  /**
+   * SVG overlay element
+   */
   readonly svgOverlay: HTMLDivElement;
-  /** Drawing canvas element */
+  /**
+   * Drawing canvas element
+   */
   readonly drawCanvas: HTMLCanvasElement;
-  /** Text layer element */
+  /**
+   * Text layer element
+   */
   readonly textLayer: HTMLDivElement;
-  /** Canvas 2D rendering context */
+  /**
+   * Canvas 2D rendering context
+   */
   readonly ctx: CanvasRenderingContext2D;
-  /** Returns current canvas dimensions */
+  /**
+   * Returns current canvas dimensions
+   */
   readonly getCanvasSize: () => {
     cw: number;
     ch: number;
   };
-  /** Resizes and redraws the canvas */
+  /**
+   * Resizes and redraws the canvas
+   */
   readonly sizeCanvas: () => void;
-  /** Pushes current state to undo history after a completed action */
+  /**
+   * Pushes current state to undo history after a completed action
+   */
   readonly pushSnapshot: () => void;
 };
 
@@ -118,7 +150,9 @@ type ToolbarHandlerDeps = {
  * ```
  */
 export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
-  /** Destructured up front so each handler closure captures the same handles. */
+  /**
+   * Destructured up front so each handler closure captures the same handles.
+   */
   const {
     colorPicker,
     sizeSlider,
@@ -154,7 +188,9 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   clearBtn.addEventListener(
     'click',
     function handleClear(): void {
-      /** Canvas dimensions captured per click so the clear region matches the current layout. */
+      /**
+       * Canvas dimensions captured per click so the clear region matches the current layout.
+       */
       const {
         cw,
         ch,
@@ -174,7 +210,9 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   exportBtn.addEventListener(
     'click',
     function handleExportClick(): void {
-      /** Selected export format from the dropdown */
+      /**
+       * Selected export format from the dropdown
+       */
       const format = formatSelect.value;
       if (!isExportFormat(format,))
         return;
@@ -207,7 +245,9 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   async function processBackgroundFile(file: File,): Promise<void> {
     clearStrokes();
     clearTextEntries();
-    /** Raw SVG markup read from the uploaded file */
+    /**
+     * Raw SVG markup read from the uploaded file
+     */
     const svgMarkup = await file.text();
     setSvgBackground({
       svgMarkup,
@@ -220,7 +260,9 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   uploadInput.addEventListener(
     'change',
     function handleFileChange(): void {
-      /** Selected file from the upload input */
+      /**
+       * Selected file from the upload input
+       */
       const file = uploadInput.files
         ?.item(0,)
         ?? null;

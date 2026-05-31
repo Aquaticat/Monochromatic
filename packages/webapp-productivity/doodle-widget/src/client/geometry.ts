@@ -56,13 +56,17 @@ export function distToSegmentSq(
    * Companion to {@link dx} on the y axis.
    */
   const dy = by - ay;
-  /** Squared length of segment AB; zero means degenerate (A == B) */
+  /**
+   * Squared length of segment AB; zero means degenerate (A == B)
+   */
   const lenSq = (dx * dx) + (dy * dy);
 
   if (lenSq === 0)
     return ((px - ax) ** 2) + ((py - ay) ** 2);
 
-  /** Projection parameter clamped to [0, 1] so closest point stays on segment */
+  /**
+   * Projection parameter clamped to [0, 1] so closest point stays on segment
+   */
   const t = Math.max(
     0,
     Math.min(
@@ -70,7 +74,9 @@ export function distToSegmentSq(
       (((px - ax) * dx) + ((py - ay) * dy)) / lenSq,
     ),
   );
-  /** Closest point on segment */
+  /**
+   * Closest point on segment
+   */
   const cx = ax + (t * dx);
   /**
    * Companion to {@link cx} on the y axis.
@@ -177,7 +183,9 @@ export function segmentsIntersect(
     b2y,
   }: TwoSegments,
 ): boolean {
-  /** Orientation of A1 relative to segment B */
+  /**
+   * Orientation of A1 relative to segment B
+   */
   const d1 = cross({
     ax: b1x,
     ay: b1y,
@@ -186,7 +194,9 @@ export function segmentsIntersect(
     cx: a1x,
     cy: a1y,
   },);
-  /** Orientation of A2 relative to segment B */
+  /**
+   * Orientation of A2 relative to segment B
+   */
   const d2 = cross({
     ax: b1x,
     ay: b1y,
@@ -195,7 +205,9 @@ export function segmentsIntersect(
     cx: a2x,
     cy: a2y,
   },);
-  /** Orientation of B1 relative to segment A */
+  /**
+   * Orientation of B1 relative to segment A
+   */
   const d3 = cross({
     ax: a1x,
     ay: a1y,
@@ -204,7 +216,9 @@ export function segmentsIntersect(
     cx: b1x,
     cy: b1y,
   },);
-  /** Orientation of B2 relative to segment A */
+  /**
+   * Orientation of B2 relative to segment A
+   */
   const d4 = cross({
     ax: a1x,
     ay: a1y,
@@ -360,7 +374,9 @@ export function segmentIntersectsRect(
     readonly bottom: number;
   },
 ): boolean {
-  /** Top edge: left,top -> right,top */
+  /**
+   * Top edge: left,top -> right,top
+   */
   if (segmentsIntersect({
     a1x: sx,
     a1y: sy,
@@ -373,7 +389,9 @@ export function segmentIntersectsRect(
   },)) {
     return true;
   }
-  /** Bottom edge: left,bottom -> right,bottom */
+  /**
+   * Bottom edge: left,bottom -> right,bottom
+   */
   if (segmentsIntersect({
     a1x: sx,
     a1y: sy,
@@ -386,7 +404,9 @@ export function segmentIntersectsRect(
   },)) {
     return true;
   }
-  /** Left edge: left,top -> left,bottom */
+  /**
+   * Left edge: left,top -> left,bottom
+   */
   if (segmentsIntersect({
     a1x: sx,
     a1y: sy,
@@ -399,7 +419,9 @@ export function segmentIntersectsRect(
   },)) {
     return true;
   }
-  /** Right edge: right,top -> right,bottom */
+  /**
+   * Right edge: right,top -> right,bottom
+   */
   if (segmentsIntersect({
     a1x: sx,
     a1y: sy,

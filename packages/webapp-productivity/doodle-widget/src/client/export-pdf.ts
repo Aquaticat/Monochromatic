@@ -22,19 +22,29 @@ import { snapshotAllPages, } from './pages.ts';
 
 //region Constants
 
-/** Conversion factor from CSS pixels to PDF points (72/96) */
+/**
+ * Conversion factor from CSS pixels to PDF points (72/96)
+ */
 const PX_TO_PT = 0.75;
 
-/** Bit shift for extracting red channel from packed 24-bit RGB */
+/**
+ * Bit shift for extracting red channel from packed 24-bit RGB
+ */
 const RED_SHIFT = 16;
 
-/** Bit shift for extracting green channel from packed 24-bit RGB */
+/**
+ * Bit shift for extracting green channel from packed 24-bit RGB
+ */
 const GREEN_SHIFT = 8;
 
-/** Bit mask for isolating a single 8-bit color channel */
+/**
+ * Bit mask for isolating a single 8-bit color channel
+ */
 const CHANNEL_MASK = 0xFF;
 
-/** Hexadecimal radix for Number.parseInt */
+/**
+ * Hexadecimal radix for Number.parseInt
+ */
 const HEX_RADIX = 16;
 
 //endregion Constants
@@ -56,7 +66,9 @@ function hexToRgb(hex: string,): {
   g: number;
   b: number;
 } {
-  /** 24-bit integer parsed from the hex digits */
+  /**
+   * 24-bit integer parsed from the hex digits
+   */
   const packed = Number.parseInt(
     hex.slice(1,),
     HEX_RADIX,
@@ -83,34 +95,48 @@ function hexToRgb(hex: string,): {
  * ```
  */
 export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
-  /** Destructured up front so subsequent calls reuse the same handles. */
+  /**
+   * Destructured up front so subsequent calls reuse the same handles.
+   */
   const {
     container,
     overlay,
     textLayer,
   } = deps;
-  /** Page dimensions resolved once so layout math stays consistent across pages. */
+  /**
+   * Page dimensions resolved once so layout math stays consistent across pages.
+   */
   const {
     cw,
     ch,
   } = getExportSize();
 
-  /** Snapshot all pages (saves current page's live state) */
+  /**
+   * Snapshot all pages (saves current page's live state)
+   */
   const allPages = snapshotAllPages({
     overlay,
     textLayer,
   },);
-  /** Save overlay HTML to restore after export */
+  /**
+   * Save overlay HTML to restore after export
+   */
   const savedOverlayHtml = overlay.innerHTML;
 
   //region PDF document setup (all dimensions in points)
-  /** Page width in PDF points */
+  /**
+   * Page width in PDF points
+   */
   const pageW = cw * PX_TO_PT;
-  /** Page height in PDF points */
+  /**
+   * Page height in PDF points
+   */
   const pageH = ch * PX_TO_PT;
 
   /* oxlint-disable new-cap -- jsPDF uses lowercase constructor by convention */
-  /** PDF document built with one orientation guess so portrait and landscape inputs both fit. */
+  /**
+   * PDF document built with one orientation guess so portrait and landscape inputs both fit.
+   */
   const doc = new jsPDF({
     orientation: pageW >= pageH ? 'l' : 'p',
     unit: 'pt',
@@ -131,7 +157,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       ],);
     }
 
-    /** Composited raster image for this page */
+    /**
+     * Composited raster image for this page
+     */
     // oxlint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
     const pageCanvas = await renderPageCanvas({
       svgBackground: page.svgBackground,
@@ -140,7 +168,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       overlay,
     },);
 
-    /** PNG image data as byte array for jsPDF embedding */
+    /**
+     * PNG image data as byte array for jsPDF embedding
+     */
     // oxlint-disable-next-line no-await-in-loop -- depends on sequential page rendering above
     const blob = await pageCanvas.convertToBlob({ type: 'image/png', },);
     /* oxlint-disable no-await-in-loop -- depends on sequential blob above */
@@ -149,7 +179,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
      */
     const buffer = await blob.arrayBuffer();
     /* oxlint-enable no-await-in-loop */
-    /** Typed view jsPDF requires for binary image embedding. */
+    /**
+     * Typed view jsPDF requires for binary image embedding.
+     */
     const imageData = new Uint8Array(buffer,);
     doc.addImage(
       imageData,
@@ -161,16 +193,22 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     );
 
     //region Overlay text as real PDF text
-    /** Filtered to the entries safe to render as selectable PDF text. */
+    /**
+     * Filtered to the entries safe to render as selectable PDF text.
+     */
     const textEntries = textEntriesToExport(page.textEntries,);
     for (const entry of textEntries) {
-      /** Font size in points */
+      /**
+       * Font size in points
+       */
       const fontSizePt = entry.fontSizePx
         * PX_TO_PT;
       doc.setFontSize(fontSizePt,);
       if (entry.color
         .startsWith('#',)) {
-        /** Decomposed channels so jsPDF's three-arg setter receives integers, not a hex string. */
+        /**
+         * Decomposed channels so jsPDF's three-arg setter receives integers, not a hex string.
+         */
         const rgb = hexToRgb(entry.color,);
         doc.setTextColor(
           rgb.r,
@@ -200,7 +238,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   }
   //endregion Render each page
 
-  /** Restore overlay to its original state */
+  /**
+   * Restore overlay to its original state
+   */
   overlay.innerHTML = savedOverlayHtml;
 
   doc.save('doodle.pdf',);

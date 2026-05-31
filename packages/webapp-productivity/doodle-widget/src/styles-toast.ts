@@ -13,19 +13,27 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Toast corner radius in rem */
+/**
+ * Toast corner radius in rem
+ */
 const TOAST_RADIUS = 1 / 2;
 
-/** Toast vertical offset from bottom in rem */
+/**
+ * Toast vertical offset from bottom in rem
+ */
 const TOAST_BOTTOM_OFFSET = 2;
 
-/** Toast font size in rem (slightly smaller than body text) */
+/**
+ * Toast font size in rem (slightly smaller than body text)
+ */
 const TOAST_FONT_SIZE = 1 - (1 / (2 + 2
   + 2
   + 2
   + 2));
 
-/** Transition duration in seconds for fade in/out */
+/**
+ * Transition duration in seconds for fade in/out
+ */
 const TRANSITION_DURATION = (1 / 2) - (1 / (2 + 2
   + 1));
 

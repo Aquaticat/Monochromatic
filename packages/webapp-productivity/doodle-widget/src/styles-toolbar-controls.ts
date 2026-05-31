@@ -11,10 +11,14 @@ import {
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
 
-/** Color picker square size */
+/**
+ * Color picker square size
+ */
 const COLOR_PICKER_SIZE = 2;
 
-/** Stroke width slider track length */
+/**
+ * Stroke width slider track length
+ */
 const SLIDER_INLINE_SIZE = 2 + 2
   + 2;
 
@@ -37,7 +41,9 @@ export function renderToolbarControlStyles(): string[] {
       decls: { display: 'flex', },
     },),
 
-    /** Remove right border and radius to connect with adjacent select */
+    /**
+     * Remove right border and radius to connect with adjacent select
+     */
     $({
       rule: '.export-group > button',
       decls: {
@@ -47,7 +53,9 @@ export function renderToolbarControlStyles(): string[] {
       },
     },),
 
-    /** Remove left radius to connect with adjacent button */
+    /**
+     * Remove left radius to connect with adjacent button
+     */
     $({
       rule: '.export-group > select',
       decls: {
@@ -69,7 +77,9 @@ export function renderToolbarControlStyles(): string[] {
       },
     },),
 
-    /** Color picker size override (base border/radius from shared control rule) */
+    /**
+     * Color picker size override (base border/radius from shared control rule)
+     */
     $({
       rule: '#color-picker',
       decls: {

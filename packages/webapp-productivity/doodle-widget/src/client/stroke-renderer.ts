@@ -7,10 +7,14 @@
 
 import type { StrokeData, } from './drawing.ts';
 
-/** Minimum number of points required for a renderable stroke */
+/**
+ * Minimum number of points required for a renderable stroke
+ */
 export const MIN_STROKE_POINTS = 2;
 
-/** Canvas context type accepted by the renderer */
+/**
+ * Canvas context type accepted by the renderer
+ */
 type RenderContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 /**

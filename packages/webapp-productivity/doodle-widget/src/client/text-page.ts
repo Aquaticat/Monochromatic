@@ -16,15 +16,25 @@
  * ```
  */
 export type TextEntryData = {
-  /** Text content of the input */
+  /**
+   * Text content of the input
+   */
   readonly value: string;
-  /** CSS percentage string for horizontal position */
+  /**
+   * CSS percentage string for horizontal position
+   */
   readonly insetInlineStart: string;
-  /** CSS percentage string for vertical position */
+  /**
+   * CSS percentage string for vertical position
+   */
   readonly insetBlockStart: string;
-  /** CSS color string captured at creation */
+  /**
+   * CSS color string captured at creation
+   */
   readonly color: string;
-  /** Font size in pixels as a numeric string */
+  /**
+   * Font size in pixels as a numeric string
+   */
   readonly fontSize: string;
 };
 
@@ -65,7 +75,9 @@ export function createTextInput({
   readonly color: string;
   readonly fontSize: string;
 },): HTMLInputElement {
-  /** Configured before insertion so the caller can finalize any extra styling. */
+  /**
+   * Configured before insertion so the caller can finalize any extra styling.
+   */
   const input = document.createElement('input',);
   input.type = 'text';
   input.className = 'text-input';
@@ -148,7 +160,9 @@ export function restoreTextEntries({
   readonly layer: HTMLDivElement;
 },): void {
   for (const entry of entries) {
-    /** Detached input built first so its value and readonly flag are set before insertion. */
+    /**
+     * Detached input built first so its value and readonly flag are set before insertion.
+     */
     const input = createTextInput({
       insetInlineStart: entry.insetInlineStart,
       insetBlockStart: entry.insetBlockStart,

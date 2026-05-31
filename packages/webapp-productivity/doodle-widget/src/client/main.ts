@@ -37,7 +37,9 @@ import { discardActiveInput, } from './text.ts';
 import { showZoomToast, } from './zoom-toast.ts';
 import { refreshZoomTransform, } from './zoom.ts';
 
-/** 2D rendering context for the drawing canvas */
+/**
+ * 2D rendering context for the drawing canvas
+ */
 const ctx = requireCanvasContext(canvas,);
 
 /**
@@ -112,7 +114,9 @@ function sizeCanvas(): void {
  * Updates canvas cursor based on the selected tool radio.
  */
 function syncCursorToTool(): void {
-  /** Cached so each branch can compare without re-invoking the getter. */
+  /**
+   * Cached so each branch can compare without re-invoking the getter.
+   */
   const mode = getToolMode();
   if ((mode === 'draw') || (mode === 'erase')) {
     canvas.style

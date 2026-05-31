@@ -35,7 +35,9 @@ export function renderToggleGroupStyles(): string[] {
       decls: { display: 'flex', },
     },),
 
-    /** Hide the native radio circle */
+    /**
+     * Hide the native radio circle
+     */
     $({
       rule: '.toggle-option input',
       decls: {
@@ -47,7 +49,9 @@ export function renderToggleGroupStyles(): string[] {
       },
     },),
 
-    /** Override base border/radius for connected toggle items */
+    /**
+     * Override base border/radius for connected toggle items
+     */
     $({
       rule: '.toggle-option',
       decls: {
@@ -77,7 +81,9 @@ export function renderToggleGroupStyles(): string[] {
       },
     },),
 
-    /** Active state driven by native :checked pseudo-class */
+    /**
+     * Active state driven by native :checked pseudo-class
+     */
     $({
       rule: '.toggle-option:has(input:checked)',
       decls: { 'background-color': BG_TOGGLE_CHECKED, },

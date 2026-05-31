@@ -7,13 +7,19 @@
 
 //region Constants
 
-/** Minimum zoom scale (no zoom-out past original size) */
+/**
+ * Minimum zoom scale (no zoom-out past original size)
+ */
 const MIN_SCALE = 1;
 
-/** Maximum zoom scale */
+/**
+ * Maximum zoom scale
+ */
 const MAX_SCALE = 8;
 
-/** Zoom step multiplier per click */
+/**
+ * Zoom step multiplier per click
+ */
 const ZOOM_STEP = 2;
 
 //endregion Constants
@@ -27,11 +33,17 @@ const ZOOM_STEP = 2;
  * container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const zoomState: {
-  /** Current zoom scale (1 = no zoom) */
+  /**
+   * Current zoom scale (1 = no zoom)
+   */
   scale: number;
-  /** Pan offset X in CSS pixels relative to container */
+  /**
+   * Pan offset X in CSS pixels relative to container
+   */
   panX: number;
-  /** Pan offset Y in CSS pixels relative to container */
+  /**
+   * Pan offset Y in CSS pixels relative to container
+   */
   panY: number;
 } = {
   scale: 1,
@@ -217,9 +229,13 @@ export function zoomAt(
     readonly zoomLayer: HTMLElement;
   },
 ): void {
-  /** Direction-aware multiplier so a single formula handles both zoom in and zoom out. */
+  /**
+   * Direction-aware multiplier so a single formula handles both zoom in and zoom out.
+   */
   const factor = direction === 'in' ? ZOOM_STEP : 1 / ZOOM_STEP;
-  /** Clamped destination scale so the gesture cannot push past the configured bounds. */
+  /**
+   * Clamped destination scale so the gesture cannot push past the configured bounds.
+   */
   const newScale = Math.max(
     MIN_SCALE,
     Math.min(
@@ -231,7 +247,9 @@ export function zoomAt(
   if (newScale === zoomState
     .scale)
     return;
-  /** Ratio between new and old scale for pan adjustment */
+  /**
+   * Ratio between new and old scale for pan adjustment
+   */
   const actualFactor = newScale / zoomState
     .scale;
   zoomState.panX = (screenX * (1 - actualFactor)) + (zoomState.panX
