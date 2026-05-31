@@ -8,10 +8,10 @@
  */
 
 import {
+  NO_STRING_FIELD,
   truncate,
   type ToolArgs,
 } from './formatter-utils.ts';
-import { ABSENT, } from './maybe.ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
 /** Prefix prepended to every terminal title for visual identification. */
@@ -73,10 +73,10 @@ function titleForTool(
   const entry = TOOL_TITLES[toolName];
   if (entry !== undefined) {
     /**
-     * Extracted display value (e.g. command, file path) sampled from the tool's arg record; {@link ABSENT} when the field is missing.
+     * Extracted display value (e.g. command, file path) sampled from the tool's arg record; {@link NO_STRING_FIELD} when the field is missing.
      */
     const value = entry.extract(args,);
-    if (value !== ABSENT) {
+    if (value !== NO_STRING_FIELD) {
       return entry.format(
         value,
         tense,

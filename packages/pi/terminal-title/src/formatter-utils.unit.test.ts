@@ -13,6 +13,7 @@ import {
 import {
   field,
   MAX_PATTERN_LENGTH,
+  NO_STRING_FIELD,
   pathFormat,
   quotedFormat,
   shortCommand,
@@ -20,7 +21,6 @@ import {
   stringField,
   truncate,
 } from './formatter-utils.ts';
-import { ABSENT, } from './maybe.ts';
 
 await describe({
   name: '',
@@ -102,26 +102,26 @@ await describe({
           },
         },),
         it({
-          name: 'returns ABSENT for missing key',
+          name: 'returns NO_STRING_FIELD for missing key',
           fn: async () => {
             expect(stringField({ input: { path: '/foo.ts', }, key: 'missing', },),).toBe(
-              ABSENT,
+              NO_STRING_FIELD,
             );
           },
         },),
         it({
-          name: 'returns ABSENT for non-string value',
+          name: 'returns NO_STRING_FIELD for non-string value',
           fn: async () => {
             expect(stringField({ input: { count: 42, }, key: 'count', },),).toBe(
-              ABSENT,
+              NO_STRING_FIELD,
             );
           },
         },),
         it({
-          name: 'returns ABSENT for null value',
+          name: 'returns NO_STRING_FIELD for null value',
           fn: async () => {
             expect(stringField({ input: { path: null, }, key: 'path', },),).toBe(
-              ABSENT,
+              NO_STRING_FIELD,
             );
           },
         },),
@@ -143,10 +143,10 @@ await describe({
           },
         },),
         it({
-          name: 'returns ABSENT when field is absent',
+          name: 'returns NO_STRING_FIELD when field is absent',
           fn: async () => {
             const extractPath = field('path',);
-            expect(extractPath({ other: 'value', },),).toBe(ABSENT,);
+            expect(extractPath({ other: 'value', },),).toBe(NO_STRING_FIELD,);
           },
         },),
       ],

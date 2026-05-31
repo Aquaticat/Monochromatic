@@ -9,11 +9,6 @@
 
 import { basename, } from 'node:path';
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
 /** Maximum length for pattern and query strings displayed in the title. */
 const MAX_PATTERN_LENGTH = 30;
 
@@ -34,12 +29,20 @@ type TenseLabels = {
 };
 
 /**
+ * Sentinel returned by {@link stringField} (and the {@link field} extractors
+ * built on it) when the requested key is missing or not a string. A
+ * `unique symbol` so an empty or falsy string value can never be mistaken for
+ * absence; consumers narrow with `!== NO_STRING_FIELD`.
+ */
+export const NO_STRING_FIELD: unique symbol = Symbol('terminal-title/no-string-field',);
+
+/**
  * Formatter entry for a known tool. `extract` pulls a display-relevant string
  * from tool input; `format` turns it into a tense-appropriate title;
- * `fallback` provides tense-specific defaults when `extract` returns {@link ABSENT}.
+ * `fallback` provides tense-specific defaults when `extract` returns {@link NO_STRING_FIELD}.
  */
 type ToolTitleEntry = {
-  extract: (input: ToolArgs,) => Maybe<string>;
+  extract: (input: ToolArgs,) => string | typeof NO_STRING_FIELD;
   format: (
     value: string,
     tense: 'pre' | 'post',
@@ -106,12 +109,12 @@ function shortPath(filePath: string,): string {
  *
  * @param key - property name to extract
  *
- * @returns string value or {@link ABSENT} if missing or non-string
+ * @returns string value or {@link NO_STRING_FIELD} if missing or non-string
  *
  * @example
  * ```ts
  * stringField({ input: { path: '/foo.ts' }, key: 'path' }) // '/foo.ts'
- * stringField({ input: { path: '/foo.ts' }, key: 'missing' }) // ABSENT
+ * stringField({ input: { path: '/foo.ts' }, key: 'missing' }) // NO_STRING_FIELD
  * ```
  */
 function stringField(
@@ -122,14 +125,14 @@ function stringField(
     input: ToolArgs;
     key: string;
   }>,
-): Maybe<string> {
+): string | typeof NO_STRING_FIELD {
   /**
-   * Raw value pulled out of `input` by key; only strings are accepted, anything else becomes {@link ABSENT}.
+   * Raw value pulled out of `input` by key; only strings are accepted, anything else becomes {@link NO_STRING_FIELD}.
    */
   const value = input[key];
   if ((typeof value) === 'string')
     return value;
-  return ABSENT;
+  return NO_STRING_FIELD;
 }
 
 /**
@@ -145,7 +148,7 @@ function stringField(
  * extractPath({ path: '/foo/bar.ts' }) // '/foo/bar.ts'
  * ```
  */
-function field(key: string,): (input: ToolArgs,) => Maybe<string> {
+function field(key: string,): (input: ToolArgs,) => string | typeof NO_STRING_FIELD {
   return function extractField(input: ToolArgs,) {
     return stringField({
       input,

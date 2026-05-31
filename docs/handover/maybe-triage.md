@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-Pilot package `aquaticat` complete; 9 targets remaining.
+`aquaticat` and `terminal-title` complete; 8 targets remaining.
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -83,11 +83,18 @@ One producer, all consumers local to `parse-svg.ts`.
 
 Verification: `mise run //packages/typeface/aquaticat:lint` passes (0 warnings, 0 errors; types build). No tests in this package; no behavior change.
 
-### terminal-title (PENDING)
+### terminal-title (COMPLETE)
 
 `packages/pi/terminal-title`.
-`stringField` / `field` / `extractPath` return `Maybe<string>` (bucket 3), consumed locally in `formatter-utils.ts` and `title-builder.ts`.
-Update the `formatter-utils.unit.test.ts` import. Delete `maybe.ts`.
+One absence concept ("no string field extracted") flows `stringField` to `field` to the `ToolTitleEntry.extract` callback type to the `title-builder.ts` consumer.
+
+- `stringField`, `field`, `ToolTitleEntry.extract` (`formatter-utils.ts`): bucket 3, one shared symbol.
+  Renamed to `export const NO_STRING_FIELD = Symbol('terminal-title/no-string-field')`, co-located in `formatter-utils.ts` above `ToolTitleEntry`.
+  Single coherent flow with one semantic, so one shared symbol keeps producer and consumer in lockstep; no seam conversion needed.
+- `title-builder.ts` consumer and `formatter-utils.unit.test.ts` import `NO_STRING_FIELD` from `formatter-utils.ts`.
+- `src/maybe.ts`: deleted.
+
+Verification: `mise run //packages/pi/terminal-title:lint` and `:test:unit` pass (0 warnings/errors; all tests PASS, exit 0).
 
 ### import-attributes (PENDING)
 
