@@ -408,24 +408,32 @@ That violated both the 100-CIDR rule input cap and the 500-effective-rule
 firewall cap.
 
 The current design encodes the Hetzner limits directly in
-`packages/config/tofu/hetzner.tf:443-447`:
+`packages/config/tofu/hetzner.tf:443-448`:
 
 ```hcl
 firewall_count              = 5
 firewall_effective_limit    = 500
 firewall_rule_ip_limit      = 100
 firewall_rule_ip_chunk_size = 20
+firewall_assignment_cycle   = local.firewall_count * 2
 firewall_indexes            = range(local.firewall_count)
 ```
 
 Inbound home ISP and SSH source ranges are chunked before rule emission
-at `packages/config/tofu/hetzner.tf:560-563`:
+at `packages/config/tofu/hetzner.tf:561-571`:
 
 ```hcl
-home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
-home_isp_ips_chunks     = chunklist(local.home_isp_ips_summarized, local.firewall_rule_ip_chunk_size)
-coolify_ips_summarized  = length(local.coolify_ips) == 0 ? [] : data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks
-ssh_source_ips_chunks   = chunklist(concat(local.home_isp_ips_summarized, local.coolify_ips_summarized), local.firewall_rule_ip_chunk_size)
+home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : (
+  data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
+)
+home_isp_ips_chunks = chunklist(local.home_isp_ips_summarized, local.firewall_rule_ip_chunk_size)
+coolify_ips_summarized = length(local.coolify_ips) == 0 ? [] : (
+  data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks
+)
+ssh_source_ips_chunks = chunklist(
+  concat(local.home_isp_ips_summarized, local.coolify_ips_summarized),
+  local.firewall_rule_ip_chunk_size,
+)
 ```
 
 Moved blocks map the previous `main`, `web_out`, and `ubuntu_http`
@@ -433,27 +441,31 @@ firewalls into the first three generic firewalls, so applying the
 migration updates existing state instead of deleting all old firewalls
 before creating the balanced set.
 
-All rule groups then feed one ordered list and are assigned to five
-generic firewalls by modulo in `packages/config/tofu/hetzner.tf`:
+All rule groups then feed one ordered list. The balancer computes each
+rule's effective-rule cost, sorts heavier rules first, then assigns them
+through a snake pattern across the five firewalls. The key sorting lives
+at `packages/config/tofu/hetzner.tf:699-715`:
 
 ```hcl
-all_firewall_rules = concat(
-  local.base_firewall_rules,
-  local.ping_in_rules,
-  local.ssh_in_rules,
-  local.tor_out_firewall_rules,
-  local.storagebox_smb_out_rules,
-  local.web_out_rules,
-  local.ubuntu_http_out_rules,
-)
+weighted_firewall_rule_keys = sort([
+  for rule_index, rule in local.all_firewall_rules : format(
+    "%05d:%05d",
+    local.firewall_rule_ip_limit - max(length(rule.source_ips), length(rule.destination_ips), 1),
+    rule_index,
+  )
+])
 
-balanced_firewall_rules = {
-  for firewall_index in local.firewall_indexes : tostring(firewall_index) => [
-    for rule_index, rule in local.all_firewall_rules : rule
-    if rule_index % local.firewall_count == firewall_index
-  ]
-}
+weighted_firewall_rule_bucket_indexes = [
+  for rule_index, rule in local.weighted_firewall_rules :
+  rule_index % local.firewall_assignment_cycle < local.firewall_count
+  ? rule_index % local.firewall_assignment_cycle
+  : local.firewall_assignment_cycle - 1 - (rule_index % local.firewall_assignment_cycle)
+]
 ```
+
+The snake pattern sends sorted rules to firewalls in this repeating order:
+`0, 1, 2, 3, 4, 4, 3, 2, 1, 0`. That keeps large 20-CIDR rules from
+systematically accumulating on one firewall.
 
 ### Verification
 
@@ -461,11 +473,11 @@ A throwaway plan with a dummy 64-character hcloud token and empty state
 now creates five generic firewalls. The plan JSON measured these counts:
 
 ```text
-hcloud_firewall.tofu["0"] rules 24 effective 390 max_src 20 max_dst 20
-hcloud_firewall.tofu["1"] rules 23 effective 384 max_src 20 max_dst 20
-hcloud_firewall.tofu["2"] rules 23 effective 411 max_src 20 max_dst 20
-hcloud_firewall.tofu["3"] rules 23 effective 391 max_src 20 max_dst 20
-hcloud_firewall.tofu["4"] rules 23 effective 423 max_src 20 max_dst 20
+hcloud_firewall.tofu["0"] rules 23 effective 397 max_src 20 max_dst 20
+hcloud_firewall.tofu["1"] rules 23 effective 400 max_src 20 max_dst 20
+hcloud_firewall.tofu["2"] rules 23 effective 398 max_src 20 max_dst 20
+hcloud_firewall.tofu["3"] rules 23 effective 400 max_src 20 max_dst 20
+hcloud_firewall.tofu["4"] rules 24 effective 404 max_src 20 max_dst 20
 ```
 
 Package validation also passes:
@@ -483,7 +495,7 @@ no longer describe a traffic class. All five firewalls must be applied
 to the server because Hetzner combines their allow rules. Set
 `firewall_server_ids` or `firewall_label_selectors` so OpenTofu manages
 those attachments without using the Hetzner web UI. The attachment
-resources are declared at `packages/config/tofu/hetzner.tf:741-747`.
+resources are declared at `packages/config/tofu/hetzner.tf:768-774`.
 
 ### What does not work
 

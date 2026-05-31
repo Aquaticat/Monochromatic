@@ -444,6 +444,7 @@ locals {
   firewall_effective_limit    = 500
   firewall_rule_ip_limit      = 100
   firewall_rule_ip_chunk_size = 20
+  firewall_assignment_cycle   = local.firewall_count * 2
   firewall_indexes            = range(local.firewall_count)
 
   cdn_ips_summarized = data.cidrblock_summarization.cdn_ips.summarized_cidr_blocks
@@ -557,10 +558,17 @@ locals {
     )
   ])
 
-  home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
-  home_isp_ips_chunks     = chunklist(local.home_isp_ips_summarized, local.firewall_rule_ip_chunk_size)
-  coolify_ips_summarized  = length(local.coolify_ips) == 0 ? [] : data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks
-  ssh_source_ips_chunks   = chunklist(concat(local.home_isp_ips_summarized, local.coolify_ips_summarized), local.firewall_rule_ip_chunk_size)
+  home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : (
+    data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
+  )
+  home_isp_ips_chunks = chunklist(local.home_isp_ips_summarized, local.firewall_rule_ip_chunk_size)
+  coolify_ips_summarized = length(local.coolify_ips) == 0 ? [] : (
+    data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks
+  )
+  ssh_source_ips_chunks = chunklist(
+    concat(local.home_isp_ips_summarized, local.coolify_ips_summarized),
+    local.firewall_rule_ip_chunk_size,
+  )
 
   base_firewall_rules = [
     {
@@ -688,10 +696,29 @@ locals {
     local.ubuntu_http_out_rules,
   )
 
+  weighted_firewall_rule_keys = sort([
+    for rule_index, rule in local.all_firewall_rules : format(
+      "%05d:%05d",
+      local.firewall_rule_ip_limit - max(length(rule.source_ips), length(rule.destination_ips), 1),
+      rule_index,
+    )
+  ])
+
+  weighted_firewall_rules = [
+    for key in local.weighted_firewall_rule_keys : local.all_firewall_rules[tonumber(split(":", key)[1])]
+  ]
+
+  weighted_firewall_rule_bucket_indexes = [
+    for rule_index, rule in local.weighted_firewall_rules :
+    rule_index % local.firewall_assignment_cycle < local.firewall_count
+    ? rule_index % local.firewall_assignment_cycle
+    : local.firewall_assignment_cycle - 1 - (rule_index % local.firewall_assignment_cycle)
+  ]
+
   balanced_firewall_rules = {
     for firewall_index in local.firewall_indexes : tostring(firewall_index) => [
-      for rule_index, rule in local.all_firewall_rules : rule
-      if rule_index % local.firewall_count == firewall_index
+      for rule_index, rule in local.weighted_firewall_rules : rule
+      if local.weighted_firewall_rule_bucket_indexes[rule_index] == firewall_index
     ]
   }
 
