@@ -19,6 +19,21 @@ terraform {
   }
 }
 
+moved {
+  from = hcloud_firewall.tofu
+  to   = hcloud_firewall.tofu["0"]
+}
+
+moved {
+  from = hcloud_firewall.web_out
+  to   = hcloud_firewall.tofu["1"]
+}
+
+moved {
+  from = hcloud_firewall.ubuntu_http
+  to   = hcloud_firewall.tofu["2"]
+}
+
 variable "hcloud_token" {
   sensitive = true
 }

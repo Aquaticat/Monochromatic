@@ -408,7 +408,7 @@ That violated both the 100-CIDR rule input cap and the 500-effective-rule
 firewall cap.
 
 The current design encodes the Hetzner limits directly in
-`packages/config/tofu/hetzner.tf:428-432`:
+`packages/config/tofu/hetzner.tf:443-447`:
 
 ```hcl
 firewall_count              = 5
@@ -419,7 +419,7 @@ firewall_indexes            = range(local.firewall_count)
 ```
 
 Inbound home ISP and SSH source ranges are chunked before rule emission
-at `packages/config/tofu/hetzner.tf:545-548`:
+at `packages/config/tofu/hetzner.tf:560-563`:
 
 ```hcl
 home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
@@ -428,8 +428,13 @@ coolify_ips_summarized  = length(local.coolify_ips) == 0 ? [] : data.cidrblock_s
 ssh_source_ips_chunks   = chunklist(concat(local.home_isp_ips_summarized, local.coolify_ips_summarized), local.firewall_rule_ip_chunk_size)
 ```
 
+Moved blocks map the previous `main`, `web_out`, and `ubuntu_http`
+firewalls into the first three generic firewalls, so applying the
+migration updates existing state instead of deleting all old firewalls
+before creating the balanced set.
+
 All rule groups then feed one ordered list and are assigned to five
-generic firewalls by modulo at `packages/config/tofu/hetzner.tf:666-680`:
+generic firewalls by modulo in `packages/config/tofu/hetzner.tf`:
 
 ```hcl
 all_firewall_rules = concat(
@@ -478,7 +483,7 @@ no longer describe a traffic class. All five firewalls must be applied
 to the server because Hetzner combines their allow rules. Set
 `firewall_server_ids` or `firewall_label_selectors` so OpenTofu manages
 those attachments without using the Hetzner web UI. The attachment
-resources are declared at `packages/config/tofu/hetzner.tf:726-732`.
+resources are declared at `packages/config/tofu/hetzner.tf:741-747`.
 
 ### What does not work
 
