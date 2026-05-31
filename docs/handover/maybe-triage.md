@@ -231,7 +231,7 @@ Verify with `:test:unit` plus `agent-browser` on the deck.gl scatter and filter 
 
 #### Symbol inventory (per-site triage)
 
-Eight exported descriptive symbols (each referenced by an exported function's signature, so declaration-emit forces the export):
+Nine exported descriptive symbols (each referenced by an exported function's signature, so declaration-emit forces the export):
 
 - `REPO_UNPARSEABLE` (`probe-field-parsers.ts`, re-exported via `probe-fields.ts`): `parseRepository` return. Consumed at `probe.ts:256/258` (collapsed to `undefined` at the `:258` seam) and both probe tests.
 - `VERSION_UNRESOLVED` (`probe-field-parsers.ts`, re-exported via `probe-fields.ts`): `resolveVersion` return. Consumed at `probe.ts:219` (seam to the raw range string) and `probe-field-parsers.unit.test.ts`'s `pinnedOrLatest` annotation.
@@ -243,7 +243,7 @@ Eight exported descriptive symbols (each referenced by an exported function's si
 - `NO_THRESHOLD_LAYER` (`deck-planes.ts`): `buildThresholdLineLayer` return. One symbol shared by the toggle-off branch and the return-absent branch in `deck-config.ts:244/253` (same purpose: "no threshold layer to add").
 - `STATE_INVALID` (`scripts/state.ts`): shared by `validateAppState` (local) and `decodeState` (exported) because `decodeState` propagates `validateAppState`'s absence directly (`return validateAppState(parsed)`); one purpose spanning two functions, per the seam rule. Consumed by `readStateFromHash:450` and `state.unit.test.ts`.
 
-Four local (unexported) descriptive symbols (never appear in an exported signature):
+Five local (unexported) descriptive symbols (never appear in an exported signature):
 
 - `parseGithubShorthand` / `parseGithubUrl` (`probe-field-parsers.ts`): two independent local symbols (siblings, not chained), each consumed only inside `parseRepository`.
 - `readManifestSilent` (`probe-transitive.ts`): one local symbol, two consumers inside the same file (manifest + depPkg checks).
@@ -260,7 +260,7 @@ Bucket 1 / 2 (no sentinel):
 #### Outcome
 
 Executed as planned. `src/maybe.ts` deleted; the gate `rg 'ABSENT|Maybe' src/` returns zero.
-Eight exported descriptive symbols and five local ones (the four planned plus `NO_PICKED_PROBE`) landed per-site; `probe.ts`'s `computeUnknownReason` took the bucket-1 `?:` params with the conditional-spread call site (no tsgo fight, so the fallback was not needed).
+Nine exported descriptive symbols and five local ones (the four planned plus `NO_PICKED_PROBE`) landed per-site; `probe.ts`'s `computeUnknownReason` took the bucket-1 `?:` params with the conditional-spread call site (no tsgo fight, so the fallback was not needed).
 TSDoc convention matched the workspace: `{@link SYMBOL}` in multiline declaration blocks (text-first `@returns` to avoid the `tsdoc(no-types)` parse), plain backticks were initially used for one-line comments but the project standard is `{@link}` with the comment expanded to multiline, so every one-line sentinel comment became a multiline block.
 `probe-field-parsers.unit.test.ts` imports `VERSION_UNRESOLVED` as `type` (used only in `typeof`).
 Verification: `:lint` 0/0 (oxlint type-aware + tsgo `--build`, which is the seam-leak proof) and `:test:unit` exit 0 (11 suites, including the renamed `REPO_UNPARSEABLE`/`DERIVED_BOOL_UNKNOWN`/`POSITION_UNKNOWN`/`STATE_INVALID` cases).
