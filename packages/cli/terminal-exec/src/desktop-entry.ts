@@ -16,10 +16,6 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 
 export type { DesktopEntry, } from './desktop-entry-types.ts';
 export { expandEscapes, } from './desktop-entry-types.ts';
@@ -31,12 +27,19 @@ const l = tagged({
 },);
 
 /**
+ * Sentinel returned by {@link parseDesktopEntry} when the `.desktop` file
+ * cannot be read. A `unique symbol`; the resolver narrows with
+ * `=== DESKTOP_ENTRY_UNREADABLE` and skips the entry.
+ */
+export const DESKTOP_ENTRY_UNREADABLE: unique symbol = Symbol('terminal-exec/desktop-entry-unreadable',);
+
+/**
  * Parses a `.desktop` file and extracts terminal-relevant keys.
  * Only reads keys from the `[Desktop Entry]` section (not actions).
  *
  * @param path - Absolute path to the `.desktop` file.
  *
- * @returns Parsed desktop entry, or {@link ABSENT} if the file cannot be read.
+ * @returns Parsed desktop entry, or {@link DESKTOP_ENTRY_UNREADABLE} if the file cannot be read.
  *
  * @example
  * ```ts
@@ -47,8 +50,8 @@ const l = tagged({
  */
 export async function parseDesktopEntry(
   { path, }: { readonly path: string; },
-): Promise<Maybe<DesktopEntry>> {
-  /** Empty default lets the catch return ABSENT without restructuring the read path. */
+): Promise<DesktopEntry | typeof DESKTOP_ENTRY_UNREADABLE> {
+  /** Empty default lets the catch return DESKTOP_ENTRY_UNREADABLE without restructuring the read path. */
   let text = '';
   try {
     text = await readFile(
@@ -57,7 +60,7 @@ export async function parseDesktopEntry(
     );
   }
   catch {
-    return ABSENT;
+    return DESKTOP_ENTRY_UNREADABLE;
   }
 
   /** Parse accumulator; each applyKey call returns an updated copy. Annotated readonly so the immutable updates type-check. */

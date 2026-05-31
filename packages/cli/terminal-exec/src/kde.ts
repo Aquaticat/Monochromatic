@@ -10,11 +10,6 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
 /** Tagged logger for this module. */
 const l = tagged({
   tag: 'kde',
@@ -22,22 +17,36 @@ const l = tagged({
 },);
 
 /**
- * Reads a UTF-8 text file, returning {@link ABSENT} when the read fails.
+ * Sentinel returned by {@link readFileOrAbsent} when a file is missing or
+ * unreadable. A `unique symbol`; {@link kdeTerminalService} narrows with
+ * `=== KDEGLOBALS_UNREADABLE`.
+ */
+const KDEGLOBALS_UNREADABLE: unique symbol = Symbol('terminal-exec/kdeglobals-unreadable',);
+
+/**
+ * Sentinel returned by {@link kdeTerminalService} when no `TerminalService` is
+ * configured (file missing, or key absent). A `unique symbol`; the resolver
+ * narrows with `=== NO_KDE_TERMINAL`.
+ */
+export const NO_KDE_TERMINAL: unique symbol = Symbol('terminal-exec/no-kde-terminal',);
+
+/**
+ * Reads a UTF-8 text file, returning {@link KDEGLOBALS_UNREADABLE} when the read fails.
  * Used to fold the kdeglobals-not-found branch into a single sentinel check at the call site.
  *
  * @param path - Absolute filesystem path to read.
  *
- * @returns File contents as a UTF-8 string, or {@link ABSENT} when the file is missing or unreadable.
+ * @returns File contents as a UTF-8 string, or {@link KDEGLOBALS_UNREADABLE} when the file is missing or unreadable.
  *
  * @example
  * ```ts
  * const text = await readFileOrAbsent({ path: '/home/alice/.config/kdeglobals' })
- * // text === '[General]\nTerminalService=...\n' when present, ABSENT otherwise
+ * // text === '[General]\nTerminalService=...\n' when present, KDEGLOBALS_UNREADABLE otherwise
  * ```
  */
 async function readFileOrAbsent(
   { path, }: { readonly path: string; },
-): Promise<Maybe<string>> {
+): Promise<string | typeof KDEGLOBALS_UNREADABLE> {
   try {
     return await readFile(
       path,
@@ -45,7 +54,7 @@ async function readFileOrAbsent(
     );
   }
   catch {
-    return ABSENT;
+    return KDEGLOBALS_UNREADABLE;
   }
 }
 
@@ -54,7 +63,7 @@ async function readFileOrAbsent(
  * This is the desktop entry filename that KDE System Settings writes
  * when the user selects a default terminal emulator.
  *
- * @returns Desktop entry ID (e.g. `com.mitchellh.ghostty.desktop`), or {@link ABSENT} if not configured.
+ * @returns Desktop entry ID (e.g. `com.mitchellh.ghostty.desktop`), or {@link NO_KDE_TERMINAL} if not configured.
  *
  * @example
  * ```ts
@@ -62,7 +71,7 @@ async function readFileOrAbsent(
  * // 'com.mitchellh.ghostty.desktop'
  * ```
  */
-export async function kdeTerminalService(): Promise<Maybe<string>> {
+export async function kdeTerminalService(): Promise<string | typeof NO_KDE_TERMINAL> {
   /** HOME envar fallback keeps path construction deterministic on systems where HOME is unset. */
   const home = process.env
     .HOME
@@ -74,11 +83,11 @@ export async function kdeTerminalService(): Promise<Maybe<string>> {
   /** KDE's global settings file; source of the TerminalService key. */
   const path = `${configHome}/kdeglobals`;
 
-  /** ABSENT when kdeglobals is missing or unreadable; the catch path is the only failure mode. */
+  /** KDEGLOBALS_UNREADABLE when kdeglobals is missing or unreadable; the catch path is the only failure mode. */
   const text = await readFileOrAbsent({ path, },);
-  if (text === ABSENT) {
+  if (text === KDEGLOBALS_UNREADABLE) {
     l.debug('kdeglobals not found',);
-    return ABSENT;
+    return NO_KDE_TERMINAL;
   }
 
   for (const rawLine of text.split('\n',)) {
@@ -97,5 +106,5 @@ export async function kdeTerminalService(): Promise<Maybe<string>> {
   }
 
   l.debug('no TerminalService in kdeglobals',);
-  return ABSENT;
+  return NO_KDE_TERMINAL;
 }

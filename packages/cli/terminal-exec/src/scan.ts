@@ -17,11 +17,6 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
 /** Tagged logger for this module. */
 const l = tagged({
   tag: 'scan',
@@ -29,12 +24,18 @@ const l = tagged({
 },);
 
 /**
- * Lists directory entries with type info, returning {@link ABSENT} when the directory cannot be read.
+ * Sentinel returned by {@link readdirOrAbsent} when a directory cannot be read.
+ * A `unique symbol`; the walker narrows with `=== DIR_UNREADABLE` and skips it.
+ */
+const DIR_UNREADABLE: unique symbol = Symbol('terminal-exec/dir-unreadable',);
+
+/**
+ * Lists directory entries with type info, returning {@link DIR_UNREADABLE} when the directory cannot be read.
  * Used so the walker skips missing or unreadable directories without leaking a let into walk's body.
  *
  * @param current - Absolute directory path to read.
  *
- * @returns Array of Dirent entries, or {@link ABSENT} when readdir throws.
+ * @returns Array of Dirent entries, or {@link DIR_UNREADABLE} when readdir throws.
  *
  * @example
  * ```ts
@@ -44,7 +45,7 @@ const l = tagged({
  */
 async function readdirOrAbsent(
   { current, }: { readonly current: string; },
-): Promise<Maybe<readonly Dirent[]>> {
+): Promise<readonly Dirent[] | typeof DIR_UNREADABLE> {
   try {
     return await readdir(
       current,
@@ -52,7 +53,7 @@ async function readdirOrAbsent(
     );
   }
   catch {
-    return ABSENT;
+    return DIR_UNREADABLE;
   }
 }
 
@@ -85,9 +86,9 @@ async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<r
    * @param current - Directory to walk.
    */
   async function walk({ current, }: { readonly current: string; },): Promise<void> {
-    /** ABSENT when readdir throws (e.g. directory missing or unreadable); skip the directory. */
+    /** DIR_UNREADABLE when readdir throws (e.g. directory missing or unreadable); skip the directory. */
     const entries = await readdirOrAbsent({ current, },);
-    if (entries === ABSENT)
+    if (entries === DIR_UNREADABLE)
       return;
     for (const entry of entries) {
       /** Absolute candidate for recursion or `.desktop` matching. */

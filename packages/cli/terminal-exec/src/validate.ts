@@ -19,16 +19,28 @@ import {
   tagged,
 } from './log.ts';
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import { tokenizeExec, } from './tokenize.ts';
+  INVALID_EXEC,
+  tokenizeExec,
+} from './tokenize.ts';
 
 /** Tagged logger for this module. */
 const l = tagged({
   tag: 'validate',
   l: parentLogger,
 },);
+
+/**
+ * Sentinel returned by the local {@link which} when an executable is not found
+ * on `$PATH`. A `unique symbol`; callers narrow with `!== EXECUTABLE_NOT_ON_PATH`.
+ */
+const EXECUTABLE_NOT_ON_PATH: unique symbol = Symbol('terminal-exec/executable-not-on-path',);
+
+/**
+ * Sentinel for "no usable terminal", shared across the resolution chain
+ * ({@link validateEntry} to `tryEntry` to `resolveTerminal`) and re-exported
+ * by `resolve.ts`. A `unique symbol`; consumers narrow with `=== NO_TERMINAL`.
+ */
+export const NO_TERMINAL: unique symbol = Symbol('terminal-exec/no-terminal',);
 
 /**
  * Checks if an executable exists in `$PATH` using platform-native resolution.
@@ -47,7 +59,7 @@ async function executableExists({ name, }: { readonly name: string; },): Promise
       return false;
     }
   }
-  return await which(name,) !== ABSENT;
+  return await which(name,) !== EXECUTABLE_NOT_ON_PATH;
 }
 
 /**
@@ -56,9 +68,9 @@ async function executableExists({ name, }: { readonly name: string; },): Promise
  *
  * @param name - Executable name to find.
  *
- * @returns Absolute path if found, or {@link ABSENT}.
+ * @returns Absolute path if found, or {@link EXECUTABLE_NOT_ON_PATH}.
  */
-async function which(name: string,): Promise<Maybe<string>> {
+async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_PATH> {
   /** Empty PATH fallback yields no candidates, which falls through to null cleanly. */
   const pathEnv = process.env
     .PATH
@@ -80,7 +92,7 @@ async function which(name: string,): Promise<Maybe<string>> {
       continue;
     }
   }
-  return ABSENT;
+  return EXECUTABLE_NOT_ON_PATH;
 }
 
 /**
@@ -114,7 +126,7 @@ export type ValidatedEntry = {
  *
  * @param execArgDefault - Default TerminalArgExec from config, if any.
  *
- * @returns Validated entry with tokenized Exec, or {@link ABSENT} if the entry fails validation.
+ * @returns Validated entry with tokenized Exec, or {@link NO_TERMINAL} if the entry fails validation.
  *
  * @example
  * ```ts
@@ -136,15 +148,15 @@ export async function validateEntry({
   readonly desktops: readonly string[];
   readonly isFallback: boolean;
   readonly execArgDefault: string;
-},): Promise<Maybe<ValidatedEntry>> {
+},): Promise<ValidatedEntry | typeof NO_TERMINAL> {
   if (!entry.isTerminal) {
     l.debug(`${entryId}: not a TerminalEmulator`,);
-    return ABSENT;
+    return NO_TERMINAL;
   }
 
   if (entry.hidden) {
     l.debug(`${entryId}: hidden`,);
-    return ABSENT;
+    return NO_TERMINAL;
   }
 
   //region OnlyShowIn / NotShowIn (fallback entries only)
@@ -159,7 +171,7 @@ export async function validateEntry({
       },);
       if (!shown) {
         l.debug(`${entryId}: OnlyShowIn does not match current desktops`,);
-        return ABSENT;
+        return NO_TERMINAL;
       }
     }
     if (entry.notShowIn
@@ -172,7 +184,7 @@ export async function validateEntry({
       },);
       if (hidden) {
         l.debug(`${entryId}: NotShowIn matches current desktop`,);
-        return ABSENT;
+        return NO_TERMINAL;
       }
     }
   }
@@ -184,15 +196,15 @@ export async function validateEntry({
     && (!await executableExists({ name: entry.tryExec, },)))
   {
     l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`,);
-    return ABSENT;
+    return NO_TERMINAL;
   }
 
-  /** Argv form of the Exec line; ABSENT or empty disqualifies the entry. */
+  /** Argv form of the Exec line; INVALID_EXEC or empty disqualifies the entry. */
   const execTokens = tokenizeExec({ exec: entry.exec, },);
-  if ((execTokens === ABSENT) || (execTokens.length
+  if ((execTokens === INVALID_EXEC) || (execTokens.length
     === 0)) {
     l.debug(`${entryId}: Exec tokenization failed or empty`,);
-    return ABSENT;
+    return NO_TERMINAL;
   }
 
   /** Executable token, the only one we PATH-check before validating. */
@@ -201,7 +213,7 @@ export async function validateEntry({
     throw new Error('unreachable: length checked above',);
   if (!await executableExists({ name: firstToken, },)) {
     l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`,);
-    return ABSENT;
+    return NO_TERMINAL;
   }
 
   /** Resolve TerminalArgExec: entry value \> config default \> `-e`. */

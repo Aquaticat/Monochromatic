@@ -15,8 +15,8 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import { ABSENT, } from './maybe.ts';
 import { resolveTerminal, } from './resolve.ts';
+import { NO_TERMINAL, } from './validate.ts';
 
 /** Tagged logger for this module. */
 const l = tagged({
@@ -50,10 +50,10 @@ export async function launchTerminal({
   readonly command?: readonly string[];
   readonly title?: string;
 },): Promise<void> {
-  /** Platform-specific resolution; the ABSENT path raises a user-facing error below. */
+  /** Platform-specific resolution; the NO_TERMINAL path raises a user-facing error below. */
   const terminal = await resolveTerminal();
 
-  if (terminal === ABSENT) {
+  if (terminal === NO_TERMINAL) {
     throw new Error(
       process.platform
         === 'win32'

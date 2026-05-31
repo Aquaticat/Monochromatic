@@ -20,16 +20,16 @@ import { buildCommand, } from './build-command.ts';
 import { parseArgs, } from './cli.ts';
 import { execvp, } from './exec.ts';
 import { l, } from './log.ts';
-import { ABSENT, } from './maybe.ts';
 import { resolveTerminal, } from './resolve.ts';
+import { NO_TERMINAL, } from './validate.ts';
 
 /** Parsed CLI options from process arguments. */
 const options = parseArgs({ argv: process.argv
   .slice(2,), },);
-/** Resolved terminal emulator entry, or ABSENT if none found. */
+/** Resolved terminal emulator entry, or NO_TERMINAL if none found. */
 const terminal = await resolveTerminal();
 
-if (terminal === ABSENT) {
+if (terminal === NO_TERMINAL) {
   console.error('terminal-exec: no terminal emulator found',);
   throw new Error(
     process.platform

@@ -10,16 +10,19 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 
 /** Tagged logger for this module. */
 const l = tagged({
   tag: 'config',
   l: parentLogger,
 },);
+
+/**
+ * Sentinel returned by {@link parseDirective} for a line that is not a
+ * well-formed `/execarg_default:` directive. A `unique symbol`; callers narrow
+ * with `=== MALFORMED_DIRECTIVE`.
+ */
+const MALFORMED_DIRECTIVE: unique symbol = Symbol('terminal-exec/malformed-directive',);
 
 /**
  * Result of parsing all config files.
@@ -87,9 +90,9 @@ export async function parseConfigFiles(
         continue;
 
       if (line.startsWith('/',)) {
-        /** Parsed execarg-default entry; ABSENT for non-matching or malformed directives. */
+        /** Parsed execarg-default entry; MALFORMED_DIRECTIVE for non-matching or malformed directives. */
         const directive = parseDirective({ line, },);
-        if (directive !== ABSENT) {
+        if (directive !== MALFORMED_DIRECTIVE) {
           /** Entry id and default arg from the matched directive. */
           const [entryId, defaultArg,] = directive;
           execArgDefaults.set(
@@ -136,31 +139,31 @@ export async function parseConfigFiles(
  *
  * @param line - Raw directive line including the leading `/`.
  *
- * @returns `[entryId, defaultArg]` for a well-formed `/execarg_default:` directive; {@link ABSENT} for other or malformed directives.
+ * @returns `[entryId, defaultArg]` for a well-formed `/execarg_default:` directive; {@link MALFORMED_DIRECTIVE} for other or malformed directives.
  *
  * @example
  * ```ts
  * parseDirective({ line: '/execarg_default:org.xterm:-e' }); // ['org.xterm', '-e']
- * parseDirective({ line: '/unknown' });                      // ABSENT
+ * parseDirective({ line: '/unknown' });                      // MALFORMED_DIRECTIVE
  * ```
  */
 function parseDirective(
   { line, }: { readonly line: string; },
-): Maybe<readonly [
+): readonly [
   string,
   string,
-]> {
+] | typeof MALFORMED_DIRECTIVE {
   /** Directive prefix lifted to a name for the slice math below. */
   const EXECARG_PREFIX = '/execarg_default:';
   if (!line.startsWith(EXECARG_PREFIX,))
-    return ABSENT;
+    return MALFORMED_DIRECTIVE;
 
   /** Directive payload; format is `<entryId>:<defaultArg>`. */
   const rest = line.slice(EXECARG_PREFIX.length,);
   /** Separator between entry id and default arg; -1 means malformed and skipped. */
   const colonIdx = rest.indexOf(':',);
   if (colonIdx === (-1))
-    return ABSENT;
+    return MALFORMED_DIRECTIVE;
 
   /** Target entry id for the default. */
   const entryId = rest.slice(

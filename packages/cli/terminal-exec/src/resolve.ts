@@ -15,18 +15,21 @@
  */
 
 import { parseConfigFiles, } from './config.ts';
-import { parseDesktopEntry, } from './desktop-entry.ts';
-import { kdeTerminalService, } from './kde.ts';
+import {
+  DESKTOP_ENTRY_UNREADABLE,
+  parseDesktopEntry,
+} from './desktop-entry.ts';
+import {
+  kdeTerminalService,
+  NO_KDE_TERMINAL,
+} from './kde.ts';
 import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { scanEntries, } from './scan.ts';
 import {
+  NO_TERMINAL,
   type ValidatedEntry,
   validateEntry,
 } from './validate.ts';
@@ -55,7 +58,7 @@ export type ResolvedTerminal = ValidatedEntry & {
 /**
  * Resolves the preferred terminal emulator for the current platform.
  *
- * @returns Resolved terminal entry, or {@link ABSENT} if no valid terminal is found.
+ * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
  *
  * @example
  * ```ts
@@ -64,7 +67,7 @@ export type ResolvedTerminal = ValidatedEntry & {
  * // Windows: terminal.entryId === 'wt.exe'
  * ```
  */
-export async function resolveTerminal(): Promise<Maybe<ResolvedTerminal>> {
+export async function resolveTerminal(): Promise<ResolvedTerminal | typeof NO_TERMINAL> {
   if (process.platform
     === 'win32') {
     l.debug('platform: win32',);
@@ -80,9 +83,9 @@ export async function resolveTerminal(): Promise<Maybe<ResolvedTerminal>> {
  * Resolves the terminal emulator using the XDG Desktop Entry Specification.
  * Used on Linux, FreeBSD, and other Unix-like systems.
  *
- * @returns Resolved terminal entry, or {@link ABSENT} if no valid terminal is found.
+ * @returns Resolved terminal entry, or {@link NO_TERMINAL} if no valid terminal is found.
  */
-async function resolveXdgTerminal(): Promise<Maybe<ResolvedTerminal>> {
+async function resolveXdgTerminal(): Promise<ResolvedTerminal | typeof NO_TERMINAL> {
   /** Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below. */
   const desktops = currentDesktops();
   /** Ordered config file paths; later parseConfigFiles reads in priority order. */
@@ -121,7 +124,7 @@ async function resolveXdgTerminal(): Promise<Maybe<ResolvedTerminal>> {
       config,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (result !== ABSENT) {
+    if (result !== NO_TERMINAL) {
       return {
         ...result,
         entryId,
@@ -142,7 +145,7 @@ async function resolveXdgTerminal(): Promise<Maybe<ResolvedTerminal>> {
       config,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (result !== ABSENT) {
+    if (result !== NO_TERMINAL) {
       return {
         ...result,
         entryId,
@@ -152,7 +155,7 @@ async function resolveXdgTerminal(): Promise<Maybe<ResolvedTerminal>> {
   //endregion
 
   l.debug('no valid terminal emulator found',);
-  return ABSENT;
+  return NO_TERMINAL;
 }
 
 /**
@@ -178,7 +181,7 @@ async function resolveExplicitIds(
   l.debug('no explicit entries in config, checking kdeglobals',);
   /** KDE fallback used only when explicit entries are empty. */
   const kdeId = await kdeTerminalService();
-  if (kdeId === ABSENT)
+  if (kdeId === NO_KDE_TERMINAL)
     return [];
 
   l.debug(`using KDE TerminalService '${kdeId}' as explicit entry`,);
@@ -198,7 +201,7 @@ async function resolveExplicitIds(
  *
  * @param config - Parsed config for execarg defaults.
  *
- * @returns Validated entry or {@link ABSENT}.
+ * @returns Validated entry or {@link NO_TERMINAL}.
  */
 async function tryEntry({
   entryId,
@@ -215,18 +218,18 @@ async function tryEntry({
   readonly desktops: readonly string[];
   readonly isFallback: boolean;
   readonly config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
-},): Promise<Maybe<ValidatedEntry>> {
+},): Promise<ValidatedEntry | typeof NO_TERMINAL> {
   /** Registry lookup; missing id means we cannot resolve this preference. */
   const reg = registry.get(entryId,);
   if (reg === undefined) {
     l.debug(`entry '${entryId}' not found in registry`,);
-    return ABSENT;
+    return NO_TERMINAL;
   }
 
-  /** Parsed desktop entry contents; ABSENT on read failure. */
+  /** Parsed desktop entry contents; DESKTOP_ENTRY_UNREADABLE on read failure. */
   const entry = await parseDesktopEntry({ path: reg.path, },);
-  if (entry === ABSENT)
-    return ABSENT;
+  if (entry === DESKTOP_ENTRY_UNREADABLE)
+    return NO_TERMINAL;
 
   return validateEntry({
     entry,

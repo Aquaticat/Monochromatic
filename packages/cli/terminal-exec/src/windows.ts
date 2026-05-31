@@ -13,10 +13,6 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type { ResolvedTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
@@ -26,14 +22,20 @@ const l = tagged({
 },);
 
 /**
+ * Sentinel returned by the local {@link which} when an executable is not found
+ * on `$PATH`. A `unique symbol`; callers narrow with `!== EXECUTABLE_NOT_ON_PATH`.
+ */
+const EXECUTABLE_NOT_ON_PATH: unique symbol = Symbol('terminal-exec/executable-not-on-path',);
+
+/**
  * Cross-runtime `which` for Windows.
  * Resolves an executable by searching directories in `$PATH`.
  *
  * @param name - Executable name to find.
  *
- * @returns Absolute path if found, or {@link ABSENT}.
+ * @returns Absolute path if found, or {@link EXECUTABLE_NOT_ON_PATH}.
  */
-async function which(name: string,): Promise<Maybe<string>> {
+async function which(name: string,): Promise<string | typeof EXECUTABLE_NOT_ON_PATH> {
   /** Dynamic import keeps the Windows-only path cold on other platforms. */
   const { access, } = await import('node:fs/promises');
   /** Empty PATH fallback yields an empty dirs list, which returns null cleanly. */
@@ -57,7 +59,7 @@ async function which(name: string,): Promise<Maybe<string>> {
       continue;
     }
   }
-  return ABSENT;
+  return EXECUTABLE_NOT_ON_PATH;
 }
 
 /**
@@ -76,7 +78,7 @@ async function which(name: string,): Promise<Maybe<string>> {
  * ```
  */
 export async function resolveWindowsTerminal(): Promise<ResolvedTerminal> {
-  if (await which('wt.exe',) !== ABSENT) {
+  if (await which('wt.exe',) !== EXECUTABLE_NOT_ON_PATH) {
     l.debug('found Windows Terminal (wt.exe)',);
     return {
       entryId: 'wt.exe',

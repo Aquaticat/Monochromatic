@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes` complete; 7 targets remaining.
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec` complete; 6 targets remaining.
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -127,12 +127,19 @@ Delete `maybe.ts`.
 Other returns (`resolve`, `css` token reader, `collect` reader) are bucket 3.
 Delete `maybe.ts`.
 
-### terminal-exec (PENDING)
+### terminal-exec (COMPLETE)
 
 `packages/cli/terminal-exec`.
-`which(): Promise<Maybe<string>>` is bucket 3 (`EXECUTABLE_NOT_ON_PATH`).
-`desktop-entry`, `kde`, `scan`, `tokenize`, `validate`, `resolve`, `config` returns are bucket 3 with descriptive names; flows are local per file.
-Delete `maybe.ts`.
+All bucket 3, but two granularity facts matter: one purpose can span many functions, and leaf purposes convert at their seams.
+
+- `NO_TERMINAL` (defined in `validate.ts`, exported): the single "no usable terminal" purpose threaded through `validateEntry` to `tryEntry` to `resolveXdgTerminal` to `resolveTerminal`, and checked by `index.ts` and `launch.ts`. Five functions, one purpose, one symbol; no consumer branches differently on "entry invalid" vs "no terminal at all", so this is not under-splitting. `index.ts`/`launch.ts` import it from `validate.ts` (cycle-free; `validate.ts` imports nothing from them).
+- Leaf seams, each defined in its producer and converted to `NO_TERMINAL` (or local control flow) by exactly one consumer along the existing import edge: `DESKTOP_ENTRY_UNREADABLE` (`desktop-entry.ts`, converted in `resolve.ts`'s `tryEntry`); `NO_KDE_TERMINAL` (`kde.ts`, converted in `resolve.ts`'s `resolveExplicitIds`); `INVALID_EXEC` (`tokenize.ts`, converted in `validate.ts`).
+- Local-only symbols: `EXECUTABLE_NOT_ON_PATH` (two independent locals, one each in `windows.ts` and `validate.ts` `which`); `MALFORMED_DIRECTIVE` (`config.ts`); `DIR_UNREADABLE` (`scan.ts`); `KDEGLOBALS_UNREADABLE` (`kde.ts`, converted to `NO_KDE_TERMINAL` inside `kdeTerminalService`).
+
+`src/maybe.ts`: deleted.
+Leak check: each leaf symbol appears only in its producer plus its one converter file; `lint:types` confirms no symbol reaches a consumer where its type cannot occur (a leak would be a tsgo "no overlap" error).
+
+Verification: `mise run //packages/cli/terminal-exec:lint` (0 warnings/errors) and `:test:unit` pass (exit 0).
 
 ### model-selection (PENDING)
 

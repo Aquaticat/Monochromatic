@@ -9,16 +9,18 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
 /** Tagged logger for this module. */
 const l = tagged({
   tag: 'tokenize',
   l: parentLogger,
 },);
+
+/**
+ * Sentinel returned by {@link tokenizeExec} when the Exec value contains
+ * invalid syntax (unquoted shell metacharacter or unterminated quote). A
+ * `unique symbol`; callers narrow with `=== INVALID_EXEC`.
+ */
+export const INVALID_EXEC: unique symbol = Symbol('terminal-exec/invalid-exec',);
 
 /** Shell metacharacters that are invalid unquoted in Exec values. */
 const UNQUOTED_REJECT = new Set([
@@ -56,7 +58,7 @@ const FIELD_CODES = new Set([
  *
  * @param exec - Raw Exec value from the desktop entry.
  *
- * @returns Array of argument tokens, or {@link ABSENT} if the value contains invalid syntax.
+ * @returns Array of argument tokens, or {@link INVALID_EXEC} if the value contains invalid syntax.
  *
  * @example
  * ```ts
@@ -64,7 +66,7 @@ const FIELD_CODES = new Set([
  * // ['/usr/bin/ghostty', '--gtk-single-instance=true']
  * ```
  */
-export function tokenizeExec({ exec, }: { readonly exec: string; },): Maybe<readonly string[]> {
+export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly string[] | typeof INVALID_EXEC {
   /** Output accumulator; pushed when whitespace ends a token. */
   const tokens: string[] = [];
   /** In-progress token characters; reset on whitespace. */
@@ -124,7 +126,7 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): Maybe<read
 
     if (UNQUOTED_REJECT.has(ch,)) {
       l.debug(`rejected unquoted character '${ch}' in exec: ${exec}`,);
-      return ABSENT;
+      return INVALID_EXEC;
     }
 
     //region % field code stripping
@@ -152,7 +154,7 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): Maybe<read
 
   if (inQuote) {
     l.debug(`unterminated quote in exec: ${exec}`,);
-    return ABSENT;
+    return INVALID_EXEC;
   }
 
   if (current.length
