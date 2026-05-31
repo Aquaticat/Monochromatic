@@ -8,10 +8,13 @@
  */
 import { stat, } from 'node:fs/promises';
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
+/**
+ * Sentinel returned by {@link wireSize} when neither the requested asset nor
+ * its `.zst` companion exists. A `unique symbol` rather than a falsy default
+ * because `0` is a valid wire size (an empty file); callers narrow with
+ * `=== WIRE_SIZE_UNAVAILABLE`.
+ */
+export const WIRE_SIZE_UNAVAILABLE: unique symbol = Symbol('page-weight/wire-size-unavailable',);
 
 /**
  * Returns `true` if the path exists and is a regular file, `false` otherwise.
@@ -45,12 +48,14 @@ async function fileReadable(
  *
  * If `path.zst` exists as a regular file, its size is returned.
  * Otherwise the raw size of `path` is returned.
- * Returns {@link ABSENT} when neither form exists, letting callers decide how
- * to handle dead references instead of silently zero-counting them.
+ * Returns {@link WIRE_SIZE_UNAVAILABLE} when neither form exists, letting
+ * callers decide how to handle dead references instead of silently
+ * zero-counting them.
  *
  * @param absolutePath - absolute path to the originally-requested asset
  *
- * @returns wire size in bytes, or {@link ABSENT} if the file is missing
+ * @returns wire size in bytes, or {@link WIRE_SIZE_UNAVAILABLE} if the file is
+ *   missing
  *
  * @example
  * ```ts
@@ -59,7 +64,7 @@ async function fileReadable(
  */
 export async function wireSize(
   absolutePath: string,
-): Promise<Maybe<number>> {
+): Promise<number | typeof WIRE_SIZE_UNAVAILABLE> {
   /** Candidate companion path; pre-compressed asset served when the client supports zstd. */
   const zstPath = `${absolutePath}.zst`;
   if (await fileReadable(zstPath,)) {
@@ -72,5 +77,5 @@ export async function wireSize(
     const info = await stat(absolutePath,);
     return info.size;
   }
-  return ABSENT;
+  return WIRE_SIZE_UNAVAILABLE;
 }

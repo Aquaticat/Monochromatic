@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten` complete; 5 targets remaining.
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight` complete; 4 targets remaining.
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -125,13 +125,24 @@ The one bucket-1 reshape in the set, plus a propagated bucket-3 purpose.
 Verification: `:lint` (0/0) and `:test:unit` pass. `--dry-run` against the real workspace runs cleanly; `readInstalledVersion` confirmed to resolve present packages (`oxlint` 1.67.0, `typescript` 6.0.3) and return `NO_INSTALLED_VERSION` for absent ones, so the bucket-1 reshape preserves behavior.
 Pre-existing, out-of-scope observation: the dry-run reports all 118 catalog entries "Not found" because `yaml-parse.ts` `unquote` strips only double quotes while `pnpm-workspace.yaml` uses single-quoted keys; every probed name keeps literal quotes and never resolves. This predates #214 and was not changed.
 
-### page-weight (PENDING)
+### page-weight (COMPLETE)
 
 `packages/dev-script/page-weight`.
-`wireSize(): Promise<Maybe<number>>` is bucket 3 (`WIRE_SIZE_UNAVAILABLE`; `0` is a valid size so no falsy default).
-`html.ts` `localUrlOrAbsent(raw: Maybe<string>): Maybe<string>` pipes one absence through another (a seam): convert the parameter side.
-Other returns (`resolve`, `css` token reader, `collect` reader) are bucket 3.
-Delete `maybe.ts`.
+Seven distinct absence purposes; one bucket-1 field reshape; one parameter-side seam conversion.
+
+- `WIRE_SIZE_UNAVAILABLE` (`size.ts`, exported): `wireSize` return. Bucket 3, not a falsy default because `0` is a valid wire size (empty file). Consumed in `collect.ts` (the `Promise.all(map(wireSize))` then `reduce`).
+- `UNRESOLVABLE_REFERENCE` (`resolve.ts`, exported): `resolveReference` return ("not a servable path under root: external, escapes, or malformed"). Consumed at three `collect.ts` sites (`walkCss` plus both `weighPage` loops).
+- `NON_LOCAL_REF` (`css.ts`, local) and `NO_MORE_TOKENS` (`css.ts`, local): `localUrlOrAbsent` return and the `nextSemanticToken` scanner's end-of-stream. Both consumed only within `css.ts`.
+- `CSS_UNREADABLE` (`collect.ts`, local): `readCssOrAbsent` return on read failure; consumed only in `walkCss`.
+- `html.ts` (all local):
+  - `NO_ASSET_URL`: one cohesive "no candidate asset URL" flow shared by `attr` (missing/non-string/empty attribute, and every attribute this file reads is URL-bearing), `firstSrcsetUrl` (empty srcset), and `ownAssetUrl` (tag carries no own asset). One purpose across three functions, one symbol, like terminal-exec's `NO_TERMINAL`; the producers chain (`ownAssetUrl` returns `attr`/`firstSrcsetUrl` results directly), so a single identity keeps them in lockstep.
+  - `NON_LOCAL_REF`: `localUrlOrAbsent` return ("candidate present but external/empty/fragment"). Distinct purpose from `css.ts`'s same-named local (two independent locals, like terminal-exec's two `EXECUTABLE_NOT_ON_PATH`).
+  - `BLANK_STYLE`: `inlineStyleText` return (blank `<style>` block).
+- Bucket 1: `collectMedia`'s return-object `url` field became `url?: string` (omitted when absent, the `exactOptionalPropertyTypes`-correct shape). Each producing branch converts its sentinel: `firstSrcsetUrl` result is `url === NO_ASSET_URL ? { styles } : { url, styles }`, the no-pick path returns `{ styles }`.
+- Seam: `localUrlOrAbsent(raw: Maybe<string>)` became `localUrlOrAbsent(raw?: string)`. The `walk` consumer converts `ownAssetUrl`'s `NO_ASSET_URL` to `undefined` at the call (`localUrlOrAbsent(own === NO_ASSET_URL ? undefined : own)`), and `collectMedia.url` (now `?:`) passes through directly. No producer sentinel reaches `localUrlOrAbsent`'s narrowing. The `raw?: string` optional param passes lint (`no-nullish-union` targets union annotations, `no-optional-escape` targets `Partial<T>`; a declared `?:` param is neither).
+- `src/maybe.ts`: deleted.
+
+Verification: `mise run //packages/dev-script/page-weight:lint` passes (0 warnings/errors; types build). The two unit files (`html.unit.test.ts`, `url-detect.unit.test.ts`, run with `bun <file>`) pass, but they cover only `firstNonWhitespaceToken` / `startsWithUriScheme`, not the seam. The behavioral `collectMedia`/`walk` seam was proven by diffing `extractHtmlRefs` output against the `HEAD` original across 33 fixtures (media parents, srcset early-return, external/protocol-relative/data/fragment filtering, no-asset elements, nested media, blank-style omission, empty input): all 33 identical. The bucket-3 renames are identity-preserving, so `lint:types` is their proof.
 
 ### terminal-exec (COMPLETE)
 

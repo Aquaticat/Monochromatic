@@ -14,12 +14,31 @@ import type {
 import rehypeParse from 'rehype-parse';
 import { unified, } from 'unified';
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type { DeepReadonly, } from './types.ts';
 import { startsWithUriScheme, } from './url-detect.ts';
+
+/**
+ * Sentinel for "this element exposes no candidate asset URL". Shared by the
+ * one cohesive flow that produces a fetchable URL or nothing: {@link attr}
+ * (missing/non-string/empty attribute), `firstSrcsetUrl` (empty srcset), and
+ * {@link ownAssetUrl} (tag carries no own asset). A `unique symbol`; callers
+ * narrow with `=== NO_ASSET_URL`.
+ */
+const NO_ASSET_URL: unique symbol = Symbol('page-weight/no-asset-url',);
+
+/**
+ * Sentinel returned by {@link localUrlOrAbsent} when a candidate URL is not a
+ * local reference: absent, external scheme, protocol-relative, data URI, or
+ * fragment-only. A `unique symbol`; callers narrow with `=== NON_LOCAL_REF`.
+ */
+const NON_LOCAL_REF: unique symbol = Symbol('page-weight/non-local-ref',);
+
+/**
+ * Sentinel returned by {@link inlineStyleText} when a `<style>` block has no
+ * non-blank text content. A `unique symbol`; callers narrow with
+ * `=== BLANK_STYLE`.
+ */
+const BLANK_STYLE: unique symbol = Symbol('page-weight/blank-style',);
 
 /** Reusable unified parser configured for full HTML documents. */
 const parser = unified()
@@ -79,15 +98,17 @@ function isParent(node: DeepReadonly<Node>,): node is DeepReadonly<Parent> {
 /**
  * Reads a string attribute from a hast element.
  *
- * Returns {@link ABSENT} for missing attributes, non-string values, or the
- * empty string, simplifying caller logic that would otherwise have to narrow
- * the return type and separately reject empty strings.
+ * Returns {@link NO_ASSET_URL} for missing attributes, non-string values, or
+ * the empty string, simplifying caller logic that would otherwise have to
+ * narrow the return type and separately reject empty strings. Every attribute
+ * this module reads is URL-bearing, so the shared "no asset URL" sentinel
+ * names the absence accurately.
  *
  * @param element - source element
  *
  * @param name - attribute name
  *
- * @returns trimmed string value, or {@link ABSENT}
+ * @returns trimmed string value, or {@link NO_ASSET_URL}
  */
 function attr(
   {
@@ -97,14 +118,14 @@ function attr(
     readonly element: DeepReadonly<Element>;
     readonly name: string;
   },
-): Maybe<string> {
+): string | typeof NO_ASSET_URL {
   /** Attribute value as hast stores it; may be missing or non-string. */
   const raw = element.properties[name];
   if ((typeof raw) !== 'string')
-    return ABSENT;
-  /** Whitespace-stripped value so empty-after-trim attributes report as `ABSENT`. */
+    return NO_ASSET_URL;
+  /** Whitespace-stripped value so empty-after-trim attributes report as `NO_ASSET_URL`. */
   const trimmed = raw.trim();
-  return trimmed === '' ? ABSENT : trimmed;
+  return trimmed === '' ? NO_ASSET_URL : trimmed;
 }
 
 /**
@@ -116,14 +137,14 @@ function attr(
  *
  * @param srcset - raw srcset value, e.g. `"a.jpg 1x, b.jpg 2x"`
  *
- * @returns first URL, or {@link ABSENT} if the value is empty
+ * @returns first URL, or {@link NO_ASSET_URL} if the value is empty
  */
-function firstSrcsetUrl(srcset: string,): Maybe<string> {
+function firstSrcsetUrl(srcset: string,): string | typeof NO_ASSET_URL {
   /** First candidate descriptor in the srcset list; used as the canonical pick. */
   const first = srcset.split(',',)[0]
     ?.trim();
   if ((first === undefined) || (first === ''))
-    return ABSENT;
+    return NO_ASSET_URL;
   // `first` is trimmed and non-empty, so it carries at least one non-whitespace
   // character; the leading-token scan therefore always yields a non-empty URL.
   return firstNonWhitespaceToken(first,);
@@ -189,24 +210,29 @@ export function firstNonWhitespaceToken(line: string,): string {
 }
 
 /**
- * Returns the local reference carried by a candidate URL, or {@link ABSENT}
- * when the candidate is missing, external, a data URI, or fragment-only.
+ * Returns the local reference carried by a candidate URL, or
+ * {@link NON_LOCAL_REF} when the candidate is missing, external, a data URI,
+ * or fragment-only.
  *
- * @param raw - candidate URL, or {@link ABSENT} when the source element had none
+ * The candidate is an optional `string`: producers that found no URL convert
+ * their {@link NO_ASSET_URL} sentinel to `undefined` at this seam rather than
+ * threading a foreign sentinel into this function's narrowing.
  *
- * @returns trimmed local reference, or {@link ABSENT}
+ * @param raw - candidate URL, or `undefined` when the source element had none
+ *
+ * @returns trimmed local reference, or {@link NON_LOCAL_REF}
  */
-function localUrlOrAbsent(raw: Maybe<string>,): Maybe<string> {
-  if (raw === ABSENT)
-    return ABSENT;
+function localUrlOrAbsent(raw?: string,): string | typeof NON_LOCAL_REF {
+  if (raw === undefined)
+    return NON_LOCAL_REF;
   /** Whitespace-stripped form so empty and fragment-only references are filtered out. */
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed
     .startsWith('#',))
-    return ABSENT;
+    return NON_LOCAL_REF;
   if (trimmed.startsWith('//',)
     || startsWithUriScheme(trimmed,))
-    return ABSENT;
+    return NON_LOCAL_REF;
   return trimmed;
 }
 
@@ -221,14 +247,14 @@ const MEDIA_PARENTS = new Set([
 ],);
 
 /**
- * Returns an inline `<style>` element's text content, or {@link ABSENT} when
- * the block is blank so the caller's accumulator stays clean.
+ * Returns an inline `<style>` element's text content, or {@link BLANK_STYLE}
+ * when the block is blank so the caller's accumulator stays clean.
  *
  * @param element - `<style>` element
  *
- * @returns concatenated stylesheet text, or {@link ABSENT} when blank
+ * @returns concatenated stylesheet text, or {@link BLANK_STYLE} when blank
  */
-function inlineStyleText(element: DeepReadonly<Element>,): Maybe<string> {
+function inlineStyleText(element: DeepReadonly<Element>,): string | typeof BLANK_STYLE {
   /** Text-node fragments collected from the `<style>` children. */
   const parts: string[] = [];
   for (const child of element.children) {
@@ -237,7 +263,7 @@ function inlineStyleText(element: DeepReadonly<Element>,): Maybe<string> {
   }
   /** Concatenated `<style>` content; only emitted when non-blank. */
   const text = parts.join('',);
-  return text.trim() === '' ? ABSENT : text;
+  return text.trim() === '' ? BLANK_STYLE : text;
 }
 
 /**
@@ -251,13 +277,14 @@ function inlineStyleText(element: DeepReadonly<Element>,): Maybe<string> {
  *
  * @param element - the `<picture>` / `<video>` / `<audio>` element
  *
- * @returns single URL the media element most likely fetches (or {@link ABSENT})
- *   plus any `<style>` contents seen among its children before that pick
+ * @returns single URL the media element most likely fetches (`url` omitted
+ *   when there is none) plus any `<style>` contents seen among its children
+ *   before that pick
  */
 function collectMedia(
   element: DeepReadonly<Element>,
 ): {
-  readonly url: Maybe<string>;
+  readonly url?: string;
   readonly styles: readonly string[];
 } {
   /** Inline `<style>` bodies found among the media children, in source order. */
@@ -272,17 +299,20 @@ function collectMedia(
         element: child,
         name: 'srcset',
       },);
-      if (srcset !== ABSENT)
-        return {
-          url: firstSrcsetUrl(srcset,),
+      if (srcset !== NO_ASSET_URL) {
+        /** Canonical first candidate of the `<source>` `srcset`; omitted when empty. */
+        const url = firstSrcsetUrl(srcset,);
+        return url === NO_ASSET_URL ? { styles, } : {
+          url,
           styles,
         };
+      }
       /** Plain `src` fallback for the current `<source>` child when no `srcset` is set. */
       const src = attr({
         element: child,
         name: 'src',
       },);
-      if (src !== ABSENT)
+      if (src !== NO_ASSET_URL)
         return {
           url: src,
           styles,
@@ -292,7 +322,7 @@ function collectMedia(
       === 'style') {
       /** Text of the current `<style>` child, when non-blank. */
       const text = inlineStyleText(child,);
-      if (text !== ABSENT)
+      if (text !== BLANK_STYLE)
         styles.push(text,);
     }
   }
@@ -307,7 +337,7 @@ function collectMedia(
           element: child,
           name: 'src',
         },);
-        if (src !== ABSENT)
+        if (src !== NO_ASSET_URL)
           return {
             url: src,
             styles,
@@ -315,10 +345,7 @@ function collectMedia(
       }
     }
   }
-  return {
-    url: ABSENT,
-    styles,
-  };
+  return { styles, };
 }
 
 /**
@@ -330,9 +357,10 @@ function collectMedia(
  *
  * @param element - element to inspect
  *
- * @returns URL to fetch, or {@link ABSENT} when the element has no own asset
+ * @returns URL to fetch, or {@link NO_ASSET_URL} when the element has no own
+ *   asset
  */
-function ownAssetUrl(element: DeepReadonly<Element>,): Maybe<string> {
+function ownAssetUrl(element: DeepReadonly<Element>,): string | typeof NO_ASSET_URL {
   if (element.tagName
     === 'link') {
     return attr({
@@ -371,7 +399,7 @@ function ownAssetUrl(element: DeepReadonly<Element>,): Maybe<string> {
       element,
       name: 'srcset',
     },);
-    if (srcset !== ABSENT)
+    if (srcset !== NO_ASSET_URL)
       return firstSrcsetUrl(srcset,);
     return attr({
       element,
@@ -385,14 +413,14 @@ function ownAssetUrl(element: DeepReadonly<Element>,): Maybe<string> {
       element,
       name: 'href',
     },);
-    if (href !== ABSENT)
+    if (href !== NO_ASSET_URL)
       return href;
     return attr({
       element,
       name: 'xlink:href',
     },);
   }
-  return ABSENT;
+  return NO_ASSET_URL;
 }
 
 /**
@@ -441,24 +469,30 @@ export function extractHtmlRefs(source: string,): HtmlReferences {
         === 'style') {
         /** Text of this `<style>` block, when non-blank. */
         const text = inlineStyleText(node,);
-        if (text !== ABSENT)
+        if (text !== BLANK_STYLE)
           inlineStyles.push(text,);
         return;
       }
       if (MEDIA_PARENTS.has(node.tagName,)) {
         /** Canonical media pick plus any inline styles found among its children. */
         const media = collectMedia(node,);
-        /** Local reference of the media pick, or `ABSENT` when external. */
+        /** Local reference of the media pick, or `NON_LOCAL_REF` when external/absent. */
         const local = localUrlOrAbsent(media.url,);
-        if (local !== ABSENT)
+        if (local !== NON_LOCAL_REF)
           urls.add(local,);
         for (const style of media.styles)
           inlineStyles.push(style,);
         return;
       }
-      /** Local reference of this element's own asset, or `ABSENT`. */
-      const local = localUrlOrAbsent(ownAssetUrl(node,),);
-      if (local !== ABSENT)
+      /** This element's own candidate asset URL, or `NO_ASSET_URL` when it has none. */
+      const own = ownAssetUrl(node,);
+      /**
+       * Local reference of this element's own asset, or `NON_LOCAL_REF`.
+       * `NO_ASSET_URL` is converted to `undefined` at this seam so the
+       * producer's sentinel never reaches {@link localUrlOrAbsent}'s narrowing.
+       */
+      const local = localUrlOrAbsent(own === NO_ASSET_URL ? undefined : own,);
+      if (local !== NON_LOCAL_REF)
         urls.add(local,);
     }
     if (isParent(node,)) {

@@ -16,10 +16,6 @@ import {
   tokenize,
 } from '@csstools/css-tokenizer';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { startsWithUriScheme, } from './url-detect.ts';
 
 /**
@@ -60,8 +56,16 @@ function tokenValue(token: ValueToken,): string {
 }
 
 /**
+ * Sentinel returned by {@link localUrlOrAbsent} when a CSS URL value is not a
+ * local reference: external schemes, protocol-relative, fragment-only, or
+ * empty. A `unique symbol`; callers narrow with `=== NON_LOCAL_REF`.
+ */
+const NON_LOCAL_REF: unique symbol = Symbol('page-weight/non-local-ref',);
+
+/**
  * Returns the local reference carried by a raw CSS URL value, or
- * {@link ABSENT} when the value is external and contributes no local weight.
+ * {@link NON_LOCAL_REF} when the value is external and contributes no local
+ * weight.
  *
  * External forms filtered:
  * - absolute URLs with scheme (`http:`, `https:`, `ftp:`, `data:`, ...)
@@ -71,19 +75,27 @@ function tokenValue(token: ValueToken,): string {
  *
  * @param raw - URL string as it appeared in CSS
  *
- * @returns trimmed local reference, or {@link ABSENT}
+ * @returns trimmed local reference, or {@link NON_LOCAL_REF}
  */
-function localUrlOrAbsent(raw: string,): Maybe<string> {
+function localUrlOrAbsent(raw: string,): string | typeof NON_LOCAL_REF {
   /** URL with surrounding whitespace removed; raw CSS values often carry stray padding. */
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed
     .startsWith('#',))
-    return ABSENT;
+    return NON_LOCAL_REF;
   if (trimmed.startsWith('//',)
     || startsWithUriScheme(trimmed,))
-    return ABSENT;
+    return NON_LOCAL_REF;
   return trimmed;
 }
+
+/**
+ * Sentinel returned by the `nextSemanticToken` scanner inside
+ * {@link extractCssUrls} when the token stream ends before a non-whitespace,
+ * non-comment token is found. A `unique symbol`; callers narrow with
+ * `=== NO_MORE_TOKENS`.
+ */
+const NO_MORE_TOKENS: unique symbol = Symbol('page-weight/no-more-tokens',);
 
 /**
  * Extracts every `url(...)` reference from a CSS source string.
@@ -118,14 +130,14 @@ export function extractCssUrls(source: string,): string[] {
 
   /**
    * Returns the next token at or after `startIndex` that is not whitespace or
-   * a comment, or {@link ABSENT} when the stream ends first. Closes over
-   * `tokens` so the shared stream is not threaded through a parameter.
+   * a comment, or {@link NO_MORE_TOKENS} when the stream ends first. Closes
+   * over `tokens` so the shared stream is not threaded through a parameter.
    *
    * @param startIndex - index to begin scanning from (inclusive)
    *
-   * @returns next semantic token, or {@link ABSENT} past the end
+   * @returns next semantic token, or {@link NO_MORE_TOKENS} past the end
    */
-  function nextSemanticToken(startIndex: number,): Maybe<CSSToken> {
+  function nextSemanticToken(startIndex: number,): CSSToken | typeof NO_MORE_TOKENS {
     for (let index = startIndex; index < tokens
       .length; index += 1) {
       /** Current token under inspection; skipped if it carries no semantic content. */
@@ -133,7 +145,7 @@ export function extractCssUrls(source: string,): string[] {
       if (!isTokenWhiteSpaceOrComment(token,))
         return token;
     }
-    return ABSENT;
+    return NO_MORE_TOKENS;
   }
 
   /**
@@ -143,9 +155,9 @@ export function extractCssUrls(source: string,): string[] {
    * @param raw - URL string as it appeared in CSS
    */
   function addLocalRef(raw: string,): void {
-    /** Local reference carried by `raw`, or `ABSENT` when external. */
+    /** Local reference carried by `raw`, or `NON_LOCAL_REF` when external. */
     const local = localUrlOrAbsent(raw,);
-    if (local !== ABSENT)
+    if (local !== NON_LOCAL_REF)
       refs.add(local,);
   }
 
@@ -164,7 +176,7 @@ export function extractCssUrls(source: string,): string[] {
         continue;
       /** First semantic token after `url(`; expected to be the quoted URL string. */
       const next = nextSemanticToken(index + 1,);
-      if ((next !== ABSENT) && isTokenString(next,))
+      if ((next !== NO_MORE_TOKENS) && isTokenString(next,))
         addLocalRef(tokenValue(next,),);
       continue;
     }
@@ -177,7 +189,7 @@ export function extractCssUrls(source: string,): string[] {
        * First semantic token after `@import`; expected to be the imported stylesheet URL.
        */
       const next = nextSemanticToken(index + 1,);
-      if ((next !== ABSENT) && isTokenString(next,))
+      if ((next !== NO_MORE_TOKENS) && isTokenString(next,))
         addLocalRef(tokenValue(next,),);
     }
   }

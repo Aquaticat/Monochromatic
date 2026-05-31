@@ -14,11 +14,16 @@ import {
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { startsWithUriScheme, } from './url-detect.ts';
+
+/**
+ * Sentinel returned by {@link resolveReference} when a reference does not
+ * resolve to a servable path under the dist root: external origins,
+ * protocol-relative URLs, data URIs, empty references, and paths that escape
+ * the root via `..` or an absolute target. A `unique symbol`; callers narrow
+ * with `=== UNRESOLVABLE_REFERENCE`.
+ */
+export const UNRESOLVABLE_REFERENCE: unique symbol = Symbol('page-weight/unresolvable-reference',);
 
 /**
  * Resolves a reference string to an absolute path under the dist root.
@@ -31,8 +36,9 @@ import { startsWithUriScheme, } from './url-detect.ts';
  *
  * @param ref - raw reference string (URL or path) from HTML or CSS
  *
- * @returns absolute filesystem path under `root`, or {@link ABSENT} when the
- *   reference is external, escapes the root, or is malformed
+ * @returns absolute filesystem path under `root`, or
+ *   {@link UNRESOLVABLE_REFERENCE} when the reference is external, escapes the
+ *   root, or is malformed
  *
  * @example
  * ```ts
@@ -54,17 +60,17 @@ export function resolveReference(
     readonly fromFile: string;
     readonly ref: string;
   },
-): Maybe<string> {
+): string | typeof UNRESOLVABLE_REFERENCE {
   /** Reference with any `#fragment` removed; fragments do not affect the served file. */
   const withoutFragment = nonNullishOrThrow(ref.trim()
     .split('#',)[0],);
   /** Reference with the query string also stripped; query parameters do not change the path on disk. */
   const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
-    return ABSENT;
+    return UNRESOLVABLE_REFERENCE;
   if (trimmed.startsWith('//',)
     || startsWithUriScheme(trimmed,))
-    return ABSENT;
+    return UNRESOLVABLE_REFERENCE;
 
   /** Canonical absolute form of the dist root used as the containment boundary. */
   const absoluteRoot = pathResolve(root,);
@@ -91,6 +97,6 @@ export function resolveReference(
   );
   if (relativeToRoot.startsWith('..',)
     || isAbsolute(relativeToRoot,))
-    return ABSENT;
+    return UNRESOLVABLE_REFERENCE;
   return resolved;
 }

@@ -12,11 +12,13 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { extractCssUrls, } from './css.ts';
 import { extractHtmlRefs, } from './html.ts';
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import { resolveReference, } from './resolve.ts';
-import { wireSize, } from './size.ts';
+  resolveReference,
+  UNRESOLVABLE_REFERENCE,
+} from './resolve.ts';
+import {
+  wireSize,
+  WIRE_SIZE_UNAVAILABLE,
+} from './size.ts';
 
 /**
  * Result of weighing a single HTML page.
@@ -47,22 +49,29 @@ function readText(absolutePath: string,): Promise<string> {
 }
 
 /**
- * Reads a CSS file and returns the raw source, or {@link ABSENT} if it cannot
- * be read.
+ * Sentinel returned by {@link readCssOrAbsent} when a CSS file cannot be read
+ * (missing, permissions, I/O). A `unique symbol`; callers narrow with
+ * `=== CSS_UNREADABLE` to skip dead links without aborting the walk.
+ */
+const CSS_UNREADABLE: unique symbol = Symbol('page-weight/css-unreadable',);
+
+/**
+ * Reads a CSS file and returns the raw source, or {@link CSS_UNREADABLE} if it
+ * cannot be read.
  *
  * Skipping on read failure keeps the pipeline robust against broken links
  * without masking them; the caller still receives the path via `missing`.
  *
  * @param absolutePath - absolute CSS path
  *
- * @returns CSS source, or {@link ABSENT} on read failure
+ * @returns CSS source, or {@link CSS_UNREADABLE} on read failure
  */
-async function readCssOrAbsent(absolutePath: string,): Promise<Maybe<string>> {
+async function readCssOrAbsent(absolutePath: string,): Promise<string | typeof CSS_UNREADABLE> {
   try {
     return await readText(absolutePath,);
   }
   catch {
-    return ABSENT;
+    return CSS_UNREADABLE;
   }
 }
 
@@ -116,20 +125,20 @@ async function walkCss(
       continue;
     visited.add(cssPath,);
 
-    /** CSS text, or `ABSENT` when the file cannot be read so dead links don't abort the walk. */
+    /** CSS text, or `CSS_UNREADABLE` when the file cannot be read so dead links don't abort the walk. */
     // oxlint-disable-next-line eslint/no-await-in-loop -- BFS over a queue that grows as each iteration parses imports; each step depends on the previous shift and the shared `visited` set, so parallelisation would race on dedup state.
     const source = await readCssOrAbsent(cssPath,);
-    if (source === ABSENT)
+    if (source === CSS_UNREADABLE)
       continue;
 
     for (const ref of extractCssUrls(source,)) {
-      /** Absolute asset path, or `ABSENT` when the reference escapes the dist root. */
+      /** Absolute asset path, or `UNRESOLVABLE_REFERENCE` when the reference escapes the dist root. */
       const resolved = resolveReference({
         root,
         fromFile: cssPath,
         ref,
       },);
-      if (resolved === ABSENT) {
+      if (resolved === UNRESOLVABLE_REFERENCE) {
         missing.push(ref,);
         continue;
       }
@@ -202,13 +211,13 @@ export async function weighPage(
   } = extractHtmlRefs(htmlSource,);
 
   for (const ref of urls) {
-    /** Absolute path of the referenced asset, or `ABSENT` when it escapes the dist root. */
+    /** Absolute path of the referenced asset, or `UNRESOLVABLE_REFERENCE` when it escapes the dist root. */
     const resolved = resolveReference({
       root,
       fromFile: htmlPath,
       ref,
     },);
-    if (resolved === ABSENT) {
+    if (resolved === UNRESOLVABLE_REFERENCE) {
       missing.push(ref,);
       continue;
     }
@@ -239,13 +248,13 @@ export async function weighPage(
 
   for (const inline of inlineStyles) {
     for (const ref of extractCssUrls(inline,)) {
-      /** Absolute asset path for an inline `<style>` reference, or `ABSENT` when it escapes the dist root. */
+      /** Absolute asset path for an inline `<style>` reference, or `UNRESOLVABLE_REFERENCE` when it escapes the dist root. */
       const resolved = resolveReference({
         root,
         fromFile: htmlPath,
         ref,
       },);
-      if (resolved === ABSENT) {
+      if (resolved === UNRESOLVABLE_REFERENCE) {
         missing.push(ref,);
         continue;
       }
@@ -256,9 +265,9 @@ export async function weighPage(
     }
   }
 
-  /** Wire sizes per asset, computed in parallel; `ABSENT` slots are surfaced via `missing` below. */
+  /** Wire sizes per asset, computed in parallel; `WIRE_SIZE_UNAVAILABLE` slots are surfaced via `missing` below. */
   const sizes = await Promise.all(
-    assets.map(function measure(asset: string,): Promise<Maybe<number>> {
+    assets.map(function measure(asset: string,): Promise<number | typeof WIRE_SIZE_UNAVAILABLE> {
       return wireSize(asset,);
     },),
   );
@@ -266,10 +275,10 @@ export async function weighPage(
   const totalBytes = sizes.reduce(
     function sumNonNull(
       acc: number,
-      size: Maybe<number>,
+      size: number | typeof WIRE_SIZE_UNAVAILABLE,
       index: number,
     ): number {
-      if (size === ABSENT) {
+      if (size === WIRE_SIZE_UNAVAILABLE) {
         missing.push(nonNullishOrThrow(assets[index],),);
         return acc;
       }
