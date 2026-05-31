@@ -158,14 +158,43 @@ Leak check: each leaf symbol appears only in its producer plus its one converter
 
 Verification: `mise run //packages/cli/terminal-exec:lint` (0 warnings/errors) and `:test:unit` pass (exit 0).
 
-### model-selection (PENDING)
+### model-selection (PENDING, scope corrected 2026-05-31)
 
 `packages/pi-shared/model-selection`.
-`core.ts` does `export * from './maybe.ts'`; 8 modules import from `./maybe.ts`, tests import `ABSENT` from `./core.ts`.
-`exact-match` / `pattern-match` / `model-id` / `budget-selection` / `scope-resolver` / `settings-scope` / `argv-scope` return `Maybe<T>` (bucket 3, descriptive per resolver outcome).
-Watch cross-module flow (`exactMatch` result consumed by `pattern-match`).
-Update the `core.ts` re-export and all test imports. Delete `maybe.ts`.
-Builds to `dist`; verify with `buildAndTest`.
+Heavier than first sketched: deleting its `maybe.ts` forces lockstep edits in two other packages, because `ABSENT` / `Maybe` cross the package boundary as a callback contract and as incidental coupling.
+This is deps-cube-tier. Blast radius is exactly three packages (verified: the only external importers of `pi/advisor` and `pi/auto-mode` are markdown docs, and neither re-exports `ABSENT` / `Maybe`).
+
+#### Ten internal sentinels (per purpose)
+
+- `NO_EXACT_MATCH` (`exact-match.ts`, export): `findExactModelReferenceMatch` plus internal `matchProviderModelReference` (one purpose, both functions). Cross-module seam: `pattern-match.ts`'s internal `tryMatchModel` imports it and narrows `exact !== NO_EXACT_MATCH` before returning the model, so it never leaks past that check. Also consumed by `exact-match.unit.test.ts`. Exported because the function is public (declaration emit).
+- `NO_PATTERN_MATCH` (`pattern-match.ts`, local): internal `tryMatchModel` return. `parseModelPattern` itself returns `PatternResolution` (already `model?:` / `thinkingLevel?:`), so it is not a sentinel site.
+- `NO_THINKING_LEVEL` (`pattern-match.ts`, local): the `for (let … thinkingLevel = ABSENT; ;)` accumulator inside `parseModelPattern`. Kept as a sentinel, not converted to `undefined`: it is a loop-`init` `let` (exempt from `no-function-root-let`) whose only `undefined`-based alternative would need a `ScopedThinkingLevel | undefined` annotation, which `no-nullish-union` bans.
+- `MALFORMED_SLUG` (`model-id.ts`, export): `parseProviderModelSlug`. Cross-module seam: `budget-override.ts` narrows `parsed === MALFORMED_SLUG`. Also `model-id.unit.test.ts`. Exported (public function).
+- `NO_ARGV_MODELS` (`argv-scope.ts`, export): `parseArgvModelPatterns`. Cross-module seam: `scope-resolver.ts` narrows `argvPatterns !== NO_ARGV_MODELS`. Also `argv-scope.unit.test.ts`. Exported (public function).
+- `NO_LIVE_SCOPE` (`scope-resolver.ts`, local): internal `readLiveScope`.
+- `SETTINGS_FILE_ABSENT` (`settings-scope.ts`, local): internal `loadSettingsFile`. `loadSettingsScopePatterns` returns `SettingsScopePatterns` (already `patterns?:`), so it is not a sentinel site.
+- `NO_CANDIDATE` (`budget-selection.ts`, export): `findCheapestCandidate`, narrowed in internal `cheapestOverallContext`. Exported because `findCheapestCandidate` is public (declaration emit would otherwise reference a private symbol).
+
+#### Two cross-package public contract symbols
+
+A callback return type cannot be `?:` and `T | undefined` is banned, so these stay shared exported sentinels (one genuine purpose each, the cross-package analog of terminal-exec's `NO_TERMINAL`; not the generic-`ABSENT` reuse #214 bans).
+
+- `NO_AUTH`: returned by `ResolveBudgetAuth` (`types.ts`) and `ResolveBudgetOverrideAuth` (`budget-override.ts`); checked in `budget-selection.ts` (`findSameProvider` / `findAnyProvider` auth walk) and `budget-override.ts`; **implemented by `auto-mode`'s `resolveBudgetAuth`** (`packages/pi/auto-mode/src/budget-model-auth.ts`); plus `budget-selection.unit.test.ts` / `budget-override.unit.test.ts` mock resolvers.
+  Home: `types.ts`. Constraint: `ResolveBudgetAuth` references both `typeof NO_AUTH` and `BudgetModelAuth` (both in `types.ts`), so the symbol must be reachable from `types.ts` cycle-free; after `maybe.ts` is deleted `types.ts` imports nothing internal, so it is the only existing leaf. Placing it in `budget-selection` / `budget-override` would form a `types → budget → types` cycle. If a lint rule rejects a runtime `const` in `types.ts`, fall back to a one-symbol `auth-sentinel.ts` leaf that `types.ts` imports (purpose-scoped, not the banned generic module).
+- `NO_OVERRIDE_MODEL`: returned by `FindBudgetOverrideModel` (`budget-override.ts`), checked in `budget-override.ts`, **implemented by `auto-mode`'s `findBudgetOverrideModel`**; plus `budget-override.unit.test.ts`. Home: `budget-override.ts` (co-located; only it references the symbol).
+
+#### Barrels
+
+`core.ts` `export * from './maybe.ts'` is removed. `core.ts` `export type * from './types.ts'` and `budget.ts` `export type { … } from './types.ts'` are type-only and will NOT carry the runtime `NO_AUTH`; add `export { NO_AUTH, } from './types.ts'` to `budget.ts`. `NO_OVERRIDE_MODEL` flows automatically through `budget.ts`'s `export * from './budget-override.ts'`. Tests import each sentinel directly from its producer file rather than via `core.ts`.
+
+#### advisor decoupling (prerequisite)
+
+`pi/advisor` imports model-selection's `ABSENT` / `Maybe` for its OWN unrelated absence purposes (`context.ts` ×8 sites across two `Maybe<AdvisorAgentMessage>` functions and a `latestExcerpt`; `context-user.ts` one `Maybe<string>`; `config.ts` a `Maybe<AdvisorConfigFile>` reader plus a `readonly Maybe<AdvisorConfigFile>[]` field). This is the incidental coupling #214 targets. Give advisor its own per-purpose local sentinels and explicit `T | typeof SENTINEL` returns; do NOT reintroduce a local `Maybe<T>` alias (that is the same coupling one layer down). `config.ts`'s `readonly Maybe<AdvisorConfigFile>[]` array field becomes `readonly (AdvisorConfigFile | typeof <sentinel>)[]`.
+
+#### Sequencing (two commits)
+
+1. advisor decouple. Builds green against unchanged model-selection (model-selection still exports `ABSENT` / `Maybe`, now unused by advisor).
+2. model-selection triage + auto-mode contract, atomic in one commit (the `NO_AUTH` / `NO_OVERRIDE_MODEL` identity must change on both sides together). Verify all three packages with `mise run buildAndTest` (model-selection builds to `dist`; auto-mode and advisor consume it), then the dependents' own lint + tests.
 
 ### oxlint-plugins/tsdoc (PENDING)
 
