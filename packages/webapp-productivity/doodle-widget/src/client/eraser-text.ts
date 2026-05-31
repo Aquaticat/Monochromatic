@@ -12,10 +12,6 @@ import {
   type NormalizedPoint,
 } from './drawing.ts';
 import { segmentIntersectsRect, } from './geometry.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 
 /**
  * Checks whether a content-space pixel coordinate falls inside an
@@ -65,7 +61,7 @@ function pointInInputRect(
  *
  * @param point - current eraser position in normalized [0..1] space
  *
- * @param previousPoint - previous eraser position, or {@link ABSENT} for first event
+ * @param previousPoint - previous eraser position; omitted on first event
  *
  * @param cw - current canvas width in CSS pixels
  *
@@ -91,12 +87,14 @@ export function eraseTextAt({
   textLayer,
 }: {
   readonly point: NormalizedPoint;
-  readonly previousPoint: Maybe<NormalizedPoint>;
+  readonly previousPoint?: NormalizedPoint;
   readonly cw: number;
   readonly ch: number;
   readonly textLayer: HTMLDivElement;
 },): boolean {
-  /** Current eraser position in content-space pixels */
+  /**
+   * Current eraser position in content-space pixels
+   */
   const {
     px,
     py,
@@ -106,38 +104,50 @@ export function eraseTextAt({
     ch,
   },);
 
-  /** Spread once so removals during iteration do not break the NodeList. */
+  /**
+   * Spread once so removals during iteration do not break the NodeList.
+   */
   const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('.text-input',),];
-  /** Flag flipped only when at least one input is removed, so callers can skip redundant work. */
+  /**
+   * Flag flipped only when at least one input is removed, so callers can skip redundant work.
+   */
   let erased = false;
 
-  /** Previous eraser position in content-space pixels when available */
-  const prev = previousPoint !== ABSENT
+  /**
+   * Previous eraser position in content-space pixels when available
+   */
+  const prev = previousPoint !== undefined
     ? denormalizePoint({
       point: previousPoint,
       cw,
       ch,
     },)
-    : ABSENT;
+    : undefined;
 
   for (const input of inputs) {
-    /** Check current eraser position */
+    /**
+     * Check current eraser position
+     */
     const hitCurrent = pointInInputRect({
       px,
       py,
       input,
     },);
 
-    /** Check previous eraser position when available */
-    const hitPrevious = (prev !== ABSENT)
+    /**
+     * Check previous eraser position when available
+     */
+    const hitPrevious = (prev !== undefined)
       && pointInInputRect({
         px: prev.px,
         py: prev.py,
         input,
       },);
 
-    /** Check whether the eraser travel segment crosses the input rect */
-    const hitSegment = (prev !== ABSENT)
+    /**
+     * Check whether the eraser travel segment crosses the input rect
+     */
+    const hitSegment = (prev !== undefined)
       && segmentIntersectsRect({
         sx: prev.px,
         sy: prev.py,

@@ -11,19 +11,32 @@ import {
   getStrokeWidth,
 } from './drawing-config.ts';
 import type { NormalizedPoint, } from './drawing.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { createTextInput, } from './text-page.ts';
 
-/** Multiplier converting a 0..1 normalized coordinate to a percentage */
+/**
+ * Multiplier converting a 0..1 normalized coordinate to a percentage
+ */
 const PERCENT_SCALE = 100;
 
-/** Multiplier converting stroke width to text font size in pixels */
+/**
+ * Multiplier converting stroke width to text font size in pixels
+ */
 const TEXT_SIZE_FACTOR = 2;
 
 //region State
+
+/**
+ * Active text-input editing state.
+ *
+ * `idle` when no input is focused; `editing` while one is open, carrying the
+ * element so finalize and discard act on the same node.
+ */
+type ActiveInput =
+  | { readonly kind: 'idle'; }
+  | {
+    readonly kind: 'editing';
+    readonly input: HTMLInputElement;
+  };
 
 /**
  * Text editing state container.
@@ -32,13 +45,16 @@ const TEXT_SIZE_FACTOR = 2;
  * container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const textState: {
-  /** Text layer container, set via {@link setTextLayer} */
-  layerElement: Maybe<HTMLDivElement>;
-  /** Currently focused text input, or {@link ABSENT} when idle */
-  activeInput: Maybe<HTMLInputElement>;
+  /**
+   * Text layer container, set once via {@link setTextLayer}; absent until then
+   */
+  layerElement?: HTMLDivElement;
+  /**
+   * Active text input, or `idle` discriminant when none is focused
+   */
+  activeInput: ActiveInput;
 } = {
-  layerElement: ABSENT,
-  activeInput: ABSENT,
+  activeInput: { kind: 'idle', },
 };
 
 //endregion State
@@ -75,27 +91,35 @@ export function setTextLayer(layer: HTMLDivElement,): void {
  * ```
  */
 export function finalizeActiveInput(): void {
-  if (textState.activeInput
-    === ABSENT)
+  /**
+   * Captured before narrowing so the discriminant check and field access read one value.
+   */
+  const active = textState.activeInput;
+  if (active.kind === 'idle')
     return;
 
-  /** Whether the input has non-empty content worth keeping */
-  const hasContent = textState.activeInput
+  /**
+   * Whether the input has non-empty content worth keeping
+   */
+  const hasContent = active.input
     .value
     .trim()
     !== '';
   if (hasContent)
-    textState.activeInput
+    active.input
       .readOnly = true;
   else
-    textState.activeInput
+    active.input
       .remove();
 
-  textState.activeInput = ABSENT;
+  textState.activeInput = { kind: 'idle', };
 
-  if (hasContent && (textState.layerElement
-    !== ABSENT))
-    textState.layerElement
+  /**
+   * Captured so the presence check and dispatch read the same layer reference.
+   */
+  const layer = textState.layerElement;
+  if (hasContent && (layer !== undefined))
+    layer
       .dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
 }
 
@@ -115,17 +139,26 @@ export function finalizeActiveInput(): void {
 export function placeTextInput(position: NormalizedPoint,): void {
   finalizeActiveInput();
 
-  if (textState.layerElement
-    === ABSENT)
+  /**
+   * Captured so the guard and append below read one layer reference.
+   */
+  const layer = textState.layerElement;
+  if (layer === undefined)
     return;
 
-  /** Active color captured at text input creation */
+  /**
+   * Active color captured at text input creation
+   */
   const color = getStrokeColor();
-  /** Text font size derived from active stroke width */
+  /**
+   * Text font size derived from active stroke width
+   */
   const textSizePx = getStrokeWidth()
     * TEXT_SIZE_FACTOR;
 
-  /** Built before listener wiring so the keydown closure can capture the same node. */
+  /**
+   * Built before listener wiring so the keydown closure can capture the same node.
+   */
   const input = createTextInput({
     insetInlineStart: `${String(position[0]
       * PERCENT_SCALE,)}%`,
@@ -155,8 +188,11 @@ export function placeTextInput(position: NormalizedPoint,): void {
     finalizeActiveInput,
   );
 
-  textState.activeInput = input;
-  textState.layerElement
+  textState.activeInput = {
+    kind: 'editing',
+    input,
+  };
+  layer
     .append(input,);
   /**
    * preventScroll stops the browser from scrolling the overflow-hidden
@@ -174,11 +210,14 @@ export function placeTextInput(position: NormalizedPoint,): void {
  * ```
  */
 export function discardActiveInput(): void {
-  if (textState.activeInput
-    !== ABSENT) {
-    textState.activeInput
+  /**
+   * Captured so the discriminant check and removal act on one input.
+   */
+  const active = textState.activeInput;
+  if (active.kind === 'editing') {
+    active.input
       .remove();
-    textState.activeInput = ABSENT;
+    textState.activeInput = { kind: 'idle', };
   }
 }
 
@@ -192,8 +231,11 @@ export function discardActiveInput(): void {
  */
 export function clearTextEntries(): void {
   discardActiveInput();
-  if (textState.layerElement
-    !== ABSENT)
-    textState.layerElement
+  /**
+   * Captured so the presence check and clear read one layer reference.
+   */
+  const layer = textState.layerElement;
+  if (layer !== undefined)
+    layer
       .replaceChildren();
 }

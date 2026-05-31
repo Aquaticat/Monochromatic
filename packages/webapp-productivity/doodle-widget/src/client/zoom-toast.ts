@@ -6,21 +6,31 @@
  * non-modal overlay without blocking interaction.
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
-/** Duration in milliseconds before the toast auto-hides */
+/**
+ * Duration in milliseconds before the toast auto-hides
+ */
 const TOAST_DURATION_MS = 3_000;
 
 /**
- * Timer id container for the auto-dismiss timeout.
+ * Auto-dismiss timer slot.
+ *
+ * `idle` when no dismissal is scheduled; `pending` while a timeout is armed,
+ * carrying its handle so a re-show can cancel it before re-arming.
+ */
+type ToastTimer =
+  | { readonly kind: 'idle'; }
+  | {
+    readonly kind: 'pending';
+    readonly id: ReturnType<typeof setTimeout>;
+  };
+
+/**
+ * Auto-dismiss timer container.
  *
  * Stored as an object property so module-root state stays in a `const`
  * container (`no-module-root-let` would otherwise reject a top-level `let`).
  */
-const timerState: { id: Maybe<ReturnType<typeof setTimeout>>; } = { id: ABSENT, };
+const timerState: { current: ToastTimer; } = { current: { kind: 'idle', }, };
 
 /**
  * Shows the zoom instruction toast, auto-hiding after a delay.
@@ -35,17 +45,21 @@ const timerState: { id: Maybe<ReturnType<typeof setTimeout>>; } = { id: ABSENT, 
  * ```
  */
 export function showZoomToast(toast: HTMLElement,): void {
-  if (timerState.id
-    !== ABSENT) {
-    clearTimeout(timerState.id,);
-    timerState.id = ABSENT;
-  }
+  /**
+   * Captured before re-arming so a still-pending timeout is cancelled first.
+   */
+  const pending = timerState.current;
+  if (pending.kind === 'pending')
+    clearTimeout(pending.id,);
   toast.showPopover();
-  timerState.id = setTimeout(
-    function hideToast(): void {
-      toast.hidePopover();
-      timerState.id = ABSENT;
-    },
-    TOAST_DURATION_MS,
-  );
+  timerState.current = {
+    kind: 'pending',
+    id: setTimeout(
+      function hideToast(): void {
+        toast.hidePopover();
+        timerState.current = { kind: 'idle', };
+      },
+      TOAST_DURATION_MS,
+    ),
+  };
 }

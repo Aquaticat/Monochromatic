@@ -15,15 +15,13 @@ import {
   getStrokeColor,
   getStrokeWidth,
 } from './drawing-config.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { renderStrokes, } from './stroke-renderer.ts';
 
 //region Types
 
-/** Normalized coordinate pair [x, y] in [0..1] range */
+/**
+ * Normalized coordinate pair [x, y] in [0..1] range
+ */
 export type NormalizedPoint = readonly [
   number,
   number,
@@ -42,11 +40,17 @@ export type NormalizedPoint = readonly [
  * ```
  */
 export type StrokeData = {
-  /** Sequence of normalized points forming one continuous stroke */
+  /**
+   * Sequence of normalized points forming one continuous stroke
+   */
   readonly points: readonly NormalizedPoint[];
-  /** CSS color string captured at stroke creation */
+  /**
+   * CSS color string captured at stroke creation
+   */
   readonly color: string;
-  /** Stroke width in CSS pixels captured at stroke creation */
+  /**
+   * Stroke width in CSS pixels captured at stroke creation
+   */
   readonly width: number;
 };
 
@@ -59,13 +63,34 @@ export type StrokeData = {
  * lands in the stroke list.
  */
 type DrawingStroke = {
-  /** Mutable point buffer appended to as the gesture progresses */
+  /**
+   * Mutable point buffer appended to as the gesture progresses
+   */
   points: NormalizedPoint[];
-  /** CSS color string captured at stroke creation */
+  /**
+   * CSS color string captured at stroke creation
+   */
   readonly color: string;
-  /** Stroke width in CSS pixels captured at stroke creation */
+  /**
+   * Stroke width in CSS pixels captured at stroke creation
+   */
   readonly width: number;
 };
+
+/**
+ * Active drawing gesture state.
+ *
+ * `idle` between strokes; `drawing` while a pointer gesture appends points to
+ * the in-progress {@link DrawingStroke}, which is the same object held in the
+ * stroke list. Folds the former separate `current` slot and `drawing` flag into
+ * one value so a present stroke and an active gesture cannot disagree.
+ */
+type DrawingMode =
+  | { readonly kind: 'idle'; }
+  | {
+    readonly kind: 'drawing';
+    readonly stroke: DrawingStroke;
+  };
 
 /**
  * Line segment between two normalized points for incremental rendering.
@@ -73,16 +98,20 @@ type DrawingStroke = {
  * @example
  * ```ts
  * const segment = continueStroke(point);
- * if (segment !== ABSENT) {
+ * if (segment !== NO_SEGMENT) {
  *   ctx.moveTo(segment.from[0] * width, segment.from[1] * height);
  *   ctx.lineTo(segment.to[0] * width, segment.to[1] * height);
  * }
  * ```
  */
 export type StrokeSegment = {
-  /** Starting point of the segment */
+  /**
+   * Starting point of the segment
+   */
   readonly from: NormalizedPoint;
-  /** Ending point of the segment */
+  /**
+   * Ending point of the segment
+   */
   readonly to: NormalizedPoint;
 };
 
@@ -97,16 +126,17 @@ export type StrokeSegment = {
  * container (`no-module-root-let` would otherwise reject top-level `let`).
  */
 const drawingState: {
-  /** All completed and in-progress strokes */
+  /**
+   * All completed and in-progress strokes
+   */
   strokes: StrokeData[];
-  /** Stroke currently being drawn, or {@link ABSENT} when idle */
-  current: Maybe<DrawingStroke>;
-  /** Whether a pointer-driven drawing gesture is active */
-  drawing: boolean;
+  /**
+   * Active drawing gesture, or `idle` between strokes
+   */
+  mode: DrawingMode;
 } = {
   strokes: [],
-  current: ABSENT,
-  drawing: false,
+  mode: { kind: 'idle', },
 };
 
 //endregion State
@@ -179,7 +209,9 @@ export function normalizePointer({
   readonly event: PointerEvent;
   readonly canvas: HTMLCanvasElement;
 },): NormalizedPoint {
-  /** Layout snapshot so both normalization terms share one DOM read. */
+  /**
+   * Layout snapshot so both normalization terms share one DOM read.
+   */
   const rect = canvas.getBoundingClientRect();
   return [
     (event.clientX
@@ -246,15 +278,34 @@ export function denormalizePoint({
  * ```
  */
 export function startStroke(point: NormalizedPoint,): void {
-  drawingState.drawing = true;
-  drawingState.current = {
+  /**
+   * Live stroke shared by reference: pushed onto the list and tracked as the active gesture.
+   */
+  const stroke: DrawingStroke = {
     points: [point,],
     color: getStrokeColor(),
     width: getStrokeWidth(),
   };
+  drawingState.mode = {
+    kind: 'drawing',
+    stroke,
+  };
   drawingState.strokes
-    .push(drawingState.current,);
+    .push(stroke,);
 }
+
+/**
+ * Absence marker returned by {@link continueStroke} when no drawing gesture is
+ * active; never a {@link StrokeSegment}, so the move handler skips rendering.
+ *
+ * @example
+ * ```ts
+ * const segment = continueStroke([0.6, 0.6]);
+ * if (segment !== NO_SEGMENT)
+ *   draw(segment);
+ * ```
+ */
+export const NO_SEGMENT: unique symbol = Symbol('doodle-widget/no-segment',);
 
 /**
  * Appends a point to the current stroke.
@@ -262,24 +313,29 @@ export function startStroke(point: NormalizedPoint,): void {
  * @param point - coordinate to append in normalized [0..1] space
  *
  * @returns segment from previous to current point for incremental
- *   rendering, or {@link ABSENT} if no drawing gesture is active
+ *   rendering, or {@link NO_SEGMENT} if no drawing gesture is active
  *
  * @example
  * ```ts
  * const segment = continueStroke([0.6, 0.6]);
  * ```
  */
-export function continueStroke(point: NormalizedPoint,): Maybe<StrokeSegment> {
-  if ((!drawingState.drawing) || (drawingState.current
-    === ABSENT))
-    return ABSENT;
-  /** Last sample retained so the returned segment can describe an incremental redraw. */
-  const previous = drawingState.current
+export function continueStroke(point: NormalizedPoint,): StrokeSegment | typeof NO_SEGMENT {
+  /**
+   * Captured so the discriminant check and point appends act on one gesture.
+   */
+  const {mode} = drawingState;
+  if (mode.kind !== 'drawing')
+    return NO_SEGMENT;
+  /**
+   * Last sample retained so the returned segment can describe an incremental redraw.
+   */
+  const previous = mode.stroke
     .points
     .at(-1,);
   if (previous === undefined)
-    return ABSENT;
-  drawingState.current
+    return NO_SEGMENT;
+  mode.stroke
     .points
     .push(point,);
   return {
@@ -297,8 +353,7 @@ export function continueStroke(point: NormalizedPoint,): Maybe<StrokeSegment> {
  * ```
  */
 export function endStroke(): void {
-  drawingState.drawing = false;
-  drawingState.current = ABSENT;
+  drawingState.mode = { kind: 'idle', };
 }
 
 /**
@@ -311,7 +366,7 @@ export function endStroke(): void {
  */
 export function clearStrokes(): void {
   drawingState.strokes = [];
-  drawingState.current = ABSENT;
+  drawingState.mode = { kind: 'idle', };
 }
 
 /**
@@ -328,8 +383,7 @@ export function clearStrokes(): void {
  */
 export function setStrokes(newStrokes: readonly StrokeData[],): void {
   drawingState.strokes = [...newStrokes,];
-  drawingState.current = ABSENT;
-  drawingState.drawing = false;
+  drawingState.mode = { kind: 'idle', };
 }
 
 /**

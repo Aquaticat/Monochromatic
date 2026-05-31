@@ -13,6 +13,7 @@ import {
 import {
   continueStroke,
   endStroke,
+  NO_SEGMENT,
   type NormalizedPoint,
   normalizePointer,
   redraw,
@@ -20,14 +21,23 @@ import {
 } from './drawing.ts';
 import { eraseStrokesAt, } from './eraser-strokes.ts';
 import { eraseTextAt, } from './eraser-text.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
 import { placeTextInput, } from './text.ts';
 
 export type { ToolMode, } from './pointer-handler-deps.ts';
+
+/**
+ * Previous eraser sample within an erase gesture.
+ *
+ * `none` on the first event (no prior point to sweep from); `at` once a sample
+ * exists, carrying it so the next tick can test the eraser travel segment.
+ */
+type PrevErasePoint =
+  | { readonly kind: 'none'; }
+  | {
+    readonly kind: 'at';
+    readonly point: NormalizedPoint;
+  };
 
 /**
  * Attaches pointerdown, pointermove, pointerup, and pointercancel
@@ -41,7 +51,9 @@ export type { ToolMode, } from './pointer-handler-deps.ts';
  * ```
  */
 export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
-  /** Destructured up front so each handler closure captures the same handles. */
+  /**
+   * Destructured up front so each handler closure captures the same handles.
+   */
   const {
     canvas,
     ctx,
@@ -60,23 +72,27 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   const eraseState: {
     erasing: boolean;
     erasedInGesture: boolean;
-    prevErasePoint: Maybe<NormalizedPoint>;
+    prevErasePoint: PrevErasePoint;
   } = {
     erasing: false,
     erasedInGesture: false,
-    prevErasePoint: ABSENT,
+    prevErasePoint: { kind: 'none', },
   };
 
   canvas.addEventListener(
     'pointerdown',
     function handlePointerDown(event: PointerEvent,): void {
-      /** Captured once so branches downstream do not re-invoke the getter. */
+      /**
+       * Captured once so branches downstream do not re-invoke the getter.
+       */
       const mode = getToolMode();
       if (mode === 'zoom')
         return;
 
       if (mode === 'text') {
-        /** Suppress default focus-management so the created input keeps focus */
+        /**
+         * Suppress default focus-management so the created input keeps focus
+         */
         event.preventDefault();
         placeTextInput(normalizePointer({
           event,
@@ -86,12 +102,16 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       }
 
       canvas.setPointerCapture(event.pointerId,);
-      /** Canvas dimensions captured at gesture start so handlers stay consistent if the layout shifts. */
+      /**
+       * Canvas dimensions captured at gesture start so handlers stay consistent if the layout shifts.
+       */
       const {
         cw,
         ch,
       } = getCanvasSize();
-      /** Normalized pointer reused for the initial draw/erase action and stored as the previous-eraser sample. */
+      /**
+       * Normalized pointer reused for the initial draw/erase action and stored as the previous-eraser sample.
+       */
       const point = normalizePointer({
         event,
         canvas,
@@ -100,18 +120,20 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'erase') {
         eraseState.erasing = true;
         eraseState.erasedInGesture = false;
-        eraseState.prevErasePoint = ABSENT;
-        /** Tracks whether any stroke geometry was removed in this tick so the redraw is conditional. */
+        eraseState.prevErasePoint = { kind: 'none', };
+        /**
+         * Tracks whether any stroke geometry was removed in this tick so the redraw is conditional.
+         */
         const strokeErased = eraseStrokesAt({
           point,
-          previousPoint: ABSENT,
           cw,
           ch,
         },);
-        /** Companion flag for text removal so snapshot pushes happen only when something actually changed. */
+        /**
+         * Companion flag for text removal so snapshot pushes happen only when something actually changed.
+         */
         const textErased = eraseTextAt({
           point,
-          previousPoint: ABSENT,
           cw,
           ch,
           textLayer,
@@ -125,7 +147,10 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
             ch,
           },);
         }
-        eraseState.prevErasePoint = point;
+        eraseState.prevErasePoint = {
+          kind: 'at',
+          point,
+        };
         return;
       }
 
@@ -136,17 +161,23 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointermove',
     function handlePointerMove(event: PointerEvent,): void {
-      /** Captured once so branches downstream do not re-invoke the getter. */
+      /**
+       * Captured once so branches downstream do not re-invoke the getter.
+       */
       const mode = getToolMode();
       if ((mode === 'zoom') || (mode === 'text'))
         return;
 
-      /** Canvas dimensions captured per move so eraser math stays in sync with the live layout. */
+      /**
+       * Canvas dimensions captured per move so eraser math stays in sync with the live layout.
+       */
       const {
         cw,
         ch,
       } = getCanvasSize();
-      /** Normalized pointer reused for both draw and erase paths in this tick. */
+      /**
+       * Normalized pointer reused for both draw and erase paths in this tick.
+       */
       const point = normalizePointer({
         event,
         canvas,
@@ -155,17 +186,25 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'erase') {
         if (!eraseState.erasing)
           return;
-        /** Tracks whether stroke geometry was removed this tick so the redraw is conditional. */
+        /**
+         * Captured once so both erasers receive the same previous-sample shape.
+         */
+        const prev = eraseState.prevErasePoint;
+        /**
+         * Tracks whether stroke geometry was removed this tick so the redraw is conditional.
+         */
         const strokeErased = eraseStrokesAt({
           point,
-          previousPoint: eraseState.prevErasePoint,
+          ...(prev.kind === 'at' ? { previousPoint: prev.point, } : {}),
           cw,
           ch,
         },);
-        /** Companion flag for text removal so snapshot pushes happen only when something actually changed. */
+        /**
+         * Companion flag for text removal so snapshot pushes happen only when something actually changed.
+         */
         const textErased = eraseTextAt({
           point,
-          previousPoint: eraseState.prevErasePoint,
+          ...(prev.kind === 'at' ? { previousPoint: prev.point, } : {}),
           cw,
           ch,
           textLayer,
@@ -179,13 +218,18 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
             ch,
           },);
         }
-        eraseState.prevErasePoint = point;
+        eraseState.prevErasePoint = {
+          kind: 'at',
+          point,
+        };
         return;
       }
 
-      /** Line segment to draw incrementally, or absent if not drawing */
+      /**
+       * Line segment to draw incrementally, or absent if not drawing
+       */
       const segment = continueStroke(point,);
-      if (segment === ABSENT)
+      if (segment === NO_SEGMENT)
         return;
       ctx.strokeStyle = getStrokeColor();
       ctx.lineWidth = getStrokeWidth();
@@ -208,18 +252,22 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
     },
   );
 
-  /** Resets draw/erase gesture state at pointer release */
+  /**
+   * Resets draw/erase gesture state at pointer release
+   */
   function endGesture(): void {
     endStroke();
     eraseState.erasing = false;
     eraseState.erasedInGesture = false;
-    eraseState.prevErasePoint = ABSENT;
+    eraseState.prevErasePoint = { kind: 'none', };
   }
 
   canvas.addEventListener(
     'pointerup',
     function handlePointerUp(): void {
-      /** Captured once so the snapshot decision and the early return share one tool reading. */
+      /**
+       * Captured once so the snapshot decision and the early return share one tool reading.
+       */
       const mode = getToolMode();
       if (mode === 'zoom')
         return;

@@ -6,10 +6,18 @@
  * (vector embedding) and raster export (canvas drawing).
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
+/**
+ * Absence marker for {@link measureSvgOverlay} meaning the overlay holds no
+ * `<svg>` element; never a measurement object, so consumers skip embedding.
+ *
+ * @example
+ * ```ts
+ * const info = measureSvgOverlay({ container, overlay });
+ * if (info !== NO_SVG_OVERLAY)
+ *   ctx.drawImage(img, info.offsetX, info.offsetY, info.width, info.height);
+ * ```
+ */
+export const NO_SVG_OVERLAY: unique symbol = Symbol('doodle-widget/no-svg-overlay',);
 
 /**
  * Measured and cloned SVG overlay data.
@@ -17,21 +25,31 @@ import {
  * @example
  * ```ts
  * const info = measureSvgOverlay({ container, overlay });
- * if (info !== ABSENT) {
+ * if (info !== NO_SVG_OVERLAY) {
  *   ctx.drawImage(img, info.offsetX, info.offsetY, info.width, info.height);
  * }
  * ```
  */
 export type SvgOverlayInfo = {
-  /** Deep clone of the SVG element */
+  /**
+   * Deep clone of the SVG element
+   */
   readonly clone: SVGSVGElement;
-  /** Horizontal offset from the container's left edge */
+  /**
+   * Horizontal offset from the container's left edge
+   */
   readonly offsetX: number;
-  /** Vertical offset from the container's top edge */
+  /**
+   * Vertical offset from the container's top edge
+   */
   readonly offsetY: number;
-  /** Rendered width of the SVG in CSS pixels */
+  /**
+   * Rendered width of the SVG in CSS pixels
+   */
   readonly width: number;
-  /** Rendered height of the SVG in CSS pixels */
+  /**
+   * Rendered height of the SVG in CSS pixels
+   */
   readonly height: number;
 };
 
@@ -42,7 +60,7 @@ export type SvgOverlayInfo = {
  *
  * @param overlay - SVG overlay div holding the background SVG element
  *
- * @returns measurement data with a cloned SVG, or {@link ABSENT} if no SVG is present
+ * @returns measurement data with cloned SVG, or {@link NO_SVG_OVERLAY} when the overlay holds no SVG
  *
  * @example
  * ```ts
@@ -55,18 +73,26 @@ export function measureSvgOverlay({
 }: {
   readonly container: HTMLDivElement;
   readonly overlay: HTMLDivElement;
-},): Maybe<SvgOverlayInfo> {
-  /** SVG element from the overlay, if present */
+},): SvgOverlayInfo | typeof NO_SVG_OVERLAY {
+  /**
+   * SVG element from the overlay, if present
+   */
   const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
   if (svgElement === null)
-    return ABSENT;
+    return NO_SVG_OVERLAY;
 
-  /** Container position for offset calculation */
+  /**
+   * Container position for offset calculation
+   */
   const containerRect = container.getBoundingClientRect();
-  /** Rendered SVG position and dimensions */
+  /**
+   * Rendered SVG position and dimensions
+   */
   const svgRect = svgElement.getBoundingClientRect();
 
-  /** Detached copy so the caller can embed the SVG without mutating the live DOM node. */
+  /**
+   * Detached copy so the caller can embed the SVG without mutating the live DOM node.
+   */
   const cloneNode = svgElement.cloneNode(true,);
   if (!(cloneNode instanceof SVGSVGElement))
     throw new Error('SVG clone is not an SVGSVGElement',);

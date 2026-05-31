@@ -14,18 +14,22 @@ import {
   getStrokes,
   type StrokeData,
 } from './drawing.ts';
-import { ABSENT, } from './maybe.ts';
 import {
   LETTER_HEIGHT,
   LETTER_WIDTH,
 } from './page-size.ts';
 import { requireOffscreenContext, } from './require-context.ts';
 import { renderStrokes, } from './stroke-renderer.ts';
-import { measureSvgOverlay, } from './svg-overlay-measure.ts';
+import {
+  measureSvgOverlay,
+  NO_SVG_OVERLAY,
+} from './svg-overlay-measure.ts';
 
 //region Types
 
-/** Supported export format */
+/**
+ * Supported export format
+ */
 export type ExportFormat = 'pdf' | 'png' | 'svg';
 
 /**
@@ -38,13 +42,21 @@ export type ExportFormat = 'pdf' | 'png' | 'svg';
  * ```
  */
 export type ExportDeps = {
-  /** Page element for SVG overlay measurement and coordinate reference */
+  /**
+   * Page element for SVG overlay measurement and coordinate reference
+   */
   readonly container: HTMLDivElement;
-  /** SVG overlay div holding the background SVG element */
+  /**
+   * SVG overlay div holding the background SVG element
+   */
   readonly overlay: HTMLDivElement;
-  /** Canvas element with rendered strokes */
+  /**
+   * Canvas element with rendered strokes
+   */
   readonly drawCanvas: HTMLCanvasElement;
-  /** Div containing positioned text input elements */
+  /**
+   * Div containing positioned text input elements
+   */
   readonly textLayer: HTMLDivElement;
 };
 
@@ -148,21 +160,29 @@ export async function renderSvgOverlayToContext(
     readonly exportScale?: number;
   },
 ): Promise<void> {
-  /** Layout snapshot of the overlay; an absent result short-circuits when there is nothing to embed. */
+  /**
+   * Layout snapshot of the overlay; an absent result short-circuits when there is nothing to embed.
+   */
   const info = measureSvgOverlay({
     container,
     overlay,
   },);
-  if (info === ABSENT)
+  if (info === NO_SVG_OVERLAY)
     return;
 
-  /** Scale from rendered page coordinates to export coordinates */
+  /**
+   * Scale from rendered page coordinates to export coordinates
+   */
   const es = exportScale ?? 1;
 
-  /** Rasterization scale factor for the SVG Image */
+  /**
+   * Rasterization scale factor for the SVG Image
+   */
   const scale = imageScale ?? 1;
 
-  /** Export-space dimensions of the SVG overlay */
+  /**
+   * Export-space dimensions of the SVG overlay
+   */
   const exportWidth = info.width
     * es;
   /**
@@ -171,7 +191,9 @@ export async function renderSvgOverlayToContext(
   const exportHeight = info.height
     * es;
 
-  /** Set explicit dimensions so the Image decodes at the correct size */
+  /**
+   * Set explicit dimensions so the Image decodes at the correct size
+   */
   info.clone
     .setAttribute(
     'width',
@@ -182,11 +204,17 @@ export async function renderSvgOverlayToContext(
     'height',
     String(exportHeight * scale,),
   );
-  /** Re-serialized SVG markup encoded as a data URL for Image loading */
+  /**
+   * Re-serialized SVG markup encoded as a data URL for Image loading
+   */
   const svgMarkup = new XMLSerializer().serializeToString(info.clone,);
-  /** Inline data URL so the SVG can be decoded without a network round-trip. */
+  /**
+   * Inline data URL so the SVG can be decoded without a network round-trip.
+   */
   const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup,)}`;
-  /** `Image` used to rasterize the SVG into the offscreen 2D context. */
+  /**
+   * `Image` used to rasterize the SVG into the offscreen 2D context.
+   */
   const img = new Image();
   img.src = dataUrl;
   await img.decode();
@@ -241,28 +269,40 @@ export async function renderBaseCanvas({
   canvas: OffscreenCanvas;
   ctx: OffscreenCanvasRenderingContext2D;
 }> {
-  /** Letter dimensions resolved once so background and overlay agree on the canvas size. */
+  /**
+   * Letter dimensions resolved once so background and overlay agree on the canvas size.
+   */
   const {
     cw,
     ch,
   } = getExportSize();
 
-  /** Scale from rendered page size to letter export size */
+  /**
+   * Scale from rendered page size to letter export size
+   */
   const {
     cw: renderedCw,
   } = getRenderedSize(container,);
-  /** Conversion factor so the overlay rasterizes at letter scale regardless of viewport zoom. */
+  /**
+   * Conversion factor so the overlay rasterizes at letter scale regardless of viewport zoom.
+   */
   const exportScale = cw / renderedCw;
 
-  /** Scale factor for high-DPI rendering (defaults to 1) */
+  /**
+   * Scale factor for high-DPI rendering (defaults to 1)
+   */
   const scale = imageScale ?? 1;
 
-  /** Offscreen canvas sized for the high-DPI variant so PDFs stay sharp. */
+  /**
+   * Offscreen canvas sized for the high-DPI variant so PDFs stay sharp.
+   */
   const exportCanvas = new OffscreenCanvas(
     cw * scale,
     ch * scale,
   );
-  /** Drawing context retained alongside the canvas so the caller can paint on top. */
+  /**
+   * Drawing context retained alongside the canvas so the caller can paint on top.
+   */
   const ctx = requireOffscreenContext(exportCanvas,);
 
   if (scale !== 1) {
@@ -331,9 +371,13 @@ export function triggerDownload({
   readonly blob: Blob;
   readonly filename: string;
 },): void {
-  /** Temporary object URL revoked once the anchor click has fired. */
+  /**
+   * Temporary object URL revoked once the anchor click has fired.
+   */
   const url = URL.createObjectURL(blob,);
-  /** Synthetic anchor synthesizes the click so the browser surfaces a save dialog. */
+  /**
+   * Synthetic anchor synthesizes the click so the browser surfaces a save dialog.
+   */
   const link = document.createElement('a',);
   link.href = url;
   link.download = filename;
