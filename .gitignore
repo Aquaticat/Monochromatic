@@ -1,3 +1,6 @@
+# Personal backup ignore config
+.kopiaignore
+
 node_modules
 .jj
 .dist
