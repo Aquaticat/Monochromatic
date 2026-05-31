@@ -224,6 +224,12 @@ Leaf parsers (`parseGithubShorthand`, `parseGithubUrl`, `pinnedOrLatest`, `extra
 Update the unit tests importing `ABSENT`. Delete `maybe.ts`.
 Verify with tests plus `agent-browser` on the deck.gl scatter and filter controls.
 
+Do not reuse the `tsdoc` technique here.
+The `tsdoc` triage was uniform bucket 3, so a per-file `replace_all 'ABSENT'` into one symbol was safe.
+deps-cube is the opposite: a single file mixes bucket-1 `?:` param conversions, seam conversions to `?:`/`undefined`, and descriptive symbols on the leaf parsers only.
+A blanket `replace_all 'ABSENT'` is actively wrong here; it must be per-site triage.
+Convert each seam and param by hand, give only the genuine leaf returns a symbol, and re-run `lint:types` after each file (the seam check: a renamed symbol leaking into a stale `=== ABSENT` surfaces as a tsgo "no overlap" error).
+
 ### doodle-widget (PENDING)
 
 `packages/webapp-productivity/doodle-widget`.
