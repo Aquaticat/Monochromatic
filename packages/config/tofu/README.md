@@ -84,6 +84,24 @@ All five firewalls must be applied to the target server for the allowlist to be 
 Set `firewall_server_ids` or `firewall_label_selectors` to let OpenTofu attach
 all generated firewalls without using the Hetzner web UI.
 
+### Balancing decision
+
+Rules are balanced by effective-rule cost, not by traffic category.
+Hetzner counts one rule with many source or destination CIDRs as many effective rules,
+so descriptive firewalls such as `web_out` and `ubuntu_http` can exceed the 500-effective-rule cap
+while other firewalls still have spare capacity.
+
+The balancer sorts generated rules by effective-rule cost, heaviest first,
+then assigns them in a snake pattern across the five firewalls:
+`tofu-0`, `tofu-1`, `tofu-2`, `tofu-3`, `tofu-4`, `tofu-4`, `tofu-3`, `tofu-2`, `tofu-1`, `tofu-0`.
+This keeps large rules from accumulating on one firewall while staying deterministic and readable in HCL.
+
+A true greedy bin-packer could produce a marginally tighter distribution,
+but it needs per-bucket running totals.
+That stateful algorithm is simple in TypeScript or Python and awkward in declarative HCL.
+The snake pattern keeps the implementation local to `hetzner.tf` and provides enough headroom
+without adding another helper script to the OpenTofu plan path.
+
 ### Inbound
 
 - HTTP (80): from all
