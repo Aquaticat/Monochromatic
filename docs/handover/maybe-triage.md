@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec` complete; 6 targets remaining.
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten` complete; 5 targets remaining.
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -111,13 +111,19 @@ Triage correction: scan-importer's `let found = ABSENT` is the bucket-3 return a
 
 Verification: `mise run //packages/rolldown-plugins/import-attributes:lint` passes (0 warnings/errors). The two unit test files (run with `bun <file>` since there is no `test:unit` task) pass, including the plugin behavioral test that transforms static/dynamic/re-export imports and ignores imports without a `with` clause (exercises the `NO_TRANSFORM` seam and the `NO_ATTR_TYPE` path).
 
-### catalog-tighten (PENDING)
+### catalog-tighten (COMPLETE)
 
 `packages/dev-script/catalog-tighten`.
-`index.ts` `version: Maybe<string>` stored field is bucket 1 (its own TSDoc confesses the sentinel only exists to stop `.map` widening); resolve to `version?: string`.
-`version-read.ts` `let bestVersion = ABSENT` is bucket 2 (reduce or filter-then-first).
-`parseRange` / `parseCatalogEntry` / `readVersionFromPackageJson` are bucket 3.
-Delete `maybe.ts`.
+The one bucket-1 reshape in the set, plus a propagated bucket-3 purpose.
+
+- Bucket 1: `index.ts` `ProbedCandidate.version: Maybe<string>` became `version?: string`. The `.map` builds `{ name }` or `{ name, version }` under a guard, converting `readInstalledVersion`'s return-sentinel at the seam; `.find`/guard narrow with `!== undefined`. This removes the `.map`-widening problem the old TSDoc described, rather than working around it.
+- Bucket 3 symbols: `NOT_A_RANGE` (`version-parse.ts`, `parseRange`); `NO_MANIFEST_VERSION` (`version-read.ts`, `readVersionFromPackageJson`); `NO_INSTALLED_VERSION` (`version-read.ts`, `readVersionFromBunStore`, propagated by `readInstalledVersion` in `version-resolve.ts` and consumed at the `index.ts` seam); `MALFORMED_ENTRY` (`yaml-parse.ts`, local). The `version.ts` barrel re-exports `NOT_A_RANGE` and `NO_INSTALLED_VERSION` for `index.ts`.
+- Triage correction: `version-read.ts` `let bestVersion = ABSENT` is a bucket-3-return accumulator (returned by `readVersionFromBunStore`; helper-shape allowlist permits the `let`), not bucket 2 as the issue speculated.
+- `version-resolve.ts` imports `NO_INSTALLED_VERSION` as `type` (used only in `typeof` for the return annotation; `typeof` works on a type-only import, confirmed by tsgo).
+- `src/maybe.ts`: deleted.
+
+Verification: `:lint` (0/0) and `:test:unit` pass. `--dry-run` against the real workspace runs cleanly; `readInstalledVersion` confirmed to resolve present packages (`oxlint` 1.67.0, `typescript` 6.0.3) and return `NO_INSTALLED_VERSION` for absent ones, so the bucket-1 reshape preserves behavior.
+Pre-existing, out-of-scope observation: the dry-run reports all 118 catalog entries "Not found" because `yaml-parse.ts` `unquote` strips only double quotes while `pnpm-workspace.yaml` uses single-quoted keys; every probed name keeps literal quotes and never resolves. This predates #214 and was not changed.
 
 ### page-weight (PENDING)
 

@@ -11,27 +11,37 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { isStrictlyGreater, } from './version-parse.ts';
 
 //region Version reading
+
+/**
+ * Sentinel returned by {@link readVersionFromPackageJson} when a manifest is
+ * missing, unreadable, or has no `version` field. A `unique symbol`; callers
+ * narrow with `=== NO_MANIFEST_VERSION`.
+ */
+export const NO_MANIFEST_VERSION: unique symbol = Symbol('catalog-tighten/no-manifest-version',);
+
+/**
+ * Sentinel returned by {@link readVersionFromBunStore} (and propagated by
+ * `readInstalledVersion`) when no installed version is found. A `unique symbol`;
+ * callers narrow with `=== NO_INSTALLED_VERSION`.
+ */
+export const NO_INSTALLED_VERSION: unique symbol = Symbol('catalog-tighten/no-installed-version',);
 
 /**
  * Reads the `version` field from a `package.json` file path.
  *
  * @param pkgJsonPath - absolute path to a package.json file
  *
- * @returns version string, or {@link ABSENT} if file does not exist or has no version
+ * @returns version string, or {@link NO_MANIFEST_VERSION} if file does not exist or has no version
  *
  * @example
  * ```ts
  * readVersionFromPackageJson("/path/to/node_modules/oxlint/package.json") // "0.21.0"
  * ```
  */
-export function readVersionFromPackageJson(pkgJsonPath: string,): Maybe<string> {
+export function readVersionFromPackageJson(pkgJsonPath: string,): string | typeof NO_MANIFEST_VERSION {
   try {
     /** Raw `package.json` text read from disk; deliberately read synchronously so callers stay sync. */
     const content = readFileSync(
@@ -41,10 +51,10 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): Maybe<string> 
     /** Parsed manifest narrowed to the only field this helper consults: `version`. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON structure from package.json is well-known
     const parsed = JSON.parse(content,) as { version?: string; };
-    return parsed.version ?? ABSENT;
+    return parsed.version ?? NO_MANIFEST_VERSION;
   }
   catch {
-    return ABSENT;
+    return NO_MANIFEST_VERSION;
   }
 }
 
@@ -58,7 +68,7 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): Maybe<string> 
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
- * @returns installed version string, or {@link ABSENT} if not found in store
+ * @returns installed version string, or {@link NO_INSTALLED_VERSION} if not found in store
  *
  * @example
  * ```ts
@@ -74,7 +84,7 @@ export function readVersionFromBunStore(
     readonly npmName: string;
     readonly monorepoRoot: string;
   },
-): Maybe<string> {
+): string | typeof NO_INSTALLED_VERSION {
   /** Top-level bun store directory holding all installed package versions for the monorepo. */
   const bunStoreDir = join(
     monorepoRoot,
@@ -101,7 +111,7 @@ export function readVersionFromBunStore(
     entries = readdirSync(bunStoreDir,);
   }
   catch {
-    return ABSENT;
+    return NO_INSTALLED_VERSION;
   }
 
   // Match directories starting with `prefix@` (the @ separates name from version)
@@ -118,16 +128,16 @@ export function readVersionFromBunStore(
 
   if (candidates.length
     === 0)
-    return ABSENT;
+    return NO_INSTALLED_VERSION;
 
   // Read package.json from each candidate and pick the highest version
   /**
    * Highest semver seen across the candidate store entries.
    *
-   * Accumulator pattern: starts {@link ABSENT} so the first valid candidate
-   * seeds the value, then later candidates only overwrite when strictly greater.
+   * Accumulator pattern: starts {@link NO_INSTALLED_VERSION} so the first valid
+   * candidate seeds the value, then later candidates only overwrite when strictly greater.
    */
-  let bestVersion: Maybe<string> = ABSENT;
+  let bestVersion: string | typeof NO_INSTALLED_VERSION = NO_INSTALLED_VERSION;
   for (const candidate of candidates) {
     /** Absolute path to the candidate's nested `package.json`; bun stores the real package under `node_modules/<name>`. */
     const pkgJsonPath = join(
@@ -137,11 +147,11 @@ export function readVersionFromBunStore(
       npmName,
       'package.json',
     );
-    /** Version of one candidate; `ABSENT` skips this iteration without touching `bestVersion`. */
+    /** Version of one candidate; `NO_MANIFEST_VERSION` skips this iteration without touching `bestVersion`. */
     const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
-    if (candidateVersion === ABSENT)
+    if (candidateVersion === NO_MANIFEST_VERSION)
       continue;
-    if ((bestVersion === ABSENT) || isStrictlyGreater({
+    if ((bestVersion === NO_INSTALLED_VERSION) || isStrictlyGreater({
       cataloged: bestVersion,
       installed: candidateVersion,
     },)) {

@@ -7,9 +7,11 @@
 
 export {
   isStrictlyGreater,
+  NOT_A_RANGE,
   type ParsedRange,
   parseRange,
 } from './version-parse.ts';
+export { NO_INSTALLED_VERSION, } from './version-read.ts';
 export {
   readInstalledVersion,
   resolveNpmNames,

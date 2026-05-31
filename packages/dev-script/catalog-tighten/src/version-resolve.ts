@@ -10,10 +10,8 @@ import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import {
+  type NO_INSTALLED_VERSION,
+  NO_MANIFEST_VERSION,
   readVersionFromBunStore,
   readVersionFromPackageJson,
 } from './version-read.ts';
@@ -161,7 +159,7 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
- * @returns installed version string, or {@link ABSENT} if not found
+ * @returns installed version string, or {@link NO_INSTALLED_VERSION} if not found
  *
  * @example
  * ```ts
@@ -176,7 +174,7 @@ export function readInstalledVersion(
     readonly npmName: string;
     readonly monorepoRoot: string;
   },
-): Maybe<string> {
+): string | typeof NO_INSTALLED_VERSION {
   // Try root node_modules first
   /** Expected hoisted location of the package's `package.json` directly under the monorepo root. */
   const rootPkgJson = join(
@@ -187,7 +185,7 @@ export function readInstalledVersion(
   );
   /** Version found at the hoisted root location, if any; short-circuits before slower fallbacks. */
   const version = readVersionFromPackageJson(rootPkgJson,);
-  if (version !== ABSENT)
+  if (version !== NO_MANIFEST_VERSION)
     return version;
 
   // Try resolving from monorepo root via createRequire
@@ -201,7 +199,7 @@ export function readInstalledVersion(
     const resolved = require.resolve(`${npmName}/package.json`,);
     /** Version read from the require-resolved `package.json`; second attempt after the hoisted lookup. */
     const rootVersion = readVersionFromPackageJson(resolved,);
-    if (rootVersion !== ABSENT)
+    if (rootVersion !== NO_MANIFEST_VERSION)
       return rootVersion;
   }
   catch {
@@ -222,7 +220,7 @@ export function readInstalledVersion(
       const resolved = require.resolve(`${npmName}/package.json`,);
       /** Version read via the workspace-anchored resolution; tried per package before falling through to the bun store. */
       const wsVersion = readVersionFromPackageJson(resolved,);
-      if (wsVersion !== ABSENT)
+      if (wsVersion !== NO_MANIFEST_VERSION)
         return wsVersion;
     }
     catch {

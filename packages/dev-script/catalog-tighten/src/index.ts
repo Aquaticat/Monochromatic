@@ -25,11 +25,9 @@ import {
 } from 'node:path';
 
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import {
   isStrictlyGreater,
+  NO_INSTALLED_VERSION,
+  NOT_A_RANGE,
   type ParsedRange,
   parseRange,
   readInstalledVersion,
@@ -58,15 +56,16 @@ type TightenResult = {
 /**
  * One npm-name probe paired with its resolved installed version.
  *
- * Annotating the probe shape keeps `version` as `Maybe<string>` instead of
- * letting the `.map` object literal widen the {@link ABSENT} sentinel to the
- * general `symbol` type, which would block the later `=== ABSENT` narrowing.
+ * `version` is an optional field (bucket 1): the probe omits it when the name
+ * did not resolve, so callers narrow with `version !== undefined` rather than a
+ * sentinel. The `readInstalledVersion` return-sentinel is converted to this
+ * optional shape at the `.map` seam below.
  */
 type ProbedCandidate = {
   /** npm name that was looked up in node_modules. */
   name: string;
-  /** Installed version, or {@link ABSENT} when this name did not resolve. */
-  version: Maybe<string>;
+  /** Installed version; omitted when this name did not resolve. */
+  version?: string;
 };
 
 //endregion Types
@@ -161,9 +160,9 @@ const summary: CatalogSummary = catalogEntries.reduce(
     acc,
     [name, value,],
   ): CatalogSummary {
-    /** Parsed range prefix and version, or `ABSENT` if not a `>=` range. */
+    /** Parsed range prefix and version, or `NOT_A_RANGE` if not a `>=` range. */
     const parsed = parseRange(value,);
-    if (parsed === ABSENT) {
+    if (parsed === NOT_A_RANGE) {
       console.info(`SKIP  ${name}: ${value} (not a >= range)`,);
       acc.skippedCount += 1;
       return acc;
@@ -177,21 +176,25 @@ const summary: CatalogSummary = catalogEntries.reduce(
     /** First npm name candidate whose installed version resolves. */
     const resolved = npmNames
       .map(function probeCandidate(candidate,): ProbedCandidate {
-        return {
-          name: candidate,
-          version: readInstalledVersion({
-            npmName: candidate,
-            monorepoRoot,
-          },),
-        };
+        /** Installed version for this candidate; `NO_INSTALLED_VERSION` when it did not resolve. */
+        const installed = readInstalledVersion({
+          npmName: candidate,
+          monorepoRoot,
+        },);
+        return installed === NO_INSTALLED_VERSION
+          ? { name: candidate, }
+          : {
+            name: candidate,
+            version: installed,
+          };
       },)
       .find(function hasVersion(r,) {
         return r.version
-          !== ABSENT;
+          !== undefined;
       },);
 
     if ((resolved === undefined) || (resolved.version
-      === ABSENT)) {
+      === undefined)) {
       console.warn(
         `MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ',)})`,
       );

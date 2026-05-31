@@ -5,11 +5,6 @@
  * for determining when catalog entries can be tightened.
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
 //region Types
 
 /**
@@ -32,8 +27,14 @@ export type ParsedRange = {
 const RANGE_TOKEN = '>=';
 
 /**
+ * Sentinel returned by {@link parseRange} when a catalog value is not a `>=`
+ * range. A `unique symbol`; callers narrow with `=== NOT_A_RANGE`.
+ */
+export const NOT_A_RANGE: unique symbol = Symbol('catalog-tighten/not-a-range',);
+
+/**
  * Extracts the `>=` version and any alias prefix from a catalog value.
- * Returns {@link ABSENT} for values that are not `>=` ranges.
+ * Returns {@link NOT_A_RANGE} for values that are not `>=` ranges.
  *
  * Linear: a single `indexOf` locates the leftmost `>=` (matching the lazy
  * `^.*?` semantics of the prior regex), and the substrings on either side
@@ -42,20 +43,20 @@ const RANGE_TOKEN = '>=';
  *
  * @param value - raw catalog entry value, e.g. `">=1.2.3"` or `"npm:@jsr/foo@>=1.0.0"`
  *
- * @returns parsed prefix and version, or {@link ABSENT}
+ * @returns parsed prefix and version, or {@link NOT_A_RANGE}
  *
  * @example
  * ```ts
  * parseRange(">=1.2.3") // { prefix: "", version: "1.2.3" }
  * parseRange("npm:\@jsr/zod__zod\@>=4.1.8") // { prefix: "npm:\@jsr/zod__zod\@", version: "4.1.8" }
- * parseRange("*") // ABSENT
+ * parseRange("*") // NOT_A_RANGE
  * ```
  */
-export function parseRange(value: string,): Maybe<ParsedRange> {
+export function parseRange(value: string,): ParsedRange | typeof NOT_A_RANGE {
   /** Leftmost index of `>=`; `-1` means the value isn't a `>=` range so the caller treats it as opaque. */
   const idx = value.indexOf(RANGE_TOKEN,);
   if (idx === (-1))
-    return ABSENT;
+    return NOT_A_RANGE;
   /** Substring before `>=`, preserved verbatim so the npm alias prefix round-trips into the rewritten range. */
   const prefix = value.slice(
     0,
@@ -66,7 +67,7 @@ export function parseRange(value: string,): Maybe<ParsedRange> {
     .length,);
   if (version.length
     === 0)
-    return ABSENT;
+    return NOT_A_RANGE;
   return {
     prefix,
     version,
