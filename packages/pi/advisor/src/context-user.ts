@@ -11,19 +11,21 @@ import type {
 import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 //region Public API
+
+/**
+ * Sentinel returned by {@link latestUserPromptExcerpt} when a branch carries no
+ * user message. A `unique symbol`; callers narrow with `=== NO_USER_PROMPT`.
+ */
+export const NO_USER_PROMPT: unique symbol = Symbol('advisor/no-user-prompt',);
 
 /**
  * Extract latest user prompt excerpt from a branch.
  *
  * @param branch - session branch entries
  *
- * @returns latest user prompt excerpt, if present
+ * @returns latest user prompt excerpt, or {@link NO_USER_PROMPT} when none
  *
  * @example
  * ```typescript
@@ -32,7 +34,7 @@ import {
  */
 export function latestUserPromptExcerpt(
   branch: readonly SessionEntry[],
-): Maybe<string> {
+): string | typeof NO_USER_PROMPT {
   /** Latest user message entry, if present. */
   const latestUserEntry = branch
     .toReversed()
@@ -40,7 +42,7 @@ export function latestUserPromptExcerpt(
       return isUserMessageEntry(entry,);
     },);
   if (latestUserEntry === undefined)
-    return ABSENT;
+    return NO_USER_PROMPT;
 
   /** Plain text extracted from user message content. */
   const text = userMessageText(latestUserEntry.message

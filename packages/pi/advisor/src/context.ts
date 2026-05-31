@@ -21,12 +21,11 @@ import {
   DEFAULT_CONTEXT_OVERHEAD_TOKENS,
   TOKEN_ESTIMATE_CHARS_PER_TOKEN,
 } from './constants.ts';
-import { latestUserPromptExcerpt, } from './context-user.ts';
 import {
-  ABSENT,
-  estimateAdvisorInputTokens,
-  type Maybe,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+  latestUserPromptExcerpt,
+  NO_USER_PROMPT,
+} from './context-user.ts';
+import { estimateAdvisorInputTokens, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -37,6 +36,14 @@ import type {
 
 /** Agent message type accepted by pi's LLM conversion helper. */
 type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
+
+/**
+ * Sentinel returned by {@link entryToMessage} / `filterMessage` when a session
+ * entry contributes no message to Advisor context (filtered Advisor artifact,
+ * current tool call, or empty content). A `unique symbol`; callers narrow with
+ * `=== MESSAGE_EXCLUDED`.
+ */
+const MESSAGE_EXCLUDED: unique symbol = Symbol('advisor/message-excluded',);
 
 /** Options for building Advisor context. */
 export type BuildAdvisorContextOptions = {
@@ -92,7 +99,7 @@ export function buildAdvisorContext(
       },);
     },)
     .filter(function isIncludedMessage(message,): message is AdvisorAgentMessage {
-      return message !== ABSENT;
+      return message !== MESSAGE_EXCLUDED;
     },);
 
   /** Serialized conversation produced by pi's compaction utility. */
@@ -127,7 +134,7 @@ export function buildAdvisorContext(
     truncated: truncation.truncated,
     includedMessageCount: messages.length,
     estimatedInputTokens,
-    ...(latestExcerpt === ABSENT ? {} : { latestUserPromptExcerpt: latestExcerpt, }),
+    ...(latestExcerpt === NO_USER_PROMPT ? {} : { latestUserPromptExcerpt: latestExcerpt, }),
   };
 }
 
@@ -260,7 +267,7 @@ function entryToMessage(
     readonly includePriorAdvisorResults: boolean;
     readonly currentToolCallId?: string;
   },
-): Maybe<AdvisorAgentMessage> {
+): AdvisorAgentMessage | typeof MESSAGE_EXCLUDED {
   if (entry.type
     === 'message') {
     return filterMessage({
@@ -294,7 +301,7 @@ function entryToMessage(
     === 'custom_message') {
     if ((!includePriorAdvisorResults) && (entry.customType
       === ADVISOR_MESSAGE_TYPE))
-      return ABSENT;
+      return MESSAGE_EXCLUDED;
     return {
       role: 'custom',
       customType: entry.customType,
@@ -305,7 +312,7 @@ function entryToMessage(
     };
   }
 
-  return ABSENT;
+  return MESSAGE_EXCLUDED;
 }
 
 /**
@@ -329,15 +336,15 @@ function filterMessage(
     readonly includePriorAdvisorResults: boolean;
     readonly currentToolCallId?: string;
   },
-): Maybe<AdvisorAgentMessage> {
+): AdvisorAgentMessage | typeof MESSAGE_EXCLUDED {
   if (message.role
     === 'toolResult') {
     if ((currentToolCallId !== undefined) && (message.toolCallId
       === currentToolCallId))
-      return ABSENT;
+      return MESSAGE_EXCLUDED;
     if ((!includePriorAdvisorResults) && (message.toolName
       === ADVISOR_TOOL_NAME))
-      return ABSENT;
+      return MESSAGE_EXCLUDED;
     return message;
   }
 
@@ -359,7 +366,7 @@ function filterMessage(
   },);
   if (content.length
     === 0)
-    return ABSENT;
+    return MESSAGE_EXCLUDED;
   return {
     ...message,
     content,

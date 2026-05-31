@@ -16,11 +16,13 @@ import {
   DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   DEFAULT_TIMEOUT_MS,
 } from './constants.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type { AdvisorConfig, } from './types.ts';
+
+/**
+ * Sentinel returned by `loadConfigFile` when a config scope's file is absent.
+ * A `unique symbol`; callers narrow with `=== NO_CONFIG_FILE`.
+ */
+const NO_CONFIG_FILE: unique symbol = Symbol('advisor/no-config-file',);
 
 //region Defaults
 
@@ -87,8 +89,8 @@ export function loadMergedConfig(
     source: {
       globalPath: paths.globalPath,
       projectPath: paths.projectPath,
-      globalLoaded: global !== ABSENT,
-      projectLoaded: project !== ABSENT,
+      globalLoaded: global !== NO_CONFIG_FILE,
+      projectLoaded: project !== NO_CONFIG_FILE,
     },
   };
 }
@@ -153,15 +155,15 @@ function mergeConfigFiles(
     configs,
   }: {
     readonly defaults: Omit<AdvisorConfig, 'source'>;
-    readonly configs: readonly Maybe<AdvisorConfigFile>[];
+    readonly configs: readonly (AdvisorConfigFile | typeof NO_CONFIG_FILE)[];
   },
 ): Omit<AdvisorConfig, 'source'> {
   return configs.reduce(
     function mergeConfig(
       accumulator: Omit<AdvisorConfig, 'source'>,
-      config: Maybe<AdvisorConfigFile>,
+      config: AdvisorConfigFile | typeof NO_CONFIG_FILE,
     ) {
-      if (config === ABSENT)
+      if (config === NO_CONFIG_FILE)
         return accumulator;
       /** Merged context cap, omitted when neither scope configures one. */
       const maxContextChars = config.maxContextChars
@@ -198,7 +200,7 @@ function mergeConfigFiles(
  *
  * @param label - config scope label
  *
- * @returns parsed config file, or {@link ABSENT} when absent
+ * @returns parsed config file, or {@link NO_CONFIG_FILE} when absent
  */
 function loadConfigFile(
   {
@@ -208,14 +210,14 @@ function loadConfigFile(
     readonly path: string;
     readonly label: string;
   },
-): Maybe<AdvisorConfigFile> {
+): AdvisorConfigFile | typeof NO_CONFIG_FILE {
   /** Raw JSON data, or `undefined` when file is absent. */
   const raw = readJsonFile({
     path,
     label,
   },);
   if (raw === undefined)
-    return ABSENT;
+    return NO_CONFIG_FILE;
   return parseConfigFile({
     raw,
     path,
