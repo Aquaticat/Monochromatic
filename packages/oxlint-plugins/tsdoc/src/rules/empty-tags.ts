@@ -12,13 +12,24 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { ABSENT, } from '../sentinel.ts';
-
 import {
   createTsdocVisitor,
   getCommentLines,
   stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
+
+/**
+ * Absence marker for {@link parseTaggedLine} meaning "line is not `@tag <text>`
+ * form"; never a parsed tagged line.
+ *
+ * @example
+ * ```ts
+ * const parsed = parseTaggedLine('plain text',);
+ * if (parsed === UNTAGGED_LINE)
+ *   return;
+ * ```
+ */
+export const UNTAGGED_LINE: unique symbol = Symbol('tsdoc/untagged-line',);
 
 /**
  * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
@@ -52,7 +63,7 @@ function isWhitespaceChar(c: string,): boolean {
 }
 
 /**
- * Parsed shape of a tagged TSDoc line; {@link ABSENT} when the line is not
+ * Parsed shape of a tagged TSDoc line; {@link UNTAGGED_LINE} when the line is not
  * `@tag <text>` form.
  */
 type TaggedLine = {
@@ -70,17 +81,17 @@ type TaggedLine = {
  *
  * @param s - line content (with the leading `*` already stripped)
  *
- * @returns parsed tag + rest, or {@link ABSENT} when the shape does not match
+ * @returns parsed tag + rest, or {@link UNTAGGED_LINE} when the shape does not match
  *
  * @example
  * ```ts
  * parseTaggedLine('@param foo'); // { tag: '@param', rest: 'foo' }
- * parseTaggedLine('@param'); // ABSENT
+ * parseTaggedLine('@param'); // UNTAGGED_LINE
  * ```
  */
-export function parseTaggedLine(s: string,): TaggedLine | typeof ABSENT {
+export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
   if (!s.startsWith('@',))
-    return ABSENT;
+    return UNTAGGED_LINE;
   /**
    * Advances through the run of word characters following the `@`.
    *
@@ -99,7 +110,7 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof ABSENT {
   /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
   const tagEnd = scanTag(1,);
   if (tagEnd === 1)
-    return ABSENT;
+    return UNTAGGED_LINE;
   /**
    * Advances through the run of whitespace characters following the tag.
    *
@@ -118,12 +129,12 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof ABSENT {
   /** First index past the inter-token whitespace; rest starts here. */
   const restStart = scanWhitespace(tagEnd,);
   if (restStart === tagEnd)
-    return ABSENT;
+    return UNTAGGED_LINE;
   /** Remaining content; must be non-empty to match `(.+)`. */
   const rest = s.slice(restStart,);
   if (rest.length
     === 0)
-    return ABSENT;
+    return UNTAGGED_LINE;
   return {
     tag: s.slice(
       0,
@@ -188,7 +199,7 @@ export const emptyTags: CreateOnceRule = {
            * Parsed `\@tag <text>` shape; absent when the line carries no tag with trailing text.
            */
           const tagMatch = parseTaggedLine(trimmed,);
-          if (tagMatch === ABSENT)
+          if (tagMatch === UNTAGGED_LINE)
             return;
           /** Captured tag name and remainder; both populate the diagnostic and gate the report. */
           const {

@@ -4,9 +4,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ABSENT, } from '../sentinel.ts';
-
-import { extractLeadingTag, } from './structural-tags.ts';
+import {
+  extractLeadingTag,
+  NO_LEADING_TAG,
+} from './structural-tags.ts';
 
 /** Length of the long repeated run used to exercise the scan boundary on big input. */
 const LONG_RUN = 1_000;
@@ -15,33 +16,33 @@ await describe({
   name: extractLeadingTag.name,
   children: [
     it({
-      name: 'returns ABSENT for empty string',
+      name: 'returns NO_LEADING_TAG for empty string',
       fn: async () => {
-        expect(extractLeadingTag('',),).toBe(ABSENT,);
+        expect(extractLeadingTag('',),).toBe(NO_LEADING_TAG,);
       },
     },),
     it({
-      name: 'returns ABSENT for a bare at-sign with no tag name',
+      name: 'returns NO_LEADING_TAG for a bare at-sign with no tag name',
       fn: async () => {
-        expect(extractLeadingTag('@',),).toBe(ABSENT,);
+        expect(extractLeadingTag('@',),).toBe(NO_LEADING_TAG,);
       },
     },),
     it({
-      name: 'returns ABSENT when the at-sign is not followed by a word char',
+      name: 'returns NO_LEADING_TAG when the at-sign is not followed by a word char',
       fn: async () => {
-        expect(extractLeadingTag('@ foo',),).toBe(ABSENT,);
+        expect(extractLeadingTag('@ foo',),).toBe(NO_LEADING_TAG,);
       },
     },),
     it({
-      name: 'returns ABSENT for a doubled at-sign',
+      name: 'returns NO_LEADING_TAG for a doubled at-sign',
       fn: async () => {
-        expect(extractLeadingTag('@@x',),).toBe(ABSENT,);
+        expect(extractLeadingTag('@@x',),).toBe(NO_LEADING_TAG,);
       },
     },),
     it({
-      name: 'returns ABSENT for text without a leading at-sign',
+      name: 'returns NO_LEADING_TAG for text without a leading at-sign',
       fn: async () => {
-        expect(extractLeadingTag('no tag',),).toBe(ABSENT,);
+        expect(extractLeadingTag('no tag',),).toBe(NO_LEADING_TAG,);
       },
     },),
     it({

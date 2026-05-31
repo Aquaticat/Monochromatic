@@ -7,9 +7,9 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 
 import type { ReadonlyRecord, } from '../ast-access.ts';
-import { ABSENT, } from '../sentinel.ts';
 import {
   isGeneratorFunction,
+  NO_TSDOC,
   parseTsdocForNode,
   shouldIgnoreFile,
   type TsdocParseResult,
@@ -55,7 +55,7 @@ function createFunctionTsdocVisitor({
       node,
       context,
     },);
-    if (result === ABSENT)
+    if (result === NO_TSDOC)
       return;
     /** Narrowed view that exposes the host AST's untyped extra properties to the handler. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped

@@ -21,7 +21,24 @@ import type {
 } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { ABSENT, } from './sentinel.ts';
+/**
+ * Absence marker meaning "node has no TSDoc comment"; never a real comment
+ * or parse result.
+ *
+ * Shared by {@link findTsdocComment} and {@link parseTsdocForNode} because the
+ * parse-absence is derived directly from the find-absence (the parser only
+ * runs once a comment exists); both narrow with `=== NO_TSDOC`. Optionality
+ * discipline bans `T | undefined` returns, so these functions return
+ * `T | typeof NO_TSDOC` instead.
+ *
+ * @example
+ * ```ts
+ * const found = findTsdocComment({ node, context, });
+ * if (found === NO_TSDOC)
+ *   return;
+ * ```
+ */
+export const NO_TSDOC: unique symbol = Symbol('tsdoc/no-tsdoc',);
 
 /**
  * Result of extracting and parsing a TSDoc comment for a node.
@@ -29,7 +46,7 @@ import { ABSENT, } from './sentinel.ts';
  * @example
  * ```ts
  * const result = parseTsdocForNode(node, context);
- * if (result !== ABSENT) {
+ * if (result !== NO_TSDOC) {
  *   console.log(result.docComment.summarySection);
  * }
  * ```
@@ -109,7 +126,7 @@ export type TsdocLookupParams = {
  * FunctionExpression or ArrowFunctionExpression, because their TSDoc
  * is owned by the enclosing VariableDeclaration or MethodDefinition.
  *
- * @returns block comment starting with `*`, or {@link ABSENT} when none precedes the node
+ * @returns block comment starting with `*`, or {@link NO_TSDOC} when none precedes the node
  *
  * @example
  * ```ts
@@ -119,7 +136,7 @@ export type TsdocLookupParams = {
 export function findTsdocComment({
   node,
   context,
-}: TsdocLookupParams,): Comment | typeof ABSENT {
+}: TsdocLookupParams,): Comment | typeof NO_TSDOC {
   // Fast path: getCommentsBefore works for most declarations
   /** Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc. */
   const comments = context.sourceCode
@@ -138,7 +155,7 @@ export function findTsdocComment({
   const nodeType = (node as unknown as Record<string, unknown>).type;
   if (((typeof nodeType)
     !== 'string') || (!FALLBACK_ELIGIBLE_TYPES.has(nodeType,)))
-    return ABSENT;
+    return NO_TSDOC;
 
   // Fallback: scan all comments for the closest TSDoc ending on the line
   // immediately before this node. Handles exported declarations where
@@ -153,7 +170,7 @@ export function findTsdocComment({
     .getAllComments();
 
   /** Closest TSDoc comment found so far, tracked as the loop scans the whole comment table. */
-  let best: Comment | typeof ABSENT = ABSENT;
+  let best: Comment | typeof NO_TSDOC = NO_TSDOC;
   for (const candidate of allComments) {
     if (!isTsdocBlock(candidate,))
       continue;
@@ -165,7 +182,7 @@ export function findTsdocComment({
       continue;
     if ((nodeStartLine - candidateEndLine) > 1)
       continue;
-    if ((best === ABSENT) || (candidate.loc
+    if ((best === NO_TSDOC) || (candidate.loc
       .end
       .line
       > best
@@ -181,12 +198,12 @@ export function findTsdocComment({
 /**
  * Extracts and parses the TSDoc comment for a given AST node.
  *
- * @returns parsed result, or {@link ABSENT} when no TSDoc comment precedes the node
+ * @returns parsed result, or {@link NO_TSDOC} when no TSDoc comment precedes the node
  *
  * @example
  * ```ts
  * const result = parseTsdocForNode({ node, context });
- * if (result === ABSENT) return;
+ * if (result === NO_TSDOC) return;
  * for (const message of result.messages) {
  *   context.report({ node, message: message.toString() });
  * }
@@ -195,14 +212,14 @@ export function findTsdocComment({
 export function parseTsdocForNode({
   node,
   context,
-}: TsdocLookupParams,): TsdocParseResult | typeof ABSENT {
+}: TsdocLookupParams,): TsdocParseResult | typeof NO_TSDOC {
   /** Located TSDoc comment for the node; absent means nothing to parse. */
   const comment = findTsdocComment({
     node,
     context,
   },);
-  if (comment === ABSENT)
-    return ABSENT;
+  if (comment === NO_TSDOC)
+    return NO_TSDOC;
 
   // Reconstruct full comment text as the parser expects `/** ... */`
   /** Reconstructed `/* ... *\/` form because `comment.value` strips the delimiters. */

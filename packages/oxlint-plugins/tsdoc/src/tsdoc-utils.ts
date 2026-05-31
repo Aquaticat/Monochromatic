@@ -41,6 +41,7 @@ export function shouldIgnoreFile(filename: string,): boolean {
 export {
   FALLBACK_ELIGIBLE_TYPES,
   findTsdocComment,
+  NO_TSDOC,
   parseTsdocForNode,
   type TsdocParseResult,
 } from './tsdoc-comments.ts';

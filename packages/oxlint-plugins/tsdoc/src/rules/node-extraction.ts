@@ -16,8 +16,10 @@ import {
   isRecordArray,
   type ReadonlyRecord,
 } from '../ast-access.ts';
-import { ABSENT, } from '../sentinel.ts';
-import { findTsdocComment, } from '../tsdoc-utils.ts';
+import {
+  findTsdocComment,
+  NO_TSDOC,
+} from '../tsdoc-utils.ts';
 
 /** Human-readable labels for AST node types that require TSDoc. */
 export const NODE_KIND_LABELS: Readonly<Record<string, string>> = {
@@ -34,6 +36,22 @@ export const NODE_KIND_LABELS: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Absence marker for {@link readNamedChild} meaning "child is not an
+ * identifier-shaped record carrying a string name"; never a real name.
+ *
+ * Local to this module because `readNamedChild` is internal and its absence
+ * never crosses a file boundary.
+ *
+ * @example
+ * ```ts
+ * const name = readNamedChild({ node, key: 'id', });
+ * if (name === NO_NAMED_CHILD)
+ *   return 'anonymous';
+ * ```
+ */
+const NO_NAMED_CHILD: unique symbol = Symbol('tsdoc/no-named-child',);
+
+/**
  * Parameters for {@link readNamedChild}.
  */
 type ReadNamedChildParams = {
@@ -46,7 +64,7 @@ type ReadNamedChildParams = {
 /**
  * Reads the `.name` string of an identifier-shaped child node.
  *
- * @returns child's `name` string, or {@link ABSENT} when the child is not
+ * @returns child's `name` string, or {@link NO_NAMED_CHILD} when the child is not
  * a record with a string `name`
  *
  * @example
@@ -57,15 +75,15 @@ type ReadNamedChildParams = {
 function readNamedChild({
   node,
   key,
-}: ReadNamedChildParams,): string | typeof ABSENT {
+}: ReadNamedChildParams,): string | typeof NO_NAMED_CHILD {
   /** Child node under `key`; only an identifier-shaped record yields a name. */
   const child = node[key];
   if (!isRecord(child,))
-    return ABSENT;
+    return NO_NAMED_CHILD;
   /** Identifier text of the child; present only on identifier nodes. */
   const { name, } = child;
   return (typeof name)
-    === 'string' ? name : ABSENT;
+    === 'string' ? name : NO_NAMED_CHILD;
 }
 
 /**
@@ -101,7 +119,7 @@ export function extractNodeName(node: Span,): string {
       node: first,
       key: 'id',
     },);
-    return name === ABSENT ? 'anonymous' : name;
+    return name === NO_NAMED_CHILD ? 'anonymous' : name;
   }
 
   // MethodDefinition / PropertyDefinition / Property: key.name
@@ -117,7 +135,7 @@ export function extractNodeName(node: Span,): string {
       node: typed,
       key: 'key',
     },);
-    return name === ABSENT ? 'anonymous' : name;
+    return name === NO_NAMED_CHILD ? 'anonymous' : name;
   }
 
   // Most declarations: .id.name
@@ -126,7 +144,7 @@ export function extractNodeName(node: Span,): string {
     node: typed,
     key: 'id',
   },);
-  if (idName !== ABSENT)
+  if (idName !== NO_NAMED_CHILD)
     return idName;
 
   // FunctionDeclaration without name, TSEnumMember with direct name
@@ -190,7 +208,7 @@ export function reportMissing({
     node,
     context,
   },)
-    === ABSENT) {
+    === NO_TSDOC) {
     context.report({
       node,
       messageId: 'missing',

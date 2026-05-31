@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep) complete; 3 targets remaining (`tsdoc`, `deps-cube`, `doodle-widget`).
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep), `tsdoc` complete; 2 targets remaining (`deps-cube`, `doodle-widget`, both heavy, advisor-check before each).
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -200,13 +200,19 @@ A callback return type cannot be `?:` and `T | undefined` is banned, so these st
 
 Executed as planned. Advisor decouple landed as commit 1 with three advisor-local symbols (`MESSAGE_EXCLUDED`, `NO_USER_PROMPT`, `NO_CONFIG_FILE`), no `Maybe` alias. model-selection triage + auto-mode contract landed as commit 2 (the lockstep). `loadSettingsFile`'s sentinel is `NO_SETTINGS_FILE`. All ten model-selection symbols and the two advisor flows behave by `lint:types` (identity narrowing is the proof for these renames; a contract-identity mismatch across the package boundary would surface as a tsgo "no overlap" error). Verification: `mise run //packages/pi-shared/model-selection:lint` (0/0) and `:buildAndTest` (all suites pass, including `resolveEffectiveScope`, budget, exact/pattern); `//packages/pi/auto-mode:lint` (0/0, types build confirms the `NO_AUTH` / `NO_OVERRIDE_MODEL` contract aligns) and `:test:unit`; `//packages/pi/advisor:lint` (0/0) and `:test:unit`.
 
-### oxlint-plugins/tsdoc (PENDING)
+### oxlint-plugins/tsdoc (COMPLETE)
 
-`packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
-Not a `Maybe<T>` alias, a generic `ABSENT = Symbol('absent')` used across ~10 rule files (`findTsdocComment`, `parseTsdocForNode`, `parseTaggedLine`, `extractLeadingTag`, `readNamedChild`).
-Distinct purposes share one symbol today.
-Split per-purpose where consumed locally; where an absence flows across files keep one shared symbol for that flow or convert at the seam.
-Update all importers and tests.
+`packages/oxlint-plugins/tsdoc/src/sentinel.ts` deleted; the generic `ABSENT = Symbol('absent')` it exported is gone.
+The five producers triaged into four per-purpose symbols:
+
+- `NO_TSDOC` (`Symbol('tsdoc/no-tsdoc')`, home `tsdoc-comments.ts`, re-exported via `tsdoc-utils.ts`): shared by `findTsdocComment` and `parseTsdocForNode`. One symbol, not two, because `parseTsdocForNode`'s absence is derived directly from `findTsdocComment`'s (the parser only runs once a comment exists); same purpose spanning two functions, per the seam rule. Consumed across `tag-types.ts`, `tsdoc-visitors.ts`, `yields.ts`, `require-example.ts`, `node-extraction.ts`.
+- `NO_LEADING_TAG` (`Symbol('tsdoc/no-leading-tag')`, exported from `structural-tags.ts`): `extractLeadingTag`. Exported because the function is public and the unit test imports the symbol.
+- `UNTAGGED_LINE` (`Symbol('tsdoc/untagged-line')`, exported from `empty-tags.ts`): `parseTaggedLine`. Same export rationale.
+- `NO_NAMED_CHILD` (`Symbol('tsdoc/no-named-child')`, local in `node-extraction.ts`, not exported): `readNamedChild`. Local because the function is internal and its absence never crosses a file boundary; never appears in an exported type, so no declaration-emit pressure to export.
+
+`node-extraction.ts` was the only mixed file: it both consumes `findTsdocComment` (the `NO_TSDOC` seam) and produces `readNamedChild` (the local `NO_NAMED_CHILD`).
+`ABSENT` was internal-only (never re-exported from `src/index.ts`), so no public-API break.
+Verified: `:lint` 0/0 (oxlint + tsgo build), `:test:unit` exit 0 (all suites including the renamed `extractLeadingTag`/`parseTaggedLine` cases).
 
 ### deps-cube (PENDING)
 

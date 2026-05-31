@@ -13,13 +13,24 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { ABSENT, } from '../sentinel.ts';
-
 import {
   createTsdocVisitor,
   getCommentLines,
   stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
+
+/**
+ * Absence marker for {@link extractLeadingTag} meaning "line does not begin
+ * with `@word`"; never a captured tag.
+ *
+ * @example
+ * ```ts
+ * const tag = extractLeadingTag('plain text',);
+ * if (tag === NO_LEADING_TAG)
+ *   return;
+ * ```
+ */
+export const NO_LEADING_TAG: unique symbol = Symbol('tsdoc/no-leading-tag',);
 
 /**
  * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
@@ -43,17 +54,17 @@ function isWordChar(c: string,): boolean {
  *
  * @param s - line content (with the leading `*` already stripped and trimmed)
  *
- * @returns captured tag (e.g. `'@param'`) or {@link ABSENT} when `s` does not begin with `@word`
+ * @returns captured tag (e.g. `'@param'`) or {@link NO_LEADING_TAG} when `s` does not begin with `@word`
  *
  * @example
  * ```ts
  * extractLeadingTag('@param foo'); // '@param'
- * extractLeadingTag('plain text'); // ABSENT
+ * extractLeadingTag('plain text'); // NO_LEADING_TAG
  * ```
  */
-export function extractLeadingTag(s: string,): string | typeof ABSENT {
+export function extractLeadingTag(s: string,): string | typeof NO_LEADING_TAG {
   if (!s.startsWith('@',))
-    return ABSENT;
+    return NO_LEADING_TAG;
   /**
    * Advances through the run of word characters following the `@`.
    *
@@ -72,7 +83,7 @@ export function extractLeadingTag(s: string,): string | typeof ABSENT {
   /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
   const end = scan(1,);
   if (end === 1)
-    return ABSENT;
+    return NO_LEADING_TAG;
   return s.slice(
     0,
     end,
@@ -156,7 +167,7 @@ export const tagLines: CreateOnceRule = {
             /**
              * Resolved tag string for the error message, with `\@unknown` for the impossible-absent case.
              */
-            const tag = matched === ABSENT ? '@unknown' : matched;
+            const tag = matched === NO_LEADING_TAG ? '@unknown' : matched;
 
             /**
              * Line number of the tag line in the source file (1-based).

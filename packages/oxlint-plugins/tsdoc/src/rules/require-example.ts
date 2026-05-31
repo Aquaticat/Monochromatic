@@ -24,9 +24,9 @@ import {
   isRecord,
   isRecordArray,
 } from '../ast-access.ts';
-import { ABSENT, } from '../sentinel.ts';
 import {
   findTsdocComment,
+  NO_TSDOC,
   parseTsdocForNode,
   shouldIgnoreFile,
   type TsdocParseResult,
@@ -178,7 +178,7 @@ export const requireExample: CreateOnceRule = {
         node,
         context,
       },);
-      if (result === ABSENT)
+      if (result === NO_TSDOC)
         return;
       if (isExempt(result,))
         return;
@@ -202,7 +202,7 @@ export const requireExample: CreateOnceRule = {
         node,
         context,
       },);
-      if (comment === ABSENT)
+      if (comment === NO_TSDOC)
         return;
 
       if (isDirectlyExported(node,)) {
@@ -270,7 +270,7 @@ export const requireExample: CreateOnceRule = {
         node,
         context,
       },);
-      if (comment === ABSENT)
+      if (comment === NO_TSDOC)
         return;
 
       if (isDirectlyExported(node,)) {
