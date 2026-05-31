@@ -3,11 +3,6 @@
  * the Aquaticat master glyph strip SVG exported from Figma.
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-
 //region Types: data extracted from the master SVG
 
 /** Raw path data extracted from a single SVG `<path>` element. */
@@ -31,13 +26,21 @@ export type Cell = {
 //endregion Types
 
 /**
+ * Sentinel returned by {@link attr} when the named attribute is genuinely
+ * absent. A `unique symbol` because an empty string is a valid attribute
+ * value, so no falsy default can stand in for "not found"; callers narrow
+ * identity with `=== ATTRIBUTE_ABSENT`.
+ */
+const ATTRIBUTE_ABSENT: unique symbol = Symbol('aquaticat/attribute-absent',);
+
+/**
  * Extracts an XML attribute value by name from a raw attribute string.
  *
  * @param attrs - raw XML attribute string to search
  *
  * @param name - attribute name to extract
  *
- * @returns attribute value, or {@link ABSENT} if not found
+ * @returns attribute value, or {@link ATTRIBUTE_ABSENT} if not found
  *
  * @example
  * ```ts
@@ -50,13 +53,13 @@ function attr({
 }: {
   readonly attrs: string;
   readonly name: string;
-},): Maybe<string> {
+},): string | typeof ATTRIBUTE_ABSENT {
   /** Literal token to locate; the value starts immediately after this prefix. */
   const needle = `${name}="`;
   /** Index of the first occurrence of `name="`; -1 when the attribute is absent. */
   const start = attrs.indexOf(needle,);
   if (start === (-1))
-    return ABSENT;
+    return ATTRIBUTE_ABSENT;
   /** First char of the value, just past the `"` opener. */
   const valueStart = start + needle
     .length;
@@ -66,7 +69,7 @@ function attr({
     valueStart,
   );
   if (valueEnd === (-1))
-    return ABSENT;
+    return ATTRIBUTE_ABSENT;
   return attrs.slice(
     valueStart,
     valueEnd,
@@ -115,7 +118,7 @@ export function parseSvg(svgContent: string,): Cell[] {
       const translateRegex = /translate\((\d+(?:\.\d+)?)\)/u;
       /* oxlint-enable no-restricted-syntax/no-regex */
       /** Captured numeric argument of the `translate(...)` transform; null when the attribute is absent or does not match. */
-      const translateMatch = transform === ABSENT
+      const translateMatch = transform === ATTRIBUTE_ABSENT
         ? null
         : translateRegex.exec(transform,);
       /** Parsed X offset of this cell rect; falls back to 0 when no translate is present. */
@@ -136,7 +139,7 @@ export function parseSvg(svgContent: string,): Cell[] {
       attrs,
       name: 'd',
     },);
-    if (d === ABSENT)
+    if (d === ATTRIBUTE_ABSENT)
       continue;
 
     /** Raw `stroke` attribute value used to discriminate stroked paths from filled ones. */
@@ -145,18 +148,18 @@ export function parseSvg(svgContent: string,): Cell[] {
       name: 'stroke',
     },);
     /** True when the path has a stroke but no fill, indicating it must be expanded into an outline. */
-    const isStroked = (strokeAttr !== ABSENT) && (attr({
+    const isStroked = (strokeAttr !== ATTRIBUTE_ABSENT) && (attr({
       attrs,
       name: 'fill',
     },)
-      === ABSENT);
+      === ATTRIBUTE_ABSENT);
     /** Raw `stroke-width` attribute string; parsed only when the path is actually stroked. */
     const strokeWidthStr = attr({
       attrs,
       name: 'stroke-width',
     },);
     /** Numeric stroke width in SVG units; 0 for filled paths so downstream code skips expansion. */
-    const strokeWidth = isStroked && (strokeWidthStr !== ABSENT)
+    const strokeWidth = isStroked && (strokeWidthStr !== ATTRIBUTE_ABSENT)
       ? Number(strokeWidthStr,)
       : 0;
 
