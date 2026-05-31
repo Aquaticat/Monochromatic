@@ -473,7 +473,9 @@ locals {
     }]
   ))
 
-  storagebox_ips_summarized = data.cidrblock_summarization.storagebox_destination_ips.summarized_cidr_blocks
+  # amilevskiy/cidrblock returns null summarized_cidr_blocks for empty input;
+  # keep an unconfigured Storage Box allowlist as an iterable empty list.
+  storagebox_ips_summarized = length(local.storagebox_destination_ips) == 0 ? [] : data.cidrblock_summarization.storagebox_destination_ips.summarized_cidr_blocks
   storagebox_ips_v4         = [for ip in local.storagebox_ips_summarized : ip if !strcontains(ip, ":")]
   storagebox_ips_v6         = [for ip in local.storagebox_ips_summarized : ip if strcontains(ip, ":")]
   storagebox_ips_v4_chunks  = chunklist(local.storagebox_ips_v4, 20)
