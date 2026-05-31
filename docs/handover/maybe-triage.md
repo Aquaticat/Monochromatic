@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep), `tsdoc` complete; 2 targets remaining (`deps-cube`, `doodle-widget`, both heavy, advisor-check before each).
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep), `tsdoc`, `deps-cube` complete; 1 target remaining (`doodle-widget`, heavy, advisor-check before it).
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -214,21 +214,57 @@ The five producers triaged into four per-purpose symbols:
 `ABSENT` was internal-only (never re-exported from `src/index.ts`), so no public-API break.
 Verified: `:lint` 0/0 (oxlint + tsgo build), `:test:unit` exit 0 (all suites including the renamed `extractLeadingTag`/`parseTaggedLine` cases).
 
-### deps-cube (PENDING)
+### deps-cube (COMPLETE)
 
 `packages/dev-script/deps-cube`.
-Largest; about 100 sites.
-`probe.ts` params `repoInfo` / `languages` are bucket 1.
-The `totalBytes` to `tsRatio` to `sourceBytes` to `unknownReason` pipeline and `parseRepository` to its consumer are seams: convert to `?:` / `undefined` (the `probe.ts:258` precedent).
-Leaf parsers (`parseGithubShorthand`, `parseGithubUrl`, `pinnedOrLatest`, `extractDim`, `pickedProbe`, `validateAppState`, `decodeState`, `probePosition`) are bucket 3, descriptive.
-Update the unit tests importing `ABSENT`. Delete `maybe.ts`.
-Verify with tests plus `agent-browser` on the deck.gl scatter and filter controls.
+Largest; ~100 sites across 21 files (16 source, 5 test).
+`src/index.ts` is the only public surface and re-exports nothing that names a sentinel (`probeAll`, `PackageProbe`, `renderHtml`, `renderControls`, `readCatalog`, `createCache`), so deleting `maybe.ts` breaks no public API.
+The package builds to `dist` with declaration emit, so every exported function whose signature names a sentinel must export that sentinel.
 
 Do not reuse the `tsdoc` technique here.
 The `tsdoc` triage was uniform bucket 3, so a per-file `replace_all 'ABSENT'` into one symbol was safe.
 deps-cube is the opposite: a single file mixes bucket-1 `?:` param conversions, seam conversions to `?:`/`undefined`, and descriptive symbols on the leaf parsers only.
 A blanket `replace_all 'ABSENT'` is actively wrong here; it must be per-site triage.
-Convert each seam and param by hand, give only the genuine leaf returns a symbol, and re-run `lint:types` after each file (the seam check: a renamed symbol leaking into a stale `=== ABSENT` surfaces as a tsgo "no overlap" error).
+Re-run `lint:types` after each file (the seam check: a renamed symbol leaking into a stale `=== ABSENT` surfaces as a tsgo "no overlap" error).
+
+Verify with `:test:unit` plus `agent-browser` on the deck.gl scatter and filter controls.
+
+#### Symbol inventory (per-site triage)
+
+Eight exported descriptive symbols (each referenced by an exported function's signature, so declaration-emit forces the export):
+
+- `REPO_UNPARSEABLE` (`probe-field-parsers.ts`, re-exported via `probe-fields.ts`): `parseRepository` return. Consumed at `probe.ts:256/258` (collapsed to `undefined` at the `:258` seam) and both probe tests.
+- `VERSION_UNRESOLVED` (`probe-field-parsers.ts`, re-exported via `probe-fields.ts`): `resolveVersion` return. Consumed at `probe.ts:219` (seam to the raw range string) and `probe-field-parsers.unit.test.ts`'s `pinnedOrLatest` annotation.
+- `LANGUAGES_UNKNOWN` (`probe-fields.ts`): `probeLanguages` return. Consumed at `probe.ts:281` (fallback) and `:303` (seam to `undefined`).
+- `LAST_COMMIT_UNKNOWN` (`probe-fields.ts`): `probeLastCommit` return. Consumed at `probe.ts:292` (fallback) and `:334` (seam to `undefined`).
+- `DIM_UNKNOWN` (`scripts/filter.ts`): `extractDim` return. Widest blast radius: consumed in `scripts/filter.ts` (passesRanges), `deck-accessors.ts` (5 accessors), `deck-config.ts`, `scripts/state.ts`, `scripts/controller-range-events.ts`, `render-controls.ts`, and `filter.unit.test.ts`.
+- `DERIVED_BOOL_UNKNOWN` (`scripts/filter.ts`): `derivedBool` return. Consumed by passesToggles and `filter.unit.test.ts`.
+- `POSITION_UNKNOWN` (`deck-accessors.ts`): `probePosition` return. Consumed by `deck-scatter.ts:160`, `deck-scatter-helpers.ts:92`, and `deck-config.unit.test.ts`.
+- `NO_THRESHOLD_LAYER` (`deck-planes.ts`): `buildThresholdLineLayer` return. One symbol shared by the toggle-off branch and the return-absent branch in `deck-config.ts:244/253` (same purpose: "no threshold layer to add").
+- `STATE_INVALID` (`scripts/state.ts`): shared by `validateAppState` (local) and `decodeState` (exported) because `decodeState` propagates `validateAppState`'s absence directly (`return validateAppState(parsed)`); one purpose spanning two functions, per the seam rule. Consumed by `readStateFromHash:450` and `state.unit.test.ts`.
+
+Four local (unexported) descriptive symbols (never appear in an exported signature):
+
+- `parseGithubShorthand` / `parseGithubUrl` (`probe-field-parsers.ts`): two independent local symbols (siblings, not chained), each consumed only inside `parseRepository`.
+- `readManifestSilent` (`probe-transitive.ts`): one local symbol, two consumers inside the same file (manifest + depPkg checks).
+- `pickedProbe` (`scripts/controller.ts`): one local symbol, two consumers (`getTooltipForInfo`, `onCanvasClick`).
+- `computeUnknownReason` (`probe.ts`): `NO_UNKNOWN_REASON` local, single consumer at the `:365` spread.
+
+Bucket 1 / 2 (no sentinel):
+
+- `computeUnknownReason` params `repoInfo` / `languages` become `?:` optionals; the call site passes the already-collapsed `repo` (`:258`) and `knownLanguages` (`:303`) via conditional spread (matching probe.ts's own `...(x === ABSENT ? {} : { x })` idiom, which is the exactOptionalPropertyTypes-correct shape).
+- probe.ts locals `resolvedVersion`, `repo`, `knownLanguages`, `totalBytes`, `tsRatioOrNull`, `sourceBytesOrNull`, `daysSinceLastCommitOrNull` drop their explicit `Maybe<…>` annotations and become ternary-inferred `T | undefined` locals (the `:258` precedent), consuming the upstream sentinels and emitting `undefined`.
+- The `Promise.resolve<Maybe<…>>(ABSENT)` fallbacks (`:281`, `:292`) keep an explicit type arg so both ternary branches unify: `Promise.resolve<Record<string, number> | typeof LANGUAGES_UNKNOWN>(LANGUAGES_UNKNOWN,)` and the `LAST_COMMIT_UNKNOWN` analog.
+- `PackageProbe`'s `*OrNull?` fields are already `?:`; no change.
+
+#### Outcome
+
+Executed as planned. `src/maybe.ts` deleted; the gate `rg 'ABSENT|Maybe' src/` returns zero.
+Eight exported descriptive symbols and five local ones (the four planned plus `NO_PICKED_PROBE`) landed per-site; `probe.ts`'s `computeUnknownReason` took the bucket-1 `?:` params with the conditional-spread call site (no tsgo fight, so the fallback was not needed).
+TSDoc convention matched the workspace: `{@link SYMBOL}` in multiline declaration blocks (text-first `@returns` to avoid the `tsdoc(no-types)` parse), plain backticks were initially used for one-line comments but the project standard is `{@link}` with the comment expanded to multiline, so every one-line sentinel comment became a multiline block.
+`probe-field-parsers.unit.test.ts` imports `VERSION_UNRESOLVED` as `type` (used only in `typeof`).
+Verification: `:lint` 0/0 (oxlint type-aware + tsgo `--build`, which is the seam-leak proof) and `:test:unit` exit 0 (11 suites, including the renamed `REPO_UNPARSEABLE`/`DERIVED_BOOL_UNKNOWN`/`POSITION_UNKNOWN`/`STATE_INVALID` cases).
+`agent-browser` confirmed the rendered scatter at the user boundary against a three-probe fixture render (`renderHtml`): no console/page errors, full controller bootstrap (deck.gl WebGL + hash round-trip), `extractDim`/`DIM_UNKNOWN` extents correct in the serialized state, search filter `searchMatches` (3 to 1 to 3), and `derivedBool`/`DERIVED_BOOL_UNKNOWN` exclusion (`tsMajority='no'` to 2 of 3, the unknown-`tsRatio` probe dropped).
 
 ### doodle-widget (PENDING)
 
