@@ -10,9 +10,9 @@ import type {
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
-  ABSENT,
   type BudgetModelAuth,
-  type Maybe,
+  NO_AUTH,
+  NO_OVERRIDE_MODEL,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { l as parentLogger, } from './log.ts';
@@ -34,7 +34,7 @@ const l = tagged({
  *
  * @param model - model to authenticate
  *
- * @returns auth details, or {@link ABSENT} when resolution failed
+ * @returns auth details, or {@link NO_AUTH} when resolution failed
  *
  * @example
  * ```typescript
@@ -49,13 +49,13 @@ async function resolveBudgetAuth(
     readonly ctx: ExtensionContext;
     readonly model: Model<Api>;
   },
-): Promise<Maybe<BudgetModelAuth>> {
+): Promise<BudgetModelAuth | typeof NO_AUTH> {
   try {
     /** Registry response carrying `ok` plus optional `apiKey` and `headers`. */
     const result = await ctx.modelRegistry
       .getApiKeyAndHeaders(model,);
     if (!result.ok)
-      return ABSENT;
+      return NO_AUTH;
     /** Output auth object assembled field-by-field so omitted keys stay absent. */
     const auth: BudgetModelAuth = {};
     if (result.apiKey
@@ -82,7 +82,7 @@ async function resolveBudgetAuth(
         error instanceof Error ? error.message : String(error,)
       }`,
     );
-    return ABSENT;
+    return NO_AUTH;
   }
 }
 
@@ -122,7 +122,7 @@ function hasConfiguredBudgetAuth(
  *
  * @param modelId - model id
  *
- * @returns matched model, or {@link ABSENT} when missing
+ * @returns matched model, or {@link NO_OVERRIDE_MODEL} when missing
  *
  * @example
  * ```typescript
@@ -139,7 +139,7 @@ function findBudgetOverrideModel(
     readonly provider: string;
     readonly modelId: string;
   },
-): Maybe<Model<Api>> {
+): Model<Api> | typeof NO_OVERRIDE_MODEL {
   /* oxlint-disable unicorn/no-array-method-this-argument -- ModelRegistry.find is not Array.find. */
   /** Registry-resolved model record, when present. */
   const model = ctx.modelRegistry
@@ -149,7 +149,7 @@ function findBudgetOverrideModel(
     );
   /* oxlint-enable unicorn/no-array-method-this-argument */
   return (model === undefined) || (model === null)
-    ? ABSENT
+    ? NO_OVERRIDE_MODEL
     : model;
 }
 

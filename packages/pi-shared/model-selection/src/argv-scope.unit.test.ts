@@ -10,8 +10,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ABSENT, } from './core.ts';
-import { parseArgvModelPatterns, } from './scope.ts';
+import {
+  NO_ARGV_MODELS,
+  parseArgvModelPatterns,
+} from './scope.ts';
 
 await describe({
   name: parseArgvModelPatterns.name,
@@ -35,9 +37,9 @@ await describe({
       },
     },),
     it({
-      name: 'returns ABSENT when --models is absent',
+      name: 'returns NO_ARGV_MODELS when --models is absent',
       fn: async function testAbsentArgvModels() {
-        expect(parseArgvModelPatterns({ argv: ['pi',], },),).toBe(ABSENT,);
+        expect(parseArgvModelPatterns({ argv: ['pi',], },),).toBe(NO_ARGV_MODELS,);
       },
     },),
   ],

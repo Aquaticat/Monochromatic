@@ -4,10 +4,13 @@
  * @module
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
+/**
+ * Sentinel returned by {@link parseArgvModelPatterns} when no `--models` flag
+ * is present in argv. A `unique symbol`; callers narrow with
+ * `=== NO_ARGV_MODELS`. Exported because `scope-resolver` consumes it across
+ * the module seam. An empty `--models` value yields `[]`, not this sentinel.
+ */
+export const NO_ARGV_MODELS: unique symbol = Symbol('model-selection/no-argv-models',);
 
 //region Public API
 
@@ -25,7 +28,7 @@ export type ParseArgvModelsOptions = {
  *
  * @param options - argv to inspect
  *
- * @returns cleaned patterns, or {@link ABSENT} when `--models` is absent
+ * @returns cleaned patterns, or {@link NO_ARGV_MODELS} when `--models` is absent
  *
  * @example
  * ```typescript
@@ -34,7 +37,7 @@ export type ParseArgvModelsOptions = {
  */
 export function parseArgvModelPatterns(
   options: ParseArgvModelsOptions,
-): Maybe<string[]> {
+): string[] | typeof NO_ARGV_MODELS {
   /** Inline `--models=value` argument, if present. */
   const inline = options.argv
     .find(function isInlineModelsArg(arg,) {
@@ -47,7 +50,7 @@ export function parseArgvModelPatterns(
   const modelsIndex = options.argv
     .indexOf('--models',);
   if (modelsIndex === (-1))
-    return ABSENT;
+    return NO_ARGV_MODELS;
 
   /** Value following `--models`. */
   const value = options.argv[modelsIndex + 1];

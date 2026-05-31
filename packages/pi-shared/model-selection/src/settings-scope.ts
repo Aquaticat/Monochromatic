@@ -7,10 +7,12 @@
 import { readFileSync, } from 'node:fs';
 import { join, } from 'node:path';
 import * as v from 'valibot';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
+
+/**
+ * Sentinel returned by internal `loadSettingsFile` when a settings file is
+ * absent. A `unique symbol`; narrowed with `=== NO_SETTINGS_FILE`.
+ */
+const NO_SETTINGS_FILE: unique symbol = Symbol('model-selection/no-settings-file',);
 
 //region Types and schemas
 
@@ -84,7 +86,7 @@ export function loadSettingsScopePatterns(
     errorPrefix,
   },);
 
-  if ((project !== ABSENT) && (project.enabledModels
+  if ((project !== NO_SETTINGS_FILE) && (project.enabledModels
     !== undefined)) {
     return {
       patterns: cleanPatterns(project.enabledModels,),
@@ -92,7 +94,7 @@ export function loadSettingsScopePatterns(
     };
   }
 
-  if ((global !== ABSENT) && (global.enabledModels
+  if ((global !== NO_SETTINGS_FILE) && (global.enabledModels
     !== undefined)) {
     return {
       patterns: cleanPatterns(global.enabledModels,),
@@ -157,7 +159,7 @@ export function getSettingsPaths(
  *
  * @param errorPrefix - message prefix
  *
- * @returns parsed settings subset, or {@link ABSENT} when absent
+ * @returns parsed settings subset, or {@link NO_SETTINGS_FILE} when absent
  */
 function loadSettingsFile(
   {
@@ -169,7 +171,7 @@ function loadSettingsFile(
     readonly label: string;
     readonly errorPrefix: string;
   },
-): Maybe<PiSettingsFile> {
+): PiSettingsFile | typeof NO_SETTINGS_FILE {
   /** Raw parsed JSON object, or `undefined` when absent. */
   const raw = readJsonFile({
     path,
@@ -177,7 +179,7 @@ function loadSettingsFile(
     errorPrefix,
   },);
   if (raw === undefined)
-    return ABSENT;
+    return NO_SETTINGS_FILE;
 
   /** Valibot validation result for settings subset. */
   const result = v.safeParse(

@@ -4,16 +4,20 @@
  * @module
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type {
   EffectiveModelScope,
   ModelIdentity,
   ModelSelection,
   ScopedModel,
 } from './types.ts';
+
+/**
+ * Sentinel returned by {@link parseProviderModelSlug} when a slug is not a
+ * `provider/model` pair (no slash, or empty provider or model id). A
+ * `unique symbol`; callers narrow with `=== MALFORMED_SLUG`. Exported because
+ * `budget-override` consumes it across the module seam.
+ */
+export const MALFORMED_SLUG: unique symbol = Symbol('model-selection/malformed-slug',);
 
 //region Types
 
@@ -70,7 +74,7 @@ export function canonicalSlug(
  *
  * @param slug - candidate provider/model slug
  *
- * @returns parsed slug, or {@link ABSENT} when the slug is malformed
+ * @returns parsed slug, or {@link MALFORMED_SLUG} when the slug is malformed
  *
  * @example
  * ```typescript
@@ -79,11 +83,11 @@ export function canonicalSlug(
  */
 export function parseProviderModelSlug(
   slug: string,
-): Maybe<ProviderModelSlug> {
+): ProviderModelSlug | typeof MALFORMED_SLUG {
   /** Slash index between provider and model id. */
   const slashIndex = slug.indexOf('/',);
   if (slashIndex === (-1))
-    return ABSENT;
+    return MALFORMED_SLUG;
 
   /** Provider segment before slash. */
   const provider = slug.slice(
@@ -95,7 +99,7 @@ export function parseProviderModelSlug(
   const modelId = slug.slice(slashIndex + 1,)
     .trim();
   if ((provider === '') || (modelId === ''))
-    return ABSENT;
+    return MALFORMED_SLUG;
 
   return {
     provider,

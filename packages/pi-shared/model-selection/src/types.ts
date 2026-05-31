@@ -5,7 +5,6 @@
  */
 
 import type { ReadonlyDeep, } from 'type-fest';
-import type { Maybe, } from './maybe.ts';
 
 //region Core model types
 
@@ -178,10 +177,21 @@ export type BudgetModelCandidate = {
   readonly hasApiKey: boolean;
 };
 
+/**
+ * Sentinel returned by a {@link ResolveBudgetAuth} implementation (and by
+ * `ResolveBudgetOverrideAuth`) when no usable auth exists for a model.
+ * A `unique symbol`; budget selection narrows with `=== NO_AUTH`. Shared
+ * across the package boundary so host auth resolvers return the same identity
+ * the selectors check. Lives here, the only internal-import-free module after
+ * `maybe.ts` was removed, so `ResolveBudgetAuth` can reference both
+ * `typeof NO_AUTH` and `BudgetModelAuth` without a module cycle.
+ */
+export const NO_AUTH: unique symbol = Symbol('model-selection/no-auth',);
+
 /** Auth callback used by budget selection. */
 export type ResolveBudgetAuth<TModel extends ModelIdentity = ReadonlyModel,> = (
   options: { readonly model: TModel; },
-) => Promise<Maybe<BudgetModelAuth>>;
+) => Promise<BudgetModelAuth | typeof NO_AUTH>;
 
 /** Options for shared budget-model strategy selection. */
 export type BudgetModelSelectionOptions<TModel extends ModelPricing = ReadonlyModel,> = {

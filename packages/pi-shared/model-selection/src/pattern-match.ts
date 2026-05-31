@@ -4,17 +4,32 @@
  * @module
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { canonicalSlug, } from './model-id.ts';
-import { findExactModelReferenceMatch, } from './exact-match.ts';
+import {
+  findExactModelReferenceMatch,
+  NO_EXACT_MATCH,
+} from './exact-match.ts';
 import type {
   ModelIdentity,
   ScopedModel,
   ScopedThinkingLevel,
 } from './types.ts';
+
+/**
+ * Sentinel returned by internal `tryMatchModel` when no exact or fuzzy model
+ * matches a pattern body. A `unique symbol`; narrowed with
+ * `=== NO_PATTERN_MATCH`.
+ */
+const NO_PATTERN_MATCH: unique symbol = Symbol('model-selection/no-pattern-match',);
+
+/**
+ * Sentinel seeding the thinking-level accumulator in {@link parseModelPattern}
+ * before a valid thinking suffix is seen. A `unique symbol` rather than
+ * `undefined` because the loop-init binding would otherwise need a banned
+ * `ScopedThinkingLevel | undefined` annotation; narrowed with
+ * `=== NO_THINKING_LEVEL`.
+ */
+const NO_THINKING_LEVEL: unique symbol = Symbol('model-selection/no-thinking-level',);
 
 //region Types and constants
 
@@ -91,7 +106,7 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
   },
 ): PatternResolution<TModel> {
   for (
-    let currentPattern = pattern, thinkingLevel: Maybe<ScopedThinkingLevel> = ABSENT;
+    let currentPattern = pattern, thinkingLevel: ScopedThinkingLevel | typeof NO_THINKING_LEVEL = NO_THINKING_LEVEL;
     ;
   ) {
     /** Exact or fuzzy match for current pattern body. */
@@ -99,10 +114,10 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
       pattern: currentPattern,
       availableModels,
     },);
-    if (exactMatch !== ABSENT) {
+    if (exactMatch !== NO_PATTERN_MATCH) {
       return {
         model: exactMatch,
-        ...(thinkingLevel === ABSENT ? {} : { thinkingLevel, }),
+        ...(thinkingLevel === NO_THINKING_LEVEL ? {} : { thinkingLevel, }),
       };
     }
 
@@ -113,7 +128,7 @@ export function parseModelPattern<TModel extends ModelIdentity,>(
 
     /** Candidate suffix after last colon. */
     const suffix = currentPattern.slice(lastColonIndex + 1,);
-    if ((thinkingLevel === ABSENT) && isThinkingLevel(suffix,))
+    if ((thinkingLevel === NO_THINKING_LEVEL) && isThinkingLevel(suffix,))
       thinkingLevel = suffix;
     currentPattern = currentPattern.slice(
       0,
@@ -302,13 +317,13 @@ function tryMatchModel<TModel extends ModelIdentity,>(
     readonly pattern: string;
     readonly availableModels: readonly TModel[];
   },
-): Maybe<TModel> {
+): TModel | typeof NO_PATTERN_MATCH {
   /** Exact match by canonical slug or bare id. */
   const exact = findExactModelReferenceMatch({
     modelReference: pattern,
     availableModels,
   },);
-  if (exact !== ABSENT)
+  if (exact !== NO_EXACT_MATCH)
     return exact;
 
   /** Lowercase pattern for fuzzy id and name matching. */
@@ -326,7 +341,7 @@ function tryMatchModel<TModel extends ModelIdentity,>(
   },);
   if (matches.length
     === 0)
-    return ABSENT;
+    return NO_PATTERN_MATCH;
 
   /** Alias matches, preferred over dated versions. */
   const aliases = matches.filter(function keepAlias(model,) {
@@ -345,7 +360,7 @@ function tryMatchModel<TModel extends ModelIdentity,>(
   },);
   /** First candidate after sorting. */
   const [firstCandidate,] = sortedCandidates;
-  return firstCandidate ?? ABSENT;
+  return firstCandidate ?? NO_PATTERN_MATCH;
 }
 
 /**

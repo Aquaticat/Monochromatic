@@ -4,11 +4,10 @@
  * @module
  */
 
-import { parseArgvModelPatterns, } from './argv-scope.ts';
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
+  NO_ARGV_MODELS,
+  parseArgvModelPatterns,
+} from './argv-scope.ts';
 import { scopedModelFromModel, } from './pattern-match.ts';
 import { resolveModelPatterns, } from './scope-patterns.ts';
 import { loadSettingsScopePatterns, } from './settings-scope.ts';
@@ -18,6 +17,13 @@ import type {
   ScopedModel,
   ScopedThinkingLevel,
 } from './types.ts';
+
+/**
+ * Sentinel returned by internal `readLiveScope` when the runtime exposes no
+ * usable live model scope. A `unique symbol`; narrowed with
+ * `=== NO_LIVE_SCOPE`.
+ */
+const NO_LIVE_SCOPE: unique symbol = Symbol('model-selection/no-live-scope',);
 
 //region Types
 
@@ -95,7 +101,7 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
 ): EffectiveModelScope<TModel> {
   /** Live model scope exposed by current or future pi APIs. */
   const liveScope = readLiveScope<TModel>(ctx,);
-  if (liveScope !== ABSENT) {
+  if (liveScope !== NO_LIVE_SCOPE) {
     return {
       source: 'live',
       entries: liveScope,
@@ -108,7 +114,7 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
       ?? process
         .argv,
   },);
-  if (argvPatterns !== ABSENT) {
+  if (argvPatterns !== NO_ARGV_MODELS) {
     return {
       source: 'argv',
       entries: resolveModelPatterns({
@@ -164,20 +170,20 @@ export function resolveEffectiveScope<TModel extends ReadonlyModel,>(
  *
  * @param scopedModels - optional live-scope property
  *
- * @returns live scoped models, or {@link ABSENT} when unavailable
+ * @returns live scoped models, or {@link NO_LIVE_SCOPE} when unavailable
  */
 function readLiveScope<TModel extends ReadonlyModel,>(
   {
     getScopedModels,
     scopedModels,
   }: Pick<ResolveEffectiveScopeContext<TModel>, 'getScopedModels' | 'scopedModels'>,
-): Maybe<ScopedModel<TModel>[]> {
+): ScopedModel<TModel>[] | typeof NO_LIVE_SCOPE {
   /** Raw live scope value from method or property. */
   const rawScope = getScopedModels === undefined
     ? scopedModels
     : getScopedModels();
   if (!Array.isArray(rawScope,))
-    return ABSENT;
+    return NO_LIVE_SCOPE;
 
   return rawScope
     .filter(function keepRawLiveScopeItem(value,): value is RawLiveScopeItem<TModel> {

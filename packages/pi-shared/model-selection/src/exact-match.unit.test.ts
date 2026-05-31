@@ -11,8 +11,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  ABSENT,
   findExactModelReferenceMatch,
+  NO_EXACT_MATCH,
 } from './core.ts';
 import { fixtureModel, } from './test-fixtures.ts';
 
@@ -64,18 +64,18 @@ await describe({
       },
     },),
     it({
-      name: 'returns ABSENT for empty, unknown, and ambiguous references',
+      name: 'returns NO_EXACT_MATCH for empty, unknown, and ambiguous references',
       fn: async function testAbsentReferences() {
         expect(findExactModelReferenceMatch({
           modelReference: '',
           availableModels,
         },),)
-          .toBe(ABSENT,);
+          .toBe(NO_EXACT_MATCH,);
         expect(findExactModelReferenceMatch({
           modelReference: 'missing',
           availableModels,
         },),)
-          .toBe(ABSENT,);
+          .toBe(NO_EXACT_MATCH,);
         expect(findExactModelReferenceMatch({
           modelReference: 'gpt-5.5',
           availableModels: [
@@ -83,7 +83,7 @@ await describe({
             fixtureModel({ provider: 'azure', id: 'gpt-5.5', },),
           ],
         },),)
-          .toBe(ABSENT,);
+          .toBe(NO_EXACT_MATCH,);
       },
     },),
   ],

@@ -11,10 +11,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  ABSENT,
   allowedSlugs,
   canonicalSlug,
   getModelIdLeaf,
+  MALFORMED_SLUG,
   parseProviderModelSlug,
   resolveRequestedModel,
   type EffectiveModelScope,
@@ -101,9 +101,9 @@ await describe({
           },
         },),
         it({
-          name: 'returns ABSENT for malformed slugs',
+          name: 'returns MALFORMED_SLUG for malformed slugs',
           fn: async function testMalformedProviderSlug() {
-            expect(parseProviderModelSlug('gpt-5.5',),).toBe(ABSENT,);
+            expect(parseProviderModelSlug('gpt-5.5',),).toBe(MALFORMED_SLUG,);
           },
         },),
       ],

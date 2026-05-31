@@ -5,21 +5,25 @@
  */
 
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import {
   budgetModelSlug,
   NoBudgetModelError,
   toBudgetModelCandidate,
 } from './budget-report.ts';
 import { findCheapestInMajorVersions, } from './version.ts';
-import type {
-  BudgetModel,
-  BudgetModelCandidate,
-  BudgetModelSelectionOptions,
-  ModelPricing,
+import {
+  type BudgetModel,
+  type BudgetModelCandidate,
+  type BudgetModelSelectionOptions,
+  type ModelPricing,
+  NO_AUTH,
 } from './types.ts';
+
+/**
+ * Sentinel returned by {@link findCheapestCandidate} when no provider yields a
+ * candidate (empty registry). A `unique symbol`; narrowed with
+ * `=== NO_CANDIDATE`. Exported because `findCheapestCandidate` is public.
+ */
+export const NO_CANDIDATE: unique symbol = Symbol('model-selection/no-candidate',);
 
 //region Internal types
 
@@ -97,7 +101,7 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
     readonly majorVersions: number;
     readonly hasConfiguredAuth: (options: { readonly model: TModel; }) => boolean;
   },
-): Maybe<BudgetModelCandidate> {
+): BudgetModelCandidate | typeof NO_CANDIDATE {
   /** Provider name to its list of models. */
   const byProvider = groupModelsByProvider(allModels,);
 
@@ -139,7 +143,7 @@ export function findCheapestCandidate<TModel extends ModelPricing,>(
     .at(0,);
 
   if (best === undefined)
-    return ABSENT;
+    return NO_CANDIDATE;
   return toBudgetModelCandidate({
     model: best.model,
     hasConfiguredAuth: hasConfiguredAuth({ model: best.model, },),
@@ -199,7 +203,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
       majorVersions,
       hasConfiguredAuth,
     },);
-    return candidate === ABSENT
+    return candidate === NO_CANDIDATE
       ? {}
       : { cheapestOverall: candidate, };
   }
@@ -266,7 +270,7 @@ async function findSameProvider<TModel extends ModelPricing,>(
     /** Resolved auth for current candidate. */
     const auth = await resolveAuth({ model: candidate, },);
     /* oxlint-enable no-await-in-loop */
-    if (auth !== ABSENT) {
+    if (auth !== NO_AUTH) {
       return {
         model: candidate,
         auth,
@@ -367,7 +371,7 @@ async function findAnyProvider<TModel extends ModelPricing,>(
     /** Resolved auth for current candidate. */
     const auth = await resolveAuth({ model, },);
     /* oxlint-enable no-await-in-loop */
-    if (auth !== ABSENT) {
+    if (auth !== NO_AUTH) {
       return {
         model,
         auth,

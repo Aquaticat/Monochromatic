@@ -2,7 +2,7 @@
 
 STATUS: IN PROGRESS (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight` complete; 4 targets remaining.
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep) complete; 3 targets remaining (`tsdoc`, `deps-cube`, `doodle-widget`).
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -158,7 +158,7 @@ Leak check: each leaf symbol appears only in its producer plus its one converter
 
 Verification: `mise run //packages/cli/terminal-exec:lint` (0 warnings/errors) and `:test:unit` pass (exit 0).
 
-### model-selection (PENDING, scope corrected 2026-05-31)
+### model-selection (COMPLETE, three packages)
 
 `packages/pi-shared/model-selection`.
 Heavier than first sketched: deleting its `maybe.ts` forces lockstep edits in two other packages, because `ABSENT` / `Maybe` cross the package boundary as a callback contract and as incidental coupling.
@@ -172,7 +172,7 @@ This is deps-cube-tier. Blast radius is exactly three packages (verified: the on
 - `MALFORMED_SLUG` (`model-id.ts`, export): `parseProviderModelSlug`. Cross-module seam: `budget-override.ts` narrows `parsed === MALFORMED_SLUG`. Also `model-id.unit.test.ts`. Exported (public function).
 - `NO_ARGV_MODELS` (`argv-scope.ts`, export): `parseArgvModelPatterns`. Cross-module seam: `scope-resolver.ts` narrows `argvPatterns !== NO_ARGV_MODELS`. Also `argv-scope.unit.test.ts`. Exported (public function).
 - `NO_LIVE_SCOPE` (`scope-resolver.ts`, local): internal `readLiveScope`.
-- `SETTINGS_FILE_ABSENT` (`settings-scope.ts`, local): internal `loadSettingsFile`. `loadSettingsScopePatterns` returns `SettingsScopePatterns` (already `patterns?:`), so it is not a sentinel site.
+- `NO_SETTINGS_FILE` (`settings-scope.ts`, local): internal `loadSettingsFile`. `loadSettingsScopePatterns` returns `SettingsScopePatterns` (already `patterns?:`), so it is not a sentinel site. (Named `NO_SETTINGS_FILE`, not `SETTINGS_FILE_ABSENT`, to keep every new symbol free of the `ABSENT` substring so a stray `replace_all` cannot corrupt one.)
 - `NO_CANDIDATE` (`budget-selection.ts`, export): `findCheapestCandidate`, narrowed in internal `cheapestOverallContext`. Exported because `findCheapestCandidate` is public (declaration emit would otherwise reference a private symbol).
 
 #### Two cross-package public contract symbols
@@ -195,6 +195,10 @@ A callback return type cannot be `?:` and `T | undefined` is banned, so these st
 
 1. advisor decouple. Builds green against unchanged model-selection (model-selection still exports `ABSENT` / `Maybe`, now unused by advisor).
 2. model-selection triage + auto-mode contract, atomic in one commit (the `NO_AUTH` / `NO_OVERRIDE_MODEL` identity must change on both sides together). Verify all three packages with `mise run buildAndTest` (model-selection builds to `dist`; auto-mode and advisor consume it), then the dependents' own lint + tests.
+
+#### Outcome
+
+Executed as planned. Advisor decouple landed as commit 1 with three advisor-local symbols (`MESSAGE_EXCLUDED`, `NO_USER_PROMPT`, `NO_CONFIG_FILE`), no `Maybe` alias. model-selection triage + auto-mode contract landed as commit 2 (the lockstep). `loadSettingsFile`'s sentinel is `NO_SETTINGS_FILE`. All ten model-selection symbols and the two advisor flows behave by `lint:types` (identity narrowing is the proof for these renames; a contract-identity mismatch across the package boundary would surface as a tsgo "no overlap" error). Verification: `mise run //packages/pi-shared/model-selection:lint` (0/0) and `:buildAndTest` (all suites pass, including `resolveEffectiveScope`, budget, exact/pattern); `//packages/pi/auto-mode:lint` (0/0, types build confirms the `NO_AUTH` / `NO_OVERRIDE_MODEL` contract aligns) and `:test:unit`; `//packages/pi/advisor:lint` (0/0) and `:test:unit`.
 
 ### oxlint-plugins/tsdoc (PENDING)
 

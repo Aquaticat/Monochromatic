@@ -4,7 +4,6 @@
  * @module
  */
 
-export * from './maybe.ts';
 export type * from './types.ts';
 export * from './model-id.ts';
 export * from './exact-match.ts';

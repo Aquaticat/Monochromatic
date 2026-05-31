@@ -5,17 +5,25 @@
  */
 
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import { parseProviderModelSlug, } from './model-id.ts';
+  MALFORMED_SLUG,
+  parseProviderModelSlug,
+} from './model-id.ts';
 import { NoBudgetModelError, } from './budget-report.ts';
-import type {
-  BudgetModel,
-  BudgetModelAuth,
-  BudgetModelOverride,
-  ModelIdentity,
+import {
+  type BudgetModel,
+  type BudgetModelAuth,
+  type BudgetModelOverride,
+  type ModelIdentity,
+  NO_AUTH,
 } from './types.ts';
+
+/**
+ * Sentinel returned by a {@link FindBudgetOverrideModel} implementation when no
+ * registry model matches the override slug. A `unique symbol`; narrowed with
+ * `=== NO_OVERRIDE_MODEL`. Shared across the package boundary so host registry
+ * lookups return the same identity this resolver checks.
+ */
+export const NO_OVERRIDE_MODEL: unique symbol = Symbol('model-selection/no-override-model',);
 
 //region Types
 
@@ -27,12 +35,12 @@ export type FindBudgetOverrideModel<TModel extends ModelIdentity = ModelIdentity
     /** Model id segment from override slug. */
     readonly modelId: string;
   },
-) => Maybe<TModel>;
+) => TModel | typeof NO_OVERRIDE_MODEL;
 
 /** Auth lookup callback used by override resolution. */
 export type ResolveBudgetOverrideAuth<TModel extends ModelIdentity = ModelIdentity,> = (
   options: { readonly model: TModel; },
-) => Promise<Maybe<BudgetModelAuth>>;
+) => Promise<BudgetModelAuth | typeof NO_AUTH>;
 
 /** Options for resolving budget-model overrides. */
 export type ResolveBudgetModelOverrideOptions<TModel extends ModelIdentity = ModelIdentity,> = {
@@ -71,7 +79,7 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
   const modelSlug = budgetModelOverrideSlug(override,);
   /** Parsed provider/model slug. */
   const parsed = parseProviderModelSlug(modelSlug,);
-  if (parsed === ABSENT) {
+  if (parsed === MALFORMED_SLUG) {
     throw new NoBudgetModelError(
       `model override "${modelSlug}" is not a provider/model slug`,
     );
@@ -82,7 +90,7 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
     provider: parsed.provider,
     modelId: parsed.modelId,
   },);
-  if (model === ABSENT) {
+  if (model === NO_OVERRIDE_MODEL) {
     throw new NoBudgetModelError(
       `model override "${modelSlug}" not found in registry`,
     );
@@ -99,7 +107,7 @@ export async function resolveBudgetModelOverride<TModel extends ModelIdentity,>(
 
   /** Registry-resolved auth for the override. */
   const auth = await options.resolveAuth({ model, },);
-  if (auth === ABSENT) {
+  if (auth === NO_AUTH) {
     throw new NoBudgetModelError(
       `no API key for model override "${modelSlug}"`,
     );

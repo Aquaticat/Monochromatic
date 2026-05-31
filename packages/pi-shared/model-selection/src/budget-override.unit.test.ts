@@ -10,8 +10,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ABSENT, } from './core.ts';
 import {
+  NO_OVERRIDE_MODEL,
   NoBudgetModelError,
   resolveBudgetModelOverride,
 } from './budget.ts';
@@ -39,7 +39,7 @@ const auth: BudgetModelAuth = { apiKey: 'test-key', };
  *
  * @param modelId - model id
  *
- * @returns fixture model or absent sentinel
+ * @returns fixture model, or {@link NO_OVERRIDE_MODEL} when unmatched
  */
 function findModel(
   {
@@ -52,7 +52,7 @@ function findModel(
 ) {
   return (provider === overrideModel.provider) && (modelId === overrideModel.id)
     ? overrideModel
-    : ABSENT;
+    : NO_OVERRIDE_MODEL;
 }
 
 /**

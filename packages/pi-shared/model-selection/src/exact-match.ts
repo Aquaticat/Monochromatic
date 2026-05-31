@@ -4,12 +4,17 @@
  * @module
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import { canonicalSlug, } from './model-id.ts';
 import type { ModelIdentity, } from './types.ts';
+
+/**
+ * Sentinel returned by {@link findExactModelReferenceMatch} (and internal
+ * `matchProviderModelReference`) when no unambiguous exact model match exists:
+ * empty reference, ambiguous matches, or no match. A `unique symbol`; callers
+ * narrow with `=== NO_EXACT_MATCH`. Exported because `pattern-match`'s
+ * `tryMatchModel` consumes it across the module seam.
+ */
+export const NO_EXACT_MATCH: unique symbol = Symbol('model-selection/no-exact-match',);
 
 //region Public API
 
@@ -35,11 +40,11 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
     readonly modelReference: string;
     readonly availableModels: readonly TModel[];
   },
-): Maybe<TModel> {
+): TModel | typeof NO_EXACT_MATCH {
   /** Trimmed user reference. */
   const trimmedReference = modelReference.trim();
   if (trimmedReference === '')
-    return ABSENT;
+    return NO_EXACT_MATCH;
 
   /** Lowercase reference for pi-compatible exact matching. */
   const normalizedReference = trimmedReference.toLowerCase();
@@ -51,17 +56,17 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
   },);
   if (canonicalMatches.length
     === 1)
-    return canonicalMatches[0] ?? ABSENT;
+    return canonicalMatches[0] ?? NO_EXACT_MATCH;
   if (canonicalMatches.length
     > 1)
-    return ABSENT;
+    return NO_EXACT_MATCH;
 
   /** Match provider/model form before bare id. */
   const providerMatch = matchProviderModelReference({
     trimmedReference,
     availableModels,
   },);
-  if (providerMatch !== ABSENT)
+  if (providerMatch !== NO_EXACT_MATCH)
     return providerMatch;
 
   /** Bare id matches. */
@@ -71,7 +76,7 @@ export function findExactModelReferenceMatch<TModel extends ModelIdentity,>(
       === normalizedReference;
   },);
   return idMatches.length
-    === 1 ? (idMatches[0] ?? ABSENT) : ABSENT;
+    === 1 ? (idMatches[0] ?? NO_EXACT_MATCH) : NO_EXACT_MATCH;
 }
 
 //endregion Public API
@@ -95,11 +100,11 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
     readonly trimmedReference: string;
     readonly availableModels: readonly TModel[];
   },
-): Maybe<TModel> {
+): TModel | typeof NO_EXACT_MATCH {
   /** Slash index used to parse provider/model references. */
   const slashIndex = trimmedReference.indexOf('/',);
   if (slashIndex === (-1))
-    return ABSENT;
+    return NO_EXACT_MATCH;
 
   /** Provider segment from a canonical reference. */
   const provider = trimmedReference
@@ -113,7 +118,7 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
     .slice(slashIndex + 1,)
     .trim();
   if ((provider === '') || (modelId === ''))
-    return ABSENT;
+    return NO_EXACT_MATCH;
 
   /** Exact provider and model id matches. */
   const providerMatches = availableModels.filter(function matchesProvider(model,) {
@@ -128,8 +133,8 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
   },);
   if (providerMatches.length
     === 1)
-    return providerMatches[0] ?? ABSENT;
-  return ABSENT;
+    return providerMatches[0] ?? NO_EXACT_MATCH;
+  return NO_EXACT_MATCH;
 }
 
 //endregion Internal helpers

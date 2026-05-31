@@ -10,8 +10,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ABSENT, } from './core.ts';
 import {
+  NO_AUTH,
   NoBudgetModelError,
   selectBudgetModel,
 } from './budget.ts';
@@ -71,7 +71,7 @@ function authCallbacks(
     async resolveAuth({ model, },) {
       return slugs.has(fixtureSlug(model,),)
         ? auth
-        : ABSENT;
+        : NO_AUTH;
     },
     hasConfiguredAuth({ model, },) {
       return slugs.has(fixtureSlug(model,),);
