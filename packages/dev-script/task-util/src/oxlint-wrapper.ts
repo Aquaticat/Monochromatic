@@ -3,13 +3,20 @@
 /**
  * CLI wrapper for `oxlint` that augments diagnostic output.
  *
- * Runs `oxlint` with all provided arguments, captures the output,
- * augments diagnostics with enhanced guidance via {@link augmentOxlintOutput},
- * and preserves the original exit code.
+ * Runs `oxlint` with all provided arguments, captures the output, augments
+ * diagnostics with enhanced guidance via {@link augmentOxlintOutput}, and
+ * preserves the original exit code.
+ *
+ * When the caller passes a fix-applying flag (`--fix`, `--fix-suggestions`, or
+ * `--fix-dangerously`), the wrapper loops oxlint until the codebase reaches a
+ * fixpoint (see {@link fixUntilStable}) instead of running a single pass, so
+ * overlapping autofixes that oxlint defers to a later pass fully converge in
+ * one `task-oxlint` invocation.
  *
  * @example
  * ```bash
  * task-oxlint --type-aware
+ * task-oxlint --fix
  * ```
  */
 
@@ -17,11 +24,16 @@ import spawn from 'nano-spawn';
 
 import { augmentOxlintOutput, } from './oxlint-augment.ts';
 import {
+  fixUntilStable,
+  MAX_AUTOFIX_PASSES,
+  type OxlintRunResult,
+} from './oxlint-fix-loop.ts';
+import {
   filterOxlintOutput,
   shouldForceSuccess,
 } from './oxlint-suppress.ts';
 
-//region Main execution
+//region Argument construction
 
 /**
  * Thread count override from environment.
@@ -60,7 +72,7 @@ const hasExplicitFormat = process.argv
   },);
 
 /**
- * Arguments forwarded to oxlint.
+ * Arguments forwarded to oxlint, identical on every pass of the fix loop.
  */
 const oxlintArgs = [
   ...(((threadOverride !== undefined) && (threadOverride !== ''))
@@ -74,126 +86,233 @@ const oxlintArgs = [
     .slice(2,),
 ];
 
-try {
-  /**
-   * Captured oxlint subprocess result; stdout is augmented with extra guidance before being forwarded.
-   */
-  const result = await spawn(
-    'oxlint',
-    [...oxlintArgs,],
-  );
+/**
+ * oxlint's fix-applying flags, stripped to build the oracle lint arguments.
+ */
+const FIX_FLAGS = new Set([
+  '--fix',
+  '--fix-suggestions',
+  '--fix-dangerously',
+],);
 
-  // oxlint succeeded (exit 0, no diagnostics): pass output through
-  if (result.stdout
-    .length
-    > 0)
-    process.stdout
-      .write(augmentOxlintOutput(result.stdout,),);
-  if (result.stderr
-    .length
-    > 0)
-    process.stderr
-      .write(result.stderr,);
-}
-catch (error) {
-  if ((error !== null) && ((typeof error) === 'object')
-    && ('exitCode' in error)) {
-    /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
+/**
+ * Whether the caller passed `--fix`, the documented multi-pass convergence case.
+ *
+ * Only `--fix` triggers the fixpoint loop. `--fix-suggestions` and
+ * `--fix-dangerously` keep their single-pass behavior: the oracle lint is not
+ * verified to track suggestion-applied changes, and "may change program
+ * behavior" fixes should not be iterated silently. A plain lint run produces
+ * identical output every pass, so it never loops.
+ */
+const hasFixFlag = process.argv
+  .slice(2,)
+  .includes('--fix',);
+
+/**
+ * Plain lint arguments: the forwarded arguments with every fix flag removed.
+ *
+ * Used as the convergence oracle, so it reports the post-fix file's remaining
+ * violations (fixable and unfixable) rather than applying anything.
+ */
+const oracleArgs = oxlintArgs
+  .filter(function isNotFixFlag(arg,) {
+    return !FIX_FLAGS.has(arg,);
+  },);
+
+//endregion Argument construction
+
+//region Execution
+
+/**
+ * Runs `oxlint` once and normalizes nano-spawn's success and failure shapes.
+ *
+ * nano-spawn resolves on a zero exit and throws a `SubprocessError` (carrying
+ * captured stdout/stderr plus `exitCode`/`signalName`) on a non-zero exit or
+ * signal; a missing binary throws a plain error. This collapses all three into
+ * one {@link OxlintRunResult} so the fix loop and {@link finalizeResult} read
+ * them uniformly.
+ *
+ * @param args - fully constructed oxlint arguments
+ *
+ * @returns normalized run result
+ */
+async function runOxlint(args: readonly string[],): Promise<OxlintRunResult> {
+  try {
     /**
-     * Re-typed thrown error so its captured stdout, stderr, and exit fields can be augmented and forwarded.
+     * Successful (exit 0) oxlint result; stdout still carries the `Found 0 ...` summary.
      */
-    const subprocessError = error as {
-      stdout?: string;
-      stderr?: string;
-      exitCode?: number;
-      signalName?: string;
+    const result = await spawn(
+      'oxlint',
+      [...args,],
+    );
+    return {
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: 0,
     };
-    /* oxlint-enable typescript/no-unsafe-type-assertion */
-
-    /**
-     * oxlint diagnostics with known false-positive blocks dropped and the summary recomputed.
-     */
-    const suppressed = filterOxlintOutput({
-      output: subprocessError.stdout
-        ?? '',
-    },);
-
-    /**
-     * oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout.
-     */
-    const augmentedStdout = augmentOxlintOutput(suppressed.filtered,);
-
-    if (augmentedStdout.length
-      > 0) {
-      process.stdout
-        .write(augmentedStdout,);
-      if (!augmentedStdout.endsWith('\n',))
-        process.stdout
-          .write('\n',);
-    }
-
-    if ((subprocessError.stderr
-      ?? '').length
-      > 0) {
-      process.stderr
-        .write(subprocessError.stderr
-          ?? '',);
-      if (!(subprocessError.stderr
-        ?? '').endsWith('\n',))
-        process.stderr
-          .write('\n',);
-    }
-
-    /**
-     * Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands.
-     */
-    const totalSuppressed = suppressed.suppressedWarnings
-      + suppressed.suppressedErrors;
-    /**
-     * oxlint's reported exit code; absent (e.g. signal termination) never qualifies as a forced success.
-     */
-    const { exitCode, } = subprocessError;
-    /**
-     * Whether to convert oxlint's non-zero exit into success.
-     *
-     * True only when the failure was caused solely by suppressed diagnostics:
-     * something was dropped, nothing real survived, oxlint used its ordinary
-     * diagnostics exit code, and stderr was empty. A config error or panic that
-     * coincides with a suppressible block (non-1 exit or stderr text) keeps
-     * oxlint's failure, so a real fault is never hidden by a suppression.
-     */
-    const forceSuccess = (exitCode !== undefined)
-      && shouldForceSuccess({
-        hasRemainingDiagnostics: suppressed.hasRemainingDiagnostics,
-        totalSuppressed,
-        exitCode,
+  }
+  catch (error) {
+    if ((error !== null) && ((typeof error) === 'object')
+      && ('exitCode' in error)) {
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
+      /**
+       * Re-typed thrown error so its captured stdout, stderr, and exit fields can be normalized.
+       */
+      const subprocessError = error as {
+        stdout?: string;
+        stderr?: string;
+        exitCode?: number;
+        signalName?: string;
+      };
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
+      return {
+        stdout: subprocessError.stdout
+          ?? '',
         stderr: subprocessError.stderr
           ?? '',
-      },);
-    if (!forceSuccess) {
-      process.exitCode = exitCode
-        ?? 1;
+        ...((subprocessError.exitCode === undefined)
+          ? {}
+          : { exitCode: subprocessError.exitCode, }),
+        ...((subprocessError.signalName === undefined)
+          ? {}
+          : { signalName: subprocessError.signalName, }),
+      };
     }
-
-    if ((subprocessError.signalName
-      !== undefined)
-      && (subprocessError.signalName
-        !== ''))
-    {
-      console.error(
-        `[task-oxlint] oxlint terminated by signal: ${subprocessError.signalName}`,
-      );
-      process.exitCode = 1;
-    }
+    return {
+      stdout: '',
+      stderr: '',
+      executionError: error instanceof Error ? error.message : String(error,),
+    };
   }
-  else {
-    console.error(
-      `[task-oxlint] failed to execute oxlint: ${
-        error instanceof Error ? error.message : String(error,)
-      }`,
-    );
+}
+
+/**
+ * Writes a normalized oxlint result to the parent streams and sets the exit code.
+ *
+ * Mirrors the original single-pass behavior: a clean run passes augmented
+ * output through; a diagnostics run drops known false-positive blocks via
+ * {@link filterOxlintOutput}, augments the survivors, and forces success only
+ * when the failure was caused solely by suppressed diagnostics
+ * ({@link shouldForceSuccess}); an execution failure reports and exits 1.
+ *
+ * @param result - final run result from the loop or a single pass
+ */
+function finalizeResult(result: OxlintRunResult,): void {
+  if (result.executionError !== undefined) {
+    console.error(`[task-oxlint] failed to execute oxlint: ${result.executionError}`,);
+    process.exitCode = 1;
+    return;
+  }
+
+  if (result.exitCode === 0) {
+    if (result.stdout
+      .length
+      > 0)
+      process.stdout
+        .write(augmentOxlintOutput(result.stdout,),);
+    if (result.stderr
+      .length
+      > 0)
+      process.stderr
+        .write(result.stderr,);
+    return;
+  }
+
+  /**
+   * oxlint diagnostics with known false-positive blocks dropped and the summary recomputed.
+   */
+  const suppressed = filterOxlintOutput({ output: result.stdout, },);
+
+  /**
+   * oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout.
+   */
+  const augmentedStdout = augmentOxlintOutput(suppressed.filtered,);
+
+  if (augmentedStdout.length
+    > 0) {
+    process.stdout
+      .write(augmentedStdout,);
+    if (!augmentedStdout.endsWith('\n',))
+      process.stdout
+        .write('\n',);
+  }
+
+  if (result.stderr
+    .length
+    > 0) {
+    process.stderr
+      .write(result.stderr,);
+    if (!result.stderr
+      .endsWith('\n',))
+      process.stderr
+        .write('\n',);
+  }
+
+  /**
+   * Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands.
+   */
+  const totalSuppressed = suppressed.suppressedWarnings
+    + suppressed.suppressedErrors;
+  /**
+   * oxlint's reported exit code; absent (e.g. signal termination) never qualifies as a forced success.
+   */
+  const { exitCode, } = result;
+  /**
+   * Whether to convert oxlint's non-zero exit into success.
+   *
+   * True only when the failure was caused solely by suppressed diagnostics:
+   * something was dropped, nothing real survived, oxlint used its ordinary
+   * diagnostics exit code, and stderr was empty. A config error or panic that
+   * coincides with a suppressible block (non-1 exit or stderr text) keeps
+   * oxlint's failure, so a real fault is never hidden by a suppression.
+   */
+  const forceSuccess = (exitCode !== undefined)
+    && shouldForceSuccess({
+      hasRemainingDiagnostics: suppressed.hasRemainingDiagnostics,
+      totalSuppressed,
+      exitCode,
+      stderr: result.stderr,
+    },);
+  if (!forceSuccess) {
+    process.exitCode = exitCode
+      ?? 1;
+  }
+
+  if ((result.signalName
+    !== undefined)
+    && (result.signalName
+      !== ''))
+  {
+    console.error(`[task-oxlint] oxlint terminated by signal: ${result.signalName}`,);
     process.exitCode = 1;
   }
 }
 
-//endregion Main execution
+//endregion Execution
+
+//region Main
+
+if (hasFixFlag) {
+  /**
+   * Fix-loop outcome; the `--fix` passes only apply fixes, the final oracle lint is forwarded.
+   */
+  const outcome = await fixUntilStable({
+    runFix: function runFixPass() {
+      return runOxlint(oxlintArgs,);
+    },
+    runLint: function runOraclePass() {
+      return runOxlint(oracleArgs,);
+    },
+    maxPasses: MAX_AUTOFIX_PASSES,
+  },);
+  if (outcome.stopReason === 'cap')
+    console.error(
+      `[task-oxlint] reached ${MAX_AUTOFIX_PASSES} autofix passes without converging; remaining diagnostics may be incomplete`,
+    );
+  finalizeResult(outcome.result,);
+}
+else {
+  finalizeResult(await runOxlint(oxlintArgs,),);
+}
+
+//endregion Main
