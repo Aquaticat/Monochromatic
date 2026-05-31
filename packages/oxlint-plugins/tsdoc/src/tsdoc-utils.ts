@@ -7,7 +7,9 @@
  * @module
  */
 
-/** File extensions excluded from TSDoc rules. */
+/**
+ * File extensions excluded from TSDoc rules.
+ */
 export const IGNORED_EXTENSIONS: readonly string[] = [
   '.test.ts',
   '.spec.ts',

@@ -52,20 +52,32 @@ export const NO_TSDOC: unique symbol = Symbol('tsdoc/no-tsdoc',);
  * ```
  */
 export type TsdocParseResult = {
-  /** Raw block comment AST node from oxlint. */
+  /**
+   * Raw block comment AST node from oxlint.
+   */
   readonly comment: Comment;
-  /** Parsed TSDoc context containing docComment, messages, and tokens. */
+  /**
+   * Parsed TSDoc context containing docComment, messages, and tokens.
+   */
   readonly parserContext: ParserContext;
-  /** Convenience alias for parserContext.docComment. */
+  /**
+   * Convenience alias for parserContext.docComment.
+   */
   readonly docComment: DocComment;
-  /** Convenience alias for parserContext.log.messages. */
+  /**
+   * Convenience alias for parserContext.log.messages.
+   */
   readonly messages: readonly ParserMessage[];
 };
 
-/** Shared TSDoc parser configuration with all standard tags. */
+/**
+ * Shared TSDoc parser configuration with all standard tags.
+ */
 const tsdocConfiguration: TSDocConfiguration = new TSDocConfiguration();
 
-/** Shared TSDoc parser instance reused across all rule invocations. */
+/**
+ * Shared TSDoc parser instance reused across all rule invocations.
+ */
 const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
 
 /**
@@ -106,9 +118,13 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
  * Parameters for {@link findTsdocComment} and {@link parseTsdocForNode}.
  */
 export type TsdocLookupParams = {
-  /** AST node to find TSDoc for. */
+  /**
+   * AST node to find TSDoc for.
+   */
   readonly node: Span;
-  /** Oxlint rule context providing sourceCode. */
+  /**
+   * Oxlint rule context providing sourceCode.
+   */
   readonly context: Context;
 };
 
@@ -138,19 +154,25 @@ export function findTsdocComment({
   context,
 }: TsdocLookupParams,): Comment | typeof NO_TSDOC {
   // Fast path: getCommentsBefore works for most declarations
-  /** Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc. */
+  /**
+   * Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc.
+   */
   const comments = context.sourceCode
     .getCommentsBefore(node,);
   for (let i = comments.length
     - 1; i >= 0; i--) {
-    /** Single comment candidate at index `i`; checked for the TSDoc block marker. */
+    /**
+     * Single comment candidate at index `i`; checked for the TSDoc block marker.
+     */
     const c = comments[i];
     if ((c !== undefined) && isTsdocBlock(c,))
       return c;
   }
 
   // Only fall back for declaration-level nodes, not expressions inside them
-  /** Node type string; gates whether the slow whole-file fallback is allowed. */
+  /**
+   * Node type string; gates whether the slow whole-file fallback is allowed.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as unknown as Record<string, unknown>).type;
   if (((typeof nodeType)
@@ -161,20 +183,28 @@ export function findTsdocComment({
   // immediately before this node. Handles exported declarations where
   // getCommentsBefore returns nothing because the comment is before the
   // `export` keyword rather than the inner declaration.
-  /** Starting line of the declaration; comments must end exactly one line above. */
+  /**
+   * Starting line of the declaration; comments must end exactly one line above.
+   */
   const nodeStartLine = node.loc
     .start
     .line;
-  /** Full comment table for the file; needed because `getCommentsBefore` misses cross-scope ones. */
+  /**
+   * Full comment table for the file; needed because `getCommentsBefore` misses cross-scope ones.
+   */
   const allComments = context.sourceCode
     .getAllComments();
 
-  /** Closest TSDoc comment found so far, tracked as the loop scans the whole comment table. */
+  /**
+   * Closest TSDoc comment found so far, tracked as the loop scans the whole comment table.
+   */
   let best: Comment | typeof NO_TSDOC = NO_TSDOC;
   for (const candidate of allComments) {
     if (!isTsdocBlock(candidate,))
       continue;
-    /** End line of the candidate comment; must immediately precede `nodeStartLine`. */
+    /**
+     * End line of the candidate comment; must immediately precede `nodeStartLine`.
+     */
     const candidateEndLine = candidate.loc
       .end
       .line;
@@ -213,7 +243,9 @@ export function parseTsdocForNode({
   node,
   context,
 }: TsdocLookupParams,): TsdocParseResult | typeof NO_TSDOC {
-  /** Located TSDoc comment for the node; absent means nothing to parse. */
+  /**
+   * Located TSDoc comment for the node; absent means nothing to parse.
+   */
   const comment = findTsdocComment({
     node,
     context,
@@ -222,9 +254,13 @@ export function parseTsdocForNode({
     return NO_TSDOC;
 
   // Reconstruct full comment text as the parser expects `/** ... */`
-  /** Reconstructed `/* ... *\/` form because `comment.value` strips the delimiters. */
+  /**
+   * Reconstructed `/* ... *\/` form because `comment.value` strips the delimiters.
+   */
   const commentText = `/*${comment.value}*/`;
-  /** Parser run state; holds the doc tree plus log messages forwarded to the rule. */
+  /**
+   * Parser run state; holds the doc tree plus log messages forwarded to the rule.
+   */
   const parserContext = tsdocParser.parseString(commentText,);
 
   return {

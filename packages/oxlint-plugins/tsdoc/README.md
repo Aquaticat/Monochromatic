@@ -34,7 +34,7 @@ All rules are enabled by default at `"warn"` severity with `recommended: true`.
 ### Structural formatting
 
 - **check-alignment**: enforces consistent asterisk alignment in multiline TSDoc blocks
-- **multiline-blocks**: requires multiline format for TSDoc comments containing tags
+- **multiline-blocks**: requires multiline format for all TSDoc comments and auto-fixes single-line blocks
 - **no-multi-asterisks**: disallows `** text` lines (doubled leading asterisks)
 - **tag-lines**: requires blank comment lines before block tags
 - **empty-tags**: enforces that modifier tags (`@public`, `@readonly`, `@override`, etc.) have no content

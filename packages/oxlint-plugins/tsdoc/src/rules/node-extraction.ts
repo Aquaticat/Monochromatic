@@ -21,7 +21,9 @@ import {
   NO_TSDOC,
 } from '../tsdoc-utils.ts';
 
-/** Human-readable labels for AST node types that require TSDoc. */
+/**
+ * Human-readable labels for AST node types that require TSDoc.
+ */
 export const NODE_KIND_LABELS: Readonly<Record<string, string>> = {
   FunctionDeclaration: 'function',
   ClassDeclaration: 'class',
@@ -55,9 +57,13 @@ const NO_NAMED_CHILD: unique symbol = Symbol('tsdoc/no-named-child',);
  * Parameters for {@link readNamedChild}.
  */
 type ReadNamedChildParams = {
-  /** Parent AST node carrying the child under `key`. */
+  /**
+   * Parent AST node carrying the child under `key`.
+   */
   readonly node: ReadonlyRecord;
-  /** Property name of the child identifier (`id`, `key`, ...). */
+  /**
+   * Property name of the child identifier (`id`, `key`, ...).
+   */
   readonly key: string;
 };
 
@@ -76,11 +82,15 @@ function readNamedChild({
   node,
   key,
 }: ReadNamedChildParams,): string | typeof NO_NAMED_CHILD {
-  /** Child node under `key`; only an identifier-shaped record yields a name. */
+  /**
+   * Child node under `key`; only an identifier-shaped record yields a name.
+   */
   const child = node[key];
   if (!isRecord(child,))
     return NO_NAMED_CHILD;
-  /** Identifier text of the child; present only on identifier nodes. */
+  /**
+   * Identifier text of the child; present only on identifier nodes.
+   */
   const { name, } = child;
   return (typeof name)
     === 'string' ? name : NO_NAMED_CHILD;
@@ -99,22 +109,30 @@ function readNamedChild({
  * ```
  */
 export function extractNodeName(node: Span,): string {
-  /** Narrowed view that exposes the untyped properties added by the host AST. */
+  /**
+   * Narrowed view that exposes the untyped properties added by the host AST.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const typed = node as Span & Record<string, unknown>;
 
   // VariableDeclaration: dig into declarators[0].id.name
   if (typed.type
     === 'VariableDeclaration') {
-    /** Declarator list of the variable statement; first declarator carries the canonical name. */
+    /**
+     * Declarator list of the variable statement; first declarator carries the canonical name.
+     */
     const { declarations, } = typed;
     if (!isRecordArray(declarations,))
       return 'anonymous';
-    /** First declarator; its `id` identifier holds the variable name. */
+    /**
+     * First declarator; its `id` identifier holds the variable name.
+     */
     const [first,] = declarations;
     if (!isRecord(first,))
       return 'anonymous';
-    /** Variable name read from the first declarator's `id`. */
+    /**
+     * Variable name read from the first declarator's `id`.
+     */
     const name = readNamedChild({
       node: first,
       key: 'id',
@@ -130,7 +148,9 @@ export function extractNodeName(node: Span,): string {
     || (typed.type
       === 'Property'))
   {
-    /** Member name read from the node's `key` (`foo` in `class C { foo() {} }`). */
+    /**
+     * Member name read from the node's `key` (`foo` in `class C { foo() {} }`).
+     */
     const name = readNamedChild({
       node: typed,
       key: 'key',
@@ -139,7 +159,9 @@ export function extractNodeName(node: Span,): string {
   }
 
   // Most declarations: .id.name
-  /** Declaration name read from `id`; present on functions, classes, type aliases, etc. */
+  /**
+   * Declaration name read from `id`; present on functions, classes, type aliases, etc.
+   */
   const idName = readNamedChild({
     node: typed,
     key: 'id',
@@ -148,7 +170,9 @@ export function extractNodeName(node: Span,): string {
     return idName;
 
   // FunctionDeclaration without name, TSEnumMember with direct name
-  /** Direct `.name` on the node, used for enum members and unnamed functions. */
+  /**
+   * Direct `.name` on the node, used for enum members and unnamed functions.
+   */
   const { name, } = typed;
   if ((typeof name)
     === 'string')
@@ -170,11 +194,12 @@ export function extractNodeName(node: Span,): string {
  * ```
  */
 export function extractNodeKind(node: Span,): string {
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped. */
   /**
    * AST type tag (e.g. `FunctionDeclaration`); the key into {@link NODE_KIND_LABELS}.
    */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as Span & Record<string, unknown>).type;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   if ((typeof nodeType)
     !== 'string')
     return 'declaration';
@@ -186,9 +211,13 @@ export function extractNodeKind(node: Span,): string {
  * Parameters for {@link reportMissing}.
  */
 export type ReportMissingParams = {
-  /** AST node that should have TSDoc. */
+  /**
+   * AST node that should have TSDoc.
+   */
   readonly node: Span;
-  /** Oxlint rule context. */
+  /**
+   * Oxlint rule context.
+   */
   readonly context: Context;
 };
 

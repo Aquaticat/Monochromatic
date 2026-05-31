@@ -26,7 +26,9 @@ import { restrictionRules, } from './rules/restriction.ts';
 import { styleRules, } from './rules/style.ts';
 import { tsdocRules, } from './rules/tsdoc.ts';
 
-/** Shared oxlint configuration. */
+/**
+ * Shared oxlint configuration.
+ */
 const config: OxlintConfig = defineConfig({
   categories: {
     correctness: 'error',

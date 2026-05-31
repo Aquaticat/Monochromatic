@@ -10,7 +10,9 @@
  * @module
  */
 
-/** Readonly view of an untyped AST node's property bag. */
+/**
+ * Readonly view of an untyped AST node's property bag.
+ */
 export type ReadonlyRecord = Readonly<Record<string, unknown>>;
 
 /**
@@ -73,7 +75,9 @@ export function unwrapMethodDefinition(node: ReadonlyRecord,): ReadonlyRecord {
     || (node.type
       === 'TSAbstractMethodDefinition'))
   {
-    /** Inner FunctionExpression of the method; carries the return-type and params info. */
+    /**
+     * Inner FunctionExpression of the method; carries the return-type and params info.
+     */
     const { value, } = node;
     if (isRecord(value,))
       return value;
@@ -94,9 +98,13 @@ export function unwrapMethodDefinition(node: ReadonlyRecord,): ReadonlyRecord {
  * ```
  */
 export function extractRawParams(node: ReadonlyRecord,): readonly ReadonlyRecord[] {
-  /** Inner function value (for methods) or node itself; the `.params` array lives here. */
+  /**
+   * Inner function value (for methods) or node itself; the `.params` array lives here.
+   */
   const target = unwrapMethodDefinition(node,);
-  /** Raw `.params`; unknown until narrowed to an array of records. */
+  /**
+   * Raw `.params`; unknown until narrowed to an array of records.
+   */
   const { params, } = target;
   if (isRecordArray(params,))
     return params;

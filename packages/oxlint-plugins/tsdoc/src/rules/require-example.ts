@@ -56,10 +56,14 @@ const INTERNAL_TAG_NAME = '@internal';
  * @returns true when the node's parent is an export declaration
  */
 function isDirectlyExported(node: Span,): boolean {
-  /** Narrowed view of `node` that exposes the untyped `parent` property added by the host. */
+  /**
+   * Narrowed view of `node` that exposes the untyped `parent` property added by the host.
+   */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const typed = node as Span & Record<string, unknown>;
-  /** Parent node, used to detect whether the function sits under an `export` declaration. */
+  /**
+   * Parent node, used to detect whether the function sits under an `export` declaration.
+   */
   const { parent, } = typed;
   if (!isRecord(parent,))
     return false;
@@ -158,7 +162,9 @@ export const requireExample: CreateOnceRule = {
       comment: Comment;
     }>();
 
-    /** Names exported via `export { name }` specifier lists. */
+    /**
+     * Names exported via `export { name }` specifier lists.
+     */
     const specifierExportedNames = new Set<string>();
 
     /**
@@ -168,12 +174,18 @@ export const requireExample: CreateOnceRule = {
       node,
       comment,
     }: {
-      /** Function-like AST node. */
+      /**
+       * Function-like AST node.
+       */
       readonly node: Span;
-      /** TSDoc comment AST node for error location. */
+      /**
+       * TSDoc comment AST node for error location.
+       */
       readonly comment: ReadonlyDeep<Comment>;
     },): void {
-      /** Parsed TSDoc result; absent when the comment cannot be parsed at all. */
+      /**
+       * Parsed TSDoc result; absent when the comment cannot be parsed at all.
+       */
       const result = parseTsdocForNode({
         node,
         context,
@@ -197,7 +209,9 @@ export const requireExample: CreateOnceRule = {
      * @param node - AST node to check
      */
     function checkFunction(node: Span,): void {
-      /** Attached TSDoc comment, when present; absent means nothing to validate. */
+      /**
+       * Attached TSDoc comment, when present; absent means nothing to validate.
+       */
       const comment = findTsdocComment({
         node,
         context,
@@ -214,7 +228,9 @@ export const requireExample: CreateOnceRule = {
       }
 
       // Defer: might be exported via `export { name }` seen later
-      /** Identifier of the function, used to match later `export { name }` specifiers. */
+      /**
+       * Identifier of the function, used to match later `export { name }` specifiers.
+       */
       const name = extractNodeName(node,);
       if (name !== 'anonymous') {
         functionNodes.set(
@@ -236,16 +252,23 @@ export const requireExample: CreateOnceRule = {
      * @param node - VariableDeclaration AST node
      */
     function checkVariable(node: Span,): void {
-      /** Narrowed view of the VariableDeclaration so untyped `declarations` is reachable. */
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped. */
+      /**
+       * Narrowed view of the VariableDeclaration so untyped `declarations` is reachable.
+       */
       const typed = node as Span & Record<string, unknown>;
-      /** Declarator list; for `const a = ..., b = ...` only the first is inspected. */
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
+      /**
+       * Declarator list; for `const a = ..., b = ...` only the first is inspected.
+       */
       const { declarations, } = typed;
       if ((!isRecordArray(declarations,)) || (declarations.length
         === 0))
         return;
 
-      /** First declarator; inspected so its `init` can be checked below. */
+      /**
+       * First declarator; inspected so its `init` can be checked below.
+       */
       const [decl,] = declarations;
       if (!isRecord(decl,))
         return;
@@ -253,7 +276,9 @@ export const requireExample: CreateOnceRule = {
       // Only check variables whose init is a function expression or arrow.
       // AST uses null (not undefined) for missing initializers (e.g. for-of bindings);
       // both fail the isRecord guard, so a non-record init is skipped here.
-      /** Initializer of the first declarator; a non-record value means no function init. */
+      /**
+       * Initializer of the first declarator; a non-record value means no function init.
+       */
       const { init, } = decl;
       if (!isRecord(init,))
         return;
@@ -265,7 +290,9 @@ export const requireExample: CreateOnceRule = {
         return;
       }
 
-      /** Attached TSDoc comment for the variable; absent means nothing to validate. */
+      /**
+       * Attached TSDoc comment for the variable; absent means nothing to validate.
+       */
       const comment = findTsdocComment({
         node,
         context,
@@ -282,7 +309,9 @@ export const requireExample: CreateOnceRule = {
       }
 
       // Defer for specifier-list exports
-      /** Declared variable name, used to match later `export { name }` specifiers. */
+      /**
+       * Declared variable name, used to match later `export { name }` specifiers.
+       */
       const name = extractNodeName(node,);
       if (name !== 'anonymous') {
         functionNodes.set(
@@ -310,20 +339,29 @@ export const requireExample: CreateOnceRule = {
       FunctionDeclaration: checkFunction,
       VariableDeclaration: checkVariable,
       ExportNamedDeclaration(node: Span,): void {
-        /** Narrowed view of the ExportNamedDeclaration so untyped `specifiers` is reachable. */
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped. */
+        /**
+         * Narrowed view of the ExportNamedDeclaration so untyped `specifiers` is reachable.
+         */
         const typed = node as Span & Record<string, unknown>;
-        /** Specifier list; populated only for `export { a, b }` form, absent for inline exports. */
+        /* oxlint-enable typescript/no-unsafe-type-assertion */
+        /**
+         * Specifier list; populated only for `export { a, b }` form, absent for inline exports.
+         */
         const { specifiers, } = typed;
         if (!isRecordArray(specifiers,))
           return;
 
         for (const spec of specifiers) {
-          /** Local-name node of the specifier (`a` in `export { a as b }`). */
+          /**
+           * Local-name node of the specifier (`a` in `export { a as b }`).
+           */
           const { local, } = spec;
           if (!isRecord(local,))
             continue;
-          /** Exported local identifier text; only string names are tracked. */
+          /**
+           * Exported local identifier text; only string names are tracked.
+           */
           const { name, } = local;
           if ((typeof name)
             === 'string')

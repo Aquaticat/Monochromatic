@@ -109,9 +109,13 @@ export function commentReportLoc(comment: ReadonlyDeep<Comment>,): {
  * Parameters for {@link createTsdocVisitor}.
  */
 export type CreateTsdocVisitorParams = {
-  /** Oxlint rule context. */
+  /**
+   * Oxlint rule context.
+   */
   readonly context: Context;
-  /** Invoked for each (node, comment) pair. */
+  /**
+   * Invoked for each (node, comment) pair.
+   */
   readonly handler: (
     node: Span,
     comment: ReadonlyDeep<Comment>,
@@ -144,7 +148,9 @@ export function createTsdocVisitor({
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    /** Located TSDoc comment for the node; only when present does the handler fire. */
+    /**
+     * Located TSDoc comment for the node; only when present does the handler fire.
+     */
     const comment = findTsdocComment({
       node,
       context,
@@ -187,9 +193,13 @@ export function createTsdocVisitor({
  * Parameters for {@link createFunctionTsdocVisitor}.
  */
 export type CreateFunctionTsdocVisitorParams = {
-  /** Oxlint rule context. */
+  /**
+   * Oxlint rule context.
+   */
   readonly context: Context;
-  /** Invoked with node and parsed TSDoc for each function-like node. */
+  /**
+   * Invoked with node and parsed TSDoc for each function-like node.
+   */
   readonly handler: (
     node: Span & ReadonlyRecord,
     result: ReadonlyDeep<TsdocParseResult>,
@@ -224,14 +234,18 @@ export function createFunctionTsdocVisitor({
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    /** Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped. */
+    /**
+     * Parsed TSDoc bundle for the node; absent means no TSDoc and the handler is skipped.
+     */
     const result = parseTsdocForNode({
       node,
       context,
     },);
     if (result === NO_TSDOC)
       return;
-    /** Narrowed view that exposes the host AST's untyped extra properties to the handler. */
+    /**
+     * Narrowed view that exposes the host AST's untyped extra properties to the handler.
+     */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typedNode = node as Span & Record<string, unknown>;
     handler(
@@ -240,7 +254,9 @@ export function createFunctionTsdocVisitor({
     );
   }
 
-  /** Visitor object built up before the unsafe cast that satisfies the host's index-signature type. */
+  /**
+   * Visitor object built up before the unsafe cast that satisfies the host's index-signature type.
+   */
   const visitor = {
     before() {
       if (shouldIgnoreFile(context.filename,))

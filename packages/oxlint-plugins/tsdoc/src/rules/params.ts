@@ -67,7 +67,9 @@ export const checkParamNames: CreateOnceRule = {
         node,
         result,
       ): void {
-        /** Ordered list of declared parameter names; positions in this array drive the index match. */
+        /**
+         * Ordered list of declared parameter names; positions in this array drive the index match.
+         */
         const paramNames = extractParamNames(node,);
         /**
          * Ordered list of `\@param` names extracted from the TSDoc comment.
@@ -87,7 +89,9 @@ export const checkParamNames: CreateOnceRule = {
           if (destructuredNames.has(docName,))
             return;
 
-          /** Parameter at the same index as the current doc tag; basis for the name comparison. */
+          /**
+           * Parameter at the same index as the current doc tag; basis for the name comparison.
+           */
           const correspondingParam = paramNames[index];
           if (correspondingParam === undefined) {
             // Extra @param with no matching parameter
@@ -156,9 +160,13 @@ export const requireParam: CreateOnceRule = {
         node,
         result,
       ): void {
-        /** Declared parameter names; each must appear among the documented tags. */
+        /**
+         * Declared parameter names; each must appear among the documented tags.
+         */
         const paramNames = extractParamNames(node,);
-        /** Documented param names indexed in a Set for O(1) presence checks. */
+        /**
+         * Documented param names indexed in a Set for O(1) presence checks.
+         */
         const docParamNames = new Set(extractDocParamNames(result.docComment,),);
 
         paramNames.forEach(function checkParam(paramName,): void {

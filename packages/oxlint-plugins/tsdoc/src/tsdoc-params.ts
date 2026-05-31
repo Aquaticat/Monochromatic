@@ -56,7 +56,9 @@ export function extractParamNames(
 function extractBindingName(pattern: ReadonlyRecord,): readonly string[] {
   if (pattern.type
     === 'Identifier') {
-    /** Identifier text of the parameter binding; `this` is skipped because it is not a real param. */
+    /**
+     * Identifier text of the parameter binding; `this` is skipped because it is not a real param.
+     */
     const { name, } = pattern;
     // Skip `this` parameter in TypeScript
     if ((typeof name)
@@ -66,19 +68,25 @@ function extractBindingName(pattern: ReadonlyRecord,): readonly string[] {
   }
   if (pattern.type
     === 'AssignmentPattern') {
-    /** Binding side of `name = default`; recurse to collect the actual name. */
+    /**
+     * Binding side of `name = default`; recurse to collect the actual name.
+     */
     const { left, } = pattern;
     return isRecord(left,) ? extractBindingName(left,) : [];
   }
   if (pattern.type
     === 'RestElement') {
-    /** Inner binding of `...rest`; recurse to collect its name. */
+    /**
+     * Inner binding of `...rest`; recurse to collect its name.
+     */
     const { argument, } = pattern;
     return isRecord(argument,) ? extractBindingName(argument,) : [];
   }
   if (pattern.type
     === 'TSParameterProperty') {
-    /** Inner parameter of a TS constructor `public/private` param; recurse on it. */
+    /**
+     * Inner parameter of a TS constructor `public/private` param; recurse on it.
+     */
     const { parameter, } = pattern;
     return isRecord(parameter,) ? extractBindingName(parameter,) : [];
   }

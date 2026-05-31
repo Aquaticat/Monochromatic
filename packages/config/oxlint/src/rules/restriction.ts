@@ -12,7 +12,9 @@
 
 import type { DummyRuleMap, } from 'oxlint';
 
-/** Restriction rules. */
+/**
+ * Restriction rules.
+ */
 export const restrictionRules: DummyRuleMap = {
   'eslint/no-iterator': 'error',
 

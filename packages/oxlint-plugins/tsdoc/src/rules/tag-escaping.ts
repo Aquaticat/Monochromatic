@@ -41,14 +41,18 @@ export function hasUnescapedCommentClose(s: string,): boolean {
   // stack stays flat regardless of how many escaped closers appear.
   for (let from = 0; from <= s
     .length;) {
-    /** Position of the next `*\/`; -1 means the rest of the string is safe. */
+    /**
+     * Position of the next `*\/`; -1 means the rest of the string is safe.
+     */
     const idx = s.indexOf(
       '*/',
       from,
     );
     if (idx === (-1))
       return false;
-    /** Char immediately before the match; backslash means the closer is escaped. */
+    /**
+     * Char immediately before the match; backslash means the closer is escaped.
+     */
     const prev = idx === 0 ? '' : s.charAt(idx - 1,);
     if (prev !== '\\')
       return true;
@@ -80,7 +84,9 @@ export const escapeInlineTags: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Comment body split into lines; the last (legitimate closer) is dropped before scanning. */
+        /**
+         * Comment body split into lines; the last (legitimate closer) is dropped before scanning.
+         */
         const lines = getCommentLines(comment,);
         // Skip the last line which is the legitimate closing `*/`
         lines
@@ -97,7 +103,9 @@ export const escapeInlineTags: CreateOnceRule = {
               && line.trimEnd()
               .endsWith('*',))
               return;
-            /** Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content. */
+            /**
+             * Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content.
+             */
             const trimmed = stripCommentLineMarker(line.trimStart(),);
             // Look for `*/` not preceded by backslash inside content
             if (hasUnescapedCommentClose(trimmed,)) {

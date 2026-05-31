@@ -36,27 +36,37 @@ export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
     || (node.type
       === 'TSAbstractMethodDefinition'))
   {
-    /** Method kind (constructor/get/set/method); read on the outer MethodDefinition before unwrap. */
+    /**
+     * Method kind (constructor/get/set/method); read on the outer MethodDefinition before unwrap.
+     */
     const { kind, } = node;
     if ((kind === 'constructor') || (kind === 'set'))
       return false;
   }
 
-  /** Inner function value (for methods) or the node itself; supplies the return-type info below. */
+  /**
+   * Inner function value (for methods) or the node itself; supplies the return-type info below.
+   */
   const target = unwrapMethodDefinition(node,);
 
   // Check for explicit void/never return type annotation
-  /** TS return-type annotation node; absent when the function has no explicit return type. */
+  /**
+   * TS return-type annotation node; absent when the function has no explicit return type.
+   */
   const { returnType, } = target;
   if (!isRecord(returnType,))
     return true;
 
-  /** Inner annotation wrapped by `returnType`; the actual TS type lives one level deeper. */
+  /**
+   * Inner annotation wrapped by `returnType`; the actual TS type lives one level deeper.
+   */
   const { typeAnnotation, } = returnType;
   if (!isRecord(typeAnnotation,))
     return true;
 
-  /** AST node-type tag (`TSVoidKeyword`, `TSTypeReference`, etc.) that drives the branch below. */
+  /**
+   * AST node-type tag (`TSVoidKeyword`, `TSTypeReference`, etc.) that drives the branch below.
+   */
   const tsType = typeAnnotation.type;
   if ((tsType === 'TSVoidKeyword') || (tsType === 'TSNeverKeyword'))
     return false;
@@ -66,7 +76,9 @@ export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
   // Handle `Promise<void>` and `Promise<never>` return types. The AST represents
   // these as `TSTypeReference` with `typeName.name === 'Promise'` and a single type
   // parameter of `TSVoidKeyword` or `TSNeverKeyword`.
-  /** Type reference name node; used to detect the `Promise<...>` shape. */
+  /**
+   * Type reference name node; used to detect the `Promise<...>` shape.
+   */
   const { typeName, } = typeAnnotation;
   if (!isRecord(typeName,))
     return true;
@@ -74,21 +86,29 @@ export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
     return true;
 
   // oxc AST uses `typeArguments` (not `typeParameters`) for generic type arguments.
-  /** Generic argument container for the `Promise<...>` reference. */
+  /**
+   * Generic argument container for the `Promise<...>` reference.
+   */
   const { typeArguments, } = typeAnnotation;
   if (!isRecord(typeArguments,))
     return true;
-  /** Concrete type parameters of `Promise<...>`; exactly one is the valid shape. */
+  /**
+   * Concrete type parameters of `Promise<...>`; exactly one is the valid shape.
+   */
   const { params, } = typeArguments;
   if ((!isRecordArray(params,)) || (params.length
     !== 1))
     return true;
 
-  /** Single Promise type argument; its node-type decides the void/never special case. */
+  /**
+   * Single Promise type argument; its node-type decides the void/never special case.
+   */
   const [innerArg,] = params;
   if (!isRecord(innerArg,))
     return true;
-  /** AST node-type of the single Promise type argument, e.g. `TSVoidKeyword`. */
+  /**
+   * AST node-type of the single Promise type argument, e.g. `TSVoidKeyword`.
+   */
   const innerType = innerArg.type;
   if ((innerType === 'TSVoidKeyword') || (innerType === 'TSNeverKeyword'))
     return false;
@@ -109,7 +129,9 @@ export function functionReturnsValue(node: Span & ReadonlyRecord,): boolean {
  * ```
  */
 export function isGeneratorFunction(node: Span & ReadonlyRecord,): boolean {
-  /** Inner function value (for methods) or the node itself; carries the `generator` flag. */
+  /**
+   * Inner function value (for methods) or the node itself; carries the `generator` flag.
+   */
   const target = unwrapMethodDefinition(node,);
 
   return target.generator

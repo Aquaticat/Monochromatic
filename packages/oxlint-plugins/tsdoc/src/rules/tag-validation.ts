@@ -65,28 +65,40 @@ export function containsBoundedAccessTag({
   // is bounded by the length of `text` and the stack stays flat.
   for (let from = 0; from <= text
     .length;) {
-    /** Position of the next literal occurrence of `tag`; -1 ends the search. */
+    /**
+     * Position of the next literal occurrence of `tag`; -1 ends the search.
+     */
     const idx = text.indexOf(
       tag,
       from,
     );
     if (idx === (-1))
       return false;
-    /** Char immediately before the match; start-of-string acts as whitespace. */
+    /**
+     * Char immediately before the match; start-of-string acts as whitespace.
+     */
     const before = idx === 0 ? '' : text.charAt(idx - 1,);
-    /** Whether the preceding char satisfies the `(?:^|\s)` anchor. */
+    /**
+     * Whether the preceding char satisfies the `(?:^|\s)` anchor.
+     */
     const beforeOk = (before === '') || isWhitespaceChar(before,);
     if (!beforeOk) {
       from = idx + 1;
       continue;
     }
-    /** Index immediately after the match; used to inspect the trailing char. */
+    /**
+     * Index immediately after the match; used to inspect the trailing char.
+     */
     const afterIdx = idx + tag
       .length;
-    /** Char immediately after the match; end-of-string acts as a valid terminator. */
+    /**
+     * Char immediately after the match; end-of-string acts as a valid terminator.
+     */
     const after = afterIdx >= text
       .length ? '' : text.charAt(afterIdx,);
-    /** Whether the trailing char satisfies the `(?:\s|$|\*)` anchor. */
+    /**
+     * Whether the trailing char satisfies the `(?:\s|$|\*)` anchor.
+     */
     const afterOk = (after === '') || (after === '*')
       || isWhitespaceChar(after,);
     if (afterOk)
@@ -113,7 +125,9 @@ export const checkAccess: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    /** Access-level tags that are mutually exclusive. */
+    /**
+     * Access-level tags that are mutually exclusive.
+     */
     const accessTags = [
       '@public',
       '@internal',
@@ -128,9 +142,13 @@ export const checkAccess: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Raw comment body searched once per access tag with the boundary-anchored predicate below. */
+        /**
+         * Raw comment body searched once per access tag with the boundary-anchored predicate below.
+         */
         const text = comment.value;
-        /** Subset of `accessTags` whose bounded form actually appears; multiple entries are a conflict. */
+        /**
+         * Subset of `accessTags` whose bounded form actually appears; multiple entries are a conflict.
+         */
         const found = accessTags.filter(function isPresent(tag,): boolean {
           return containsBoundedAccessTag({
             text,

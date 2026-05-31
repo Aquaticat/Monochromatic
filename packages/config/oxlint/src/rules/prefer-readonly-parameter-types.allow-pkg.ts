@@ -21,7 +21,9 @@ type PackageSpecifier = {
   readonly package: string;
 };
 
-/** Package-type specifiers, grouped by SDK. */
+/**
+ * Package-type specifiers, grouped by SDK.
+ */
 export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
   {
     from: "package",

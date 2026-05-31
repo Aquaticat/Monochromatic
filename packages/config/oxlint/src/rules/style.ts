@@ -13,7 +13,9 @@
 
 import type { DummyRuleMap, } from 'oxlint';
 
-/** Style and pedantic rules. */
+/**
+ * Style and pedantic rules.
+ */
 export const styleRules: DummyRuleMap = {
   //region pedantic
 

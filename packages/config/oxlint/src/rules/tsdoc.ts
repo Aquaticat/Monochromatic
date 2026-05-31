@@ -14,7 +14,9 @@
 
 import type { DummyRuleMap, } from 'oxlint';
 
-/** Rule severity for the tsdoc JS plugin. */
+/**
+ * Rule severity for the tsdoc JS plugin.
+ */
 export const tsdocRules: DummyRuleMap = {
   // Every documentable declaration (function, type, const, class, enum) needs a /** *\/ comment,
   // including local consts and lets inside function bodies and block scopes.
@@ -28,7 +30,7 @@ export const tsdocRules: DummyRuleMap = {
   // Leading * on each comment line must align vertically with the opener's first *.
   'tsdoc/check-alignment': 'error',
 
-  // Comments containing tags (@param, @returns, etc.) must use multiline /** *\/ format.
+  // All TSDoc comments must use multiline /** *\/ format; single-line blocks are auto-fixable.
   'tsdoc/multiline-blocks': 'warn',
 
   // No ** at start of comment lines (e.g. ` ** text` is invalid TSDoc).

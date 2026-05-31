@@ -1,4 +1,17 @@
-import { resolve, } from 'node:path';
+import {
+  copyFileSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
+import { tmpdir, } from 'node:os';
+import {
+  isAbsolute,
+  join,
+  resolve,
+} from 'node:path';
+
+import spawn from 'nano-spawn';
 
 import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
 import {
@@ -6,7 +19,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
 //region Types
 
@@ -28,6 +40,22 @@ type OxlintOutput = {
   readonly diagnostics: readonly OxlintDiagnostic[];
 };
 
+/** Disposable temp copy of a fixture file. */
+type TempFixtureFile = {
+  /** Absolute path to copied fixture file. */
+  readonly filePath: string;
+  /** Removes temp directory that contains fixture copy. */
+  [Symbol.dispose](): void;
+};
+
+/** Options for creating a disposable fixture copy. */
+type TempFixtureFileOptions = {
+  /** Basename for copied temp file. */
+  readonly fileName: string;
+  /** Source fixture path to copy into temp directory. */
+  readonly sourcePath: string;
+};
+
 //endregion Types
 
 //region Helpers
@@ -47,21 +75,73 @@ const FIXTURES = resolve(FIXTURE_PKG, 'src',);
  */
 const FIXTURE_CONFIG = resolve(FIXTURE_PKG, '.oxlintrc.fixture.json',);
 
+/** Diagnostic message emitted by tsdoc/multiline-blocks. */
+const MULTILINE_BLOCKS_MESSAGE = 'TSDoc comments must use multiline format.';
+
+/**
+ * Creates a temp fixture copy with disposal-backed directory cleanup.
+ *
+ * @param options - fixture source and temp basename
+ *
+ * @returns copied temp fixture file handle
+ */
+function createTempFixtureFile(
+  {
+    fileName,
+    sourcePath,
+  }: TempFixtureFileOptions,
+): TempFixtureFile {
+  /** Unique temp directory owning this fixture copy. */
+  const dirPath = mkdtempSync(
+    join(
+      tmpdir(),
+      'oxlint-tsdoc-autofix-',
+    ),
+  );
+  /** Absolute path to temp fixture copy. */
+  const filePath = resolve(
+    dirPath,
+    fileName,
+  );
+  copyFileSync(sourcePath, filePath,);
+
+  return {
+    filePath,
+    [Symbol.dispose]: function cleanup(): void {
+      rmSync(
+        dirPath,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
 /**
  * Runs oxlint with the project config against a fixture path and returns parsed diagnostics.
  *
- * @param fixturePath - path relative to fixture root
+ * @param fixturePath - path relative to fixture root, or absolute temp fixture path
  *
  * @returns array of diagnostics from tsdoc rules only
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
-  const target = resolve(FIXTURES, fixturePath,);
+  /** Resolved lint target; temp fixtures already arrive as absolute paths. */
+  const target = isAbsolute(fixturePath,)
+    ? fixturePath
+    : resolve(FIXTURES, fixturePath,);
 
   // oxlint exits non-zero when violations are found: capture stdout from the error
   async function captureStdout(): Promise<string> {
     try {
-      const { stdout, } = await spawn('oxlint', ['--format', 'json', '-c', FIXTURE_CONFIG,
-        target,], {
+      const { stdout, } = await spawn('oxlint', [
+        '--format',
+        'json',
+        '--config',
+        FIXTURE_CONFIG,
+        target,
+      ], {
         cwd: ROOT,
       },);
       return stdout;
@@ -79,6 +159,29 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   return output.diagnostics.filter(function isTsdocRule(diagnostic,): boolean {
     return diagnostic.code.startsWith('tsdoc(',);
   },);
+}
+
+/**
+ * Runs oxlint --fix once against a fixture file.
+ *
+ * @param filePath - absolute path to fixture copy to mutate
+ *
+ * @example
+ * ```ts
+ * await runOxlintFix(filePath);
+ * ```
+ */
+async function runOxlintFix(filePath: string,): Promise<void> {
+  await spawn(
+    'oxlint',
+    [
+      '--fix',
+      '--config',
+      FIXTURE_CONFIG,
+      filePath,
+    ],
+    { cwd: ROOT, },
+  );
 }
 
 /**
@@ -194,6 +297,55 @@ await describe({
             expect(rules,).toContain('tsdoc(no-multi-asterisks)',);
             expect(rules,).toContain('tsdoc(tag-lines)',);
             expect(rules,).toContain('tsdoc(empty-tags)',);
+
+            const multilineDiagnostics = diagnostics.filter(
+              function isMultilineBlocks(diagnostic,): boolean {
+                return diagnostic.code === 'tsdoc(multiline-blocks)';
+              },
+            );
+            expect(multilineDiagnostics.length,).toBe(3,);
+            expect(multilineDiagnostics.map(function getMessage(diagnostic,): string {
+              return diagnostic.message;
+            },),).toEqual([
+              MULTILINE_BLOCKS_MESSAGE,
+              MULTILINE_BLOCKS_MESSAGE,
+              MULTILINE_BLOCKS_MESSAGE,
+            ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'autofix',
+      children: [
+        it({
+          name: '--fix expands single-line TSDoc blocks',
+          fn: async () => {
+            const fixableSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'single-line-tsdoc-fixable.ts',
+            );
+            using fixableCopy = createTempFixtureFile({
+              fileName: 'single-line-tsdoc-fixable.ts',
+              sourcePath: fixableSrc,
+            },);
+
+            await runOxlintFix(fixableCopy.filePath,);
+
+            const fixedContent = readFileSync(fixableCopy.filePath, 'utf8',);
+            expect(fixedContent,).toContain('/**\n * Description only.\n */',);
+            expect(fixedContent,).toContain('/**\n * @returns value\n */',);
+            expect(fixedContent,).toContain(
+              '  /**\n   * Inner description.\n   */\n  const value = true;',
+            );
+            expect(fixedContent,).toContain(
+              'type PropertyFixture = {\n  /**\n   * Property description.\n   */\n  readonly value: string;\n};',
+            );
+            expect(fixedContent,).toContain('/**\n *\n */\nconst emptyDoc = true;',);
+
+            const diagnostics = await lint(fixableCopy.filePath,);
+            expect(diagnostics,).toEqual([],);
           },
         },),
       ],

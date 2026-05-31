@@ -73,14 +73,18 @@ export function extractLeadingTag(s: string,): string | typeof NO_LEADING_TAG {
    * @returns exclusive end of the tag-name run
    */
   function scan(idx: number,): number {
-    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    /**
+     * Cursor advanced over the word-character run; returned as the run's exclusive end.
+     */
     let cursor = idx;
     while ((cursor < s
       .length) && isWordChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
-  /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
+  /**
+   * Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign.
+   */
   const end = scan(1,);
   if (end === 1)
     return NO_LEADING_TAG;
@@ -114,9 +118,13 @@ export const tagLines: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Raw lines of the comment body, including opener `/**` and closer `*\/`. */
+        /**
+         * Raw lines of the comment body, including opener `/**` and closer `*\/`.
+         */
         const lines = getCommentLines(comment,);
-        /** Minimum line count for a comment that can contain tag spacing issues. */
+        /**
+         * Minimum line count for a comment that can contain tag spacing issues.
+         */
         const minContentLines = 3;
         if (lines.length
           < minContentLines)
@@ -130,11 +138,15 @@ export const tagLines: CreateOnceRule = {
           .start
           .column
           + 1,);
-        /** Pre-built ` * ` blank-line text inserted by the autofixer when spacing is missing. */
+        /**
+         * Pre-built ` * ` blank-line text inserted by the autofixer when spacing is missing.
+         */
         const blankCommentLine = `${blankLineIndent}*`;
 
         // Check each content line (skip opener and closer)
-        /** Comment body without opener and closer; scanned for tag-spacing violations. */
+        /**
+         * Comment body without opener and closer; scanned for tag-spacing violations.
+         */
         const contentLines = lines.slice(
           1,
           -1,
@@ -145,17 +157,23 @@ export const tagLines: CreateOnceRule = {
         ): void {
           if (index === 0)
             return;
-          /** Current line stripped of indent and the leading `*`, ready for tag matching. */
+          /**
+           * Current line stripped of indent and the leading `*`, ready for tag matching.
+           */
           const trimmed = stripCommentLineMarker(line.trimStart(),)
             .trimStart();
           if (!trimmed.startsWith('@',))
             return;
           // Check if previous line is blank
-          /** Previous content line; required to determine whether the tag is preceded by a blank. */
+          /**
+           * Previous content line; required to determine whether the tag is preceded by a blank.
+           */
           const prevLine = contentLines[index - 1];
           if (prevLine === undefined)
             return;
-          /** Previous line stripped of indent and `*`; empty string means the tag is preceded by blank. */
+          /**
+           * Previous line stripped of indent and `*`; empty string means the tag is preceded by blank.
+           */
           const prevTrimmed = stripCommentLineMarker(prevLine.trimStart(),)
             .trimStart();
           if (prevTrimmed.length

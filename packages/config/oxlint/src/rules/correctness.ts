@@ -14,7 +14,9 @@ import type { DummyRuleMap, } from 'oxlint';
 
 import { preferReadonlyParameterTypesRule, } from './prefer-readonly-parameter-types.ts';
 
-/** Correctness, typescript, and performance rules. */
+/**
+ * Correctness, typescript, and performance rules.
+ */
 export const correctnessRules: DummyRuleMap = {
   //region jest: Suppress leaked jest rules from vitest plugin internals.
   // oxlint re-uses jest rule implementations for vitest and leaks them globally.

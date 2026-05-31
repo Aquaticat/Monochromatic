@@ -67,9 +67,13 @@ function isWhitespaceChar(c: string,): boolean {
  * `@tag <text>` form.
  */
 type TaggedLine = {
-  /** Captured tag including the leading at-sign. */
+  /**
+   * Captured tag including the leading at-sign.
+   */
   tag: string;
-  /** Content following the whitespace gap. */
+  /**
+   * Content following the whitespace gap.
+   */
   rest: string;
 };
 
@@ -100,14 +104,18 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
    * @returns exclusive end of the tag-name run
    */
   function scanTag(idx: number,): number {
-    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    /**
+     * Cursor advanced over the word-character run; returned as the run's exclusive end.
+     */
     let cursor = idx;
     while ((cursor < s
       .length) && isWordChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
-  /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
+  /**
+   * Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign.
+   */
   const tagEnd = scanTag(1,);
   if (tagEnd === 1)
     return UNTAGGED_LINE;
@@ -119,18 +127,24 @@ export function parseTaggedLine(s: string,): TaggedLine | typeof UNTAGGED_LINE {
    * @returns first non-whitespace position
    */
   function scanWhitespace(idx: number,): number {
-    /** Cursor advanced over the whitespace run; returned as first non-whitespace position. */
+    /**
+     * Cursor advanced over the whitespace run; returned as first non-whitespace position.
+     */
     let cursor = idx;
     while ((cursor < s
       .length) && isWhitespaceChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
-  /** First index past the inter-token whitespace; rest starts here. */
+  /**
+   * First index past the inter-token whitespace; rest starts here.
+   */
   const restStart = scanWhitespace(tagEnd,);
   if (restStart === tagEnd)
     return UNTAGGED_LINE;
-  /** Remaining content; must be non-empty to match `(.+)`. */
+  /**
+   * Remaining content; must be non-empty to match `(.+)`.
+   */
   const rest = s.slice(restStart,);
   if (rest.length
     === 0)
@@ -163,7 +177,9 @@ export const emptyTags: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    /** Tags that must be standalone (no content after them). */
+    /**
+     * Tags that must be standalone (no content after them).
+     */
     const modifierTags = new Set([
       '@public',
       '@readonly',
@@ -184,7 +200,9 @@ export const emptyTags: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Comment body split into lines; each is inspected independently for modifier-tag misuse. */
+        /**
+         * Comment body split into lines; each is inspected independently for modifier-tag misuse.
+         */
         const lines = getCommentLines(comment,);
         lines.forEach(function checkLine(
           line,
@@ -201,7 +219,9 @@ export const emptyTags: CreateOnceRule = {
           const tagMatch = parseTaggedLine(trimmed,);
           if (tagMatch === UNTAGGED_LINE)
             return;
-          /** Captured tag name and remainder; both populate the diagnostic and gate the report. */
+          /**
+           * Captured tag name and remainder; both populate the diagnostic and gate the report.
+           */
           const {
             tag,
             rest,

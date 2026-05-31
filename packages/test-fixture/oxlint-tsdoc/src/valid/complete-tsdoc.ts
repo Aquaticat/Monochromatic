@@ -66,11 +66,17 @@ function join(...parts: string[]): string {
   return parts.join('/',);
 }
 
-/** Options for the process function. */
+/**
+ * Options for the process function.
+ */
 type ProcessOptions = {
-  /** Item to process. */
+  /**
+   * Item to process.
+   */
   value: string;
-  /** Number of repetitions. */
+  /**
+   * Number of repetitions.
+   */
   count: number;
 };
 

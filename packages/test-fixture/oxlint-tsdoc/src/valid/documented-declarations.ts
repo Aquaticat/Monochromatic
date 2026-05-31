@@ -29,24 +29,38 @@ function add(a: number, b: number,): number {
  */
 function log(): void {}
 
-/** Available directions. */
+/**
+ * Available directions.
+ */
 type Direction = 'up' | 'down' | 'left' | 'right';
 
-/** Configuration shape. */
+/**
+ * Configuration shape.
+ */
 type Config = {
-  /** Enables verbose logging. */
+  /**
+   * Enables verbose logging.
+   */
   debug: boolean;
 };
 
-/** Status codes. */
+/**
+ * Status codes.
+ */
 enum Status {
-  /** Request succeeded. */
+  /**
+   * Request succeeded.
+   */
   Ok = 200,
-  /** Resource not found. */
+  /**
+   * Resource not found.
+   */
   NotFound = 404,
 }
 
-/** Maximum retry attempts. */
+/**
+ * Maximum retry attempts.
+ */
 const MAX_RETRIES = 3;
 
 export {

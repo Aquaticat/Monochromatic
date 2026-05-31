@@ -17,18 +17,26 @@
  * ```
  */
 function shift(values: readonly number[], offset: number,): number[] {
-  /** Accumulated shifted values. */
+  /**
+   * Accumulated shifted values.
+   */
   const out: number[] = [];
-  /** Number of values processed so far. */
+  /**
+   * Number of values processed so far.
+   */
   let count = 0;
   for (const v of values) {
-    /** Single shifted value, pushed once per iteration. */
+    /**
+     * Single shifted value, pushed once per iteration.
+     */
     const next = v + offset;
     out.push(next,);
     count++;
   }
   if (count === 0) {
-    /** Sentinel marking the no-input branch. */
+    /**
+     * Sentinel marking the no-input branch.
+     */
     const empty = true;
     return empty ? [] : out;
   }

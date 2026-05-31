@@ -40,7 +40,9 @@ import {
 export function extractDestructuredParamNames(
   node: Span & ReadonlyRecord,
 ): ReadonlySet<string> {
-  /** Accumulator populated by the recursive walk; returned as a read-only view. */
+  /**
+   * Accumulator populated by the recursive walk; returned as a read-only view.
+   */
   const names = new Set<string>();
 
   /**
@@ -57,7 +59,9 @@ export function extractDestructuredParamNames(
     }
     if (pattern.type
       === 'AssignmentPattern') {
-      /** Binding side of `name = default`; recurse on it to collect the actual names. */
+      /**
+       * Binding side of `name = default`; recurse on it to collect the actual names.
+       */
       const { left, } = pattern;
       if (isRecord(left,))
         collect(left,);
@@ -65,7 +69,9 @@ export function extractDestructuredParamNames(
     }
     if (pattern.type
       === 'RestElement') {
-      /** Inner binding pattern of `...rest`; recurse on it to extract its names. */
+      /**
+       * Inner binding pattern of `...rest`; recurse on it to extract its names.
+       */
       const { argument, } = pattern;
       if (isRecord(argument,))
         collect(argument,);
@@ -73,7 +79,9 @@ export function extractDestructuredParamNames(
     }
     if (pattern.type
       === 'TSParameterProperty') {
-      /** Inner parameter of a TS constructor `public/private` param; recurse on it. */
+      /**
+       * Inner parameter of a TS constructor `public/private` param; recurse on it.
+       */
       const { parameter, } = pattern;
       if (isRecord(parameter,))
         collect(parameter,);
@@ -81,7 +89,9 @@ export function extractDestructuredParamNames(
     }
     if (pattern.type
       === 'ObjectPattern') {
-      /** Property list of the `{ a, b }` pattern; iterated to collect named keys. */
+      /**
+       * Property list of the `{ a, b }` pattern; iterated to collect named keys.
+       */
       const { properties, } = pattern;
       if (!isRecordArray(properties,))
         return;
@@ -93,14 +103,18 @@ export function extractDestructuredParamNames(
           continue;
         }
         // Property node; only `Identifier` keys contribute a name
-        /** Key node of a destructured property; only `Identifier` keys contribute a name. */
+        /**
+         * Key node of a destructured property; only `Identifier` keys contribute a name.
+         */
         const { key, } = prop;
         if (!isRecord(key,))
           continue;
         if (key.type
           !== 'Identifier')
           continue;
-        /** Identifier text of the key; added to `names` only when it is a string. */
+        /**
+         * Identifier text of the key; added to `names` only when it is a string.
+         */
         const { name, } = key;
         if ((typeof name)
           === 'string')
@@ -111,7 +125,9 @@ export function extractDestructuredParamNames(
     if (pattern.type
       === 'ArrayPattern') {
       // Array destructuring `[a, , c]`: hole slots (non-records) contribute no name
-      /** Slot list of `[a, , c]`; non-record hole slots contribute no name. */
+      /**
+       * Slot list of `[a, , c]`; non-record hole slots contribute no name.
+       */
       const { elements, } = pattern;
       if (!isRecordArray(elements,))
         return;

@@ -56,7 +56,9 @@ export const requireTsdoc: CreateOnceRule = {
      * a mutable property carries the same state in a single `const` binding.
      */
     const state = {
-      /** True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init). */
+      /**
+       * True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init).
+       */
       inForLoopInit: false,
     };
 

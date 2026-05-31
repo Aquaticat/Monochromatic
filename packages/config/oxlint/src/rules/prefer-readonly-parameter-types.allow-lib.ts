@@ -20,7 +20,9 @@ type LibSpecifier = {
   readonly name: readonly string[];
 };
 
-/** Lib-type specifiers, grouped by concern. */
+/**
+ * Lib-type specifiers, grouped by concern.
+ */
 export const libAllowSpecifiers: readonly LibSpecifier[] = [
   {
     from: 'lib',

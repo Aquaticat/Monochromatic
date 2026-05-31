@@ -32,13 +32,19 @@ const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
   '@yields',
 ],);
 
-/** Triple-backtick delimiter that opens or closes a fenced code block. */
+/**
+ * Triple-backtick delimiter that opens or closes a fenced code block.
+ */
 const FENCE_DELIMITER = '```';
 
-/** Single-backtick delimiter that wraps inline-code segments. */
+/**
+ * Single-backtick delimiter that wraps inline-code segments.
+ */
 const INLINE_CODE_DELIMITER = '`';
 
-/** Backslash-escape sequence that should be stripped before tag scanning. */
+/**
+ * Backslash-escape sequence that should be stripped before tag scanning.
+ */
 const ESCAPED_AT = String.raw`\@`;
 
 /**
@@ -84,14 +90,18 @@ function isFenceLine(line: string,): boolean {
  * ```
  */
 export function stripInlineCodeSpans(s: string,): string {
-  /** Plain-text segments collected between code spans; joined into the result. */
+  /**
+   * Plain-text segments collected between code spans; joined into the result.
+   */
   const parts: string[] = [];
   // Linear walk: each opening backtick is paired with the next closing
   // backtick; the cursor jumps past the closed span, so each character is
   // visited a bounded number of times and the stack stays flat.
   for (let from = 0; from <= s
     .length;) {
-    /** Position of the next opening backtick; -1 means the rest is plain text. */
+    /**
+     * Position of the next opening backtick; -1 means the rest is plain text.
+     */
     const open = s.indexOf(
       INLINE_CODE_DELIMITER,
       from,
@@ -100,7 +110,9 @@ export function stripInlineCodeSpans(s: string,): string {
       parts.push(s.slice(from,),);
       break;
     }
-    /** Position of the closing backtick; -1 means the line ends inside inline code. */
+    /**
+     * Position of the closing backtick; -1 means the line ends inside inline code.
+     */
     const close = s.indexOf(
       INLINE_CODE_DELIMITER,
       open + 1,
@@ -162,28 +174,36 @@ export function collectTags(stripped: string,): readonly string[] {
    * @returns exclusive end of the tag-name run
    */
   function scanTag(idx: number,): number {
-    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    /**
+     * Cursor advanced over the word-character run; returned as the run's exclusive end.
+     */
     let cursor = idx;
     while ((cursor < stripped
       .length) && isWordChar(stripped.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
-  /** Tag words collected in source order; each entry omits its leading at-sign. */
+  /**
+   * Tag words collected in source order; each entry omits its leading at-sign.
+   */
   const out: string[] = [];
   // Linear walk: each `@` is located by `indexOf`, the trailing word run is
   // measured once, and the cursor jumps past it, so each character is visited a
   // bounded number of times and the stack stays flat.
   for (let from = 0; from < stripped
     .length;) {
-    /** Position of the next at-sign; -1 ends the scan. */
+    /**
+     * Position of the next at-sign; -1 ends the scan.
+     */
     const atIdx = stripped.indexOf(
       '@',
       from,
     );
     if (atIdx === (-1))
       break;
-    /** Exclusive end of the word run; equals `atIdx + 1` when no word follows. */
+    /**
+     * Exclusive end of the word run; equals `atIdx + 1` when no word follows.
+     */
     const end = scanTag(atIdx + 1,);
     if (end === (atIdx + 1)) {
       from = atIdx + 1;
@@ -226,7 +246,9 @@ export const checkTagNames: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Raw comment body split into per-line slices; iterated to find tag occurrences. */
+        /**
+         * Raw comment body split into per-line slices; iterated to find tag occurrences.
+         */
         const lines = comment.value
           .split('\n',);
         /**
@@ -263,7 +285,9 @@ export const checkTagNames: CreateOnceRule = {
              * Recovered tag string with the leading `\@` for lookup and message data.
              */
             const tag = `@${word}`;
-            /** TSDoc-equivalent suggestion when the tag is JSDoc-only; undefined for unknowns. */
+            /**
+             * TSDoc-equivalent suggestion when the tag is JSDoc-only; undefined for unknowns.
+             */
             const suggestion = JSDOC_TO_TSDOC_MAP.get(tag,);
             if (suggestion !== undefined) {
               context.report({

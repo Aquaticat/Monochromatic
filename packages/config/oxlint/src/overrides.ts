@@ -13,7 +13,9 @@
 
 import type { OxlintOverride, } from 'oxlint';
 
-/** Figma plugin globals. */
+/**
+ * Figma plugin globals.
+ */
 const figmaOverride = {
   files: ['**/figma-plugin/**',],
   globals: {
@@ -21,7 +23,9 @@ const figmaOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Numeric type files can use magic numbers. */
+/**
+ * Numeric type files can use magic numbers.
+ */
 const typeFileOverride = {
   files: ['**/*.type.*.ts',],
   rules: {
@@ -29,7 +33,9 @@ const typeFileOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Fixture files are exempt from line limits and magic numbers. */
+/**
+ * Fixture files are exempt from line limits and magic numbers.
+ */
 const fixtureOverride = {
   files: ['**/fixture.*',],
   rules: {
@@ -38,7 +44,9 @@ const fixtureOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Model-generated canary artifacts have no meaningful line budget. */
+/**
+ * Model-generated canary artifacts have no meaningful line budget.
+ */
 const canaryOverride = {
   files: ['**/canary-lint/**',],
   rules: {
@@ -46,7 +54,9 @@ const canaryOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Astro components have implicit module context. */
+/**
+ * Astro components have implicit module context.
+ */
 const astroOverride = {
   files: ['**/*.astro',],
   rules: {
@@ -59,7 +69,9 @@ const astroOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Declaration files describe external shapes that violate source conventions. */
+/**
+ * Declaration files describe external shapes that violate source conventions.
+ */
 const declarationOverride = {
   files: ['**/*.d.{ts,mts,cts}',],
   rules: {
@@ -110,7 +122,9 @@ const declarationOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Config files are exempt from line limits. */
+/**
+ * Config files are exempt from line limits.
+ */
 const configOverride = {
   files: ['**/*.config.*',],
   rules: {
@@ -137,7 +151,9 @@ const jestMatcherApiOverride = {
   },
 } satisfies OxlintOverride;
 
-/** Test and benchmark files have relaxed rules for flexibility. */
+/**
+ * Test and benchmark files have relaxed rules for flexibility.
+ */
 const testOverride = {
   files: ['**/*.{test,bench}.ts',],
   rules: {
@@ -231,7 +247,9 @@ const nonUnitTestRuleOverride = {
   },
 } satisfies OxlintOverride;
 
-/** All overrides, ordered from most specific to least specific. */
+/**
+ * All overrides, ordered from most specific to least specific.
+ */
 export const overrides: OxlintOverride[] = [
   figmaOverride,
   typeFileOverride,

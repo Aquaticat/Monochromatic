@@ -74,7 +74,9 @@ export function findTypeAnnotations(s: string,): readonly string[] {
    * @returns exclusive end of the tag-name run
    */
   function scanTag(idx: number,): number {
-    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    /**
+     * Cursor advanced over the word-character run; returned as the run's exclusive end.
+     */
     let cursor = idx;
     while ((cursor < s
       .length) && isWordChar(s.charAt(cursor,),))
@@ -89,14 +91,18 @@ export function findTypeAnnotations(s: string,): readonly string[] {
    * @returns first non-whitespace position
    */
   function scanWs(idx: number,): number {
-    /** Cursor advanced over the whitespace run; returned as first non-whitespace position. */
+    /**
+     * Cursor advanced over the whitespace run; returned as first non-whitespace position.
+     */
     let cursor = idx;
     while ((cursor < s
       .length) && isWhitespaceChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
-  /** Captured type bodies in source order; each omits the surrounding braces. */
+  /**
+   * Captured type bodies in source order; each omits the surrounding braces.
+   */
   const out: string[] = [];
   // Linear walk: each `@` is located by `indexOf`; the tag run, whitespace gap,
   // and `{...}` body are each measured once and the cursor jumps past every
@@ -104,34 +110,44 @@ export function findTypeAnnotations(s: string,): readonly string[] {
   // stays flat. An unterminated `{` halts the scan, matching the prior recursion.
   for (let from = 0; from < s
     .length;) {
-    /** Position of the next at-sign; -1 ends the scan. */
+    /**
+     * Position of the next at-sign; -1 ends the scan.
+     */
     const atIdx = s.indexOf(
       '@',
       from,
     );
     if (atIdx === (-1))
       break;
-    /** Exclusive end of the tag-name run; cursor starts at `atIdx + 1` to skip the at-sign. */
+    /**
+     * Exclusive end of the tag-name run; cursor starts at `atIdx + 1` to skip the at-sign.
+     */
     const tagEnd = scanTag(atIdx + 1,);
     if (tagEnd === (atIdx + 1)) {
       from = atIdx + 1;
       continue;
     }
-    /** First index past the inter-token whitespace; `{` must live here for a match. */
+    /**
+     * First index past the inter-token whitespace; `{` must live here for a match.
+     */
     const afterWs = scanWs(tagEnd,);
     if ((afterWs === tagEnd) || (s.charAt(afterWs,)
       !== '{')) {
       from = tagEnd;
       continue;
     }
-    /** Position of the matching `}`; -1 means the type body is unterminated. */
+    /**
+     * Position of the matching `}`; -1 means the type body is unterminated.
+     */
     const closeIdx = s.indexOf(
       '}',
       afterWs + 1,
     );
     if (closeIdx === (-1))
       break;
-    /** Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`. */
+    /**
+     * Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`.
+     */
     const body = s.slice(
       afterWs + 1,
       closeIdx,
@@ -182,7 +198,9 @@ export const noTypes: CreateOnceRule = {
           line,
           index,
         ): void {
-          /** Line stripped of indent and leading `*` so the scan matches at the start of the content. */
+          /**
+           * Line stripped of indent and leading `*` so the scan matches at the start of the content.
+           */
           const trimmed = stripCommentLineMarker(line.trimStart(),)
             .trimStart();
           for (const body of findTypeAnnotations(trimmed,)) {
