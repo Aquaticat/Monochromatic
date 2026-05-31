@@ -18,7 +18,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import { extractDim, } from './scripts/filter.ts';
 import {
@@ -27,6 +26,7 @@ import {
   defaultState,
   encodeState,
   readStateFromHash,
+  STATE_INVALID,
   TOGGLE_KEYS,
   writeStateToHash,
 } from './scripts/state.ts';
@@ -158,10 +158,10 @@ await describe({
     },),
 
     it({
-      name: 'decodeState returns ABSENT for malformed input',
+      name: 'decodeState returns STATE_INVALID for malformed input',
       fn: async () => {
-        expect(decodeState({ encoded: '%%not-valid-uri%%', },),).toBe(ABSENT,);
-        expect(decodeState({ encoded: 'not%20json', },),).toBe(ABSENT,);
+        expect(decodeState({ encoded: '%%not-valid-uri%%', },),).toBe(STATE_INVALID,);
+        expect(decodeState({ encoded: 'not%20json', },),).toBe(STATE_INVALID,);
       },
     },),
 
@@ -169,7 +169,7 @@ await describe({
       name: 'decodeState rejects objects missing required keys',
       fn: async () => {
         const partial = encodeURIComponent(JSON.stringify({ viewState: {}, },),);
-        expect(decodeState({ encoded: partial, },),).toBe(ABSENT,);
+        expect(decodeState({ encoded: partial, },),).toBe(STATE_INVALID,);
       },
     },),
     //endregion encoding round-trip

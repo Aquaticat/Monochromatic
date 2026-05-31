@@ -24,11 +24,11 @@ import {
   DIM_DISPLAY_NAMES,
   TOGGLE_LABELS,
 } from './dim-meta.ts';
-import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import {
   type ChannelKey,
   type DataDimKey,
+  DIM_UNKNOWN,
   extractDim,
   type ToggleKey,
   type ToggleValue,
@@ -161,7 +161,7 @@ function computeChannelExtent(
       },);
     },)
     .filter(function known(value,): value is number {
-      return value !== ABSENT;
+      return value !== DIM_UNKNOWN;
     },);
   if (values.length
     === 0) {

@@ -20,14 +20,11 @@
  * ```
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 import {
   type ChannelKey,
   type DataDimKey,
+  DIM_UNKNOWN,
   type DimMapping,
   extractDim,
   type RangeState,
@@ -181,7 +178,7 @@ function computeExtent(
       },);
     },)
     .filter(function known(value,): value is number {
-      return value !== ABSENT;
+      return value !== DIM_UNKNOWN;
     },);
   if (values.length
     === 0) {
@@ -302,6 +299,21 @@ export function encodeState(
 }
 
 /**
+ * Absence marker meaning "this payload could not be restored to an
+ * {@link AppState}"; shared by {@link validateAppState} and
+ * {@link decodeState} because the latter propagates the former's absence
+ * directly. Never a restored state.
+ *
+ * @example
+ * ```ts
+ * const restored = decodeState({ encoded, },);
+ * if (restored === STATE_INVALID)
+ *   return fallback;
+ * ```
+ */
+export const STATE_INVALID: unique symbol = Symbol('deps-cube/state-invalid',);
+
+/**
  * Shallow shape check; every top-level field present and of the right
  * primitive kind. Doesn't deep-validate `dimMapping` values or range
  * tuple shapes; if those are wrong the renderer will surface NaN /
@@ -309,11 +321,11 @@ export function encodeState(
  *
  * @param value - Parsed JSON value, untrusted.
  *
- * @returns Value typed as `AppState`, or `ABSENT` when malformed.
+ * @returns Value typed as `AppState`, or {@link STATE_INVALID} when malformed.
  */
-function validateAppState(value: unknown,): Maybe<AppState> {
+function validateAppState(value: unknown,): AppState | typeof STATE_INVALID {
   if (((typeof value) !== 'object') || (value === null))
-    return ABSENT;
+    return STATE_INVALID;
   /** Top-level `AppState` fields that must all be present for the shape check to pass. */
   const required: readonly (keyof AppState)[] = [
     'viewState',
@@ -328,7 +340,7 @@ function validateAppState(value: unknown,): Maybe<AppState> {
     return key in value;
   },);
   if (!has)
-    return ABSENT;
+    return STATE_INVALID;
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape verified above; deep-validation is intentionally cheap.
   return value as AppState;
 }
@@ -336,25 +348,25 @@ function validateAppState(value: unknown,): Maybe<AppState> {
 /**
  * Decodes a URL-safe encoded string back into an `AppState`.
  *
- * Returns `null` for any failure (URI malformed, JSON parse error,
- * missing required fields) so the caller can fall back to the default
+ * Returns {@link STATE_INVALID} for any failure (URI malformed, JSON parse
+ * error, missing required fields) so the caller can fall back to the default
  * state without crashing.
  *
  * @param encoded - The URL-safe encoded string (no leading `state=`).
  *
- * @returns Restored state, or `ABSENT` if the input is malformed.
+ * @returns Restored state, or {@link STATE_INVALID} if the input is malformed.
  *
  * @example
  * ```ts
  * const restored = decodeState({ encoded: match[1] });
- * if (restored === ABSENT) {
+ * if (restored === STATE_INVALID) {
  *   // fall back to defaults
  * }
  * ```
  */
 export function decodeState(
   { encoded, }: { readonly encoded: string; },
-): Maybe<AppState> {
+): AppState | typeof STATE_INVALID {
   try {
     /** URI-decoded JSON payload extracted from the hash. */
     const json = decodeURIComponent(encoded,);
@@ -363,7 +375,7 @@ export function decodeState(
     return validateAppState(parsed,);
   }
   catch {
-    return ABSENT;
+    return STATE_INVALID;
   }
 }
 
@@ -443,11 +455,13 @@ export function readStateFromHash(
   const encoded = extractStateParam(stripped,);
   if (encoded === '')
     return fallback;
-  /** Round-tripped state, or `ABSENT` when the payload fails to parse or validate. */
+  /**
+   * Round-tripped state, or {@link STATE_INVALID} when the payload fails to parse or validate.
+   */
   const decoded = decodeState({
     encoded,
   },);
-  return decoded === ABSENT ? fallback : decoded;
+  return decoded === STATE_INVALID ? fallback : decoded;
 }
 
 /**

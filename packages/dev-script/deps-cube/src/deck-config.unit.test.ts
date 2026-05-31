@@ -27,13 +27,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  POSITION_UNKNOWN,
   probeFillColor,
   probeIsFilled,
   probePosition,
   probeRadius,
   unknownClusterPosition,
 } from './deck-accessors.ts';
-import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import { defaultState, } from './scripts/state.ts';
 
@@ -123,21 +123,21 @@ await describe({
           probe: KNOWN,
           state: STATE,
         },);
-        expect(pos,).not.toBe(ABSENT,);
-        if (pos === ABSENT)
+        expect(pos,).not.toBe(POSITION_UNKNOWN,);
+        if (pos === POSITION_UNKNOWN)
           return;
         expect(pos.length,).toBe(3,);
       },
     },),
 
     it({
-      name: 'probePosition returns ABSENT when any spatial dim is unknown',
+      name: 'probePosition returns POSITION_UNKNOWN when any spatial dim is unknown',
       fn: async () => {
         const pos = probePosition({
           probe: UNKNOWN,
           state: STATE,
         },);
-        expect(pos,).toBe(ABSENT,);
+        expect(pos,).toBe(POSITION_UNKNOWN,);
       },
     },),
     //endregion probePosition

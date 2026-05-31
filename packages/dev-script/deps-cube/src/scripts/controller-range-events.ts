@@ -9,7 +9,6 @@
  */
 
 import { computeSceneBounds, } from '../deck-config.ts';
-import { ABSENT, } from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 import {
   elInput,
@@ -25,6 +24,7 @@ import type {
 } from './controller-event-types.ts';
 import {
   type DataDimKey,
+  DIM_UNKNOWN,
   extractDim,
 } from './filter.ts';
 
@@ -65,7 +65,7 @@ function computeRangeExtent(
       },);
     },)
     .filter(function known(value,): value is number {
-      return value !== ABSENT;
+      return value !== DIM_UNKNOWN;
     },);
   if (values.length
     === 0) {

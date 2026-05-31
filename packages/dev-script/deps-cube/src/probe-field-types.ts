@@ -37,8 +37,8 @@ export type NpmVersion = {
 /**
  * Output of `repository` normalisation.
  *
- * Parsers return {@link Maybe} of this type; an unparseable repository
- * field yields `ABSENT` rather than a nullish union.
+ * Parsers return this type or a descriptive absence sentinel; an unparseable
+ * repository field yields `REPO_UNPARSEABLE` rather than a nullish union.
  */
 export type RepositoryInfo = {
   readonly host: 'github' | 'other';

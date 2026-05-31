@@ -35,10 +35,10 @@ import { join, } from 'node:path';
 
 import { createCache, } from './cache.ts';
 import type { CatalogEntry, } from './catalog.ts';
-import { ABSENT, } from './maybe.ts';
 import {
   classifyLicense,
   parseRepository,
+  REPO_UNPARSEABLE,
   resolveVersion,
 } from './probe-fields.ts';
 import { probeAll, } from './probe.ts';
@@ -167,19 +167,19 @@ await describe({
       name: 'parseRepository returns other host for non-GitHub URLs',
       fn: async () => {
         const info = parseRepository('https://gitlab.com/owner/repo',);
-        expect(info,).not.toBe(ABSENT,);
-        if (info === ABSENT)
+        expect(info,).not.toBe(REPO_UNPARSEABLE,);
+        if (info === REPO_UNPARSEABLE)
           return;
         expect(info.host,).toBe('other',);
       },
     },),
 
     it({
-      name: 'parseRepository returns ABSENT for undefined and empty',
+      name: 'parseRepository returns REPO_UNPARSEABLE for undefined and empty',
       fn: async () => {
-        expect(parseRepository(undefined,),).toBe(ABSENT,);
-        expect(parseRepository('',),).toBe(ABSENT,);
-        expect(parseRepository({ url: '', },),).toBe(ABSENT,);
+        expect(parseRepository(undefined,),).toBe(REPO_UNPARSEABLE,);
+        expect(parseRepository('',),).toBe(REPO_UNPARSEABLE,);
+        expect(parseRepository({ url: '', },),).toBe(REPO_UNPARSEABLE,);
       },
     },),
     //endregion parseRepository

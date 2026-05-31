@@ -8,10 +8,6 @@
  * ```
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type {
   LicenseClass,
   NpmPackage,
@@ -55,21 +51,46 @@ const GIT_SUFFIX = '.git';
 const GITHUB_DOMAIN = 'github.com';
 
 /**
- * Parses the `github:owner/repo` shorthand string. Returns `null` for any
- * other shape. Case-insensitive on the prefix to match the prior
- * `/^github:.../i` flag.
+ * Absence marker for {@link parseGithubShorthand} meaning "string is not in
+ * `github:owner/repo` shorthand form"; never a captured owner/repo pair.
+ */
+const NOT_SHORTHAND: unique symbol = Symbol('deps-cube/not-github-shorthand',);
+
+/**
+ * Absence marker for {@link parseGithubUrl} meaning "string is not a GitHub
+ * URL"; never a captured owner/repo pair.
+ */
+const NOT_GITHUB_URL: unique symbol = Symbol('deps-cube/not-github-url',);
+
+/**
+ * Absence marker for {@link parseRepository} meaning "repository field carries
+ * no parseable repo URL"; never a parsed {@link RepositoryInfo}.
+ *
+ * @example
+ * ```ts
+ * const info = parseRepository(versionManifest.repository,);
+ * if (info === REPO_UNPARSEABLE)
+ *   return;
+ * ```
+ */
+export const REPO_UNPARSEABLE: unique symbol = Symbol('deps-cube/repo-unparseable',);
+
+/**
+ * Parses the `github:owner/repo` shorthand string. Returns
+ * {@link NOT_SHORTHAND} for any other shape. Case-insensitive on the prefix
+ * to match the prior `/^github:.../i` flag.
  *
  * Linear: one prefix check, one `indexOf`, and a trailing `.git` strip.
  *
  * @param s - candidate string from the `repository` field
  *
- * @returns owner/repo pair, or `ABSENT` when the shape does not match
+ * @returns owner/repo pair, or {@link NOT_SHORTHAND} when the shape does not match
  */
-function parseGithubShorthand(s: string,): Maybe<GithubOwnerRepo> {
+function parseGithubShorthand(s: string,): GithubOwnerRepo | typeof NOT_SHORTHAND {
   if (s.length
     <= GITHUB_SHORTHAND_PREFIX
     .length)
-    return ABSENT;
+    return NOT_SHORTHAND;
   if (s
     .slice(
       0,
@@ -78,14 +99,14 @@ function parseGithubShorthand(s: string,): Maybe<GithubOwnerRepo> {
     .toLowerCase()
     !== GITHUB_SHORTHAND_PREFIX)
   {
-    return ABSENT;
+    return NOT_SHORTHAND;
   }
   /** Substring after the `github:` prefix; split into owner/repo on the first `/`. */
   const rest = s.slice(GITHUB_SHORTHAND_PREFIX.length,);
   /** Position of the first `/`; `-1` or `0` means there is no owner half. */
   const slashIdx = rest.indexOf('/',);
   if (slashIdx <= 0)
-    return ABSENT;
+    return NOT_SHORTHAND;
   /** Owner segment captured up to the first slash. */
   const owner = rest.slice(
     0,
@@ -94,7 +115,7 @@ function parseGithubShorthand(s: string,): Maybe<GithubOwnerRepo> {
   /** Repo segment after the slash, with the trailing `.git` (if any) stripped. */
   const repoRaw = rest.slice(slashIdx + 1,);
   if (repoRaw === '')
-    return ABSENT;
+    return NOT_SHORTHAND;
   /** Repo with `.git` stripped when present so the URL form matches the prior regex output. */
   const repo = repoRaw.endsWith(GIT_SUFFIX,)
     ? repoRaw.slice(
@@ -103,7 +124,7 @@ function parseGithubShorthand(s: string,): Maybe<GithubOwnerRepo> {
     )
     : repoRaw;
   if (repo === '')
-    return ABSENT;
+    return NOT_SHORTHAND;
   return {
     owner,
     repo,
@@ -122,31 +143,31 @@ function parseGithubShorthand(s: string,): Maybe<GithubOwnerRepo> {
  *
  * @param s - candidate URL from the `repository` field
  *
- * @returns owner/repo pair, or `ABSENT` when the URL is not on GitHub
+ * @returns owner/repo pair, or {@link NOT_GITHUB_URL} when the URL is not on GitHub
  */
-function parseGithubUrl(s: string,): Maybe<GithubOwnerRepo> {
+function parseGithubUrl(s: string,): GithubOwnerRepo | typeof NOT_GITHUB_URL {
   /** Lower-cased copy so the domain scan is case-insensitive; offsets line up with `s`. */
   const lowered = s.toLowerCase();
   /** Position of the domain in the lower-cased copy. */
   const ghIdx = lowered.indexOf(GITHUB_DOMAIN,);
   if (ghIdx === (-1))
-    return ABSENT;
+    return NOT_GITHUB_URL;
   /** Index immediately after the domain; the separator byte must live here. */
   const afterDomain = ghIdx + GITHUB_DOMAIN
     .length;
   if (afterDomain >= s
     .length)
-    return ABSENT;
+    return NOT_GITHUB_URL;
   /** Separator char between domain and path; per the URL forms must be `/` or `:`. */
   const sep = s.charAt(afterDomain,);
   if ((sep !== '/') && (sep !== ':'))
-    return ABSENT;
+    return NOT_GITHUB_URL;
   /** Path segment between the separator and the rest of the URL. */
   const tail = s.slice(afterDomain + 1,);
   /** Position of the slash splitting owner from repo. */
   const slashIdx = tail.indexOf('/',);
   if (slashIdx <= 0)
-    return ABSENT;
+    return NOT_GITHUB_URL;
   /** Owner segment captured up to the splitting slash. */
   const owner = tail.slice(
     0,
@@ -185,7 +206,7 @@ function parseGithubUrl(s: string,): Maybe<GithubOwnerRepo> {
     scanRepoEnd(slashIdx + 1,),
   );
   if (repoRaw === '')
-    return ABSENT;
+    return NOT_GITHUB_URL;
   /** Repo with the trailing `.git` (if any) stripped. */
   const repo = repoRaw.endsWith(GIT_SUFFIX,)
     ? repoRaw.slice(
@@ -194,7 +215,7 @@ function parseGithubUrl(s: string,): Maybe<GithubOwnerRepo> {
     )
     : repoRaw;
   if (repo === '')
-    return ABSENT;
+    return NOT_GITHUB_URL;
   return {
     owner,
     repo,
@@ -206,12 +227,12 @@ function parseGithubUrl(s: string,): Maybe<GithubOwnerRepo> {
  *
  * Handles plain strings, `{url, directory}` objects, `github:owner/repo`
  * shortcuts, `git+https://...`, `git@github.com:owner/repo.git`. Returns
- * `ABSENT` when no parseable repo URL is present; non-GitHub hosts return
- * `{host: 'other', ...}` so the caller can mark TS/SLOC unknown.
+ * {@link REPO_UNPARSEABLE} when no parseable repo URL is present; non-GitHub
+ * hosts return `{host: 'other', ...}` so the caller can mark TS/SLOC unknown.
  *
  * @param repoField - Raw `repository` value from version manifest.
  *
- * @returns Parsed repository info, or `ABSENT` when unparseable.
+ * @returns Parsed repository info, or {@link REPO_UNPARSEABLE} when unparseable.
  *
  * @example
  * ```ts
@@ -221,9 +242,9 @@ function parseGithubUrl(s: string,): Maybe<GithubOwnerRepo> {
  * // { host: 'github', owner: 'lezer-parser', repo: 'common', url: 'https://github.com/lezer-parser/common' }
  * ```
  */
-export function parseRepository(repoField: NpmVersion['repository'],): Maybe<RepositoryInfo> {
+export function parseRepository(repoField: NpmVersion['repository'],): RepositoryInfo | typeof REPO_UNPARSEABLE {
   if ((repoField === undefined) || (repoField === null))
-    return ABSENT;
+    return REPO_UNPARSEABLE;
 
   /** `true` when `repository` field is a plain string instead of an object. */
   const isStringForm = (typeof repoField) === 'string';
@@ -236,11 +257,13 @@ export function parseRepository(repoField: NpmVersion['repository'],): Maybe<Rep
   const directoryPart = directory === undefined ? {} : { directory, };
 
   if (rawString === '')
-    return ABSENT;
+    return REPO_UNPARSEABLE;
 
-  /** Parsed `github:owner/repo` shorthand; `ABSENT` when the prefix does not match. */
+  /**
+   * Parsed `github:owner/repo` shorthand; {@link NOT_SHORTHAND} when the prefix does not match.
+   */
   const shortParts = parseGithubShorthand(rawString,);
-  if (shortParts !== ABSENT) {
+  if (shortParts !== NOT_SHORTHAND) {
     return {
       host: 'github',
       owner: shortParts.owner,
@@ -250,9 +273,11 @@ export function parseRepository(repoField: NpmVersion['repository'],): Maybe<Rep
     };
   }
 
-  /** Parsed `github.com` URL; `ABSENT` when the URL is on a different host. */
+  /**
+   * Parsed `github.com` URL; {@link NOT_GITHUB_URL} when the URL is on a different host.
+   */
   const urlParts = parseGithubUrl(rawString,);
-  if (urlParts !== ABSENT) {
+  if (urlParts !== NOT_GITHUB_URL) {
     return {
       host: 'github',
       owner: urlParts.owner,
@@ -276,6 +301,18 @@ export function parseRepository(repoField: NpmVersion['repository'],): Maybe<Rep
 //region Version resolution
 
 /**
+ * Absence marker for {@link resolveVersion} meaning "neither a pinned version
+ * nor a `dist-tags.latest` resolves for this range"; never a version string.
+ *
+ * @example
+ * ```ts
+ * const resolved = resolveVersion({ range, pkg, },);
+ * const version = resolved === VERSION_UNRESOLVED ? entry.range : resolved;
+ * ```
+ */
+export const VERSION_UNRESOLVED: unique symbol = Symbol('deps-cube/version-unresolved',);
+
+/**
  * Picks a concrete version that satisfies the catalog range.
  *
  * Heuristic: pinned versions (no leading operator) are used as-is; otherwise
@@ -286,7 +323,7 @@ export function parseRepository(repoField: NpmVersion['repository'],): Maybe<Rep
  *
  * @param pkg - Package-level npm registry response.
  *
- * @returns Concrete version string, or `ABSENT` if neither pin nor latest resolves.
+ * @returns Concrete version string, or {@link VERSION_UNRESOLVED} if neither pin nor latest resolves.
  *
  * @example
  * ```ts
@@ -302,14 +339,14 @@ export function resolveVersion(
     readonly range: string;
     readonly pkg: NpmPackage;
   },
-): Maybe<string> {
+): string | typeof VERSION_UNRESOLVED {
   if (looksLikePinnedSemver(range,)
     && (pkg.versions?.[range]
       !== undefined))
     return range;
   return pkg['dist-tags']
     ?.latest
-    ?? ABSENT;
+    ?? VERSION_UNRESOLVED;
 }
 
 /**

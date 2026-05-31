@@ -34,16 +34,17 @@ import {
 import {
   buildCoordinatePlaneLayers,
   buildThresholdLineLayer,
+  NO_THRESHOLD_LAYER,
 } from './deck-planes.ts';
 import {
   buildLeafScatterLayer,
   buildNonLeafScatterLayer,
   buildUnknownClusterLayer,
 } from './deck-scatter.ts';
-import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import {
   type ChannelKey,
+  DIM_UNKNOWN,
   type DimMapping,
   extractDim,
 } from './scripts/filter.ts';
@@ -107,7 +108,7 @@ export const orbitView: OrbitView = new OrbitView({
 
 /**
  * Computes inclusive `[min, max]` bounds for every channel given the
- * current dim mapping. Unknowns (`extractDim` returning `ABSENT`) are
+ * current dim mapping. Unknowns (`extractDim` returning {@link DIM_UNKNOWN}) are
  * skipped. Channels with zero known values fall back to {@link FALLBACK_EXTENT}.
  *
  * Run on every render so dim swaps reflow the camera + axis labels.
@@ -135,7 +136,9 @@ export function computeSceneBounds(
 ): SceneBounds {
   /** Per-channel `[key, extent]` pairs ready to feed `Object.fromEntries` into a SceneBounds record. */
   const entries = CHANNEL_KEYS.map(function extentFor(channel,) {
-    /** Known values across every probe for this channel; unknowns (`ABSENT`) are dropped before min/max. */
+    /**
+     * Known values across every probe for this channel; unknowns ({@link DIM_UNKNOWN}) are dropped before min/max.
+     */
     const values = probes
       .map(function pluck(probe,) {
         return extractDim({
@@ -144,7 +147,7 @@ export function computeSceneBounds(
         },);
       },)
       .filter(function known(value,): value is number {
-        return value !== ABSENT;
+        return value !== DIM_UNKNOWN;
       },);
     if (values.length
       === 0) {
@@ -234,14 +237,16 @@ export function buildLayers(
       visibleIndices,
     },)
     : [];
-  /** Threshold guide-line layer when the toggle is on; `ABSENT` is filtered out before flattening. */
+  /**
+   * Threshold guide-line layer when the toggle is on; {@link NO_THRESHOLD_LAYER} is filtered out before flattening.
+   */
   const thresholdLines = state.displayToggles
     .showThresholdPlanes
     ? buildThresholdLineLayer({
       bounds,
       dimMapping: state.dimMapping,
     },)
-    : ABSENT;
+    : NO_THRESHOLD_LAYER;
   /** Layer groups in back-to-front order; flattened below into the final layer array deck.gl renders. */
   const groups: readonly (readonly Layer[])[] = [
     state.displayToggles
@@ -250,7 +255,7 @@ export function buildLayers(
         bounds,
       },)
       : [],
-    thresholdLines === ABSENT ? [] : [thresholdLines,],
+    thresholdLines === NO_THRESHOLD_LAYER ? [] : [thresholdLines,],
     [
       buildAxisShaftLayer({
         bounds,

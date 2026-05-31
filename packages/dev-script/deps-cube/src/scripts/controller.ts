@@ -31,10 +31,6 @@ import {
   orbitView,
   type SceneBounds,
 } from '../deck-config.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 import { syncDomFromState, } from './controller-dom.ts';
 import {
@@ -113,27 +109,33 @@ function getProbes(): readonly PackageProbe[] {
   return probes;
 }
 
+/**
+ * Absence marker for {@link pickedProbe} meaning "no pickable probe is under
+ * the cursor"; never a {@link PackageProbe}.
+ */
+const NO_PICKED_PROBE: unique symbol = Symbol('deps-cube/no-picked-probe',);
+
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `info` is deck.gl's external `PickingInfo`, which carries mutating methods; deep-readonly cannot apply. */
 /**
  * Extracts the probe payload from a deck.gl picking-info object, or
- * returns `ABSENT` when nothing was picked or the picked datum lacks the
- * `.probe` field. `info.object` is typed `any` by deck.gl; the cast
+ * returns {@link NO_PICKED_PROBE} when nothing was picked or the picked datum
+ * lacks the `.probe` field. `info.object` is typed `any` by deck.gl; the cast
  * is justified because we own the layer-data contract.
  *
  * @param info - deck.gl picking info.
  *
- * @returns Picked probe, or `ABSENT` when no probe is under the cursor.
+ * @returns Picked probe, or {@link NO_PICKED_PROBE} when no probe is under the cursor.
  */
-function pickedProbe(info: PickingInfo,): Maybe<PackageProbe> {
+function pickedProbe(info: PickingInfo,): PackageProbe | typeof NO_PICKED_PROBE {
   if ((info.object
     === undefined) || (info.object
       === null))
-    return ABSENT;
+    return NO_PICKED_PROBE;
   if ((typeof info.object) !== 'object')
-    return ABSENT;
+    return NO_PICKED_PROBE;
   if (!('probe' in info
     .object))
-    return ABSENT;
+    return NO_PICKED_PROBE;
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- ScatterplotLayer is fed ScatterDatum from layer factories; .probe is always a PackageProbe. */
   return info.object
     .probe as PackageProbe;
@@ -248,9 +250,11 @@ function syncHash(
  * @returns `{ html }` for hovered probes, `null` otherwise.
  */
 function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
-  /** Probe under the cursor, or `ABSENT` for hover-over-empty-space. */
+  /**
+   * Probe under the cursor, or {@link NO_PICKED_PROBE} for hover-over-empty-space.
+   */
   const probe = pickedProbe(info,);
-  if (probe === ABSENT)
+  if (probe === NO_PICKED_PROBE)
     return null;
   return {
     html: formatTooltipHtml({
@@ -268,9 +272,11 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
  * @param info - deck.gl picking info.
  */
 function onCanvasClick(info: PickingInfo,): void {
-  /** Probe under the click, or `ABSENT` for miss-clicks that should unpin instead of pin. */
+  /**
+   * Probe under the click, or {@link NO_PICKED_PROBE} for miss-clicks that should unpin instead of pin.
+   */
   const probe = pickedProbe(info,);
-  if (probe === ABSENT) {
+  if (probe === NO_PICKED_PROBE) {
     unpinTooltip();
     return;
   }

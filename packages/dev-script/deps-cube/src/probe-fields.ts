@@ -25,16 +25,14 @@ import {
   type Cache,
   CACHE_MISS,
 } from './cache.ts';
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type { NpmPackage, } from './probe-field-types.ts';
 
 export {
   classifyLicense,
   parseRepository,
+  REPO_UNPARSEABLE,
   resolveVersion,
+  VERSION_UNRESOLVED,
 } from './probe-field-parsers.ts';
 export type {
   LicenseClass,
@@ -225,6 +223,19 @@ export async function probeDownloads(
 }
 
 /**
+ * Absence marker for {@link probeLanguages} meaning "Linguist data is
+ * unavailable for this repo"; never a language byte-count record.
+ *
+ * @example
+ * ```ts
+ * const langs = await probeLanguages({ owner, repo, cache, },);
+ * if (langs === LANGUAGES_UNKNOWN)
+ *   return;
+ * ```
+ */
+export const LANGUAGES_UNKNOWN: unique symbol = Symbol('deps-cube/languages-unknown',);
+
+/**
  * Calls Linguist for a GitHub repo, returning language byte counts.
  *
  * @param owner - GitHub owner.
@@ -233,7 +244,7 @@ export async function probeDownloads(
  *
  * @param cache - File cache handle.
  *
- * @returns `ABSENT` when API errors due to private repo, 404, or rate limit.
+ * @returns Linguist byte-count record, or {@link LANGUAGES_UNKNOWN} when API errors due to private repo, 404, or rate limit.
  *
  * @example
  * ```ts
@@ -250,7 +261,7 @@ export async function probeLanguages(
     readonly repo: string;
     readonly cache: Cache;
   },
-): Promise<Maybe<Record<string, number>>> {
+): Promise<Record<string, number> | typeof LANGUAGES_UNKNOWN> {
   /** Cache key for languages probe; `<owner>/<repo>` prevents repo collisions. */
   const key = `${owner}/${repo}`;
   // Language data is immutable per published version, so `ttlMs` is omitted (never expires).
@@ -263,7 +274,9 @@ export async function probeLanguages(
   if (cached !== CACHE_MISS)
     return cached;
   try {
-    /** Fresh Linguist response; on error, catch returns `ABSENT` to signal unknown upstream. */
+    /**
+     * Fresh Linguist response; on error, catch returns {@link LANGUAGES_UNKNOWN} to signal unknown upstream.
+     */
     const fetched = await ghApi<Record<string, number>>(
       `repos/${owner}/${repo}/languages`,
     );
@@ -276,9 +289,22 @@ export async function probeLanguages(
     return fetched;
   }
   catch {
-    return ABSENT;
+    return LANGUAGES_UNKNOWN;
   }
 }
+
+/**
+ * Absence marker for {@link probeLastCommit} meaning "last-commit date is
+ * unavailable for this repo"; never an ISO timestamp string.
+ *
+ * @example
+ * ```ts
+ * const date = await probeLastCommit({ owner, repo, directory, cache, },);
+ * if (date === LAST_COMMIT_UNKNOWN)
+ *   return;
+ * ```
+ */
+export const LAST_COMMIT_UNKNOWN: unique symbol = Symbol('deps-cube/last-commit-unknown',);
 
 /**
  * Fetches whole-repo `pushed_at`, or most recent commit date in `directory`.
@@ -291,7 +317,7 @@ export async function probeLanguages(
  *
  * @param cache - File cache handle.
  *
- * @returns ISO timestamp string, or `ABSENT` when API errors out.
+ * @returns ISO timestamp string, or {@link LAST_COMMIT_UNKNOWN} when API errors out.
  *
  * @example
  * ```ts
@@ -310,7 +336,7 @@ export async function probeLastCommit(
     readonly directory?: string;
     readonly cache: Cache;
   },
-): Promise<Maybe<string>> {
+): Promise<string | typeof LAST_COMMIT_UNKNOWN> {
   /** Cache key shared by whole-repo and path-scoped variants; `field` discriminates. */
   const key = `${owner}/${repo}`;
   /** Cache field tag distinguishing whole-repo `pushed_at` from per-directory commits. */
@@ -349,7 +375,7 @@ export async function probeLastCommit(
       ?.author
       ?.date;
     if (date === undefined)
-      return ABSENT;
+      return LAST_COMMIT_UNKNOWN;
     await cache.write({
       name: key,
       version: '_repo',
@@ -359,7 +385,7 @@ export async function probeLastCommit(
     return date;
   }
   catch {
-    return ABSENT;
+    return LAST_COMMIT_UNKNOWN;
   }
 }
 

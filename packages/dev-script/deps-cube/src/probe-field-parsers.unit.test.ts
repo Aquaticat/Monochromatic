@@ -23,12 +23,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import {
   parseRepository,
+  REPO_UNPARSEABLE,
   resolveVersion,
+  type VERSION_UNRESOLVED,
 } from './probe-field-parsers.ts';
 import type {
   NpmPackage,
@@ -39,7 +37,9 @@ import type {
 /** Repeated-run length for the stack-safety cases; far past V8's recursion ceiling, so a recursive scan would overflow while the linear pass does not. */
 const LONG_RUN = 100_000;
 
-/** Fallback `dist-tags.latest` returned by {@link pinnedOrLatest} when the range is not a pinned semver; distinct from any pinned range so the branch is observable. */
+/**
+ * Fallback `dist-tags.latest` returned by {@link pinnedOrLatest} when the range is not a pinned semver; distinct from any pinned range so the branch is observable.
+ */
 const LATEST_SENTINEL = 'LATEST-FALLBACK';
 
 /**
@@ -59,7 +59,7 @@ const LATEST_SENTINEL = 'LATEST-FALLBACK';
  * pinnedOrLatest('^1.0.0'); // 'LATEST-FALLBACK'
  * ```
  */
-function pinnedOrLatest(range: string,): Maybe<string> {
+function pinnedOrLatest(range: string,): string | typeof VERSION_UNRESOLVED {
   /** Registry stub whose sole version key is `range`; `latest` differs so the non-pinned branch returns an observably different value. */
   const pkg: NpmPackage = {
     versions: { [range]: {}, },
@@ -72,9 +72,9 @@ function pinnedOrLatest(range: string,): Maybe<string> {
 }
 
 /**
- * Parses `raw` and narrows away {@link ABSENT} so positive parser assertions
- * can read `.owner`/`.repo`/`.host` directly. Throws when the field does not
- * parse, surfacing a fixture mistake instead of a silent `undefined`.
+ * Parses `raw` and narrows away {@link REPO_UNPARSEABLE} so positive parser
+ * assertions can read `.owner`/`.repo`/`.host` directly. Throws when the field
+ * does not parse, surfacing a fixture mistake instead of a silent `undefined`.
  *
  * @param raw - Raw `repository` field forwarded to {@link parseRepository}.
  *
@@ -83,10 +83,12 @@ function pinnedOrLatest(range: string,): Maybe<string> {
  * @throws When `raw` does not parse to a repository.
  */
 function parsedRepo(raw: NpmVersion['repository'],): RepositoryInfo {
-  /** Parse result; `ABSENT` here means the test fed an unparseable fixture. */
+  /**
+   * Parse result; {@link REPO_UNPARSEABLE} here means the test fed an unparseable fixture.
+   */
   const info = parseRepository(raw,);
-  if (info === ABSENT)
-    throw new Error(`expected a parseable repository, got ABSENT for ${JSON.stringify(raw,)}`,);
+  if (info === REPO_UNPARSEABLE)
+    throw new Error(`expected a parseable repository, got REPO_UNPARSEABLE for ${JSON.stringify(raw,)}`,);
   return info;
 }
 

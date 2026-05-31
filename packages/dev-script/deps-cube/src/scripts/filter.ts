@@ -23,10 +23,6 @@
  * ```
  */
 
-import {
-  ABSENT,
-  type Maybe,
-} from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 
 //region Types
@@ -133,23 +129,37 @@ const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
 //region Pure extractors
 
 /**
+ * Absence marker for {@link extractDim} meaning "the source `*OrNull` field is
+ * unknown for this probe along this dim"; never a numeric reading.
+ *
+ * @example
+ * ```ts
+ * const x = extractDim({ probe, dim: 'logSourceBytes', },);
+ * if (x === DIM_UNKNOWN) {
+ *   // monorepo-housed or repo unavailable; render in Unknown cluster
+ * }
+ * ```
+ */
+export const DIM_UNKNOWN: unique symbol = Symbol('deps-cube/dim-unknown',);
+
+/**
  * Returns the displayed value of one probe along one data dimension.
  *
  * Continuous dims that span orders of magnitude are log10-scaled with a
  * floor of {@link LOG_FLOOR}. Unknown values (absent `*OrNull` fields)
- * return `ABSENT` so callers can either filter the package out or render
- * it at a sentinel offset position.
+ * return {@link DIM_UNKNOWN} so callers can either filter the package out or
+ * render it at a sentinel offset position.
  *
  * @param probe - Source probe.
  *
  * @param dim - Data dimension to extract.
  *
- * @returns Numeric value, or `ABSENT` when the source field is unknown.
+ * @returns Numeric value, or {@link DIM_UNKNOWN} when the source field is unknown.
  *
  * @example
  * ```ts
  * const x = extractDim({ probe, dim: 'logSourceBytes' });
- * if (x === ABSENT) {
+ * if (x === DIM_UNKNOWN) {
  *   // monorepo-housed or repo unavailable; render in Unknown cluster
  * }
  * ```
@@ -162,11 +172,11 @@ export function extractDim(
     readonly probe: PackageProbe;
     readonly dim: DataDimKey;
   },
-): Maybe<number> {
+): number | typeof DIM_UNKNOWN {
   if (dim === 'logSourceBytes') {
     if (probe.sourceBytesOrNull
       === undefined)
-      return ABSENT;
+      return DIM_UNKNOWN;
     return Math.log10(Math.max(
       probe.sourceBytesOrNull,
       LOG_FLOOR,
@@ -175,7 +185,7 @@ export function extractDim(
   if (dim === 'logDaysStale') {
     if (probe.daysSinceLastCommitOrNull
       === undefined)
-      return ABSENT;
+      return DIM_UNKNOWN;
     return Math.log10(Math.max(
       probe.daysSinceLastCommitOrNull,
       LOG_FLOOR,
@@ -195,7 +205,7 @@ export function extractDim(
   }
   if (dim === 'tsRatio')
     return probe.tsRatioOrNull
-      ?? ABSENT;
+      ?? DIM_UNKNOWN;
   if (dim === 'runtimeDepCount')
     return probe.runtimeDepCount;
   if (dim === 'transitiveDepCount')
@@ -214,22 +224,36 @@ export function extractDim(
 }
 
 /**
+ * Absence marker for {@link derivedBool} meaning "this derived boolean depends
+ * on an unknown input and is undetermined"; never a concrete boolean.
+ *
+ * @example
+ * ```ts
+ * const ts = derivedBool({ probe, key: 'tsMajority', },);
+ * if (ts === DERIVED_BOOL_UNKNOWN) {
+ *   // TS ratio is unknown for this package
+ * }
+ * ```
+ */
+export const DERIVED_BOOL_UNKNOWN: unique symbol = Symbol('deps-cube/derived-bool-unknown',);
+
+/**
  * Computes the value of one derived boolean attribute for a probe.
  *
- * Returns `ABSENT` for booleans that depend on unknown inputs (e.g.
- * `tsMajority` when `tsRatioOrNull` is absent). The `hasKnownRepo`
+ * Returns {@link DERIVED_BOOL_UNKNOWN} for booleans that depend on unknown
+ * inputs (e.g. `tsMajority` when `tsRatioOrNull` is absent). The `hasKnownRepo`
  * derivation is always defined; it's the "no unknowns" predicate itself.
  *
  * @param probe - Source probe.
  *
  * @param key - Toggle key.
  *
- * @returns Boolean value, or `ABSENT` when undetermined.
+ * @returns Boolean value, or {@link DERIVED_BOOL_UNKNOWN} when undetermined.
  *
  * @example
  * ```ts
  * const ts = derivedBool({ probe, key: 'tsMajority' });
- * // ts === ABSENT means TS ratio is unknown for this package
+ * // ts === DERIVED_BOOL_UNKNOWN means TS ratio is unknown for this package
  * ```
  */
 export function derivedBool(
@@ -240,27 +264,27 @@ export function derivedBool(
     readonly probe: PackageProbe;
     readonly key: ToggleKey;
   },
-): Maybe<boolean> {
+): boolean | typeof DERIVED_BOOL_UNKNOWN {
   if (key === 'isLeaf')
     return probe.isLeaf;
   if (key === 'tsMajority') {
     if (probe.tsRatioOrNull
       === undefined)
-      return ABSENT;
+      return DERIVED_BOOL_UNKNOWN;
     return probe.tsRatioOrNull
       >= TS_MAJORITY_THRESHOLD;
   }
   if (key === 'large') {
     if (probe.sourceBytesOrNull
       === undefined)
-      return ABSENT;
+      return DERIVED_BOOL_UNKNOWN;
     return probe.sourceBytesOrNull
       >= LARGE_SOURCE_BYTES_THRESHOLD;
   }
   if (key === 'recent') {
     if (probe.daysSinceLastCommitOrNull
       === undefined)
-      return ABSENT;
+      return DERIVED_BOOL_UNKNOWN;
     return probe.daysSinceLastCommitOrNull
       < RECENT_DAYS_THRESHOLD;
   }
@@ -326,12 +350,14 @@ function passesToggles(
   ) {
     if (value === 'any')
       return true;
-    /** Concrete derived-boolean reading for the toggle; `ABSENT` means undetermined and fails both `'yes'` and `'no'`. */
+    /**
+     * Concrete derived-boolean reading for the toggle; {@link DERIVED_BOOL_UNKNOWN} means undetermined and fails both `'yes'` and `'no'`.
+     */
     const actual = derivedBool({
       probe,
       key,
     },);
-    if (actual === ABSENT)
+    if (actual === DERIVED_BOOL_UNKNOWN)
       return false;
     return value === 'yes' ? actual : !actual;
   },);
@@ -384,12 +410,14 @@ function passesRanges(
       min,
       max,
     ] = ranges[channel];
-    /** Extracted dim reading for the probe; `ABSENT` skips the range constraint. */
+    /**
+     * Extracted dim reading for the probe; {@link DIM_UNKNOWN} skips the range constraint.
+     */
     const value = extractDim({
       probe,
       dim,
     },);
-    if (value === ABSENT)
+    if (value === DIM_UNKNOWN)
       return true;
     return (value >= min) && (value <= max);
   },);

@@ -26,10 +26,6 @@ import {
   CACHE_MISS,
 } from './cache.ts';
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import {
   type NpmPackage,
   probePackageManifest,
 } from './probe-fields.ts';
@@ -48,14 +44,20 @@ const TTL_MS = TTL_DAYS * MS_PER_DAY;
 //region Helpers
 
 /**
+ * Absence marker for {@link readManifestSilent} meaning "registry fetch failed
+ * for this package"; never an {@link NpmPackage} manifest.
+ */
+const MANIFEST_FETCH_FAILED: unique symbol = Symbol('deps-cube/manifest-fetch-failed',);
+
+/**
  * Wraps {@link probePackageManifest} so registry-fetch failures during the
- * transitive walk return `ABSENT` instead of throwing.
+ * transitive walk return {@link MANIFEST_FETCH_FAILED} instead of throwing.
  *
  * @param npmName - npm package name.
  *
  * @param cache - File cache handle.
  *
- * @returns Manifest, or `ABSENT` on any fetch error.
+ * @returns Manifest, or {@link MANIFEST_FETCH_FAILED} on any fetch error.
  */
 async function readManifestSilent(
   {
@@ -65,7 +67,7 @@ async function readManifestSilent(
     readonly npmName: string;
     readonly cache: Cache;
   },
-): Promise<Maybe<NpmPackage>> {
+): Promise<NpmPackage | typeof MANIFEST_FETCH_FAILED> {
   try {
     return await probePackageManifest({
       npmName,
@@ -73,7 +75,7 @@ async function readManifestSilent(
     },);
   }
   catch {
-    return ABSENT;
+    return MANIFEST_FETCH_FAILED;
   }
 }
 
@@ -139,12 +141,14 @@ export async function probeTransitive(
   if (cached !== CACHE_MISS)
     return cached;
 
-  /** Full registry manifest for `name`; `ABSENT` when the registry fetch failed. */
+  /**
+   * Full registry manifest for `name`; {@link MANIFEST_FETCH_FAILED} when the registry fetch failed.
+   */
   const manifest = await readManifestSilent({
     npmName: name,
     cache,
   },);
-  if (manifest === ABSENT)
+  if (manifest === MANIFEST_FETCH_FAILED)
     return 0;
   /** Manifest entry for the exact requested version, falling back to any first version when the requested version is missing. */
   const versionManifest = manifest.versions?.[version]
@@ -160,12 +164,14 @@ export async function probeTransitive(
   /** Per-direct-dep subtree counts (each direct dep contributes `1 + transitive_below`). */
   const subCounts = await Promise.all(directNames.map(
     async function recurseOne(depName,) {
-      /** Latest-version manifest for the direct dep; `ABSENT` when its registry fetch failed. */
+      /**
+       * Latest-version manifest for the direct dep; {@link MANIFEST_FETCH_FAILED} when its registry fetch failed.
+       */
       const depPkg = await readManifestSilent({
         npmName: depName,
         cache,
       },);
-      if (depPkg === ABSENT)
+      if (depPkg === MANIFEST_FETCH_FAILED)
         return 0;
       /** Concrete version string for the direct dep, used as the cache key for the recursive call. */
       const depVersion = depPkg['dist-tags']

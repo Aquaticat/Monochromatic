@@ -25,19 +25,19 @@ import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';
 import type { Cache, } from './cache.ts';
 import type { CatalogEntry, } from './catalog.ts';
 import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
-import {
   classifyLicense,
+  LANGUAGES_UNKNOWN,
+  LAST_COMMIT_UNKNOWN,
   type LicenseClass,
   parseRepository,
   probeDownloads,
   probeLanguages,
   probeLastCommit,
   probePackageManifest,
+  REPO_UNPARSEABLE,
   type RepositoryInfo,
   resolveVersion,
+  VERSION_UNRESOLVED,
 } from './probe-fields.ts';
 import { probeTransitive, } from './probe-transitive.ts';
 
@@ -112,17 +112,23 @@ const CONCURRENCY = 8;
 //region Helpers
 
 /**
+ * Absence marker for {@link computeUnknownReason} meaning "every GH-derived
+ * attribute is known, so no unknown-reason code applies"; never a reason code.
+ */
+const NO_UNKNOWN_REASON: unique symbol = Symbol('deps-cube/no-unknown-reason',);
+
+/**
  * Decides which of the four "unknown" reason codes applies to a probe based
  * on the repo info and the Linguist outcome.
  *
- * @param repoInfo - Normalised repository info, or `ABSENT` if missing.
+ * @param repoInfo - Normalised repository info; omitted when missing.
  *
  * @param isMonorepoHoused - `true` when `repository.directory` is set.
  *
- * @param languages - Linguist response, or `ABSENT` when API failed.
+ * @param languages - Linguist response; omitted when the API failed.
  *
- * @returns Discriminated reason code, or `ABSENT` when all three GH-derived
- *   attributes are known.
+ * @returns Discriminated reason code, or {@link NO_UNKNOWN_REASON} when all
+ *   three GH-derived attributes are known.
  */
 function computeUnknownReason(
   {
@@ -130,21 +136,21 @@ function computeUnknownReason(
     isMonorepoHoused,
     languages,
   }: {
-    readonly repoInfo: Maybe<RepositoryInfo>;
+    readonly repoInfo?: RepositoryInfo;
     readonly isMonorepoHoused: boolean;
-    readonly languages: Maybe<Readonly<Record<string, number>>>;
+    readonly languages?: Readonly<Record<string, number>>;
   },
-): Maybe<UnknownReason> {
-  if (repoInfo === ABSENT)
+): UnknownReason | typeof NO_UNKNOWN_REASON {
+  if (repoInfo === undefined)
     return 'no-repo';
   if (repoInfo.host
     !== 'github')
     return 'non-github';
-  if (isMonorepoHoused && (languages === ABSENT))
+  if (isMonorepoHoused && (languages === undefined))
     return 'monorepo';
-  if (languages === ABSENT)
+  if (languages === undefined)
     return 'private-or-404';
-  return ABSENT;
+  return NO_UNKNOWN_REASON;
 }
 
 /**
@@ -210,13 +216,18 @@ async function probeOne(
     npmName: entry.npmName,
     cache,
   },);
-  /** Resolved version, or `ABSENT` when neither pin nor latest resolves. */
+  /**
+   * Resolved version, or {@link VERSION_UNRESOLVED} when neither pin nor latest resolves.
+   */
   const resolved = resolveVersion({
     range: entry.range,
     pkg,
   },);
-  /** Concrete version actually used for measurements; falls back to the raw range string when resolution returns `ABSENT`. */
-  const resolvedVersion = resolved === ABSENT ? entry.range : resolved;
+  /**
+   * Concrete version actually used for measurements; falls back to the raw
+   * range string when resolution returns {@link VERSION_UNRESOLVED}.
+   */
+  const resolvedVersion = resolved === VERSION_UNRESOLVED ? entry.range : resolved;
 
   /** Version-scoped sub-manifest for `resolvedVersion`; `{}` when the registry response is incomplete. */
   const versionManifest = pkg.versions?.[resolvedVersion]
@@ -252,10 +263,14 @@ async function probeOne(
     cache,
   },);
 
-  /** Parsed repository pointer, or `ABSENT` when the manifest lacks a usable repo URL. */
+  /**
+   * Parsed repository pointer, or {@link REPO_UNPARSEABLE} when the manifest lacks a usable repo URL.
+   */
   const repoInfo = parseRepository(versionManifest.repository,);
-  /** Repo pointer with `ABSENT` collapsed to `undefined` so the guards below narrow it cleanly. */
-  const repo = repoInfo === ABSENT ? undefined : repoInfo;
+  /**
+   * Repo pointer with {@link REPO_UNPARSEABLE} collapsed to `undefined` so the guards below narrow it cleanly.
+   */
+  const repo = repoInfo === REPO_UNPARSEABLE ? undefined : repoInfo;
   /** `true` when the package lives inside a monorepo; Linguist measures the wrong scope here so we skip it. */
   const isMonorepoHoused = (repo !== undefined) && (repo.directory
     !== undefined);
@@ -278,7 +293,7 @@ async function probeOne(
         repo: repo.repo,
         cache,
       },)
-      : Promise.resolve<Maybe<Record<string, number>>>(ABSENT,),
+      : Promise.resolve<Record<string, number> | typeof LANGUAGES_UNKNOWN>(LANGUAGES_UNKNOWN,),
     (isGitHub && (repo !== undefined))
       ? probeLastCommit({
         owner: repo.owner,
@@ -289,7 +304,7 @@ async function probeOne(
           : { directory: repo.directory, }),
         cache,
       },)
-      : Promise.resolve<Maybe<string>>(ABSENT,),
+      : Promise.resolve<string | typeof LAST_COMMIT_UNKNOWN>(LAST_COMMIT_UNKNOWN,),
     probeTransitive({
       name: entry.npmName,
       version: resolvedVersion,
@@ -299,11 +314,11 @@ async function probeOne(
     },),
   ],);
 
-  /** Linguist languages record, or `undefined` when the probe was skipped or failed; narrows the symbol away. */
-  const knownLanguages = languages === ABSENT ? undefined : languages;
-  /** Sum of Linguist byte counts across every detected language; denominator for the TS ratio, `ABSENT` when Linguist did not run. */
-  const totalBytes: Maybe<number> = knownLanguages === undefined
-    ? ABSENT
+  /** Linguist languages record, or `undefined` when the probe was skipped or failed; narrows the symbol away at this seam. */
+  const knownLanguages = languages === LANGUAGES_UNKNOWN ? undefined : languages;
+  /** Sum of Linguist byte counts across every detected language; denominator for the TS ratio, `undefined` when Linguist did not run. */
+  const totalBytes = knownLanguages === undefined
+    ? undefined
     : Object.values(knownLanguages,)
       .reduce(
       function sumBytes(
@@ -320,28 +335,30 @@ async function probeOne(
   const jsBytes = knownLanguages?.JavaScript
     ?? 0;
 
-  /** TS-share of total source bytes, in `[0, 1]`; `ABSENT` when Linguist data is missing or unusable. */
-  const tsRatioOrNull: Maybe<number> = (totalBytes === ABSENT)
+  /** TS-share of total source bytes, in `[0, 1]`; `undefined` when Linguist data is missing or unusable. */
+  const tsRatioOrNull = (totalBytes === undefined)
     || (totalBytes === 0)
     || (tsBytes === undefined)
-    ? ABSENT
+    ? undefined
     : tsBytes / totalBytes;
-  /** Combined TS+JS bytes; `ABSENT` when Linguist data is missing. */
-  const sourceBytesOrNull: Maybe<number> = totalBytes === ABSENT
-    ? ABSENT
+  /** Combined TS+JS bytes; `undefined` when Linguist data is missing. */
+  const sourceBytesOrNull = totalBytes === undefined
+    ? undefined
     : (tsBytes ?? 0) + jsBytes;
-  /** Days since the most-recent commit; `ABSENT` when the last-commit probe failed or was skipped. */
-  const daysSinceLastCommitOrNull: Maybe<number> = lastCommitDate === ABSENT
-    ? ABSENT
+  /** Days since the most-recent commit; `undefined` when the last-commit probe failed or was skipped. */
+  const daysSinceLastCommitOrNull = lastCommitDate === LAST_COMMIT_UNKNOWN
+    ? undefined
     : Math.floor((Date.now()
       - new Date(lastCommitDate,)
       .getTime()) / MS_PER_DAY,);
 
-  /** Discriminated reason for any unknown GH-derived field, or `ABSENT` when all three are known. */
+  /**
+   * Discriminated reason for any unknown GH-derived field, or {@link NO_UNKNOWN_REASON} when all three are known.
+   */
   const unknownReason = computeUnknownReason({
-    repoInfo,
+    ...(repo === undefined ? {} : { repoInfo: repo, }),
     isMonorepoHoused,
-    languages,
+    ...(knownLanguages === undefined ? {} : { languages: knownLanguages, }),
   },);
 
   return {
@@ -356,13 +373,13 @@ async function probeOne(
     runtimeDepCount,
     transitiveDepCount,
     isMonorepoHoused,
-    ...(tsRatioOrNull === ABSENT ? {} : { tsRatioOrNull, }),
-    ...(sourceBytesOrNull === ABSENT ? {} : { sourceBytesOrNull, }),
-    ...(daysSinceLastCommitOrNull === ABSENT
+    ...(tsRatioOrNull === undefined ? {} : { tsRatioOrNull, }),
+    ...(sourceBytesOrNull === undefined ? {} : { sourceBytesOrNull, }),
+    ...(daysSinceLastCommitOrNull === undefined
       ? {}
       : { daysSinceLastCommitOrNull, }),
     ...(repo === undefined ? {} : { repositoryUrlOrNull: repo.url, }),
-    ...(unknownReason === ABSENT ? {} : { unknownReason, }),
+    ...(unknownReason === NO_UNKNOWN_REASON ? {} : { unknownReason, }),
   };
 }
 

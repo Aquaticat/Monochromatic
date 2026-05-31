@@ -12,10 +12,10 @@
  */
 
 import {
+  POSITION_UNKNOWN,
   probeIsFilled,
   probePosition,
 } from './deck-accessors.ts';
-import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import type { AppState, } from './scripts/state.ts';
 
@@ -89,7 +89,7 @@ export function partitionProbes(
       probe,
       state,
     },)
-      === ABSENT) {
+      === POSITION_UNKNOWN) {
       unknown.push({
         probe,
         originalIndex,

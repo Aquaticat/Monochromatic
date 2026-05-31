@@ -32,6 +32,7 @@ import { SimpleMeshLayer, } from '@deck.gl/mesh-layers';
 import type { Geometry, } from '@luma.gl/engine';
 
 import {
+  POSITION_UNKNOWN,
   probeFillColor,
   probePosition,
   probeRadiusWorld,
@@ -47,7 +48,6 @@ import {
   partitionProbes,
   type ScatterDatum,
 } from './deck-scatter-helpers.ts';
-import { ABSENT, } from './maybe.ts';
 import {
   makeProbeTexture,
   type MeshShape,
@@ -150,14 +150,16 @@ function buildProbeLayer(
     shape,
     withName: bake,
   },);
-  /** Data-driven position, or `ABSENT` when any spatial dim is unknown for this probe. */
+  /**
+   * Data-driven position, or {@link POSITION_UNKNOWN} when any spatial dim is unknown for this probe.
+   */
   const dataPosition = probePosition({
     probe: datum.probe,
     state,
   },);
   /** World-space position; honours the unknown-cluster override, then the data position, then the origin fallback. */
   const pos = positionOverride
-    ?? (dataPosition === ABSENT
+    ?? (dataPosition === POSITION_UNKNOWN
       ? [
         0,
         0,

@@ -15,11 +15,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import {
   computeVisibleIndices,
+  DERIVED_BOOL_UNKNOWN,
   derivedBool,
+  DIM_UNKNOWN,
   type DimMapping,
   extractDim,
   type RangeState,
@@ -173,7 +174,7 @@ await describe({
           probe: MONOREPO_UNKNOWN,
           dim: 'logSourceBytes',
         },);
-        expect(v,).toBe(ABSENT,);
+        expect(v,).toBe(DIM_UNKNOWN,);
       },
     },),
 
@@ -199,10 +200,10 @@ await describe({
 
     //region derivedBool
     it({
-      name: 'derivedBool tsMajority returns ABSENT when ratio is unknown',
+      name: 'derivedBool tsMajority returns DERIVED_BOOL_UNKNOWN when ratio is unknown',
       fn: async () => {
         expect(derivedBool({ probe: MONOREPO_UNKNOWN, key: 'tsMajority', },),).toBe(
-          ABSENT,
+          DERIVED_BOOL_UNKNOWN,
         );
       },
     },),

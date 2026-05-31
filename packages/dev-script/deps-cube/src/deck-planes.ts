@@ -28,10 +28,6 @@ import {
   SolidPolygonLayer,
 } from '@deck.gl/layers';
 
-import {
-  ABSENT,
-  type Maybe,
-} from './maybe.ts';
 import type { SceneBounds, } from './deck-config.ts';
 import type { DimMapping, } from './scripts/filter.ts';
 
@@ -310,6 +306,19 @@ export function buildCoordinatePlaneLayers(
 //region Threshold guide lines
 
 /**
+ * Absence marker for {@link buildThresholdLineLayer} meaning "no threshold
+ * guide segment qualifies under the current dim mapping"; never a layer.
+ *
+ * @example
+ * ```ts
+ * const layer = buildThresholdLineLayer({ bounds, dimMapping, },);
+ * if (layer !== NO_THRESHOLD_LAYER)
+ *   layers.push(layer,);
+ * ```
+ */
+export const NO_THRESHOLD_LAYER: unique symbol = Symbol('deps-cube/no-threshold-layer',);
+
+/**
  * Builds a thin {@link PathLayer} drawing the three threshold guide
  * lines (300 SLOC, 365 days, 100KB) on the coordinate planes when
  * the relevant channel's dim mapping matches.
@@ -318,12 +327,12 @@ export function buildCoordinatePlaneLayers(
  *
  * @param dimMapping - Current dim mapping.
  *
- * @returns PathLayer with zero to three guide segments, or `ABSENT` if none qualify.
+ * @returns PathLayer with zero to three guide segments, or {@link NO_THRESHOLD_LAYER} if none qualify.
  *
  * @example
  * ```ts
  * const layer = buildThresholdLineLayer({ bounds, dimMapping: state.dimMapping });
- * if (layer !== ABSENT) layers.push(layer);
+ * if (layer !== NO_THRESHOLD_LAYER) layers.push(layer);
  * ```
  */
 export function buildThresholdLineLayer(
@@ -334,7 +343,7 @@ export function buildThresholdLineLayer(
     readonly bounds: SceneBounds;
     readonly dimMapping: DimMapping;
   },
-): Maybe<Layer> {
+): Layer | typeof NO_THRESHOLD_LAYER {
   /** X-axis min and max destructured from `bounds.x` for guide-line endpoints. */
   const [
     xMin,
@@ -418,7 +427,7 @@ export function buildThresholdLineLayer(
   }
   if (segments.length
     === 0)
-    return ABSENT;
+    return NO_THRESHOLD_LAYER;
   return new PathLayer<PathDatum>({
     id: 'threshold-guides',
     data: segments,
