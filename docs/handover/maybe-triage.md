@@ -1,8 +1,8 @@
 # Maybe and ABSENT sentinel triage handover
 
-STATUS: IN PROGRESS (2026-05-31).
+STATUS: COMPLETE (2026-05-31).
 Resolving issue #214.
-`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep), `tsdoc`, `deps-cube` complete; 1 target remaining (`doodle-widget`, heavy, advisor-check before it).
+`aquaticat`, `terminal-title`, `import-attributes`, `terminal-exec`, `catalog-tighten`, `page-weight`, `model-selection` (with `advisor` + `auto-mode` lockstep), `tsdoc`, `deps-cube`, `doodle-widget` complete; all 10 targets done. Run `gh issue close 214` once these commits land.
 Each package is triaged call-site by call-site into four buckets, committed independently, directly on `main`.
 
 Resume record for the per-call-site triage of the 9 `src/maybe.ts` copies plus `packages/oxlint-plugins/tsdoc/src/sentinel.ts`.
@@ -266,12 +266,35 @@ TSDoc convention matched the workspace: `{@link SYMBOL}` in multiline declaratio
 Verification: `:lint` 0/0 (oxlint type-aware + tsgo `--build`, which is the seam-leak proof) and `:test:unit` exit 0 (11 suites, including the renamed `REPO_UNPARSEABLE`/`DERIVED_BOOL_UNKNOWN`/`POSITION_UNKNOWN`/`STATE_INVALID` cases).
 `agent-browser` confirmed the rendered scatter at the user boundary against a three-probe fixture render (`renderHtml`): no console/page errors, full controller bootstrap (deck.gl WebGL + hash round-trip), `extractDim`/`DIM_UNKNOWN` extents correct in the serialized state, search filter `searchMatches` (3 to 1 to 3), and `derivedBool`/`DERIVED_BOOL_UNKNOWN` exclusion (`tsMajority='no'` to 2 of 3, the unknown-`tsRatio` probe dropped).
 
-### doodle-widget (PENDING)
+### doodle-widget (COMPLETE)
 
 `packages/webapp-productivity/doodle-widget`.
-Heaviest.
-Bucket-4 reassignable slots redesigned to discriminated-union state (see divergence section).
-Genuine returns (`undo`, `redo`, `continueStroke`, `svgOverlayMeasure`) are bucket 3.
-`eraser-text` / `eraser-strokes` `previousPoint: Maybe<NormalizedPoint>` param is bucket 1.
-Delete `maybe.ts`.
-Verify with `agent-browser`: drawing, eraser, text entry, zoom, undo/redo.
+Heaviest target; all `ABSENT` / `Maybe` lived in `src/client/`.
+
+Bucket 4, redesigned to discriminated unions (the deliberate divergence), one named `type` per slot, documented on the alias only (matching `messages-demo`'s union convention, member fields bare):
+
+- `drawing.ts` `drawingState`: the former `current: Maybe<DrawingStroke>` slot and its companion `drawing: boolean` flag are **folded** into one `mode: { kind: 'idle' } | { kind: 'drawing'; stroke }`. Proven safe first: `drawing` had exactly one reader (`continueStroke`), so folding cannot change observable behavior and additionally normalizes a latent `clearStrokes` desync (it left `drawing` stale-true while clearing `current`; the union now idles both). `startStroke` keeps the same `DrawingStroke` object aliased into `strokes[]` so the points-mutation aliasing is preserved.
+- `zoom-toast.ts` `timerState.current` -> `ToastTimer` (`idle` | `pending` with the handle). Dropped a dead intermediate `= idle` store that was immediately overwritten by the re-arm.
+- `pointer-handlers-zoom.ts` `gestureState`: `longPressTimer` -> `LongPressTimer` and `downEvent` -> `DownEvent`, modelled as **two independent per-slot unions** (not one gesture FSM): the timer clears on move/up while `downEvent` clears on up/cancel, so "timer idle, downEvent present" is reachable and a single union would misrepresent the coupling. `longPressFired` stays a plain boolean (genuinely independent, not an absence marker).
+- `pointer-handlers.ts` `eraseState.prevErasePoint` -> `PrevErasePoint` (`none` | `at` with the point). `erasing` / `erasedInGesture` stay booleans.
+- `text.ts`: `activeInput` -> `ActiveInput` (`idle` | `editing` with the input). `layerElement` is **not** a union: it is set once by `setTextLayer` and never reassigned to absence (lines confirm write-once, read-only after), so it fails the bucket-4 definition and is a set-once `?:` optional property (no `delete` ever needed, no nullish-union annotation). This `?:` is not a sentinel, so it does not contradict the divergence's "do not revert to sentinels" warning.
+
+The general rule applied: an absence-bearing slot becomes a union (or `?:` if set-once); a boolean that *redundantly* encodes that slot's presence (`drawing`) folds in; genuinely-independent booleans (`erasing`, `erasedInGesture`, `longPressFired`) stay booleans.
+
+Bucket 3, genuine multi-path returns, descriptive exported `unique symbol`s co-located with the producer:
+
+- `NO_SNAPSHOT` (`undo-history.ts`): shared by `undo` and `redo` (one "no state to move to" semantic). Consumed at four sites in `undo-handlers.ts`.
+- `NO_SEGMENT` (`drawing.ts`): `continueStroke` return. Its former internal `current === ABSENT` check is now the union discriminant (`mode.kind !== 'drawing'`), so the slot check and the return sentinel cleanly separate. Consumed in `pointer-handlers.ts`.
+- `NO_SVG_OVERLAY` (`svg-overlay-measure.ts`): `measureSvgOverlay` return. Consumed in `export.ts` and `export-svg.ts`.
+
+Bucket 1, params -> `?:`:
+
+- `eraseStrokesAt` / `eraseTextAt` `previousPoint: Maybe<NormalizedPoint>` -> `previousPoint?: NormalizedPoint`. Seam conversions at the `pointer-handlers.ts` call sites: the first-event call omits the property entirely; the move call spreads conditionally (`...(prev.kind === 'at' ? { previousPoint: prev.point, } : {})`), `exactOptionalPropertyTypes`-correct. The `eraser-text` derived `prev` local became a bucket-2 `undefined` ternary.
+
+`tsgo` caveat honored: every union-slot read captures the container property to a local `const` before narrowing (`const mode = drawingState.mode; if (mode.kind !== 'drawing') ...`), since tsgo loses narrowing on mutable container properties across re-reads.
+
+`src/maybe.ts`: deleted. Completion gate `rg -n 'ABSENT|\bMaybe\b' src/client/` returns zero.
+
+Concurrent tsdoc-rule interaction: a parallel session made `oxlint-plugins/tsdoc`'s `multiline-blocks` rule flag every single-line `/** ... */` (383 pre-existing warnings across the package, in files unrelated to #214). Fixed with `task-oxlint --type-aware --fix` via a new package-scoped `format:oxlint` task added to `mise.toml`. Multiline tsdoc is valid under both the old and new rule, so it is safe on `main` regardless of when the rule change lands. The 27 non-#214 files touched contain only comment reformatting (verified: zero non-comment diff lines); committed separately as `style(doodle-widget)`.
+
+Verification: `mise run //packages/webapp-productivity/doodle-widget:lint` passes (oxlint 0/0 + tsgo `--build` clean, the seam-leak proof); `build` produces the self-contained `dist/final/index.html`. `agent-browser` drove every rewritten path at the user boundary with zero console errors: draw + the `NO_SEGMENT` idle no-op; undo/redo through `NO_SNAPSHOT` including both at-start/at-end no-op branches; `eraseStrokesAt`/`eraseTextAt` `?:` seams (omit + conditional-spread) with actual stroke/text removal; text place, finalize-keep (-> readonly), discard (Escape), empty-finalize (removal); zoom click-in, long-press zoom-out (`fireLongPress` reading `downEvent`), and pan (drag -> `continuePan` -> `clearLongPress`); clear. Canvas pointer capture intercepts coordinate clicks, so gestures were synthesized via `dispatchEvent`; the long-press timer was driven by holding across its 500 ms timeout.
