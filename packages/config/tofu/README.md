@@ -31,7 +31,7 @@ Features:
 - Filter to `ORPort 443` only, so the firewall rules use a single port and the per-IP-per-port effective-rule count stays predictable
 - 1-hour cache (the Tor guard set rotates on a different cadence than ASN data)
 - Graceful fallback to expired cache on failure
-- Used by the `tor_out_rules` block to populate `hcloud_firewall.tofu` outbound rules without consuming a fresh firewall slot
+- Feeds the balanced firewall rule list without consuming a separate descriptive firewall slot
 
 ### `hetzner.tf`
 
@@ -40,7 +40,8 @@ Main Terraform configuration that:
 - Fetches IP ranges from multiple CDN APIs (Cloudflare, CloudFront, Fastly, GitHub, Coolify, YouTube)
 - Looks up ASNs (Ubuntu, home ISP) via external data source
 - Aggregates and summarizes IP blocks to minimize firewall rules
-- Creates Hetzner Cloud firewall resources
+- Splits large source and destination CIDR lists into per-rule chunks
+- Creates five generic Hetzner Cloud firewalls with balanced effective rule counts
 
 ## Setup
 
@@ -49,8 +50,9 @@ Main Terraform configuration that:
 ```hcl
 hcloud_token  = "your_hetzner_api_token"
 ipinfo_token  = "your_ipinfo_token"
-home_isp_asns = { home = "AS12345" }
-storagebox_hostnames = ["u123456.your-storagebox.de"]
+home_isp_asns            = { home = "AS12345" }
+storagebox_hostnames     = ["u123456.your-storagebox.de"]
+firewall_label_selectors = ["role=monochromatic-host"]
 ```
 
 2. Create `.env.local` with:
@@ -74,6 +76,13 @@ tofu apply
 ```
 
 ## Firewall rules
+
+The configuration emits five generic firewalls named `tofu-0` through `tofu-4`.
+Rules are intentionally mixed across those firewalls so each one stays under
+Hetzner's active-firewall and effective-rule limits.
+All five firewalls must be applied to the target server for the allowlist to be complete.
+Set `firewall_server_ids` or `firewall_label_selectors` to let OpenTofu attach
+all generated firewalls without using the Hetzner web UI.
 
 ### Inbound
 

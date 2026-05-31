@@ -373,9 +373,135 @@ rules. No upstream report.
 
 ---
 
+## Bug 7: Hetzner Cloud firewall rule distribution exceeds product limits
+
+### Symptom
+
+Applying the firewall can fail with both per-rule and per-firewall
+Hetzner API errors:
+
+```text
+invalid input in fields 'rules[0].source_ips', 'rules[8].source_ips'
+[value required to be smaller]
+
+firewall limit exceeded
+```
+
+### Root cause
+
+Hetzner's Cloud Firewall FAQ lists two relevant limits: at most five
+active firewalls per server and at most 500 effective rules per
+firewall. One inbound rule with many sources counts as many effective
+rules. The hcloud client docs also state that `source_ips` and
+`destination_ips` can specify 100 CIDRs at most per rule.
+
+The previous layout kept large dynamic groups in descriptive firewalls.
+A throwaway plan against an empty state measured this distribution:
+
+```text
+hcloud_firewall.tofu rules 23 effective 901 max_src 355 max_dst 20
+hcloud_firewall.ubuntu_http rules 5 effective 84 max_src 0 max_dst 20
+hcloud_firewall.web_out rules 54 effective 1014 max_src 0 max_dst 20
+```
+
+That violated both the 100-CIDR rule input cap and the 500-effective-rule
+firewall cap.
+
+The current design encodes the Hetzner limits directly in
+`packages/config/tofu/hetzner.tf:428-432`:
+
+```hcl
+firewall_count              = 5
+firewall_effective_limit    = 500
+firewall_rule_ip_limit      = 100
+firewall_rule_ip_chunk_size = 20
+firewall_indexes            = range(local.firewall_count)
+```
+
+Inbound home ISP and SSH source ranges are chunked before rule emission
+at `packages/config/tofu/hetzner.tf:545-548`:
+
+```hcl
+home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
+home_isp_ips_chunks     = chunklist(local.home_isp_ips_summarized, local.firewall_rule_ip_chunk_size)
+coolify_ips_summarized  = length(local.coolify_ips) == 0 ? [] : data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks
+ssh_source_ips_chunks   = chunklist(concat(local.home_isp_ips_summarized, local.coolify_ips_summarized), local.firewall_rule_ip_chunk_size)
+```
+
+All rule groups then feed one ordered list and are assigned to five
+generic firewalls by modulo at `packages/config/tofu/hetzner.tf:666-680`:
+
+```hcl
+all_firewall_rules = concat(
+  local.base_firewall_rules,
+  local.ping_in_rules,
+  local.ssh_in_rules,
+  local.tor_out_firewall_rules,
+  local.storagebox_smb_out_rules,
+  local.web_out_rules,
+  local.ubuntu_http_out_rules,
+)
+
+balanced_firewall_rules = {
+  for firewall_index in local.firewall_indexes : tostring(firewall_index) => [
+    for rule_index, rule in local.all_firewall_rules : rule
+    if rule_index % local.firewall_count == firewall_index
+  ]
+}
+```
+
+### Verification
+
+A throwaway plan with a dummy 64-character hcloud token and empty state
+now creates five generic firewalls. The plan JSON measured these counts:
+
+```text
+hcloud_firewall.tofu["0"] rules 24 effective 390 max_src 20 max_dst 20
+hcloud_firewall.tofu["1"] rules 23 effective 384 max_src 20 max_dst 20
+hcloud_firewall.tofu["2"] rules 23 effective 411 max_src 20 max_dst 20
+hcloud_firewall.tofu["3"] rules 23 effective 391 max_src 20 max_dst 20
+hcloud_firewall.tofu["4"] rules 23 effective 423 max_src 20 max_dst 20
+```
+
+Package validation also passes:
+
+```bash
+mise run //packages/config/tofu:lint
+```
+
+### Verified workaround (the design itself)
+
+Use five generic firewalls named `tofu-0` through `tofu-4`, chunk every
+large source or destination CIDR list to 20 entries per rule, and mix
+all rule categories across the five firewalls. Tradeoff: firewall names
+no longer describe a traffic class. All five firewalls must be applied
+to the server because Hetzner combines their allow rules. Set
+`firewall_server_ids` or `firewall_label_selectors` so OpenTofu manages
+those attachments without using the Hetzner web UI. The attachment
+resources are declared at `packages/config/tofu/hetzner.tf:726-732`.
+
+### What does not work
+
+- Keeping descriptive firewalls such as `main`, `web_out`, and
+  `ubuntu_http`: the effective-rule counts are uneven and can exceed
+  500 on one resource while others remain underused.
+- Keeping home ISP sources in one `ping` or `ssh` rule: large summarized
+  home ISP ranges can exceed the API's 100-CIDR per-rule input limit.
+- Creating more than five server firewalls: Hetzner permits only five
+  active firewalls per server.
+
+### Why we do not file this upstream
+
+By-design product limits. Hetzner documents the five-active-firewall
+and 500-effective-rule caps, and the API rejects oversized source and
+destination lists as documented. The consumer-side fix is to chunk and
+balance rules before sending them to hcloud.
+
+---
+
 ## Why we do not loosen the firewall
 
-Each of the six sections concludes with a small tradeoff
+Each of the seven sections concludes with a small tradeoff
 acceptable given the original abuse report. The blanket "open
 ICMP / open all 443 / open all DNS / open all 445" alternative re-creates the
 exposure that motivated the firewall. The audit trail above

@@ -45,6 +45,18 @@ variable "storagebox_destination_ips" {
   description = "Optional Hetzner Storage Box destination CIDRs for SMB/CIFS egress when DNS resolution is not desired."
 }
 
+variable "firewall_server_ids" {
+  type        = list(number)
+  default     = []
+  description = "Hetzner Cloud server IDs that should receive every generated firewall."
+}
+
+variable "firewall_label_selectors" {
+  type        = list(string)
+  default     = []
+  description = "Hetzner Cloud server label selectors that should receive every generated firewall."
+}
+
 variable "target_asns" {
   type = map(string)
   default = {
@@ -413,6 +425,12 @@ data "cidrblock_summarization" "storagebox_destination_ips" {
 }
 
 locals {
+  firewall_count              = 5
+  firewall_effective_limit    = 500
+  firewall_rule_ip_limit      = 100
+  firewall_rule_ip_chunk_size = 20
+  firewall_indexes            = range(local.firewall_count)
+
   cdn_ips_summarized = data.cidrblock_summarization.cdn_ips.summarized_cidr_blocks
 
   cdn_ips_v4 = [for ip in local.cdn_ips_summarized : ip if !strcontains(ip, ":")]
@@ -444,15 +462,13 @@ locals {
     if strcontains(ip, ":")
   ])
 
-  # cdn_ips_v4_chunks = chunklist(local.cdn_ips_v4_filtered, 20)
-  # cdn_ips_v6_chunks = chunklist(local.cdn_ips_v6_filtered, 20)
-  cdn_ips_v4_chunks = chunklist(local.cdn_ips_v4_greedy, 20)
-  cdn_ips_v6_chunks = chunklist(local.cdn_ips_v6_greedy, 20)
+  # cdn_ips_v4_chunks = chunklist(local.cdn_ips_v4_filtered, local.firewall_rule_ip_chunk_size)
+  # cdn_ips_v6_chunks = chunklist(local.cdn_ips_v6_filtered, local.firewall_rule_ip_chunk_size)
+  cdn_ips_v4_chunks = chunklist(local.cdn_ips_v4_greedy, local.firewall_rule_ip_chunk_size)
+  cdn_ips_v6_chunks = chunklist(local.cdn_ips_v6_greedy, local.firewall_rule_ip_chunk_size)
 
   web_out = [
     { port = "443", proto = "tcp", desc = "https tcp cdn" },
-
-    # Trying to stay under the 500 effective rules limit.
     { port = "443", proto = "udp", desc = "https udp cdn" },
   ]
 
@@ -460,16 +476,20 @@ locals {
   # HTTP before HTTPS sources can work in fresh containers).
   ubuntu_http_out_rules = flatten(concat(
     [for i, chunk in local.ubuntu_ips_v4_chunks : {
-      desc  = "http ubuntu v4 - chunk ${i}"
-      port  = "80"
-      proto = "tcp"
-      ips   = chunk
+      description     = "http ubuntu v4 - chunk ${i}"
+      destination_ips = chunk
+      direction       = "out"
+      port            = "80"
+      protocol        = "tcp"
+      source_ips      = []
     }],
     [for i, chunk in local.ubuntu_ips_v6_chunks : {
-      desc  = "http ubuntu v6 - chunk ${i}"
-      port  = "80"
-      proto = "tcp"
-      ips   = chunk
+      description     = "http ubuntu v6 - chunk ${i}"
+      destination_ips = chunk
+      direction       = "out"
+      port            = "80"
+      protocol        = "tcp"
+      source_ips      = []
     }]
   ))
 
@@ -478,216 +498,235 @@ locals {
   storagebox_ips_summarized = length(local.storagebox_destination_ips) == 0 ? [] : data.cidrblock_summarization.storagebox_destination_ips.summarized_cidr_blocks
   storagebox_ips_v4         = [for ip in local.storagebox_ips_summarized : ip if !strcontains(ip, ":")]
   storagebox_ips_v6         = [for ip in local.storagebox_ips_summarized : ip if strcontains(ip, ":")]
-  storagebox_ips_v4_chunks  = chunklist(local.storagebox_ips_v4, 20)
-  storagebox_ips_v6_chunks  = chunklist(local.storagebox_ips_v6, 20)
+  storagebox_ips_v4_chunks  = chunklist(local.storagebox_ips_v4, local.firewall_rule_ip_chunk_size)
+  storagebox_ips_v6_chunks  = chunklist(local.storagebox_ips_v6, local.firewall_rule_ip_chunk_size)
 
   storagebox_smb_out_rules = flatten(concat(
     [for i, chunk in local.storagebox_ips_v4_chunks : {
-      desc  = "smb hetzner storagebox v4 - chunk ${i}"
-      port  = "445"
-      proto = "tcp"
-      ips   = chunk
+      description     = "smb hetzner storagebox v4 - chunk ${i}"
+      destination_ips = chunk
+      direction       = "out"
+      port            = "445"
+      protocol        = "tcp"
+      source_ips      = []
     }],
     [for i, chunk in local.storagebox_ips_v6_chunks : {
-      desc  = "smb hetzner storagebox v6 - chunk ${i}"
-      port  = "445"
-      proto = "tcp"
-      ips   = chunk
+      description     = "smb hetzner storagebox v6 - chunk ${i}"
+      destination_ips = chunk
+      direction       = "out"
+      port            = "445"
+      protocol        = "tcp"
+      source_ips      = []
     }]
   ))
 
   web_out_rules = flatten([
-    for s in local.web_out : concat(
+    for service in local.web_out : concat(
       [for i, chunk in local.cdn_ips_v4_chunks : {
-        desc  = "${s.desc} v4 - chunk ${i}"
-        port  = s.port
-        proto = s.proto
-        ips   = chunk
+        description     = "${service.desc} v4 - chunk ${i}"
+        destination_ips = chunk
+        direction       = "out"
+        port            = service.port
+        protocol        = service.proto
+        source_ips      = []
       }],
 
       [for i, chunk in local.cdn_ips_v6_chunks : {
-        desc  = "${s.desc} v6 - chunk ${i}"
-        port  = s.port
-        proto = s.proto
-        ips   = chunk
+        description     = "${service.desc} v6 - chunk ${i}"
+        destination_ips = chunk
+        direction       = "out"
+        port            = service.port
+        protocol        = service.proto
+        source_ips      = []
       }]
     )
   ])
+
+  home_isp_ips_summarized = length(local.home_isp_ips) == 0 ? [] : data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
+  home_isp_ips_chunks     = chunklist(local.home_isp_ips_summarized, local.firewall_rule_ip_chunk_size)
+  coolify_ips_summarized  = length(local.coolify_ips) == 0 ? [] : data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks
+  ssh_source_ips_chunks   = chunklist(concat(local.home_isp_ips_summarized, local.coolify_ips_summarized), local.firewall_rule_ip_chunk_size)
+
+  base_firewall_rules = [
+    {
+      description     = "dhcpv4"
+      destination_ips = ["0.0.0.0/0"]
+      direction       = "out"
+      port            = "67-68"
+      protocol        = "udp"
+      source_ips      = []
+    },
+    {
+      description     = "dns hetzner"
+      destination_ips = local.hetzner_ips
+      direction       = "out"
+      port            = "53"
+      protocol        = "udp"
+      source_ips      = []
+    },
+    {
+      description     = "http"
+      destination_ips = []
+      direction       = "in"
+      port            = "80"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "https tcp"
+      destination_ips = []
+      direction       = "in"
+      port            = "443"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "https udp"
+      destination_ips = []
+      direction       = "in"
+      port            = "443"
+      protocol        = "udp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "syncthing quic"
+      destination_ips = []
+      direction       = "in"
+      port            = "22000"
+      protocol        = "udp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "syncthing relay data"
+      destination_ips = []
+      direction       = "in"
+      port            = "22067"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "syncthing relay status"
+      destination_ips = []
+      direction       = "in"
+      port            = "22070"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "syncthing"
+      destination_ips = []
+      direction       = "in"
+      port            = "21027"
+      protocol        = "udp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      description     = "syncthing"
+      destination_ips = []
+      direction       = "in"
+      port            = "22000"
+      protocol        = "tcp"
+      source_ips      = ["0.0.0.0/0", "::/0"]
+    },
+  ]
+
+  ping_in_rules = [
+    for i, chunk in local.home_isp_ips_chunks : {
+      description     = "ping - chunk ${i}"
+      destination_ips = []
+      direction       = "in"
+      port            = ""
+      protocol        = "icmp"
+      source_ips      = chunk
+    }
+  ]
+
+  ssh_in_rules = [
+    for i, chunk in local.ssh_source_ips_chunks : {
+      description     = "ssh - chunk ${i}"
+      destination_ips = []
+      direction       = "in"
+      port            = "22"
+      protocol        = "tcp"
+      source_ips      = chunk
+    }
+  ]
+
+  tor_out_firewall_rules = [
+    for rule in local.tor_out_rules : {
+      description     = rule.desc
+      destination_ips = rule.ips
+      direction       = "out"
+      port            = rule.port
+      protocol        = rule.proto
+      source_ips      = []
+    }
+  ]
+
+  all_firewall_rules = concat(
+    local.base_firewall_rules,
+    local.ping_in_rules,
+    local.ssh_in_rules,
+    local.tor_out_firewall_rules,
+    local.storagebox_smb_out_rules,
+    local.web_out_rules,
+    local.ubuntu_http_out_rules,
+  )
+
+  balanced_firewall_rules = {
+    for firewall_index in local.firewall_indexes : tostring(firewall_index) => [
+      for rule_index, rule in local.all_firewall_rules : rule
+      if rule_index % local.firewall_count == firewall_index
+    ]
+  }
+
+  balanced_firewall_effective_rule_counts = {
+    for firewall_index, rules in local.balanced_firewall_rules : firewall_index => sum([
+      for rule in rules : max(length(rule.source_ips), length(rule.destination_ips), 1)
+    ])
+  }
+}
+
+check "hetzner_firewall_rule_limits" {
+  assert {
+    condition = alltrue(flatten([
+      for rules in values(local.balanced_firewall_rules) : [
+        for rule in rules : length(rule.source_ips) <= local.firewall_rule_ip_limit && length(rule.destination_ips) <= local.firewall_rule_ip_limit
+      ]
+    ]))
+    error_message = "Hetzner firewall rules must have at most 100 source or destination CIDRs."
+  }
+}
+
+check "hetzner_firewall_effective_rule_limits" {
+  assert {
+    condition     = alltrue([for count in values(local.balanced_firewall_effective_rule_counts) : count <= local.firewall_effective_limit])
+    error_message = "Hetzner firewalls must stay under 500 effective rules each."
+  }
 }
 
 resource "hcloud_firewall" "tofu" {
-  name = "main"
+  for_each = local.balanced_firewall_rules
 
-  rule {
-    description     = "dhcpv4"
-    destination_ips = ["0.0.0.0/0"]
-    direction       = "out"
-    port            = "67-68"
-    protocol        = "udp"
-    source_ips      = []
-  }
-  rule {
-    description     = "dns hetzner"
-    destination_ips = local.hetzner_ips
-    direction       = "out"
-    port            = "53"
-    protocol        = "udp"
-    source_ips      = []
-  }
+  name = "tofu-${each.key}"
 
-  rule {
-    description     = "http"
-    destination_ips = []
-    direction       = "in"
-    port            = "80"
-    protocol        = "tcp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  rule {
-    description     = "https tcp"
-    destination_ips = []
-    direction       = "in"
-    port            = "443"
-    protocol        = "tcp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  rule {
-    description     = "https udp"
-    destination_ips = []
-    direction       = "in"
-    port            = "443"
-    protocol        = "udp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-
-  rule {
-    description     = "ping"
-    destination_ips = []
-    direction       = "in"
-    port            = ""
-    protocol        = "icmp"
-    source_ips      = data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks
-  }
-  rule {
-    description     = "ssh"
-    destination_ips = []
-    direction       = "in"
-    port            = "22"
-    protocol        = "tcp"
-    source_ips      = concat(data.cidrblock_summarization.home_isp_ips.summarized_cidr_blocks, data.cidrblock_summarization.coolify_ips.summarized_cidr_blocks)
-  }
-  rule {
-    description     = "syncthing quic"
-    destination_ips = []
-    direction       = "in"
-    port            = "22000"
-    protocol        = "udp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  rule {
-    description     = "syncthing relay data"
-    destination_ips = []
-    direction       = "in"
-    port            = "22067"
-    protocol        = "tcp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  rule {
-    description     = "syncthing relay status"
-    destination_ips = []
-    direction       = "in"
-    port            = "22070"
-    protocol        = "tcp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  rule {
-    description     = "syncthing"
-    destination_ips = []
-    direction       = "in"
-    port            = "21027"
-    protocol        = "udp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  rule {
-    description     = "syncthing"
-    destination_ips = []
-    direction       = "in"
-    port            = "22000"
-    protocol        = "tcp"
-    source_ips      = ["0.0.0.0/0", "::/0"]
-  }
-  # rule {
-  #   description     = "tor bridge"
-  #   destination_ips = []
-  #   direction       = "in"
-  #   port            = "9001"
-  #   protocol        = "tcp"
-  #   source_ips      = ["0.0.0.0/0", "::/0"]
-  # }
-  # rule {
-  #   description     = "tor snowflake"
-  #   destination_ips = []
-  #   direction       = "in"
-  #   port            = "32768-60999"
-  #   protocol        = "udp"
-  #   source_ips      = ["0.0.0.0/0", "::/0"]
-  # }
-
-  # Tor onion service outbound: top-N guards advertising ORPort 443,
-  # fetched dynamically from Onionoo (see fetch_tor_relays.ts).
-  # Single port keeps the per-IP-per-port effective-rule count predictable;
-  # path-spec /16 subnet diversity prevents the prior /24-sweep abuse pattern.
   dynamic "rule" {
-    for_each = local.tor_out_rules
+    for_each = each.value
     content {
-      description     = rule.value.desc
-      direction       = "out"
-      protocol        = rule.value.proto
+      description     = rule.value.description
+      destination_ips = rule.value.destination_ips
+      direction       = rule.value.direction
       port            = rule.value.port
-      destination_ips = rule.value.ips
-    }
-  }
-
-  # Hetzner Storage Box SMB/CIFS outbound: Storage Box hostnames use
-  # <username>.your-storagebox.de, but hcloud firewall rules require CIDRs.
-  dynamic "rule" {
-    for_each = local.storagebox_smb_out_rules
-    content {
-      description     = rule.value.desc
-      direction       = "out"
-      protocol        = rule.value.proto
-      port            = rule.value.port
-      destination_ips = rule.value.ips
+      protocol        = rule.value.protocol
+      source_ips      = rule.value.source_ips
     }
   }
 }
 
-resource "hcloud_firewall" "web_out" {
-  name = "web_out"
+resource "hcloud_firewall_attachment" "tofu" {
+  for_each = length(var.firewall_server_ids) == 0 && length(var.firewall_label_selectors) == 0 ? {} : hcloud_firewall.tofu
 
-  dynamic "rule" {
-    for_each = local.web_out_rules
-    content {
-      description     = rule.value.desc
-      direction       = "out"
-      protocol        = rule.value.proto
-      port            = rule.value.port
-      destination_ips = rule.value.ips
-    }
-  }
-}
-
-resource "hcloud_firewall" "ubuntu_http" {
-  name = "ubuntu_http"
-
-  dynamic "rule" {
-    for_each = local.ubuntu_http_out_rules
-    content {
-      description     = rule.value.desc
-      direction       = "out"
-      protocol        = rule.value.proto
-      port            = rule.value.port
-      destination_ips = rule.value.ips
-    }
-  }
+  firewall_id     = each.value.id
+  label_selectors = length(var.firewall_label_selectors) == 0 ? null : var.firewall_label_selectors
+  server_ids      = length(var.firewall_server_ids) == 0 ? null : var.firewall_server_ids
 }
