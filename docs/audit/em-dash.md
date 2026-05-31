@@ -3198,7 +3198,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 50: - `t never/f/t never/onLoadRedirectingTo/r s/p p/index.ts` - Silently does nothing if no anchor element is found. Per project rules: "Never silently discard unexpected states."
 - Line 54: - `t object/t promise/f/t number/wait/r a/p p/index.ts:43` - TSDoc `@example` block uses `.then()` pattern which contradicts project rules.
 - Line 66: - `t object/t logger/t sink/t file/p p/index.ts` - Writes log files to `node_modules/.monochromatic/` which is unconventional and will be wiped on `npm install`.
-- Line 69: - `t never/f/t any/throws/r s/p n/index.ts` - Return type is `void` but function always throws.
+- Line 69: resolved in `packages/module/throws`; the old module-es expression-position helper TODO was removed.
 - Line 73: - `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43` - `lineCounter++` uses postfix increment which is a mutation without justification.
 - Line 76: - `customParsers.ts:101` - `['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].some(...)` could be simplified.
 - Line 79: - `path/index.ts` - The `dirnameFallback` function uses a `for` loop with `let charIndex` and mutable `lastSlash`.

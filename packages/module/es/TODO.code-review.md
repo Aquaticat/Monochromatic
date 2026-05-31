@@ -70,10 +70,6 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
 - `t object/t logger/t sink/t file/p p/index.ts`: Writes log files to `node_modules/.monochromatic/` which is unconventional and will be wiped on `npm install`.
   Suggested action: consider using a `.cache` or `data` directory, or document this design choice.
 
-- `t never/f/t any/throws/r s/p n/index.ts`: Return type is `void` but function always throws.
-  The return type should be `never` for accurate type narrowing.
-  Suggested action: change return type from `void` to `never`.
-
 - `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43`: `lineCounter++` uses postfix increment which is a mutation without justification.
   Suggested action: add a brief comment explaining why mutable state is needed here.
 

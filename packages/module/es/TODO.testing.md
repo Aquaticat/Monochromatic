@@ -9,7 +9,7 @@
       under `deprecated.dom`. Either the test needs to access the correct path
       or the function needs re-exporting at the top level.
 
-## Testing Coverage Analysis
+## Type testing coverage analysis
 
 ### Type Testing Requirements (Critical)
 
@@ -57,7 +57,6 @@
 
 - [ ] All assertion functions - Test void return and throwing behavior
 - [ ] All `not*OrThrow()` functions - Test type narrowing and never returns
-- [ ] [`throws()`](src/error.throws.ts:43): Test never return type
 - [ ] [`isError()`](src/error.is.ts:32): Test Error type predicate
 
 **Function Utilities**: Type tests needed:

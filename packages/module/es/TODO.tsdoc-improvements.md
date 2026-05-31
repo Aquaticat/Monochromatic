@@ -104,10 +104,6 @@
   - Document type narrowing behavior
   - Add examples of proper error handling patterns
 
-- [ ] **[`error.throws.ts`](src/error.throws.ts:43)**: [`throws()`](src/error.throws.ts:43)
-  - Good documentation, needs error chaining examples
-  - Document cause handling and error inheritance
-
 ### Platform-Specific Documentation Gaps
 
 #### Node.js Platform Functions

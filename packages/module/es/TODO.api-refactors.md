@@ -92,7 +92,6 @@ export function clamp(
 
 - [ ] All assertion functions - Add logger parameters
 - [ ] All `not*OrThrow()` functions - Add logger parameters
-- [ ] [`throws()`](src/error.throws.ts:43): Add logger parameter
 - [ ] [`isError()`](src/error.is.ts:32): Add logger parameter
 
 #### Function Utilities (20+ functions)
