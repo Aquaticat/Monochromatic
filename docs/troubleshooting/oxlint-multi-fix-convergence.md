@@ -479,14 +479,60 @@ Tradeoffs:
   rounds, we'd need to make sure that only diagnostics from the last
   round are output."
 
+### F. task-oxlint fix-until-stable wrapper (current state for the command path)
+
+`task-oxlint` (the `oxlint` wrapper at
+`packages/dev-script/task-util/src/oxlint-wrapper.ts`) loops `oxlint --fix` to a
+fixpoint when the caller passes `--fix`, so a single `task-oxlint --fix` (and the
+`format:oxlint` task that calls it) applies the overlapping and fix-induced fixes
+that previously needed a manual second run. Verified on `oxlint@1.67.0`.
+
+Convergence detection was the hard part. `oxlint --fix` signals through neither
+its exit code nor its stdout whether a pass changed any file:
+
+- A `--fix` pass that applies fixes and leaves nothing unfixable exits zero with
+  `Found 0 warnings and 0 errors.`, byte-identical to a genuine no-op pass, even
+  when its own fix introduced a fresh fixable violation that the next pass
+  rewrites. Reproduced on `chain-and-mixed-operators.ts`: passes two and three
+  both exit zero with identical stdout, yet each still mutates the file; only
+  pass four is a true no-op.
+- `oxlint --fix --format json` carries `number_of_files`, `number_of_rules`, and
+  `start_time`, but no count of fixes applied.
+
+So neither the exit code nor a stdout comparison of the `--fix` run is a sound
+stop condition. The signal that does track the file is a plain (no-fix) lint of
+the post-fix state: it reports every remaining violation, fixable or not, so its
+output moves while the file moves and settles when the file stops changing. The
+loop runs two oxlint invocations per pass:
+
+1.  `oxlint --fix` to apply fixes.
+2.  a plain `oxlint` lint (fix flags stripped) as the convergence oracle.
+
+It stops when the oracle reports zero diagnostics (a file with no violation is a
+guaranteed fixpoint, sound across severities unlike the exit code, which is zero
+whenever no errors remain even with a fixable warning pending), or the oracle's
+normalized output matches the previous pass (an unfixable remainder has
+stabilized), or an oxlint run fails to execute, or a cap of eight passes is hit.
+The oracle output is normalized by stripping oxlint's `Finished in <n>ms ...`
+footer, whose duration varies run to run and would otherwise defeat the
+comparison.
+
+The two-runs-per-pass cost is the price of correctness given oxlint exposes no
+fix-applied signal; workaround (A) already treats running `--fix` twice as the
+baseline. Only `--fix` triggers the loop: `--fix-suggestions` and
+`--fix-dangerously` stay single-pass because the plain-lint oracle is not
+verified to track suggestion-applied changes. The loop lives in
+`packages/dev-script/task-util/src/oxlint-fix-loop.ts` with unit tests in
+`oxlint-fix-loop.unit.test.ts`.
+
 ## What does not work
 
-- **External wrapper script that loops `oxlint --fix` until stable.**
-  Functionally equivalent to (A) at the workflow layer but explicitly
-  rejected as a workaround direction. Editor save-on-fix integrations
-  still call `oxlint --fix` directly, so a wrapper does not cover the
-  IDE path. (The intent here was to reach a fix that does not depend
-  on external orchestration.)
+- **External wrapper script as a complete substitute for the upstream fix.**
+  `task-oxlint` now loops `oxlint --fix` to a fixpoint for the command path (see
+  workaround (F)), but a wrapper cannot cover the IDE save-on-fix path: editors
+  call `oxlint --fix` directly and bypass the wrapper. The wrapper is the chosen
+  fix for the `task-oxlint` and `format:oxlint` path, not a replacement for the
+  upstream iteration in (E).
 - **Use `fixer.replaceTextRange([start, end], '(' + source + ')')`
   from `no-mixed-operators` instead of two insertions.** Produces the
   same merged `Fix` shape: one `Fix` with span
