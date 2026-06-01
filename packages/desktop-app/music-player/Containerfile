@@ -16,6 +16,11 @@ FROM registry.fedoraproject.org/fedora:41
 #   mesa-*                 OpenGL/EGL for the femtovg renderer + DRI drivers
 #   libxkbcommon, wayland  winit Wayland backend
 #   fontconfig, freetype   Slint font loading
+#   google-noto-sans-cjk-fonts  CJK glyph coverage. Slint 1.16's femtovg
+#                          renderer lays text out with parley + fontique
+#                          (system_fonts enabled), which falls back per script
+#                          to a system font. Without a CJK font installed,
+#                          Japanese/Chinese/Korean filenames render as blanks.
 #   xdg-desktop-portal     rfd file picker over the portal (when D-Bus passed)
 RUN dnf install -y \
       rust cargo clippy gcc \
@@ -26,6 +31,7 @@ RUN dnf install -y \
       mesa-dri-drivers mesa-libgbm libglvnd-glx libglvnd-egl \
       libwayland-client libwayland-cursor libwayland-egl libxkbcommon \
       fontconfig fontconfig-devel freetype freetype-devel \
+      google-noto-sans-cjk-fonts \
     && dnf clean all
 
 ENV CARGO_HOME=/cargo

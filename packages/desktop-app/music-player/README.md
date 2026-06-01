@@ -68,7 +68,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   `Controller` and drives it from the command channel.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties.
-- `ui/app.slint`: the window markup (now-playing label, seek bar, transport row, volume slider, queue list).
+- `ui/app.slint`: the window markup (seek bar, transport row, volume slider, queue list). The playing track is
+  the highlighted row in the list; there is no separate now-playing title.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The
@@ -83,6 +84,10 @@ the container so the window and audio reach the host session. The `run` task als
 container runs under the host uid: the D-Bus session bus authenticates with SASL EXTERNAL, which checks the asserted
 uid against the socket peer credential, and the dark/light theme watcher and the portal file picker (both using
 zbus) are rejected otherwise. See `docs/troubleshooting/podman-dbus-external-keep-id.md`.
+
+The image installs `google-noto-sans-cjk-fonts`. Slint 1.16's femtovg renderer lays out text with parley and
+fontique with system fonts enabled, which falls back per script to a system font for glyphs the primary font
+lacks; without a CJK font in the container, Japanese, Chinese, and Korean filenames render as blank boxes.
 
 The source comments follow the repository's `dum-dum-non-ts` convention: every concept-introducing line carries a
 plain-English explanation and a TypeScript translation, because the maintainer reads TypeScript fluently and Rust

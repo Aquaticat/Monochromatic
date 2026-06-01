@@ -1,7 +1,9 @@
-// The player window: now-playing label + seek bar on top, a transport row
-// (prev / play-pause / next, shuffle, repeat, open), a volume slider, and a
-// click-to-play queue list below. All state comes IN from Rust via properties;
-// all user actions go OUT to Rust via callbacks. No playback logic lives here.
+// The player window: a seek bar on top, a transport row (prev / play-pause /
+// next, shuffle, repeat, open), a volume slider, and a click-to-play queue list
+// below. The currently playing track is the highlighted row in that list, so no
+// separate now-playing title is drawn. All state comes IN from Rust via
+// properties; all user actions go OUT to Rust via callbacks. No playback logic
+// lives here.
 //
 // Numeric time values (position/duration) are kept as `float` seconds for the
 // slider, while their human-readable "m:ss" forms arrive as separate string
@@ -47,13 +49,6 @@ export component AppWindow inherits Window {
     VerticalBox {
         padding: 12px;
         spacing: 8px;
-
-        Text {
-            text: root.track-name == "" ? "Nothing playing" : root.track-name;
-            font-size: 18px;
-            horizontal-alignment: center;
-            overflow: elide;
-        }
 
         HorizontalBox {
             alignment: stretch;
@@ -150,7 +145,11 @@ export component AppWindow inherits Window {
                         width: parent.width - 16px;
                         vertical-alignment: center;
                         overflow: elide;
-                        color: i == root.current-index ? white : black;
+                        // Active row sits on the blue highlight, so white reads
+                        // best; inactive rows sit on the theme background, which
+                        // is dark under a dark system theme where black text
+                        // vanished, so use light grey instead.
+                        color: i == root.current-index ? white : #cccccc;
                     }
                 }
             }
