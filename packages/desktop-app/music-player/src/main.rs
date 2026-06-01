@@ -29,13 +29,13 @@ use std::path::{Path, PathBuf};
 // ```
 use std::rc::Rc;
 
-// What:     `use music_player::command::{Command, RepeatMode, Update};`. The
+// What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
 //           message types from our library crate. The package is `music-player`
 //           but a Rust crate identifier cannot contain `-`, so the lib crate is
 //           `music_player` (the hyphen becomes an underscore).
 // Why:      We build `Command`s and read `Update`s.
-// TS map:   `import { Command, RepeatMode, Update } from "music-player/command";`
-use music_player::command::{Command, RepeatMode, Update};
+// TS map:   `import { Command, ShuffleMode, Update } from "music-player/command";`
+use music_player::command::{Command, ShuffleMode, Update};
 
 // What:     `use music_player::engine::Engine;`. The controller handle.
 // Why:      We spawn it and send commands.
@@ -67,57 +67,52 @@ use music_player::pagination;
 // TS map:   importing the UI runtime's helpers.
 use slint::{ComponentHandle, Model, SharedString, VecModel};
 
-// What:     `const REPEAT_MODES: i32 = 3;`. Number of repeat modes (Off/All/One),
-//           used to cycle the repeat button. `i32` matches Slint's `int` property.
-// Why:      Avoid a bare `3` when wrapping the mode around.
-// TS map:   `const REPEAT_MODES = 3;`
-const REPEAT_MODES: i32 = 3;
-
-// What:     `fn repeat_to_int(mode: RepeatMode) -> i32`. Map the enum to the
-//           integer the UI property uses (Off=0, All=1, One=2).
-// Why:      Slint has no Rust enum; it stores the mode as an `int`.
-// TS map:   `function repeatToInt(mode: RepeatMode): number`
-fn repeat_to_int(mode: RepeatMode) -> i32 {
+// What:     `fn shuffle_to_int(mode: ShuffleMode) -> i32`. Map the enum to the
+//           integer the UI property uses (Off=0, WithinPage=1, All=2).
+// Why:      Slint has no Rust enum; it stores the mode as an `int` the radio
+//           group compares against.
+// TS map:   `function shuffleToInt(mode: ShuffleMode): number`
+fn shuffle_to_int(mode: ShuffleMode) -> i32 {
     // What:     `match mode { ... }`. Map each variant to its number.
     // Why:      Stable encoding shared with the .slint file.
     // TS map:   `switch (mode) { ... }`
     match mode {
-        // What:     `RepeatMode::Off => 0`. Path-qualified variant -> 0.
+        // What:     `ShuffleMode::Off => 0`. Path-qualified variant -> 0.
         // Why:      Off is 0.
         // TS map:   `case "off": return 0;`
-        RepeatMode::Off => 0,
-        // What:     `RepeatMode::All => 1`.
-        // Why:      All is 1.
-        // TS map:   `case "all": return 1;`
-        RepeatMode::All => 1,
-        // What:     `RepeatMode::One => 2`.
-        // Why:      One is 2.
-        // TS map:   `case "one": return 2;`
-        RepeatMode::One => 2,
+        ShuffleMode::Off => 0,
+        // What:     `ShuffleMode::WithinPage => 1`.
+        // Why:      WithinPage is 1.
+        // TS map:   `case "withinPage": return 1;`
+        ShuffleMode::WithinPage => 1,
+        // What:     `ShuffleMode::All => 2`.
+        // Why:      All is 2.
+        // TS map:   `case "all": return 2;`
+        ShuffleMode::All => 2,
     }
 }
 
-// What:     `fn int_to_repeat(value: i32) -> RepeatMode`. Inverse of the above.
-// Why:      Turn the cycled integer back into a `RepeatMode` for the command.
-// TS map:   `function intToRepeat(value: number): RepeatMode`
-fn int_to_repeat(value: i32) -> RepeatMode {
-    // What:     `match value { 1 => All, 2 => One, _ => Off }`. The wildcard `_`
-    //           maps anything else (including 0) to Off.
+// What:     `fn int_to_shuffle(value: i32) -> ShuffleMode`. Inverse of the above.
+// Why:      Turn the radio group's selected integer back into a `ShuffleMode`.
+// TS map:   `function intToShuffle(value: number): ShuffleMode`
+fn int_to_shuffle(value: i32) -> ShuffleMode {
+    // What:     `match value { 1 => WithinPage, 2 => All, _ => Off }`. The wildcard
+    //           `_` maps anything else (including 0) to Off.
     // Why:      Defensive default to Off.
-    // TS map:   `return value === 1 ? "all" : value === 2 ? "one" : "off";`
+    // TS map:   `return value === 1 ? "withinPage" : value === 2 ? "all" : "off";`
     match value {
-        // What:     `1 => RepeatMode::All`.
-        // Why:      1 is All.
-        // TS map:   `case 1: return "all";`
-        1 => RepeatMode::All,
-        // What:     `2 => RepeatMode::One`.
-        // Why:      2 is One.
-        // TS map:   `case 2: return "one";`
-        2 => RepeatMode::One,
-        // What:     `_ => RepeatMode::Off`. Everything else.
+        // What:     `1 => ShuffleMode::WithinPage`.
+        // Why:      1 is WithinPage.
+        // TS map:   `case 1: return "withinPage";`
+        1 => ShuffleMode::WithinPage,
+        // What:     `2 => ShuffleMode::All`.
+        // Why:      2 is All.
+        // TS map:   `case 2: return "all";`
+        2 => ShuffleMode::All,
+        // What:     `_ => ShuffleMode::Off`. Everything else.
         // Why:      Default.
         // TS map:   `default: return "off";`
-        _ => RepeatMode::Off,
+        _ => ShuffleMode::Off,
     }
 }
 
@@ -383,15 +378,16 @@ fn apply_update(app: &AppWindow, update: Update) {
         // Why:      Sync the slider.
         // TS map:   `case "volume": app.volume = v;`
         Update::Volume(v) => app.set_volume(v),
-        // What:     `Update::Shuffle(on) => app.set_shuffle(on)`. Shuffle state.
-        // Why:      Button label.
-        // TS map:   `case "shuffle": app.shuffle = on;`
-        Update::Shuffle(on) => app.set_shuffle(on),
-        // What:     `Update::Repeat(mode) => app.set_repeat_mode(repeat_to_int(mode))`.
-        //           Encode the mode to an int for the UI.
-        // Why:      Repeat button label.
-        // TS map:   `case "repeat": app.repeatMode = repeatToInt(mode);`
-        Update::Repeat(mode) => app.set_repeat_mode(repeat_to_int(mode)),
+        // What:     `Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(mode))`.
+        //           Encode the mode to an int for the UI radio group.
+        // Why:      Highlight the selected shuffle radio.
+        // TS map:   `case "shuffle": app.shuffleMode = shuffleToInt(mode);`
+        Update::Shuffle(mode) => app.set_shuffle_mode(shuffle_to_int(mode)),
+        // What:     `Update::RepeatTrack(on) => app.set_repeat_track(on)`. Repeat-track
+        //           checkbox state.
+        // Why:      Check/uncheck the repeat-track box.
+        // TS map:   `case "repeatTrack": app.repeatTrack = on;`
+        Update::RepeatTrack(on) => app.set_repeat_track(on),
     }
 }
 
@@ -623,50 +619,31 @@ fn main() -> Result<(), slint::PlatformError> {
         move |v| engine.send(Command::SetVolume(v))
     });
 
-    // What:     `app.on_toggle_shuffle(...)`. Reads the current shuffle property
-    //           and sends its opposite. Needs a weak handle to read the property.
-    // Why:      The engine command carries the desired boolean, not a "toggle".
-    // TS map:   `app.onToggleShuffle(() => engine.send(Command.SetShuffle(!app.shuffle)));`
-    app.on_toggle_shuffle({
+    // What:     `app.on_set_shuffle_mode(move |m| ...)`. Shuffle radio handler; the
+    //           clicked radio passes its mode integer `m: i32` (0/1/2). Map it back
+    //           to the enum and send. No property read needed: the radio carries the
+    //           target mode directly.
+    // Why:      Selecting a shuffle radio sets that exact mode.
+    // TS map:   `app.onSetShuffleMode(m => engine.send(Command.SetShuffle(intToShuffle(m))));`
+    app.on_set_shuffle_mode({
         let engine = engine.clone();
-        // What:     `let weak = app.as_weak();`. Weak handle to read the property.
-        // Why:      Closures cannot borrow `app` for `'static`; a weak handle can.
-        // TS map:   `const w = app;`
-        let weak = app.as_weak();
-        // What:     `move || { if let Some(app) = weak.upgrade() { engine.send(Command::SetShuffle(!app.get_shuffle())); } }`.
-        //           Upgrade, read `get_shuffle()`, send the inverse.
-        // Why:      Compute the new state from the current one.
-        // TS map:   `() => engine.send(Command.SetShuffle(!app.shuffle))`
-        move || {
-            if let Some(app) = weak.upgrade() {
-                engine.send(Command::SetShuffle(!app.get_shuffle()));
-            }
-        }
+        // What:     `move |m| engine.send(Command::SetShuffle(int_to_shuffle(m)))`. The
+        //           handler closure takes the mode int and forwards the enum.
+        // Why:      One radio click -> one shuffle-mode command.
+        // TS map:   `m => engine.send(Command.SetShuffle(intToShuffle(m)))`
+        move |m| engine.send(Command::SetShuffle(int_to_shuffle(m)))
     });
 
-    // What:     `app.on_cycle_repeat(...)`. Advances the repeat mode Off->All->One->Off.
-    // Why:      One button cycles through the three modes.
-    // TS map:   `app.onCycleRepeat(() => engine.send(Command.SetRepeat(next)));`
-    app.on_cycle_repeat({
+    // What:     `app.on_set_repeat_track(move |on| ...)`. Repeat-track checkbox
+    //           handler; the checkbox passes the desired boolean `on: bool`.
+    // Why:      Toggling the box sets the flag directly.
+    // TS map:   `app.onSetRepeatTrack(on => engine.send(Command.SetRepeatTrack(on)));`
+    app.on_set_repeat_track({
         let engine = engine.clone();
-        let weak = app.as_weak();
-        // What:     `move || { ... }`. Read the current mode int, add one modulo
-        //           `REPEAT_MODES`, convert back, and send.
-        // Why:      Cycle the mode.
-        // TS map:   `() => { const next = (app.repeatMode + 1) % 3; engine.send(...); }`
-        move || {
-            if let Some(app) = weak.upgrade() {
-                // What:     `let next = int_to_repeat((app.get_repeat_mode() + 1) % REPEAT_MODES);`.
-                //           `%` wraps 2 -> 0. Convert the int back to the enum.
-                // Why:      Next mode in the cycle.
-                // TS map:   `const next = intToRepeat((app.repeatMode + 1) % 3);`
-                let next = int_to_repeat((app.get_repeat_mode() + 1) % REPEAT_MODES);
-                // What:     `engine.send(Command::SetRepeat(next));`. Apply it.
-                // Why:      Tell the engine.
-                // TS map:   `engine.send(Command.SetRepeat(next));`
-                engine.send(Command::SetRepeat(next));
-            }
-        }
+        // What:     `move |on| engine.send(Command::SetRepeatTrack(on))`. The handler.
+        // Why:      One checkbox toggle -> one repeat-track command.
+        // TS map:   `on => engine.send(Command.SetRepeatTrack(on))`
+        move |on| engine.send(Command::SetRepeatTrack(on))
     });
 
     // What:     `app.on_play_index(move |i| ...)`. Click-to-play handler; `i: i32`
@@ -798,7 +775,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 position: session.position_secs,
                 volume: session.volume,
                 shuffle: session.shuffle,
-                repeat: session.repeat,
+                repeat_track: session.repeat_track,
             });
         // What:     `} else if let Some(music_dir) = music_dir() {`. Otherwise try the
         //           user's music directory (see the `music_dir` helper above).

@@ -1,14 +1,18 @@
 // The player window: a seek bar on top, a transport row (prev / play-pause /
-// next, shuffle, repeat, open), a volume slider, a page-tab bar, and a
-// click-to-play queue list below. The queue is paginated on two axes (decided
-// per track in Rust): a track in a subfolder gets a page per top-level folder
-// under the loaded root (one level only; the tab is that folder); a track at the
-// loaded root gets a first-letter page (A-Z, plus a `#` catch-all). The list
-// shows only the selected page's tracks, each row showing its path relative to
-// the loaded root (so deeper nesting stays visible). The currently playing
-// track is the highlighted row, so no separate now-playing title is drawn. All
-// state comes IN from Rust via properties; all user actions go OUT to Rust via
-// callbacks. No playback logic (including the pagination grouping) lives here.
+// next, open), a volume slider, a shuffle/repeat control row (a three-state
+// shuffle radio group and a "repeat track" checkbox, both drawn plain-HTML
+// style), a page-tab bar, and a click-to-play queue list below. The queue is
+// paginated on two axes (decided per track in Rust): a track in a subfolder gets
+// a page per top-level folder under the loaded root (one level only; the tab is
+// that folder); a track at the loaded root gets a first-letter page (A-Z, plus a
+// `#` catch-all). The list shows only the selected page's tracks, each row
+// showing its path relative to the loaded root (so deeper nesting stays visible).
+// The shuffle mode also chooses what playback loops over (Off/Within page stay
+// inside the current page; All spans the whole queue); that logic lives in Rust.
+// The currently playing track is the highlighted row, so no separate now-playing
+// title is drawn. All state comes IN from Rust via properties; all user actions
+// go OUT to Rust via callbacks. No playback logic (including the pagination
+// grouping) lives here.
 //
 // Numeric time values (position/duration) are kept as `float` seconds for the
 // slider, while their human-readable "m:ss" forms arrive as separate string
@@ -25,6 +29,102 @@ struct PageItem {
     index: int,
 }
 
+// A radio button drawn like a plain HTML <input type="radio">: a small ring that
+// shows a filled centre dot when selected, with a label to its right. The whole
+// row is clickable. The root is a Rectangle wrapping a HorizontalLayout (which
+// gives the component its content-derived size) plus a TouchArea overlay that
+// captures the click. Used for the three-state shuffle control.
+component RadioButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected;
+    callback clicked();
+    horizontal-stretch: 0;
+
+    HorizontalLayout {
+        spacing: 6px;
+        alignment: start;
+        // the ring, centred vertically against the label
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 16px;
+                height: 16px;
+                border-radius: self.width / 2;
+                border-width: 1px;
+                border-color: #888888;
+                background: white;
+                // filled centre dot, shown only when selected
+                Rectangle {
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: self.width / 2;
+                    background: root.selected ? #303030 : transparent;
+                }
+            }
+        }
+        Text {
+            text: root.text;
+            vertical-alignment: center;
+            color: #cccccc;
+        }
+    }
+    TouchArea {
+        clicked => {
+            root.clicked();
+        }
+    }
+}
+
+// A checkbox drawn like a plain HTML <input type="checkbox">: a small square box
+// that fills with the accent colour and shows a tick when checked, with a label
+// to its right. The whole row toggles. Same Rectangle + HorizontalLayout +
+// TouchArea structure as RadioButton. Used for "Repeat track".
+component CheckBox inherits Rectangle {
+    in property <string> text;
+    in property <bool> checked;
+    callback toggled();
+    horizontal-stretch: 0;
+
+    HorizontalLayout {
+        spacing: 6px;
+        alignment: start;
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 16px;
+                height: 16px;
+                border-radius: 3px;
+                border-width: 1px;
+                border-color: #888888;
+                background: root.checked ? #3060c0 : white;
+                // the tick, drawn only when checked (the font has the glyph; the
+                // image ships google-noto plus the default sans)
+                Text {
+                    width: parent.width;
+                    height: parent.height;
+                    text: root.checked ? "✓" : "";
+                    color: white;
+                    font-size: 12px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+        Text {
+            text: root.text;
+            vertical-alignment: center;
+            color: #cccccc;
+        }
+    }
+    TouchArea {
+        clicked => {
+            root.toggled();
+        }
+    }
+}
+
 export component AppWindow inherits Window {
     title: "Music Player";
     preferred-width: 480px;
@@ -38,8 +138,12 @@ export component AppWindow inherits Window {
     in property <string> duration-text: "0:00";
     in property <bool> playing: false;
     in property <float> volume: 1.0;
-    in property <bool> shuffle: false;
-    in property <int> repeat-mode: 0;
+    // Shuffle mode as an int the radio group compares against: 0 = off,
+    // 1 = within page, 2 = all. Off/within-page confine playback to the current
+    // page; all spans the whole queue (the scope logic lives in Rust).
+    in property <int> shuffle-mode: 0;
+    // Whether "repeat track" is on (replay the current track on its natural end).
+    in property <bool> repeat-track: false;
     in property <int> current-index: -1;
     in property <[string]> queue: [];
 
@@ -57,19 +161,15 @@ export component AppWindow inherits Window {
     callback next();
     callback seek(float);
     callback set-volume(float);
-    callback toggle-shuffle();
-    callback cycle-repeat();
+    // The user picked a shuffle radio; the argument is the mode int (0/1/2).
+    callback set-shuffle-mode(int);
+    // The user toggled the repeat-track checkbox; the argument is the new state.
+    callback set-repeat-track(bool);
     callback play-index(int);
     callback open-files();
     // The user clicked a page tab; the argument is the page index. Rust swaps the
     // visible page (refills `page-items` and updates `selected-page`).
     callback select-page(int);
-
-    // Label for the repeat button, chosen by the integer mode (0/1/2). Pure
-    // integer comparisons only, so no number-to-string formatting is needed.
-    pure function repeat-label(mode: int) -> string {
-        return mode == 1 ? "Repeat: all" : mode == 2 ? "Repeat: one" : "Repeat: off";
-    }
 
     VerticalBox {
         padding: 12px;
@@ -117,18 +217,6 @@ export component AppWindow inherits Window {
                 }
             }
             Button {
-                text: root.shuffle ? "Shuffle: on" : "Shuffle: off";
-                clicked => {
-                    root.toggle-shuffle();
-                }
-            }
-            Button {
-                text: repeat-label(root.repeat-mode);
-                clicked => {
-                    root.cycle-repeat();
-                }
-            }
-            Button {
                 text: "Open";
                 // Highlight (accent style) when the queue is empty, so a fresh
                 // launch points the user at the only useful action.
@@ -151,6 +239,52 @@ export component AppWindow inherits Window {
                 value: root.volume;
                 changed(value) => {
                     root.set-volume(value);
+                }
+            }
+        }
+
+        // Shuffle/repeat control row: a three-state shuffle radio group on the
+        // left (Off / Within page / All) and a "repeat track" checkbox pushed to
+        // the right. Both are plain-HTML-styled custom components. Selecting a
+        // shuffle radio sends that mode; toggling the checkbox sends its inverse.
+        HorizontalBox {
+            alignment: start;
+            spacing: 12px;
+            Text {
+                text: "Shuffle";
+                vertical-alignment: center;
+                color: #cccccc;
+            }
+            RadioButton {
+                text: "Off";
+                selected: root.shuffle-mode == 0;
+                clicked => {
+                    root.set-shuffle-mode(0);
+                }
+            }
+            RadioButton {
+                text: "Within page";
+                selected: root.shuffle-mode == 1;
+                clicked => {
+                    root.set-shuffle-mode(1);
+                }
+            }
+            RadioButton {
+                text: "All";
+                selected: root.shuffle-mode == 2;
+                clicked => {
+                    root.set-shuffle-mode(2);
+                }
+            }
+            // spacer: pushes the checkbox to the right edge
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+            CheckBox {
+                text: "Repeat track";
+                checked: root.repeat-track;
+                toggled => {
+                    root.set-repeat-track(!root.repeat-track);
                 }
             }
         }

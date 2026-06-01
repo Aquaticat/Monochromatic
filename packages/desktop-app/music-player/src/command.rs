@@ -20,7 +20,7 @@ use std::path::PathBuf;
 //           A derive macro auto-generates code for a type when you write
 //           `#[derive(...)]` above it. `Serialize` generates "turn this into
 //           JSON", `Deserialize` generates "build this from JSON".
-// Why:      `RepeatMode` is saved to the session file on disk, so it needs
+// Why:      `ShuffleMode` is saved to the session file on disk, so it needs
 //           both directions of conversion.
 // TS map:   No direct equivalent; imagine importing a decorator that makes a
 //           class JSON-roundtrippable, e.g. `import { Serializable } from ...`.
@@ -40,7 +40,7 @@ use serde::{Deserialize, Serialize};
 //           - `Debug`: enables `{:?}` formatting for logging.
 //           - `PartialEq` / `Eq`: enables `==` comparison.
 //           - `Serialize` / `Deserialize`: JSON conversion (see import above).
-// Why:      We compare repeat modes with `==`, copy them around freely, log
+// Why:      We compare shuffle modes with `==`, copy them around freely, log
 //           them, and persist them; each derive unlocks one of those.
 //           `Default` is added here too (instead of a hand-written `impl
 //           Default`) and reads the `#[default]` marker on the `Off` variant
@@ -53,30 +53,42 @@ use serde::{Deserialize, Serialize};
 // // nothing — the union below just works with ===, JSON, console.log
 // ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
-// What:     `pub enum RepeatMode { ... }` declares a PUBLIC enum: a type whose
+// What:     `pub enum ShuffleMode { ... }` declares a PUBLIC enum: a type whose
 //           value is exactly one of the listed variants. Here the variants
 //           carry no data (plain tags).
-// Why:      Encodes the three repeat behaviours the queue supports.
+// Why:      Encodes the three shuffle behaviours. Shuffle now also chooses the
+//           SCOPE that playback loops over, so it subsumes what a separate
+//           repeat-all/off setting used to do (see the design note below).
 // TS map:   A string-literal union type.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type RepeatMode = "off" | "all" | "one";
+// type ShuffleMode = "off" | "withinPage" | "all";
 // ```
-pub enum RepeatMode {
+//
+// Design decision (deliberate limitation): the repeat behaviour when "repeat
+// track" is OFF is derived from this mode, not set independently. `Off` and
+// `WithinPage` confine playback to the current page (the track's top-level
+// folder, or its A-Z/`#` letter bucket for a root-level track) and loop WITHIN
+// that page; only `All` traverses and loops the whole queue. There is therefore
+// no way to express "play the whole queue in load order and loop the whole
+// queue" (non-shuffle + repeat-all): when not shuffling, the user stays inside
+// the current folder/page. This is intended: when playing in order, people do
+// not want playback to jump to a different artist once a folder finishes.
+pub enum ShuffleMode {
     // What:     `#[default]` marks this variant as the one `derive(Default)`
-    //           returns from `RepeatMode::default()`. It is an ATTRIBUTE on the
+    //           returns from `ShuffleMode::default()`. It is an ATTRIBUTE on the
     //           variant, not code.
-    // Why:      A brand-new session with no saved file should start at `Off`;
+    // Why:      A brand-new session with no saved file should start unshuffled;
     //           the derive then writes the `Default` impl for us.
-    // TS map:   `const DEFAULT_REPEAT: RepeatMode = "off";`
+    // TS map:   `const DEFAULT_SHUFFLE: ShuffleMode = "off";`
     #[default]
-    /// Play the queue once, stop at the end.
+    /// Play the current page in load order, looping within the page.
     Off,
-    /// At the end of the queue, wrap to the first track.
+    /// Shuffle the current page, looping within the page once all are played.
+    WithinPage,
+    /// Shuffle the whole queue, looping the queue once all are played.
     All,
-    /// Replay the current track when it ends.
-    One,
 }
 
 // What:     `pub enum Command { ... }` declares the public set of actions the
@@ -95,8 +107,8 @@ pub enum RepeatMode {
 //   | { kind: "playIndex"; index: number }
 //   | { kind: "seek"; secs: number }
 //   | { kind: "setVolume"; volume: number }
-//   | { kind: "setShuffle"; on: boolean }
-//   | { kind: "setRepeat"; mode: RepeatMode }
+//   | { kind: "setShuffle"; mode: ShuffleMode }
+//   | { kind: "setRepeatTrack"; on: boolean }
 //   | { kind: "quit" };
 // ```
 pub enum Command {
@@ -144,10 +156,10 @@ pub enum Command {
     //           0..1 gain gains nothing from `f64` precision.
     // TS map:   `{ kind: "setVolume"; volume: number }`.
     SetVolume(f32),
-    /// Turn shuffle on or off.
-    SetShuffle(bool),
-    /// Change the repeat mode.
-    SetRepeat(RepeatMode),
+    /// Set the shuffle mode (off / within-page / all).
+    SetShuffle(ShuffleMode),
+    /// Turn "repeat track" (replay the current track on its natural end) on or off.
+    SetRepeatTrack(bool),
     // What:     `Restore { ... }` is a STRUCT variant carrying a saved session to
     //           reinstate at launch: the queue paths, which track was current,
     //           the position, and the volume/shuffle/repeat settings. The engine
@@ -155,7 +167,7 @@ pub enum Command {
     // Why:      Sent once on startup to resume where the user left off, without
     //           coupling this enum to the persistence `Session` type.
     // TS map:   `{ kind: "restore"; tracks: string[]; current: number | null;
-    //             position: number; volume: number; shuffle: boolean; repeat: RepeatMode }`
+    //             position: number; volume: number; shuffle: ShuffleMode; repeatTrack: boolean }`
     Restore {
         // What:     `tracks: Vec<PathBuf>` the saved queue in load order.
         // Why:      Rebuild the queue.
@@ -174,14 +186,14 @@ pub enum Command {
         // Why:      Restore the last volume.
         // TS map:   `volume: number`.
         volume: f32,
-        // What:     `shuffle: bool` saved shuffle state.
+        // What:     `shuffle: ShuffleMode` saved shuffle mode.
         // Why:      Restore shuffle.
-        // TS map:   `shuffle: boolean`.
-        shuffle: bool,
-        // What:     `repeat: RepeatMode` saved repeat mode.
-        // Why:      Restore repeat.
-        // TS map:   `repeat: RepeatMode`.
-        repeat: RepeatMode,
+        // TS map:   `shuffle: ShuffleMode`.
+        shuffle: ShuffleMode,
+        // What:     `repeat_track: bool` saved "repeat track" flag.
+        // Why:      Restore whether the current track replays on its natural end.
+        // TS map:   `repeatTrack: boolean`.
+        repeat_track: bool,
     },
     /// Shut the engine thread down.
     Quit,
@@ -203,8 +215,8 @@ pub enum Command {
 //   | { kind: "position"; secs: number }
 //   | { kind: "playing"; on: boolean }
 //   | { kind: "volume"; volume: number }
-//   | { kind: "shuffle"; on: boolean }
-//   | { kind: "repeat"; mode: RepeatMode };
+//   | { kind: "shuffle"; mode: ShuffleMode }
+//   | { kind: "repeatTrack"; on: boolean };
 // ```
 pub enum Update {
     /// The full queue as display paths, each relative to the queue's common root
@@ -255,8 +267,8 @@ pub enum Update {
     //           `float` (also f32), so no conversion happens at either edge.
     // TS map:   `volume: number`.
     Volume(f32),
-    /// Whether shuffle is on.
-    Shuffle(bool),
-    /// Current repeat mode.
-    Repeat(RepeatMode),
+    /// Current shuffle mode (off / within-page / all).
+    Shuffle(ShuffleMode),
+    /// Whether "repeat track" is on.
+    RepeatTrack(bool),
 }

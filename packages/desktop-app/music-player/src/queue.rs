@@ -1,5 +1,25 @@
 //! The play queue: an ordered list of tracks plus a cursor, with shuffle and
-//! repeat behaviour. Pure logic, no audio, no I/O, so it is fully unit-tested.
+//! "repeat track" behaviour. Pure logic, no audio, no I/O, so it is fully
+//! unit-tested.
+//!
+//! Playback has a SCOPE that it loops over, chosen by the shuffle mode:
+//!
+//! - `ShuffleMode::Off` and `ShuffleMode::WithinPage` confine playback to the
+//!   current track's PAGE (its top-level folder under the loaded root, or its
+//!   A-Z/`#` letter bucket for a root-level track; the same grouping the UI tabs
+//!   use, computed by the `pagination` module). `Off` plays the page in load
+//!   order; `WithinPage` shuffles the page. Either way, reaching the end of the
+//!   page loops back to its start.
+//! - `ShuffleMode::All` scopes playback to the whole queue, shuffled, and loops
+//!   the whole queue.
+//!
+//! "Repeat track" is independent: when on, a track that ends NATURALLY replays
+//! itself; a manual Next/Prev still moves within the scope.
+//!
+//! Design decision (deliberate): because `Off`/`WithinPage` are page-confined
+//! and always loop the page, there is no way to play the whole queue in load
+//! order and loop the whole queue (non-shuffle + repeat-all). When not
+//! shuffling, the user stays inside the current folder/page on purpose.
 
 // What:     `use std::path::PathBuf;` imports the OWNED filesystem-path type
 //           (heap-allocated, growable). Sibling: `&Path`, a borrowed view.
@@ -12,16 +32,16 @@
 // ```
 use std::path::PathBuf;
 
-// What:     `use crate::command::RepeatMode;` imports our own enum from the
+// What:     `use crate::command::ShuffleMode;` imports our own enum from the
 //           sibling module. `crate::` means "from the root of this package".
-// Why:      The queue's traversal depends on the repeat mode.
-// TS map:   `import { RepeatMode } from "./command";`
+// Why:      The queue's scope and ordering depend on the shuffle mode.
+// TS map:   `import { ShuffleMode } from "./command";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { RepeatMode } from "./command";
+// import { ShuffleMode } from "./command";
 // ```
-use crate::command::RepeatMode;
+use crate::command::ShuffleMode;
 
 // What:     `pub struct Queue { ... }` declares a public record type with
 //           named fields. The fields are private (no `pub`), so only this
@@ -35,8 +55,8 @@ use crate::command::RepeatMode;
 //   private tracks: string[];
 //   private order: number[];
 //   private pos: number | null;
-//   private shuffle: boolean;
-//   private repeat: RepeatMode;
+//   private shuffle: ShuffleMode;
+//   private repeatTrack: boolean;
 //   private rngState: bigint;
 // }
 // ```
@@ -50,8 +70,9 @@ pub struct Queue {
     // What:     `Vec<usize>` is a growable array of indices into `tracks`.
     //           `usize` is the pointer-sized unsigned int used for indexing
     //           (siblings: `u32`, `u64`).
-    // Why:      Playback order. Without shuffle it is 0,1,2,...; with shuffle
-    //           it is a permutation of those indices.
+    // Why:      The CURRENT SCOPE's playback order: the load-order indices of the
+    //           tracks playback walks right now (the current page for Off/
+    //           WithinPage, or the whole queue for All), sequential or shuffled.
     // TS map:   `number[]`.
     order: Vec<usize>,
     // What:     `Option<usize>` is "maybe an index": `Some(p)` or `None`.
@@ -59,10 +80,17 @@ pub struct Queue {
     //           is empty / nothing selected.
     // TS map:   `number | null`.
     pos: Option<usize>,
-    /// Whether playback order is shuffled.
-    shuffle: bool,
-    /// Behaviour at the end of the queue / end of a track.
-    repeat: RepeatMode,
+    // What:     `shuffle: ShuffleMode` is the three-state shuffle/scope setting
+    //           (Off / WithinPage / All). `ShuffleMode` is `Copy`.
+    // Why:      Decides both the scope (page vs whole queue) and the ordering
+    //           (sequential vs shuffled).
+    // TS map:   `shuffle: ShuffleMode`.
+    shuffle: ShuffleMode,
+    // What:     `repeat_track: bool`. When true, a track that ends naturally
+    //           replays itself.
+    // Why:      The "repeat track" checkbox; independent of the shuffle scope.
+    // TS map:   `repeatTrack: boolean`.
+    repeat_track: bool,
     // What:     `u64` is an unsigned 64-bit integer (siblings: `u32`, `usize`,
     //           `i64`). Used as the running state of a tiny PRNG.
     // Why:      Shuffling needs randomness; a self-contained PRNG avoids a
@@ -95,8 +123,7 @@ impl Queue {
         let seed = std::time::SystemTime::now()
             // What:     `.duration_since(UNIX_EPOCH)` returns
             //           `Result<Duration, _>` (Ok with the elapsed time, or Err
-            //           if the clock is before 1970). `?`-style handling is
-            //           avoided here; see the next call.
+            //           if the clock is before 1970).
             // Why:      Turns "now" into "nanoseconds since 1970".
             // TS map:   `Date.now() - 0`.
             .duration_since(std::time::UNIX_EPOCH)
@@ -137,22 +164,24 @@ impl Queue {
     pub fn with_rng_seed(seed: u64) -> Queue {
         // What:     A struct literal `Queue { field: value, ... }` constructs the
         //           record. `Vec::new()` makes an empty owned array; `None` is
-        //           the empty `Option`. No `;`, so this is the return value.
-        // Why:      Start empty, not shuffled, repeat off.
-        // TS map:   `return { tracks: [], order: [], pos: null, shuffle: false,
-        //           repeat: "off", rngState: seed === 0n ? 1n : seed };`
+        //           the empty `Option`. `ShuffleMode::Off` is the path-qualified
+        //           variant. No `;`, so this is the return value.
+        // Why:      Start empty, not shuffled, repeat-track off.
+        // TS map:   `return { tracks: [], order: [], pos: null,
+        //           shuffle: "off", repeatTrack: false,
+        //           rngState: seed === 0n ? 1n : seed };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return { tracks: [], order: [], pos: null, shuffle: false,
-        //          repeat: "off", rngState: seed === 0n ? 1n : seed };
+        // return { tracks: [], order: [], pos: null, shuffle: "off",
+        //          repeatTrack: false, rngState: seed === 0n ? 1n : seed };
         // ```
         Queue {
             tracks: Vec::new(),
             order: Vec::new(),
             pos: None,
-            shuffle: false,
-            repeat: RepeatMode::Off,
+            shuffle: ShuffleMode::Off,
+            repeat_track: false,
             // What:     `if seed == 0 { 1 } else { seed }` is an expression that
             //           evaluates to one of the two branch values (no `;`).
             // Why:      xorshift gets stuck forever at state 0, so forbid it.
@@ -242,17 +271,25 @@ impl Queue {
         self.tracks.is_empty()
     }
 
-    /// Current repeat mode.
-    pub fn repeat(&self) -> RepeatMode {
-        // What:     `self.repeat` is a `Copy` enum, so reading it copies it out.
-        //           Tail expression.
-        // Why:      Expose the mode to the engine/UI.
-        // TS map:   `return this.repeat;`
-        self.repeat
+    /// Whether "repeat track" is on.
+    // What:     `pub fn repeat_track(&self) -> bool`. Read-only borrow.
+    // Why:      The engine mirrors this flag to the UI checkbox.
+    // TS map:   `repeatTrack(): boolean`.
+    pub fn repeat_track(&self) -> bool {
+        // What:     `self.repeat_track` reads the `Copy` bool. Tail expression.
+        // Why:      Expose the flag.
+        // TS map:   `return this.repeatTrack;`
+        self.repeat_track
     }
 
-    /// Whether shuffle is on.
-    pub fn shuffle_on(&self) -> bool {
+    /// Current shuffle mode.
+    // What:     `pub fn shuffle_mode(&self) -> ShuffleMode`. Read-only borrow.
+    // Why:      The engine mirrors the mode to the UI radio group.
+    // TS map:   `shuffleMode(): ShuffleMode`.
+    pub fn shuffle_mode(&self) -> ShuffleMode {
+        // What:     `self.shuffle` reads the `Copy` enum out. Tail expression.
+        // Why:      Expose the mode.
+        // TS map:   `return this.shuffle;`
         self.shuffle
     }
 
@@ -296,7 +333,7 @@ impl Queue {
     pub fn current_index(&self) -> Option<usize> {
         // What:     `self.pos.map(|p| self.order[p])`. `self.pos` is
         //           `Option<usize>`; `.map` runs the closure only if `Some`.
-        //           `self.order[p]` indexes the order array. Tail -> return.
+        //           `self.order[p]` indexes the scope order array. Tail -> return.
         // Why:      Translate the cursor's order-position into a track index.
         // TS map:   `return this.pos === null ? null : this.order[this.pos];`
         self.pos.map(|p| self.order[p])
@@ -324,14 +361,14 @@ impl Queue {
         self.current_index().map(|i| &self.tracks[i])
     }
 
-    // What:     `pub fn set_repeat(&mut self, mode: RepeatMode)` mutates state.
-    // Why:      The UI toggles repeat; record the new mode.
-    // TS map:   `setRepeat(mode: RepeatMode): void`.
-    pub fn set_repeat(&mut self, mode: RepeatMode) {
+    // What:     `pub fn set_repeat_track(&mut self, on: bool)` mutates state.
+    // Why:      The UI checkbox toggles "repeat track"; record the new flag.
+    // TS map:   `setRepeatTrack(on: boolean): void`.
+    pub fn set_repeat_track(&mut self, on: bool) {
         // What:     plain field assignment through the mutable borrow.
-        // Why:      Store it; traversal reads it later.
-        // TS map:   `this.repeat = mode;`
-        self.repeat = mode;
+        // Why:      Store it; `advance` reads it on a natural end.
+        // TS map:   `this.repeatTrack = on;`
+        self.repeat_track = on;
     }
 
     // What:     `pub fn set_tracks(&mut self, tracks: Vec<PathBuf>)`. The
@@ -343,8 +380,7 @@ impl Queue {
     // ```ts
     // setTracks(tracks: string[]): void {
     //   this.tracks = tracks;
-    //   this.rebuildOrder();
-    //   this.pos = tracks.length ? 0 : null;
+    //   this.rebuildScopeOrder(tracks.length ? 0 : null);
     // }
     // ```
     pub fn set_tracks(&mut self, tracks: Vec<PathBuf>) {
@@ -353,72 +389,110 @@ impl Queue {
         // Why:      Adopt the new track list.
         // TS map:   `this.tracks = tracks;`
         self.tracks = tracks;
-        // What:     `self.rebuild_order();` calls a private helper (declared
-        //           below) on `&mut self`.
-        // Why:      Build the playback order to match the new tracks + shuffle.
-        // TS map:   `this.rebuildOrder();`
-        self.rebuild_order();
-        // What:     `if self.tracks.is_empty() { None } else { Some(0) }` is an
-        //           expression assigned to `self.pos`. `Some(0)` wraps index 0.
-        // Why:      Start at the first track, or have no cursor when empty.
-        // TS map:   `this.pos = this.tracks.length === 0 ? null : 0;`
-        self.pos = if self.tracks.is_empty() { None } else { Some(0) };
+        // What:     `self.rebuild_scope_order(Some(0));` builds the scope order
+        //           around the first track. `Some(0)` wraps index 0; the helper
+        //           handles the empty queue (order empty, cursor None).
+        // Why:      Start playback at the first track's page (or whole queue).
+        // TS map:   `this.rebuildScopeOrder(0);`
+        self.rebuild_scope_order(Some(0));
     }
 
-    // What:     `fn rebuild_order(&mut self)` private helper.
-    // Why:      Recreates `order` as 0..n, then shuffles it in place if shuffle
-    //           is on. Used by set_tracks and set_shuffle.
-    // TS map:   `private rebuildOrder(): void`.
+    // What:     `fn scope_indices(&self, anchor: usize) -> Vec<usize>` returns the
+    //           load-order indices that make up the playback scope around the
+    //           `anchor` track, in ascending load order. Private helper.
+    // Why:      `All` scopes the whole queue; `Off`/`WithinPage` scope the
+    //           anchor's page (its top-level folder / letter bucket), so playback
+    //           stays inside one folder unless shuffling everything.
+    // TS map:   `private scopeIndices(anchor: number): number[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // private rebuildOrder(): void {
-    //   this.order = [...Array(this.tracks.length).keys()];
-    //   if (this.shuffle) this.shuffleOrder();
+    // private scopeIndices(anchor: number): number[] {
+    //   if (this.shuffle === "all") return [...Array(this.tracks.length).keys()];
+    //   const pages = paginate(this.displayPaths());
+    //   const p = pageOfIndex(pages, anchor);
+    //   return p === null
+    //     ? [...Array(this.tracks.length).keys()]
+    //     : pages[p].entries.map(e => e.index);
     // }
     // ```
-    fn rebuild_order(&mut self) {
-        // What:     `(0..self.tracks.len())` is a RANGE (half-open, excludes the
-        //           end). `.collect()` turns it into `Vec<usize>` (type inferred
-        //           from the field it is assigned to).
-        // Why:      The identity order 0,1,2,...,n-1.
-        // TS map:   `this.order = [...Array(n).keys()];`
-        self.order = (0..self.tracks.len()).collect();
-        // What:     `if self.shuffle { self.shuffle_order(); }` runs the shuffle
-        //           only when enabled.
-        // Why:      Keep load order unless shuffle is requested.
-        // TS map:   `if (this.shuffle) this.shuffleOrder();`
-        if self.shuffle {
-            self.shuffle_order();
+    fn scope_indices(&self, anchor: usize) -> Vec<usize> {
+        // What:     `if self.shuffle == ShuffleMode::All { ... }`. `==` compares
+        //           the `Copy` enum (it derives `PartialEq`).
+        // Why:      `All` ignores pages: the scope is every track.
+        // TS map:   `if (this.shuffle === "all") { ... }`
+        if self.shuffle == ShuffleMode::All {
+            // What:     `(0..self.tracks.len()).collect()`. `(a..b)` is a half-open
+            //           RANGE; `.collect()` gathers it into a `Vec<usize>` (the
+            //           return type fixes the element type). Tail of the `if`.
+            // Why:      Every load-order index, ascending.
+            // TS map:   `return [...Array(this.tracks.length).keys()];`
+            return (0..self.tracks.len()).collect();
+        }
+        // What:     `let names = self.display_paths();`. The relative display
+        //           strings, one per track, in load order.
+        // Why:      Pagination groups these into pages.
+        // TS map:   `const names = this.displayPaths();`
+        let names = self.display_paths();
+        // What:     `let pages = crate::pagination::paginate(&names);`. Group the
+        //           names into pages (the same pure function the UI tab bar uses,
+        //           so the playback scope and the visible page can never drift).
+        //           `&names` lends the vector.
+        // Why:      We need the set of indices sharing the anchor's page.
+        // TS map:   `const pages = paginate(names);`
+        let pages = crate::pagination::paginate(&names);
+        // What:     `match crate::pagination::page_of_index(&pages, anchor) { ... }`.
+        //           Find which page holds the anchor; returns `Option<usize>`.
+        // Why:      That page IS the scope.
+        // TS map:   `const p = pageOfIndex(pages, anchor);`
+        match crate::pagination::page_of_index(&pages, anchor) {
+            // What:     `Some(p) => pages[p].entries.iter().map(|e| e.index).collect()`.
+            //           Found the page at position `p`; `.entries.iter()` borrows
+            //           each `PageEntry`; `.map(|e| e.index)` pulls the load-order
+            //           index out; `.collect()` gathers them into a `Vec<usize>`.
+            //           Entries are already in ascending load order (pagination
+            //           preserves order). Tail of the arm.
+            // Why:      The page's track indices form the confined scope.
+            // TS map:   `return pages[p].entries.map(e => e.index);`
+            Some(p) => pages[p].entries.iter().map(|e| e.index).collect(),
+            // What:     `None => (0..self.tracks.len()).collect()`. The anchor was
+            //           not found on any page (only happens for an empty/invalid
+            //           anchor); fall back to the whole queue.
+            // Why:      Defensive: never produce an empty scope for a real track.
+            // TS map:   `return [...Array(this.tracks.length).keys()];`
+            None => (0..self.tracks.len()).collect(),
         }
     }
 
-    // What:     `fn shuffle_order(&mut self)` private Fisher-Yates shuffle.
-    // Why:      Randomly permute `order` using the built-in PRNG.
-    // TS map:   `private shuffleOrder(): void`.
+    // What:     `fn shuffle_slice(&mut self, slice: &mut [usize])`. Fisher-Yates
+    //           shuffle of a borrowed mutable slice of indices. `&mut [usize]` is
+    //           a mutable view; the slice is a local Vec the caller owns, so
+    //           mutating it does not clash with `self.next_rand()`'s `&mut self`.
+    // Why:      Randomly permute the scope indices before they become `order`.
+    // TS map:   `private shuffleSlice(slice: number[]): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // private shuffleOrder(): void {
-    //   for (let i = this.order.length - 1; i > 0; i--) {
+    // private shuffleSlice(slice: number[]): void {
+    //   for (let i = slice.length - 1; i > 0; i--) {
     //     const j = Number(this.nextRand() % BigInt(i + 1));
-    //     [this.order[i], this.order[j]] = [this.order[j], this.order[i]];
+    //     [slice[i], slice[j]] = [slice[j], slice[i]];
     //   }
     // }
     // ```
-    fn shuffle_order(&mut self) {
-        // What:     `if self.order.len() < 2 { return; }` is an EARLY RETURN:
-        //           nothing to shuffle for 0 or 1 elements.
-        // Why:      Avoid the `len() - 1` underflow on an empty array (usize is
+    fn shuffle_slice(&mut self, slice: &mut [usize]) {
+        // What:     `if slice.len() < 2 { return; }` is an EARLY RETURN: nothing
+        //           to shuffle for 0 or 1 elements.
+        // Why:      Avoid the `len() - 1` underflow on an empty slice (usize is
         //           unsigned, so 0 - 1 would panic in debug).
-        // TS map:   `if (this.order.length < 2) return;`
-        if self.order.len() < 2 {
+        // TS map:   `if (slice.length < 2) return;`
+        if slice.len() < 2 {
             return;
         }
-        // What:     `let mut i = self.order.len() - 1;` a mutable loop counter.
+        // What:     `let mut i = slice.len() - 1;` a mutable loop counter.
         // Why:      Fisher-Yates walks from the last index down to 1.
-        // TS map:   `let i = this.order.length - 1;`
-        let mut i = self.order.len() - 1;
+        // TS map:   `let i = slice.length - 1;`
+        let mut i = slice.len() - 1;
         // What:     `while i > 0 { ... }` a condition-controlled loop.
         // Why:      Standard Fisher-Yates traversal.
         // TS map:   `while (i > 0) { ... }`
@@ -430,10 +504,10 @@ impl Queue {
             // Why:      Pick a random slot `j` in `0..=i`.
             // TS map:   `const j = Number(this.nextRand() % BigInt(i + 1));`
             let j = (self.next_rand() % (i as u64 + 1)) as usize;
-            // What:     `self.order.swap(i, j)` swaps two elements in place.
+            // What:     `slice.swap(i, j)` swaps two elements in place.
             // Why:      The shuffle step.
-            // TS map:   `[order[i], order[j]] = [order[j], order[i]];`
-            self.order.swap(i, j);
+            // TS map:   `[slice[i], slice[j]] = [slice[j], slice[i]];`
+            slice.swap(i, j);
             // What:     `i -= 1;` decrement the counter.
             // Why:      Move toward the loop end.
             // TS map:   `i--;`
@@ -441,118 +515,186 @@ impl Queue {
         }
     }
 
-    // What:     `pub fn set_shuffle(&mut self, on: bool)` toggles shuffle while
-    //           keeping the currently-playing track current.
-    // Why:      Turning shuffle on/off should not interrupt the current song.
-    // TS map:   `setShuffle(on: boolean): void`.
+    // What:     `fn rebuild_scope_order(&mut self, anchor: Option<usize>)`. Recompute
+    //           the scope `order` (and the cursor `pos`) so that the `anchor`
+    //           track stays current. Private helper used whenever the scope might
+    //           change (set_tracks, set_shuffle, play_index to another page).
+    // Why:      Centralise the "what plays next, in what order" rebuild.
+    // TS map:   `private rebuildScopeOrder(anchor: number | null): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // setShuffle(on: boolean): void {
-    //   if (on === this.shuffle) return;
-    //   const cur = this.currentIndex();
-    //   this.shuffle = on;
-    //   this.rebuildOrder();
-    //   this.pos = cur === null ? this.pos
-    //            : this.order.indexOf(cur);
+    // private rebuildScopeOrder(anchor: number | null): void {
+    //   if (this.tracks.length === 0) { this.order = []; this.pos = null; return; }
+    //   const a = Math.min(anchor ?? 0, this.tracks.length - 1);
+    //   let scope = this.scopeIndices(a);
+    //   if (this.shuffle !== "off") this.shuffleSlice(scope);
+    //   const p = scope.indexOf(a);
+    //   this.order = scope;
+    //   this.pos = p < 0 ? 0 : p;
     // }
     // ```
-    pub fn set_shuffle(&mut self, on: bool) {
-        // What:     early return when nothing changes.
+    fn rebuild_scope_order(&mut self, anchor: Option<usize>) {
+        // What:     `if self.tracks.is_empty() { self.order = Vec::new(); self.pos = None; return; }`.
+        //           Empty queue: no order, no cursor.
+        // Why:      Nothing to play; guard the index math below.
+        // TS map:   `if (!this.tracks.length) { this.order = []; this.pos = null; return; }`
+        if self.tracks.is_empty() {
+            self.order = Vec::new();
+            self.pos = None;
+            return;
+        }
+        // What:     `let anchor = anchor.unwrap_or(0);`. Default a missing anchor
+        //           to the first track. `.unwrap_or` extracts `Some`'s value or
+        //           substitutes `0`.
+        // Why:      Always anchor on a real index.
+        // TS map:   `const a0 = anchor ?? 0;`
+        let anchor = anchor.unwrap_or(0);
+        // What:     `let anchor = anchor.min(self.tracks.len() - 1);`. Clamp the
+        //           anchor into range. `.min(x)` returns the smaller of the two.
+        // Why:      Defensive: a stale index must not point past the tracks.
+        // TS map:   `const a = Math.min(a0, this.tracks.length - 1);`
+        let anchor = anchor.min(self.tracks.len() - 1);
+        // What:     `let mut scope = self.scope_indices(anchor);`. The scope's
+        //           indices in ascending load order; `mut` so we can shuffle it.
+        // Why:      Starting point for the playback order.
+        // TS map:   `let scope = this.scopeIndices(a);`
+        let mut scope = self.scope_indices(anchor);
+        // What:     `if self.shuffle != ShuffleMode::Off { self.shuffle_slice(&mut scope); }`.
+        //           `!=` is "not equal"; both `WithinPage` and `All` shuffle.
+        //           `&mut scope` lends the local vector mutably to the shuffler.
+        // Why:      Off keeps load order; the other two randomise the scope.
+        // TS map:   `if (this.shuffle !== "off") this.shuffleSlice(scope);`
+        if self.shuffle != ShuffleMode::Off {
+            self.shuffle_slice(&mut scope);
+        }
+        // What:     `let pos = scope.iter().position(|&x| x == anchor);`. Find the
+        //           anchor's index within the (possibly shuffled) scope.
+        //           `.iter()` borrows; `|&x|` destructures the `&usize` to a
+        //           `usize` value; `.position` returns `Option<usize>`.
+        // Why:      The cursor must point at the anchor after the rebuild.
+        // TS map:   `const p = scope.indexOf(a);`
+        let pos = scope.iter().position(|&x| x == anchor);
+        // What:     `self.order = scope;` move the new order into place.
+        // Why:      Adopt the rebuilt scope.
+        // TS map:   `this.order = scope;`
+        self.order = scope;
+        // What:     `self.pos = pos.or(Some(0));`. `.or(default)` keeps `Some`,
+        //           else substitutes `Some(0)`. `Some(0)` wraps index 0.
+        // Why:      Point the cursor at the anchor, or the scope's start if the
+        //           anchor somehow fell outside (cannot happen for a real track).
+        // TS map:   `this.pos = p < 0 ? 0 : p;`
+        self.pos = pos.or(Some(0));
+    }
+
+    // What:     `pub fn set_shuffle(&mut self, mode: ShuffleMode)` changes the
+    //           shuffle/scope mode while keeping the currently-playing track
+    //           current.
+    // Why:      Switching shuffle should not interrupt the current song.
+    // TS map:   `setShuffle(mode: ShuffleMode): void`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // setShuffle(mode: ShuffleMode): void {
+    //   if (mode === this.shuffle) return;
+    //   const cur = this.currentIndex();
+    //   this.shuffle = mode;
+    //   this.rebuildScopeOrder(cur);
+    // }
+    // ```
+    pub fn set_shuffle(&mut self, mode: ShuffleMode) {
+        // What:     early return when nothing changes. `==` compares the enum.
         // Why:      Avoid reshuffling (and moving the cursor) on a no-op.
-        // TS map:   `if (on === this.shuffle) return;`
-        if on == self.shuffle {
+        // TS map:   `if (mode === this.shuffle) return;`
+        if mode == self.shuffle {
             return;
         }
         // What:     `let current = self.current_index();` remembers the playing
-        //           track (Option<usize>) before we rebuild the order.
-        // Why:      So we can restore the cursor onto the same track afterward.
+        //           track (Option<usize>) before we rebuild the scope.
+        // Why:      So the rebuild can keep the cursor on the same track.
         // TS map:   `const current = this.currentIndex();`
         let current = self.current_index();
-        // What:     `self.shuffle = on;` record the new flag.
-        // Why:      rebuild_order reads it.
-        // TS map:   `this.shuffle = on;`
-        self.shuffle = on;
-        // What:     rebuild the order array (shuffled or identity).
-        // Why:      Apply the new mode.
-        // TS map:   `this.rebuildOrder();`
-        self.rebuild_order();
-        // What:     `if let Some(track) = current { ... }` is a one-arm pattern
-        //           match: run the block only when `current` is `Some`, binding
-        //           the inner value to `track`.
-        // Why:      Re-point the cursor at the previously playing track's new
-        //           position in `order`.
-        // TS map:   `if (current !== null) { ... }`
-        if let Some(track) = current {
-            // What:     `self.order.iter().position(|&x| x == track)` finds the
-            //           index where the order array holds `track`. `iter()`
-            //           borrows; `|&x|` is a closure that DESTRUCTURES the borrow
-            //           so `x` is a `usize` value, not `&usize`. `.position`
-            //           returns `Option<usize>`.
-            // Why:      Locate where the current track landed after shuffling.
-            // TS map:   `this.pos = this.order.indexOf(track);` (indexOf returns
-            //           -1 when missing; here it is always found).
-            self.pos = self.order.iter().position(|&x| x == track);
-        }
+        // What:     `self.shuffle = mode;` record the new mode.
+        // Why:      `rebuild_scope_order`/`scope_indices` read it.
+        // TS map:   `this.shuffle = mode;`
+        self.shuffle = mode;
+        // What:     `self.rebuild_scope_order(current);` rebuild the scope order
+        //           anchored on the previously playing track.
+        // Why:      Apply the new mode without losing the current track.
+        // TS map:   `this.rebuildScopeOrder(current);`
+        self.rebuild_scope_order(current);
     }
 
     // What:     `pub fn play_index(&mut self, track: usize) -> Option<usize>`
-    //           selects a specific track (load-order index) as current.
+    //           selects a specific track (load-order index) as current, switching
+    //           the playback scope if the track is on another page.
     // Why:      The user clicked a row in the queue list.
     // TS map:   `playIndex(track: number): number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // playIndex(track: number): number | null {
+    //   if (track >= this.tracks.length) return null;
     //   const p = this.order.indexOf(track);
-    //   if (p < 0) return null;
-    //   this.pos = p;
+    //   if (p >= 0) this.pos = p;          // already in the current scope
+    //   else this.rebuildScopeOrder(track); // jumped to another page
     //   return track;
     // }
     // ```
     pub fn play_index(&mut self, track: usize) -> Option<usize> {
-        // What:     find the order-position of the requested track index.
-        // Why:      The cursor stores an order-position, not a track index.
-        // TS map:   `const p = this.order.indexOf(track);`
-        let position = self.order.iter().position(|&x| x == track);
-        // What:     `if let Some(p) = position { self.pos = Some(p); }` updates
-        //           the cursor only when the track exists.
-        // Why:      Guard against an out-of-range click.
-        // TS map:   `if (p >= 0) this.pos = p;`
-        if let Some(p) = position {
-            self.pos = Some(p);
+        // What:     `if track >= self.tracks.len() { return None; }` bounds check.
+        // Why:      Ignore an out-of-range click.
+        // TS map:   `if (track >= this.tracks.length) return null;`
+        if track >= self.tracks.len() {
+            return None;
         }
-        // What:     `position.map(|_| track)` turns Some(p) into Some(track) and
-        //           keeps None as None. `|_|` ignores the closure argument.
-        //           Tail expression -> return.
-        // Why:      Report the now-current track index, or None if not found.
-        // TS map:   `return p < 0 ? null : track;`
-        position.map(|_| track)
+        // What:     `match self.order.iter().position(|&x| x == track) { ... }`.
+        //           Find the track's position in the CURRENT scope order, if any.
+        // Why:      Stay in the same scope when possible; rebuild only on a jump
+        //           to a different page.
+        // TS map:   `const p = this.order.indexOf(track);`
+        match self.order.iter().position(|&x| x == track) {
+            // What:     `Some(p) => self.pos = Some(p)`. Already in scope: just
+            //           move the cursor. `Some(p)` wraps the position.
+            // Why:      Clicking another track on the same page keeps the page's
+            //           shuffle order intact.
+            // TS map:   `if (p >= 0) this.pos = p;`
+            Some(p) => self.pos = Some(p),
+            // What:     `None => self.rebuild_scope_order(Some(track))`. Not in the
+            //           current scope: the track is on another page (Off/WithinPage)
+            //           — rebuild the scope around it. `Some(track)` wraps the anchor.
+            // Why:      Switch playback to the clicked track's page.
+            // TS map:   `else this.rebuildScopeOrder(track);`
+            None => self.rebuild_scope_order(Some(track)),
+        }
+        // What:     `Some(track)` tail expression: report the now-current track.
+        // Why:      The caller loads this index.
+        // TS map:   `return track;`
+        Some(track)
     }
 
     // What:     `pub fn advance(&mut self, natural: bool) -> Option<usize>`.
     //           `natural` is true when a track ended on its own, false when the
     //           user pressed Next.
-    // Why:      End-of-track and Next share most logic but differ for repeat-one.
+    // Why:      End-of-track and Next share most logic but differ for repeat-track.
     // TS map:   `advance(natural: boolean): number | null`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // advance(natural: boolean): number | null {
     //   if (this.pos === null) return null;
-    //   if (natural && this.repeat === "one") return this.order[this.pos];
-    //   const next = this.pos + 1;
+    //   const pos = this.pos;
+    //   if (natural && this.repeatTrack) return this.order[pos];
+    //   const next = pos + 1;
     //   if (next < this.order.length) { this.pos = next; return this.order[next]; }
-    //   if (this.repeat === "all") { this.pos = 0; return this.order[0]; }
-    //   return null; // end of queue, stop
+    //   this.pos = 0; return this.order[0]; // loop the scope (page or all)
     // }
     // ```
     pub fn advance(&mut self, natural: bool) -> Option<usize> {
         // What:     `let pos = self.pos?;`. The `?` operator on an `Option`: if
-        //           `self.pos` is `Some(p)` it unwraps to `p`; if it is `None` it
-        //           RETURNS `None` from the whole function immediately. (`self.pos`
-        //           is `Option<usize>`; the early-return shape is why `advance`
-        //           returns `Option<usize>`.)
+        //           `self.pos` is `Some(p)` it unwraps to `p`; if `None` it
+        //           RETURNS `None` from the whole function immediately. (This
+        //           early-return shape is why `advance` returns `Option<usize>`.)
         // Why:      No cursor means nothing to advance; bail out early.
         // TS map:   `if (this.pos === null) return null; const pos = this.pos;`
         //
@@ -562,11 +704,10 @@ impl Queue {
         // const pos = this.pos;
         // ```
         let pos = self.pos?;
-        // What:     `if natural && self.repeat == RepeatMode::One { ... }`. `&&`
-        //           is logical AND; `==` compares the Copy enum.
-        // Why:      A track that ended under repeat-one replays itself.
-        // TS map:   `if (natural && this.repeat === "one") return order[pos];`
-        if natural && self.repeat == RepeatMode::One {
+        // What:     `if natural && self.repeat_track { ... }`. `&&` is logical AND.
+        // Why:      A track that ended under "repeat track" replays itself.
+        // TS map:   `if (natural && this.repeatTrack) return order[pos];`
+        if natural && self.repeat_track {
             // What:     `Some(self.order[pos])` wraps the current track index as
             //           the return value (cursor unchanged). Tail of the `if`.
             // Why:      Signal "play this same track again".
@@ -574,11 +715,11 @@ impl Queue {
             return Some(self.order[pos]);
         }
         // What:     `let next = pos + 1;` compute the following position.
-        // Why:      Try to move forward.
+        // Why:      Try to move forward within the scope.
         // TS map:   `const next = pos + 1;`
         let next = pos + 1;
         // What:     `if next < self.order.len() { ... }` bounds check.
-        // Why:      There is a track after the current one.
+        // Why:      There is a track after the current one in this scope.
         // TS map:   `if (next < this.order.length) { ... }`
         if next < self.order.len() {
             // What:     update cursor and return the new track index.
@@ -587,27 +728,20 @@ impl Queue {
             self.pos = Some(next);
             return Some(self.order[next]);
         }
-        // What:     `if self.repeat == RepeatMode::All { ... }` wrap-around case.
-        // Why:      At the end with repeat-all, loop to the front.
-        // TS map:   `if (this.repeat === "all") { this.pos = 0; return order[0]; }`
-        if self.repeat == RepeatMode::All {
-            // What:     `Some(0)` wraps index 0; set cursor to the front.
-            // Why:      Restart the queue.
-            // TS map:   `this.pos = 0;`
-            self.pos = Some(0);
-            // What:     return the first track's index. Tail of the `if`.
-            // Why:      Begin playing the wrapped track.
-            // TS map:   `return this.order[0];`
-            return Some(self.order[0]);
-        }
-        // What:     `None` is the function's tail expression: end of queue, no
-        //           next track, stop playback.
-        // Why:      Repeat is off and we are past the last track.
-        // TS map:   `return null;`
-        None
+        // What:     `self.pos = Some(0);`. Past the end of the scope: wrap to its
+        //           start. `Some(0)` wraps index 0.
+        // Why:      Off/WithinPage loop the page; All loops the whole queue. There
+        //           is no "stop at end" mode (only repeat-track changes natural-end).
+        // TS map:   `this.pos = 0;`
+        self.pos = Some(0);
+        // What:     `Some(self.order[0])` tail expression: the wrapped track.
+        // Why:      Begin the next loop of the scope.
+        // TS map:   `return this.order[0];`
+        Some(self.order[0])
     }
 
-    // What:     `pub fn prev(&mut self) -> Option<usize>` steps backward.
+    // What:     `pub fn prev(&mut self) -> Option<usize>` steps backward within
+    //           the scope, wrapping to the end at the start.
     // Why:      The user pressed Previous.
     // TS map:   `prev(): number | null`.
     //
@@ -615,9 +749,9 @@ impl Queue {
     // ```ts
     // prev(): number | null {
     //   if (this.pos === null) return null;
-    //   if (this.pos > 0) { this.pos--; return this.order[this.pos]; }
-    //   if (this.repeat === "all") { this.pos = this.order.length - 1; return this.order[this.pos]; }
-    //   return this.order[0]; // at first track: restart it
+    //   const pos = this.pos;
+    //   if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }
+    //   const last = this.order.length - 1; this.pos = last; return this.order[last];
     // }
     // ```
     pub fn prev(&mut self) -> Option<usize> {
@@ -633,7 +767,7 @@ impl Queue {
         // const pos = this.pos;
         // ```
         let pos = self.pos?;
-        // What:     `if pos > 0 { ... }` there is a previous slot.
+        // What:     `if pos > 0 { ... }` there is a previous slot in the scope.
         // Why:      Normal backward step.
         // TS map:   `if (pos > 0) { ... }`
         if pos > 0 {
@@ -643,26 +777,18 @@ impl Queue {
             self.pos = Some(pos - 1);
             return Some(self.order[pos - 1]);
         }
-        // What:     at the first track; `if self.repeat == RepeatMode::All`
-        //           wraps to the last track.
-        // Why:      Repeat-all makes Previous loop to the end.
-        // TS map:   `if (this.repeat === "all") { ... last ... }`
-        if self.repeat == RepeatMode::All {
-            // What:     `let last = self.order.len() - 1;` last index.
-            // Why:      Target for the wrap.
-            // TS map:   `const last = this.order.length - 1;`
-            let last = self.order.len() - 1;
-            // What:     set cursor to last, return that track index.
-            // Why:      Wrap behaviour.
-            // TS map:   `this.pos = last; return this.order[last];`
-            self.pos = Some(last);
-            return Some(self.order[last]);
-        }
-        // What:     `Some(self.order[0])` tail: at the first track with no
-        //           repeat-all, Previous just restarts the current (first) track.
-        // Why:      Common player behaviour; cursor stays at 0.
-        // TS map:   `return this.order[0];`
-        Some(self.order[0])
+        // What:     `let last = self.order.len() - 1;` the last scope index.
+        // Why:      At the start of the scope, Previous wraps to its end.
+        // TS map:   `const last = this.order.length - 1;`
+        let last = self.order.len() - 1;
+        // What:     set cursor to last, return that track index.
+        // Why:      Wrap behaviour (the scope always loops).
+        // TS map:   `this.pos = last; return this.order[last];`
+        self.pos = Some(last);
+        // What:     `Some(self.order[last])` tail expression.
+        // Why:      Play the wrapped (last) track of the scope.
+        // TS map:   `return this.order[last];`
+        Some(self.order[last])
     }
 }
 
@@ -697,23 +823,37 @@ impl Default for Queue {
 #[cfg(test)]
 mod tests {
     // What:     `use super::*;` imports everything from the parent module (the
-    //           queue) into the test scope. `super` means "one level up".
-    // Why:      Tests need `Queue`, `RepeatMode`, etc.
+    //           queue) into the test scope, including the `ShuffleMode` it imports.
+    // Why:      Tests need `Queue`, `ShuffleMode`, etc.
     // TS map:   `import * as parent from "./queue";`
     use super::*;
 
     // What:     `fn paths(n: usize) -> Vec<PathBuf>` test helper building `n`
-    //           fake paths "0".."n-1".
-    // Why:      Tracks' contents do not matter for queue logic, only their count.
+    //           fake ROOT-LEVEL paths "0".."n-1" (no folder, so they share one
+    //           `#` letter page).
+    // Why:      For tests where the page split does not matter, only the count.
     // TS map:   `function paths(n: number): string[]`.
     fn paths(n: usize) -> Vec<PathBuf> {
-        // What:     `(0..n)` range; `.map(|i| PathBuf::from(i.to_string()))`
-        //           turns each number into a path. `i.to_string()` allocates a
-        //           `String`; `PathBuf::from` wraps it as a path. `.collect()`
-        //           gathers into the Vec. Tail expression.
-        // Why:      Distinct dummy paths.
+        // What:     `(0..n).map(|i| PathBuf::from(i.to_string())).collect()`.
+        //           `i.to_string()` allocates a `String`; `PathBuf::from` wraps it.
+        //           Tail expression.
+        // Why:      Distinct dummy paths with no folder.
         // TS map:   `return [...Array(n).keys()].map(i => String(i));`
         (0..n).map(|i| PathBuf::from(i.to_string())).collect()
+    }
+
+    // What:     `fn track_paths(list: &[&str]) -> Vec<PathBuf>` test helper turning
+    //           string literals (often with folders like "A/1.flac") into owned
+    //           paths.
+    // Why:      Page-confinement tests need real folder structure.
+    // TS map:   `function trackPaths(list: string[]): string[]`.
+    fn track_paths(list: &[&str]) -> Vec<PathBuf> {
+        // What:     `list.iter().map(|s| PathBuf::from(*s)).collect()`. `|s|` is a
+        //           `&&str`; `*s` derefs it to `&str`; `PathBuf::from` wraps it.
+        //           Tail expression.
+        // Why:      Build the owned path vector preserving folders.
+        // TS map:   `return [...list];`
+        list.iter().map(|s| PathBuf::from(*s)).collect()
     }
 
     // What:     `#[test]` marks the next function as a test case.
@@ -757,49 +897,40 @@ mod tests {
     }
 
     #[test]
-    fn advance_walks_forward_then_stops_when_repeat_off() {
+    fn advance_loops_within_scope_when_repeat_track_off() {
         let mut q = Queue::with_rng_seed(1);
         q.set_tracks(paths(3));
-        // What:     natural=false (user pressed Next). Expect 1, then 2, then None.
-        // Why:      Linear traversal, stop past the end with repeat Off.
+        // What:     natural=false (user pressed Next). Bare names share one `#`
+        //           page, so the scope is all three; advance walks 1, 2, then
+        //           WRAPS to 0 (no stop-at-end mode any more), then 1.
+        // Why:      Off scope loops within the page once exhausted.
         // TS map:   `expect(q.advance(false)).toBe(1);` etc.
         assert_eq!(q.advance(false), Some(1));
         assert_eq!(q.advance(false), Some(2));
-        assert_eq!(q.advance(false), None);
-    }
-
-    #[test]
-    fn repeat_all_wraps_at_end() {
-        let mut q = Queue::with_rng_seed(1);
-        q.set_tracks(paths(2));
-        // What:     enable repeat-all.
-        // Why:      End should wrap to the front.
-        // TS map:   `q.setRepeat("all");`
-        q.set_repeat(RepeatMode::All);
-        assert_eq!(q.advance(false), Some(1));
-        // What:     past the end wraps to 0.
-        // Why:      Repeat-all behaviour.
-        // TS map:   `expect(q.advance(false)).toBe(0);`
         assert_eq!(q.advance(false), Some(0));
+        assert_eq!(q.advance(false), Some(1));
     }
 
     #[test]
-    fn repeat_one_replays_on_natural_end_only() {
+    fn repeat_track_replays_on_natural_end_only() {
         let mut q = Queue::with_rng_seed(1);
         q.set_tracks(paths(3));
-        q.set_repeat(RepeatMode::One);
-        // What:     natural=true: a track that ended replays itself (stays 0).
-        // Why:      Repeat-one semantics.
+        // What:     turn "repeat track" on.
+        // Why:      A natural end should replay the same track.
+        // TS map:   `q.setRepeatTrack(true);`
+        q.set_repeat_track(true);
+        // What:     natural=true: the track replays itself (stays 0).
+        // Why:      Repeat-track semantics.
         // TS map:   `expect(q.advance(true)).toBe(0);`
         assert_eq!(q.advance(true), Some(0));
         // What:     natural=false: the user pressing Next still advances to 1.
-        // Why:      Repeat-one must not trap the user on one track.
+        // Why:      Repeat-track must not trap the user on one track.
         // TS map:   `expect(q.advance(false)).toBe(1);`
         assert_eq!(q.advance(false), Some(1));
     }
 
     #[test]
-    fn prev_steps_back_and_restarts_at_first() {
+    fn prev_steps_back_then_wraps_to_last() {
         let mut q = Queue::with_rng_seed(1);
         q.set_tracks(paths(3));
         // What:     move forward to index 1, then back to 0.
@@ -807,19 +938,8 @@ mod tests {
         // TS map:   advance then prev.
         assert_eq!(q.advance(false), Some(1));
         assert_eq!(q.prev(), Some(0));
-        // What:     prev at the first track (repeat off) returns 0 (restart).
-        // Why:      No wrap without repeat-all.
-        // TS map:   `expect(q.prev()).toBe(0);`
-        assert_eq!(q.prev(), Some(0));
-    }
-
-    #[test]
-    fn prev_wraps_to_last_with_repeat_all() {
-        let mut q = Queue::with_rng_seed(1);
-        q.set_tracks(paths(3));
-        q.set_repeat(RepeatMode::All);
-        // What:     prev at the first track wraps to the last (index 2).
-        // Why:      Repeat-all backward wrap.
+        // What:     prev at the start of the scope wraps to the last (index 2).
+        // Why:      The scope always loops; there is no stop.
         // TS map:   `expect(q.prev()).toBe(2);`
         assert_eq!(q.prev(), Some(2));
     }
@@ -841,25 +961,19 @@ mod tests {
     }
 
     #[test]
-    fn shuffle_keeps_current_track_and_covers_all() {
+    fn shuffle_all_keeps_current_track_and_covers_all() {
         let mut q = Queue::with_rng_seed(12345);
         q.set_tracks(paths(6));
-        // What:     advance to track 2, then enable shuffle.
+        // What:     advance to track 2, then enable shuffle-all.
         // Why:      Toggling shuffle must keep track 2 current.
-        // TS map:   advance twice, setShuffle(true).
+        // TS map:   advance twice, setShuffle("all").
         assert_eq!(q.advance(false), Some(1));
         assert_eq!(q.advance(false), Some(2));
-        q.set_shuffle(true);
+        q.set_shuffle(ShuffleMode::All);
         // What:     after shuffling, the current track is still 2.
         // Why:      The contract of set_shuffle.
         // TS map:   `expect(q.currentIndex()).toBe(2);`
         assert_eq!(q.current_index(), Some(2));
-        // What:     collect every track reachable by repeated advance under
-        //           repeat-all, then confirm all 6 indices appear.
-        // Why:      A valid shuffle is a permutation: no track lost or duplicated
-        //           within one cycle.
-        // TS map:   gather order via advance() and compare as a set.
-        q.set_repeat(RepeatMode::All);
         // What:     `let mut seen = std::collections::HashSet::new();` an owned
         //           hash set of usize. `HashSet` is the unordered unique-set type.
         // Why:      Track which indices we have visited.
@@ -870,19 +984,19 @@ mod tests {
         // TS map:   `seen.add(2);`
         seen.insert(2);
         // What:     a counter loop bounded by the queue length.
-        // Why:      One full cycle visits every other track exactly once.
+        // Why:      One full loop of the scope visits every track.
         // TS map:   `for (let i = 0; i < 6; i++) { ... }`
         for _ in 0..6 {
             // What:     `if let Some(t) = q.advance(false) { seen.insert(t); }`
             //           advance and record.
-            // Why:      Walk the shuffled order.
+            // Why:      Walk the shuffled order (it wraps and keeps looping).
             // TS map:   `const t = q.advance(false); if (t !== null) seen.add(t);`
             if let Some(t) = q.advance(false) {
                 seen.insert(t);
             }
         }
         // What:     `seen.len()` should be 6 (all tracks seen).
-        // Why:      Proves the shuffle is a full permutation.
+        // Why:      Proves shuffle-all spans the whole queue.
         // TS map:   `expect(seen.size).toBe(6);`
         assert_eq!(seen.len(), 6);
     }
@@ -891,13 +1005,13 @@ mod tests {
     fn turning_shuffle_off_restores_load_order() {
         let mut q = Queue::with_rng_seed(999);
         q.set_tracks(paths(4));
-        q.set_shuffle(true);
-        // What:     turn shuffle back off.
-        // Why:      Order should return to 0,1,2,3 traversal.
-        // TS map:   `q.setShuffle(false);`
-        q.set_shuffle(false);
+        // What:     shuffle everything, then turn shuffle back off.
+        // Why:      Order should return to 0,1,2,3 traversal within the page.
+        // TS map:   `q.setShuffle("all"); q.setShuffle("off");`
+        q.set_shuffle(ShuffleMode::All);
+        q.set_shuffle(ShuffleMode::Off);
         // What:     starting from current (0), advancing gives 1,2,3 in order.
-        // Why:      Confirm identity order restored.
+        // Why:      Confirm identity order restored (bare names form one page).
         // TS map:   advance() === 1, 2, 3.
         assert_eq!(q.current_index(), Some(0));
         assert_eq!(q.advance(false), Some(1));
@@ -905,9 +1019,118 @@ mod tests {
         assert_eq!(q.advance(false), Some(3));
     }
 
-    // What:     `#[test]` marks the next function as a test case.
-    // Why:      `display_paths` must hand the UI paths relative to the common root,
-    //           not bare filenames, so pagination can group by folder.
+    // What:     `#[test]` page-confinement under shuffle Off.
+    // Why:      Off must stay inside the current TOP-LEVEL folder page and loop it,
+    //           never crossing to another folder.
+    // TS map:   `test("shuffle off confines to folder", () => { ... })`.
+    #[test]
+    fn shuffle_off_confines_to_top_folder_page() {
+        let mut q = Queue::with_rng_seed(1);
+        // What:     two tracks under folder A (indices 0,1) and one under B (index 2).
+        // Why:      Distinct pages A and B.
+        // TS map:   `q.setTracks(["A/1.flac","A/2.flac","B/3.flac"]);`
+        q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac"]));
+        // What:     current starts at 0 (page A). advance stays in A: 1, then wraps
+        //           to 0 (NOT 2), then 1 again.
+        // Why:      Off loops the A page and never reaches the B track.
+        // TS map:   advance() === 1, 0, 1.
+        assert_eq!(q.current_index(), Some(0));
+        assert_eq!(q.advance(false), Some(1));
+        assert_eq!(q.advance(false), Some(0));
+        assert_eq!(q.advance(false), Some(1));
+    }
+
+    // What:     `#[test]` within-page shuffle covers only the current page.
+    // Why:      WithinPage shuffles the page's tracks but never escapes it.
+    // TS map:   `test("within page shuffle stays on page", () => { ... })`.
+    #[test]
+    fn shuffle_within_page_covers_only_current_page() {
+        let mut q = Queue::with_rng_seed(777);
+        // What:     three tracks in A (0,1,2) and one in B (3).
+        // Why:      A page of size 3 plus a separate B page.
+        // TS map:   `q.setTracks(["A/1","A/2","A/3","B/4"]);`
+        q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "A/3.flac", "B/4.flac"]));
+        // What:     enable within-page shuffle (anchored on current track 0, in A).
+        // Why:      Scope becomes a shuffle of {0,1,2}.
+        // TS map:   `q.setShuffle("withinPage");`
+        q.set_shuffle(ShuffleMode::WithinPage);
+        assert_eq!(q.current_index(), Some(0));
+        // What:     `let mut seen = std::collections::HashSet::new();`. Visited set.
+        // Why:      Confirm the page's three tracks are covered and 3 never is.
+        // TS map:   `const seen = new Set<number>();`
+        let mut seen = std::collections::HashSet::new();
+        // What:     seed with the current track, then advance three times.
+        // Why:      A 3-element scope is fully covered by wrapping advances.
+        // TS map:   `seen.add(q.currentIndex()); for (3) seen.add(q.advance(false));`
+        seen.insert(q.current_index().unwrap());
+        for _ in 0..3 {
+            seen.insert(q.advance(false).unwrap());
+        }
+        // What:     `assert!(!seen.contains(&3));`. The B track (index 3) is never
+        //           played. `&3` borrows the literal for the lookup.
+        // Why:      WithinPage must not cross to the B page.
+        // TS map:   `expect(seen.has(3)).toBe(false);`
+        assert!(!seen.contains(&3));
+        // What:     all three A indices were seen.
+        // Why:      The page is fully covered.
+        // TS map:   `expect(seen.size).toBe(3);`
+        assert_eq!(seen.len(), 3);
+    }
+
+    // What:     `#[test]` shuffle-all crosses page boundaries.
+    // Why:      All must span every page, unlike Off/WithinPage.
+    // TS map:   `test("shuffle all crosses pages", () => { ... })`.
+    #[test]
+    fn shuffle_all_crosses_pages() {
+        let mut q = Queue::with_rng_seed(55);
+        // What:     two tracks in A (0,1) and one in B (2).
+        // Why:      Two pages to span.
+        // TS map:   `q.setTracks(["A/1","A/2","B/3"]);`
+        q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac"]));
+        // What:     shuffle the whole queue.
+        // Why:      Scope is all three across both pages.
+        // TS map:   `q.setShuffle("all");`
+        q.set_shuffle(ShuffleMode::All);
+        // What:     collect the current track plus three advances.
+        // Why:      A 3-element scope is fully covered by wrapping advances.
+        // TS map:   `const seen = new Set(); seen.add(cur); for (3) seen.add(advance);`
+        let mut seen = std::collections::HashSet::new();
+        seen.insert(q.current_index().unwrap());
+        for _ in 0..3 {
+            seen.insert(q.advance(false).unwrap());
+        }
+        // What:     all of {0,1,2} seen, including the B track.
+        // Why:      Proves All ignores page boundaries.
+        // TS map:   `expect(seen.size).toBe(3);`
+        assert_eq!(seen.len(), 3);
+        assert!(seen.contains(&2));
+    }
+
+    // What:     `#[test]` clicking a track on another page switches the scope.
+    // Why:      play_index must rebuild the scope around the clicked track's page.
+    // TS map:   `test("play_index switches page", () => { ... })`.
+    #[test]
+    fn play_index_switches_page_scope() {
+        let mut q = Queue::with_rng_seed(1);
+        // What:     two tracks in A (0,1) and one in B (2). Start on A.
+        // Why:      Click into the B page and confirm playback confines there.
+        // TS map:   `q.setTracks(["A/1","A/2","B/3"]);`
+        q.set_tracks(track_paths(&["A/1.flac", "A/2.flac", "B/3.flac"]));
+        // What:     jump to the B track (index 2).
+        // Why:      Switch scope to page B.
+        // TS map:   `q.playIndex(2);`
+        assert_eq!(q.play_index(2), Some(2));
+        assert_eq!(q.current_index(), Some(2));
+        // What:     B has only one track, so advance wraps back to 2, never to A.
+        // Why:      Off confines to the (now B) page.
+        // TS map:   `expect(q.advance(false)).toBe(2);`
+        assert_eq!(q.advance(false), Some(2));
+        assert_eq!(q.advance(false), Some(2));
+    }
+
+    // What:     `#[test]` `display_paths` must hand the UI paths relative to the
+    //           common root, not bare filenames, so pagination can group by folder.
+    // Why:      Same source of truth the scope and the UI tabs both rely on.
     // TS map:   `test("display_paths ...", () => { ... })`.
     #[test]
     fn display_paths_strips_common_prefix() {

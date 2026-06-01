@@ -82,8 +82,8 @@ impl Controller {
             current: self.queue.current_index(),
             position_secs,
             volume: self.volume,
-            shuffle: self.queue.shuffle_on(),
-            repeat: self.queue.repeat(),
+            shuffle: self.queue.shuffle_mode(),
+            repeat_track: self.queue.repeat_track(),
         }
     }
 
@@ -109,6 +109,18 @@ impl Controller {
     // Why:      One place that turns "current path" into live playback state.
     // TS map:   `loadCurrent(): boolean`
     pub(crate) fn load_current(&mut self) -> bool {
+        // What:     `let max_attempts = self.queue.len();`. How many opens to try
+        //           before giving up.
+        // Why:      `advance` now ALWAYS loops its scope (no end-of-queue `None`), so
+        //           a queue of all-unreadable files would otherwise spin forever; cap
+        //           the retries at the track count. Confinement is intentional: when a
+        //           whole page is unreadable, stop rather than jump to another page.
+        // TS map:   `const maxAttempts = this.queue.len();`
+        let max_attempts = self.queue.len();
+        // What:     `let mut attempts = 0;`. Count of failed opens so far.
+        // Why:      Compare against `max_attempts` to bound the loop.
+        // TS map:   `let attempts = 0;`
+        let mut attempts = 0;
         // What:     `loop { ... }`. Iterate the queue, advancing past any unreadable
         //           file. Iterative (not recursive) so a long run of bad files cannot
         //           overflow the stack.
@@ -152,13 +164,25 @@ impl Controller {
                     // Why:      Surface the bad file.
                     // TS map:   `console.error(`cannot open ${path}: ${e}`);`
                     eprintln!("music-player: cannot open {}: {e}", path.display());
-                    // What:     `if self.queue.advance(false).is_none() { return false; }`.
-                    //           Step forward; give up if there is no next track.
+                    // What:     `attempts += 1;`. Count this failed open.
+                    // Why:      Track progress toward the retry cap.
+                    // TS map:   `attempts += 1;`
+                    attempts += 1;
+                    // What:     `if attempts >= max_attempts { return false; }`. Give up
+                    //           after trying every track once (advance loops, so it
+                    //           never returns `None` on its own for a non-empty queue).
                     // Why:      Avoid an endless loop when all files are bad.
-                    // TS map:   `if (this.queue.advance(false) == null) return false;`
-                    if self.queue.advance(false).is_none() {
+                    // TS map:   `if (attempts >= maxAttempts) return false;`
+                    if attempts >= max_attempts {
                         return false;
                     }
+                    // What:     `self.queue.advance(false);`. Step forward within the
+                    //           scope; the returned index is ignored (we only need the
+                    //           cursor moved). `advance` returns an `Option` that is
+                    //           not `#[must_use]`, so discarding it is fine.
+                    // Why:      Retry the loop with the next current track.
+                    // TS map:   `this.queue.advance(false);`
+                    self.queue.advance(false);
                     // Otherwise the loop retries with the new current track.
                 }
             }

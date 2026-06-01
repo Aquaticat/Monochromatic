@@ -340,33 +340,33 @@ impl Controller {
                 // TS map:   `this.emit({ kind: "volume", v });`
                 self.emit(Update::Volume(v));
             }
-            // What:     `Command::SetShuffle(on) => { ... }`. Toggle shuffle.
-            // Why:      Shuffle button.
+            // What:     `Command::SetShuffle(mode) => { ... }`. Set the shuffle mode.
+            // Why:      Shuffle radio group.
             // TS map:   `case "setShuffle": ...`
-            Command::SetShuffle(on) => {
-                // What:     `self.queue.set_shuffle(on);`. Reorder play order, keeping
-                //           the current track.
-                // Why:      Apply shuffle.
-                // TS map:   `this.queue.setShuffle(on);`
-                self.queue.set_shuffle(on);
-                // What:     `self.emit(Update::Shuffle(on));`. Mirror state.
-                // Why:      Button visual.
-                // TS map:   `this.emit({ kind: "shuffle", on });`
-                self.emit(Update::Shuffle(on));
+            Command::SetShuffle(mode) => {
+                // What:     `self.queue.set_shuffle(mode);`. Rebuild the playback
+                //           scope/order for the new mode, keeping the current track.
+                // Why:      Apply the shuffle mode (off / within-page / all).
+                // TS map:   `this.queue.setShuffle(mode);`
+                self.queue.set_shuffle(mode);
+                // What:     `self.emit(Update::Shuffle(mode));`. Mirror state. `mode`
+                //           is `Copy`, so using it twice is fine.
+                // Why:      Radio-group visual.
+                // TS map:   `this.emit({ kind: "shuffle", mode });`
+                self.emit(Update::Shuffle(mode));
             }
-            // What:     `Command::SetRepeat(mode) => { ... }`. Change repeat mode.
-            // Why:      Repeat button.
-            // TS map:   `case "setRepeat": ...`
-            Command::SetRepeat(mode) => {
-                // What:     `self.queue.set_repeat(mode);`. Apply it.
-                // Why:      Affects natural-end behaviour.
-                // TS map:   `this.queue.setRepeat(mode);`
-                self.queue.set_repeat(mode);
-                // What:     `self.emit(Update::Repeat(mode));`. Mirror state. `mode` is
-                //           `Copy`, so using it twice is fine.
-                // Why:      Button visual.
-                // TS map:   `this.emit({ kind: "repeat", mode });`
-                self.emit(Update::Repeat(mode));
+            // What:     `Command::SetRepeatTrack(on) => { ... }`. Toggle "repeat track".
+            // Why:      Repeat-track checkbox.
+            // TS map:   `case "setRepeatTrack": ...`
+            Command::SetRepeatTrack(on) => {
+                // What:     `self.queue.set_repeat_track(on);`. Apply it.
+                // Why:      Affects natural-end behaviour (replay current track).
+                // TS map:   `this.queue.setRepeatTrack(on);`
+                self.queue.set_repeat_track(on);
+                // What:     `self.emit(Update::RepeatTrack(on));`. Mirror state.
+                // Why:      Checkbox visual.
+                // TS map:   `this.emit({ kind: "repeatTrack", on });`
+                self.emit(Update::RepeatTrack(on));
             }
             // What:     `Command::Restore { ... } => { ... }`. Reinstate a saved session,
             //           loading the current track PAUSED at the saved position.
@@ -378,16 +378,17 @@ impl Controller {
                 position,
                 volume,
                 shuffle,
-                repeat,
+                repeat_track,
             } => {
                 // What:     `self.volume = volume;`. Restore the saved gain.
                 // Why:      Applied to decoded samples.
                 // TS map:   `this.volume = volume;`
                 self.volume = volume;
-                // What:     `self.queue.set_repeat(repeat);`. Restore repeat mode.
-                // Why:      Affects auto-advance.
-                // TS map:   `this.queue.setRepeat(repeat);`
-                self.queue.set_repeat(repeat);
+                // What:     `self.queue.set_repeat_track(repeat_track);`. Restore the
+                //           "repeat track" flag.
+                // Why:      Affects auto-advance (replay current on natural end).
+                // TS map:   `this.queue.setRepeatTrack(repeatTrack);`
+                self.queue.set_repeat_track(repeat_track);
                 // What:     `self.queue.set_tracks(tracks);`. Rebuild the queue.
                 // Why:      Restore the playlist.
                 // TS map:   `this.queue.setTracks(tracks);`
@@ -417,16 +418,16 @@ impl Controller {
                 // Why:      Sync the slider.
                 // TS map:   `this.emit({ kind: "volume", volume });`
                 self.emit(Update::Volume(volume));
-                // What:     `self.emit(Update::Shuffle(self.queue.shuffle_on()));`. Mirror
-                //           shuffle state.
-                // Why:      Sync the button.
-                // TS map:   `this.emit({ kind: "shuffle", on: ... });`
-                self.emit(Update::Shuffle(self.queue.shuffle_on()));
-                // What:     `self.emit(Update::Repeat(self.queue.repeat()));`. Mirror
-                //           repeat mode.
-                // Why:      Sync the button.
-                // TS map:   `this.emit({ kind: "repeat", mode: ... });`
-                self.emit(Update::Repeat(self.queue.repeat()));
+                // What:     `self.emit(Update::Shuffle(self.queue.shuffle_mode()));`.
+                //           Mirror the shuffle mode.
+                // Why:      Sync the radio group.
+                // TS map:   `this.emit({ kind: "shuffle", mode: ... });`
+                self.emit(Update::Shuffle(self.queue.shuffle_mode()));
+                // What:     `self.emit(Update::RepeatTrack(self.queue.repeat_track()));`.
+                //           Mirror the "repeat track" flag.
+                // Why:      Sync the checkbox.
+                // TS map:   `this.emit({ kind: "repeatTrack", on: ... });`
+                self.emit(Update::RepeatTrack(self.queue.repeat_track()));
                 // What:     `self.playing = false;`. Restore PAUSED.
                 // Why:      Resuming should not blast audio on launch.
                 // TS map:   `this.playing = false;`

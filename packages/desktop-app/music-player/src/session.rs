@@ -15,10 +15,10 @@ use std::path::PathBuf;
 // TS map:   `import { Serializable } from "some-json-lib";`
 use serde::{Deserialize, Serialize};
 
-// What:     `use crate::command::RepeatMode;` imports our repeat enum.
-// Why:      The saved session remembers the repeat mode.
-// TS map:   `import { RepeatMode } from "./command";`
-use crate::command::RepeatMode;
+// What:     `use crate::command::ShuffleMode;` imports our shuffle enum.
+// Why:      The saved session remembers the shuffle mode.
+// TS map:   `import { ShuffleMode } from "./command";`
+use crate::command::ShuffleMode;
 
 // What:     `#[derive(...)]` auto-implements: `Clone` (duplicable), `Debug`
 //           (`{:?}` printing), `PartialEq` (`==`, used in tests), and
@@ -38,8 +38,8 @@ use crate::command::RepeatMode;
 //   current: number | null;
 //   positionSecs: number;
 //   volume: number;
-//   shuffle: boolean;
-//   repeat: RepeatMode;
+//   shuffle: ShuffleMode;
+//   repeatTrack: boolean;
 // }
 // ```
 pub struct Session {
@@ -60,10 +60,10 @@ pub struct Session {
     // Why:      Restore the user's last volume.
     // TS map:   `volume: number`.
     pub volume: f32,
-    /// Whether shuffle was on.
-    pub shuffle: bool,
-    /// Saved repeat mode.
-    pub repeat: RepeatMode,
+    /// Saved shuffle mode (off / within-page / all).
+    pub shuffle: ShuffleMode,
+    /// Whether "repeat track" was on.
+    pub repeat_track: bool,
 }
 
 // What:     `impl Default for Session` provides the first-run / corrupt-file
@@ -75,14 +75,15 @@ pub struct Session {
 // ```ts
 // function defaultSession(): Session {
 //   return { tracks: [], current: null, positionSecs: 0, volume: 1,
-//            shuffle: false, repeat: "off" };
+//            shuffle: "off", repeatTrack: false };
 // }
 // ```
 impl Default for Session {
     fn default() -> Session {
         // What:     struct literal as the tail expression (return value).
         //           `Vec::new()` empty array; `None` empty option; `1.0` full
-        //           volume; `RepeatMode::Off` the default mode.
+        //           volume; `ShuffleMode::Off` the default mode; `false` no
+        //           repeat-track.
         // Why:      Sensible starting state.
         // TS map:   the object literal above.
         Session {
@@ -90,8 +91,8 @@ impl Default for Session {
             current: None,
             position_secs: 0.0,
             volume: 1.0,
-            shuffle: false,
-            repeat: RepeatMode::Off,
+            shuffle: ShuffleMode::Off,
+            repeat_track: false,
         }
     }
 }
@@ -384,8 +385,8 @@ mod tests {
             current: Some(1),
             position_secs: 12.5,
             volume: 0.7,
-            shuffle: true,
-            repeat: RepeatMode::All,
+            shuffle: ShuffleMode::WithinPage,
+            repeat_track: true,
         };
         // What:     `serde_json::to_string(&original).unwrap()` serializes to JSON.
         //           `.unwrap()` extracts the `Ok` value and PANICS on `Err` (fine
@@ -432,8 +433,8 @@ mod tests {
             current: Some(1),
             position_secs: 5.0,
             volume: 1.0,
-            shuffle: false,
-            repeat: RepeatMode::Off,
+            shuffle: ShuffleMode::Off,
+            repeat_track: false,
         };
         // What:     run the prune.
         // Why:      The behaviour under test.
@@ -468,8 +469,8 @@ mod tests {
             current: Some(0),
             position_secs: 9.0,
             volume: 1.0,
-            shuffle: false,
-            repeat: RepeatMode::Off,
+            shuffle: ShuffleMode::Off,
+            repeat_track: false,
         };
         session.prune_unplayable();
         // What:     queue now empty.
@@ -512,8 +513,8 @@ mod tests {
             current: Some(1),
             position_secs: 3.0,
             volume: 1.0,
-            shuffle: false,
-            repeat: RepeatMode::Off,
+            shuffle: ShuffleMode::Off,
+            repeat_track: false,
         };
         // What:     run the prune.
         // Why:      The behaviour under test.

@@ -8,7 +8,15 @@ Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, an
 - Output: Wayland for the window, PipeWire for audio. No X11 fallback, no ALSA/PulseAudio backends.
 - Source: an ad-hoc queue. Opening a folder replaces the queue with the audio files found under it, scanning
   subfolders recursively. Command-line file or folder arguments are expanded the same way.
-- Transport: play/pause, seek, volume, next/prev, shuffle, and repeat (off, all, one).
+- Transport: play/pause, seek, volume, next/prev, a three-state shuffle (off, within page, all), and a
+  "repeat track" toggle.
+- Playback scope: the shuffle mode also chooses what playback loops over. Off and within-page confine playback to
+  the current page (the track's top-level folder, or its A-Z/`#` letter bucket for a root-level track); off plays
+  the page in load order, within-page shuffles it. All spans the whole queue, shuffled. When "repeat track" is
+  off, reaching the end of the scope loops the scope (the page, or the whole queue); when on, the current track
+  replays at its natural end, while a manual next/prev still moves within the scope. This deliberately cannot
+  express non-shuffle with whole-queue repeat: when playing in order, playback stays inside the current folder
+  rather than jumping to another artist once the folder ends.
 - Metadata: filesystem path only. The queue list shows each track's path relative to the loaded folder (folder
   plus filename), with no tag parsing and no album art. The seek bar's position and duration come from the
   decoder (frame count over sample rate), not from tags.
@@ -43,8 +51,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 
 - `src/lib.rs`: module root.
 - `src/command.rs`: the UI-to-engine `Command` and engine-to-UI `Update` message enums, plus `RepeatMode`.
-- `src/queue.rs`: the play-queue model (load order, shuffle order, cursor, repeat), with a seedable PRNG for
-  deterministic shuffle tests. `display_paths` builds the UI list as each track's path relative to the queue's
+- `src/queue.rs`: the play-queue model (load order, the current scope's playback order, cursor, shuffle mode,
+  repeat-track flag), with a seedable PRNG for deterministic shuffle tests. The playback scope is the current
+  track's page (off and within-page, computed via `pagination`) or the whole queue (all), and it always loops;
+  there is no stop-at-end mode. `display_paths` builds the UI list as each track's path relative to the queue's
   common root (via `relpath`).
 - `src/session.rs`: save and restore of the last session under the platform config directory, pruning tracks
   whose files moved or are not audio files (and remapping the saved cursor onto the survivors).
@@ -85,7 +95,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
   property edge, so the engine and queue model stay unaware of pagination.
-- `ui/app.slint`: the window markup (seek bar, transport row, volume slider, page-tab bar, queue list). The
+- `ui/app.slint`: the window markup (seek bar, transport row, volume slider, a plain-HTML-styled three-state
+  shuffle radio group and "repeat track" checkbox, page-tab bar, queue list). The
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
   `#` catch-all). Each tab shows one page; the tab bar wraps onto multiple rows to fit the window width (rather
@@ -147,8 +158,8 @@ files can be enqueued through command-line arguments (the portal cannot offer fi
 
 ## Session
 
-On exit the engine saves the queue (file paths), current index, position, volume, and shuffle/repeat mode to a
-JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). The `run` task sets
+On exit the engine saves the queue (file paths), current index, position, volume, shuffle mode, and the
+repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). The `run` task sets
 `XDG_CONFIG_HOME` to a `music-player-config` named volume so the session persists across runs and is not written
 into the bind-mounted source tree. On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
