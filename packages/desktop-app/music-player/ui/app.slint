@@ -156,22 +156,43 @@ export component AppWindow inherits Window {
         }
 
         // Page-tab bar: one tab per page (top-level folder or letter), shown only
-        // when the queue has at least one page. Wrapped in a Flickable so a wide
-        // row of tabs (many folders or letters) scrolls horizontally instead of
-        // being clipped. viewport-width is bound to the tab row's natural width so
-        // the scrollable area is exactly the content width.
-        if root.page-labels.length > 0: Flickable {
-            height: 36px;
-            viewport-height: 36px;
-            viewport-width: tab-row.preferred-width;
-            tab-row := HorizontalLayout {
-                spacing: 4px;
-                for label[p] in root.page-labels: Button {
-                    text: label;
-                    // The active page's tab is drawn with the accent style.
-                    primary: p == root.selected-page;
+        // when the queue has at least one page. Slint (stable) has no flow layout,
+        // so the tabs are laid out as a fixed-cell grid that WRAPS: `columns` is
+        // derived from the current width and each tab's x/y come from its index, so
+        // the grid reflows as the window resizes instead of scrolling horizontally.
+        // The container height is computed from the row count; vertical-stretch: 0
+        // leaves the remaining space to the queue list below. A long folder label
+        // elides, but its full path is still visible in the row below.
+        if root.page-labels.length > 0: Rectangle {
+            property <length> tab-w: 64px;
+            property <length> tab-h: 30px;
+            property <length> gap: 4px;
+            // Whole tabs that fit across the current width (at least one).
+            property <int> columns: Math.max(1, Math.floor(self.width / (self.tab-w + self.gap)));
+            vertical-stretch: 0;
+            // Rows needed = ceil(tabs / columns); height packs them with gaps.
+            height: Math.ceil(root.page-labels.length / self.columns) * (self.tab-h + self.gap) - self.gap;
+            for label[p] in root.page-labels: Rectangle {
+                width: parent.tab-w;
+                height: parent.tab-h;
+                x: Math.mod(p, parent.columns) * (parent.tab-w + parent.gap);
+                y: Math.floor(p / parent.columns) * (parent.tab-h + parent.gap);
+                border-radius: 4px;
+                // Active tab uses the same accent blue as the playing row; inactive
+                // tabs sit on a neutral dark fill (this app targets a dark theme).
+                background: p == root.selected-page ? #3060c0 : #404040;
+                TouchArea {
                     clicked => {
                         root.select-page(p);
+                    }
+                    Text {
+                        text: label;
+                        x: 4px;
+                        width: parent.width - 8px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        overflow: elide;
+                        color: p == root.selected-page ? white : #cccccc;
                     }
                 }
             }

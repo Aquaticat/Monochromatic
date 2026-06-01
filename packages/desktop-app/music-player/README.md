@@ -88,9 +88,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `ui/app.slint`: the window markup (seek bar, transport row, volume slider, page-tab bar, queue list). The
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
-  `#` catch-all). Each tab shows one page; rows show each track's path relative to the loaded root (so deeper
-  nesting stays visible). The playing track is the highlighted row, and the view follows it across track
-  changes, so there is no separate now-playing title.
+  `#` catch-all). Each tab shows one page; the tab bar wraps onto multiple rows to fit the window width (rather
+  than scrolling horizontally). Rows show each track's path relative to the loaded root (so deeper nesting stays
+  visible). The playing track is the highlighted row, and the view follows it across track changes, so there is
+  no separate now-playing title.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The
