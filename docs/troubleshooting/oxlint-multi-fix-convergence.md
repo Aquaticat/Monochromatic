@@ -512,18 +512,43 @@ It stops when the oracle reports zero diagnostics (a file with no violation is a
 guaranteed fixpoint, sound across severities unlike the exit code, which is zero
 whenever no errors remain even with a fixable warning pending), or the oracle's
 normalized output matches the previous pass (an unfixable remainder has
-stabilized), or an oxlint run fails to execute, or a cap of eight passes is hit.
-The oracle output is normalized by stripping oxlint's `Finished in <n>ms ...`
-footer, whose duration varies run to run and would otherwise defeat the
-comparison.
+stabilized), or it matches a non-adjacent earlier pass (an autofix oscillation,
+see below), or an oxlint run fails to execute, or a cap of eight passes is hit.
+
+Normalizing the oracle has two parts, both load-bearing:
+
+- The volatile `Finished in <n>ms ...` footer is dropped; its duration differs
+  every run.
+- Diagnostic blocks are sorted. Over a multi-file, multi-threaded run oxlint
+  emits the same blocks in non-deterministic order (verified: two identical
+  no-fix lints of a 2531-file tree produced the same 41419 lines shuffled).
+  Without block-sorting, consecutive oracles never compare equal and the loop
+  hits the cap on every whole-repo run.
+
+The normalizer only handles oxlint's default reporter. `oracleArgs` keeps a
+caller-supplied `--format`, so `task-oxlint --fix --format json` would compare
+JSON carrying the volatile `start_time` and never converge (files still
+converge; the loop just wastes passes and warns). `format:oxlint` always uses
+the pinned default reporter, so this cannot bite the real task.
 
 The two-runs-per-pass cost is the price of correctness given oxlint exposes no
 fix-applied signal; workaround (A) already treats running `--fix` twice as the
-baseline. Only `--fix` triggers the loop: `--fix-suggestions` and
-`--fix-dangerously` stay single-pass because the plain-lint oracle is not
-verified to track suggestion-applied changes. The loop lives in
-`packages/dev-script/task-util/src/oxlint-fix-loop.ts` with unit tests in
-`oxlint-fix-loop.unit.test.ts`.
+baseline. `--fix` alone triggers the loop: `--fix-suggestions` or
+`--fix-dangerously` passed without `--fix` stay single-pass, because the
+plain-lint oracle is not verified to track suggestion-applied changes. The loop
+lives in `packages/dev-script/task-util/src/oxlint-fix-loop.ts` with unit tests
+in `oxlint-fix-loop.unit.test.ts`.
+
+This workspace has a real autofix oscillation that the loop surfaces.
+`packages-paused/webapp-forge/server/src/data/db.ts` flips between two states on
+every `--fix`: two stylistic rules disagree on the continuation indent of a
+chained `.includes(...)` call (four spaces versus six), so one rewrites what the
+other just wrote. `oxlint --fix` over the whole repo therefore cannot converge.
+The loop detects the two-state cycle (the oracle revisits an earlier state) at
+the third pass and stops with a `cycle` warning naming the conflict, rather than
+grinding all eight passes. Fixing it is a rule-config decision (reconcile the two
+rules' indent, disable one rule's autofix, or exclude paused packages from
+`format:oxlint`); the wrapper only reports it.
 
 ## What does not work
 
