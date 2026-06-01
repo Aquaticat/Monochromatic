@@ -95,7 +95,9 @@ files can be enqueued through command-line arguments (the portal cannot offer fi
 ## Session
 
 On exit the engine saves the queue (file paths), current index, position, volume, and shuffle/repeat mode to a
-JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). On launch, when no file
+JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). The `run` task sets
+`XDG_CONFIG_HOME` to a `music-player-config` named volume so the session persists across runs and is not written
+into the bind-mounted source tree. On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
 track is loaded paused at the saved position, with files that have since moved pruned out. Command-line path
 arguments take precedence over a saved session. When no arguments are given and no queue remains to restore (none

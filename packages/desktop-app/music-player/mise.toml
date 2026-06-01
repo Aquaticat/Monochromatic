@@ -53,6 +53,12 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # the server"). keep-id maps the host uid identically into the container, so
 # the asserted uid matches and the handshake succeeds. See
 # docs/troubleshooting/podman-dbus-external-keep-id.md.
+#
+# XDG_CONFIG_HOME=/config (a named volume) keeps the session file out of the
+# bind-mounted source tree. Without it, HOME resolves to the /work workdir
+# inside the container and the `directories` crate writes the session under
+# /work/.config, polluting the repo. The volume also persists the session
+# across runs.
 run = '''
 let xrd = $env.XDG_RUNTIME_DIR
 let wl = $env.WAYLAND_DISPLAY
@@ -60,11 +66,12 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
 (
   podman run --rm --security-opt label=disable --userns=keep-id
   --device /dev/dri --group-add keep-groups
-  -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work
+  -v $"(pwd):/work" -v music-player-cargo:/cargo -v music-player-config:/config -w /work
   -v $"($xrd)/($wl):/run/host-wayland"
   -v $"($xrd)/pipewire-0:/run/pipewire-0"
   -v $"($xrd)/bus:/run/host-bus"
   -e XDG_RUNTIME_DIR=/run
+  -e XDG_CONFIG_HOME=/config
   -e WAYLAND_DISPLAY=host-wayland
   -e PIPEWIRE_REMOTE=pipewire-0
   -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-bus
