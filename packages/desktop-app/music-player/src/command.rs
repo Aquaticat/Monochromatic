@@ -89,7 +89,7 @@ pub enum RepeatMode {
 // In TS you'd write (pseudocode):
 // ```ts
 // type Command =
-//   | { kind: "openPaths"; paths: string[] }
+//   | { kind: "openPaths"; paths: string[]; play: boolean }
 //   | { kind: "togglePlay" } | { kind: "play" } | { kind: "pause" }
 //   | { kind: "next" } | { kind: "prev" }
 //   | { kind: "playIndex"; index: number }
@@ -100,8 +100,23 @@ pub enum RepeatMode {
 //   | { kind: "quit" };
 // ```
 pub enum Command {
-    /// Replace the queue with these files/folders and start playing.
-    OpenPaths(Vec<PathBuf>),
+    // What:     `OpenPaths { paths: Vec<PathBuf>, play: bool }` is a STRUCT variant:
+    //           replace the queue with these files/folders (folders are expanded
+    //           recursively to their files), then either start playing
+    //           (`play: true`) or just load the first track PAUSED (`play: false`).
+    // Why:      A user-initiated open should play; the launch-time auto-load of the
+    //           music directory should populate the queue without blasting audio.
+    // TS map:   `{ kind: "openPaths"; paths: string[]; play: boolean }`
+    OpenPaths {
+        // What:     `paths: Vec<PathBuf>` files/folders to open (owned paths).
+        // Why:      Source of the new queue.
+        // TS map:   `paths: string[]`.
+        paths: Vec<PathBuf>,
+        // What:     `play: bool` whether to start playing once loaded.
+        // Why:      Distinguishes a user open (play) from the auto-load (paused).
+        // TS map:   `play: boolean`.
+        play: bool,
+    },
     /// Flip between playing and paused.
     TogglePlay,
     /// Resume playback.

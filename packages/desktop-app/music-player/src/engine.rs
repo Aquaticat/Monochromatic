@@ -498,13 +498,15 @@ impl Controller {
         // Why:      Each command does a different thing.
         // TS map:   `switch (command.kind) { ... }`
         match command {
-            // What:     `Command::OpenPaths(paths) => { ... }`. Set the queue to the
-            //           given files/folders and start playing the first.
-            // Why:      Opening files replaces the queue (ad-hoc queue model).
-            // TS map:   `case "openPaths": ...`
-            Command::OpenPaths(paths) => {
+            // What:     `Command::OpenPaths { paths, play } => { ... }`. Set the queue
+            //           to the given files/folders and load the first track, playing
+            //           it only when `play` is true.
+            // Why:      Opening files replaces the queue (ad-hoc queue model); the
+            //           launch-time auto-load loads paused.
+            // TS map:   `case "openPaths": { const { paths, play } = command; ... }`
+            Command::OpenPaths { paths, play } => {
                 // What:     `let tracks = expand_paths(paths);`. Turn folders into
-                //           their contained files; pass files through.
+                //           their contained files (recursively); pass files through.
                 // Why:      The queue holds files, not directories.
                 // TS map:   `const tracks = expandPaths(paths);`
                 let tracks = expand_paths(paths);
@@ -518,19 +520,22 @@ impl Controller {
                 // TS map:   `this.emit({ kind: "queue", names: this.queue.displayNames() });`
                 self.emit(Update::Queue(self.queue.display_names()));
                 // What:     `if self.queue.current_path().is_some() { ... } else { ... }`.
-                //           Play the first track if the queue is non-empty.
-                // Why:      Opening should start playback.
+                //           Load the first track if the queue is non-empty.
+                // Why:      Opening should make a track current.
                 // TS map:   `if (this.queue.currentPath()) { ... } else { ... }`
                 if self.queue.current_path().is_some() {
                     // What:     `let ok = self.load_current();`. Load the current
                     //           track; `ok` is whether a decoder was opened.
-                    // Why:      Start decoding it.
+                    // Why:      Make it ready to play.
                     // TS map:   `const ok = this.loadCurrent();`
                     let ok = self.load_current();
-                    // What:     `self.set_playing(ok);`. Play if loaded, else stop.
-                    // Why:      Reflect whether playback actually started.
-                    // TS map:   `this.setPlaying(ok);`
-                    self.set_playing(ok);
+                    // What:     `self.set_playing(play && ok);`. Play only when the
+                    //           caller asked to AND a track actually loaded; otherwise
+                    //           stay paused. `&&` short-circuits.
+                    // Why:      Auto-load (`play == false`) loads paused; a user open
+                    //           (`play == true`) starts playback.
+                    // TS map:   `this.setPlaying(play && ok);`
+                    self.set_playing(play && ok);
                 } else {
                     // What:     `self.set_playing(false);`. Empty queue -> stopped.
                     // Why:      Nothing to play.

@@ -98,4 +98,7 @@ On exit the engine saves the queue (file paths), current index, position, volume
 JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
 track is loaded paused at the saved position, with files that have since moved pruned out. Command-line path
-arguments take precedence over a saved session.
+arguments take precedence over a saved session. When no arguments are given and no queue remains to restore (none
+was stored, or every saved file has since moved and was pruned away), the XDG music directory (`XDG_MUSIC_DIR`,
+typically `~/Music`) is auto-loaded paused, so the queue is populated without playing; if that directory is unset
+or missing, the queue starts empty.

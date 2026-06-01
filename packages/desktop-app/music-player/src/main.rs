@@ -427,13 +427,17 @@ fn main() -> Result<(), slint::PlatformError> {
                 // Why:      Let the user enqueue a whole folder.
                 // TS map:   `const dir = await showOpenDialog({ directory: true }); if (dir) { ... }`
                 if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                    // What:     `let _ = tx.send(Command::OpenPaths(vec![dir]));`. Wrap
-                    //           the single folder in a one-element vector (`vec![...]`)
-                    //           and send it; the engine expands it recursively to its
-                    //           files. `let _ =` ignores a send error (engine gone).
-                    // Why:      Replace the queue with the folder's tracks.
-                    // TS map:   `tx.send(Command.OpenPaths([dir]));`
-                    let _ = tx.send(Command::OpenPaths(vec![dir]));
+                    // What:     `let _ = tx.send(Command::OpenPaths { paths: vec![dir], play: true });`.
+                    //           Wrap the single folder in a one-element vector
+                    //           (`vec![...]`) and send it with `play: true` (a user
+                    //           open should start playback); the engine expands it
+                    //           recursively. `let _ =` ignores a send error (engine gone).
+                    // Why:      Replace the queue with the folder's tracks and play.
+                    // TS map:   `tx.send(Command.OpenPaths({ paths: [dir], play: true }));`
+                    let _ = tx.send(Command::OpenPaths {
+                        paths: vec![dir],
+                        play: true,
+                    });
                 }
             });
         }
@@ -451,21 +455,35 @@ fn main() -> Result<(), slint::PlatformError> {
     // Why:      Opening files explicitly should override resuming.
     // TS map:   `if (cliPaths.length) { ... } else { ... }`
     if !cli_paths.is_empty() {
-        // What:     `engine.send(Command::OpenPaths(cli_paths));`. Enqueue and play.
+        // What:     `engine.send(Command::OpenPaths { paths: cli_paths, play: true });`.
+        //           Enqueue and play. `play: true` because explicit arguments mean
+        //           the user wants playback.
         // Why:      Honour CLI arguments.
-        // TS map:   `engine.send(Command.OpenPaths(cliPaths));`
-        engine.send(Command::OpenPaths(cli_paths));
+        // TS map:   `engine.send(Command.OpenPaths({ paths: cliPaths, play: true }));`
+        engine.send(Command::OpenPaths {
+            paths: cli_paths,
+            play: true,
+        });
     } else {
         // What:     `let session = Session::load();`. Read the saved session
         //           (returns defaults if none/corrupt; prunes moved files).
         // Why:      Resume where the user left off.
         // TS map:   `const session = Session.load();`
         let session = Session::load();
-        // What:     `if !session.tracks.is_empty() { engine.send(Command::Restore { ... }); }`.
-        //           Only restore when a non-empty queue survived pruning.
-        // Why:      Nothing to resume otherwise.
-        // TS map:   `if (session.tracks.length) engine.send({ kind: "restore", ... });`
+        // What:     `if !session.tracks.is_empty() { ... } else if let Some(music_dir) = ... { ... }`.
+        //           Restore a saved queue when one survived pruning. `load()` already
+        //           dropped files that moved, so an all-missing session arrives here
+        //           with `tracks` empty and falls through to auto-loading the XDG
+        //           music directory.
+        // Why:      A launch with nothing to resume (no session, or every saved file
+        //           pruned away) should not leave an empty queue when the user has a
+        //           music folder.
+        // TS map:   `if (session.tracks.length) { restore } else if (musicDir) { autoload }`
         if !session.tracks.is_empty() {
+            // What:     `engine.send(Command::Restore { ... });`. Reinstate the saved
+            //           session (loads paused at the saved position).
+            // Why:      Resume the previous queue and position.
+            // TS map:   `engine.send({ kind: "restore", ... });`
             engine.send(Command::Restore {
                 tracks: session.tracks,
                 current: session.current,
@@ -473,6 +491,34 @@ fn main() -> Result<(), slint::PlatformError> {
                 volume: session.volume,
                 shuffle: session.shuffle,
                 repeat: session.repeat,
+            });
+        } else if let Some(music_dir) = directories::UserDirs::new()
+            // What:     `.and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))`.
+            //           `UserDirs::new()` is `Option<UserDirs>`; `.and_then(...)` runs
+            //           the closure only if present. `dirs.audio_dir()` is
+            //           `Option<&Path>` (the XDG_MUSIC_DIR, e.g. ~/Music);
+            //           `.map(|p| p.to_path_buf())` copies the borrowed path into an
+            //           owned `PathBuf`. The whole chain is `Option<PathBuf>`.
+            // Why:      Locate the user's music folder without assuming a path.
+            // TS map:   `userDirs()?.audioDir`
+            .and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))
+            // What:     `.filter(|p| p.is_dir())`. Keep the path only if it exists and
+            //           is a directory; otherwise the `Option` becomes `None` and the
+            //           `if let` body is skipped.
+            // Why:      Skip the auto-load when no music directory is configured or
+            //           present, instead of feeding a missing path to the engine.
+            // TS map:   `.filter(p => isDir(p))`
+            .filter(|p| p.is_dir())
+        {
+            // What:     `engine.send(Command::OpenPaths { paths: vec![music_dir], play: false });`.
+            //           Auto-load the music directory PAUSED (`play: false`), so the
+            //           queue is populated without blasting audio on launch.
+            // Why:      Give a fresh launch a ready-to-play library without surprise
+            //           playback.
+            // TS map:   `engine.send(Command.OpenPaths({ paths: [musicDir], play: false }));`
+            engine.send(Command::OpenPaths {
+                paths: vec![music_dir],
+                play: false,
             });
         }
     }
