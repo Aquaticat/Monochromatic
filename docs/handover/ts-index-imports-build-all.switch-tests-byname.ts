@@ -60,10 +60,10 @@ function extractSpecifier(line: string,): {
   const sideEffectIdx = line.trimStart()
     .startsWith('import ',)
     && line.includes('\'',)
-    && !line.includes('{',)
+    && (!line.includes('{',))
     ? line.indexOf('import ',)
     : -1;
-  const anchor = fromIdx !== -1 ? fromIdx : sideEffectIdx;
+  const anchor = fromIdx !== (-1) ? fromIdx : sideEffectIdx;
   if (anchor < 0) {
     return null;
   }
@@ -75,7 +75,7 @@ function extractSpecifier(line: string,): {
     '"',
     anchor,
   );
-  const openQuote = (singleOpen >= 0) && ((doubleOpen < 0) || (singleOpen < doubleOpen)) ? singleOpen : doubleOpen;
+  const openQuote = (singleOpen !== (-1)) && ((doubleOpen === (-1)) || (singleOpen < doubleOpen)) ? singleOpen : doubleOpen;
   if (openQuote < 0) {
     return null;
   }
@@ -84,11 +84,14 @@ function extractSpecifier(line: string,): {
     quoteChar,
     openQuote + 1,
   );
-  if (closeQuote === -1) {
+  if (closeQuote === (-1)) {
     return null;
   }
   return {
-    spec: line.slice(openQuote + 1, closeQuote,),
+    spec: line.slice(
+      openQuote + 1,
+      closeQuote,
+    ),
     openQuote,
     closeQuote,
   };
@@ -161,7 +164,10 @@ for await (const rel of glob.scan(pkgDir,)) {
   const lineIndex = ownSourceLineIndexes[0]!;
   const line = lines[lineIndex]!;
   const extracted = extractSpecifier(line,)!;
-  const rewritten = line.slice(0, extracted.openQuote + 1,) + pkgName
+  const rewritten = line.slice(
+    0,
+    extracted.openQuote + 1,
+  ) + pkgName
     + line.slice(extracted.closeQuote,);
   lines[lineIndex] = rewritten;
   if (!dry) {

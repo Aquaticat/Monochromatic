@@ -57,7 +57,10 @@ function ownerOf(file: string): string | null {
       'package.json'
     );
     if (existsSync(pj)) {
-      const name = JSON.parse(readFileSync(pj, 'utf8'))
+      const name = JSON.parse(readFileSync(
+        pj,
+        'utf8'
+      ))
         .name
         ?? null;
       for (const s of seen) ownerCache.set(
@@ -78,7 +81,10 @@ function ownerOf(file: string): string | null {
 // import/export context + boundary-safe target match; replacement keeps the
 // leading `from `/`import `/`import(` and the quote, swaps only the specifier.
 const re = new RegExp(
-  `(?<![A-Za-z0-9_$])(from|import)(\\s*\\(?\\s*)(['"])${scoped.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)}(?:/[^'"]*)?\\3`,
+  `(?<![A-Za-z0-9_$])(from|import)(\\s*\\(?\\s*)(['"])${scoped.replaceAll(
+    /[.*+?^${}()|[\]\\]/g,
+    String.raw`\$&`
+  )}(?:/[^'"]*)?\\3`,
   'g',
 );
 
@@ -99,7 +105,12 @@ for (const rel of new Glob('packages/**/*.{ts,tsx,mts}').scanSync(root)) {
   let hits = 0;
   const next = text.replace(
     re,
-    (_m, kw: string, gap: string, q: string) => {
+    (
+      _m,
+      kw: string,
+      gap: string,
+      q: string
+    ) => {
     hits += 1;
     return `${kw}${gap}${q}${canonical}${q}`;
   }

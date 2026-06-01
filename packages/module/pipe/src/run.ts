@@ -214,7 +214,9 @@ export function runPipe(args: RunArgs,): unknown {
           fn6(
             fn5(
               fn4(
-                fn3(fn2(fn1(value,),),),
+                fn3(
+                  fn2(fn1(value,),),
+                ),
               ),
             ),
           ),
@@ -228,7 +230,11 @@ export function runPipe(args: RunArgs,): unknown {
         fn7(
           fn6(
             fn5(
-              fn4(fn3(fn2(fn1(value,),),),),
+              fn4(
+                fn3(
+                  fn2(fn1(value,),),
+                ),
+              ),
             ),
           ),
         ),

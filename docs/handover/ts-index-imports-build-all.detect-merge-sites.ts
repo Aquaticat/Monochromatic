@@ -46,7 +46,10 @@ function ownerOf(file: string): string | null {
       'package.json'
     );
     if (existsSync(pj)) {
-      const name = JSON.parse(readFileSync(pj, 'utf8'))
+      const name = JSON.parse(readFileSync(
+        pj,
+        'utf8'
+      ))
         .name
         ?? null;
       for (const s of seen) ownerCache.set(
@@ -79,12 +82,14 @@ function parseImports(text: string): ImportStmt[] {
     const line = lines[i];
     const trimmed = line.trimStart();
     if (trimmed.startsWith('import ') || trimmed.startsWith('import{')
-      || trimmed === 'import'
+      || (trimmed === 'import')
       || trimmed.startsWith('import type')) {
       // collect until we see a closing `from '...'` or a bare `import '...'`
       let stmt = line;
       let j = i;
-      while ((!/from\s*['"][^'"]+['"]/.test(stmt)) && (!/^import\s+['"][^'"]+['"]/.test(stmt.trimStart())) && (j < lines.length - 1)) {
+      while ((!/from\s*['"][^'"]+['"]/.test(stmt)) && (!/^import\s+['"][^'"]+['"]/.test(stmt.trimStart()))
+        && (j < (lines.length
+          - 1))) {
         j += 1;
         stmt += `\n${  lines[j]}`;
         if ((j - i) > 50) break;

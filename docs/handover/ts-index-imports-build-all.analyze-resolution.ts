@@ -74,10 +74,16 @@ for (const rel of new Glob('packages/**/package.json').scanSync(root)) {
     file,
     'utf8'
   ));
-  if ((typeof json.name) === 'string' && json.name.startsWith(SCOPE)) {
+  if (((typeof json.name) === 'string')
+    && json.name
+    .startsWith(SCOPE)) {
     pkgByName.set(
       json.name,
-      { name: json.name, dir: dirname(file), exports: json.exports }
+      {
+        name: json.name,
+        dir: dirname(file),
+        exports: json.exports
+      }
     );
   }
 }
@@ -102,7 +108,10 @@ function ownerOf(file: string): string | null {
       'package.json'
     );
     if (existsSync(pj)) {
-      const name = JSON.parse(readFileSync(pj, 'utf8'))
+      const name = JSON.parse(readFileSync(
+        pj,
+        'utf8'
+      ))
         .name
         ?? null;
       for (const s of seen) ownerCache.set(
@@ -125,7 +134,7 @@ function ownerOf(file: string): string | null {
 // objects collapse to default||node||import||types (the value a bundler picks).
 function condTarget(v: unknown): string | null {
   if ((typeof v) === 'string') return v;
-  if (v && (typeof v) === 'object') {
+  if (v && ((typeof v) === 'object')) {
     const o = v as Record<string, unknown>;
     for (const k of [
       'default',
@@ -142,7 +151,7 @@ function resolveExport(
   exportsObj: unknown,
   subkey: string
 ): string | null {
-  if ((!exportsObj) || (typeof exportsObj) !== 'object') {
+  if ((!exportsObj) || ((typeof exportsObj) !== 'object')) {
     // string exports shorthand only matches '.'
     return subkey === '.' ? condTarget(exportsObj) : null;
   }
@@ -153,7 +162,8 @@ function resolveExport(
     if (!pat.includes('*')) continue;
     const [pre, post] = pat.split('*');
     if (subkey.startsWith(pre) && subkey.endsWith(post)
-      && subkey.length >= pre.length + post.length) {
+      && (subkey.length >= (pre.length
+        + post.length))) {
       const star = subkey.slice(
         pre.length,
         subkey.length - post.length
@@ -180,7 +190,10 @@ function subkeyFor(
 
 // import/export-context specifier scanner (same boundary rule as the rewriter).
 const re = new RegExp(
-  `(?<![A-Za-z0-9_$])(?:from|import)\\s*\\(?\\s*['"](${SCOPE.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)}[^'"]+)['"]`,
+  `(?<![A-Za-z0-9_$])(?:from|import)\\s*\\(?\\s*['"](${SCOPE.replaceAll(
+    /[.*+?^${}()|[\]\\]/g,
+    String.raw`\$&`
+  )}[^'"]+)['"]`,
   'g',
 );
 
@@ -194,7 +207,10 @@ type Finding = {
 };
 const findings: Finding[] = [];
 const names = [...pkgByName.keys()].map(n => n.slice(SCOPE.length))
-  .sort((a, b) => b.length - a.length);
+  .toSorted((
+    a,
+    b
+  ) => b.length - a.length);
 
 for (const rel of new Glob('packages/**/*.{ts,tsx,mts,cts}').scanSync(root)) {
   if (rel.includes('/dist/') || rel.includes('/node_modules/')) continue;
@@ -230,7 +246,8 @@ for (const rel of new Glob('packages/**/*.{ts,tsx,mts,cts}').scanSync(root)) {
       specifier
     );
     const resolved = resolveExport(
-      pkgByName.get(targetName)!.exports,
+      pkgByName.get(targetName)!
+        .exports,
       subkey
     );
     let bucket: string;
@@ -253,7 +270,10 @@ for (const rel of new Glob('packages/**/*.{ts,tsx,mts,cts}').scanSync(root)) {
 
 const byBucket = new Map<string, Finding[]>();
 for (const f of findings) (byBucket.get(f.bucket)
-  ?? byBucket.set(f.bucket, [])
+  ?? byBucket.set(
+    f.bucket,
+    []
+  )
   .get(f.bucket)!).push(f);
 
 console.log(`total @monochromatic-dev import-context specifiers: ${findings.length}\n`);
@@ -287,5 +307,6 @@ const selfDist = (byBucket.get('self-import') ?? []).filter(f => (f.resolved ?? 
 console.log(`\nself-import -> dist (the intentional by-name lib smokes, excluded): ${selfDist.length}`);
 for (const v of selfDist) console.log(`  ${v.importer} self-imports ${v.specifier}  [${v.file}]`);
 
-const pass = (violations.length === 0) && (unresolved.length === 0) && (unknown.length === 0);
+const pass = (violations.length === 0) && (unresolved.length === 0)
+  && (unknown.length === 0);
 console.log(`\n${pass ? 'PASS' : 'FAIL'}: criterion ${pass ? 'met' : 'NOT met'}.`);
