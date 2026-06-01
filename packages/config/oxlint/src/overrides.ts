@@ -196,6 +196,10 @@ const testOverride = {
     // Tests may use arrow functions in callbacks freely.
     'no-restricted-syntax/no-arrow-function': 'off',
 
+    // Test helpers, spies, fixture APIs, and framework adapters often mirror positional signatures.
+    'no-restricted-syntax/require-destructured-params': 'off',
+    'no-restricted-syntax/no-disable-require-destructured-params': 'off',
+
     // Test code uses inline arrays, objects, and multi-arg calls freely.
     'stylistic/param-per-line': 'off',
     'stylistic/argument-per-line': 'off',
