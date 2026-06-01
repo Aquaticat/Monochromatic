@@ -562,21 +562,20 @@ impl Queue {
     // }
     // ```
     pub fn advance(&mut self, natural: bool) -> Option<usize> {
-        // What:     `let pos = match self.pos { Some(p) => p, None => return None };`
-        //           A `match` on the Option. The `None => return None` arm exits
-        //           the whole function early. Otherwise bind the inner `p`.
-        // Why:      No cursor means nothing to advance.
+        // What:     `let pos = self.pos?;`. The `?` operator on an `Option`: if
+        //           `self.pos` is `Some(p)` it unwraps to `p`; if it is `None` it
+        //           RETURNS `None` from the whole function immediately. (`self.pos`
+        //           is `Option<usize>`; the early-return shape is why `advance`
+        //           returns `Option<usize>`.)
+        // Why:      No cursor means nothing to advance; bail out early.
         // TS map:   `if (this.pos === null) return null; const pos = this.pos;`
-        let pos = match self.pos {
-            // What:     `Some(p) => p` extracts the index.
-            // Why:      Continue with a concrete position.
-            // TS map:   the non-null branch.
-            Some(p) => p,
-            // What:     `None => return None` short-circuits out of `advance`.
-            // Why:      Empty queue.
-            // TS map:   `return null;`
-            None => return None,
-        };
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.pos === null) return null;
+        // const pos = this.pos;
+        // ```
+        let pos = self.pos?;
         // What:     `if natural && self.repeat == RepeatMode::One { ... }`. `&&`
         //           is logical AND; `==` compares the Copy enum.
         // Why:      A track that ended under repeat-one replays itself.
@@ -636,13 +635,18 @@ impl Queue {
     // }
     // ```
     pub fn prev(&mut self) -> Option<usize> {
-        // What:     match the cursor; early-return None when empty.
-        // Why:      Nothing to go back to.
+        // What:     `let pos = self.pos?;`. The `?` operator on the `Option<usize>`
+        //           cursor: unwraps `Some(p)` to `p`, or returns `None` from `prev`
+        //           immediately when the cursor is `None`.
+        // Why:      Nothing to go back to when there is no cursor; bail out early.
         // TS map:   `if (this.pos === null) return null; const pos = this.pos;`
-        let pos = match self.pos {
-            Some(p) => p,
-            None => return None,
-        };
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.pos === null) return null;
+        // const pos = this.pos;
+        // ```
+        let pos = self.pos?;
         // What:     `if pos > 0 { ... }` there is a previous slot.
         // Why:      Normal backward step.
         // TS map:   `if (pos > 0) { ... }`

@@ -304,12 +304,14 @@ impl Session {
         // Why:      Produce the bytes to write; unify error types for `?`.
         // TS map:   `const json = JSON.stringify(this, null, 2);`
         let json = serde_json::to_string_pretty(self)
-            // What:     `.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))`
-            //           wraps the serde error in an io error. `|e| ...` is a closure;
-            //           `ErrorKind::Other` is the generic error category.
+            // What:     `.map_err(std::io::Error::other)` wraps the serde error in a
+            //           generic io error. `std::io::Error::other(e)` is the shorthand
+            //           for "an io error of the catch-all `Other` kind carrying `e`";
+            //           passing the function itself (not `|e| ...`) is the closure
+            //           shorthand clippy prefers.
             // Why:      `?` below needs an `io::Error`, not a serde error.
             // TS map:   serialization rarely throws in JS; ignore the conversion.
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         // What:     `std::fs::write(&path, json)` writes the string to the file,
         //           replacing existing contents. Returns `io::Result<()>`. It is
         //           the tail expression, so its result is `save`'s result.

@@ -23,3 +23,13 @@ pub mod session;
 // Why:      `PlayerError` is the one error all fallible functions return.
 // TS map:   `export * as error from "./error";`
 pub mod error;
+
+// What:     `pub mod decode;` the decoding module (`src/decode.rs`).
+// Why:      Probes files and yields interleaved f32 PCM via the `Source` trait.
+// TS map:   `export * as decode from "./decode";`
+pub mod decode;
+
+// What:     `pub mod opus;` the Opus decode path (`src/opus.rs`).
+// Why:      libopus-backed `Source` for Opus, which symphonia cannot decode.
+// TS map:   `export * as opus from "./opus";`
+pub mod opus;

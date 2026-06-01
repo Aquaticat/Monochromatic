@@ -60,20 +60,23 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
 [tasks."gen:fixtures"]
 description = "Generate tiny per-codec audio fixtures with host ffmpeg (run once, commit results)"
 # Runs on the host: ffmpeg is present there. 0.3s 440Hz stereo sine per codec.
+# All dash-leading codec args are quoted strings so nushell treats them as
+# data, not flags. 48000 Hz is used because libopus only accepts a fixed set
+# of input rates (8000/12000/16000/24000/48000); 48000 is the safe common rate.
 run = '''
 let specs = [
   [ext, args];
-  [wav, []]
-  [flac, []]
-  [mp3, [-c:a, libmp3lame]]
-  [ogg, [-c:a, libvorbis]]
-  [opus, [-c:a, libopus]]
-  [aac.m4a, [-c:a, aac]]
-  [alac.m4a, [-c:a, alac]]
+  ["wav" []]
+  ["flac" []]
+  ["mp3" ["-c:a" "libmp3lame"]]
+  ["ogg" ["-c:a" "libvorbis"]]
+  ["opus" ["-c:a" "libopus"]]
+  ["aac.m4a" ["-c:a" "aac"]]
+  ["alac.m4a" ["-c:a" "alac"]]
 ]
 for s in $specs {
   let out = $"fixtures/tone.($s.ext)"
   print $"generating ($out)"
-  ffmpeg -y -f lavfi -i "sine=frequency=440:duration=0.3" -ac 2 -ar 44100 ...$s.args $out
+  ffmpeg -y -f lavfi -i "sine=frequency=440:duration=0.3" -ac 2 -ar 48000 ...$s.args $out
 }
 '''

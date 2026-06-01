@@ -42,6 +42,9 @@ use serde::{Deserialize, Serialize};
 //           - `Serialize` / `Deserialize`: JSON conversion (see import above).
 // Why:      We compare repeat modes with `==`, copy them around freely, log
 //           them, and persist them; each derive unlocks one of those.
+//           `Default` is added here too (instead of a hand-written `impl
+//           Default`) and reads the `#[default]` marker on the `Off` variant
+//           below; clippy flags a manual `impl` that just returns one variant.
 // TS map:   TS gives `==`, structural equality, and JSON for free on a string
 //           union, so no annotation is needed there.
 //
@@ -49,7 +52,7 @@ use serde::{Deserialize, Serialize};
 // ```ts
 // // nothing — the union below just works with ===, JSON, console.log
 // ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
 // What:     `pub enum RepeatMode { ... }` declares a PUBLIC enum: a type whose
 //           value is exactly one of the listed variants. Here the variants
 //           carry no data (plain tags).
@@ -61,51 +64,19 @@ use serde::{Deserialize, Serialize};
 // type RepeatMode = "off" | "all" | "one";
 // ```
 pub enum RepeatMode {
+    // What:     `#[default]` marks this variant as the one `derive(Default)`
+    //           returns from `RepeatMode::default()`. It is an ATTRIBUTE on the
+    //           variant, not code.
+    // Why:      A brand-new session with no saved file should start at `Off`;
+    //           the derive then writes the `Default` impl for us.
+    // TS map:   `const DEFAULT_REPEAT: RepeatMode = "off";`
+    #[default]
     /// Play the queue once, stop at the end.
     Off,
     /// At the end of the queue, wrap to the first track.
     All,
     /// Replay the current track when it ends.
     One,
-}
-
-// What:     `impl Default for RepeatMode { ... }` provides the value used when
-//           nothing is specified. `impl Trait for Type` means "give `Type` the
-//           behaviour described by `Trait`". `Default` is the standard "make a
-//           sensible empty/initial value" trait.
-// Why:      A brand-new session with no saved file should start at `Off`.
-// TS map:   Like defining a `const DEFAULT_REPEAT: RepeatMode = "off"` plus a
-//           factory `function defaultRepeat() { return "off"; }`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function defaultRepeat(): RepeatMode { return "off"; }
-// ```
-impl Default for RepeatMode {
-    // What:     `fn default() -> Self` is the one method `Default` requires.
-    //           `Self` is an alias for the type we are impl-ing (RepeatMode).
-    //           `-> Self` is the return-type arrow.
-    // Why:      Hands back the chosen initial variant.
-    // TS map:   `default(): RepeatMode`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // default(): RepeatMode { return "off"; }
-    // ```
-    fn default() -> Self {
-        // What:     `RepeatMode::Off` names a specific variant of the enum
-        //           using `::` (the path/namespace separator). No trailing
-        //           `;`, so this is the function's tail expression and becomes
-        //           the return value.
-        // Why:      Off is the least surprising default.
-        // TS map:   `return "off";`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return "off";
-        // ```
-        RepeatMode::Off
-    }
 }
 
 // What:     `pub enum Command { ... }` declares the public set of actions the

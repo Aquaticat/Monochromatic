@@ -7,6 +7,7 @@ FROM registry.fedoraproject.org/fedora:41
 
 # Build toolchain:
 #   rust, cargo            Rust compiler + package manager
+#   clippy                 cargo-clippy linter (the lint:clippy task)
 #   gcc                    cc for building C dependencies (audiopus_sys)
 #   clang, clang-devel     libclang for bindgen used by pipewire's libspa-sys
 #   pkgconf-pkg-config     pkg-config used to locate libpipewire / libopus
@@ -17,7 +18,7 @@ FROM registry.fedoraproject.org/fedora:41
 #   fontconfig, freetype   Slint font loading
 #   xdg-desktop-portal     rfd file picker over the portal (when D-Bus passed)
 RUN dnf install -y \
-      rust cargo gcc \
+      rust cargo clippy gcc \
       clang clang-devel \
       pkgconf-pkg-config \
       pipewire-devel \
