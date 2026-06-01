@@ -260,14 +260,24 @@ impl Controller {
         self.pending.clear();
         self.pending_pos = 0;
 
-        // What:     `let name = file_name_of(path);`. The display filename.
-        // Why:      Filename-only metadata policy.
-        // TS map:   `const name = fileNameOf(path);`
-        let name = file_name_of(path);
-        // What:     `let index = self.queue.current_index();`. Its position in the queue.
-        // Why:      Lets the UI highlight the current row.
+        // What:     `let index = self.queue.current_index();`. Its LOAD-ORDER
+        //           position in the queue.
+        // Why:      Lets the UI highlight the current row, and indexes the display
+        //           paths for the name below.
         // TS map:   `const index = this.queue.currentIndex();`
         let index = self.queue.current_index();
+        // What:     `let name = index.and_then(|i| self.queue.display_paths().into_iter().nth(i)).unwrap_or_else(|| file_name_of(path));`.
+        //           The track's DISPLAY PATH relative to the queue root (the same
+        //           string the list row shows, e.g. `r-906/diaLOG/06 V.flac`): index
+        //           `display_paths()` by the load-order index, falling back to the
+        //           bare filename if the index is somehow absent. `display_paths()` is
+        //           computed only when `index` is `Some` (lazily, inside the closure).
+        // Why:      The window title shows this name, so it must match the list row,
+        //           not just the filename. Still filesystem-derived (no embedded tags).
+        // TS map:   `const name = index != null ? displayPaths()[index] : fileNameOf(path);`
+        let name = index
+            .and_then(|i| self.queue.display_paths().into_iter().nth(i))
+            .unwrap_or_else(|| file_name_of(path));
         // What:     `self.emit(Update::NowPlaying { index, name, duration: spec.duration_secs });`.
         //           Tell the UI the new track.
         // Why:      Update the now-playing label and seek-bar maximum.

@@ -189,10 +189,11 @@ component VScrollBar inherits Rectangle {
 }
 
 export component AppWindow inherits Window {
-    // Window title: the playing track's filename while audio is playing, plain
-    // "Music Player" when paused or idle. Bound to `playing` + `track-name` (both
-    // pushed from Rust), so the taskbar / window-list entry shows the song only
-    // during active playback and reverts the moment it pauses.
+    // Window title: the playing track's list path (folder/.../file, the same string
+    // the queue row shows) while audio is playing, plain "Music Player" when paused
+    // or idle. Bound to `playing` + `track-name` (both pushed from Rust), so the
+    // taskbar / window-list entry shows the song only during active playback and
+    // reverts the moment it pauses.
     title: root.playing && root.track-name != "" ? root.track-name : "Music Player";
     preferred-width: 480px;
     preferred-height: 600px;

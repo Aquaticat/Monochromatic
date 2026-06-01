@@ -117,8 +117,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   across track changes, so there is no separate now-playing title. A single click on an unselected row selects
   it (Rust loads it paused, pausing whatever was playing); a click on the already-highlighted row toggles
   play/pause. "Double click to play" falls out for free (first click selects, second toggles to play), so no
-  real double-click handling is needed. The window title shows the playing track's filename while audio plays
-  and reverts to "Music Player" when paused or idle. The custom controls (radio group, checkbox, scrollbar, row highlight) take
+  real double-click handling is needed. The window title shows the playing track's list path (the same
+  `folder/.../file` string the queue row shows) while audio plays, and reverts to "Music Player" when paused. The custom controls (radio group, checkbox, scrollbar, row highlight) take
   their colours from the Slint system palette rather than hardcoded values, so they follow the OS accent colour
   and the light/dark theme: the highlighted row and the checked checkbox use the accent, the same as the active
   page tab's primary button.

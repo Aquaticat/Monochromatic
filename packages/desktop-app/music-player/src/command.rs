@@ -241,7 +241,9 @@ pub enum Update {
         //           is optional.
         // TS map:   `index: number | null`.
         index: Option<usize>,
-        /// Display filename of the current track.
+        /// Display path of the current track, relative to the queue root (the same
+        /// string the list row shows, e.g. `r-906/diaLOG/06 V.flac`), used for the
+        /// window title; falls back to the bare filename if the index is absent.
         name: String,
         // What:     `duration: f64` is the track length in SECONDS as an `f64`
         //           (64-bit IEEE double). Siblings the reader might expect:
