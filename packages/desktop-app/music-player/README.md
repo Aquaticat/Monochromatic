@@ -106,7 +106,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   `#` catch-all). Each tab shows one page; the tab bar wraps onto multiple rows to fit the window width (rather
   than scrolling horizontally). The tab bar and the list sit in one Flickable, so they scroll together (the tabs
   scroll away with the list rather than staying pinned), driven by a prominent custom scrollbar in a right-hand
-  gutter, since the default std-widgets scrollbar is a near-invisible hairline. Rows show each track's path
+  gutter, since the default std-widgets scrollbar is a near-invisible hairline. Scrolling is animated by the
+  Flickable itself: touchpad and touchscreen gestures fling with momentum, and mouse-wheel notches ease in over a
+  short duration rather than snapping. The wheel animation needs the pinned Slint 1.17 revision (it is absent from
+  the 1.16 releases); see `docs/troubleshooting/slint-flickable-smooth-scroll.md`. Rows show each track's path
   relative to the loaded root (so deeper nesting stays
   visible). The playing track is the highlighted row, and the view follows it across track changes, so there is
   no separate now-playing title. The custom controls (radio group, checkbox, scrollbar, row highlight) take
@@ -123,7 +126,10 @@ engine and the realtime callback share audio through a single-producer/single-co
 The host is an immutable-style Fedora without the PipeWire, Opus, and clang development headers, so all cargo work
 runs inside a Fedora container defined by `Containerfile`. The image carries the build toolchain and the GUI/audio
 runtime libraries; the `run` task passes the host Wayland, PipeWire, and D-Bus sockets and the DRI render node into
-the container so the window and audio reach the host session. The `run` task also uses `--userns=keep-id` so the
+the container so the window and audio reach the host session. The Rust toolchain comes from rustup (current stable),
+not Fedora's `rust` package, because the Slint dependency is pinned to a git master revision (1.17.0-dev) that needs
+rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
+`docs/troubleshooting/slint-flickable-smooth-scroll.md`. The `run` task also uses `--userns=keep-id` so the
 container runs under the host uid: the D-Bus session bus authenticates with SASL EXTERNAL, which checks the asserted
 uid against the socket peer credential, and the dark/light theme watcher and the portal file picker (both using
 zbus) are rejected otherwise. See `docs/troubleshooting/podman-dbus-external-keep-id.md`.

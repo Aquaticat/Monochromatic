@@ -6,8 +6,11 @@
 FROM registry.fedoraproject.org/fedora:41
 
 # Build toolchain:
-#   rust, cargo            Rust compiler + package manager
-#   clippy                 cargo-clippy linter (the lint:clippy task)
+#   rustup-installed stable  Rust compiler + cargo + clippy. NOT Fedora's `rust`
+#                          package: the Slint git pin in Cargo.toml is master
+#                          (1.17.0-dev) and requires rustc >= 1.92, while Fedora
+#                          41 ships 1.91.1. rustup gives the current stable
+#                          toolchain (see the rustup RUN below).
 #   gcc                    cc for building C dependencies (audiopus_sys)
 #   clang, clang-devel     libclang for bindgen used by pipewire's libspa-sys
 #   pkgconf-pkg-config     pkg-config used to locate libpipewire / libopus
@@ -23,7 +26,7 @@ FROM registry.fedoraproject.org/fedora:41
 #                          Japanese/Chinese/Korean filenames render as blanks.
 #   xdg-desktop-portal     rfd file picker over the portal (when D-Bus passed)
 RUN dnf install -y \
-      rust cargo clippy gcc \
+      gcc \
       clang clang-devel \
       pkgconf-pkg-config \
       pipewire-devel \
@@ -33,6 +36,20 @@ RUN dnf install -y \
       fontconfig fontconfig-devel freetype freetype-devel \
       google-noto-sans-cjk-fonts \
     && dnf clean all
+
+# Rust toolchain via rustup, not Fedora's `rust` package (1.91.1), because the
+# Slint git pin (master, 1.17.0-dev) requires rustc >= 1.92. RUSTUP_HOME holds
+# the toolchain and persists in the image. The install uses a throwaway
+# CARGO_HOME=/usr/local so the cargo/rustc/clippy proxy shims land in
+# /usr/local/bin (already on PATH, persistent in the image); the real CARGO_HOME
+# is set to /cargo below, a named volume that holds only the registry/git cache
+# at run time. If CARGO_HOME were /cargo here, the run-time volume mount would
+# shadow the proxies. `--profile minimal` plus the clippy component keeps the
+# layer small while still providing `cargo clippy`.
+ENV RUSTUP_HOME=/rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+      | env CARGO_HOME=/usr/local sh -s -- -y --no-modify-path --profile minimal \
+          --default-toolchain stable --component clippy
 
 ENV CARGO_HOME=/cargo
 # Enable Slint's experimental builtins so `FlexboxLayout` (used for the wrapping,

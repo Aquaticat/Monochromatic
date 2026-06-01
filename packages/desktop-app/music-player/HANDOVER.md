@@ -36,8 +36,15 @@ Approved plan: `/home/user/.claude/plans/build-a-music-player-frolicking-nebula.
 The host is an immutable-style Fedora (`/home` -> `var/home`) and the user refused host package installs
 (`pipewire-devel`, `opus-devel`, `clang` are absent). All cargo work runs inside a Fedora podman container.
 
-- `Containerfile` builds image `localhost/monochromatic/music-player` (fedora:41 + rust/cargo/gcc, clang+clang-devel for the
-  libspa-sys bindgen, pkgconf, pipewire-devel, opus-devel, and GUI runtime libs for `run`).
+- `Containerfile` builds image `localhost/monochromatic/music-player` (fedora:41 + rustup stable toolchain + gcc,
+  clang+clang-devel for the libspa-sys bindgen, pkgconf, pipewire-devel, opus-devel, and GUI runtime libs for `run`).
+  The Rust toolchain is rustup's current stable (rustc 1.96 at last rebuild), NOT Fedora's `rust` package (1.91.1):
+  the Slint dependency is pinned to a git master revision (1.17.0-dev) for smooth mouse-wheel scrolling
+  (slint-ui/slint#11338, unreleased; the latest release 1.16.1 predates it), and 1.17 requires rustc >= 1.92.
+  rustup installs the proxies into `/usr/local/bin` (CARGO_HOME=/usr/local during the install) so the run-time
+  `music-player-cargo:/cargo` volume does not shadow them; RUSTUP_HOME=/rustup holds the toolchain. Revert the pin
+  to a crates.io `version` once a Slint release including #11338 ships. See
+  `docs/troubleshooting/slint-flickable-smooth-scroll.md`.
 - `mise.toml` tasks wrap `podman run` (mount package dir at `/work`, cargo registry in named volume `music-player-cargo`,
   `--security-opt label=disable`): `image`, `build`, `build:debug`, `lint` (cargo check), `lint:clippy`, `test`,
   `run` (Wayland/PipeWire/D-Bus/DRI passthrough), `gen:fixtures` (host ffmpeg).
