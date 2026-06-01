@@ -391,7 +391,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 description = "Lint"
 run = [
   "mise '//packages/...:lint'",
-  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdownlint"] },
+  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdownlint", "lint:rust"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -438,9 +438,9 @@ if ($args | is-empty) {
 
 [tasks."lint:rust"]
 description = "Enforce the per-file code-line budget on .rs under packages/ (monochromatic-rust-linter)"
-# Standalone, not folded into the `lint` aggregate: pre-existing files are over
-# budget and splitting them is deliberate follow-up work, so the main lint must
-# not go red yet. Run explicitly, or per package via `:lint:max-lines`.
+# Part of the `lint` aggregate. Pre-existing over-budget files keep this red
+# until they are split; tracked in issue #235. Also runnable per package via
+# `:lint:max-lines`.
 run = "cargo run --quiet --manifest-path packages/linter/rust/Cargo.toml -- packages"
 
 #endregion Linting Tasks
