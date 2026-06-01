@@ -18,12 +18,15 @@ tool_call -> flagger (signals.ts, wide-net boolean predicates)
 
 Before resolving a judge model, auto-mode checks the current session branch for
 an earlier verdict with the same action text and approval fingerprint. The
-fingerprint hashes the tool name, current working directory, and full tool input,
-so a later write or edit to the same path with different content does not match.
-Only the fingerprint digest of the full input is stored; full write or edit
-payloads are not added to custom entries. Older verdict entries without an
-approval fingerprint fail closed: they are not reused, and the newest same-action
-unkeyed verdict prevents older fingerprinted approvals from being reused.
+fingerprint hashes the tool name, current working directory, and permission
+scope. For `read`, the scope is the path only, so a user approval for one
+`offset` or `limit` range also covers later reads of another range in the same
+file. For other tools, the scope is the full tool input, so a later write or
+edit to the same path with different content does not match. Only the
+fingerprint digest is stored; full write or edit payloads are not added to
+custom entries. Older verdict entries without an approval fingerprint fail
+closed: they are not reused, and the newest same-action unkeyed verdict prevents
+older fingerprinted approvals from being reused.
 
 If the latest matching verdict is `approve` or `user-approve`, auto-mode allows
 the action immediately and records a fresh `approve` verdict with the original

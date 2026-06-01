@@ -31,44 +31,31 @@ const APPROVAL_FINGERPRINT_HASH_ALGORITHM = 'sha256';
 const APPROVAL_FINGERPRINT_HASH_ENCODING = 'hex';
 
 /**
- * Build a stable fingerprint for exact same-session approval reuse.
- *
- * The fingerprint includes the tool name, current working directory, and full
- * tool input. Only the digest is stored in the session, so write or edit
- * payloads are compared without persisting their contents in custom entries.
- *
- * @param event - tool call event being guarded
- *
- * @param cwd - current extension working directory
- *
- * @returns SHA-256 digest for the guarded tool call
+ * Serializable identity that is hashed for approval reuse.
  *
  * @example
  * ```typescript
- * const fingerprint = buildApprovalFingerprint({ event, cwd: '/repo' });
+ * const identity: ApprovalFingerprintIdentity = {
+ *   cwd: '/repo',
+ *   input: { path: '.env' },
+ *   toolName: 'read',
+ * };
  * ```
  */
-function buildApprovalFingerprint(
-  {
-    event,
-    cwd,
-  }: {
-    readonly event: ToolCallEvent;
-    readonly cwd: string;
-  },
-): string {
+type ApprovalFingerprintIdentity = {
   /**
-   * Serialized call identity with canonical object key order.
+   * Working directory in which relative tool inputs are interpreted.
    */
-  const serializedCall = stableSerialize({
-    cwd,
-    input: event.input,
-    toolName: event.toolName,
-  },);
-  return createHash(APPROVAL_FINGERPRINT_HASH_ALGORITHM,)
-    .update(serializedCall,)
-    .digest(APPROVAL_FINGERPRINT_HASH_ENCODING,);
-}
+  readonly cwd: string;
+  /**
+   * Tool input fields that affect approval reuse.
+   */
+  readonly input: unknown;
+  /**
+   * Tool name receiving approval.
+   */
+  readonly toolName: string;
+};
 
 /**
  * Serialize JSON-compatible data with sorted object keys.
@@ -145,6 +132,100 @@ function stableSerialize(
       },)
       .join(',',)
   }}`;
+}
+
+/**
+ * Build approval identity from tool call fields that change permission scope.
+ *
+ * Read calls intentionally use only `path`, so a user approval for one segment
+ * of a file also covers later reads of another segment from the same path.
+ * Mutating tools keep full input, so changed write or edit content needs a new
+ * approval.
+ *
+ * @param event - tool call event being guarded
+ *
+ * @param cwd - current extension working directory
+ *
+ * @returns serializable call identity for approval reuse
+ *
+ * @example
+ * ```typescript
+ * const identity = buildApprovalFingerprintIdentity({ event, cwd: '/repo' });
+ * ```
+ */
+function buildApprovalFingerprintIdentity(
+  {
+    event,
+    cwd,
+  }: {
+    readonly event: ToolCallEvent;
+    readonly cwd: string;
+  },
+): ApprovalFingerprintIdentity {
+  if (isToolCallEventType(
+    'read',
+    event,
+  )) {
+    return {
+      cwd,
+      input: {
+        path: event.input
+          .path,
+      },
+      toolName: event.toolName,
+    };
+  }
+
+  return {
+    cwd,
+    input: event.input,
+    toolName: event.toolName,
+  };
+}
+
+/**
+ * Build a stable fingerprint for same-session approval reuse.
+ *
+ * The fingerprint includes the tool name and current working directory. Read
+ * calls include only the read path, ignoring `offset` and `limit`, so repeated
+ * reads of one file at different ranges reuse approval. Other tools include
+ * full tool input. Only the digest is stored in the session, so write or edit
+ * payloads are compared without persisting their contents in custom entries.
+ *
+ * @param event - tool call event being guarded
+ *
+ * @param cwd - current extension working directory
+ *
+ * @returns SHA-256 digest for the guarded tool call
+ *
+ * @example
+ * ```typescript
+ * const fingerprint = buildApprovalFingerprint({ event, cwd: '/repo' });
+ * ```
+ */
+function buildApprovalFingerprint(
+  {
+    event,
+    cwd,
+  }: {
+    readonly event: ToolCallEvent;
+    readonly cwd: string;
+  },
+): string {
+  /**
+   * Permission identity after per-tool normalization.
+   */
+  const fingerprintIdentity = buildApprovalFingerprintIdentity({
+    event,
+    cwd,
+  },);
+  /**
+   * Serialized call identity with canonical object key order.
+   */
+  const serializedCall = stableSerialize(fingerprintIdentity,);
+  return createHash(APPROVAL_FINGERPRINT_HASH_ALGORITHM,)
+    .update(serializedCall,)
+    .digest(APPROVAL_FINGERPRINT_HASH_ENCODING,);
 }
 
 /**

@@ -100,6 +100,59 @@ await describe({
     },),
 
     it({
+      name: 'returns same read fingerprint when line range changes',
+      fn: async function returnsSameReadFingerprintWhenLineRangeChanges(): Promise<void> {
+        /** Read event for an approved file range. */
+        const approvedEvent = toolCallEvent({
+          toolName: 'read',
+          input: {
+            path: '/repo/large.ts',
+            offset: 1,
+            limit: 100,
+          },
+        },);
+        /** Read event for another range in the same file. */
+        const laterRangeEvent = toolCallEvent({
+          toolName: 'read',
+          input: {
+            path: '/repo/large.ts',
+            offset: 301,
+            limit: 100,
+          },
+        },);
+
+        expect(buildApprovalFingerprint({ event: approvedEvent, cwd: TEST_CWD, },),)
+          .toBe(
+            buildApprovalFingerprint({ event: laterRangeEvent, cwd: TEST_CWD, },),
+          );
+      },
+    },),
+
+    it({
+      name: 'changes read fingerprint when path changes',
+      fn: async function changesReadFingerprintWhenPathChanges(): Promise<void> {
+        /** Read event for the approved file. */
+        const approvedEvent = toolCallEvent({
+          toolName: 'read',
+          input: { path: '/repo/large.ts', },
+        },);
+        /** Read event for a different file with the same range fields. */
+        const otherPathEvent = toolCallEvent({
+          toolName: 'read',
+          input: {
+            path: '/repo/other.ts',
+            offset: 1,
+            limit: 100,
+          },
+        },);
+
+        expect(buildApprovalFingerprint({ event: approvedEvent, cwd: TEST_CWD, },),)
+          .not
+          .toBe(buildApprovalFingerprint({ event: otherPathEvent, cwd: TEST_CWD, },),);
+      },
+    },),
+
+    it({
       name: 'changes fingerprint when write content changes',
       fn: async function changesFingerprintWhenWriteContentChanges(): Promise<void> {
         /** Write event whose content was approved. */
