@@ -22,8 +22,7 @@
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "nano-spawn": "catalog:",
-    "p-limit": "catalog:"
+    "nano-spawn": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

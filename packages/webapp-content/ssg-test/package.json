@@ -15,9 +15,7 @@
     "yaml": "catalog:",
     "nano-spawn": "catalog:",
     "rehype-autolink-headings": "catalog:",
-    "rehype-parse": "catalog:",
     "rehype-slug-custom-id": "catalog:",
-    "rehype-stringify": "catalog:",
     "remark-gfm": "catalog:",
     "remark-sectionize": "catalog:",
     "sharp": "catalog:",
@@ -25,7 +23,6 @@
     "wawoff2": "catalog:",
     "woff2-encode-wasm": "catalog:",
     "tiny-readdir-glob": "catalog:",
-    "unified": "catalog:",
     "valibot": "catalog:"
   },
   "devDependencies": {
