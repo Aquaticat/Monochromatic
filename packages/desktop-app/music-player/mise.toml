@@ -24,6 +24,13 @@ run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music
 description = "Run clippy with warnings denied inside the container"
 run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo clippy --release -- -D warnings"
 
+[tasks."lint:max-lines"]
+description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust-linter)"
+# Runs on the HOST, not in the container: the linter is a separate crate with
+# no pipewire/opus/clang deps, so it needs no container. .gitignore-aware
+# walking skips target/ (including Slint's generated .rs).
+run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
+
 [tasks.test]
 description = "cargo test inside the container"
 run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo test --release"
