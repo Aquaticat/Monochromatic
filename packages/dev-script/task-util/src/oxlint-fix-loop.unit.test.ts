@@ -158,6 +158,68 @@ const oracleC = dirtyOracle('C',);
 /** Clean oracle output: summary only, no diagnostic header. */
 const oracleClean = 'Found 0 warnings and 0 errors.';
 
+/**
+ * Builds a single diagnostic block (header plus source frame) for a label.
+ *
+ * @param label - distinguishes block content and target path
+ *
+ * @returns one diagnostic block, no summary or footer
+ *
+ * @example
+ * ```ts
+ * blockFor('A');
+ * ```
+ */
+function blockFor(label: string,): string {
+  return [
+    `  x stylistic(chain-per-line): boundary ${label}.`,
+    `    ,-[${label}.ts:1:1]`,
+    '  1 | code',
+    '    `----',
+  ].join('\n',);
+}
+
+/**
+ * Assembles two diagnostic blocks, a summary, and a timing footer.
+ *
+ * Models oxlint's multi-file output, whose block order and footer duration both
+ * vary run to run.
+ *
+ * @param first - first diagnostic block
+ *
+ * @param second - second diagnostic block
+ *
+ * @param ms - timing footer duration
+ *
+ * @returns combined stdout for two diagnostics
+ *
+ * @example
+ * ```ts
+ * twoBlockOutput({ first: blockFor('A'), second: blockFor('B'), ms: 5 });
+ * ```
+ */
+function twoBlockOutput(
+  {
+    first,
+    second,
+    ms,
+  }: {
+    readonly first: string;
+    readonly second: string;
+    readonly ms: number;
+  },
+): string {
+  return [
+    '',
+    first,
+    '',
+    second,
+    '',
+    'Found 0 warnings and 2 errors.',
+    `Finished in ${ms}ms on 2 files with 111 rules using 16 threads.`,
+  ].join('\n',);
+}
+
 await describe({
   name: '',
   children: [
@@ -165,16 +227,16 @@ await describe({
       name: normalizeForConvergence.name,
       children: [
         it({
-          name: 'drops the volatile Finished-in timing line',
+          name: 'drops the volatile Finished-in timing footer',
           fn: async () => {
             /** One run's stdout normalized; the timing footer must be gone. */
             const normalized = normalizeForConvergence(withTiming({ body: oneErrorBody, ms: 247, },),);
-            expect(normalized,)
-              .toBe(oneErrorBody,);
+            expect(normalized.includes('Finished in',),)
+              .toBe(false,);
           },
         },),
         it({
-          name: 'makes two runs differing only in timing compare equal',
+          name: 'is invariant to the timing footer duration',
           fn: async () => {
             /** Fast run's normalized stdout. */
             const fast = normalizeForConvergence(withTiming({ body: oneErrorBody, ms: 100, },),);
@@ -185,10 +247,35 @@ await describe({
           },
         },),
         it({
-          name: 'leaves diagnostics-only output untouched',
+          name: 'is invariant to diagnostic block order',
           fn: async () => {
-            expect(normalizeForConvergence(oneErrorBody,),)
-              .toBe(oneErrorBody,);
+            // The repo-scale failure: a multi-file run emits the same blocks in
+            // non-deterministic order, so order must not affect the canonical form.
+            /** Blocks emitted A-then-B. */
+            const forward = normalizeForConvergence(
+              twoBlockOutput({ first: blockFor('A',), second: blockFor('B',), ms: 5, },),
+            );
+            /** Same blocks emitted B-then-A with a different footer. */
+            const reversed = normalizeForConvergence(
+              twoBlockOutput({ first: blockFor('B',), second: blockFor('A',), ms: 9, },),
+            );
+            expect(forward,)
+              .toBe(reversed,);
+          },
+        },),
+        it({
+          name: 'distinguishes a changed diagnostic set',
+          fn: async () => {
+            /** Output with blocks A and B. */
+            const ab = normalizeForConvergence(
+              twoBlockOutput({ first: blockFor('A',), second: blockFor('B',), ms: 5, },),
+            );
+            /** Output with blocks A and C; C differs, so the canonical form must differ. */
+            const ac = normalizeForConvergence(
+              twoBlockOutput({ first: blockFor('A',), second: blockFor('C',), ms: 5, },),
+            );
+            expect(ab === ac,)
+              .toBe(false,);
           },
         },),
       ],
@@ -323,6 +410,34 @@ await describe({
           },
         },),
         it({
+          name: 'treats a reordered oracle as stable (repo-scale ordering noise)',
+          fn: async () => {
+            const fixes = [
+              makeResult({ exitCode: 1, },),
+              makeResult({ exitCode: 1, },),
+            ];
+            const lints = [
+              makeResult({
+                stdout: twoBlockOutput({ first: blockFor('A',), second: blockFor('B',), ms: 5, },),
+                exitCode: 1,
+              },),
+              makeResult({
+                stdout: twoBlockOutput({ first: blockFor('B',), second: blockFor('A',), ms: 9, },),
+                exitCode: 1,
+              },),
+            ];
+            const outcome = await fixUntilStable({
+              runFix: makeScriptedRun(fixes,),
+              runLint: makeScriptedRun(lints,),
+              maxPasses: MAX_AUTOFIX_PASSES,
+            },);
+            expect(outcome.passes,)
+              .toBe(2,);
+            expect(outcome.stopReason,)
+              .toBe('stable',);
+          },
+        },),
+        it({
           name: 'stops at the cap when the oracle keeps changing',
           fn: async () => {
             const fixes = [
@@ -348,6 +463,33 @@ await describe({
               .toBe(0,);
             expect(lints.length,)
               .toBe(0,);
+          },
+        },),
+        it({
+          name: 'detects a two-state oscillation and stops with cycle',
+          fn: async () => {
+            // The real-repo failure: --fix flips a file A -> B -> A -> ...,
+            // so the oracle never matches the immediately-previous pass but
+            // revisits an earlier state. Detect that instead of running to cap.
+            const fixes = [
+              makeResult({ exitCode: 1, },),
+              makeResult({ exitCode: 1, },),
+              makeResult({ exitCode: 1, },),
+            ];
+            const lints = [
+              makeResult({ stdout: oracleA, exitCode: 1, },),
+              makeResult({ stdout: oracleB, exitCode: 1, },),
+              makeResult({ stdout: oracleA, exitCode: 1, },),
+            ];
+            const outcome = await fixUntilStable({
+              runFix: makeScriptedRun(fixes,),
+              runLint: makeScriptedRun(lints,),
+              maxPasses: MAX_AUTOFIX_PASSES,
+            },);
+            expect(outcome.passes,)
+              .toBe(3,);
+            expect(outcome.stopReason,)
+              .toBe('cycle',);
           },
         },),
         it({

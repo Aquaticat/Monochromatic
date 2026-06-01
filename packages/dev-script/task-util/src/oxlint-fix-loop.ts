@@ -86,12 +86,16 @@ export type OxlintRunResult = {
  *   and no further `--fix` could change the file.
  * - `stable`: the oracle's normalized output stopped changing while diagnostics
  *   still remain (unfixable remainder; the file has reached a fixpoint).
+ * - `cycle`: the oracle returned to an earlier (non-immediate) state, so two or
+ *   more autofixes are flipping a file back and forth and it will never settle.
  * - `execution-error`: an oxlint run failed to execute or was signal-terminated.
- * - `cap`: {@link MAX_AUTOFIX_PASSES} reached while the oracle kept changing.
+ * - `cap`: {@link MAX_AUTOFIX_PASSES} reached while the oracle kept changing
+ *   without repeating a prior state (an unusually deep but progressing fix chain).
  */
 export type FixLoopStopReason =
   | 'clean'
   | 'stable'
+  | 'cycle'
   | 'execution-error'
   | 'cap';
 
@@ -125,24 +129,32 @@ export type FixLoopOutcome = {
 const TIMING_PREFIX = 'Finished in ';
 
 /**
- * Strips oxlint's volatile timing footer so two lints can be compared.
+ * Canonicalizes oxlint stdout into an order- and timing-invariant form.
  *
- * oxlint's `--format=default` output ends with a line like
- * `Finished in 247ms on 1 file with 111 rules using 16 threads.`; the duration
- * differs run to run, so a raw comparison never matches and the loop would
- * always run to {@link MAX_AUTOFIX_PASSES}. Dropping that line leaves the stable
- * diagnostics blocks and the `Found N warnings and M errors.` summary, which
- * change only when the linted file's violations change. ANSI is stripped
- * defensively even though piped oxlint emits none.
+ * Two sources of run-to-run noise would otherwise defeat the convergence
+ * comparison even when the linted files are unchanged:
+ *
+ * - The trailing `Finished in 247ms on 1 file with 111 rules using 16 threads.`
+ *   footer; its duration differs every run.
+ * - Diagnostic block order. Across a multi-file, multi-threaded run oxlint emits
+ *   the same set of blocks in a non-deterministic order (verified: two identical
+ *   no-fix lints of a 2531-file tree produced the same 41419 lines shuffled).
+ *
+ * So the timing line is dropped, the remaining output is split into
+ * blank-line-separated diagnostic blocks (oxlint never puts a blank line inside
+ * a block; a shown blank source line keeps its ` N | ` prefix), and the blocks
+ * are sorted. The result changes only when the set of diagnostics changes, which
+ * is exactly the fixpoint signal. ANSI is stripped defensively even though piped
+ * oxlint emits none.
  *
  * @param stdout - raw captured stdout from one `oxlint` run
  *
- * @returns stdout with timing line(s) removed
+ * @returns timing-free, block-sorted canonical form for equality comparison
  *
  * @example
  * ```ts
- * normalizeForConvergence('Found 0 warnings and 1 error.\nFinished in 5ms on 1 file ...');
- * // 'Found 0 warnings and 1 error.'
+ * normalizeForConvergence(runA.stdout) === normalizeForConvergence(runB.stdout);
+ * // true when A and B report the same diagnostics in any order
  * ```
  */
 export function normalizeForConvergence(stdout: string,): string {
@@ -153,7 +165,25 @@ export function normalizeForConvergence(stdout: string,): string {
         .trimStart()
         .startsWith(TIMING_PREFIX,);
     },)
-    .join('\n',);
+    .join('\n',)
+    .split('\n\n',)
+    .map(function trimBlock(block,): string {
+      return block.trim();
+    },)
+    .filter(function isNonEmptyBlock(block,): boolean {
+      return block.length > 0;
+    },)
+    .toSorted(function compareBlocks(
+      first,
+      second,
+    ): number {
+      if (first < second)
+        return -1;
+      if (first > second)
+        return 1;
+      return 0;
+    },)
+    .join('\n\n',);
 }
 
 /**
@@ -222,7 +252,9 @@ export type FixUntilStableOptions = {
  * read the true file state. The loop stops as soon as that oracle lint reports
  * zero diagnostics (nothing left for any fix to change), or its normalized
  * output matches the previous pass's oracle (a fixpoint with unfixable
- * diagnostics remaining), or an execution failure occurs, or the cap is hit.
+ * diagnostics remaining), or it matches a non-adjacent earlier pass (two fixes
+ * oscillating a file back and forth, which would never settle), or an execution
+ * failure occurs, or the cap is hit.
  * The returned (final) oracle result is what flows through the wrapper's
  * suppression and augmentation stages; the `--fix` passes exist only to apply
  * fixes.
@@ -261,6 +293,14 @@ export async function fixUntilStable(
 ): Promise<FixLoopOutcome> {
   if (maxPasses < 1)
     throw new RangeError(`maxPasses must be at least 1, received ${maxPasses}`,);
+
+  /**
+   * Every normalized oracle state seen so far; a repeat means a `--fix` cycle.
+   *
+   * Holds prior passes' states, not the immediately-previous one, so a
+   * non-adjacent repeat distinguishes an oscillation from a true fixpoint.
+   */
+  const seen = new Set<string>();
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-pass fix cursor must remember the prior pass's normalized oracle output across side-effecting --fix iterations */
   /**
@@ -325,6 +365,13 @@ export async function fixUntilStable(
         stopReason: 'stable',
       };
 
+    if (seen.has(normalized,))
+      return {
+        result: oracle,
+        passes: pass + 1,
+        stopReason: 'cycle',
+      };
+
     if (pass === (maxPasses - 1))
       return {
         result: oracle,
@@ -332,6 +379,7 @@ export async function fixUntilStable(
         stopReason: 'cap',
       };
 
+    seen.add(normalized,);
     previousOracle = normalized;
   }
 

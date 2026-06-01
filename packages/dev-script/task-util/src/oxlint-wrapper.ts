@@ -98,11 +98,11 @@ const FIX_FLAGS = new Set([
 /**
  * Whether the caller passed `--fix`, the documented multi-pass convergence case.
  *
- * Only `--fix` triggers the fixpoint loop. `--fix-suggestions` and
- * `--fix-dangerously` keep their single-pass behavior: the oracle lint is not
- * verified to track suggestion-applied changes, and "may change program
- * behavior" fixes should not be iterated silently. A plain lint run produces
- * identical output every pass, so it never loops.
+ * `--fix` alone is the loop trigger. `--fix-suggestions` or `--fix-dangerously`
+ * passed without `--fix` stay single-pass: the oracle lint is not verified to
+ * track suggestion-applied changes, and "may change program behavior" fixes
+ * should not be iterated on their own. A plain lint run produces identical
+ * output every pass, so it never loops.
  */
 const hasFixFlag = process.argv
   .slice(2,)
@@ -305,6 +305,10 @@ if (hasFixFlag) {
     },
     maxPasses: MAX_AUTOFIX_PASSES,
   },);
+  if (outcome.stopReason === 'cycle')
+    console.error(
+      `[task-oxlint] autofix oscillates between two states after ${outcome.passes} passes; two rules' fixes conflict, so this cannot converge. Fix the rule conflict or disable one rule's autofix.`,
+    );
   if (outcome.stopReason === 'cap')
     console.error(
       `[task-oxlint] reached ${MAX_AUTOFIX_PASSES} autofix passes without converging; remaining diagnostics may be incomplete`,
