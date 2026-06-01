@@ -1,66 +1,49 @@
 # pi-statusline
 
-Pi extension that adds one footer status: Anthropic rate-limit usage warnings.
+Pi extension that adds one footer status: projected provider usage overflow warnings.
 
-It ports only the warning behavior from `packages/claude-code-plugins/statusline`:
-when remaining capacity is low, or recent burn rate projects past the reset point,
-Pi shows a compact status segment.
+It ports only the projected-overflow warning behavior from `packages/claude-code-plugins/statusline`.
+Comfortable usage and low remaining capacity render nothing.
 
 ## What it displays
 
-Comfortable usage renders nothing.
+No projected overflow renders nothing.
 No news is good news.
 
-Low remaining capacity renders a remaining-capacity warning:
+Projected overflow renders the extrapolated end-of-window usage:
 
 ```text
-tokens 40% left (3h)
+codex 5h →150% (4h)
 ```
 
-Projected overflow appends the extrapolated end-of-window usage:
-
-```text
-tokens 60% left →120% (40s)
-```
-
-The `→120%` marker means current used percentage, elapsed window time, and reset time imply that
+The `→150%` marker means current used percentage, elapsed window time, and reset time imply that
 continued burn rate will exceed available capacity before the limiter replenishes.
 
-Multiple constrained limiters are joined with a centered dot:
+Multiple overflowing windows are joined with a centered dot:
 
 ```text
-input 20% left (45s) · output 8% left (2m)
+anthropic tokens →120% (40s) · synthetic search →120% (30m)
 ```
 
-## How it works
+## Supported sources
 
 Pi exposes provider response headers through the `after_provider_response` event.
-The extension reads Anthropic rate-limit headers, including:
+The extension reads projectable usage windows from these sources:
 
-- `anthropic-ratelimit-tokens-limit`
-- `anthropic-ratelimit-tokens-remaining`
-- `anthropic-ratelimit-tokens-reset`
-- matching input-token, output-token, unified-token, and Priority Tier headers
+- Anthropic token limit headers, such as `anthropic-ratelimit-tokens-limit`,
+  `anthropic-ratelimit-tokens-remaining`, and `anthropic-ratelimit-tokens-reset`.
+- OpenAI Codex subscription headers, matching Codex CLI's `x-codex-primary-used-percent`,
+  `x-codex-primary-window-minutes`, and `x-codex-primary-reset-at` families.
+- Synthetic.new quota headers from `@aliou/pi-synthetic`, via `x-synthetic-quotas`.
 
-For each complete header group, the extension calculates remaining percentage.
-It renders when either condition is true:
-
-- remaining capacity is 50% or lower
-- sampled burn rate projects above 100% before the reset time
-
-Projection mirrors the Claude Code statusline formatter: it derives elapsed time from a fixed window and reset time,
-then extrapolates current used percentage over the full window.
-Claude Code provides `used_percentage` for fixed five-hour and seven-day windows.
-Pi exposes Anthropic provider headers instead, and Anthropic token limiters are per-minute limits,
-so this extension applies the same projection to a 60 second token window.
+The extension skips quota windows that do not expose enough data for projection.
+For Synthetic.new, that means `rollingFiveHourLimit` and legacy `subscription` data are ignored because
+`@aliou/pi-synthetic` does not model them as pace-projectable windows.
+It does not show status for low remaining capacity by itself.
 
 ## Colors
 
-The warning uses Pi theme colors:
-
-- success: 26% to 50% remaining
-- warning: 11% to 25% remaining
-- error: 10% or less remaining, or any projected overflow
+Projected overflow uses Pi theme `error` color.
 
 ## Installation
 

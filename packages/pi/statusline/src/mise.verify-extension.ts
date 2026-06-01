@@ -35,9 +35,9 @@ const EXPECTED_STATUS_KEY = 'pi-statusline.usage';
 const NOW_MS = Date.parse('2026-06-01T12:00:00Z',);
 
 /**
- * Milliseconds in three hours for reset fixture.
+ * Milliseconds in forty seconds for projected-overflow fixture.
  */
-const THREE_HOURS_MS = 10_800_000;
+const FORTY_SECONDS_MS = 40_000;
 
 //endregion Constants
 
@@ -118,7 +118,7 @@ function freezeDateNow(nowMs: number,): DateNowRestore {
 /**
  * Creates Anthropic token rate-limit headers for verification.
  *
- * @returns deterministic low-remaining token header group
+ * @returns deterministic projected-overflow token header group
  *
  * @example
  * ```ts
@@ -128,8 +128,8 @@ function freezeDateNow(nowMs: number,): DateNowRestore {
 function verificationHeaders(): Record<string, string> {
   return {
     'anthropic-ratelimit-tokens-limit': '100',
-    'anthropic-ratelimit-tokens-remaining': '40',
-    'anthropic-ratelimit-tokens-reset': new Date(NOW_MS + THREE_HOURS_MS,).toISOString(),
+    'anthropic-ratelimit-tokens-remaining': '60',
+    'anthropic-ratelimit-tokens-reset': new Date(NOW_MS + FORTY_SECONDS_MS,).toISOString(),
   };
 }
 
@@ -202,13 +202,13 @@ async function verifyBuiltExtension(): Promise<string> {
    * Captured footer status text.
    */
   const status = statuses.get(EXPECTED_STATUS_KEY,);
-  if (status !== 'tokens <success>40% left</success> (3h)') {
+  if (status !== 'anthropic tokens <error>→120%</error> (40s)') {
     throw new Error(
       `unexpected pi-statusline status: ${String(status,)}`,
     );
   }
 
-  return 'pi-statusline extension verified: event:after_provider_response, tokens 40% left (3h)';
+  return 'pi-statusline extension verified: event:after_provider_response, anthropic tokens →120% (40s)';
 }
 
 //endregion Verification

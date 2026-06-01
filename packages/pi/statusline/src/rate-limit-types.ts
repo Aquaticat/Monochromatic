@@ -1,5 +1,5 @@
 /**
- * Shared rate-limit warning types and thresholds.
+ * Shared projected-overflow warning types and thresholds.
  *
  * @module
  */
@@ -7,7 +7,7 @@
 //region Numeric constants
 
 /**
- * Percentage scale used by Anthropic usage math.
+ * Percentage scale used by provider usage math.
  */
 const PERCENT_BASE = 100;
 
@@ -40,19 +40,14 @@ const SECONDS_PER_HOUR = 3_600;
 const SECONDS_PER_DAY = 86_400;
 
 /**
- * Remaining-capacity cutoff where a rate-limit segment becomes visible.
+ * Days in one week.
  */
-const RATE_LIMIT_REMAINING_THRESHOLD = 50;
+const DAYS_PER_WEEK = 7;
 
 /**
- * Remaining-capacity cutoff where warning color starts.
+ * Seconds in one week.
  */
-const CAUTION_REMAINING_THRESHOLD = 25;
-
-/**
- * Remaining-capacity cutoff where critical color starts.
- */
-const CRITICAL_REMAINING_THRESHOLD = 10;
+const SECONDS_PER_WEEK: number = DAYS_PER_WEEK * SECONDS_PER_DAY;
 
 /**
  * Projected usage cutoff where the extension warns about overflow.
@@ -79,15 +74,15 @@ const MIN_PROJECTION_ELAPSED_SECONDS = 1;
 //region Types
 
 /**
- * Header group describing one Anthropic rate limiter.
+ * Header group describing one Anthropic token rate limiter.
  */
 type RateLimitHeaderFamily = {
   /**
-   * Stable key for matching samples across provider responses.
+   * Stable key for the limiter family.
    */
   readonly key: string;
   /**
-   * Short footer label shown before the warning text.
+   * Short footer label shown before the projected warning text.
    */
   readonly label: string;
   /**
@@ -109,25 +104,17 @@ type RateLimitHeaderFamily = {
 };
 
 /**
- * Parsed limiter state sampled from one provider response.
+ * Parsed provider usage window sampled from one provider response.
  */
 type RateLimitSnapshot = {
   /**
-   * Stable key from {@link RateLimitHeaderFamily.key}.
+   * Stable key for this sampled window.
    */
   readonly key: string;
   /**
-   * Short footer label from {@link RateLimitHeaderFamily.label}.
+   * Short footer label shown before the projected warning text.
    */
   readonly label: string;
-  /**
-   * Limiter capacity parsed from the `*-limit` header.
-   */
-  readonly limit: number;
-  /**
-   * Remaining capacity clamped between zero and {@link limit}.
-   */
-  readonly remaining: number;
   /**
    * Reset timestamp in Unix epoch milliseconds.
    */
@@ -137,17 +124,17 @@ type RateLimitSnapshot = {
    */
   readonly windowSeconds: number;
   /**
+   * Optional elapsed-pace multiplier for providers whose quota window regenerates fractionally.
+   */
+  readonly paceScale: number;
+  /**
    * Wall-clock sample time in Unix epoch milliseconds.
    */
   readonly sampledAtMs: number;
   /**
-   * Used capacity as a percentage of {@link limit}.
+   * Used capacity as a percentage of capacity.
    */
   readonly usedPercent: number;
-  /**
-   * Remaining capacity as a floored whole percentage.
-   */
-  readonly remainingPercent: number;
 };
 
 /**
@@ -155,17 +142,9 @@ type RateLimitSnapshot = {
  */
 type UsageWarningStyle = {
   /**
-   * Style for visible but non-critical remaining-capacity warnings.
+   * Style for projected-overflow warnings.
    */
-  readonly healthy: (text: string,) => string;
-  /**
-   * Style for low remaining-capacity warnings.
-   */
-  readonly caution: (text: string,) => string;
-  /**
-   * Style for critical or projected-overflow warnings.
-   */
-  readonly critical: (text: string,) => string;
+  readonly overflow: (text: string,) => string;
 };
 
 /**
@@ -202,27 +181,23 @@ function identityStyle(text: string,): string {
  * Style object used by tests and non-UI execution paths.
  */
 const PLAIN_USAGE_WARNING_STYLE: UsageWarningStyle = {
-  healthy: identityStyle,
-  caution: identityStyle,
-  critical: identityStyle,
+  overflow: identityStyle,
 };
 
 //endregion Plain style
 
 export {
-  CAUTION_REMAINING_THRESHOLD,
-  CRITICAL_REMAINING_THRESHOLD,
   MILLISECONDS_PER_SECOND,
   MIN_PROJECTION_ELAPSED_SECONDS,
   MIN_USAGE_PERCENT_FOR_PROJECTION,
   PERCENT_BASE,
   PLAIN_USAGE_WARNING_STYLE,
   PROJECTED_OVERFLOW_THRESHOLD,
-  RATE_LIMIT_REMAINING_THRESHOLD,
   RATE_LIMIT_WINDOW_SECONDS,
   SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
+  SECONDS_PER_WEEK,
 };
 export type {
   RateLimitHeaderFamily,

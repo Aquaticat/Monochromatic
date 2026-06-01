@@ -1,7 +1,7 @@
 /**
  * Pi statusline extension entry point.
  *
- * Adds one footer status segment for Anthropic rate-limit usage warnings.
+ * Adds one footer status segment for projected provider usage overflow warnings.
  *
  * @module
  */
@@ -51,19 +51,7 @@ function styleFromContext(ctx: ExtensionContext,): UsageWarningStyle {
   const { theme, } = ctx.ui;
 
   return {
-    healthy: function healthy(text: string,): string {
-      return theme.fg(
-        'success',
-        text,
-      );
-    },
-    caution: function caution(text: string,): string {
-      return theme.fg(
-        'warning',
-        text,
-      );
-    },
-    critical: function critical(text: string,): string {
+    overflow: function overflow(text: string,): string {
       return theme.fg(
         'error',
         text,
@@ -81,7 +69,7 @@ function styleFromContext(ctx: ExtensionContext,): UsageWarningStyle {
  *
  * @example
  * ```ts
- * setUsageStatus({ ctx, statusText: 'tokens 40% left' });
+ * setUsageStatus({ ctx, statusText: 'codex 5h →180%' });
  * ```
  */
 function setUsageStatus({
@@ -146,8 +134,8 @@ function clearStatus({
 /**
  * Pi statusline extension.
  *
- * Subscribes to provider responses, samples Anthropic rate-limit headers, and
- * renders only the usage warning portion ported from the Claude Code statusline.
+ * Subscribes to provider responses, samples supported provider usage headers, and
+ * renders only the projected-overflow warning portion ported from the Claude Code statusline.
  *
  * @param pi - Pi extension API
  *

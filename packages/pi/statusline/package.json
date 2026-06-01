@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic-dev/pi-statusline",
-  "description": "Pi footer status extension that warns when Anthropic rate-limit usage is projected to overflow",
+  "description": "Pi footer status extension that warns when provider usage is projected to overflow",
   "type": "module",
   "private": true,
   "version": "0.0.1",

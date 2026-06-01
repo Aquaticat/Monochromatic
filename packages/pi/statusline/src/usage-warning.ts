@@ -1,18 +1,15 @@
 /**
- * Rate-limit warning projection and footer formatting.
+ * Projected-overflow warning projection and footer formatting.
  *
  * @module
  */
 
 import { parseRateLimitSnapshots, } from './rate-limit-headers.ts';
 import {
-  CAUTION_REMAINING_THRESHOLD,
-  CRITICAL_REMAINING_THRESHOLD,
   MILLISECONDS_PER_SECOND,
   MIN_PROJECTION_ELAPSED_SECONDS,
   MIN_USAGE_PERCENT_FOR_PROJECTION,
   PROJECTED_OVERFLOW_THRESHOLD,
-  RATE_LIMIT_REMAINING_THRESHOLD,
   SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
@@ -85,11 +82,11 @@ function formatRelativeTime({
 /**
  * Projects usage at fixed window end from current used percentage and reset time.
  *
- * This mirrors the Claude Code statusline `formatRateLimit` projection:
- * recover elapsed window time as `windowSeconds - secondsUntilReset`, then
- * extrapolate current used percentage over the full window. Anthropic token
- * response headers are per-minute limiters, so each parsed snapshot carries a
- * 60 second window.
+ * This mirrors the Claude Code statusline projection: recover elapsed window
+ * time as `windowSeconds - secondsUntilReset`, then extrapolate current used
+ * percentage over the full window. Providers that expose fractional quota
+ * regeneration, such as Synthetic weekly credits, set `paceScale` to normalize
+ * elapsed pace before projection.
  *
  * @param snapshot - current limiter sample
  *
@@ -110,20 +107,26 @@ function projectUsagePercent({
   nowMs: number;
 }>,): number {
   /**
-   * Seconds until provider reports the limiter as fully replenished.
+   * Seconds until provider reports the usage window as reset or replenished.
    */
   const secondsUntilReset = (snapshot.resetAtMs - nowMs) / MILLISECONDS_PER_SECOND;
   /**
    * Elapsed seconds recovered from fixed limiter window and reset timestamp.
    */
   const elapsedSeconds = snapshot.windowSeconds - secondsUntilReset;
+  /**
+   * Elapsed seconds after provider-specific pace normalization.
+   */
+  const effectiveElapsedSeconds = elapsedSeconds * snapshot.paceScale;
 
   if (elapsedSeconds < MIN_PROJECTION_ELAPSED_SECONDS)
+    return 0;
+  if (effectiveElapsedSeconds <= 0)
     return 0;
   if (snapshot.usedPercent < MIN_USAGE_PERCENT_FOR_PROJECTION)
     return 0;
 
-  return (snapshot.usedPercent / elapsedSeconds) * snapshot.windowSeconds;
+  return (snapshot.usedPercent / effectiveElapsedSeconds) * snapshot.windowSeconds;
 }
 
 //endregion Projection
@@ -131,65 +134,23 @@ function projectUsagePercent({
 //region Segment formatting
 
 /**
- * Chooses warning style for remaining capacity and projection state.
- *
- * @param remainingPercent - floored remaining capacity percentage
- *
- * @param isProjectedOverflow - whether projected usage exceeds capacity
- *
- * @param style - theme style hooks
- *
- * @returns style function for warning text
- *
- * @example
- * ```ts
- * warningStyleFor({ remainingPercent: 12, isProjectedOverflow: false, style });
- * ```
- */
-function warningStyleFor({
-  remainingPercent,
-  isProjectedOverflow,
-  style,
-}: Readonly<{
-  remainingPercent: number;
-  isProjectedOverflow: boolean;
-  style: UsageWarningStyle;
-}>,): (text: string,) => string {
-  if (isProjectedOverflow || (remainingPercent <= CRITICAL_REMAINING_THRESHOLD))
-    return style.critical;
-  if (remainingPercent <= CAUTION_REMAINING_THRESHOLD)
-    return style.caution;
-  return style.healthy;
-}
-
-/**
- * Formats projected-overflow suffix.
- *
- * @param isProjectedOverflow - whether projection should be shown
+ * Formats projected-overflow marker.
  *
  * @param projectedPercent - projected used percentage
  *
- * @returns overflow suffix, or empty string when projection is hidden
+ * @returns overflow marker like `→120%`
  *
  * @example
  * ```ts
- * formatProjectionMarker({ isProjectedOverflow: true, projectedPercent: 120 });
+ * formatProjectionMarker(120);
  * ```
  */
-function formatProjectionMarker({
-  isProjectedOverflow,
-  projectedPercent,
-}: Readonly<{
-  isProjectedOverflow: boolean;
-  projectedPercent: number;
-}>,): string {
-  return isProjectedOverflow
-    ? ` →${Math.floor(projectedPercent,)}%`
-    : '';
+function formatProjectionMarker(projectedPercent: number,): string {
+  return `→${Math.floor(projectedPercent,)}%`;
 }
 
 /**
- * Formats one limiter segment.
+ * Formats one projected-overflow segment.
  *
  * @param snapshot - current limiter sample
  *
@@ -197,7 +158,7 @@ function formatProjectionMarker({
  *
  * @param style - theme style hooks
  *
- * @returns footer segment, or empty string when no warning should render
+ * @returns footer segment, or empty string when projection does not overflow
  *
  * @example
  * ```ts
@@ -220,40 +181,23 @@ function formatUsageWarningSegment({
     snapshot,
     nowMs,
   },);
-  /**
-   * Whether projection exceeds available capacity.
-   */
-  const isProjectedOverflow = projectedPercent > PROJECTED_OVERFLOW_THRESHOLD;
 
-  if ((snapshot.remainingPercent > RATE_LIMIT_REMAINING_THRESHOLD) && (!isProjectedOverflow))
+  if (projectedPercent <= PROJECTED_OVERFLOW_THRESHOLD)
     return '';
 
   /**
-   * Style function selected for the warning severity.
+   * Projected-overflow annotation.
    */
-  const color = warningStyleFor({
-    remainingPercent: snapshot.remainingPercent,
-    isProjectedOverflow,
-    style,
-  },);
+  const projectionMarker = formatProjectionMarker(projectedPercent,);
   /**
-   * Optional projected-overflow annotation.
-   */
-  const projectionMarker = formatProjectionMarker({
-    isProjectedOverflow,
-    projectedPercent,
-  },);
-  /**
-   * Human-readable duration until this limiter resets.
+   * Human-readable duration until this usage window resets or replenishes.
    */
   const timeLeft = formatRelativeTime({
     resetAtMs: snapshot.resetAtMs,
     nowMs,
   },);
 
-  return `${snapshot.label} ${
-    color(`${snapshot.remainingPercent}% left${projectionMarker}`,)
-  } (${timeLeft})`;
+  return `${snapshot.label} ${style.overflow(projectionMarker,)} (${timeLeft})`;
 }
 
 /**
@@ -265,7 +209,7 @@ function formatUsageWarningSegment({
  *
  * @example
  * ```ts
- * isNonEmptySegment('tokens 40% left');
+ * isNonEmptySegment('tokens →120%');
  * ```
  */
 function isNonEmptySegment(segment: string,): boolean {
@@ -285,7 +229,7 @@ function isNonEmptySegment(segment: string,): boolean {
  *
  * @param style - theme style hooks
  *
- * @returns status text for visible warnings
+ * @returns status text for projected-overflow warnings
  *
  * @example
  * ```ts
@@ -309,7 +253,7 @@ function formatUsageWarningStatus({
     nowMs,
   },);
   /**
-   * Formatted warning segments that should appear in the footer.
+   * Formatted projected-overflow segments that should appear in the footer.
    */
   const segments = snapshots
     .map(function formatSnapshot(snapshot,): string {

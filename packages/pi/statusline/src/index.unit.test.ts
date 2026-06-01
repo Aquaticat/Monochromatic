@@ -14,7 +14,7 @@ import {
 } from './pi-test-harness.ts';
 
 const NOW_MS = Date.parse('2026-06-01T12:00:00Z',);
-const HOUR_MS = 3_600_000;
+const SECOND_MS = 1_000;
 
 function tokenHeaders({
   limit,
@@ -70,7 +70,7 @@ await describe({
       },
     },),
     it({
-      name: 'sets themed status for low remaining usage',
+      name: 'sets themed status for projected overflow usage',
       fn: async function testSetsWarningStatus() {
         await withFrozenNow(async function runWithFrozenNow() {
           const harness = fakePiApi();
@@ -80,12 +80,12 @@ await describe({
           const handler = getAfterProviderResponseHandler(harness.afterProviderResponseHandlers,);
           await handler(
             createAfterProviderResponseEvent(
-              tokenHeaders({ limit: 100, remaining: 40, resetOffsetMs: 3 * HOUR_MS, },),
+              tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
             ),
             ctx,
           );
 
-          expect(statuses.get(STATUS_KEY,),).toBe('tokens <success>40% left</success> (3h)',);
+          expect(statuses.get(STATUS_KEY,),).toBe('anthropic tokens <error>→120%</error> (40s)',);
         },);
       },
     },),
@@ -100,13 +100,13 @@ await describe({
           const handler = getAfterProviderResponseHandler(harness.afterProviderResponseHandlers,);
           await handler(
             createAfterProviderResponseEvent(
-              tokenHeaders({ limit: 100, remaining: 40, resetOffsetMs: 3 * HOUR_MS, },),
+              tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
             ),
             ctx,
           );
           await handler(
             createAfterProviderResponseEvent(
-              tokenHeaders({ limit: 100, remaining: 90, resetOffsetMs: 3 * HOUR_MS, },),
+              tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: 10 * SECOND_MS, },),
             ),
             ctx,
           );
@@ -126,7 +126,7 @@ await describe({
           const handler = getAfterProviderResponseHandler(harness.afterProviderResponseHandlers,);
           await handler(
             createAfterProviderResponseEvent(
-              tokenHeaders({ limit: 100, remaining: 40, resetOffsetMs: 3 * HOUR_MS, },),
+              tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
             ),
             ctx,
           );
@@ -136,8 +136,8 @@ await describe({
       },
     },),
     it({
-      name: 'clears sampled state on session start',
-      fn: async function testSessionStartClearsState() {
+      name: 'clears status on session start',
+      fn: async function testSessionStartClearsStatus() {
         await withFrozenNow(async function runWithFrozenNow() {
           const harness = fakePiApi();
           const { ctx, statuses, } = createExtensionContext();
@@ -146,7 +146,7 @@ await describe({
           const responseHandler = getAfterProviderResponseHandler(harness.afterProviderResponseHandlers,);
           await responseHandler(
             createAfterProviderResponseEvent(
-              tokenHeaders({ limit: 100, remaining: 40, resetOffsetMs: 3 * HOUR_MS, },),
+              tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
             ),
             ctx,
           );

@@ -27,6 +27,10 @@ function resetAt(offsetMs: number,): string {
   return new Date(NOW_MS + offsetMs,).toISOString();
 }
 
+function resetAtEpochSeconds(offsetMs: number,): string {
+  return String((NOW_MS + offsetMs) / SECOND_MS,);
+}
+
 function tokenHeaders({
   limit,
   remaining,
@@ -43,19 +47,25 @@ function tokenHeaders({
   };
 }
 
-function inputHeaders({
-  limit,
-  remaining,
+function codexHeaders({
+  usedPercent,
+  windowMinutes,
   resetOffsetMs,
 }: Readonly<{
-  limit: number;
-  remaining: number;
+  usedPercent: number;
+  windowMinutes: number;
   resetOffsetMs: number;
 }>): Record<string, string> {
   return {
-    'anthropic-ratelimit-input-tokens-limit': String(limit,),
-    'anthropic-ratelimit-input-tokens-remaining': String(remaining,),
-    'anthropic-ratelimit-input-tokens-reset': resetAt(resetOffsetMs,),
+    'x-codex-primary-used-percent': String(usedPercent,),
+    'x-codex-primary-window-minutes': String(windowMinutes,),
+    'x-codex-primary-reset-at': resetAtEpochSeconds(resetOffsetMs,),
+  };
+}
+
+function syntheticQuotasHeader(quotas: unknown,): Record<string, string> {
+  return {
+    'x-synthetic-quotas': JSON.stringify(quotas,),
   };
 }
 
@@ -74,13 +84,7 @@ function firstSnapshot(headers: Readonly<Record<string, string>>,): RateLimitSna
 }
 
 const ANGLE_STYLE: UsageWarningStyle = {
-  healthy: function healthy(text: string,): string {
-    return `<success>${text}</success>`;
-  },
-  caution: function caution(text: string,): string {
-    return `<warning>${text}</warning>`;
-  },
-  critical: function critical(text: string,): string {
+  overflow: function overflow(text: string,): string {
     return `<error>${text}</error>`;
   },
 };
@@ -112,21 +116,104 @@ await describe({
       name: parseRateLimitSnapshots.name,
       children: [
         it({
-          name: 'parses headers case-insensitively and clamps rounded remaining capacity',
-          fn: async function testParseSnapshots() {
+          name: 'parses Anthropic headers case-insensitively',
+          fn: async function testAnthropicSnapshots() {
             const snapshots = parseRateLimitSnapshots({
               headers: {
                 'Anthropic-Ratelimit-Tokens-Limit': '100',
-                'Anthropic-Ratelimit-Tokens-Remaining': '150',
-                'Anthropic-Ratelimit-Tokens-Reset': resetAt(HOUR_MS,),
+                'Anthropic-Ratelimit-Tokens-Remaining': '25',
+                'Anthropic-Ratelimit-Tokens-Reset': resetAt(40 * SECOND_MS,),
               },
               nowMs: NOW_MS,
             },);
 
             expect(snapshots.length,).toBe(1,);
-            expect(snapshots[0]?.remaining,).toBe(100,);
-            expect(snapshots[0]?.remainingPercent,).toBe(100,);
+            expect(snapshots[0]?.label,).toBe('anthropic tokens',);
+            expect(snapshots[0]?.usedPercent,).toBe(75,);
             expect(snapshots[0]?.windowSeconds,).toBe(RATE_LIMIT_WINDOW_SECONDS,);
+          },
+        },),
+        it({
+          name: 'parses Codex subscription headers',
+          fn: async function testCodexSnapshots() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: codexHeaders({
+                usedPercent: 30,
+                windowMinutes: 300,
+                resetOffsetMs: 4 * HOUR_MS,
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.label,).toBe('codex 5h',);
+            expect(snapshots[0]?.usedPercent,).toBe(30,);
+          },
+        },),
+        it({
+          name: 'parses Codex secondary and dynamic limit headers',
+          fn: async function testCodexDynamicSnapshots() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: {
+                'x-codex-secondary-used-percent': '40',
+                'x-codex-secondary-window-minutes': '300',
+                'x-codex-secondary-reset-at': resetAtEpochSeconds(4 * HOUR_MS,),
+                'x-codex-bengalfox-primary-used-percent': '30',
+                'x-codex-bengalfox-primary-window-minutes': '300',
+                'x-codex-bengalfox-primary-reset-at': resetAtEpochSeconds(4 * HOUR_MS,),
+                'x-codex-bengalfox-limit-name': 'gpt-5.2-codex-sonic',
+              },
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(2,);
+            expect(snapshots[0]?.label,).toBe('codex 5h secondary',);
+            expect(snapshots[1]?.label,).toBe('gpt-5.2-codex-sonic 5h',);
+          },
+        },),
+        it({
+          name: 'skips Synthetic quota windows that are not pace-projectable',
+          fn: async function testSyntheticUnsupportedWindows() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                rollingFiveHourLimit: {
+                  nextTickAt: resetAt(30 * MINUTE_MS,),
+                  tickPercent: 0.1,
+                  remaining: 5,
+                  max: 100,
+                  limited: false,
+                },
+                subscription: {
+                  limit: 100,
+                  requests: 95,
+                  renewsAt: resetAt(2 * HOUR_MS,),
+                },
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(0,);
+          },
+        },),
+        it({
+          name: 'parses Synthetic quotas header',
+          fn: async function testSyntheticSnapshots() {
+            const snapshots = parseRateLimitSnapshots({
+              headers: syntheticQuotasHeader({
+                search: {
+                  hourly: {
+                    limit: 100,
+                    requests: 60,
+                    renewsAt: resetAt(30 * MINUTE_MS,),
+                  },
+                },
+              },),
+              nowMs: NOW_MS,
+            },);
+
+            expect(snapshots.length,).toBe(1,);
+            expect(snapshots[0]?.label,).toBe('synthetic search',);
+            expect(snapshots[0]?.usedPercent,).toBe(60,);
           },
         },),
         it({
@@ -181,10 +268,10 @@ await describe({
       name: formatUsageWarningSegment.name,
       children: [
         it({
-          name: 'hides comfortable capacity without projected overflow',
-          fn: async function testComfortableHidden() {
+          name: 'hides low remaining capacity when projection stays within the window',
+          fn: async function testLowRemainingHidden() {
             const snapshot = firstSnapshot(
-              tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: HOUR_MS, },),
+              tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: 10 * SECOND_MS, },),
             );
 
             expect(formatUsageWarningSegment({
@@ -195,25 +282,17 @@ await describe({
           },
         },),
         it({
-          name: 'formats low remaining capacity with severity colors',
-          fn: async function testRemainingWarnings() {
-            const caution = firstSnapshot(
-              tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: HOUR_MS, },),
-            );
-            const critical = firstSnapshot(
-              tokenHeaders({ limit: 100, remaining: 8, resetOffsetMs: HOUR_MS, },),
+          name: 'formats projected overflow with overflow color',
+          fn: async function testOverflowWarning() {
+            const snapshot = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
             );
 
             expect(formatUsageWarningSegment({
-              snapshot: caution,
+              snapshot,
               nowMs: NOW_MS,
               style: ANGLE_STYLE,
-            },),).toBe('tokens <warning>20% left</warning> (1h)',);
-            expect(formatUsageWarningSegment({
-              snapshot: critical,
-              nowMs: NOW_MS,
-              style: ANGLE_STYLE,
-            },),).toBe('tokens <error>8% left</error> (1h)',);
+            },),).toBe('anthropic tokens <error>→120%</error> (40s)',);
           },
         },),
       ],
@@ -222,37 +301,81 @@ await describe({
       name: formatUsageWarningStatus.name,
       children: [
         it({
-          name: 'renders projected overflow even above remaining threshold',
-          fn: async function testProjectedOverflowStatus() {
+          name: 'renders Codex projected overflow',
+          fn: async function testCodexOverflowStatus() {
             const current = formatUsageWarningStatus({
-              headers: tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
+              headers: codexHeaders({
+                usedPercent: 30,
+                windowMinutes: 300,
+                resetOffsetMs: 4 * HOUR_MS,
+              },),
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('tokens 60% left →120% (40s)',);
+            expect(current.statusText,).toBe('codex 5h →150% (4h)',);
           },
         },),
         it({
-          name: 'joins multiple constrained limiter groups',
+          name: 'renders Synthetic projected overflow',
+          fn: async function testSyntheticOverflowStatus() {
+            const current = formatUsageWarningStatus({
+              headers: syntheticQuotasHeader({
+                search: {
+                  hourly: {
+                    limit: 100,
+                    requests: 60,
+                    renewsAt: resetAt(30 * MINUTE_MS,),
+                  },
+                },
+              },),
+              nowMs: NOW_MS,
+              style: PLAIN_USAGE_WARNING_STYLE,
+            },);
+
+            expect(current.statusText,).toBe('synthetic search →120% (30m)',);
+          },
+        },),
+        it({
+          name: 'renders Synthetic weekly projection using daily regen pace',
+          fn: async function testSyntheticWeeklyOverflowStatus() {
+            const current = formatUsageWarningStatus({
+              headers: syntheticQuotasHeader({
+                weeklyTokenLimit: {
+                  nextRegenAt: resetAt(20 * HOUR_MS,),
+                  percentRemaining: 80,
+                  maxCredits: '$100.00',
+                  remainingCredits: '$80.00',
+                  nextRegenCredits: '$10.00',
+                },
+              },),
+              nowMs: NOW_MS,
+              style: PLAIN_USAGE_WARNING_STYLE,
+            },);
+
+            expect(current.statusText,).toBe('synthetic week →840% (20h)',);
+          },
+        },),
+        it({
+          name: 'joins multiple projected overflow groups',
           fn: async function testJoinedSegments() {
             const current = formatUsageWarningStatus({
               headers: {
-                ...tokenHeaders({ limit: 100, remaining: 40, resetOffsetMs: 3 * HOUR_MS, },),
-                ...inputHeaders({ limit: 100, remaining: 20, resetOffsetMs: MINUTE_MS, },),
+                ...tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
+                ...codexHeaders({ usedPercent: 30, windowMinutes: 300, resetOffsetMs: 4 * HOUR_MS, },),
               },
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('tokens 40% left (3h) · input 20% left (1m)',);
+            expect(current.statusText,).toBe('anthropic tokens →120% (40s) · codex 5h →150% (4h)',);
           },
         },),
         it({
-          name: 'returns empty status text when no complete headers exist',
+          name: 'returns empty status text when no projected overflow exists',
           fn: async function testEmptyStatus() {
             const current = formatUsageWarningStatus({
-              headers: {},
+              headers: tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: 10 * SECOND_MS, },),
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
