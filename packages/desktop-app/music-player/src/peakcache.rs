@@ -167,12 +167,12 @@ impl PeakCache {
         PeakCache::from_path(cache_path())
     }
 
-    // What:     `fn from_path(path: Option<PathBuf>) -> PeakCache`. Build a cache that
-    //           persists to `path`, pre-loading any existing entries. Module-private
-    //           (tests in this file use it with a throwaway path).
+    // What:     `pub(crate) fn from_path(path: Option<PathBuf>) -> PeakCache`. Build a
+    //           cache that persists to `path`, pre-loading any existing entries.
+    //           `pub(crate)` so `measure`'s tests can point it at a throwaway file.
     // Why:      One place to parse the on-disk map, reusable by `load` and tests.
     // TS map:   `static fromPath(path: string | null): PeakCache`
-    fn from_path(path: Option<PathBuf>) -> PeakCache {
+    pub(crate) fn from_path(path: Option<PathBuf>) -> PeakCache {
         // What:     `let map = path.as_ref().and_then(...).and_then(...).unwrap_or_default();`.
         //           Read the file to a string then parse it as a `HashMap<String, f32>`;
         //           any missing/unreadable/corrupt step yields an empty map.
