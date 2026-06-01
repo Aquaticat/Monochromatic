@@ -7,7 +7,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { FigmaFile as FigmaFileType, } from '@monochromatic-dev/figma-kiwi/ts';
+import {
+  type FigmaFile as FigmaFileType,
+  parseFigmaFile,
+} from '@monochromatic-dev/figma-kiwi/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   convertFigmaToPenpot,
   figmaColorToHex,
@@ -39,7 +43,7 @@ const FIGMA_EXPORT_DIR = join(
 // region Test fixtures
 
 /** Build a minimal FigmaFile for testing without real file I/O. */
-function buildTestFigmaFile(overrides: Partial<FigmaFile> = {},): FigmaFile {
+function buildTestFigmaFile(fileType: FigmaFile['fileType'] = 'fig',): FigmaFile {
   const nodeChanges: Record<string, unknown>[] = [
     // Document root
     { __type: 'NodeChange', guid: { sessionID: 0, localID: 0, },
@@ -94,7 +98,7 @@ function buildTestFigmaFile(overrides: Partial<FigmaFile> = {},): FigmaFile {
   ];
 
   return {
-    fileType: 'fig',
+    fileType,
     meta: {
       backgroundColor: { r: 1, g: 1, b: 1, a: 1, },
       thumbnailSize: { width: 800, height: 600, },
@@ -107,7 +111,6 @@ function buildTestFigmaFile(overrides: Partial<FigmaFile> = {},): FigmaFile {
     schema: { definitions: [], enumByName: new Map(), structByName: new Map(), },
     document: { __type: 'Message', type: 'MessageType.NODE_CHANGES', nodeChanges, },
     images: new Map(),
-    ...overrides,
   };
 }
 
@@ -222,7 +225,7 @@ await describe({
           name: 'creates one page per canvas',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             expect(doc.pages.size,).toBe(1,);
           },
         },),
@@ -230,7 +233,7 @@ await describe({
           name: 'sets file name from meta',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             expect(doc.file.name,).toBe('Test File',);
           },
         },),
@@ -238,16 +241,16 @@ await describe({
           name: 'converts frame with fills and strokes',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             // Find the frame shape (not root frame)
             const shapes = [...doc.shapes.values(),].filter(s => s.name === 'My Frame');
             expect(shapes,).toHaveLength(1,);
-            const frame = shapes[0]!;
+            const frame = nonNullishOrThrow(shapes[0],);
             expect(frame.type,).toBe('frame',);
             expect(frame.fills,).toHaveLength(1,);
-            expect(frame.fills[0]!.fillColor,).toBe('#FF0000',);
+            expect(nonNullishOrThrow(frame.fills[0],).fillColor,).toBe('#FF0000',);
             expect(frame.strokes,).toHaveLength(1,);
-            expect(frame.strokes[0]!.strokeWidth,).toBe(2,);
+            expect(nonNullishOrThrow(frame.strokes[0],).strokeWidth,).toBe(2,);
             expect(frame.r1,).toBe(8,);
           },
         },),
@@ -255,10 +258,10 @@ await describe({
           name: 'converts text node',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             const textShapes = [...doc.shapes.values(),].filter(s => s.type === 'text');
             expect(textShapes,).toHaveLength(1,);
-            const text = textShapes[0]!;
+            const text = nonNullishOrThrow(textShapes[0],);
             expect(text.name,).toBe('Hello',);
             expect(text.growType,).toBe('auto-width',);
           },
@@ -267,7 +270,7 @@ await describe({
           name: 'skips DOCUMENT and NONE types',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             // Only 3 shapes should exist: root frame + frame + text
             const nonRootShapes = [...doc.shapes.values(),].filter(s =>
               s.id !== '00000000-0000-0000-0000-000000000000'
@@ -287,9 +290,9 @@ await describe({
           name: 'creates one page per slide',
           fn: async () => {
             const deckFile = buildTestDeckFile();
-            const doc = convertFigmaToPenpot(deckFile,);
+            const doc = convertFigmaToPenpot({ figmaFile: deckFile, },);
             expect(doc.pages.size,).toBe(1,);
-            const page = [...doc.pages.values(),][0]!;
+            const page = nonNullishOrThrow([...doc.pages.values(),][0],);
             expect(page.name,).toBe('Slide 1',);
           },
         },),
@@ -297,7 +300,7 @@ await describe({
           name: 'skips internal-only canvases',
           fn: async () => {
             const deckFile = buildTestDeckFile();
-            const doc = convertFigmaToPenpot(deckFile,);
+            const doc = convertFigmaToPenpot({ figmaFile: deckFile, },);
             // Only 1 page (the slide), not 2 (slide + internal canvas)
             const pageNames = [...doc.pages.values(),].map(p => p.name);
             expect(pageNames,).not.toContain('Internal Only Canvas',);
@@ -307,10 +310,10 @@ await describe({
           name: 'converts slide child text',
           fn: async () => {
             const deckFile = buildTestDeckFile();
-            const doc = convertFigmaToPenpot(deckFile,);
+            const doc = convertFigmaToPenpot({ figmaFile: deckFile, },);
             const textShapes = [...doc.shapes.values(),].filter(s => s.type === 'text');
             expect(textShapes,).toHaveLength(1,);
-            expect(textShapes[0]!.name,).toBe('Title',);
+            expect(nonNullishOrThrow(textShapes[0],).name,).toBe('Title',);
           },
         },),
       ],
@@ -324,8 +327,8 @@ await describe({
         it({
           name: 'creates pages from canvases',
           fn: async () => {
-            const jamFile = buildTestFigmaFile({ fileType: 'jam', },);
-            const doc = convertFigmaToPenpot(jamFile,);
+            const jamFile = buildTestFigmaFile('jam',);
+            const doc = convertFigmaToPenpot({ figmaFile: jamFile, },);
             expect(doc.pages.size,).toBe(1,);
           },
         },),
@@ -341,7 +344,7 @@ await describe({
           name: 'produces a valid ZIP with manifest',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             const zipBuffer = await serializePenpotZip(doc,);
             expect(zipBuffer.length,).toBeGreaterThan(0,);
 
@@ -354,7 +357,7 @@ await describe({
           name: 'manifest has penpot/export-files type',
           fn: async () => {
             const figmaFile = buildTestFigmaFile();
-            const doc = convertFigmaToPenpot(figmaFile,);
+            const doc = convertFigmaToPenpot({ figmaFile, },);
             expect(doc.manifest.type,).toBe('penpot/export-files',);
             expect(doc.manifest.version,).toBe(1,);
           },
@@ -368,54 +371,33 @@ await describe({
       name: 'integration: real file conversion',
       children: [
         it({
-          name: 'converts a .fig file end-to-end',
+          name: 'converts real .fig, .deck, and .jam files end-to-end',
           timeout: 30_000,
+          // One sequential test, not three concurrent it()s: kiwi's decompressZstd shares a per-call temp file, so concurrent parseFigmaFile runs (the harness runs sibling it()s concurrently) race on it.
           fn: async () => {
-            const { parseFigmaFile, } = await import(
-              '@monochromatic-dev/figma-kiwi/ts' as string
-            );
-            const figmaFile = await parseFigmaFile(
+            const figFile = await parseFigmaFile(
               join(FIGMA_EXPORT_DIR, 'Color palette - base.fig',),
             );
-            const doc = convertFigmaToPenpot(figmaFile,);
-            const zipBuffer = await serializePenpotZip(doc,);
-            expect(doc.pages.size,).toBeGreaterThan(0,);
-            expect(doc.shapes.size,).toBeGreaterThan(0,);
-            expect(zipBuffer.length,).toBeGreaterThan(1_000,);
-          },
-        },),
-        it({
-          name: 'converts a .deck file with slides as pages',
-          timeout: 30_000,
-          fn: async () => {
-            const { parseFigmaFile, } = await import(
-              '@monochromatic-dev/figma-kiwi/ts' as string
-            );
-            const figmaFile = await parseFigmaFile(
+            const figDoc = convertFigmaToPenpot({ figmaFile: figFile, },);
+            const figZip = serializePenpotZip(figDoc,);
+            expect(figDoc.pages.size,).toBeGreaterThan(0,);
+            expect(figDoc.shapes.size,).toBeGreaterThan(0,);
+            expect(figZip.length,).toBeGreaterThan(1_000,);
+
+            const deckFile = await parseFigmaFile(
               join(FIGMA_EXPORT_DIR, 'MTM6162-040 participation 2 cover.deck',),
             );
-            const doc = convertFigmaToPenpot(figmaFile,);
-            // Deck should have slides as pages
-            expect(doc.pages.size,).toBeGreaterThanOrEqual(1,);
-            // Verify page names come from slides, not canvases
-            for (const page of doc.pages.values())
+            const deckDoc = convertFigmaToPenpot({ figmaFile: deckFile, },);
+            expect(deckDoc.pages.size,).toBeGreaterThanOrEqual(1,);
+            for (const page of deckDoc.pages.values())
               expect(page.name,).not.toBe('Internal Only Canvas',);
-          },
-        },),
-        it({
-          name: 'converts a .jam file end-to-end',
-          timeout: 30_000,
-          fn: async () => {
-            const { parseFigmaFile, } = await import(
-              '@monochromatic-dev/figma-kiwi/ts' as string
-            );
-            const figmaFile = await parseFigmaFile(
+
+            const jamFile = await parseFigmaFile(
               join(FIGMA_EXPORT_DIR, 'Todo app - Brainstorming.jam',),
             );
-            const doc = convertFigmaToPenpot(figmaFile,);
-            expect(doc.pages.size,).toBeGreaterThan(0,);
-            // Should have sticky notes as frames
-            const frames = [...doc.shapes.values(),].filter(s =>
+            const jamDoc = convertFigmaToPenpot({ figmaFile: jamFile, },);
+            expect(jamDoc.pages.size,).toBeGreaterThan(0,);
+            const frames = [...jamDoc.shapes.values(),].filter(s =>
               (s.type === 'frame') && (s.name !== 'Root Frame')
             );
             expect(frames.length,).toBeGreaterThan(0,);

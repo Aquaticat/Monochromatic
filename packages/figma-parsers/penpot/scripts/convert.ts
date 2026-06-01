@@ -5,23 +5,63 @@
  * Usage: bun scripts/convert.ts <input.fig|.deck|.jam> [output.penpot]
  */
 
-import { parseFigmaFile, } from '@monochromatic-dev/figma-kiwi/ts';
 import { writeFile, } from 'node:fs/promises';
+import process from 'node:process';
+
+import { parseFigmaFile, } from '@monochromatic-dev/figma-kiwi/ts';
+
 import {
   convertFigmaToPenpot,
   serializePenpotZip,
 } from '../src/index.ts';
 
 /**
- * First positional argument: source Figma export file path that the converter reads.
+ * Figma export extensions whose output path is rewritten to `.penpot`.
  */
-const inputPath = process.argv[2];
-/**
- * Optional second positional argument: destination `.penpot` path; falls back to the input path with the extension swapped.
- */
-const outputPath = process.argv[3];
+const FIGMA_EXTENSIONS: ReadonlySet<string> = new Set([
+  'fig',
+  'deck',
+  'jam',
+],);
 
-if (!inputPath) {
+/**
+ * Swap a known Figma export extension for `.penpot`, leaving other paths as-is.
+ *
+ * @param path - input file path
+ *
+ * @returns path with a known Figma extension replaced by `.penpot`
+ *
+ * @example
+ * ```ts
+ * swapToPenpotExtension('a.fig'); // "a.penpot"
+ * ```
+ */
+function swapToPenpotExtension(path: string,): string {
+  /**
+   * Index of the final `.` in the path, or -1 when the path has no extension.
+   */
+  const dot = path.lastIndexOf('.',);
+  if (dot === (-1))
+    return path;
+  /**
+   * Extension text after the final `.`.
+   */
+  const ext = path.slice(dot + 1,);
+  return FIGMA_EXTENSIONS.has(ext,)
+    ? `${path.slice(
+      0,
+      dot,
+    )}.penpot`
+    : path;
+}
+
+/**
+ * Positional CLI arguments: input source path and optional output path.
+ */
+const [inputPath, outputPath,] = process.argv
+  .slice(2,);
+
+if (inputPath === undefined) {
   console.error('Usage: bun scripts/convert.ts <input.fig|.deck|.jam> [output.penpot]',);
   throw new Error('Missing input path',);
 }
@@ -31,29 +71,27 @@ if (!inputPath) {
  */
 const figmaFile = await parseFigmaFile(inputPath,);
 /**
- * Intermediate Penpot document model produced by the converter, ready for ZIP serialization.
+ * Figma's own file name, used as the Penpot file name when present.
  */
-const doc = convertFigmaToPenpot(
+const {fileName} = figmaFile.meta;
+/**
+ * Intermediate Penpot document model produced by the converter.
+ */
+const doc = convertFigmaToPenpot({
   figmaFile,
-  {
-    fileName: figmaFile.meta
-      .fileName
-      || undefined,
-  },
-);
+  options: ((typeof fileName) === 'string') && (fileName !== '')
+    ? { fileName, }
+    : {},
+},);
 
 /**
  * Final ZIP buffer ready to be written to disk.
  */
-const zipBuffer = await serializePenpotZip(doc,);
+const zipBuffer = serializePenpotZip(doc,);
 /**
- * Resolved output path: caller's argument takes precedence, otherwise the input filename with its extension swapped to `.penpot`.
+ * Resolved output path: caller's argument, otherwise the input path with its extension swapped.
  */
-const outPath = outputPath ?? inputPath
-  .replace(
-  /\.(fig|deck|jam)$/,
-  '.penpot',
-);
+const outPath = outputPath ?? swapToPenpotExtension(inputPath,);
 
 await writeFile(
   outPath,
@@ -61,11 +99,14 @@ await writeFile(
 );
 
 /**
- * Count of NodeChange entries logged below as a quick sanity-check of conversion scope.
+ * Raw NodeChange list from the decoded document, when present.
  */
-const nodeCount = (figmaFile.document
-  ?.nodeChanges
-  ?? []).length;
+const nodeChanges = figmaFile.document
+  ?.nodeChanges;
+/**
+ * Count of NodeChange entries logged as a quick sanity-check of conversion scope.
+ */
+const nodeCount = Array.isArray(nodeChanges,) ? nodeChanges.length : 0;
 console.log(
   `Converted ${figmaFile.fileType} (${nodeCount} nodes) -> ${outPath} (${zipBuffer.length} bytes)`,
 );

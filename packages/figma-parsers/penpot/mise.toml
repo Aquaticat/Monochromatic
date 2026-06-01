@@ -19,6 +19,13 @@ extends = "watch:build:js:node"
 [tasks.lint]
 extends = "lint"
 
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."format:oxlint"]
+description = "Auto-fix with Oxlint (type-aware)"
+run = "task-oxlint --type-aware --fix"
+
 [tasks."lint:types"]
 extends = "lint:types"
 hide = true
