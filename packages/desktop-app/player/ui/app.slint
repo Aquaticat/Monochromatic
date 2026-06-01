@@ -1,0 +1,13 @@
+// Minimal placeholder window. The full transport + queue UI is built in a
+// later step; this exists so the crate links the Slint pipeline end to end.
+export component AppWindow inherits Window {
+    title: "player";
+    preferred-width: 800px;
+    preferred-height: 600px;
+
+    Text {
+        text: "player";
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}

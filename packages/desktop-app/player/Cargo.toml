@@ -1,0 +1,29 @@
+[package]
+name = "player"
+version = "0.1.0"
+edition = "2021"
+description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc queue, broad codec support (symphonia + Opus)."
+license = "LGPL-3.0-or-later"
+publish = false
+
+[lib]
+name = "player"
+path = "src/lib.rs"
+
+[[bin]]
+name = "player"
+path = "src/main.rs"
+
+[dependencies]
+slint = { version = "1", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+symphonia = { version = "0.5", features = ["all"] }
+opus = "0.3"
+pipewire = "0.8"
+rfd = "0.15"
+ringbuf = "0.4"
+directories = "5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[build-dependencies]
+slint-build = "1"

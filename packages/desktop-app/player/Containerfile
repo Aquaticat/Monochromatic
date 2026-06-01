@@ -1,0 +1,31 @@
+# Build + run environment for the `player` music player.
+# The host is an immutable-style Fedora without dev headers, so all cargo
+# work happens inside this container (see mise.toml tasks). The image also
+# carries the GUI/audio runtime libraries so the `run` task can drive the
+# Slint UI against the host's Wayland + PipeWire sockets (passed through).
+FROM registry.fedoraproject.org/fedora:41
+
+# Build toolchain:
+#   rust, cargo            Rust compiler + package manager
+#   gcc                    cc for building C dependencies (audiopus_sys)
+#   clang, clang-devel     libclang for bindgen used by pipewire's libspa-sys
+#   pkgconf-pkg-config     pkg-config used to locate libpipewire / libopus
+#   *-devel                headers for the native audio dependencies
+# Runtime (for `run`):
+#   mesa-*                 OpenGL/EGL for the femtovg renderer + DRI drivers
+#   libxkbcommon, wayland  winit Wayland backend
+#   fontconfig, freetype   Slint font loading
+#   xdg-desktop-portal     rfd file picker over the portal (when D-Bus passed)
+RUN dnf install -y \
+      rust cargo gcc \
+      clang clang-devel \
+      pkgconf-pkg-config \
+      pipewire-devel \
+      opus-devel \
+      mesa-dri-drivers mesa-libgbm libglvnd-glx libglvnd-egl \
+      libwayland-client libwayland-cursor libwayland-egl libxkbcommon \
+      fontconfig fontconfig-devel freetype freetype-devel \
+    && dnf clean all
+
+ENV CARGO_HOME=/cargo
+WORKDIR /work

@@ -1,0 +1,240 @@
+//! Messages that cross the boundary between the UI thread and the engine
+//! thread. `Command` flows UI -> engine; `Update` flows engine -> UI.
+
+// What:     `use std::path::PathBuf;` pulls the `PathBuf` type into scope.
+//           `PathBuf` is an OWNED, growable filesystem path (heap-allocated).
+//           Sibling the reader might expect: `&Path`, a BORROWED path slice
+//           that does not own its bytes (like `&str` is to `String`).
+// Why:      Commands carry file paths the user opened; the engine keeps them
+//           after the UI call returns, so they must be owned, not borrowed.
+// TS map:   There is no owned/borrowed split in TS; mentally this is just
+//           `string` used as a path.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type PathBuf = string; // a filesystem path
+// ```
+use std::path::PathBuf;
+
+// What:     `use serde::{Deserialize, Serialize};` imports two DERIVE MACROS.
+//           A derive macro auto-generates code for a type when you write
+//           `#[derive(...)]` above it. `Serialize` generates "turn this into
+//           JSON", `Deserialize` generates "build this from JSON".
+// Why:      `RepeatMode` is saved to the session file on disk, so it needs
+//           both directions of conversion.
+// TS map:   No direct equivalent; imagine importing a decorator that makes a
+//           class JSON-roundtrippable, e.g. `import { Serializable } from ...`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Serializable } from "some-json-lib";
+// ```
+use serde::{Deserialize, Serialize};
+
+// What:     `#[derive(...)]` is an ATTRIBUTE that runs the listed macros to
+//           auto-implement behaviour for the enum below:
+//           - `Clone` / `Copy`: makes the value duplicable. `Copy` means it
+//             is cheap enough to duplicate implicitly on assignment (like a
+//             number), not moved. Sibling: a type WITHOUT `Copy` is "moved"
+//             (the old binding becomes unusable).
+//           - `Debug`: enables `{:?}` formatting for logging.
+//           - `PartialEq` / `Eq`: enables `==` comparison.
+//           - `Serialize` / `Deserialize`: JSON conversion (see import above).
+// Why:      We compare repeat modes with `==`, copy them around freely, log
+//           them, and persist them; each derive unlocks one of those.
+// TS map:   TS gives `==`, structural equality, and JSON for free on a string
+//           union, so no annotation is needed there.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // nothing — the union below just works with ===, JSON, console.log
+// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+// What:     `pub enum RepeatMode { ... }` declares a PUBLIC enum: a type whose
+//           value is exactly one of the listed variants. Here the variants
+//           carry no data (plain tags).
+// Why:      Encodes the three repeat behaviours the queue supports.
+// TS map:   A string-literal union type.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type RepeatMode = "off" | "all" | "one";
+// ```
+pub enum RepeatMode {
+    /// Play the queue once, stop at the end.
+    Off,
+    /// At the end of the queue, wrap to the first track.
+    All,
+    /// Replay the current track when it ends.
+    One,
+}
+
+// What:     `impl Default for RepeatMode { ... }` provides the value used when
+//           nothing is specified. `impl Trait for Type` means "give `Type` the
+//           behaviour described by `Trait`". `Default` is the standard "make a
+//           sensible empty/initial value" trait.
+// Why:      A brand-new session with no saved file should start at `Off`.
+// TS map:   Like defining a `const DEFAULT_REPEAT: RepeatMode = "off"` plus a
+//           factory `function defaultRepeat() { return "off"; }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function defaultRepeat(): RepeatMode { return "off"; }
+// ```
+impl Default for RepeatMode {
+    // What:     `fn default() -> Self` is the one method `Default` requires.
+    //           `Self` is an alias for the type we are impl-ing (RepeatMode).
+    //           `-> Self` is the return-type arrow.
+    // Why:      Hands back the chosen initial variant.
+    // TS map:   `default(): RepeatMode`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // default(): RepeatMode { return "off"; }
+    // ```
+    fn default() -> Self {
+        // What:     `RepeatMode::Off` names a specific variant of the enum
+        //           using `::` (the path/namespace separator). No trailing
+        //           `;`, so this is the function's tail expression and becomes
+        //           the return value.
+        // Why:      Off is the least surprising default.
+        // TS map:   `return "off";`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return "off";
+        // ```
+        RepeatMode::Off
+    }
+}
+
+// What:     `pub enum Command { ... }` declares the public set of actions the
+//           UI can ask the engine to perform. Several variants carry data in
+//           parentheses (a tuple variant), e.g. `Seek(f64)`.
+// Why:      A single message type lets the UI talk to the engine over one
+//           channel; the engine matches on the variant to decide what to do.
+// TS map:   A discriminated union of action objects.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Command =
+//   | { kind: "openPaths"; paths: string[] }
+//   | { kind: "togglePlay" } | { kind: "play" } | { kind: "pause" }
+//   | { kind: "next" } | { kind: "prev" }
+//   | { kind: "playIndex"; index: number }
+//   | { kind: "seek"; secs: number }
+//   | { kind: "setVolume"; volume: number }
+//   | { kind: "setShuffle"; on: boolean }
+//   | { kind: "setRepeat"; mode: RepeatMode }
+//   | { kind: "quit" };
+// ```
+pub enum Command {
+    /// Replace the queue with these files/folders and start playing.
+    OpenPaths(Vec<PathBuf>),
+    /// Flip between playing and paused.
+    TogglePlay,
+    /// Resume playback.
+    Play,
+    /// Pause playback (keep position).
+    Pause,
+    /// Skip to the next track.
+    Next,
+    /// Skip to the previous track.
+    Prev,
+    /// Jump straight to the track at this position in the queue.
+    PlayIndex(usize),
+    // What:     `Seek(f64)` carries a target time in SECONDS as an `f64`.
+    //           Siblings: `f32`, `u64` frames, `Duration`.
+    // Why:      Same seconds-as-f64 unit as `Position`/`duration`; the engine
+    //           converts these seconds back into an exact frame offset for the
+    //           decoder. Not `f32` (too coarse for long tracks), not `u64`
+    //           frames (UI does not know the per-track rate), not `Duration`
+    //           (awkward fractional value from a slider drag).
+    // TS map:   `{ kind: "seek"; secs: number }`.
+    Seek(f64),
+    // What:     `SetVolume(f32)` is a gain in 0.0..=1.0 as an `f32`. Sibling:
+    //           `f64`.
+    // Why:      `f32` matches PipeWire's f32 samples and Slint's `float`, and a
+    //           0..1 gain gains nothing from `f64` precision.
+    // TS map:   `{ kind: "setVolume"; volume: number }`.
+    SetVolume(f32),
+    /// Turn shuffle on or off.
+    SetShuffle(bool),
+    /// Change the repeat mode.
+    SetRepeat(RepeatMode),
+    /// Shut the engine thread down.
+    Quit,
+}
+
+// What:     `pub enum Update { ... }` declares the messages the engine pushes
+//           back to the UI so the on-screen state stays in sync.
+//           `NowPlaying { ... }` is a STRUCT variant: it names its fields
+//           instead of using positional tuple slots.
+// Why:      The engine owns the real playback state; the UI only mirrors it,
+//           and these updates are how the mirror is refreshed.
+// TS map:   Another discriminated union.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Update =
+//   | { kind: "queue"; names: string[] }
+//   | { kind: "nowPlaying"; index: number | null; name: string; duration: number }
+//   | { kind: "position"; secs: number }
+//   | { kind: "playing"; on: boolean }
+//   | { kind: "volume"; volume: number }
+//   | { kind: "shuffle"; on: boolean }
+//   | { kind: "repeat"; mode: RepeatMode };
+// ```
+pub enum Update {
+    /// The full queue as display filenames (filename-only policy).
+    Queue(Vec<String>),
+    /// The current track changed. `index` is its position in the queue, or
+    /// `None` when nothing is loaded.
+    NowPlaying {
+        // What:     `Option<usize>` is the "maybe a number" type. `Option<T>`
+        //           has two variants: `Some(value)` or `None`. `usize` is the
+        //           pointer-sized unsigned integer used for indices (siblings:
+        //           `u32`, `u64`).
+        // Why:      There may be no current track (empty queue), so the index
+        //           is optional.
+        // TS map:   `index: number | null`.
+        index: Option<usize>,
+        /// Display filename of the current track.
+        name: String,
+        // What:     `duration: f64` is the track length in SECONDS as an `f64`
+        //           (64-bit IEEE double). Siblings the reader might expect:
+        //           `f32` (32-bit float), `u64` (a frame/sample count), or
+        //           `std::time::Duration`.
+        // Why:      Seconds-as-f64 is our cross-thread time unit. Not `f32`: its
+        //           ~7-significant-digit precision cannot resolve sub-second
+        //           detail once a track passes a few minutes (near 3600 s an
+        //           f32's step is ~0.25 s). Not `u64` frames: the UI thinks in
+        //           seconds and does not know each track's sample rate (it
+        //           varies per file). Not `Duration`: clumsy for a fractional
+        //           seek-bar value. The value is narrowed to Slint's `float`
+        //           (f32) only at the property edge, where display coarseness
+        //           is harmless.
+        // TS map:   `duration: number` (JS `number` is already f64).
+        duration: f64,
+    },
+    // What:     `Position(f64)` carries the live playback position in SECONDS as
+    //           an `f64`. Siblings: `f32`, `u64` frames, `Duration` (see the
+    //           `duration` field above for why f64 wins).
+    // Why:      Same time unit as `duration` so the seek bar can compare them
+    //           directly; the engine derives it from an exact frame count.
+    // TS map:   `position: number`.
+    Position(f64),
+    /// Whether audio is currently playing (true) or paused (false).
+    Playing(bool),
+    // What:     `Volume(f32)` is a gain in 0.0..=1.0 as an `f32` (32-bit float).
+    //           Sibling: `f64` (double).
+    // Why:      `f32` not `f64` because a 0..1 gain needs no double precision
+    //           and it matches BOTH PipeWire's f32 PCM samples and Slint's
+    //           `float` (also f32), so no conversion happens at either edge.
+    // TS map:   `volume: number`.
+    Volume(f32),
+    /// Whether shuffle is on.
+    Shuffle(bool),
+    /// Current repeat mode.
+    Repeat(RepeatMode),
+}

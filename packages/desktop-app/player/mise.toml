@@ -1,0 +1,79 @@
+# All cargo work runs inside the Fedora build container (see Containerfile):
+# the host lacks the pipewire/opus/clang dev headers and must stay clean.
+# The package dir is bind-mounted at /work; the cargo registry lives in a
+# named volume so rebuilds stay fast. `label=disable` avoids relabeling the
+# host source tree under SELinux.
+
+[tasks.image]
+description = "Build the Fedora build/run container image"
+run = "podman build -t localhost/monochromatic/player -f Containerfile ."
+
+[tasks.build]
+description = "Release build inside the container"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo build --release"
+
+[tasks."build:debug"]
+description = "Debug build inside the container"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo build"
+
+[tasks.lint]
+description = "cargo check (no codegen) inside the container"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied inside the container"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo clippy --release -- -D warnings"
+
+[tasks.test]
+description = "cargo test inside the container"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo test --release"
+
+[tasks.run]
+description = "Run the player GUI against the host Wayland + PipeWire (pass file/folder paths after --)"
+usage = '''
+arg "[args]" var=#true help="File or folder paths to enqueue"
+'''
+# Passthrough: Wayland socket, PipeWire socket, D-Bus session (for the rfd
+# portal picker), and the DRI render node for GPU GL. SLINT_BACKEND lets a
+# caller force the software renderer when GPU passthrough is unavailable.
+run = '''
+let xrd = $env.XDG_RUNTIME_DIR
+let wl = $env.WAYLAND_DISPLAY
+let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
+(
+  podman run --rm --security-opt label=disable
+  --device /dev/dri --group-add keep-groups
+  -v $"(pwd):/work" -v player-cargo:/cargo -w /work
+  -v $"($xrd)/($wl):/run/host-wayland"
+  -v $"($xrd)/pipewire-0:/run/pipewire-0"
+  -v $"($xrd)/bus:/run/host-bus"
+  -e XDG_RUNTIME_DIR=/run
+  -e WAYLAND_DISPLAY=host-wayland
+  -e PIPEWIRE_REMOTE=pipewire-0
+  -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-bus
+  (if ($env.SLINT_BACKEND? != null) { [-e $"SLINT_BACKEND=($env.SLINT_BACKEND)"] } else { [] })
+  localhost/monochromatic/player
+  cargo run --release -- ...$extras
+) | complete | get stdout
+'''
+
+[tasks."gen:fixtures"]
+description = "Generate tiny per-codec audio fixtures with host ffmpeg (run once, commit results)"
+# Runs on the host: ffmpeg is present there. 0.3s 440Hz stereo sine per codec.
+run = '''
+let specs = [
+  [ext, args];
+  [wav, []]
+  [flac, []]
+  [mp3, [-c:a, libmp3lame]]
+  [ogg, [-c:a, libvorbis]]
+  [opus, [-c:a, libopus]]
+  [aac.m4a, [-c:a, aac]]
+  [alac.m4a, [-c:a, alac]]
+]
+for s in $specs {
+  let out = $"fixtures/tone.($s.ext)"
+  print $"generating ($out)"
+  ffmpeg -y -f lavfi -i "sine=frequency=440:duration=0.3" -ac 2 -ar 44100 ...$s.args $out
+}
+'''
