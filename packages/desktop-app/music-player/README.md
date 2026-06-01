@@ -66,10 +66,17 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   position reporting), split out to keep each file within the line budget.
 - `src/engine.rs`: the worker-thread front door. `Engine::spawn` starts the background thread; `run` builds a
   `Controller` and drives it from the command channel.
+- `src/pagination.rs`: pure queue pagination. `paginate` groups the display names into pages by the uppercased
+  first character (case-insensitive for letters; digits, symbols, and each CJK character form their own pages,
+  sorted by character), and `page_of_index` finds the page holding a given track. No GUI or audio, so it is
+  unit-tested directly.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
-  properties.
-- `ui/app.slint`: the window markup (seek bar, transport row, volume slider, queue list). The playing track is
-  the highlighted row in the list; there is no separate now-playing title.
+  properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
+  property edge, so the engine and queue model stay unaware of pagination.
+- `ui/app.slint`: the window markup (seek bar, transport row, volume slider, page-tab bar, queue list). The
+  queue is paginated by the first character of each track name: each tab is one starting character and the list
+  shows only that page's tracks. The playing track is the highlighted row, and the view follows it across track
+  changes, so there is no separate now-playing title.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The

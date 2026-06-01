@@ -47,14 +47,23 @@ use music_player::engine::Engine;
 // TS map:   `import { Session } from "music-player/session";`
 use music_player::session::Session;
 
-// What:     `use slint::{ComponentHandle, SharedString, VecModel};`.
+// What:     `use music_player::pagination;`. The pure queue-pagination module.
+//           Importing the MODULE (not its items) so calls read `pagination::paginate`
+//           / `pagination::page_of_index`, keeping the origin obvious at the call.
+// Why:      The binary groups the queue's display names into per-character pages.
+// TS map:   `import * as pagination from "music-player/pagination";`
+use music_player::pagination;
+
+// What:     `use slint::{ComponentHandle, Model, SharedString, VecModel};`.
 //           `ComponentHandle` is the trait giving `.as_weak()`/`.run()` on the
-//           window; `SharedString` is Slint's cheap-to-clone string; `VecModel`
-//           builds the list model behind the queue property. (The `ModelRc` the
-//           setter wants is produced by `.into()`, so it needs no import.)
-// Why:      Needed to drive the window and set its `[string]` queue.
+//           window; `Model` is the trait whose `.iter()` reads a list property
+//           back (we re-read the full `queue` model to repaginate); `SharedString`
+//           is Slint's cheap-to-clone string; `VecModel` builds the list model
+//           behind a list property. (The `ModelRc` a setter wants is produced by
+//           `.into()`, so it needs no import.)
+// Why:      Needed to drive the window, read its `queue`, and set its list props.
 // TS map:   importing the UI runtime's helpers.
-use slint::{ComponentHandle, SharedString, VecModel};
+use slint::{ComponentHandle, Model, SharedString, VecModel};
 
 // What:     `const REPEAT_MODES: i32 = 3;`. Number of repeat modes (Off/All/One),
 //           used to cycle the repeat button. `i32` matches Slint's `int` property.
@@ -126,6 +135,140 @@ fn format_time(secs: f64) -> String {
     format!("{}:{:02}", whole / 60, whole % 60)
 }
 
+// What:     `fn refresh_page(app: &AppWindow, target: Option<i32>)`. Rebuild the
+//           page-tab list and the visible page from the full `queue` property.
+//           `target` is `Some(page)` to show a specific page, or `None` to follow
+//           the current track (used when the track changes). Runs on the UI thread.
+// Why:      One place derives the pagination view, so the tabs, the visible rows,
+//           and the selected tab can never disagree.
+// TS map:   `function refreshPage(app: AppWindow, target: number | null): void`
+fn refresh_page(app: &AppWindow, target: Option<i32>) {
+    // What:     `let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();`.
+    //           `app.get_queue()` returns the full-list model (`ModelRc<SharedString>`);
+    //           `.iter()` (from the `Model` trait) walks it yielding `SharedString`;
+    //           `.map(|s| s.to_string())` copies each into an owned `String`;
+    //           `.collect()` gathers them into the `Vec<String>` `paginate` takes.
+    // Why:      Re-read the canonical full list to regroup it into pages.
+    // TS map:   `const names = [...app.queue];`
+    let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();
+    // What:     `let pages = pagination::paginate(&names);`. Group the names into
+    //           sorted per-first-character pages. `&names` lends the vector.
+    // Why:      The single source of the tabs and page contents.
+    // TS map:   `const pages = pagination.paginate(names);`
+    let pages = pagination::paginate(&names);
+
+    // What:     `let labels: Vec<SharedString> = pages.iter().map(|page| SharedString::from(page.label.as_str())).collect();`.
+    //           Borrow each page (`page.iter()`), take its `label` (a `String`),
+    //           `.as_str()` borrows it as `&str`, and `SharedString::from` makes the
+    //           Slint string the model holds. `.collect()` gathers them.
+    // Why:      The tab captions, one per page, in page order.
+    // TS map:   `const labels = pages.map(p => p.label);`
+    let labels: Vec<SharedString> = pages
+        .iter()
+        .map(|page| SharedString::from(page.label.as_str()))
+        .collect();
+    // What:     `app.set_page_labels(Rc::new(VecModel::from(labels)).into());`. Wrap
+    //           the labels in a `VecModel` behind an `Rc`, convert to the `ModelRc`
+    //           the property wants with `.into()`, and set it.
+    // Why:      Push the tab list to the UI.
+    // TS map:   `app.pageLabels = labels;`
+    app.set_page_labels(Rc::new(VecModel::from(labels)).into());
+
+    // What:     `let requested: i32 = match target { ... };`. Decide which page to
+    //           show: the explicit one, or the page of the current track when
+    //           following.
+    // Why:      `select-page` passes an explicit page; a track change passes `None`.
+    // TS map:   `const requested = target ?? pageOfCurrent();`
+    let requested: i32 = match target {
+        // What:     `Some(page) => page`. An explicit page index was requested.
+        // Why:      Honour the clicked tab.
+        // TS map:   `if (target !== null) return target;`
+        Some(page) => page,
+        // What:     `None => { ... }`. Follow the current track instead.
+        // Why:      Keep the playing row visible after a track change.
+        // TS map:   `else { ... compute from current ... }`
+        None => {
+            // What:     `let index = app.get_current_index();`. The playing track's
+            //           load-order index, or `-1` when nothing is playing.
+            // Why:      We map it onto a page.
+            // TS map:   `const index = app.currentIndex;`
+            let index = app.get_current_index();
+            // What:     `if index < 0 { app.get_selected_page() } else { ... }`. With
+            //           no current track, keep the page the user is already viewing;
+            //           otherwise find the page holding that track.
+            // Why:      Do not yank the view to page 0 when nothing is playing.
+            // TS map:   `index < 0 ? app.selectedPage : (pageOfIndex(...) ?? app.selectedPage)`
+            if index < 0 {
+                app.get_selected_page()
+            } else {
+                // What:     `match pagination::page_of_index(&pages, index as usize) { ... }`.
+                //           `index as usize` narrows the `i32` to the index type;
+                //           `page_of_index` returns `Some(page)` or `None`.
+                // Why:      Locate the current track's page.
+                // TS map:   `pageOfIndex(pages, index) ?? app.selectedPage`
+                match pagination::page_of_index(&pages, index as usize) {
+                    // What:     `Some(page) => page as i32`. Found; widen to the
+                    //           property's `i32`.
+                    // Why:      Show that page.
+                    // TS map:   `return page;`
+                    Some(page) => page as i32,
+                    // What:     `None => app.get_selected_page()`. Not found (stale
+                    //           index mid-update); keep the current view.
+                    // Why:      Safe fallback.
+                    // TS map:   `return app.selectedPage;`
+                    None => app.get_selected_page(),
+                }
+            }
+        }
+    };
+
+    // What:     `let clamped: i32 = if pages.is_empty() { 0 } else { requested.clamp(0, pages.len() as i32 - 1) };`.
+    //           With no pages, page 0; otherwise pin `requested` into the valid
+    //           range. `i32::clamp(lo, hi)` returns the nearest bound when outside.
+    //           `pages.len() as i32` narrows the `usize` count.
+    // Why:      A stale or out-of-range page index must not index past the pages.
+    // TS map:   `const clamped = pages.length ? Math.min(Math.max(requested, 0), pages.length - 1) : 0;`
+    let clamped: i32 = if pages.is_empty() {
+        0
+    } else {
+        requested.clamp(0, pages.len() as i32 - 1)
+    };
+
+    // What:     `let items: Vec<PageItem> = match pages.get(clamped as usize) { ... };`.
+    //           `pages.get(i)` returns `Option<&Page>` (None when empty). Build the
+    //           selected page's rows as the generated `PageItem` struct.
+    // Why:      The ListView shows only this page's tracks.
+    // TS map:   `const items = (pages[clamped]?.entries ?? []).map(...);`
+    let items: Vec<PageItem> = match pages.get(clamped as usize) {
+        // What:     `Some(page) => page.entries.iter().map(|entry| PageItem { name: entry.name.as_str().into(), index: entry.index as i32 }).collect()`.
+        //           Map each `PageEntry` to a Slint `PageItem`: `entry.name.as_str().into()`
+        //           makes the `SharedString`, `entry.index as i32` narrows the index.
+        // Why:      Carry the real queue index so a click maps back correctly.
+        // TS map:   `page.entries.map(e => ({ name: e.name, index: e.index }))`
+        Some(page) => page
+            .entries
+            .iter()
+            .map(|entry| PageItem {
+                name: entry.name.as_str().into(),
+                index: entry.index as i32,
+            })
+            .collect(),
+        // What:     `None => Vec::new()`. No page (empty queue): no rows.
+        // Why:      Show an empty list.
+        // TS map:   `[]`
+        None => Vec::new(),
+    };
+    // What:     `app.set_page_items(Rc::new(VecModel::from(items)).into());`. Push the
+    //           page's rows to the UI (same `VecModel`/`.into()` wrapping as labels).
+    // Why:      Render the selected page.
+    // TS map:   `app.pageItems = items;`
+    app.set_page_items(Rc::new(VecModel::from(items)).into());
+    // What:     `app.set_selected_page(clamped);`. Mark which tab is active.
+    // Why:      Highlight the visible tab.
+    // TS map:   `app.selectedPage = clamped;`
+    app.set_selected_page(clamped);
+}
+
 // What:     `fn apply_update(app: &AppWindow, update: Update)`. Apply one engine
 //           update to the window's properties. Runs on the event-loop thread.
 // Why:      Keep the on-screen state mirroring the engine's state.
@@ -154,9 +297,18 @@ fn apply_update(app: &AppWindow, update: Update) {
             // What:     `app.set_queue(model.into());`. `model.into()` converts the
             //           `Rc<VecModel>` into the `ModelRc` the property wants.
             //           `set_queue` is the generated setter for the `queue` property.
-            // Why:      Push the list to the UI.
+            //           This `queue` property is the canonical full list; the visible
+            //           rows come from the paginated `page-items` set just below.
+            // Why:      Store the full list (the pagination view is derived from it).
             // TS map:   `app.queue = model;`
             app.set_queue(model.into());
+            // What:     `refresh_page(app, Some(0));`. Rebuild the tabs and show the
+            //           first page. A fresh queue resets to page 0; the `NowPlaying`
+            //           update that always follows an open/restore then jumps to the
+            //           current track's page.
+            // Why:      Repaginate whenever the queue changes.
+            // TS map:   `refreshPage(app, 0);`
+            refresh_page(app, Some(0));
         }
         // What:     `Update::NowPlaying { index, name, duration } => { ... }`.
         //           Destructure the struct variant's fields.
@@ -200,6 +352,12 @@ fn apply_update(app: &AppWindow, update: Update) {
             // Why:      Mark the playing track.
             // TS map:   `app.currentIndex = indexI32;`
             app.set_current_index(index_i32);
+            // What:     `refresh_page(app, None);`. Follow the now-playing track:
+            //           switch the visible page to the one holding it so the
+            //           highlighted row stays on screen after Next / auto-advance.
+            // Why:      Keep the playing track visible across track changes.
+            // TS map:   `refreshPage(app, null);`
+            refresh_page(app, None);
         }
         // What:     `Update::Position(secs) => { ... }`. Live playback position.
         // Why:      Move the seek bar and update the elapsed label.
@@ -515,6 +673,30 @@ fn main() -> Result<(), slint::PlatformError> {
     app.on_play_index({
         let engine = engine.clone();
         move |i| engine.send(Command::PlayIndex(i as usize))
+    });
+
+    // What:     `app.on_select_page(...)`. Tab-click handler; `p: i32` is the page
+    //           index. It does not touch the engine: pagination is a pure display
+    //           concern, so it just re-renders the chosen page from the existing
+    //           `queue` property. Needs a weak handle to read/write properties.
+    // Why:      Clicking a tab filters the list to that starting character.
+    // TS map:   `app.onSelectPage(p => refreshPage(app, p));`
+    app.on_select_page({
+        // What:     `let weak = app.as_weak();`. A weak handle the `'static` closure
+        //           can hold (it cannot borrow `app`).
+        // Why:      `refresh_page` needs the window to read `queue` and set the page.
+        // TS map:   `const w = app;`
+        let weak = app.as_weak();
+        // What:     `move |p| { if let Some(app) = weak.upgrade() { refresh_page(&app, Some(p)); } }`.
+        //           Upgrade the weak handle, then render the explicit page `p`.
+        //           `Some(p)` requests that exact page (not the follow-current path).
+        // Why:      Show the clicked tab's tracks.
+        // TS map:   `p => { if (app) refreshPage(app, p); }`
+        move |p| {
+            if let Some(app) = weak.upgrade() {
+                refresh_page(&app, Some(p));
+            }
+        }
     });
 
     // What:     `app.on_open_files(...)`. Opens the FOLDER picker on a SEPARATE

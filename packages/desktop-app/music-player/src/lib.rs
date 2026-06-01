@@ -77,3 +77,8 @@ pub mod controller_audio;
 // Why:      Spawns the worker and drives a `Controller` from the command channel.
 // TS map:   `export * as engine from "./engine";`
 pub mod engine;
+
+// What:     `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
+// Why:      Pure grouping of display names into per-first-character pages, unit-tested.
+// TS map:   `export * as pagination from "./pagination";`
+pub mod pagination;

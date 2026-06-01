@@ -1,15 +1,25 @@
 // The player window: a seek bar on top, a transport row (prev / play-pause /
-// next, shuffle, repeat, open), a volume slider, and a click-to-play queue list
-// below. The currently playing track is the highlighted row in that list, so no
-// separate now-playing title is drawn. All state comes IN from Rust via
-// properties; all user actions go OUT to Rust via callbacks. No playback logic
-// lives here.
+// next, shuffle, repeat, open), a volume slider, a page-tab bar, and a
+// click-to-play queue list below. The queue is paginated by the first character
+// of each track name: each tab is one starting character, and the list shows
+// only that page's tracks. The currently playing track is the highlighted row in
+// that list, so no separate now-playing title is drawn. All state comes IN from
+// Rust via properties; all user actions go OUT to Rust via callbacks. No playback
+// logic (including the pagination grouping) lives here.
 //
 // Numeric time values (position/duration) are kept as `float` seconds for the
 // slider, while their human-readable "m:ss" forms arrive as separate string
 // properties formatted in Rust (Slint's number formatting is awkward).
 
 import { Button, Slider, ListView, HorizontalBox, VerticalBox } from "std-widgets.slint";
+
+// One row on the selected page: the display filename plus its index into the full
+// queue. The index survives filtering, so clicking a filtered row still maps back
+// to the right track in the full queue. Rust fills these from the pagination module.
+struct PageItem {
+    name: string,
+    index: int,
+}
 
 export component AppWindow inherits Window {
     title: "Music Player";
@@ -29,6 +39,13 @@ export component AppWindow inherits Window {
     in property <int> current-index: -1;
     in property <[string]> queue: [];
 
+    // Pagination view, derived in Rust from `queue`. `page-labels` are the tab
+    // captions (one starting character each, sorted); `selected-page` is the
+    // index of the visible tab; `page-items` are only the selected page's tracks.
+    in property <[string]> page-labels: [];
+    in property <int> selected-page: 0;
+    in property <[PageItem]> page-items: [];
+
     // Outputs to Rust (each maps to one engine Command).
     callback toggle-play();
     callback prev();
@@ -39,6 +56,9 @@ export component AppWindow inherits Window {
     callback cycle-repeat();
     callback play-index(int);
     callback open-files();
+    // The user clicked a page tab; the argument is the page index. Rust swaps the
+    // visible page (refills `page-items` and updates `selected-page`).
+    callback select-page(int);
 
     // Label for the repeat button, chosen by the integer mode (0/1/2). Pure
     // integer comparisons only, so no number-to-string formatting is needed.
@@ -130,17 +150,41 @@ export component AppWindow inherits Window {
             }
         }
 
+        // Page-tab bar: one tab per starting character, shown only when the queue
+        // has at least one page. Wrapped in a Flickable so a wide row of tabs
+        // (many letters, or CJK characters) scrolls horizontally instead of being
+        // clipped. viewport-width is bound to the tab row's natural width so the
+        // scrollable area is exactly the content width.
+        if root.page-labels.length > 0: Flickable {
+            height: 36px;
+            viewport-height: 36px;
+            viewport-width: tab-row.preferred-width;
+            tab-row := HorizontalLayout {
+                spacing: 4px;
+                for label[p] in root.page-labels: Button {
+                    text: label;
+                    // The active page's tab is drawn with the accent style.
+                    primary: p == root.selected-page;
+                    clicked => {
+                        root.select-page(p);
+                    }
+                }
+            }
+        }
+
         ListView {
             vertical-stretch: 1;
-            for name[i] in root.queue: Rectangle {
+            // Only the selected page's tracks. `item.index` is the track's position
+            // in the full queue, so highlight and play map to the real track.
+            for item in root.page-items: Rectangle {
                 height: 30px;
-                background: i == root.current-index ? #3060c0 : transparent;
+                background: item.index == root.current-index ? #3060c0 : transparent;
                 TouchArea {
                     clicked => {
-                        root.play-index(i);
+                        root.play-index(item.index);
                     }
                     Text {
-                        text: name;
+                        text: item.name;
                         x: 8px;
                         width: parent.width - 16px;
                         vertical-alignment: center;
@@ -149,7 +193,7 @@ export component AppWindow inherits Window {
                         // best; inactive rows sit on the theme background, which
                         // is dark under a dark system theme where black text
                         // vanished, so use light grey instead.
-                        color: i == root.current-index ? white : #cccccc;
+                        color: item.index == root.current-index ? white : #cccccc;
                     }
                 }
             }
