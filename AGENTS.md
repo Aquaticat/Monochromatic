@@ -570,6 +570,10 @@ No enforcement hook guards root regression; this rule is the cure. A warn-only `
 
 ### Handling external changes
 
+- External worktree changes are normal and often expected in this repo.
+  Treat `git status` entries you did not modify as concurrent work, not an emergency.
+- Do not run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes.
+  Only touch files in your task scope; if an unrelated external change blocks a necessary edit, ask before changing it.
 - Acknowledge externally modified files; ask before reverting.
 - Do not proceed with implementing features that will not achieve their intended effect.
 - Explain when a tool/command does not support requested functionality instead of creating non-functional code.
@@ -578,10 +582,17 @@ No enforcement hook guards root regression; this rule is the cure. A warn-only `
 
 Conventional Commits format: `<type>(<scope>): <subject>`.
 
-Commit immediately after every minimum logical unit of work, before the next.
+Commit at the earliest opportunity that records coherent progress, before the next work step.
+Do not wait for full verification when a feature or fix has just been implemented;
+commit the checkpoint, then keep testing and fixing in follow-up commits.
+The cue is:
+"I just finished implementing a feature or fix.
+I am not sure it works yet, but committing now records progress."
 Do not accumulate independent units in the working tree;
 it forces a sprawling mixed-concern commit or an error-prone split.
-The trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or "I am done with the whole task." When committing, include all current working-tree changes together unless instructed otherwise;
+The trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
+"I am done with the whole task."
+When committing, include all current working-tree changes together unless instructed otherwise;
 do not subdivide a logical unit across commits.
 This supersedes the harness default to ask before committing;
 on this project, commit eagerly without asking.
