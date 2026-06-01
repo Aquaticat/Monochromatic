@@ -22,6 +22,13 @@ import {
 import { invalidatePaths, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import spawn from 'nano-spawn';
 
+import {
+  type CountersSnapshot,
+  loadCounters,
+  measureRegion,
+  probeCounters,
+} from './container-counters.ts';
+
 /** Pattern to extract CPU affinity from /proc/self/status */
 const CPU_AFFINITY_PATTERN = /Cpus_allowed_list:\s+(.+)/;
 
@@ -110,13 +117,37 @@ await import(resolve(import.meta.dirname, 'setup-fixture.ts',));
 
 //endregion Fixture setup
 
+//region Hardware counter setup
+
+/** Loaded counters module, or null when the native addon fails to load. */
+const countersModule = await loadCounters();
+
+/**
+ * Counters module when the host grants perf access, else null. Best-effort:
+ * rootless podman at perf_event_paranoid >= 1 without CAP_PERFMON probes false,
+ * and every region is timed without counters.
+ */
+const counters = countersModule !== null && probeCounters(countersModule,)
+  ? countersModule
+  : null;
+
+console.error(
+  `[container] hardware counters: ${counters !== null ? 'enabled' : 'unavailable (timing only)'}`,
+);
+
+//endregion Hardware counter setup
+
 //region Timed config runs
 
 /** Absolute path to the benchmark configuration file */
 const CONFIG_PATH = resolve(import.meta.dirname, 'perf.config.ts',);
 
 /** Timing entry for one config execution */
-type TimingEntry = { readonly label: string; readonly ms: number; };
+type TimingEntry = {
+  readonly label: string;
+  readonly ms: number;
+  readonly counters: CountersSnapshot | null;
+};
 
 /**
  * Mutable array: benchmark results accumulated sequentially because each
@@ -125,13 +156,15 @@ type TimingEntry = { readonly label: string; readonly ms: number; };
 const timings: TimingEntry[] = [];
 
 // Cold run; all destination files written fresh
-/** Timestamp before the cold run starts */
-const coldStart = performance.now();
-await import(`${CONFIG_PATH}?v=cold`);
-/** Duration of the cold run in milliseconds */
-const coldMs = performance.now() - coldStart;
-timings.push({ label: 'cold', ms: coldMs, },);
-console.error(`[container] cold run: ${coldMs.toFixed(1,)}ms`,);
+/** Cold-run timing and counters; all destination files written fresh. */
+const coldResult = await measureRegion({
+  counters,
+  run: async function runCold() {
+    await import(`${CONFIG_PATH}?v=cold`,);
+  },
+},);
+timings.push({ label: 'cold', ms: coldResult.ms, counters: coldResult.counters, },);
+console.error(`[container] cold run: ${coldResult.ms.toFixed(1,)}ms`,);
 
 // Warm runs: content unchanged, all writes skipped.
 // 10 iterations provide enough samples per container; with N containers
@@ -141,12 +174,19 @@ const WARM_RUN_COUNT = 10;
 // Sequential execution required: each warm run must complete before the
 // next to measure individual run timing accurately.
 for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
-  const warmStart = performance.now();
   // oxlint-disable-next-line no-await-in-loop -- sequential benchmark timing required
-  await import(`${CONFIG_PATH}?v=warm-${String(warmIndex,)}`);
-  const warmMs = performance.now() - warmStart;
-  timings.push({ label: `warm-${String(warmIndex,)}`, ms: warmMs, },);
-  console.error(`[container] warm run ${String(warmIndex,)}: ${warmMs.toFixed(1,)}ms`,);
+  const warmResult = await measureRegion({
+    counters,
+    run: async function runWarm() {
+      await import(`${CONFIG_PATH}?v=warm-${String(warmIndex,)}`,);
+    },
+  },);
+  timings.push({
+    label: `warm-${String(warmIndex,)}`,
+    ms: warmResult.ms,
+    counters: warmResult.counters,
+  },);
+  console.error(`[container] warm run ${String(warmIndex,)}: ${warmResult.ms.toFixed(1,)}ms`,);
 }
 
 // 1 source changed: modify one source file, invalidate its cache entry, re-run.
@@ -159,13 +199,19 @@ const sourceFile = join(fixtureDir, 'src', 'pkg-00', 'docs', 'readme.md',);
 const sourceContent = await readFile(sourceFile, 'utf8',);
 await writeFile(sourceFile, `${sourceContent}\n# Modified for benchmark`,);
 invalidatePaths([sourceFile,],);
-/** Timestamp before the source-changed run starts */
-const srcChangedStart = performance.now();
-await import(`${CONFIG_PATH}?v=src-changed`);
-/** Duration of the source-changed run in milliseconds */
-const srcChangedMs = performance.now() - srcChangedStart;
-timings.push({ label: 'source-changed', ms: srcChangedMs, },);
-console.error(`[container] 1 source changed: ${srcChangedMs.toFixed(1,)}ms`,);
+/** Source-changed timing and counters after invalidating one source file. */
+const srcChangedResult = await measureRegion({
+  counters,
+  run: async function runSrcChanged() {
+    await import(`${CONFIG_PATH}?v=src-changed`,);
+  },
+},);
+timings.push({
+  label: 'source-changed',
+  ms: srcChangedResult.ms,
+  counters: srcChangedResult.counters,
+},);
+console.error(`[container] 1 source changed: ${srcChangedResult.ms.toFixed(1,)}ms`,);
 
 // 1 dest changed: modify one dest file externally, invalidate its cache entry, re-run.
 // Simulates watch mode detecting an external edit to a managed destination.
@@ -175,13 +221,19 @@ const destFile = join(fixtureDir, 'dest', 'combined-0.md',);
 const destContent = await readFile(destFile, 'utf8',);
 await writeFile(destFile, `${destContent}\n# Externally modified`,);
 invalidatePaths([destFile,],);
-/** Timestamp before the dest-changed run starts */
-const destChangedStart = performance.now();
-await import(`${CONFIG_PATH}?v=dest-changed`);
-/** Duration of the dest-changed run in milliseconds */
-const destChangedMs = performance.now() - destChangedStart;
-timings.push({ label: 'dest-changed', ms: destChangedMs, },);
-console.error(`[container] 1 dest changed: ${destChangedMs.toFixed(1,)}ms`,);
+/** Dest-changed timing and counters after an external edit to one dest file. */
+const destChangedResult = await measureRegion({
+  counters,
+  run: async function runDestChanged() {
+    await import(`${CONFIG_PATH}?v=dest-changed`,);
+  },
+},);
+timings.push({
+  label: 'dest-changed',
+  ms: destChangedResult.ms,
+  counters: destChangedResult.counters,
+},);
+console.error(`[container] 1 dest changed: ${destChangedResult.ms.toFixed(1,)}ms`,);
 
 //endregion Timed config runs
 
@@ -199,14 +251,17 @@ function round1(value: number,): number {
 }
 
 /**
- * Rounds a timing entry's ms value to one decimal place.
+ * Rounds a timing entry's ms value to one decimal place; counter values are
+ * already rounded by the snapshot mapper and pass through unchanged.
  *
- * @param entry - Timing entry with label and ms
+ * @param entry - Timing entry with label, ms, and counters
  *
  * @returns New timing entry with rounded ms
  */
-function roundTimingEntry(entry: TimingEntry,): { label: string; ms: number; } {
-  return { label: entry.label, ms: round1(entry.ms,), };
+function roundTimingEntry(
+  entry: TimingEntry,
+): { label: string; ms: number; counters: CountersSnapshot | null; } {
+  return { label: entry.label, ms: round1(entry.ms,), counters: entry.counters, };
 }
 
 /** Structured benchmark results for JSON output */

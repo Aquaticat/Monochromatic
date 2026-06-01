@@ -3,6 +3,7 @@
  * Handles median computation, timing collection, and summary formatting.
  */
 
+import type { CountersSnapshot, } from './container-counters.ts';
 import type { ContainerBenchResult, } from './run-constrained-utils.ts';
 
 /**
@@ -127,4 +128,72 @@ export function formatTimingSummary(label: string, values: readonly number[],): 
   return `  ${label.padEnd(LABEL_PAD,)} min=${min.toFixed(1,)}ms  median=${
     med.toFixed(1,)
   }ms  max=${max.toFixed(1,)}ms  (n=${String(values.length,)})`;
+}
+
+/**
+ * Collects counter snapshots from all containers for a label or label prefix,
+ * dropping regions that ran without counters.
+ *
+ * @param results - All container bench results
+ *
+ * @param labelOrPrefix - Exact label match, or prefix for labels like "warm-0"
+ *
+ * @returns Counter snapshots across all containers for the category
+ */
+export function collectCounters(
+  results: readonly ContainerBenchResult[],
+  labelOrPrefix: string,
+): CountersSnapshot[] {
+  /**
+   * Extracts present counter snapshots from a single container result.
+   *
+   * @param result - Container benchmark result
+   *
+   * @returns Non-null snapshots matching the label or prefix
+   */
+  function extractMatchingCounters(result: ContainerBenchResult,): CountersSnapshot[] {
+    return result
+      .timings
+      .filter(function checkLabel(entry,) {
+        return matchesLabel(labelOrPrefix, entry,);
+      },)
+      .map(function getCounters(entry,) {
+        return entry.counters;
+      },)
+      .filter(function isPresent(snapshot,): snapshot is CountersSnapshot {
+        return snapshot !== null;
+      },);
+  }
+
+  return results.flatMap(function getCountersForResult(result,) {
+    return extractMatchingCounters(result,);
+  },);
+}
+
+/**
+ * Formats a counters summary line for one timing category, reporting the median
+ * across containers. Indented to sit under its timing summary line.
+ *
+ * @param snapshots - All counter snapshots for this category
+ *
+ * @returns Formatted summary string
+ */
+export function formatCountersSummary(snapshots: readonly CountersSnapshot[],): string {
+  /** Median retired instructions across containers for this category. */
+  const instructions = median(snapshots.map(function getInstructions(snapshot,) {
+    return snapshot.instructions;
+  },),);
+  /** Median CPU cycles across containers for this category. */
+  const cycles = median(snapshots.map(function getCycles(snapshot,) {
+    return snapshot.cycles;
+  },),);
+  /** Median instructions-per-cycle across containers for this category. */
+  const ipc = median(snapshots.map(function getIpc(snapshot,) {
+    return snapshot.ipc;
+  },),);
+  /** Indent aligning the counters line under formatTimingSummary's values. */
+  const INDENT = 18;
+  return `  ${' '.repeat(INDENT,)}instr=${instructions.toLocaleString('en-US',)}  cycles=${
+    cycles.toLocaleString('en-US',)
+  }  ipc=${ipc.toFixed(2,)}  (n=${String(snapshots.length,)})`;
 }

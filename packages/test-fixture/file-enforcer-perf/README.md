@@ -9,12 +9,17 @@ Tests file-enforcer under VPS-like resource constraints using podman containers 
 # Micro-benchmarks (fast, runs locally)
 mise run //packages/test-fixture/file-enforcer-perf:perf:micro
 
+# Grant CAP_PERFMON to bun once so perf:micro reports hardware counters
+mise run //packages/test-fixture/file-enforcer-perf:perf:enable-counters
+
 # End-to-end benchmarks with hyperfine (requires hyperfine)
 mise run //packages/test-fixture/file-enforcer-perf:perf:e2e
 
 # Full constrained benchmark in podman (requires podman, ~2 min)
 mise run //packages/test-fixture/file-enforcer-perf:perf:constrained
 ```
+
+See the hardware counters section below for what `perf:enable-counters` does.
 
 ## Benchmark fixture
 
@@ -120,6 +125,41 @@ With 5 containers sharing 1 core, each gets ~20% of a fast core (~1060-1090 sysb
 IO throttling limits are set to 100 IOPS and 80 MB/s, simulating a cheap shared HDD.
 Verified with `dd` (200 writes in 1.98s = 101 IOPS) and bandwidth tests (4.2 MB/s at 5mb limit).
 
+## Hardware counters
+
+Both the micro tier and the constrained tier can report CPU hardware counters (cycles, instructions, instructions-per-cycle, cache references and misses, branch mispredictions) through `@mitata/counters`.
+On Linux this needs perf access: the default `kernel.perf_event_paranoid=2` blocks the kernel-inclusive counters the addon opens unless the process holds `CAP_PERFMON`.
+
+### Micro tier
+
+mitata loads `@mitata/counters` itself and prints counters inline in its benchmark table.
+The workspace uses strict pnpm isolation (`hoist: false`, `nodeLinker: isolated`), so mitata cannot resolve the addon from its own location; a `packageExtensions` entry in `pnpm-workspace.yaml` declares the dependency for mitata so the runtime `import('@mitata/counters')` resolves.
+
+Grant `CAP_PERFMON` to the bun binary once, then run the micro benchmarks:
+
+```bash
+mise run //packages/test-fixture/file-enforcer-perf:perf:enable-counters
+mise run //packages/test-fixture/file-enforcer-perf:perf:micro
+```
+
+`perf:enable-counters` runs `setcap cap_perfmon+ep` on the bun binary (one sudo prompt).
+Without the capability the benchmarks still run; mitata just omits the counter columns.
+Two caveats:
+
+- The capability is granted to the bun binary system-wide, so every bun process gains `CAP_PERFMON` until it is removed with `perf:disable-counters`.
+- A mise bun upgrade replaces the binary and drops the capability; re-run `perf:enable-counters` afterward.
+
+### Constrained tier
+
+`bench-in-container.ts` drives the `@mitata/counters` low-level API directly (it times with `performance.now()`, not mitata) and wraps each config run to capture per-region counters; `run-constrained.ts` reports the median instructions, cycles, and IPC per scenario alongside the timings.
+
+This is best-effort.
+Rootless podman cannot obtain perf access from `--cap-add=PERFMON` alone: the container's capabilities live in a child user namespace, but the kernel checks perf permission against the init user namespace, and the perf subsystem is not namespaced so the container inherits the host `perf_event_paranoid`.
+At the default value of 2 the counters stay dormant and each scenario reports timing only.
+To populate them, lower the host setting before running the constrained benchmark, for example `sudo sysctl kernel.perf_event_paranoid=1`, then restore it afterward.
+
+The counter span covers thread-on-CPU work between the start and end of each measured region, including event-loop activity during awaits, so the constrained counters are approximate for these single-shot async runs.
+
 ## Results (as of 2026-02-22)
 
 ### Host (AMD Ryzen 7 8700F, NVMe SSD)
@@ -152,9 +192,11 @@ The 2-55ms warm variance was caused by CFS period boundary stalls, not actual pe
 
 - `setup-fixture.ts`: creates the 240-file benchmark fixture
 - `perf.config.ts`: exercises all file-enforcer operations against the fixture
-- `perf.bench.test.ts`: 11 micro-benchmarks with JIT limitation notes
+- `perf.bench.test.ts`: 11 micro-benchmarks with JIT limitation notes; mitata prints hardware counters inline when `CAP_PERFMON` is granted
 - `run-e2e.ts`: hyperfine-based end-to-end benchmarks
 - `validate-resources.ts`: CPU, memory, IO, and sysbench benchmarks for resource validation
-- `bench-in-container.ts`: runs inside the container, validates CPU affinity and memory limits, times config execution
+- `bench-in-container.ts`: runs inside the container, validates CPU affinity and memory limits, times config execution, and captures best-effort hardware counters
+- `container-counters.ts`: best-effort `@mitata/counters` wiring (load, probe, per-region measure) for the constrained tier
+- `mitata-counters.d.ts`: ambient types for the untyped `@mitata/counters` addon
 - `run-constrained.ts`: orchestrates podman build, parallel container launch, and constrained benchmarks
 - `Containerfile`: Fedora 43 with bun and sysbench

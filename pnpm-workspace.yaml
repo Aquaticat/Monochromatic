@@ -175,6 +175,18 @@ minimumReleaseAgeExclude:
 - '@earendil-works/pi-tui@0.78.0'
 nodeLinker: isolated
 
+packageExtensions:
+  # mitata calls `import('@mitata/counters')` at runtime to add hardware
+  # performance counters (cycles, instructions, IPC, cache, branches) to its
+  # benchmark output, but does not declare the package as a dependency. Under
+  # this workspace's strict isolation (hoist: false, nodeLinker: isolated) that
+  # dynamic import is unresolvable from mitata's own location, so counters never
+  # load. Declaring the dependency here makes pnpm link it under mitata so the
+  # import resolves. Only consumer is the file-enforcer-perf benchmark package.
+  mitata:
+    dependencies:
+      '@mitata/counters': '>=0.0.8'
+
 overrides:
   'jspdf>canvg': '-'
   'jspdf>dompurify': '-'

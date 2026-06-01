@@ -31,7 +31,9 @@ import {
   VPS_SYSBENCH_BASELINE,
 } from './run-constrained-config.ts';
 import {
+  collectCounters,
   collectTimings,
+  formatCountersSummary,
   formatTimingSummary,
 } from './run-constrained-timing.ts';
 import {
@@ -115,7 +117,7 @@ async function runContainerBench(_unused: unknown,
       '-c',
       CPUSET_CPU,
       'bun',
-      'packages/fixture/file-enforcer-perf/src/bench-in-container.ts',
+      'packages/test-fixture/file-enforcer-perf/src/bench-in-container.ts',
     ],
     `Container ${String(containerIndex,)}`,
   );
@@ -205,6 +207,9 @@ for (const category of TIMING_CATEGORIES) {
   const values = collectTimings(containerResults, category,);
   if (values.length > 0)
     console.log(formatTimingSummary(category, values,),);
+  const categoryCounters = collectCounters(containerResults, category,);
+  if (categoryCounters.length > 0)
+    console.log(formatCountersSummary(categoryCounters,),);
 }
 
 //endregion Benchmark results

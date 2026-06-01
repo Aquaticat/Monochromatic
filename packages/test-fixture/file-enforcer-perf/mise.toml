@@ -1,22 +1,38 @@
 [tasks.'perf:setup']
 description = "Create performance benchmark fixture files in /tmp"
-run = "bun packages/fixture/file-enforcer-perf/src/setup-fixture.ts"
+run = "bun src/setup-fixture.ts"
 
 [tasks.'perf:micro']
-description = "Run micro-benchmarks of individual file-enforcer operations"
-run = "bun packages/fixture/file-enforcer-perf/src/perf.bench.test.ts"
+description = "Run micro-benchmarks of individual file-enforcer operations (hardware counters appear once CAP_PERFMON is granted via perf:enable-counters)"
+run = "bun src/perf.bench.test.ts"
 
 [tasks.'perf:e2e']
 description = "Run end-to-end benchmarks with hyperfine on host"
-run = "bun packages/fixture/file-enforcer-perf/src/run-e2e.ts"
+run = "bun src/run-e2e.ts"
 
 [tasks.'perf:constrained']
 description = "Run benchmarks under CPU contention (5 containers on 1 core, 1GB RAM)"
-run = "bun packages/fixture/file-enforcer-perf/src/run-constrained.ts"
+run = "bun src/run-constrained.ts"
 
 [tasks.'perf:teardown']
 description = "Remove performance benchmark fixture files"
 run = "rm -rf ($env.TMPDIR? | default '/tmp' | path join 'file-enforcer-perf')"
+
+[tasks.'perf:enable-counters']
+description = "Grant CAP_PERFMON to the bun binary so mitata surfaces hardware counters in perf:micro (system-wide; re-run after a bun upgrade)"
+run = '''
+let bun = (which bun | get path | first | path expand)
+^sudo setcap cap_perfmon+ep $bun
+^getcap $bun
+'''
+
+[tasks.'perf:disable-counters']
+description = "Remove the CAP_PERFMON file capability that perf:enable-counters granted to bun"
+run = '''
+let bun = (which bun | get path | first | path expand)
+^sudo setcap -r $bun
+print $"removed file capabilities from ($bun)"
+'''
 
 # lint:oxlint omitted -- see docs/troubleshooting/oxlint.md
 

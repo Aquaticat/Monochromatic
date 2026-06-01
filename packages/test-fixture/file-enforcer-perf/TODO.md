@@ -35,6 +35,15 @@
 - The container mounts the entire monorepo as a volume.
   For more isolated benchmarks, copy only the necessary packages into the container.
 
+## Hardware counters
+
+- Constrained-tier counters are dormant under the default rootless podman setup
+  (`perf_event_paranoid=2`), since `--cap-add=PERFMON` cannot grant perf access
+  across the container's user namespace.
+  They populate only when the host paranoid level is lowered before the run.
+  Consider a throwaway sysctl toggle around the constrained pipeline if
+  per-scenario counters under contention become a routine need.
+
 ## Host baseline
 
 - sysbench is not installed on the host (`-1 events/sec` in output).

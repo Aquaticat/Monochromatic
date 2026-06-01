@@ -5,6 +5,8 @@
 
 import nanoSpawn from 'nano-spawn';
 
+import type { CountersSnapshot, } from './container-counters.ts';
+
 /** Result shape from bench-in-container.ts */
 export type ContainerBenchResult = {
   readonly limits: {
@@ -14,7 +16,11 @@ export type ContainerBenchResult = {
     readonly memoryValid: boolean;
   };
   readonly sysbench: { readonly eventsPerSec: number; };
-  readonly timings: readonly { readonly label: string; readonly ms: number; }[];
+  readonly timings: readonly {
+    readonly label: string;
+    readonly ms: number;
+    readonly counters: CountersSnapshot | null;
+  }[];
 };
 
 /** Shape of host baseline benchmark results parsed from JSON */
