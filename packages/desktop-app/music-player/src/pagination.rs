@@ -5,8 +5,10 @@
 //! Each track's display string is its path relative to the queue's common root
 //! (see the `relpath` module):
 //!
-//! - A track inside a subfolder (its relative path contains `/`) groups by that
-//!   folder: the page label is the relative parent path (e.g. `Artist/Album`).
+//! - A track inside a subfolder (its relative path contains `/`) groups by its
+//!   TOP-LEVEL folder under the loaded root (one level only): the page label is
+//!   that single folder (e.g. `Artist`), while any deeper nesting stays visible
+//!   in the row's full relative path.
 //! - A track sitting directly at the root (no `/`) groups by first letter, with
 //!   fixed buckets: the 26 English letters A-Z (case-insensitive), plus a single
 //!   `#` catch-all for digits, symbols, CJK, and non-English letters.
@@ -162,19 +164,22 @@ fn letter_key(name: &str) -> (u8, String) {
 //           can never drift apart.
 // TS map:   `function pageKey(name: string): [number, string]`
 fn page_key(name: &str) -> (u8, String) {
-    // What:     `match name.rfind(SEPARATOR) { ... }`. `name.rfind(c)` returns
-    //           `Option<usize>`: the BYTE index of the LAST `/`, or `None` when the
-    //           name has no folder. (`rfind` with a `char` is a plain reverse scan,
+    // What:     `match name.find(SEPARATOR) { ... }`. `name.find(c)` returns
+    //           `Option<usize>`: the BYTE index of the FIRST `/`, or `None` when the
+    //           name has no folder. (`find` with a `char` is a plain forward scan,
     //           not a regex.)
-    // Why:      A `/` means the track lives in a subfolder; its parent path is the
-    //           folder page, otherwise it is a root-level (letter-page) track.
-    // TS map:   `const slash = name.lastIndexOf("/");`
-    match name.rfind(SEPARATOR) {
+    // Why:      A `/` means the track lives in a subfolder; the segment before the
+    //           FIRST `/` is its top-level folder (one level only), otherwise it is
+    //           a root-level (letter-page) track.
+    // TS map:   `const slash = name.indexOf("/");`
+    match name.find(SEPARATOR) {
         // What:     `Some(slash) => (FOLDER_GROUP, name[..slash].to_string())`.
-        //           `name[..slash]` slices the bytes BEFORE the last `/` (a range
-        //           index; `..slash` means "up to, not including"), yielding a
-        //           `&str`; `.to_string()` owns it as the folder label.
-        // Why:      Group the track under its containing folder's relative path.
+        //           `name[..slash]` slices the bytes BEFORE the FIRST `/` (a range
+        //           index; `..slash` means "up to, not including"), yielding the
+        //           top-level folder as a `&str`; `.to_string()` owns it as the page
+        //           label.
+        // Why:      Group by one folder level only (the top folder under the loaded
+        //           root); deeper nesting shows in the row path, not the tab.
         // TS map:   `if (slash >= 0) return [FOLDER_GROUP, name.slice(0, slash)];`
         Some(slash) => (FOLDER_GROUP, name[..slash].to_string()),
         // What:     `None => letter_key(name)`. No folder: fall back to the first-
@@ -334,20 +339,21 @@ mod tests {
     }
 
     #[test]
-    fn same_folder_tracks_share_one_page() {
-        // What:     `let pages = paginate(&names(&["A/Alb/01.flac", "A/Alb/02.flac"]));`.
-        //           Two tracks in the same relative folder.
-        // Why:      Prove they merge onto one folder page in load order.
-        // TS map:   `const pages = paginate(["A/Alb/01.flac", "A/Alb/02.flac"]);`
-        let pages = paginate(&names(&["A/Alb/01.flac", "A/Alb/02.flac"]));
+    fn same_top_folder_collapses_one_level() {
+        // What:     `let pages = paginate(&names(&["Artist/Album1/01.flac", "Artist/Album2/01.flac"]));`.
+        //           Two tracks in DIFFERENT deeper subfolders but the same top folder.
+        // Why:      Prove paging uses one level only: both collapse onto `Artist`.
+        // TS map:   `const pages = paginate(["Artist/Album1/01.flac", "Artist/Album2/01.flac"]);`
+        let pages = paginate(&names(&["Artist/Album1/01.flac", "Artist/Album2/01.flac"]));
         // What:     `assert_eq!(pages.len(), 1);`. One page expected.
-        // Why:      Both share the `A/Alb` folder.
+        // Why:      Both share the `Artist` top-level folder despite differing albums.
         // TS map:   `expect(pages.length).toBe(1);`
         assert_eq!(pages.len(), 1);
-        // What:     `assert_eq!(pages[0].label, "A/Alb");`. The label is the folder.
-        // Why:      Folder pages caption with the relative parent path.
-        // TS map:   `expect(pages[0].label).toBe("A/Alb");`
-        assert_eq!(pages[0].label, "A/Alb");
+        // What:     `assert_eq!(pages[0].label, "Artist");`. The label is the TOP
+        //           folder only, not `Artist/Album1`.
+        // Why:      Pages are limited to one folder level.
+        // TS map:   `expect(pages[0].label).toBe("Artist");`
+        assert_eq!(pages[0].label, "Artist");
         // What:     `let indices: Vec<usize> = pages[0].entries.iter().map(|e| e.index).collect();`.
         //           Pull just the load-order indices out of the page's entries.
         // Why:      Confirm the original positions survived grouping, in order.

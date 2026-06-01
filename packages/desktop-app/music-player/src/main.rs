@@ -50,8 +50,9 @@ use music_player::session::Session;
 // What:     `use music_player::pagination;`. The pure queue-pagination module.
 //           Importing the MODULE (not its items) so calls read `pagination::paginate`
 //           / `pagination::page_of_index`, keeping the origin obvious at the call.
-// Why:      The binary groups the queue's display paths into pages: one per folder
-//           for subfolder tracks, A-Z + `#` letter pages for root-level tracks.
+// Why:      The binary groups the queue's display paths into pages: one per top-
+//           level folder for subfolder tracks, A-Z + `#` letter pages for root-
+//           level tracks.
 // TS map:   `import * as pagination from "music-player/pagination";`
 use music_player::pagination;
 

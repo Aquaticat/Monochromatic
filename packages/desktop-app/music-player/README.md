@@ -73,10 +73,11 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/engine.rs`: the worker-thread front door. `Engine::spawn` starts the background thread; `run` builds a
   `Controller` and drives it from the command channel.
 - `src/pagination.rs`: pure queue pagination on two axes. `paginate` groups each track's relative display path:
-  a track in a subfolder gets a page per folder (label is the relative folder path), and a track at the loaded
-  root gets a first-letter page (the 26 English letters A-Z, case-insensitive, plus a `#` catch-all for digits,
-  symbols, CJK, and non-English letters). Pages sort folder-pages-first, then A-Z, then `#`. `page_of_index`
-  finds the page holding a given track. No GUI or audio, so it is unit-tested directly.
+  a track in a subfolder gets a page per top-level folder under the loaded root (one level only; the label is
+  that folder, with deeper nesting shown in the row path), and a track at the loaded root gets a first-letter
+  page (the 26 English letters A-Z, case-insensitive, plus a `#` catch-all for digits, symbols, CJK, and
+  non-English letters). Pages sort folder-pages-first, then A-Z, then `#`. `page_of_index` finds the page
+  holding a given track. No GUI or audio, so it is unit-tested directly.
 - `src/relpath.rs`: pure relative-path display. `relative_display_paths` strips the longest common directory
   prefix shared by all queued tracks (always leaving at least the filename), so the UI shows `Artist/Album/01.flac`
   rather than the full absolute path, or just `01.flac` when the whole queue is one folder. No I/O, so it is
@@ -85,10 +86,11 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
   property edge, so the engine and queue model stay unaware of pagination.
 - `ui/app.slint`: the window markup (seek bar, transport row, volume slider, page-tab bar, queue list). The
-  queue is paginated on two axes: a track in a subfolder gets a page per containing folder (the tab is the
-  relative folder path), and a track at the loaded root gets a first-letter page (A-Z plus a `#` catch-all).
-  Each tab shows one page; rows show each track's path relative to the loaded root. The playing track is the
-  highlighted row, and the view follows it across track changes, so there is no separate now-playing title.
+  queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
+  (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
+  `#` catch-all). Each tab shows one page; rows show each track's path relative to the loaded root (so deeper
+  nesting stays visible). The playing track is the highlighted row, and the view follows it across track
+  changes, so there is no separate now-playing title.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The
