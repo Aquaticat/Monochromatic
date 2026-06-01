@@ -9,6 +9,60 @@
 // TS map:   both are just `string` in TS.
 use std::path::{Path, PathBuf};
 
+// What:     `const AUDIO_EXTENSIONS: &[&str] = &[ ... ];`. `&[&str]` is a BORROWED
+//           slice (sibling: the owned `Vec<&str>`) of borrowed string slices, each
+//           pointing at text baked into the binary. The file extensions (lowercased,
+//           no leading dot) this player treats as playable, matching the documented
+//           codec set: FLAC, WAV/PCM, MP3, Vorbis (Ogg), Opus, AAC-LC/ALAC (MP4),
+//           and AIFF.
+// Why:      A folder holds more than music (cover art, playlists, and system files
+//           like `.DS_Store` / `.nomedia` / `.database_uuid`); this allowlist is the
+//           single rule deciding what a scan enqueues, so junk never reaches the queue.
+// TS map:   `const AUDIO_EXTENSIONS: readonly string[] = [ ... ];`
+const AUDIO_EXTENSIONS: &[&str] = &[
+    "flac", "wav", "wave", "mp3", "ogg", "oga", "opus", "m4a", "m4b", "mp4", "aac", "aiff", "aif",
+    "aifc",
+];
+
+// What:     `pub(crate) fn is_audio_file(path: &Path) -> bool`. True when the path's
+//           extension is in `AUDIO_EXTENSIONS`, compared case-insensitively. `&Path`
+//           is a borrowed path (read-only). `pub(crate)` so the session pruner reuses
+//           the same rule.
+// Why:      One predicate decides "does this belong in a music queue", shared by the
+//           folder scan and the session restore so they cannot disagree.
+// TS map:   `function isAudioFile(path: string): boolean`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function isAudioFile(path: string): boolean {
+//   const ext = extname(path).replace(/^\./, "").toLowerCase(); // "" when none
+//   return AUDIO_EXTENSIONS.includes(ext);
+// }
+// ```
+pub(crate) fn is_audio_file(path: &Path) -> bool {
+    // What:     `match path.extension() { ... }`. `path.extension()` returns
+    //           `Option<&OsStr>`: the part after the final dot, or `None` when there
+    //           is none. A dotfile like `.DS_Store` has NO extension in Rust (the
+    //           leading dot is not a separator), so it lands in the `None` arm.
+    // Why:      Without an extension there is nothing to match against the allowlist.
+    // TS map:   `const ext = extname(path); // "" when none`
+    match path.extension() {
+        // What:     `Some(ext) => AUDIO_EXTENSIONS.contains(&ext.to_string_lossy().to_lowercase().as_str())`.
+        //           `ext.to_string_lossy()` makes a `Cow<str>` (replacing invalid
+        //           bytes); `.to_lowercase()` returns an owned lowercased `String`;
+        //           `.as_str()` borrows it as `&str`; the leading `&` makes the
+        //           `&&str` that `slice.contains` compares against each entry.
+        // Why:      Case-insensitive membership test, so `.FLAC` matches `flac`.
+        // TS map:   `return AUDIO_EXTENSIONS.includes(ext.toLowerCase());`
+        Some(ext) => AUDIO_EXTENSIONS.contains(&ext.to_string_lossy().to_lowercase().as_str()),
+        // What:     `None => false`. No extension (extensionless name or a dotfile):
+        //           not recognised as audio.
+        // Why:      Skip extensionless and hidden files.
+        // TS map:   `return false;`
+        None => false,
+    }
+}
+
 // What:     `pub(crate) fn process_sample(sample: f32, gain: f32) -> f32`. The
 //           per-sample output stage: apply the combined gain (user volume times the
 //           track's normalization gain), then hard-clamp into the valid PCM range.
@@ -191,17 +245,20 @@ fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
             // Why:      Stored in one of the two buckets.
             // TS map:   `const p = entry.path;`
             let p = entry.path();
-            // What:     `if file_type.is_dir() { subdirs.push(p); } else if p.is_file() { files.push(p); }`.
+            // What:     `if file_type.is_dir() { subdirs.push(p); } else if p.is_file() && is_audio_file(&p) { files.push(p); }`.
             //           A REAL subdirectory (symlinks excluded by `file_type`) goes
-            //           on the work-list; anything that resolves to a file
-            //           (`p.is_file()` DOES follow symlinks, so symlinked files
-            //           still count) is kept. A symlinked directory matches neither
-            //           and is ignored (loop-safe).
-            // Why:      Recurse only into real folders; collect real files.
-            // TS map:   `if (ft.isDirectory()) subdirs.push(p); else if (isFile(p)) files.push(p);`
+            //           on the work-list; a file is kept ONLY when it resolves to a
+            //           real file (`p.is_file()` DOES follow symlinks, so symlinked
+            //           files still count) AND its extension is in the audio allowlist
+            //           (`is_audio_file`, borrowing `&p`). A symlinked directory
+            //           matches neither and is ignored (loop-safe).
+            // Why:      Recurse into real folders; enqueue only audio files, so cover
+            //           art, playlists, and system files (`.DS_Store`, `.nomedia`,
+            //           `.database_uuid`, ...) never enter the queue.
+            // TS map:   `if (ft.isDirectory()) subdirs.push(p); else if (isFile(p) && isAudioFile(p)) files.push(p);`
             if file_type.is_dir() {
                 subdirs.push(p);
-            } else if p.is_file() {
+            } else if p.is_file() && is_audio_file(&p) {
                 files.push(p);
             }
         }
@@ -411,6 +468,84 @@ mod tests {
 
         // What:     `let _ = fs::remove_dir_all(&root);`. Delete the throwaway tree;
         //           `let _ =` discards the result (cleanup is best-effort).
+        // Why:      Leave no fixture behind.
+        // TS map:   `fs.rmSync(root, { recursive: true, force: true });`
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    // What:     `#[test]` marks the next function as a test case.
+    // Why:      Cover the audio-extension predicate directly.
+    // TS map:   `test("is_audio_file ...", () => { ... })`.
+    #[test]
+    fn is_audio_file_matches_extensions_case_insensitively() {
+        // What:     `assert!(is_audio_file(Path::new("a.flac")));`. `Path::new(s)`
+        //           wraps a `&str` as a `&Path` with no allocation. A `.flac` file
+        //           is audio.
+        // Why:      Baseline positive.
+        // TS map:   `expect(isAudioFile("a.flac")).toBe(true);`
+        assert!(is_audio_file(Path::new("a.flac")));
+        // What:     uppercase extension still matches.
+        // Why:      The check is case-insensitive.
+        // TS map:   `expect(isAudioFile("A.FLAC")).toBe(true);`
+        assert!(is_audio_file(Path::new("A.FLAC")));
+        // What:     a mixed-case extension on a nested path matches.
+        // Why:      Confirm path components do not affect the extension test.
+        // TS map:   `expect(isAudioFile("/x/y/b.OpUs")).toBe(true);`
+        assert!(is_audio_file(Path::new("/x/y/b.OpUs")));
+        // What:     `assert!(!is_audio_file(Path::new("cover.jpg")));`. `!` negates;
+        //           a non-audio extension is rejected.
+        // Why:      Cover art must not enter the queue.
+        // TS map:   `expect(isAudioFile("cover.jpg")).toBe(false);`
+        assert!(!is_audio_file(Path::new("cover.jpg")));
+        // What:     a dotfile has no extension, so it is rejected.
+        // Why:      System files like `.DS_Store` must be skipped.
+        // TS map:   `expect(isAudioFile(".DS_Store")).toBe(false);`
+        assert!(!is_audio_file(Path::new(".DS_Store")));
+        // What:     an extensionless name is rejected.
+        // Why:      Nothing identifies it as audio.
+        // TS map:   `expect(isAudioFile("noext")).toBe(false);`
+        assert!(!is_audio_file(Path::new("noext")));
+    }
+
+    // What:     `#[test]` marks the next function as a test case.
+    // Why:      Prove a folder scan keeps only audio files and skips junk.
+    // TS map:   `test("expand_paths keeps only audio ...", () => { ... })`.
+    #[test]
+    fn expand_paths_keeps_only_audio_files_and_skips_junk() {
+        // What:     `let root = unique_temp_dir();`. A throwaway fixture directory.
+        // Why:      A real folder to scan.
+        // TS map:   `const root = uniqueTempDir();`
+        let root = unique_temp_dir();
+
+        // What:     create two audio files, deliberately out of alphabetical order.
+        // Why:      Confirm they survive and come back sorted.
+        // TS map:   `fs.writeFileSync(join(root, "song.mp3"), "x"); ...`
+        fs::write(root.join("song.mp3"), b"x").unwrap();
+        fs::write(root.join("tune.flac"), b"x").unwrap();
+        // What:     create non-audio and hidden/system files that must be skipped.
+        // Why:      These are exactly the kinds of files that leaked into the queue.
+        // TS map:   `fs.writeFileSync(join(root, "cover.jpg"), "x"); ...`
+        fs::write(root.join("cover.jpg"), b"x").unwrap();
+        fs::write(root.join("playlist.m3u"), b"x").unwrap();
+        fs::write(root.join(".DS_Store"), b"x").unwrap();
+        fs::write(root.join(".nomedia"), b"x").unwrap();
+        fs::write(root.join(".database_uuid"), b"x").unwrap();
+
+        // What:     `let got = expand_paths(vec![root.clone()]);`. Scan the folder.
+        // Why:      Exercise the filtered walk.
+        // TS map:   `const got = expandPaths([root]);`
+        let got = expand_paths(vec![root.clone()]);
+        // What:     `let expected = vec![root.join("song.mp3"), root.join("tune.flac")];`.
+        //           Only the two audio files, sorted (`s` before `t`).
+        // Why:      Pin the filtered, ordered result.
+        // TS map:   `const expected = [join(root, "song.mp3"), join(root, "tune.flac")];`
+        let expected = vec![root.join("song.mp3"), root.join("tune.flac")];
+        // What:     `assert_eq!(got, expected);`. Fail unless equal.
+        // Why:      Confirm junk is dropped and audio kept in order.
+        // TS map:   `expect(got).toEqual(expected);`
+        assert_eq!(got, expected);
+
+        // What:     `let _ = fs::remove_dir_all(&root);`. Best-effort cleanup.
         // Why:      Leave no fixture behind.
         // TS map:   `fs.rmSync(root, { recursive: true, force: true });`
         let _ = fs::remove_dir_all(&root);

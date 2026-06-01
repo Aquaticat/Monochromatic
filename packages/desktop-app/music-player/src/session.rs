@@ -1,6 +1,7 @@
 //! Saving and restoring the last session (queue, cursor, position, volume,
 //! shuffle, repeat) to a JSON file under the user's config directory. On
-//! restore, tracks whose files have moved/disappeared are dropped.
+//! restore, tracks whose files have moved/disappeared, or that are not audio
+//! files, are dropped and the cursor is remapped onto the survivors.
 
 // What:     `use std::path::PathBuf;` imports the OWNED path type (sibling:
 //           borrowed `&Path`).
@@ -96,20 +97,22 @@ impl Default for Session {
 }
 
 impl Session {
-    // What:     `pub fn prune_missing(&mut self)` removes tracks whose files no
-    //           longer exist and fixes up the `current` index. `&mut self` is a
-    //           mutable borrow.
-    // Why:      Files may have moved since the session was saved; we must not
-    //           try to play paths that are gone.
-    // TS map:   `pruneMissing(): void`.
+    // What:     `pub fn prune_unplayable(&mut self)` removes tracks that cannot or
+    //           should not be played, fixing up the `current` index: a track is kept
+    //           only when its file still exists AND its extension is in the audio
+    //           allowlist. `&mut self` is a mutable borrow.
+    // Why:      Files may have moved since the session was saved (gone paths), and a
+    //           session saved before audio filtering existed may hold non-audio junk
+    //           (cover art, `.DS_Store`, `.nomedia`); neither belongs in the queue.
+    // TS map:   `pruneUnplayable(): void`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // pruneMissing(): void {
+    // pruneUnplayable(): void {
     //   const kept: string[] = [];
     //   let newCurrent: number | null = null;
     //   this.tracks.forEach((p, oldIdx) => {
-    //     if (existsSync(p)) {
+    //     if (existsSync(p) && isAudioFile(p)) {
     //       if (this.current === oldIdx) newCurrent = kept.length;
     //       kept.push(p);
     //     }
@@ -119,7 +122,7 @@ impl Session {
     //   if (newCurrent === null) this.positionSecs = 0;
     // }
     // ```
-    pub fn prune_missing(&mut self) {
+    pub fn prune_unplayable(&mut self) {
         // What:     `let mut kept: Vec<PathBuf> = Vec::new();` an owned, growable
         //           array we fill with surviving paths. The `: Vec<PathBuf>`
         //           annotation is explicit because nothing else pins the type.
@@ -138,10 +141,15 @@ impl Session {
         // Why:      We need both the value and its original index to remap.
         // TS map:   `this.tracks.forEach((path, oldIdx) => { ... })`.
         for (old_idx, path) in self.tracks.iter().enumerate() {
-            // What:     `path.exists()` returns `bool` (does the file exist now).
-            // Why:      Keep only present files.
-            // TS map:   `existsSync(path)`.
-            if path.exists() {
+            // What:     `path.exists() && crate::playback::is_audio_file(path)`.
+            //           `path.exists()` returns `bool` (does the file exist now);
+            //           `&&` short-circuits to the audio-extension test, the same
+            //           predicate the folder scan uses. `path` is a `&PathBuf`, which
+            //           DEREF-COERCES to the `&Path` `is_audio_file` takes.
+            // Why:      Keep only present audio files; drop moved-away paths and any
+            //           non-audio junk a pre-filtering session persisted.
+            // TS map:   `existsSync(path) && isAudioFile(path)`.
+            if path.exists() && crate::playback::is_audio_file(path) {
                 // What:     `if self.current == Some(old_idx) { ... }` compares the
                 //           saved cursor with this position. `Some(old_idx)` wraps
                 //           the index to match the `Option` on the left.
@@ -192,7 +200,7 @@ impl Session {
     //   if (!path) return defaultSession();
     //   try {
     //     const s = JSON.parse(readFileSync(path, "utf8")) as Session;
-    //     s.pruneMissing();
+    //     s.pruneUnplayable();
     //     return s;
     //   } catch { return defaultSession(); }
     // }
@@ -238,10 +246,11 @@ impl Session {
             // Why:      We need to drop missing tracks before returning.
             // TS map:   `const session = ...; session.pruneMissing(); return session;`
             Ok(mut session) => {
-                // What:     `session.prune_missing();` drop gone files, fix cursor.
-                // Why:      Never resume into a missing file.
-                // TS map:   `session.pruneMissing();`
-                session.prune_missing();
+                // What:     `session.prune_unplayable();` drop gone/non-audio files,
+                //           fix the cursor.
+                // Why:      Never resume into a missing file or non-audio junk.
+                // TS map:   `session.pruneUnplayable();`
+                session.prune_unplayable();
                 // What:     `session` tail expression returns the cleaned value.
                 // Why:      Hand back the restored state.
                 // TS map:   `return session;`
@@ -428,8 +437,8 @@ mod tests {
         };
         // What:     run the prune.
         // Why:      The behaviour under test.
-        // TS map:   `session.pruneMissing();`
-        session.prune_missing();
+        // TS map:   `session.pruneUnplayable();`
+        session.prune_unplayable();
         // What:     only one track remains.
         // Why:      The missing one was dropped.
         // TS map:   `expect(session.tracks.length).toBe(1);`
@@ -462,7 +471,7 @@ mod tests {
             shuffle: false,
             repeat: RepeatMode::Off,
         };
-        session.prune_missing();
+        session.prune_unplayable();
         // What:     queue now empty.
         // Why:      The only track was missing.
         // TS map:   `expect(session.tracks.length).toBe(0);`
@@ -475,5 +484,55 @@ mod tests {
         // Why:      No track to resume into.
         // TS map:   `expect(session.positionSecs).toBe(0);`
         assert_eq!(session.position_secs, 0.0);
+    }
+
+    #[test]
+    fn prune_drops_present_non_audio_and_remaps_current() {
+        // What:     `let dir = std::env::temp_dir();`. The OS temp directory.
+        // Why:      We create real files so `exists()` is true for both.
+        // TS map:   `const dir = os.tmpdir();`
+        let dir = std::env::temp_dir();
+        // What:     a present NON-audio file (cover art) and a present audio file.
+        // Why:      Both exist, so only the audio-extension test separates them.
+        // TS map:   `const junk = join(dir, "...cover.jpg"); const audio = join(dir, "...song.flac");`
+        let junk = dir.join("player_prune_cover_xyz.jpg");
+        let audio = dir.join("player_prune_song_xyz.flac");
+        // What:     `std::fs::write(&junk, b"x").unwrap();`. Create each file with one
+        //           byte. `b"x"` is a BYTE-STRING literal (`&[u8]`), not text.
+        // Why:      Make both paths exist on disk.
+        // TS map:   `writeFileSync(junk, "x"); writeFileSync(audio, "x");`
+        std::fs::write(&junk, b"x").unwrap();
+        std::fs::write(&audio, b"x").unwrap();
+        // What:     session with [junk, audio], current = 1 (the audio one).
+        // Why:      After pruning, only `audio` survives and current must remap from
+        //           index 1 to index 0.
+        // TS map:   `{ tracks: [junk, audio], current: 1, ... }`.
+        let mut session = Session {
+            tracks: vec![junk.clone(), audio.clone()],
+            current: Some(1),
+            position_secs: 3.0,
+            volume: 1.0,
+            shuffle: false,
+            repeat: RepeatMode::Off,
+        };
+        // What:     run the prune.
+        // Why:      The behaviour under test.
+        // TS map:   `session.pruneUnplayable();`
+        session.prune_unplayable();
+        // What:     `assert_eq!(session.tracks, vec![audio.clone()]);`. Only the audio
+        //           file remains.
+        // Why:      The present non-audio file was dropped.
+        // TS map:   `expect(session.tracks).toEqual([audio]);`
+        assert_eq!(session.tracks, vec![audio.clone()]);
+        // What:     current remapped from 1 to 0.
+        // Why:      The cursor must follow the surviving audio track.
+        // TS map:   `expect(session.current).toBe(0);`
+        assert_eq!(session.current, Some(0));
+        // What:     `std::fs::remove_file(...).ok();` clean up both temp files;
+        //           `.ok()` discards any deletion error.
+        // Why:      Leave no test droppings.
+        // TS map:   `try { unlinkSync(junk); unlinkSync(audio); } catch {}`
+        std::fs::remove_file(&junk).ok();
+        std::fs::remove_file(&audio).ok();
     }
 }

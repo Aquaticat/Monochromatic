@@ -44,14 +44,18 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/command.rs`: the UI-to-engine `Command` and engine-to-UI `Update` message enums, plus `RepeatMode`.
 - `src/queue.rs`: the play-queue model (load order, shuffle order, cursor, repeat), with a seedable PRNG for
   deterministic shuffle tests.
-- `src/session.rs`: save and restore of the last session under the platform config directory, pruning files that moved.
+- `src/session.rs`: save and restore of the last session under the platform config directory, pruning tracks
+  whose files moved or are not audio files (and remapping the saved cursor onto the survivors).
 - `src/error.rs`: `PlayerError`, the single error type all fallible functions return.
 - `src/decode.rs`: probing and decoding to interleaved `f32` PCM behind a `Source` trait (`AudioSpec`, `open`).
 - `src/opus.rs`: the libopus `Source` for Opus.
 - `src/output.rs`: the PipeWire FFI boundary. It owns the thread loop, context, and core, and `reconfigure`
   builds an output stream at a track's native format, returning the producer half of a lock-free ring buffer.
 - `src/playback.rs`: device-free playback helpers, kept apart so they are unit-testable: the per-sample
-  gain-and-clamp stage, frame-to-seconds conversion, and recursive folder-to-file expansion.
+  gain-and-clamp stage, frame-to-seconds conversion, recursive folder expansion, and the audio-file test.
+  Folder scans enqueue only files whose extension is in the audio allowlist (flac, wav/wave, mp3, ogg/oga,
+  opus, m4a/m4b/mp4, aac, aiff/aif/aifc), so cover art, playlists, and system files (`.DS_Store`, `.nomedia`,
+  `.database_uuid`, and other dotfiles) never enter the queue.
 - `src/truepeak.rs`: streaming true-peak measurement. It oversamples each channel ~4x with a cubic
   (Catmull-Rom) interpolation to estimate inter-sample peaks at constant memory, and turns a measured peak into
   the attenuate-only normalization gain.
