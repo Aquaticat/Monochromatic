@@ -276,14 +276,28 @@ export component AppWindow inherits Window {
         // shuffle radio group (a "Shuffle" label then Off / Within page / All),
         // the transport buttons (prev / play-pause / next), and a "repeat track"
         // checkbox. The radio and checkbox are plain-HTML-styled custom
-        // components. Three stretch-factor spacer Rectangles separate the four
-        // groups, distributing them across the row (Open hugs the left edge, the
-        // checkbox the right). Default `stretch` alignment is kept (no
-        // `alignment:` override) so the spacers' `horizontal-stretch: 1` actually
-        // absorb the slack; setting any other alignment makes Slint ignore
-        // stretch factors.
-        HorizontalBox {
-            spacing: 8px;
+        // components. A FlexboxLayout (the same experimental builtin the page-tab
+        // bar uses, enabled via SLINT_ENABLE_EXPERIMENTAL_FEATURES in the
+        // Containerfile) lays the four groups left-to-right and wraps them onto
+        // more rows when the window is too narrow. Each group is wrapped in its
+        // own HorizontalLayout so a wrap never splits a group. alignment:
+        // space-between is taffy's justify-content: space-between, and
+        // spacing-horizontal: 48px is taffy's column gap, which acts as the
+        // minimum: space-between only ADDS free space on top of the gap, so the
+        // groups spread across the row yet never sit closer than 48px (verified
+        // against the slint clone's internal/core/layout.rs:1495-1524, where
+        // alignment maps to justify_content and spacing-h/v map to the taffy gap
+        // independently). spacing-vertical: 8px is the gap between wrapped rows;
+        // align-items: center vertically centres each group against the tallest
+        // in its row; vertical-stretch: 0 keeps the row at its wrapped height (the
+        // queue region below absorbs the vertical slack).
+        FlexboxLayout {
+            flex-wrap: wrap;
+            alignment: space-between;
+            align-items: center;
+            spacing-horizontal: 48px;
+            spacing-vertical: 8px;
+            vertical-stretch: 0;
             Button {
                 text: "Open";
                 // Highlight (accent style) when the queue is empty, so a fresh
@@ -293,61 +307,58 @@ export component AppWindow inherits Window {
                     root.open-files();
                 }
             }
-            // spacer: separates Open from the shuffle group
-            Rectangle {
-                horizontal-stretch: 1;
-            }
-            Text {
-                text: "Shuffle";
-                vertical-alignment: center;
-                color: Palette.foreground;
-            }
-            RadioButton {
-                text: "Off";
-                selected: root.shuffle-mode == 0;
-                clicked => {
-                    root.set-shuffle-mode(0);
+            // shuffle group: the label plus the three mutually-exclusive radios,
+            // kept together as one flex item so wrapping never splits them
+            HorizontalLayout {
+                spacing: 8px;
+                Text {
+                    text: "Shuffle";
+                    vertical-alignment: center;
+                    color: Palette.foreground;
+                }
+                RadioButton {
+                    text: "Off";
+                    selected: root.shuffle-mode == 0;
+                    clicked => {
+                        root.set-shuffle-mode(0);
+                    }
+                }
+                RadioButton {
+                    text: "Within page";
+                    selected: root.shuffle-mode == 1;
+                    clicked => {
+                        root.set-shuffle-mode(1);
+                    }
+                }
+                RadioButton {
+                    text: "All";
+                    selected: root.shuffle-mode == 2;
+                    clicked => {
+                        root.set-shuffle-mode(2);
+                    }
                 }
             }
-            RadioButton {
-                text: "Within page";
-                selected: root.shuffle-mode == 1;
-                clicked => {
-                    root.set-shuffle-mode(1);
+            // transport group: prev / play-pause / next, one flex item
+            HorizontalLayout {
+                spacing: 8px;
+                Button {
+                    text: "Prev";
+                    clicked => {
+                        root.prev();
+                    }
                 }
-            }
-            RadioButton {
-                text: "All";
-                selected: root.shuffle-mode == 2;
-                clicked => {
-                    root.set-shuffle-mode(2);
+                Button {
+                    text: root.playing ? "Pause" : "Play";
+                    clicked => {
+                        root.toggle-play();
+                    }
                 }
-            }
-            // spacer: separates the shuffle group from the transport buttons
-            Rectangle {
-                horizontal-stretch: 1;
-            }
-            Button {
-                text: "Prev";
-                clicked => {
-                    root.prev();
+                Button {
+                    text: "Next";
+                    clicked => {
+                        root.next();
+                    }
                 }
-            }
-            Button {
-                text: root.playing ? "Pause" : "Play";
-                clicked => {
-                    root.toggle-play();
-                }
-            }
-            Button {
-                text: "Next";
-                clicked => {
-                    root.next();
-                }
-            }
-            // spacer: pushes the checkbox to the right edge
-            Rectangle {
-                horizontal-stretch: 1;
             }
             CheckBox {
                 text: "Repeat track";
