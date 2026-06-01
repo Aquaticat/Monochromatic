@@ -221,7 +221,7 @@ fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
         // Why:      Degrade gracefully to silent mode.
         // TS map:   `console.error(...); output = null;`
         Err(e) => {
-            eprintln!("player: audio init failed: {e}");
+            eprintln!("music-player: audio init failed: {e}");
             None
         }
     };
@@ -657,11 +657,11 @@ impl Controller {
                 // Why:      Skip to the next track.
                 // TS map:   `catch (e) { ... }`
                 Err(e) => {
-                    // What:     `eprintln!("player: cannot open {}: {e}", path.display());`.
+                    // What:     `eprintln!("music-player: cannot open {}: {e}", path.display());`.
                     //           Log the failure. `path.display()` formats the path.
                     // Why:      Surface the bad file.
                     // TS map:   `console.error(`cannot open ${path}: ${e}`);`
-                    eprintln!("player: cannot open {}: {e}", path.display());
+                    eprintln!("music-player: cannot open {}: {e}", path.display());
                     // What:     `if self.queue.advance(false).is_none() { return false; }`.
                     //           Step forward; if there is no next track, give up.
                     // Why:      Avoid an endless loop when all files are bad.
@@ -713,7 +713,7 @@ impl Controller {
                 // Why:      Don't crash if a stream fails to connect.
                 // TS map:   `console.error(e); this.producer = null;`
                 Err(e) => {
-                    eprintln!("player: audio reconfigure failed: {e}");
+                    eprintln!("music-player: audio reconfigure failed: {e}");
                     self.producer = None;
                 }
             }
@@ -796,7 +796,7 @@ impl Controller {
             // Why:      A failed seek should not corrupt position state.
             // TS map:   `try { source.seek(secs); } catch (e) { console.error(e); return; }`
             if let Err(e) = source.seek(secs) {
-                eprintln!("player: seek failed: {e}");
+                eprintln!("music-player: seek failed: {e}");
                 return;
             }
         } else {
@@ -824,7 +824,7 @@ impl Controller {
                 // What:     `Err(e) => eprintln!(...)`. Log a reconfigure failure.
                 // Why:      Keep going (position still updates).
                 // TS map:   `console.error(e);`
-                Err(e) => eprintln!("player: seek reconfigure failed: {e}"),
+                Err(e) => eprintln!("music-player: seek reconfigure failed: {e}"),
             }
         }
 
@@ -934,7 +934,7 @@ impl Controller {
             // Why:      Move on rather than stall.
             // TS map:   `catch (e) { console.error(e); this.onTrackEnd(); return true; }`
             Err(e) => {
-                eprintln!("player: decode error: {e}");
+                eprintln!("music-player: decode error: {e}");
                 self.on_track_end();
                 return true;
             }
@@ -1131,7 +1131,7 @@ fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
                 // What:     `Err(e) => eprintln!(...)`. Log a directory-read failure.
                 // Why:      Skip the bad folder.
                 // TS map:   `catch (e) { console.error(e); }`
-                Err(e) => eprintln!("player: cannot read dir {}: {e}", path.display()),
+                Err(e) => eprintln!("music-player: cannot read dir {}: {e}", path.display()),
             }
         } else {
             // What:     `out.push(path);`. A plain path: keep it as-is (MOVES it).

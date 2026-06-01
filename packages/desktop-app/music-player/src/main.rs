@@ -27,16 +27,18 @@ use std::path::PathBuf;
 // ```
 use std::rc::Rc;
 
-// What:     `use player::command::{Command, RepeatMode, Update};`. The message
-//           types from our library crate (`player` is this package's lib).
+// What:     `use music_player::command::{Command, RepeatMode, Update};`. The
+//           message types from our library crate. The package is `music-player`
+//           but a Rust crate identifier cannot contain `-`, so the lib crate is
+//           `music_player` (the hyphen becomes an underscore).
 // Why:      We build `Command`s and read `Update`s.
-// TS map:   `import { Command, RepeatMode, Update } from "player/command";`
-use player::command::{Command, RepeatMode, Update};
+// TS map:   `import { Command, RepeatMode, Update } from "music-player/command";`
+use music_player::command::{Command, RepeatMode, Update};
 
-// What:     `use player::engine::Engine;`. The controller handle.
+// What:     `use music_player::engine::Engine;`. The controller handle.
 // Why:      We spawn it and send commands.
-// TS map:   `import { Engine } from "player/engine";`
-use player::engine::Engine;
+// TS map:   `import { Engine } from "music-player/engine";`
+use music_player::engine::Engine;
 
 // What:     `use slint::{ComponentHandle, SharedString, VecModel};`.
 //           `ComponentHandle` is the trait giving `.as_weak()`/`.run()` on the
@@ -429,7 +431,7 @@ fn main() -> Result<(), slint::PlatformError> {
     // What:     `let cli_paths: Vec<PathBuf> = std::env::args().skip(1).map(PathBuf::from).collect();`.
     //           Collect command-line arguments after the program name into paths.
     //           `skip(1)` drops `argv[0]`; `.map(PathBuf::from)` converts each.
-    // Why:      Allow `player file1 dir2 ...` to enqueue on launch.
+    // Why:      Allow `music-player file1 dir2 ...` to enqueue on launch.
     // TS map:   `const cliPaths = process.argv.slice(2);`
     let cli_paths: Vec<PathBuf> = std::env::args().skip(1).map(PathBuf::from).collect();
     // What:     `if !cli_paths.is_empty() { engine.send(Command::OpenPaths(cli_paths)); }`.

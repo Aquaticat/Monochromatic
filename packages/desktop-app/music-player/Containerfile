@@ -1,4 +1,4 @@
-# Build + run environment for the `player` music player.
+# Build + run environment for the `music-player` app.
 # The host is an immutable-style Fedora without dev headers, so all cargo
 # work happens inside this container (see mise.toml tasks). The image also
 # carries the GUI/audio runtime libraries so the `run` task can drive the

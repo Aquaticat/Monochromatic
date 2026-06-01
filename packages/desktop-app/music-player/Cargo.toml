@@ -1,5 +1,5 @@
 [package]
-name = "player"
+name = "music-player"
 version = "0.1.0"
 edition = "2021"
 description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc queue, broad codec support (symphonia + Opus)."
@@ -7,11 +7,11 @@ license = "LGPL-3.0-or-later"
 publish = false
 
 [lib]
-name = "player"
+name = "music_player"
 path = "src/lib.rs"
 
 [[bin]]
-name = "player"
+name = "music-player"
 path = "src/main.rs"
 
 [dependencies]

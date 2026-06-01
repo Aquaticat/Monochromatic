@@ -6,30 +6,30 @@
 
 [tasks.image]
 description = "Build the Fedora build/run container image"
-run = "podman build -t localhost/monochromatic/player -f Containerfile ."
+run = "podman build -t localhost/monochromatic/music-player -f Containerfile ."
 
 [tasks.build]
 description = "Release build inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo build --release"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo build --release"
 
 [tasks."build:debug"]
 description = "Debug build inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo build"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo build"
 
 [tasks.lint]
 description = "cargo check (no codegen) inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo check"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo check"
 
 [tasks."lint:clippy"]
 description = "Run clippy with warnings denied inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo clippy --release -- -D warnings"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo clippy --release -- -D warnings"
 
 [tasks.test]
 description = "cargo test inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v player-cargo:/cargo -w /work localhost/monochromatic/player cargo test --release"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo test --release"
 
 [tasks.run]
-description = "Run the player GUI against the host Wayland + PipeWire (pass file/folder paths after --)"
+description = "Run the music-player GUI against the host Wayland + PipeWire (pass file/folder paths after --)"
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue"
 '''
@@ -43,7 +43,7 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
 (
   podman run --rm --security-opt label=disable
   --device /dev/dri --group-add keep-groups
-  -v $"(pwd):/work" -v player-cargo:/cargo -w /work
+  -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work
   -v $"($xrd)/($wl):/run/host-wayland"
   -v $"($xrd)/pipewire-0:/run/pipewire-0"
   -v $"($xrd)/bus:/run/host-bus"
@@ -52,7 +52,7 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
   -e PIPEWIRE_REMOTE=pipewire-0
   -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-bus
   (if ($env.SLINT_BACKEND? != null) { [-e $"SLINT_BACKEND=($env.SLINT_BACKEND)"] } else { [] })
-  localhost/monochromatic/player
+  localhost/monochromatic/music-player
   cargo run --release -- ...$extras
 ) | complete | get stdout
 '''

@@ -330,18 +330,18 @@ impl Session {
 // In TS you'd write (pseudocode):
 // ```ts
 // function sessionPath(): string | null {
-//   const dirs = projectDirs("dev", "Monochromatic", "player");
+//   const dirs = projectDirs("dev", "Monochromatic", "music-player");
 //   return dirs ? join(dirs.configDir, "session.json") : null;
 // }
 // ```
 fn session_path() -> Option<PathBuf> {
-    // What:     `directories::ProjectDirs::from("dev", "Monochromatic", "player")`
+    // What:     `directories::ProjectDirs::from("dev", "Monochromatic", "music-player")`
     //           asks the `directories` crate for the standard per-app config
-    //           location (on Linux: `$XDG_CONFIG_HOME/player`). It returns
+    //           location (on Linux: `$XDG_CONFIG_HOME/music-player`). It returns
     //           `Option<ProjectDirs>` (None if the home directory cannot be found).
     // Why:      Respect the platform's config-dir convention instead of guessing.
-    // TS map:   `const dirs = projectDirs("dev","Monochromatic","player");`
-    directories::ProjectDirs::from("dev", "Monochromatic", "player")
+    // TS map:   `const dirs = projectDirs("dev","Monochromatic","music-player");`
+    directories::ProjectDirs::from("dev", "Monochromatic", "music-player")
         // What:     `.map(|dirs| dirs.config_dir().join("session.json"))` runs only
         //           when `Some`. `dirs.config_dir()` returns `&Path`; `.join(...)`
         //           appends the filename and returns an owned `PathBuf`.

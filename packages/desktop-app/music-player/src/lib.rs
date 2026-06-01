@@ -1,4 +1,4 @@
-//! Library root for the `player` music player. The binary (`main.rs`) wires
+//! Library root for the `music-player` app. The binary (`main.rs`) wires
 //! these modules to the Slint UI; keeping the logic in a library lets the pure
 //! parts (queue, session) be unit-tested without any audio or GUI.
 

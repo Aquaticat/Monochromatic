@@ -205,20 +205,20 @@ impl Output {
         // TS map:   `pw.init();`
         pw::init();
 
-        // What:     `let thread_loop = unsafe { ThreadLoop::new(Some("player-audio"), None) }
+        // What:     `let thread_loop = unsafe { ThreadLoop::new(Some("music-player-audio"), None) }
         //           .map_err(...)?`. `ThreadLoop::new` is an `unsafe fn` (its
         //           safety contract is about keeping the loop alive correctly,
-        //           which the `Output` struct guarantees). `Some("player-audio")`
+        //           which the `Output` struct guarantees). `Some("music-player-audio")`
         //           names the thread; `None` = no extra properties. `.map_err`
         //           converts a `pw::Error` into our `PlayerError`; `?` returns early.
         // Why:      Create the background audio loop.
-        // TS map:   `const threadLoop = new ThreadLoop("player-audio");`
+        // TS map:   `const threadLoop = new ThreadLoop("music-player-audio");`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const threadLoop = new ThreadLoop("player-audio");
+        // const threadLoop = new ThreadLoop("music-player-audio");
         // ```
-        let thread_loop = unsafe { ThreadLoop::new(Some("player-audio"), None) }
+        let thread_loop = unsafe { ThreadLoop::new(Some("music-player-audio"), None) }
             // What:     `.map_err(|e| PlayerError::Audio(format!("thread loop: {e:?}")))`.
             //           `|e| ...` is a closure; `format!` builds an owned `String`;
             //           `{e:?}` uses the error's Debug formatting.
@@ -356,20 +356,20 @@ impl Output {
         // TS map:   `this.stream = null;`
         self.stream = None;
 
-        // What:     `let stream = Stream::new(&self.core, "player", properties! { ... })
+        // What:     `let stream = Stream::new(&self.core, "music-player", properties! { ... })
         //           .map_err(...)?`. Create a new stream on our core, named
-        //           "player", with media metadata. `properties! { *KEY => "val" }`
+        //           "music-player", with media metadata. `properties! { *KEY => "val" }`
         //           builds the dictionary; the `*` dereferences each key constant.
         // Why:      A fresh stream to negotiate this track's format.
-        // TS map:   `const stream = new Stream(core, "player", { mediaType: "Audio", ... });`
+        // TS map:   `const stream = new Stream(core, "music-player", { mediaType: "Audio", ... });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const stream = new Stream(core, "player", { MEDIA_TYPE: "Audio", MEDIA_CATEGORY: "Playback", MEDIA_ROLE: "Music" });
+        // const stream = new Stream(core, "music-player", { MEDIA_TYPE: "Audio", MEDIA_CATEGORY: "Playback", MEDIA_ROLE: "Music" });
         // ```
         let stream = Stream::new(
             &self.core,
-            "player",
+            "music-player",
             properties! {
                 *pw::keys::MEDIA_TYPE => "Audio",
                 *pw::keys::MEDIA_CATEGORY => "Playback",

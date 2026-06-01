@@ -1,4 +1,4 @@
-# Handover: building the `player` music player
+# Handover: building the `music-player` app
 
 Working handover for the in-progress Slint music player. Read this top to bottom before continuing; it captures every
 design decision, the build environment, what exists, and the exact next steps with the API research already done.
@@ -25,30 +25,30 @@ Approved plan: `/home/user/.claude/plans/build-a-music-player-frolicking-nebula.
 - Time values: `f64` seconds across engine + messages (seek/position/duration share a unit, derived from exact frame
   counts), narrowed to Slint's `float` (f32) only at the property edge. Volume is `f32` end to end. If you ever want
   the messages to carry `u64` frame counts instead, the user is open to it but f64-seconds is the current contract.
-- Placement: `packages/desktop-app/player/` (new category, parallel to `desktop-daemon`). Binary/crate name `player`.
+- Placement: `packages/desktop-app/music-player/` (new category, parallel to `desktop-daemon`). Package/binary name `music-player`, lib crate `music_player`.
 - File picker: `rfd` crate (Wayland via `xdg-desktop-portal`); CLI path args also accepted.
 - Session persistence: save queue paths + current index + position + volume + shuffle/repeat to a JSON file under the
   config dir; restore on launch, prune tracks whose files moved.
-- Cargo workspace: none. `player` is standalone like `packages/cli/forbidden-strings`.
+- Cargo workspace: none. `music-player` is standalone like `packages/cli/forbidden-strings`.
 
 ## Build environment (important: host must stay clean)
 
 The host is an immutable-style Fedora (`/home` -> `var/home`) and the user refused host package installs
 (`pipewire-devel`, `opus-devel`, `clang` are absent). All cargo work runs inside a Fedora podman container.
 
-- `Containerfile` builds image `localhost/monochromatic/player` (fedora:41 + rust/cargo/gcc, clang+clang-devel for the
+- `Containerfile` builds image `localhost/monochromatic/music-player` (fedora:41 + rust/cargo/gcc, clang+clang-devel for the
   libspa-sys bindgen, pkgconf, pipewire-devel, opus-devel, and GUI runtime libs for `run`).
-- `mise.toml` tasks wrap `podman run` (mount package dir at `/work`, cargo registry in named volume `player-cargo`,
+- `mise.toml` tasks wrap `podman run` (mount package dir at `/work`, cargo registry in named volume `music-player-cargo`,
   `--security-opt label=disable`): `image`, `build`, `build:debug`, `lint` (cargo check), `lint:clippy`, `test`,
   `run` (Wayland/PipeWire/D-Bus/DRI passthrough), `gen:fixtures` (host ffmpeg).
-- The image is already built. Rebuild with `mise run //packages/desktop-app/player:image` if the Containerfile changes.
+- The image is already built. Rebuild with `mise run //packages/desktop-app/music-player:image` if the Containerfile changes.
 
 Gotchas learned:
-- Reference the image as `localhost/monochromatic/player` (fully-qualified). A bare short name triggers
+- Reference the image as `localhost/monochromatic/music-player` (fully-qualified). A bare short name triggers
   "short-name resolution enforced but cannot prompt without a TTY" in the non-interactive task context.
 - Do NOT pipe `podman build ... | tail`: the pipe exit code is `tail`'s, which masked a real build failure once.
 - Live Wayland (`wayland-0`) + PipeWire + pipewire-pulse are running on the host, so end-to-end GUI + audio
-  verification via `mise run //packages/desktop-app/player:run` is possible on this machine.
+  verification via `mise run //packages/desktop-app/music-player:run` is possible on this machine.
 
 ## What exists now (committed checkpoint)
 
@@ -70,9 +70,9 @@ Source modules (all carry the mandated `dum-dum-non-ts` TS-explainer comments; k
 Status: compilation not yet confirmed green, but close. A `cargo check` (mise `lint`) compiled the entire dependency
 tree (slint, symphonia, pipewire, opus, all transitive) and failed only on a missing BUILD dep:
 `yeslogic-fontconfig-sys` (a Slint font dependency) needs `fontconfig.pc`. Fixed by adding `fontconfig-devel` and
-`freetype-devel` to the Containerfile; the image is being rebuilt. The cargo cache volume `player-cargo` is now warm,
+`freetype-devel` to the Containerfile; the image is being rebuilt. The cargo cache volume `music-player-cargo` is now warm,
 so the next `lint`/`test` only recompiles from fontconfig-sys onward plus our crate. First action next session:
-`mise run //packages/desktop-app/player:image` if not already done, then `mise run //packages/desktop-app/player:lint`
+`mise run //packages/desktop-app/music-player:image` if not already done, then `mise run //packages/desktop-app/music-player:lint`
 to confirm `command`/`queue`/`session`/`error` compile (high confidence; the failure was environmental, not source).
 
 ## Next steps (in order)
@@ -80,7 +80,7 @@ to confirm `command`/`queue`/`session`/`error` compile (high confidence; the fai
 1. Confirm `cargo check` is green; fix any path/type issues in `error.rs`.
 2. Write `src/opus.rs` and `src/decode.rs` (designs + verified APIs below), add `pub mod decode; pub mod opus;` to
    `lib.rs`.
-3. `mise run //packages/desktop-app/player:gen:fixtures` to create per-codec fixtures, then run `test`. NOTE: the
+3. `mise run //packages/desktop-app/music-player:gen:fixtures` to create per-codec fixtures, then run `test`. NOTE: the
    `gen:fixtures` nushell task has unquoted codec args in the specs table (e.g. `[mp3, [-c:a, libmp3lame]]`); quote
    them (`["-c:a" "libmp3lame"]`) before running or nushell may mis-parse the leading-dash tokens.
 4. Write `src/output.rs` (PipeWire ThreadLoop + Stream, ringbuf consumer in the process callback, per-track
