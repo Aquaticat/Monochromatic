@@ -82,21 +82,21 @@ export function needsPerLineFix({
     return true;
   }
 
-  for (let i = 1; i < items
-    .length; i++) {
+  for (let loopIndex = 1; loopIndex < items
+    .length; loopIndex++) {
     /**
      * Previous item's range; paired with `currRange` to detect items sharing a line.
      */
     const prevRange = rangeOf(at({
       arr: items,
-      index: i - 1,
+      index: loopIndex - 1,
     },),);
     /**
      * Current item's range; paired with `prevRange` to detect items sharing a line.
      */
     const currRange = rangeOf(at({
       arr: items,
-      index: i,
+      index: loopIndex,
     },),);
     if (lineAt({
       sourceText,

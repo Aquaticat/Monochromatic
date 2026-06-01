@@ -86,21 +86,21 @@ export function paramsNeedFix({
     return true;
   }
 
-  for (let i = 1; i < params
-    .length; i++) {
+  for (let loopIndex = 1; loopIndex < params
+    .length; loopIndex++) {
     /**
      * Range of the previous param; its end offset is compared with the current param's start line.
      */
     const prevRange = rangeOf(at({
       arr: params,
-      index: i - 1,
+      index: loopIndex - 1,
     },),);
     /**
      * Range of the current param; its start offset is the other side of the line-equality check.
      */
     const currRange = rangeOf(at({
       arr: params,
-      index: i,
+      index: loopIndex,
     },),);
     if (lineAt({
       sourceText,

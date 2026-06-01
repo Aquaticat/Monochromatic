@@ -294,11 +294,11 @@ function lastNode(items?: readonly unknown[],): OptionalNode {
   if (items === undefined)
     return NO_NODE;
 
-  for (let index = items.length - 1; index >= 0; index -= 1) {
+  for (let loopIndex = items.length - 1; loopIndex >= 0; loopIndex -= 1) {
     /**
      * Candidate item from reverse scan.
      */
-    const item = items[index];
+    const item = items[loopIndex];
     if (isNode(item,))
       return item;
   }

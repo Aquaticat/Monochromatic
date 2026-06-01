@@ -222,21 +222,21 @@ export const maxStatementsPerLine: CreateOnceRule = {
           offset: firstRange[0],
         },);
 
-        for (let i = 1; i < stmts
-          .length; i++) {
+        for (let loopIndex = 1; loopIndex < stmts
+          .length; loopIndex++) {
           /**
            * Previous statement; its end offset is the cut point for the inter-statement slice.
            */
           const prev = at({
             arr: stmts,
-            index: i - 1,
+            index: loopIndex - 1,
           },);
           /**
            * Current statement; its start offset is the other cut point and the reported node.
            */
           const curr = at({
             arr: stmts,
-            index: i,
+            index: loopIndex,
           },);
           /**
            * End offset of the previous statement; queried once and reused below.

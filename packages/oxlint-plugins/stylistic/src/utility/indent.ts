@@ -41,10 +41,10 @@ export function leadingWhitespace(s: string,): string {
    * @returns first non-whitespace position (or `s.length`)
    */
   function scan(): number {
-    for (let idx = 0; idx < s
-      .length; idx += 1) {
-      if (!isWhitespaceChar(s.charAt(idx,),))
-        return idx;
+    for (let cursorIndex = 0; cursorIndex < s
+      .length; cursorIndex += 1) {
+      if (!isWhitespaceChar(s.charAt(cursorIndex,),))
+        return cursorIndex;
     }
     return s.length;
   }

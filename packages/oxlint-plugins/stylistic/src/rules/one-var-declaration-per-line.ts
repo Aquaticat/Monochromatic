@@ -140,21 +140,21 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
        */
       const childIndent = `${baseIndent}  `;
 
-      for (let i = 1; i < declarations
-        .length; i++) {
+      for (let loopIndex = 1; loopIndex < declarations
+        .length; loopIndex++) {
         /**
          * Previous declarator; its end offset is the cut point for the inter-declarator slice.
          */
         const prev = at({
           arr: declarations,
-          index: i - 1,
+          index: loopIndex - 1,
         },);
         /**
          * Current declarator; its start offset is the other cut point.
          */
         const curr = at({
           arr: declarations,
-          index: i,
+          index: loopIndex,
         },);
         /**
          * Source range of the previous declarator, queried once.

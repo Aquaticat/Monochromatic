@@ -47,17 +47,17 @@ export function findDelimiter({
   direction,
 }: FindDelimiterParams,): number {
   if (direction === 'open') {
-    for (let i = 0; i < text
-      .length; i++) {
-      if (OPEN_DELIMITERS.has(text.charAt(i,),))
-        return i;
+    for (let loopIndex = 0; loopIndex < text
+      .length; loopIndex++) {
+      if (OPEN_DELIMITERS.has(text.charAt(loopIndex,),))
+        return loopIndex;
     }
   }
   else {
-    for (let i = text.length
-      - 1; i >= 0; i--) {
-      if (CLOSE_DELIMITERS.has(text.charAt(i,),))
-        return i;
+    for (let loopIndex = text.length
+      - 1; loopIndex >= 0; loopIndex--) {
+      if (CLOSE_DELIMITERS.has(text.charAt(loopIndex,),))
+        return loopIndex;
     }
   }
   return -1;

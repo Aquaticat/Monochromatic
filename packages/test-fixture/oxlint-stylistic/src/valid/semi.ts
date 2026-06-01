@@ -27,7 +27,7 @@ type Alias = number;
 
 declare function ambient(): void;
 
-for (let index = 0; index < 1; index += 1) {
+for (let loopIndex = 0; loopIndex < 1; loopIndex += 1) {
   readValue();
 }
 

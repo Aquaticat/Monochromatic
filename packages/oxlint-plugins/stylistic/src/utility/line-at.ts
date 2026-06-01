@@ -33,8 +33,8 @@ export function lineAt({
    * Accumulator initialised to 1 because callers expect 1-indexed line numbers.
    */
   let line = 1;
-  for (let i = 0; i < offset; i++) {
-    if (sourceText[i]
+  for (let loopIndex = 0; loopIndex < offset; loopIndex++) {
+    if (sourceText[loopIndex]
       === '\n')
       line++;
   }
