@@ -9,7 +9,8 @@ Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, an
 - Source: an ad-hoc queue. Opening a folder replaces the queue with the audio files found under it, scanning
   subfolders recursively. Command-line file or folder arguments are expanded the same way.
 - Transport: play/pause, seek, volume, next/prev, shuffle, and repeat (off, all, one).
-- Metadata: filename only. No tag parsing and no album art. The seek bar's position and duration come from the
+- Metadata: filesystem path only. The queue list shows each track's path relative to the loaded folder (folder
+  plus filename), with no tag parsing and no album art. The seek bar's position and duration come from the
   decoder (frame count over sample rate), not from tags.
 - Sample rate: each track is declared to PipeWire at its own native rate, and PipeWire resamples to the device.
   Gapless playback is permanently out of scope.
@@ -43,7 +44,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/lib.rs`: module root.
 - `src/command.rs`: the UI-to-engine `Command` and engine-to-UI `Update` message enums, plus `RepeatMode`.
 - `src/queue.rs`: the play-queue model (load order, shuffle order, cursor, repeat), with a seedable PRNG for
-  deterministic shuffle tests.
+  deterministic shuffle tests. `display_paths` builds the UI list as each track's path relative to the queue's
+  common root (via `relpath`).
 - `src/session.rs`: save and restore of the last session under the platform config directory, pruning tracks
   whose files moved or are not audio files (and remapping the saved cursor onto the survivors).
 - `src/error.rs`: `PlayerError`, the single error type all fallible functions return.
@@ -70,17 +72,23 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   position reporting), split out to keep each file within the line budget.
 - `src/engine.rs`: the worker-thread front door. `Engine::spawn` starts the background thread; `run` builds a
   `Controller` and drives it from the command channel.
-- `src/pagination.rs`: pure queue pagination. `paginate` groups the display names into pages by the uppercased
-  first character (case-insensitive for letters; digits, symbols, and each CJK character form their own pages,
-  sorted by character), and `page_of_index` finds the page holding a given track. No GUI or audio, so it is
+- `src/pagination.rs`: pure queue pagination on two axes. `paginate` groups each track's relative display path:
+  a track in a subfolder gets a page per folder (label is the relative folder path), and a track at the loaded
+  root gets a first-letter page (the 26 English letters A-Z, case-insensitive, plus a `#` catch-all for digits,
+  symbols, CJK, and non-English letters). Pages sort folder-pages-first, then A-Z, then `#`. `page_of_index`
+  finds the page holding a given track. No GUI or audio, so it is unit-tested directly.
+- `src/relpath.rs`: pure relative-path display. `relative_display_paths` strips the longest common directory
+  prefix shared by all queued tracks (always leaving at least the filename), so the UI shows `Artist/Album/01.flac`
+  rather than the full absolute path, or just `01.flac` when the whole queue is one folder. No I/O, so it is
   unit-tested directly.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
   property edge, so the engine and queue model stay unaware of pagination.
 - `ui/app.slint`: the window markup (seek bar, transport row, volume slider, page-tab bar, queue list). The
-  queue is paginated by the first character of each track name: each tab is one starting character and the list
-  shows only that page's tracks. The playing track is the highlighted row, and the view follows it across track
-  changes, so there is no separate now-playing title.
+  queue is paginated on two axes: a track in a subfolder gets a page per containing folder (the tab is the
+  relative folder path), and a track at the loaded root gets a first-letter page (A-Z plus a `#` catch-all).
+  Each tab shows one page; rows show each track's path relative to the loaded root. The playing track is the
+  highlighted row, and the view follows it across track changes, so there is no separate now-playing title.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The

@@ -79,6 +79,13 @@ pub mod controller_audio;
 pub mod engine;
 
 // What:     `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
-// Why:      Pure grouping of display names into per-first-character pages, unit-tested.
+// Why:      Pure grouping of display paths into folder pages (subfolder tracks) and
+//           A-Z + `#` letter pages (root-level tracks), unit-tested.
 // TS map:   `export * as pagination from "./pagination";`
 pub mod pagination;
+
+// What:     `pub mod relpath;` the relative-path display module (`src/relpath.rs`).
+// Why:      Pure stripping of the queue's common directory prefix, so the UI shows
+//           each track's path relative to the loaded root; unit-tested.
+// TS map:   `export * as relpath from "./relpath";`
+pub mod relpath;

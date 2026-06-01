@@ -50,7 +50,8 @@ use music_player::session::Session;
 // What:     `use music_player::pagination;`. The pure queue-pagination module.
 //           Importing the MODULE (not its items) so calls read `pagination::paginate`
 //           / `pagination::page_of_index`, keeping the origin obvious at the call.
-// Why:      The binary groups the queue's display names into per-character pages.
+// Why:      The binary groups the queue's display paths into pages: one per folder
+//           for subfolder tracks, A-Z + `#` letter pages for root-level tracks.
 // TS map:   `import * as pagination from "music-player/pagination";`
 use music_player::pagination;
 
@@ -151,8 +152,9 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     // Why:      Re-read the canonical full list to regroup it into pages.
     // TS map:   `const names = [...app.queue];`
     let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();
-    // What:     `let pages = pagination::paginate(&names);`. Group the names into
-    //           sorted per-first-character pages. `&names` lends the vector.
+    // What:     `let pages = pagination::paginate(&names);`. Group the relative
+    //           paths into pages (folder pages, then A-Z letter pages, then `#`).
+    //           `&names` lends the vector.
     // Why:      The single source of the tabs and page contents.
     // TS map:   `const pages = pagination.paginate(names);`
     let pages = pagination::paginate(&names);
@@ -679,7 +681,7 @@ fn main() -> Result<(), slint::PlatformError> {
     //           index. It does not touch the engine: pagination is a pure display
     //           concern, so it just re-renders the chosen page from the existing
     //           `queue` property. Needs a weak handle to read/write properties.
-    // Why:      Clicking a tab filters the list to that starting character.
+    // Why:      Clicking a tab filters the list to that folder (or letter) page.
     // TS map:   `app.onSelectPage(p => refreshPage(app, p));`
     app.on_select_page({
         // What:     `let weak = app.as_weak();`. A weak handle the `'static` closure

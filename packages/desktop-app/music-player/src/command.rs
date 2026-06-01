@@ -207,7 +207,8 @@ pub enum Command {
 //   | { kind: "repeat"; mode: RepeatMode };
 // ```
 pub enum Update {
-    /// The full queue as display filenames (filename-only policy).
+    /// The full queue as display paths, each relative to the queue's common root
+    /// (e.g. `Artist/Album/01.flac`, or a bare filename for a single-folder queue).
     Queue(Vec<String>),
     /// The current track changed. `index` is its position in the queue, or
     /// `None` when nothing is loaded.

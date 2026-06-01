@@ -234,11 +234,11 @@ impl Controller {
                 // Why:      New playlist.
                 // TS map:   `this.queue.setTracks(tracks);`
                 self.queue.set_tracks(tracks);
-                // What:     `self.emit(Update::Queue(self.queue.display_names()));`. Send
-                //           the filename list to the UI.
-                // Why:      Render the queue list.
+                // What:     `self.emit(Update::Queue(self.queue.display_paths()));`. Send
+                //           the relative-path list to the UI.
+                // Why:      Render the queue list (grouped by folder / first letter).
                 // TS map:   `this.emit({ kind: "queue", names: ... });`
-                self.emit(Update::Queue(self.queue.display_names()));
+                self.emit(Update::Queue(self.queue.display_paths()));
                 // What:     `self.start_queue_measurement();`. Pre-measure the whole
                 //           queue in the background (true-peak normalization cache).
                 // Why:      Every queue load (open or auto-load) warms the peak cache.
@@ -408,11 +408,11 @@ impl Controller {
                 if let Some(idx) = current {
                     self.queue.play_index(idx);
                 }
-                // What:     `self.emit(Update::Queue(self.queue.display_names()));`. Push
-                //           the queue list to the UI.
-                // Why:      Render the restored queue.
+                // What:     `self.emit(Update::Queue(self.queue.display_paths()));`. Push
+                //           the relative-path list to the UI.
+                // Why:      Render the restored queue (grouped by folder / first letter).
                 // TS map:   `this.emit({ kind: "queue", names: ... });`
-                self.emit(Update::Queue(self.queue.display_names()));
+                self.emit(Update::Queue(self.queue.display_paths()));
                 // What:     `self.emit(Update::Volume(volume));`. Mirror volume.
                 // Why:      Sync the slider.
                 // TS map:   `this.emit({ kind: "volume", volume });`

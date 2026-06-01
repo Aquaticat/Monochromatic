@@ -256,58 +256,30 @@ impl Queue {
         self.shuffle
     }
 
-    // What:     `pub fn display_names(&self) -> Vec<String>` returns owned
-    //           filename strings in load order.
-    // Why:      The UI shows filenames only (project policy); this builds that
-    //           list once per queue change.
-    // TS map:   `displayNames(): string[]`.
+    // What:     `pub fn display_paths(&self) -> Vec<String>` returns owned display
+    //           strings in load order: each track's path relative to the queue's
+    //           common root (e.g. `Artist/Album/01.flac`, or just `01.flac` when
+    //           the whole queue is one folder).
+    // Why:      The UI shows the folder a track lives in, not just its filename, so
+    //           pagination can group by folder; the absolute prefix is stripped.
+    // TS map:   `displayPaths(): string[]`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // displayNames(): string[] {
-    //   return this.tracks.map(p => basename(p) ?? p);
+    // displayPaths(): string[] {
+    //   return relativeDisplayPaths(this.tracks);
     // }
     // ```
-    pub fn display_names(&self) -> Vec<String> {
-        // What:     `self.tracks.iter()` makes a BORROWING iterator over
-        //           `&PathBuf`. `.map(|p| ...)` transforms each. `.collect()`
-        //           gathers the results into a `Vec<String>` (the target type is
-        //           inferred from the return type). Tail expression -> return.
-        // Why:      One pass turning each path into its display name.
-        // TS map:   `return this.tracks.map(p => fileName(p));`
-        self.tracks
-            .iter()
-            // What:     `|p|` is a closure taking `p: &PathBuf` (a borrow).
-            //           `p.file_name()` returns `Option<&OsStr>` (maybe the last
-            //           path component as an OS string). `.and_then(|n| ...)`
-            //           runs the next step only if present, flattening nested
-            //           options. `n.to_str()` returns `Option<&str>` (None if the
-            //           bytes are not valid UTF-8). `.map(|s| s.to_string())`
-            //           makes an OWNED copy. `.unwrap_or_else(|| ...)` supplies a
-            //           fallback by calling a closure only when needed.
-            // Why:      Show the bare filename; fall back to the whole path's
-            //           lossy string when there is no filename or bad UTF-8.
-            // TS map:   `p => basename(p) ?? p`.
-            .map(|p| {
-                p.file_name()
-                    // What:     `.and_then(|n| n.to_str().map(|s| s.to_string()))`
-                    //           chains optionals: if there is a filename AND it is
-                    //           valid UTF-8, produce an owned `String`.
-                    // Why:      Convert the OS string to a normal owned string.
-                    // TS map:   filename may be undefined; map it to a string.
-                    .and_then(|n| n.to_str().map(|s| s.to_string()))
-                    // What:     `.unwrap_or_else(|| p.to_string_lossy().into_owned())`
-                    //           provides the fallback. `to_string_lossy()` returns a
-                    //           `Cow<str>` (borrowed-or-owned) replacing bad bytes;
-                    //           `.into_owned()` forces an owned `String`.
-                    // Why:      Always yield some readable label.
-                    // TS map:   `?? String(p)`.
-                    .unwrap_or_else(|| p.to_string_lossy().into_owned())
-            })
-            // What:     `.collect()` builds the `Vec<String>` from the iterator.
-            // Why:      Materialise the list to hand to the UI.
-            // TS map:   the `.map(...)` already yields the array.
-            .collect()
+    pub fn display_paths(&self) -> Vec<String> {
+        // What:     `crate::relpath::relative_display_paths(&self.tracks)`. Call the
+        //           pure path helper. `crate::` means "from this package's root";
+        //           `&self.tracks` lends the `Vec<PathBuf>` (which coerces to the
+        //           `&[PathBuf]` slice the helper takes) read-only. Tail expression
+        //           -> return.
+        // Why:      One source of truth for the common-prefix stripping, reused and
+        //           unit-tested in the `relpath` module.
+        // TS map:   `return relativeDisplayPaths(this.tracks);`
+        crate::relpath::relative_display_paths(&self.tracks)
     }
 
     // What:     `pub fn current_index(&self) -> Option<usize>` returns the
@@ -931,5 +903,36 @@ mod tests {
         assert_eq!(q.advance(false), Some(1));
         assert_eq!(q.advance(false), Some(2));
         assert_eq!(q.advance(false), Some(3));
+    }
+
+    // What:     `#[test]` marks the next function as a test case.
+    // Why:      `display_paths` must hand the UI paths relative to the common root,
+    //           not bare filenames, so pagination can group by folder.
+    // TS map:   `test("display_paths ...", () => { ... })`.
+    #[test]
+    fn display_paths_strips_common_prefix() {
+        // What:     `let mut q = Queue::with_rng_seed(1);`. A deterministic queue.
+        // Why:      We load real-looking paths and read the display list back.
+        // TS map:   `const q = Queue.withRngSeed(1n);`
+        let mut q = Queue::with_rng_seed(1);
+        // What:     `q.set_tracks(vec![PathBuf::from("..."), ...]);`. Load two tracks
+        //           in different artist folders under a shared `/music` root.
+        //           `vec![...]` builds the vector; `PathBuf::from(s)` wraps each
+        //           `&str` as an owned path (MOVING the vector into the queue).
+        // Why:      Their only shared prefix is `/music`.
+        // TS map:   `q.setTracks(["/music/A/Alb/01.flac", "/music/B/Alb/01.flac"]);`
+        q.set_tracks(vec![
+            PathBuf::from("/music/A/Alb/01.flac"),
+            PathBuf::from("/music/B/Alb/01.flac"),
+        ]);
+        // What:     `assert_eq!(q.display_paths(), vec!["A/Alb/01.flac".to_string(), ...]);`.
+        //           `.to_string()` makes each expected literal an owned `String` to
+        //           match the `Vec<String>` returned. `assert_eq!` fails unless equal.
+        // Why:      `/music` is stripped; the relative folders survive, in order.
+        // TS map:   `expect(q.displayPaths()).toEqual(["A/Alb/01.flac", "B/Alb/01.flac"]);`
+        assert_eq!(
+            q.display_paths(),
+            vec!["A/Alb/01.flac".to_string(), "B/Alb/01.flac".to_string()]
+        );
     }
 }

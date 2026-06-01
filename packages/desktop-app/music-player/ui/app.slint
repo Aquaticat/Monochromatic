@@ -1,11 +1,13 @@
 // The player window: a seek bar on top, a transport row (prev / play-pause /
 // next, shuffle, repeat, open), a volume slider, a page-tab bar, and a
-// click-to-play queue list below. The queue is paginated by the first character
-// of each track name: each tab is one starting character, and the list shows
-// only that page's tracks. The currently playing track is the highlighted row in
-// that list, so no separate now-playing title is drawn. All state comes IN from
-// Rust via properties; all user actions go OUT to Rust via callbacks. No playback
-// logic (including the pagination grouping) lives here.
+// click-to-play queue list below. The queue is paginated on two axes (decided
+// per track in Rust): a track in a subfolder gets a page per folder (the tab is
+// the relative folder path); a track at the loaded root gets a first-letter page
+// (A-Z, plus a `#` catch-all). The list shows only the selected page's tracks,
+// each row showing its path relative to the loaded root. The currently playing
+// track is the highlighted row, so no separate now-playing title is drawn. All
+// state comes IN from Rust via properties; all user actions go OUT to Rust via
+// callbacks. No playback logic (including the pagination grouping) lives here.
 //
 // Numeric time values (position/duration) are kept as `float` seconds for the
 // slider, while their human-readable "m:ss" forms arrive as separate string
@@ -13,9 +15,10 @@
 
 import { Button, Slider, ListView, HorizontalBox, VerticalBox } from "std-widgets.slint";
 
-// One row on the selected page: the display filename plus its index into the full
-// queue. The index survives filtering, so clicking a filtered row still maps back
-// to the right track in the full queue. Rust fills these from the pagination module.
+// One row on the selected page: the display path (relative to the loaded root)
+// plus its index into the full queue. The index survives filtering, so clicking a
+// filtered row still maps back to the right track. Rust fills these from the
+// pagination module.
 struct PageItem {
     name: string,
     index: int,
@@ -40,8 +43,9 @@ export component AppWindow inherits Window {
     in property <[string]> queue: [];
 
     // Pagination view, derived in Rust from `queue`. `page-labels` are the tab
-    // captions (one starting character each, sorted); `selected-page` is the
-    // index of the visible tab; `page-items` are only the selected page's tracks.
+    // captions (a folder path, an A-Z letter, or `#`; folder pages first, then
+    // letters, then `#`); `selected-page` is the index of the visible tab;
+    // `page-items` are only the selected page's tracks.
     in property <[string]> page-labels: [];
     in property <int> selected-page: 0;
     in property <[PageItem]> page-items: [];
@@ -150,11 +154,11 @@ export component AppWindow inherits Window {
             }
         }
 
-        // Page-tab bar: one tab per starting character, shown only when the queue
-        // has at least one page. Wrapped in a Flickable so a wide row of tabs
-        // (many letters, or CJK characters) scrolls horizontally instead of being
-        // clipped. viewport-width is bound to the tab row's natural width so the
-        // scrollable area is exactly the content width.
+        // Page-tab bar: one tab per page (folder path or letter), shown only when
+        // the queue has at least one page. Wrapped in a Flickable so a wide row of
+        // tabs (many folders, or long folder paths) scrolls horizontally instead
+        // of being clipped. viewport-width is bound to the tab row's natural width
+        // so the scrollable area is exactly the content width.
         if root.page-labels.length > 0: Flickable {
             height: 36px;
             viewport-height: 36px;
