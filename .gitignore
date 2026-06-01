@@ -268,6 +268,9 @@ out/
 ### JetBrains Patch ###
 # Comment Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-215987721
 
+# Root JetBrains module files are local IDE state.
+/.idea/*.iml
+
 # *.iml
 # modules.xml
 # .idea/misc.xml
