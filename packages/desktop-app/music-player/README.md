@@ -106,7 +106,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   gutter, since the default std-widgets scrollbar is a near-invisible hairline. Rows show each track's path
   relative to the loaded root (so deeper nesting stays
   visible). The playing track is the highlighted row, and the view follows it across track changes, so there is
-  no separate now-playing title.
+  no separate now-playing title. The custom controls (radio group, checkbox, scrollbar, row highlight) take
+  their colours from the Slint system palette rather than hardcoded values, so they follow the OS accent colour
+  and the light/dark theme: the highlighted row and the checked checkbox use the accent, the same as the active
+  page tab's primary button.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The
@@ -121,6 +124,11 @@ the container so the window and audio reach the host session. The `run` task als
 container runs under the host uid: the D-Bus session bus authenticates with SASL EXTERNAL, which checks the asserted
 uid against the socket peer credential, and the dark/light theme watcher and the portal file picker (both using
 zbus) are rejected otherwise. See `docs/troubleshooting/podman-dbus-external-keep-id.md`.
+
+The same Slint XDG-portal watcher that supplies the dark/light colour scheme also reads
+`org.freedesktop.appearance accent-color` and live-updates on change, so the UI follows the system accent colour
+through the Slint palette with no extra wiring. When the desktop environment or portal exposes no accent-color
+setting, Slint falls back to its default accent, so the feature degrades gracefully rather than failing.
 
 The image installs `google-noto-sans-cjk-fonts`. Slint 1.16's femtovg renderer lays out text with parley and
 fontique with system fonts enabled, which falls back per script to a system font for glyphs the primary font

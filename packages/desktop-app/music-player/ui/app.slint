@@ -20,7 +20,7 @@
 // slider, while their human-readable "m:ss" forms arrive as separate string
 // properties formatted in Rust (Slint's number formatting is awkward).
 
-import { Button, Slider, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, Slider, HorizontalBox, VerticalBox, Palette } from "std-widgets.slint";
 
 // One row on the selected page: the display path (relative to the loaded root)
 // plus its index into the full queue. The index survives filtering, so clicking a
@@ -53,23 +53,24 @@ component RadioButton inherits Rectangle {
                 height: 16px;
                 border-radius: self.width / 2;
                 border-width: 1px;
-                border-color: #888888;
-                background: white;
-                // filled centre dot, shown only when selected
+                border-color: Palette.border;
+                background: Palette.control-background;
+                // filled centre dot, shown only when selected; the OS accent
+                // colour via the system palette
                 Rectangle {
                     x: (parent.width - self.width) / 2;
                     y: (parent.height - self.height) / 2;
                     width: 8px;
                     height: 8px;
                     border-radius: self.width / 2;
-                    background: root.selected ? #303030 : transparent;
+                    background: root.selected ? Palette.accent-background : transparent;
                 }
             }
         }
         Text {
             text: root.text;
             vertical-alignment: center;
-            color: #cccccc;
+            color: Palette.foreground;
         }
     }
     TouchArea {
@@ -80,9 +81,10 @@ component RadioButton inherits Rectangle {
 }
 
 // A checkbox drawn like a plain HTML <input type="checkbox">: a small square box
-// that fills with the accent colour and shows a tick when checked, with a label
-// to its right. The whole row toggles. Same Rectangle + HorizontalLayout +
-// TouchArea structure as RadioButton. Used for "Repeat track".
+// that fills with the system accent colour (Palette.accent-background) and shows
+// a tick when checked, with a label to its right. The whole row toggles. Same
+// Rectangle + HorizontalLayout + TouchArea structure as RadioButton. Used for
+// "Repeat track".
 component CheckBox inherits Rectangle {
     in property <string> text;
     in property <bool> checked;
@@ -99,15 +101,17 @@ component CheckBox inherits Rectangle {
                 height: 16px;
                 border-radius: 3px;
                 border-width: 1px;
-                border-color: #888888;
-                background: root.checked ? #3060c0 : white;
+                border-color: Palette.border;
+                background: root.checked ? Palette.accent-background : Palette.control-background;
                 // the tick, drawn only when checked (the font has the glyph; the
-                // image ships google-noto plus the default sans)
+                // image ships google-noto plus the default sans). accent-foreground
+                // is the palette's matched on-accent ink, legible on the accent fill
+                // whichever way the system accent and light/dark land.
                 Text {
                     width: parent.width;
                     height: parent.height;
                     text: root.checked ? "✓" : "";
-                    color: white;
+                    color: Palette.accent-foreground;
                     font-size: 12px;
                     horizontal-alignment: center;
                     vertical-alignment: center;
@@ -117,7 +121,7 @@ component CheckBox inherits Rectangle {
         Text {
             text: root.text;
             vertical-alignment: center;
-            color: #cccccc;
+            color: Palette.foreground;
         }
     }
     TouchArea {
@@ -145,17 +149,20 @@ component VScrollBar inherits Rectangle {
     width: 14px;
     // only worth showing once the content actually overflows the viewport
     visible: root.maximum > 0;
-    background: #2a2a2a;
+    // recessed track surface from the system palette
+    background: Palette.alternate-background;
     border-radius: 7px;
 
     // the draggable thumb: its length is the visible fraction of the content,
-    // and its position tracks how far we have scrolled
+    // and its position tracks how far we have scrolled. Palette-derived greys so
+    // it stays prominent and high-contrast on any theme: border at rest, brighter
+    // toward the foreground colour on hover and while grabbed.
     thumb := Rectangle {
         x: 2px;
         width: parent.width - 4px;
         height: max(32px, (parent.height - 4px) * root.page-size / (root.maximum + root.page-size));
         y: 2px + (parent.height - 4px - self.height) * (-root.value / root.maximum);
-        background: ta.pressed ? #cccccc : ta.has-hover ? #aaaaaa : #888888;
+        background: ta.pressed ? Palette.foreground : ta.has-hover ? Palette.foreground.with-alpha(0.7) : Palette.border;
         border-radius: self.width / 2;
 
         ta := TouchArea {
@@ -307,7 +314,7 @@ export component AppWindow inherits Window {
             Text {
                 text: "Shuffle";
                 vertical-alignment: center;
-                color: #cccccc;
+                color: Palette.foreground;
             }
             RadioButton {
                 text: "Off";
@@ -392,7 +399,10 @@ export component AppWindow inherits Window {
                         // map to the real track.
                         for item in root.page-items: Rectangle {
                             height: 30px;
-                            background: item.index == root.current-index ? #3060c0 : transparent;
+                            // Active row painted with the system accent (matching
+                            // the active page tab's primary Button); inactive rows
+                            // stay transparent over the window background.
+                            background: item.index == root.current-index ? Palette.accent-background : transparent;
                             TouchArea {
                                 clicked => {
                                     root.play-index(item.index);
@@ -403,12 +413,12 @@ export component AppWindow inherits Window {
                                     width: parent.width - 16px;
                                     vertical-alignment: center;
                                     overflow: elide;
-                                    // Active row sits on the blue highlight, so white
-                                    // reads best; inactive rows sit on the theme
-                                    // background, which is dark under a dark system
-                                    // theme where black text vanished, so use light
-                                    // grey instead.
-                                    color: item.index == root.current-index ? white : #cccccc;
+                                    // Active row uses the palette's on-accent ink so
+                                    // it stays legible on the accent fill (it can be a
+                                    // light tint under the dark scheme); inactive rows
+                                    // use the palette foreground, which tracks the
+                                    // system light/dark theme.
+                                    color: item.index == root.current-index ? Palette.accent-foreground : Palette.foreground;
                                 }
                             }
                         }
