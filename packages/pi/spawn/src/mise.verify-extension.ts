@@ -39,6 +39,16 @@ const BUILT_EXTENSION_PATH = '../dist/final/node/index.mjs';
 const BUILT_CLI_PATH = '../dist/final/node/cli.mjs';
 
 /**
+ * Source CLI path used by local source-mode symlink setup.
+ */
+const SOURCE_CLI_PATH = './cli.ts';
+
+/**
+ * Node executable name used for source TypeScript CLI smoke check.
+ */
+const NODE_EXECUTABLE = 'node';
+
+/**
  * Expected Node shebang for built CLI artifact.
  */
 const EXPECTED_NODE_SHEBANG = '#!/usr/bin/env node';
@@ -85,8 +95,9 @@ type SpawnPiExtensionModule = {
 async function verifyBuiltSpawnPi(): Promise<string> {
   await verifyBuiltExtension();
   verifyBuiltCli();
+  verifySourceCli();
 
-  return 'spawn-pi verified: extension registrations, Node CLI artifact, and inert CLI help';
+  return 'spawn-pi verified: extension registrations, Node CLI artifact, source CLI help, and inert built CLI help';
 }
 
 /**
@@ -203,9 +214,8 @@ function verifyBuiltCli(): void {
    * Inert CLI help invocation result.
    */
   const helpResult = spawnSync(
-    process.execPath,
+    builtCliPath,
     [
-      builtCliPath,
       '--help',
     ],
     {
@@ -217,6 +227,51 @@ function verifyBuiltCli(): void {
     throw new Error([
       'spawn-pi --help failed',
       `status: ${String(helpResult.status,)}`,
+      `error: ${String(helpResult.error,)}`,
+      `stdout: ${helpResult.stdout}`,
+      `stderr: ${helpResult.stderr}`,
+    ].join('\n',),);
+  }
+}
+
+/**
+ * Verifies source CLI can be evaluated by Node in local development mode without spawning a terminal.
+ *
+ * @throws when source CLI help invocation fails.
+ *
+ * @example
+ * ```typescript
+ * verifySourceCli();
+ * ```
+ */
+function verifySourceCli(): void {
+  /**
+   * Absolute source CLI path.
+   */
+  const sourceCliPath = fileURLToPath(new URL(
+    SOURCE_CLI_PATH,
+    import.meta.url,
+  ),);
+
+  /**
+   * Inert source CLI help invocation result.
+   */
+  const helpResult = spawnSync(
+    NODE_EXECUTABLE,
+    [
+      sourceCliPath,
+      '--help',
+    ],
+    {
+      encoding: 'utf8',
+    },
+  );
+
+  if (helpResult.status !== 0) {
+    throw new Error([
+      'source spawn-pi --help failed under Node',
+      `status: ${String(helpResult.status,)}`,
+      `error: ${String(helpResult.error,)}`,
       `stdout: ${helpResult.stdout}`,
       `stderr: ${helpResult.stderr}`,
     ].join('\n',),);
