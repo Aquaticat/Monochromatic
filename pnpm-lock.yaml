@@ -2265,6 +2265,28 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
 
+  packages/pi/statusline:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+    devDependencies:
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.78.0
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+
   packages/pi/terminal-title:
     devDependencies:
       '@earendil-works/pi-coding-agent':

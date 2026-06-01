@@ -1,0 +1,39 @@
+{
+  "name": "@monochromatic-dev/pi-statusline",
+  "description": "Pi footer status extension that warns when Anthropic rate-limit usage is projected to overflow",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/pi/statusline"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts"
+  },
+  "pi": {
+    "extensions": ["./dist/final/node/index.mjs"]
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "catalog:",
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
