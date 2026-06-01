@@ -95,8 +95,9 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
   property edge, so the engine and queue model stay unaware of pagination.
-- `ui/app.slint`: the window markup (seek bar, transport row, volume slider, a plain-HTML-styled three-state
-  shuffle radio group and "repeat track" checkbox, and a shared scroll region holding the page-tab bar and the
+- `ui/app.slint`: the window markup (seek bar, volume slider, one combined control row holding the Open button,
+  a plain-HTML-styled three-state shuffle radio group, the prev/play-pause/next transport buttons, and the
+  "repeat track" checkbox, and a shared scroll region holding the page-tab bar and the
   queue list). The
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a

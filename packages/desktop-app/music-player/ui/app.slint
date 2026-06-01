@@ -1,7 +1,8 @@
-// The player window: a seek bar on top, a transport row (prev / play-pause /
-// next, open), a volume slider, a shuffle/repeat control row (a three-state
-// shuffle radio group and a "repeat track" checkbox, both drawn plain-HTML
-// style), and one scroll region holding the page-tab bar and the click-to-play
+// The player window: a seek bar on top, a volume slider, and one combined
+// control row (left to right: an Open button, a three-state shuffle radio group
+// (Off / Within page / All), the transport buttons prev / play-pause / next, and
+// a "repeat track" checkbox; the custom radio and checkbox are drawn plain-HTML
+// style), then one scroll region holding the page-tab bar and the click-to-play
 // queue list together, so the tabs and the list scroll as a single unit (driven
 // by a prominent custom scrollbar in a right-hand gutter). The queue is
 // paginated on two axes (decided per track in Rust): a track in a subfolder gets
@@ -256,37 +257,6 @@ export component AppWindow inherits Window {
         }
 
         HorizontalBox {
-            alignment: center;
-            Button {
-                text: "Prev";
-                clicked => {
-                    root.prev();
-                }
-            }
-            Button {
-                text: root.playing ? "Pause" : "Play";
-                clicked => {
-                    root.toggle-play();
-                }
-            }
-            Button {
-                text: "Next";
-                clicked => {
-                    root.next();
-                }
-            }
-            Button {
-                text: "Open";
-                // Highlight (accent style) when the queue is empty, so a fresh
-                // launch points the user at the only useful action.
-                primary: root.queue.length == 0;
-                clicked => {
-                    root.open-files();
-                }
-            }
-        }
-
-        HorizontalBox {
             Text {
                 text: "Volume";
                 vertical-alignment: center;
@@ -302,15 +272,31 @@ export component AppWindow inherits Window {
             }
         }
 
-        // Shuffle/repeat control row: a three-state shuffle radio group on the
-        // left (Off / Within page / All) and a "repeat track" checkbox pushed to
-        // the right. Both are plain-HTML-styled custom components. Selecting a
-        // shuffle radio sends that mode; toggling the checkbox sends its inverse.
-        // Default `stretch` alignment is kept (no `alignment:` override) so the
-        // spacer Rectangle's `horizontal-stretch: 1` actually absorbs the slack;
-        // setting any other alignment makes Slint ignore stretch factors.
+        // Combined control row, left to right: an Open button, the three-state
+        // shuffle radio group (a "Shuffle" label then Off / Within page / All),
+        // the transport buttons (prev / play-pause / next), and a "repeat track"
+        // checkbox. The radio and checkbox are plain-HTML-styled custom
+        // components. Three stretch-factor spacer Rectangles separate the four
+        // groups, distributing them across the row (Open hugs the left edge, the
+        // checkbox the right). Default `stretch` alignment is kept (no
+        // `alignment:` override) so the spacers' `horizontal-stretch: 1` actually
+        // absorb the slack; setting any other alignment makes Slint ignore
+        // stretch factors.
         HorizontalBox {
-            spacing: 12px;
+            spacing: 8px;
+            Button {
+                text: "Open";
+                // Highlight (accent style) when the queue is empty, so a fresh
+                // launch points the user at the only useful action.
+                primary: root.queue.length == 0;
+                clicked => {
+                    root.open-files();
+                }
+            }
+            // spacer: separates Open from the shuffle group
+            Rectangle {
+                horizontal-stretch: 1;
+            }
             Text {
                 text: "Shuffle";
                 vertical-alignment: center;
@@ -335,6 +321,28 @@ export component AppWindow inherits Window {
                 selected: root.shuffle-mode == 2;
                 clicked => {
                     root.set-shuffle-mode(2);
+                }
+            }
+            // spacer: separates the shuffle group from the transport buttons
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+            Button {
+                text: "Prev";
+                clicked => {
+                    root.prev();
+                }
+            }
+            Button {
+                text: root.playing ? "Pause" : "Play";
+                clicked => {
+                    root.toggle-play();
+                }
+            }
+            Button {
+                text: "Next";
+                clicked => {
+                    root.next();
                 }
             }
             // spacer: pushes the checkbox to the right edge
