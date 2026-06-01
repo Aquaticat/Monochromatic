@@ -33,6 +33,7 @@ Package management and dependency resolution problems:
 
 - pnpm workspace configuration issues
 - Dependency resolution conflicts
+- [Pi update allowScripts warnings](pi-update-allow-scripts.md)
 
 ### [Performance Optimization](performance.md)
 
@@ -158,6 +159,8 @@ For common issues:
 - **Dev server restarts on every save?** → [mise watch flag dropping + content-hash filter](mise-watch.md)
 - **Output order looks wrong with `2>&1 > file`?** → [Redirect ordering splits streams](bash.md#2>&1--file-splits-stderr-and-stdout-producing-interleaved-output)
 - **rg missing files with spaces in paths?** → [Content-vs-filename search confusion](bash.md#rg---glob-finds-files-but--l-with-a-content-pattern-does-not)
+- **`pi update` reintroduces `@google/genai`, `koffi`, or `protobufjs`?** →
+  [Pi update allowScripts warnings](pi-update-allow-scripts.md)
 
 ## Contributing
 
