@@ -39,7 +39,18 @@ pub mod opus;
 // TS map:   `export * as output from "./output";`
 pub mod output;
 
-// What:     `pub mod engine;` the controller-thread module (`src/engine.rs`).
+// What:     `pub mod playback;` the device-free playback helpers (`src/playback.rs`):
+//           the per-sample volume/headroom/clamp stage and folder expansion.
+// Why:      Pure logic kept apart so it is unit-tested and the files stay small.
+// TS map:   `export * as playback from "./playback";`
+pub mod playback;
+
+// What:     `pub mod controller;` the playback state machine (`src/controller.rs`).
 // Why:      Owns the queue + decoder + output; turns commands into playback.
+// TS map:   `export * as controller from "./controller";`
+pub mod controller;
+
+// What:     `pub mod engine;` the worker-thread front door (`src/engine.rs`).
+// Why:      Spawns the worker and drives a `Controller` from the command channel.
 // TS map:   `export * as engine from "./engine";`
 pub mod engine;
