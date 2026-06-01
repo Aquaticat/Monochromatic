@@ -218,10 +218,9 @@ export const restrictionRules: DummyRuleMap = {
   'unicorn/prefer-modern-math-apis': 'error',
   'unicorn/prefer-node-protocol': 'error',
 
-  // TODO: Need observation for this one.
-  //       The intention is to ban the original global number variables
-  //       because they have different behavior with new number properties,
-  //       and then replace the global number variables with aliases of new number properties.
+  // Prefer Number.* properties over legacy global number functions and values.
+  // Reports are rare in this workspace; keep new usages gated at introduction
+  // instead of accumulating migration debt.
   'unicorn/prefer-number-properties': 'error',
 
   // Linters reporting unused vars aren't wanted.
