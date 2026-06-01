@@ -44,14 +44,16 @@ export const restrictionRules: DummyRuleMap = {
 
   // `let` at function-body root leaks scope to every subsequent statement.
   // IIFE callees and helper-function shape (ends with `return <root-binding>`)
-  // are allowlisted by AST heuristic. Initial severity is 'warn' to surface
-  // the existing footprint without blocking CI; see docs/audit/let.md.
-  'no-restricted-syntax/no-function-root-let': 'warn',
+  // are allowlisted by AST heuristic. Migration complete: every report is
+  // refactored or carries a justified disable, so severity is now 'error'
+  // (see docs/audit/let.md status table).
+  'no-restricted-syntax/no-function-root-let': 'error',
 
   // `let` at module root is mutable across the entire module. No allowlist;
   // use Map/WeakMap/Set, memoize() from @monochromatic-dev/module-memoize,
-  // or an IIFE-into-const initialization.
-  'no-restricted-syntax/no-module-root-let': 'warn',
+  // or an IIFE-into-const initialization. Migration complete; severity is now
+  // 'error' (see docs/audit/let.md status table).
+  'no-restricted-syntax/no-module-root-let': 'error',
 
   // `describe({ name: '<fn>' })` silently drifts on rename. Prefer
   // `describe({ name: <fn>.name })` whenever `<fn>` is an in-scope binding.

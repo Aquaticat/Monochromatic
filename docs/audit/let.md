@@ -457,13 +457,13 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 Both rules:
 
 - Registered in `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`.
-- Enabled at `'warn'` (not `'error'`) in `packages/config/oxlint/src/rules/restriction.ts`.
+- Enabled at `'error'` in `packages/config/oxlint/src/rules/restriction.ts` (shipped at `'warn'`; flipped to `'error'` 2026-06-01 after the migration reached zero reports across the linted tree).
 - Have no corresponding `no-disable-*` companion rule; disable-with-justification is the contracted escape.
 - Referenced in `AGENTS.md` under the `const`/`let` policy.
 
 ## Migration steps
 
-The rules ship at `'warn'` so they surface the existing footprint without blocking CI. The migration to `'error'` is a separate, incremental stream of work.
+The rules shipped at `'warn'` so they surfaced the existing footprint without blocking CI. The migration to `'error'` completed 2026-06-01. The phase history below is retained for the record; the status table records the final state.
 
 ### Phase 1: Capture the post-warn baseline
 
@@ -546,45 +546,49 @@ Once the warning count is zero (every report is refactored, allowlist-shaped, or
 </tr>
 <tr>
 <td>1: baseline capture</td>
-<td>TODO</td>
-<td></td>
-<td>Per-rule report count, spot-check 10 each.</td>
+<td>DONE</td>
+<td>2026-06-01</td>
+<td>Whole-repo `mise '//packages/...:lint:oxlint'` reports zero instances of either rule. Plugin firing confirmed against a throwaway violator probe (both rules reported as expected) and against the live disable inventory. No open reports remained to spot-check; the existing justified-disable directives stand in as the audited residue.</td>
 </tr>
 <tr>
 <td>2: mechanical refactors</td>
-<td>TODO</td>
-<td></td>
-<td>Ternary, reduce, chain.</td>
+<td>DONE</td>
+<td>2026-06-01</td>
+<td>Landed incrementally before the flip (e.g. `module/logger/src/sinks/console.ts` module-state moved into a `const` container).</td>
 </tr>
 <tr>
 <td>3: helper / IIFE</td>
-<td>TODO</td>
-<td></td>
-<td>Use the allowlist heuristics deliberately.</td>
+<td>DONE</td>
+<td>2026-06-01</td>
+<td>Landed incrementally; helper-shape and IIFE allowlists absorb the structural cases.</td>
 </tr>
 <tr>
 <td>4: disable-with-justification</td>
-<td>TODO</td>
-<td></td>
-<td>Each disable names a concrete constraint.</td>
+<td>DONE</td>
+<td>2026-06-01</td>
+<td>Residue carries block and next-line disables across `messages-demo`, `pi/auto-mode`, `dev-script/task-util`, `cli/vmsync`, `pi/morph-compact`, `typeface/aquaticat`, and others; each names a concrete constraint (parser cursor, state machine, singleton timer, PRNG state). No bare justifications.</td>
 </tr>
 <tr>
 <td>5: flip to `'error'`</td>
-<td>TODO</td>
-<td></td>
-<td>Both entries in `restriction.ts`.</td>
+<td>DONE</td>
+<td>2026-06-01</td>
+<td>Both entries in `restriction.ts` set to `'error'`. Post-flip fanout: zero reports of either rule; the only failing package is `module/es` on unrelated rules (out of scope for this migration).</td>
 </tr>
 </tbody>
 </table>
 
 ### Verification targets
 
-Re-check these after Phase 1 to confirm the heuristics fire as designed:
+These targets were defined against the 2026-05-10 tree. By the 2026-06-01 flip they had all converged to zero open reports:
 
-- `packages/webapp-forge/stress/src/scenarios/force-push.ts:142-156` (`concat()`): NO REPORT expected (helper shape, returns root const `out`).
-- `packages/webapp-content/messages-demo/src/lib/seed.ts:143` (`rng()`): REPORT expected (returns expression, not bare identifier).
-- `packages/module/logger/src/sinks/console.ts:8,11,100,160`: REPORT from `no-module-root-let` expected.
-- `packages/module/es/src/path/fallbacks.ts:54`: NO REPORT expected (helper shape, returns `result` which is a root let).
+- `packages/webapp-forge/stress/src/scenarios/force-push.ts` (`concat()`): NO REPORT (helper shape, returns root const `out`).
+- `packages/webapp-content/messages-demo/src/lib/seed.ts` (`rng()`): the Mulberry32 PRNG is now a justified block disable (`seed.ts:204-226`) naming the two-variable state-machine constraint.
+- `packages/module/logger/src/sinks/console.ts`: refactored; module state moved into a `const` container with a `Symbol` sentinel, so no module-root `let` remains.
+- `packages/module/es/src/path/fallbacks.ts`: NO REPORT (helper shape).
+
+Heuristic firing was reconfirmed on 2026-06-01 with a throwaway probe (one function-root and one module-root `let`): both rules reported as designed, ruling out a silently-disabled plugin.
+
+Coverage gap noted during the 2026-06-01 baseline: packages without a `lint:oxlint` task are never checked by these rules. `packages/figma-parsers/penpot` is one such package and still holds a module-root `let uuidCounter` in `src/index.ts`. Closing that gap is a separate lint-coverage task, not part of this migration.
 
 ## Appendix: source data
 
