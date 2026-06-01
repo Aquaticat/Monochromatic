@@ -1,13 +1,156 @@
-// Minimal placeholder window. The full transport + queue UI is built in a
-// later step; this exists so the crate links the Slint pipeline end to end.
+// The player window: now-playing label + seek bar on top, a transport row
+// (prev / play-pause / next, shuffle, repeat, open), a volume slider, and a
+// click-to-play queue list below. All state comes IN from Rust via properties;
+// all user actions go OUT to Rust via callbacks. No playback logic lives here.
+//
+// Numeric time values (position/duration) are kept as `float` seconds for the
+// slider, while their human-readable "m:ss" forms arrive as separate string
+// properties formatted in Rust (Slint's number formatting is awkward).
+
+import { Button, Slider, ListView, HorizontalBox, VerticalBox } from "std-widgets.slint";
+
 export component AppWindow inherits Window {
     title: "player";
-    preferred-width: 800px;
+    preferred-width: 480px;
     preferred-height: 600px;
 
-    Text {
-        text: "player";
-        horizontal-alignment: center;
-        vertical-alignment: center;
+    // Inputs from Rust (the engine pushes these via Update messages).
+    in property <string> track-name: "";
+    in property <float> position: 0;
+    in property <float> duration: 0;
+    in property <string> position-text: "0:00";
+    in property <string> duration-text: "0:00";
+    in property <bool> playing: false;
+    in property <float> volume: 1.0;
+    in property <bool> shuffle: false;
+    in property <int> repeat-mode: 0;
+    in property <int> current-index: -1;
+    in property <[string]> queue: [];
+
+    // Outputs to Rust (each maps to one engine Command).
+    callback toggle-play();
+    callback prev();
+    callback next();
+    callback seek(float);
+    callback set-volume(float);
+    callback toggle-shuffle();
+    callback cycle-repeat();
+    callback play-index(int);
+    callback open-files();
+
+    // Label for the repeat button, chosen by the integer mode (0/1/2). Pure
+    // integer comparisons only, so no number-to-string formatting is needed.
+    pure function repeat-label(mode: int) -> string {
+        return mode == 1 ? "Repeat: all" : mode == 2 ? "Repeat: one" : "Repeat: off";
+    }
+
+    VerticalBox {
+        padding: 12px;
+        spacing: 8px;
+
+        Text {
+            text: root.track-name == "" ? "Nothing playing" : root.track-name;
+            font-size: 18px;
+            horizontal-alignment: center;
+            overflow: elide;
+        }
+
+        HorizontalBox {
+            alignment: stretch;
+            Text {
+                text: root.position-text;
+                vertical-alignment: center;
+            }
+            Slider {
+                horizontal-stretch: 1;
+                minimum: 0;
+                maximum: root.duration > 0 ? root.duration : 1.0;
+                value: root.position;
+                changed(value) => {
+                    root.seek(value);
+                }
+            }
+            Text {
+                text: root.duration-text;
+                vertical-alignment: center;
+            }
+        }
+
+        HorizontalBox {
+            alignment: center;
+            Button {
+                text: "Prev";
+                clicked => {
+                    root.prev();
+                }
+            }
+            Button {
+                text: root.playing ? "Pause" : "Play";
+                clicked => {
+                    root.toggle-play();
+                }
+            }
+            Button {
+                text: "Next";
+                clicked => {
+                    root.next();
+                }
+            }
+            Button {
+                text: root.shuffle ? "Shuffle: on" : "Shuffle: off";
+                clicked => {
+                    root.toggle-shuffle();
+                }
+            }
+            Button {
+                text: repeat-label(root.repeat-mode);
+                clicked => {
+                    root.cycle-repeat();
+                }
+            }
+            Button {
+                text: "Open";
+                clicked => {
+                    root.open-files();
+                }
+            }
+        }
+
+        HorizontalBox {
+            Text {
+                text: "Volume";
+                vertical-alignment: center;
+            }
+            Slider {
+                horizontal-stretch: 1;
+                minimum: 0;
+                maximum: 1.0;
+                value: root.volume;
+                changed(value) => {
+                    root.set-volume(value);
+                }
+            }
+        }
+
+        ListView {
+            vertical-stretch: 1;
+            for name[i] in root.queue: Rectangle {
+                height: 30px;
+                background: i == root.current-index ? #3060c0 : transparent;
+                TouchArea {
+                    clicked => {
+                        root.play-index(i);
+                    }
+                    Text {
+                        text: name;
+                        x: 8px;
+                        width: parent.width - 16px;
+                        vertical-alignment: center;
+                        overflow: elide;
+                        color: i == root.current-index ? white : black;
+                    }
+                }
+            }
+        }
     }
 }

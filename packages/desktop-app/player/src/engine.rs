@@ -149,6 +149,20 @@ impl Engine {
         }
     }
 
+    // What:     `pub fn sender(&self) -> Sender<Command>`. Hand out a CLONE of the
+    //           command channel's send end. `Sender` is `Clone` and `Send`, so the
+    //           clone can be moved to another OS thread (the file-picker thread).
+    // Why:      The file dialog runs on its own thread and must send `OpenPaths`
+    //           back; it cannot hold the `!Send` `Rc<Engine>` the UI uses.
+    // TS map:   `sender(): Sender<Command>` (returns a thread-safe queue handle)
+    pub fn sender(&self) -> Sender<Command> {
+        // What:     `self.tx.clone()`. Duplicate the sender (both refer to the same
+        //           underlying channel). Tail -> return.
+        // Why:      Give the caller its own handle.
+        // TS map:   `return this.tx.clone();`
+        self.tx.clone()
+    }
+
     // What:     `pub fn send(&self, command: Command)`. Forward a command to the
     //           worker. Read-only borrow of self.
     // Why:      The UI's only way to control playback.
