@@ -1,0 +1,206 @@
+// What:     `use crate::config::{max_lines_exempt, Config};` imports two names
+//           from this crate's config module: the exemption predicate and the
+//           settings struct.
+// Why:      The rule needs the budget (from `Config`) and the skip check.
+// TS map:   `import { maxLinesExempt, Config } from "../config";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { maxLinesExempt, Config } from "../config";
+// ```
+use crate::config::{max_lines_exempt, Config};
+
+// What:     `use crate::context::LintContext;` imports the per-file bundle type.
+// Why:      The rule reads code-line data from it.
+// TS map:   `import { LintContext } from "../context";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { LintContext } from "../context";
+// ```
+use crate::context::LintContext;
+
+// What:     `use crate::diagnostic::{Diagnostic, Severity};` imports the finding
+//           record and its severity enum.
+// Why:      The rule constructs a `Diagnostic` with `Severity::Error`.
+// TS map:   `import { Diagnostic, Severity } from "../diagnostic";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Diagnostic, Severity } from "../diagnostic";
+// ```
+use crate::diagnostic::{Diagnostic, Severity};
+
+// What:     `use crate::rule::Rule;` imports the trait this rule implements.
+// Why:      Needed so we can write `impl Rule for MaxLines`.
+// TS map:   `import { Rule } from "../rule";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Rule } from "../rule";
+// ```
+use crate::rule::Rule;
+
+// What:     `use std::path::Path;` imports the borrowed-path type.
+// Why:      The exemption check takes a `&Path`; we build one from the path string.
+// TS map:   `import path from "node:path";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import path from "node:path";
+// ```
+use std::path::Path;
+
+// What:     `pub struct MaxLines;`. A UNIT struct: a type with no fields, written
+//           without braces. It carries no data; it exists only to implement the
+//           `Rule` trait.
+// Why:      Rules are values so they can live together in a `Vec<Box<dyn Rule>>`;
+//           this one needs no state.
+// TS map:   `class MaxLines implements Rule {}` (an empty class instance).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// class MaxLines implements Rule { /* no fields */ }
+// ```
+pub struct MaxLines;
+
+// What:     `impl Rule for MaxLines { ... }`. Provides the trait's methods for the
+//           `MaxLines` type. This is how Rust says "MaxLines satisfies the Rule
+//           interface".
+// Why:      So the runner can hold it as a `Box<dyn Rule>` and call `check`.
+// TS map:   the body of `class MaxLines implements Rule { ... }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// class MaxLines implements Rule { id() { return "max-lines"; } check(...) { ... } }
+// ```
+impl Rule for MaxLines {
+    // What:     `fn id(&self) -> &'static str { "max-lines" }`. Returns the fixed
+    //           rule id. The string literal is the tail expression, so it is
+    //           returned. `&'static str` is a program-lifetime borrowed string.
+    // Why:      Identify this rule in diagnostics and (later) config.
+    // TS map:   `id(): string { return "max-lines"; }`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // id(): string { return "max-lines"; }
+    // ```
+    fn id(&self) -> &'static str {
+        "max-lines"
+    }
+
+    // What:     `fn check(&self, context: &LintContext, config: &Config, out: &mut
+    //           Vec<Diagnostic>)`. Read-only borrows of the file context and
+    //           config; a mutable borrow of the shared findings vector to push into.
+    // Why:      Inspect one file and append a finding if it busts the budget.
+    // TS map:   `check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void { ... }`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // check(ctx: LintContext, cfg: Config, out: Diagnostic[]): void { /* ... */ }
+    // ```
+    fn check(&self, context: &LintContext, config: &Config, out: &mut Vec<Diagnostic>) {
+        // What:     `let path = Path::new(&context.path);`. `Path::new` wraps the
+        //           borrowed string (`&context.path`, a `&String` that coerces to
+        //           `&str`) as a `&Path` without copying.
+        // Why:      The exemption check works on path segments, which `Path` exposes.
+        // TS map:   `const p = ctx.path;` (TS treats a path as just a string).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const p = ctx.path;
+        // ```
+        let path = Path::new(&context.path);
+
+        // What:     `if max_lines_exempt(path) { return; }`. Calls the predicate
+        //           and bails out early when the file is exempt.
+        // Why:      Tests, fuzz harnesses, and build scripts are off-budget,
+        //           mirroring oxlint's overrides.
+        // TS map:   `if (maxLinesExempt(p)) return;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (maxLinesExempt(p)) return;
+        // ```
+        if max_lines_exempt(path) {
+            return;
+        }
+
+        // What:     `let count = context.code_line_count();`. Reads how many code
+        //           lines (blanks and comments already excluded) the file has.
+        // Why:      This count is what we compare against the budget.
+        // TS map:   `const count = ctx.codeLineCount();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const count = ctx.codeLineCount();
+        // ```
+        let count = context.code_line_count();
+
+        // What:     `if count <= config.max_lines { return; }`. Within budget, so
+        //           there is nothing to report.
+        // Why:      Only over-budget files produce a finding.
+        // TS map:   `if (count <= cfg.maxLines) return;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (count <= cfg.maxLines) return;
+        // ```
+        if count <= config.max_lines {
+            return;
+        }
+
+        // What:     `let line = context.code_line_at(config.max_lines).unwrap_or(1);`.
+        //           `code_line_at(config.max_lines)` returns `Option<usize>`: the
+        //           line number of the first code line PAST the budget (0-based
+        //           index `max_lines` is the `max_lines+1`-th code line).
+        //           `.unwrap_or(1)` extracts the inner number, or substitutes `1`
+        //           if absent (it never is here, since `count > max_lines`).
+        // Why:      Point the diagnostic at the first offending line.
+        // TS map:   `const line = ctx.codeLineAt(cfg.maxLines) ?? 1;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const line = ctx.codeLineAt(cfg.maxLines) ?? 1;
+        // ```
+        let line = context.code_line_at(config.max_lines).unwrap_or(1);
+
+        // What:     `let message = format!(...)`. Builds an OWNED `String` via the
+        //           formatting macro, interpolating the actual count and budget.
+        // Why:      Explain the violation to the reader.
+        // TS map:   a backtick template string assigned to `message`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const message = `file has ${count} code lines, limit is ${cfg.maxLines} (blank and comment lines excluded)`;
+        // ```
+        let message = format!(
+            "file has {count} code lines, limit is {} (blank and comment lines excluded)",
+            config.max_lines,
+        );
+
+        // What:     `out.push(Diagnostic { ... });`. Appends a new finding to the
+        //           shared vector. The struct literal fills every field;
+        //           `rule_id: "max-lines"` is a borrowed literal, `severity:
+        //           Severity::Error` selects the failing variant, and
+        //           `path: context.path.clone()` makes an OWNED copy of the path
+        //           string (`.clone()` deep-copies the `String`) because the
+        //           diagnostic outlives this borrow of `context`.
+        // Why:      Record the violation; its presence will drive a non-zero exit.
+        // TS map:   `out.push({ ruleId: "max-lines", severity: "error", message, path: ctx.path, line });`
+        // Gotcha:   `.clone()` here is a real heap copy of the string, not a cheap
+        //           reference bump; we accept it because findings are rare.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // out.push({ ruleId: "max-lines", severity: "error", message, path: ctx.path, line });
+        // ```
+        out.push(Diagnostic {
+            rule_id: "max-lines",
+            severity: Severity::Error,
+            message,
+            path: context.path.clone(),
+            line,
+        });
+    }
+}

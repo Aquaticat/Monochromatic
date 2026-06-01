@@ -1,0 +1,47 @@
+[package]
+name = "monochromatic-rust-linter"
+version = "0.1.0"
+categories = ["development-tools", "command-line-utilities"]
+edition = "2021"
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/packages/linter/rust"
+include = [
+  "src/**/*.rs",
+  "Cargo.toml",
+  "Cargo.lock",
+  "README.md",
+]
+keywords = ["rust", "linter", "max-lines", "lint", "ci"]
+license = "LGPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/Aquaticat/Monochromatic.git"
+description = "Pluggable Rust linter written in Rust. First rule: max-lines, a per-file code-line budget mirroring oxlint's eslint/max-lines for TypeScript."
+
+[lib]
+name = "monochromatic_rust_linter"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rust-linter"
+path = "src/main.rs"
+
+[dependencies]
+# `ignore` is the gitignore-aware parallel file walker that ripgrep uses; we
+# use it to enumerate `.rs` files while automatically skipping `target/` and
+# anything else .gitignore excludes.
+ignore = "0.4"
+
+# `ra_ap_syntax` is rust-analyzer's own lossless syntax-tree crate, auto-published
+# to crates.io under the `ra_ap_*` prefix. Pinned to EXACTLY 0.0.335: these
+# bot-published mirrors carry NO API-stability guarantee and the parse/token API
+# can shift between point releases, so a caret range would risk silent breakage.
+# Re-pin deliberately (and re-verify the token API) when bumping. Verified to
+# build and tokenize on stable rustc 1.96.0; in particular it keeps `//`/`/* */`
+# that appear inside string literals out of the COMMENT token stream, which the
+# max-lines code-line count depends on.
+ra_ap_syntax = "=0.0.335"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true

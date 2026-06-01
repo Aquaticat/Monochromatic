@@ -1,0 +1,43 @@
+[tasks.build]
+description = "Build the rust-linter binary in release mode"
+run = "cargo build --release"
+
+[tasks."build:debug"]
+description = "Build the rust-linter binary in debug mode"
+run = "cargo build"
+
+[tasks.lint]
+description = "cargo check (no codegen)"
+run = "cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied"
+run = "cargo clippy --release -- -D warnings"
+
+[tasks.test]
+description = "cargo test"
+run = "cargo test --release"
+
+[tasks."lint:max-lines"]
+description = "Dogfood: run the linter's max-lines rule over its own src"
+run = "cargo run --release -- src"
+
+[tasks.run]
+description = "Run the linter (pass paths and flags like --max after --)"
+usage = '''
+arg "[args]" var=#true help="Paths to lint and flags such as --max 300"
+'''
+# `usage_args` arrives shell-quoted as `'a' 'b'`; split on the inter-arg
+# separator `"' '"` then trim the lone outer quotes, mirroring the
+# forbidden-strings fuzz:run task.
+run = '''
+let extras = (
+  $env.usage_args?
+  | default ''
+  | str trim
+  | split row "' '"
+  | each {|p| $p | str trim --char "'" }
+  | where {|p| $p != '' }
+)
+cargo run --release -- ...$extras
+'''
