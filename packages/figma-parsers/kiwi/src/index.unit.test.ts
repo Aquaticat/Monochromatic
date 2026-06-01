@@ -779,7 +779,7 @@ await describe({
           timeout: 30_000,
           fn: async () => {
             const path =
-              '/home/user/Nextcloud/Text/Reference/Figma export/Color palette - base.fig';
+              '/home/user/Seafile/Plain/Text/Reference/Figma export/Color palette - base.fig';
             const file = await parseFigmaFile(path,);
             expect(file.fileType,).toBe('fig',);
             expect(file.schema.definitions.length,).toBeGreaterThan(0,);
@@ -795,7 +795,7 @@ await describe({
           timeout: 30_000,
           fn: async () => {
             const path =
-              '/home/user/Nextcloud/Text/Reference/Figma export/MTM6162-040 participation 2 cover.deck';
+              '/home/user/Seafile/Plain/Text/Reference/Figma export/MTM6162-040 participation 2 cover.deck';
             const file = await parseFigmaFile(path,);
             expect(file.fileType,).toBe('deck',);
             expect(file.document,).not.toBeNull();
@@ -806,7 +806,7 @@ await describe({
           timeout: 30_000,
           fn: async () => {
             const path =
-              '/home/user/Nextcloud/Text/Reference/Figma export/Todo app - Brainstorming.jam';
+              '/home/user/Seafile/Plain/Text/Reference/Figma export/Todo app - Brainstorming.jam';
             const file = await parseFigmaFile(path,);
             expect(file.fileType,).toBe('jam',);
             expect(file.document,).not.toBeNull();
