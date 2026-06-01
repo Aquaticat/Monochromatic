@@ -334,6 +334,16 @@ saveWorkspaceProtocol: false
 shellEmulator: false
 strictPeerDependencies: true
 
+# Without multi-platform entries, the lockfile only records the optional
+# dependencies for the current host OS/arch. When a developer on macOS
+# commits pnpm-lock.yaml and CI runs on linux-x64, `pnpm install
+# --frozen-lockfile` fails because the Linux native binaries are missing
+# from the lockfile. Listing darwin/linux, x64/arm64, and glibc/musl here
+# ensures the lockfile is portable across the mixed local-dev/CI
+# environments we actually have. Tradeoff: the pnpm virtual store
+# (~1.2 GB) includes unused platform binaries.
+#
+# See docs/decisions/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
   - x64
