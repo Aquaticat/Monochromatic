@@ -58,10 +58,10 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
   -e WAYLAND_DISPLAY=host-wayland
   -e PIPEWIRE_REMOTE=pipewire-0
   -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-bus
-  (if ($env.SLINT_BACKEND? != null) { [-e $"SLINT_BACKEND=($env.SLINT_BACKEND)"] } else { [] })
+  ...(if ($env.SLINT_BACKEND? != null) { [-e $"SLINT_BACKEND=($env.SLINT_BACKEND)"] } else { [] })
   localhost/monochromatic/music-player
   cargo run --release -- ...$extras
-) | complete | get stdout
+)
 '''
 
 [tasks."gen:fixtures"]
