@@ -1,3 +1,6 @@
+import { homedir, } from 'node:os';
+import { join, } from 'node:path';
+
 import {
   describe,
   expect,
@@ -15,6 +18,23 @@ import {
 } from './index.ts';
 
 type FigmaFile = FigmaFileType;
+
+/**
+ * Directory holding the maintainer's personal Figma export fixtures.
+ *
+ * These integration tests read real `.fig`/`.deck`/`.jam` exports that are
+ * not checked into the repo; they only run on a machine where the files are
+ * present at this path under the home directory. `homedir()` keeps the path
+ * independent of the `/home` vs `/var/home` mount.
+ */
+const FIGMA_EXPORT_DIR = join(
+  homedir(),
+  'Seafile',
+  'Plain',
+  'Text',
+  'Reference',
+  'Figma export',
+);
 
 // region Test fixtures
 
@@ -355,7 +375,7 @@ await describe({
               '@monochromatic-dev/figma-kiwi/ts' as string
             );
             const figmaFile = await parseFigmaFile(
-              '/home/user/Nextcloud/Text/Reference/Figma export/Color palette - base.fig',
+              join(FIGMA_EXPORT_DIR, 'Color palette - base.fig',),
             );
             const doc = convertFigmaToPenpot(figmaFile,);
             const zipBuffer = await serializePenpotZip(doc,);
@@ -372,7 +392,7 @@ await describe({
               '@monochromatic-dev/figma-kiwi/ts' as string
             );
             const figmaFile = await parseFigmaFile(
-              '/home/user/Nextcloud/Text/Reference/Figma export/MTM6162-040 participation 2 cover.deck',
+              join(FIGMA_EXPORT_DIR, 'MTM6162-040 participation 2 cover.deck',),
             );
             const doc = convertFigmaToPenpot(figmaFile,);
             // Deck should have slides as pages
@@ -390,7 +410,7 @@ await describe({
               '@monochromatic-dev/figma-kiwi/ts' as string
             );
             const figmaFile = await parseFigmaFile(
-              '/home/user/Nextcloud/Text/Reference/Figma export/Todo app - Brainstorming.jam',
+              join(FIGMA_EXPORT_DIR, 'Todo app - Brainstorming.jam',),
             );
             const doc = convertFigmaToPenpot(figmaFile,);
             expect(doc.pages.size,).toBeGreaterThan(0,);
