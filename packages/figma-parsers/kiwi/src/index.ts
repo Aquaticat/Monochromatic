@@ -1223,9 +1223,9 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
    */
   const tmpDir = await import('node:os').then(m => m.tmpdir());
   /**
-   * Unique-enough suffix for the temp filenames to avoid collisions between concurrent calls.
+   * Per-call unique suffix for the temp filenames; a UUID rather than `Date.now()` so concurrent calls landing on the same millisecond cannot collide on the same paths.
    */
-  const id = Date.now();
+  const id = crypto.randomUUID();
   /**
    * Temp path for the compressed input passed to the CLI.
    */
