@@ -12,7 +12,10 @@ import { html as siteFooterHtml, } from '../components/site-footer.ts';
 import { html as siteHeaderHtml, } from '../components/site-header.ts';
 import type { Locales, } from '../i18n/i18n-types.ts';
 
-import { headFragment, } from './head.ts';
+import {
+  headFragment,
+  type ArticleDates,
+} from './head.ts';
 
 /**
  * Renders a complete HTML document with the standard site shell.
@@ -35,6 +38,8 @@ import { headFragment, } from './head.ts';
  * @param availableInLangs - locales in which the current post exists;
  * forwarded to the header so locales without a translation fall back
  * to the locale landing
+ *
+ * @param articleDates - optional git-derived post dates emitted as Open Graph metadata
  *
  * @returns complete HTML document string including `<!DOCTYPE html>`
  *
@@ -59,6 +64,7 @@ export function pageLayout(
     searchable = false,
     currentName,
     availableInLangs,
+    articleDates,
   }: {
     readonly title: string;
     readonly lang: Locales;
@@ -68,6 +74,7 @@ export function pageLayout(
     readonly searchable?: boolean;
     readonly currentName?: string;
     readonly availableInLangs?: readonly Locales[];
+    readonly articleDates?: ArticleDates;
   },
 ): string {
   return `<!DOCTYPE html>\n${
@@ -80,6 +87,7 @@ export function pageLayout(
           lang,
           description,
           canonicalUrl,
+          ...(articleDates !== undefined ? { articleDates, } : {}),
         },),
         h({
           tag: 'body',

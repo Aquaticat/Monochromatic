@@ -14,6 +14,8 @@ const zh = {
   redirectingToLangChooser: '的语言选择',
   themeToggle: '反转主题',
   langSwitcher: '切换语言',
+  published: '发布',
+  updated: '更新',
 } satisfies Translation;
 
 export default zh;

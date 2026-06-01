@@ -25,6 +25,10 @@ import type { Locales, } from '../i18n/i18n-types.ts';
 import { isLocale, } from '../i18n/i18n-util.ts';
 
 import { sha256, } from './cache-hash.ts';
+import {
+  readAuthoredDates,
+  type AuthoredDateFields,
+} from './frontmatter-dates.ts';
 
 //region Frontmatter
 
@@ -272,6 +276,10 @@ export type LoadedPost = {
     readonly tags: readonly string[];
   };
   /**
+   * Optional human-authored date fields retained only for divergence warnings.
+   */
+  readonly authoredDates: AuthoredDateFields;
+  /**
    * Raw MDX body content (frontmatter stripped).
    */
   readonly body: string;
@@ -376,6 +384,13 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
         rawData,
       );
       /**
+       * Optional date fields retained for warnings when they contradict git history.
+       */
+      const authoredDates = readAuthoredDates({
+        rawData,
+        filePath,
+      },);
+      /**
        * Locale segment of the file path before narrowing to the `Locales` type.
        */
       const rawLang = basename(dirname(filePath,),);
@@ -400,6 +415,7 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
         lang,
         name,
         fileData,
+        authoredDates,
         body,
         filePath,
         contentHash,
@@ -412,8 +428,8 @@ export async function loadContent(contentDir: string,): Promise<LoadedPost[]> {
  * Derived dates for one post, keyed by absolute file path in `attachDates`.
  */
 export type ResolvedDates = {
-  published: Date;
-  updated: Date;
+  readonly published: Date;
+  readonly updated: Date;
 };
 
 /**

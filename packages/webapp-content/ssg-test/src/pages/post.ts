@@ -12,6 +12,7 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
 
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
+import { prettyDate, } from '../templates/pretty-date.ts';
 
 /**
  * Generates the full post page HTML.
@@ -71,6 +72,11 @@ export function postPage(
   }
 
   /**
+   * Locale-bound translator used for post date labels.
+   */
+  const t = i18nObject(lang,);
+
+  /**
    * Main element tree composed before the page layout wraps it with `<head>` and friends.
    */
   const content = h({
@@ -80,6 +86,25 @@ export function postPage(
         tag: 'h1',
         text: post.data
           .title,
+      },),
+      h({
+        tag: 'aside',
+        class: 'date',
+        children: [
+          `${t.published()}: `,
+          prettyDate({
+            date: post.data
+              .published,
+            lang,
+          },),
+          ' ',
+          `${t.updated()}: `,
+          prettyDate({
+            date: post.data
+              .updated,
+            lang,
+          },),
+        ],
       },),
       h({
         tag: 'article',
@@ -99,6 +124,12 @@ export function postPage(
     searchable: true,
     currentName: name,
     availableInLangs,
+    articleDates: {
+      published: post.data
+        .published,
+      updated: post.data
+        .updated,
+    },
   },);
 }
 

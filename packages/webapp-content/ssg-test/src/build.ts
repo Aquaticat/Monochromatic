@@ -40,6 +40,7 @@ import {
   loadContent,
   type ResolvedDates,
 } from './lib/content.ts';
+import { warnOnAuthoredDateDivergence, } from './lib/date-divergence.ts';
 import {
   getPostDates,
   resolveGitDatesContext,
@@ -146,14 +147,24 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
         contentHash: post.contentHash,
       },);
     if (cached !== CACHE_MISS) {
+      /**
+       * Cached dates reused when the git HEAD still matches the manifest.
+       */
+      const dates = {
+        published: cached.frontmatter
+          .published,
+        updated: cached.frontmatter
+          .updated,
+      };
+      warnOnAuthoredDateDivergence({
+        authoredDates: post.authoredDates,
+        resolvedDates: dates,
+        filePath: post.filePath,
+        l,
+      },);
       datesByFilePath.set(
         post.filePath,
-        {
-          published: cached.frontmatter
-            .published,
-          updated: cached.frontmatter
-            .updated,
-        },
+        dates,
       );
       return;
     }
@@ -166,6 +177,12 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
     filePath: post.filePath,
     isShallow: gitCtx.isShallow,
     githubSlug: gitCtx.githubSlug,
+    l,
+  },);
+  warnOnAuthoredDateDivergence({
+    authoredDates: post.authoredDates,
+    resolvedDates: dates,
+    filePath: post.filePath,
     l,
   },);
   datesByFilePath.set(

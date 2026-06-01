@@ -11,6 +11,20 @@ import type { Locales, } from '../i18n/i18n-types.ts';
 import { i18nObject, } from '../i18n/i18n-util.ts';
 
 /**
+ * Git-derived article dates exposed as Open Graph metadata on post pages.
+ */
+export type ArticleDates = {
+  /**
+   * Publication date derived from the oldest git commit touching the post.
+   */
+  readonly published: Date;
+  /**
+   * Modification date derived from the newest git commit touching the post.
+   */
+  readonly updated: Date;
+};
+
+/**
  * Renders the `<head>` element with meta, title, and stylesheet link.
  *
  * Elements are ordered per Capo.js priorities for optimal browser parsing:
@@ -24,6 +38,8 @@ import { i18nObject, } from '../i18n/i18n-util.ts';
  * @param description - page-specific meta description
  *
  * @param canonicalUrl - full canonical URL for this page
+ *
+ * @param articleDates - optional git-derived publication and modification dates for article pages
  *
  * @returns HTML string for the `<head>` element
  *
@@ -43,11 +59,13 @@ export function headFragment(
     lang,
     description,
     canonicalUrl,
+    articleDates,
   }: {
     readonly title: string;
     readonly lang: Locales;
     readonly description: string;
     readonly canonicalUrl: string;
+    readonly articleDates?: ArticleDates;
   },
 ): string {
   /**
@@ -58,6 +76,36 @@ export function headFragment(
    * Page title with site name suffix per the Capo.js title convention.
    */
   const fullTitle = `${title} | ${t.siteName()}`;
+  /**
+   * Optional Open Graph article metadata, emitted only for post pages.
+   */
+  const articleMeta = articleDates === undefined
+    ? []
+    : [
+      h({
+        tag: 'meta',
+        attrs: {
+          property: 'og:type',
+          content: 'article',
+        },
+      },),
+      h({
+        tag: 'meta',
+        attrs: {
+          property: 'article:published_time',
+          content: articleDates.published
+            .toISOString(),
+        },
+      },),
+      h({
+        tag: 'meta',
+        attrs: {
+          property: 'article:modified_time',
+          content: articleDates.updated
+            .toISOString(),
+        },
+      },),
+    ];
 
   return h({
     tag: 'head',
@@ -172,6 +220,7 @@ export function headFragment(
           content: description,
         },
       },),
+      ...articleMeta,
       h({
         tag: 'link',
         attrs: {

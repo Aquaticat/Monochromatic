@@ -41,11 +41,34 @@ export function generateLanguageRss(
    * Locale-bound translator captured once so siteName and siteDescription resolve in the same locale.
    */
   const t = i18nObject(lang,);
+  /**
+   * Newest git-derived update date across this locale's posts, used as the feed build date.
+   */
+  const lastBuildDate = posts
+    .map(function toUpdatedDate(post,): Date {
+      return post.data
+        .updated;
+    },)
+    .toSorted(function newestFirst(
+      a,
+      b,
+    ): number {
+      return b.getTime()
+        - a.getTime();
+    },)
+    .at(0,);
+
   return generateRssFeed({
     title: t.siteName(),
     link: siteUrl,
     description: t.siteDescription(),
     language: lang,
+    ...(lastBuildDate === undefined
+      ? {}
+      : {
+        pubDate: lastBuildDate,
+        lastBuildDate,
+      }),
     items: posts.map(function toRssItem(post,) {
       return {
         title: post.data
@@ -54,7 +77,7 @@ export function generateLanguageRss(
         description: post.data
           .description,
         pubDate: post.data
-          .published,
+          .updated,
         categories: post.data
           .tags
           .map(function toCategory(tag,) {

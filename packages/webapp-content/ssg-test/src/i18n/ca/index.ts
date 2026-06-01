@@ -14,6 +14,8 @@ const ca = {
   redirectingToLangChooser: 'Tria un idioma per a',
   themeToggle: 'Inverteix el tema',
   langSwitcher: 'Canvia d\'idioma',
+  published: 'Publicat',
+  updated: 'Actualitzat',
 } satisfies Translation;
 
 export default ca;

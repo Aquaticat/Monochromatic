@@ -82,17 +82,20 @@ README for the full pipeline.
 
 #### Set Default Modified Date by Git Log
 
-**Status**: Medium Priority (content management)
+**Status**: Done in `packages/webapp-content/ssg-test`.
 
-Automatically set document modification dates from git history.
+The SSG derives publication and modification dates from git history,
+renders them on content pages, emits feed and Open Graph dates, and warns
+when legacy hand-authored date frontmatter diverges from git. See
+`packages/webapp-content/ssg-test/README.md`.
 
 #### Enhanced Git Integration
 
-- [ ] Implement comprehensive git metadata extraction
+- [x] Implement comprehensive git metadata extraction for SSG content dates
 - [ ] Add author and contributor tracking
 - [ ] Create change history visualization
 - [ ] Implement document lifecycle tracking
-- [ ] Add automated content freshness validation
+- [x] Add automated content freshness validation for authored date divergence
 - [ ] Create content maintenance scheduling
 
 #### Format MDX Files

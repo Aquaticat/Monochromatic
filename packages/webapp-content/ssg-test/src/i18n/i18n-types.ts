@@ -55,6 +55,14 @@ type RootTranslation = {
 	 * S​w​i​t​c​h​ ​l​a​n​g​u​a​g​e
 	 */
 	langSwitcher: string
+	/**
+	 * P​u​b​l​i​s​h​e​d
+	 */
+	published: string
+	/**
+	 * U​p​d​a​t​e​d
+	 */
+	updated: string
 }
 
 export type TranslationFunctions = {
@@ -98,6 +106,14 @@ export type TranslationFunctions = {
 	 * Switch language
 	 */
 	langSwitcher: () => LocalizedString
+	/**
+	 * Published
+	 */
+	published: () => LocalizedString
+	/**
+	 * Updated
+	 */
+	updated: () => LocalizedString
 }
 
 export type Formatters = {}

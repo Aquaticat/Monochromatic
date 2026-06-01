@@ -8,7 +8,7 @@ Converts MDX content into flat HTML pages served by Caddy with clean URLs.
 The build pipeline runs as a sequence of mise tasks (`mise run build`):
 
 1. **i18n + client JS** (`build:i18n`, `build:js:client`): generate typesafe-i18n types and bundle client-side scripts via tsdown
-2. **Site generation** (`build:site` / `src/build.ts`): loads MDX from `src/content/{lang}/`, validates frontmatter with Zod, processes changed files through a remark/rehype pipeline (with SHA-256 content caching), pre-computes syntax highlight ranges via Lezer, generates HTML pages from h-html templates, generates CSS from h-css declarations, generates RSS feeds per language via feedsmith, copies static assets from `public/`
+2. **Site generation** (`build:site` / `src/build.ts`): loads MDX from `src/content/{lang}/`, validates frontmatter with Valibot, processes changed files through a remark/rehype pipeline (with SHA-256 content caching), pre-computes syntax highlight ranges via Lezer, generates HTML pages from h-html templates, generates CSS from h-css declarations, generates RSS feeds per language via feedsmith, copies static assets from `public/`
 3. **Post-processing** (`build:postprocess` / `src/build/postprocess.ts`): pagefind indexes `dist/` in parallel with fingerprint phases 1+2 (leaf assets + CSS); phase 3 (HTML reference rewriting) runs after both complete
 4. **Compression** (`build:compress`): compresses `dist/` with zstd
 
@@ -48,6 +48,17 @@ They are derived from git history at build time in `src/lib/git-dates.ts`:
 
 - `published`: author date of the oldest commit that touched the file (`git log --follow --reverse`)
 - `updated`: author date of the newest commit that touched the file (`git log --follow`)
+
+Full post pages render both dates with `<time datetime="...">` elements,
+Open Graph article metadata exposes `article:published_time` and
+`article:modified_time`, and RSS feeds use git-derived `updated` dates
+for item `<pubDate>` plus channel `<pubDate>` and `<lastBuildDate>`.
+
+Legacy `date`, `published`, or `updated` frontmatter fields are ignored
+for rendering. When present, the build compares their calendar date against
+the corresponding git-derived date and logs a warning if they diverge.
+This preserves git history as the source of truth while surfacing stale
+hand-authored metadata during migrations.
 
 Both queries use `--follow` so renames preserve the original publication date.
 Every commit touching the file bumps `updated`, including trivial edits;

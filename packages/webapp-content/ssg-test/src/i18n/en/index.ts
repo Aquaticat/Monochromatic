@@ -14,6 +14,8 @@ const en = {
   redirectingToLangChooser: 'Choose a language for',
   themeToggle: 'Invert theme',
   langSwitcher: 'Switch language',
+  published: 'Published',
+  updated: 'Updated',
 } satisfies BaseTranslation;
 
 export default en;
