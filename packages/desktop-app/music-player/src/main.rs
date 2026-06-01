@@ -40,6 +40,11 @@ use music_player::command::{Command, RepeatMode, Update};
 // TS map:   `import { Engine } from "music-player/engine";`
 use music_player::engine::Engine;
 
+// What:     `use music_player::session::Session;`. The saved-state record.
+// Why:      We load it on launch to restore the last session.
+// TS map:   `import { Session } from "music-player/session";`
+use music_player::session::Session;
+
 // What:     `use slint::{ComponentHandle, SharedString, VecModel};`.
 //           `ComponentHandle` is the trait giving `.as_weak()`/`.run()` on the
 //           window; `SharedString` is Slint's cheap-to-clone string; `VecModel`
@@ -434,12 +439,36 @@ fn main() -> Result<(), slint::PlatformError> {
     // Why:      Allow `music-player file1 dir2 ...` to enqueue on launch.
     // TS map:   `const cliPaths = process.argv.slice(2);`
     let cli_paths: Vec<PathBuf> = std::env::args().skip(1).map(PathBuf::from).collect();
-    // What:     `if !cli_paths.is_empty() { engine.send(Command::OpenPaths(cli_paths)); }`.
-    //           Enqueue and play them if any were given.
-    // Why:      Honour CLI arguments.
-    // TS map:   `if (cliPaths.length) engine.send(Command.OpenPaths(cliPaths));`
+    // What:     `if !cli_paths.is_empty() { ... } else { ... }`. CLI paths take
+    //           precedence over a saved session; with no paths, restore the
+    //           last session instead.
+    // Why:      Opening files explicitly should override resuming.
+    // TS map:   `if (cliPaths.length) { ... } else { ... }`
     if !cli_paths.is_empty() {
+        // What:     `engine.send(Command::OpenPaths(cli_paths));`. Enqueue and play.
+        // Why:      Honour CLI arguments.
+        // TS map:   `engine.send(Command.OpenPaths(cliPaths));`
         engine.send(Command::OpenPaths(cli_paths));
+    } else {
+        // What:     `let session = Session::load();`. Read the saved session
+        //           (returns defaults if none/corrupt; prunes moved files).
+        // Why:      Resume where the user left off.
+        // TS map:   `const session = Session.load();`
+        let session = Session::load();
+        // What:     `if !session.tracks.is_empty() { engine.send(Command::Restore { ... }); }`.
+        //           Only restore when a non-empty queue survived pruning.
+        // Why:      Nothing to resume otherwise.
+        // TS map:   `if (session.tracks.length) engine.send({ kind: "restore", ... });`
+        if !session.tracks.is_empty() {
+            engine.send(Command::Restore {
+                tracks: session.tracks,
+                current: session.current,
+                position: session.position_secs,
+                volume: session.volume,
+                shuffle: session.shuffle,
+                repeat: session.repeat,
+            });
+        }
     }
 
     // What:     `app.run()`. Show the window and run the event loop until it

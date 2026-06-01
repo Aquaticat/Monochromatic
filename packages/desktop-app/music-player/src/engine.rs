@@ -69,6 +69,11 @@ use crate::output::Output;
 // TS map:   `import { Queue } from "./queue";`
 use crate::queue::Queue;
 
+// What:     `use crate::session::Session;`. The serializable saved-state record.
+// Why:      The engine builds one on quit and saves it to disk.
+// TS map:   `import { Session } from "./session";`
+use crate::session::Session;
+
 // What:     `const IDLE_SLEEP_MS: u64 = 5;`. Milliseconds to sleep when there is
 //           no audio work this cycle. `u64` is what `Duration::from_millis` wants.
 // Why:      Avoid pegging a CPU core while paused or buffer-full.
@@ -281,11 +286,13 @@ fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
             }
         }
 
-        // What:     `if quitting { break; }`. Leave the main loop -> `run` returns
-        //           -> `controller` (and its `Output`) drops -> PipeWire stops.
-        // Why:      Clean shutdown.
-        // TS map:   `if (quitting) break;`
+        // What:     `if quitting { controller.save_session(); break; }`. Persist the
+        //           session, then leave the main loop -> `run` returns ->
+        //           `controller` (and its `Output`) drops -> PipeWire stops.
+        // Why:      Save where the user left off before shutting down.
+        // TS map:   `if (quitting) { controller.saveSession(); break; }`
         if quitting {
+            controller.save_session();
             break;
         }
 
@@ -419,6 +426,56 @@ impl Controller {
         // Why:      Visual state.
         // TS map:   `this.emit({ kind: "playing", on });`
         self.emit(Update::Playing(on));
+    }
+
+    // What:     `fn current_session(&self) -> Session`. Snapshot the playback
+    //           state into a serializable `Session`.
+    // Why:      Persist where the user left off.
+    // TS map:   `currentSession(): Session`
+    fn current_session(&self) -> Session {
+        // What:     `let position_secs = match &self.spec { ... };`. Convert the
+        //           frame counter to seconds using the current rate, or 0 if
+        //           unknown.
+        // Why:      The session stores seconds, not frames.
+        // TS map:   `const positionSecs = this.spec?.rate ? this.positionFrames / this.spec.rate : 0;`
+        let position_secs = match &self.spec {
+            // What:     `Some(spec) if spec.rate > 0 => self.position_frames as f64 / spec.rate as f64`.
+            //           Guarded arm: a known, positive rate.
+            // Why:      seconds = frames / rate.
+            // TS map:   `return this.positionFrames / spec.rate;`
+            Some(spec) if spec.rate > 0 => self.position_frames as f64 / spec.rate as f64,
+            // What:     `_ => 0.0`. No spec or zero rate.
+            // Why:      Unknown position.
+            // TS map:   `return 0;`
+            _ => 0.0,
+        };
+        // What:     `Session { ... }`. Build the record from the queue + state.
+        //           `self.queue.tracks().to_vec()` clones the borrowed paths into
+        //           an owned `Vec`. Tail expression -> return.
+        // Why:      Bundle everything the next launch needs.
+        // TS map:   `return { tracks: [...this.queue.tracks()], current: ..., ... };`
+        Session {
+            tracks: self.queue.tracks().to_vec(),
+            current: self.queue.current_index(),
+            position_secs,
+            volume: self.volume,
+            shuffle: self.queue.shuffle_on(),
+            repeat: self.queue.repeat(),
+        }
+    }
+
+    // What:     `fn save_session(&self)`. Write the current session to disk,
+    //           logging (not propagating) any I/O error.
+    // Why:      Called on quit; a failed save should not block shutdown.
+    // TS map:   `saveSession(): void`
+    fn save_session(&self) {
+        // What:     `if let Err(e) = self.current_session().save() { ... }`. `save`
+        //           returns `io::Result<()>`; on `Err` we log it.
+        // Why:      Best-effort persistence.
+        // TS map:   `try { currentSession().save(); } catch (e) { console.error(e); }`
+        if let Err(e) = self.current_session().save() {
+            eprintln!("music-player: session save failed: {e}");
+        }
     }
 
     // What:     `fn handle_command(&mut self, command: Command)`. Apply one UI
@@ -578,6 +635,84 @@ impl Controller {
                 // Why:      Button visual.
                 // TS map:   `this.emit({ kind: "repeat", mode });`
                 self.emit(Update::Repeat(mode));
+            }
+            // What:     `Command::Restore { tracks, current, position, volume,
+            //           shuffle, repeat } => { ... }`. Reinstate a saved session,
+            //           loading the current track PAUSED at the saved position.
+            // Why:      Resume where the user left off, on launch.
+            // TS map:   `case "restore": { const { tracks, current, ... } = command; ... }`
+            Command::Restore {
+                tracks,
+                current,
+                position,
+                volume,
+                shuffle,
+                repeat,
+            } => {
+                // What:     `self.volume = volume;`. Restore the saved gain.
+                // Why:      Applied to decoded samples.
+                // TS map:   `this.volume = volume;`
+                self.volume = volume;
+                // What:     `self.queue.set_repeat(repeat);`. Restore repeat mode.
+                // Why:      Affects auto-advance.
+                // TS map:   `this.queue.setRepeat(repeat);`
+                self.queue.set_repeat(repeat);
+                // What:     `self.queue.set_tracks(tracks);`. Rebuild the queue
+                //           (cursor starts at the first track).
+                // Why:      Restore the playlist.
+                // TS map:   `this.queue.setTracks(tracks);`
+                self.queue.set_tracks(tracks);
+                // What:     `self.queue.set_shuffle(shuffle);`. Restore shuffle
+                //           ordering (keeps the current track).
+                // Why:      Restore shuffle state.
+                // TS map:   `this.queue.setShuffle(shuffle);`
+                self.queue.set_shuffle(shuffle);
+                // What:     `if let Some(idx) = current { self.queue.play_index(idx); }`.
+                //           Move the cursor to the saved current track, if any.
+                // Why:      Resume on the right track.
+                // TS map:   `if (current != null) this.queue.playIndex(current);`
+                if let Some(idx) = current {
+                    self.queue.play_index(idx);
+                }
+                // What:     `self.emit(Update::Queue(self.queue.display_names()));`.
+                //           Push the queue list to the UI.
+                // Why:      Render the restored queue.
+                // TS map:   `this.emit({ kind: "queue", names: ... });`
+                self.emit(Update::Queue(self.queue.display_names()));
+                // What:     `self.emit(Update::Volume(volume));`. Mirror volume.
+                // Why:      Sync the slider.
+                // TS map:   `this.emit({ kind: "volume", volume });`
+                self.emit(Update::Volume(volume));
+                // What:     `self.emit(Update::Shuffle(self.queue.shuffle_on()));`.
+                //           Mirror shuffle state.
+                // Why:      Sync the button.
+                // TS map:   `this.emit({ kind: "shuffle", on: this.queue.shuffleOn() });`
+                self.emit(Update::Shuffle(self.queue.shuffle_on()));
+                // What:     `self.emit(Update::Repeat(self.queue.repeat()));`. Mirror
+                //           repeat mode.
+                // Why:      Sync the button.
+                // TS map:   `this.emit({ kind: "repeat", mode: this.queue.repeat() });`
+                self.emit(Update::Repeat(self.queue.repeat()));
+                // What:     `self.playing = false;`. Restore PAUSED, not playing.
+                // Why:      Resuming should not blast audio on launch.
+                // TS map:   `this.playing = false;`
+                self.playing = false;
+                // What:     `let loaded = self.load_current();`. Load the current
+                //           track (creates the output stream, emits NowPlaying).
+                // Why:      Make the track ready to play from the saved position.
+                // TS map:   `const loaded = this.loadCurrent();`
+                let loaded = self.load_current();
+                // What:     `self.emit(Update::Playing(false));`. Mirror paused state.
+                // Why:      Show the Play button.
+                // TS map:   `this.emit({ kind: "playing", on: false });`
+                self.emit(Update::Playing(false));
+                // What:     `if loaded && position > 0.0 { self.seek(position); }`.
+                //           Jump to the saved position if a track loaded.
+                // Why:      Resume mid-track.
+                // TS map:   `if (loaded && position > 0) this.seek(position);`
+                if loaded && position > 0.0 {
+                    self.seek(position);
+                }
             }
             // What:     `Command::Quit => {}`. Handled in `run`'s drain loop; this
             //           arm just keeps the match exhaustive.

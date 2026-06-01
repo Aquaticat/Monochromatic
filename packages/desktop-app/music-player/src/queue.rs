@@ -217,6 +217,20 @@ impl Queue {
         self.tracks.len()
     }
 
+    /// Tracks in load order (as opened), regardless of shuffle.
+    // What:     `pub fn tracks(&self) -> &[PathBuf]`. Returns a BORROWED slice
+    //           (`&[PathBuf]`, sibling of the owned `Vec<PathBuf>`) of the load-
+    //           order paths. Read-only borrow; the caller may not mutate them.
+    // Why:      The session save needs the queue's file paths to persist.
+    // TS map:   `get tracks(): readonly string[]` (a read-only view of the array).
+    pub fn tracks(&self) -> &[PathBuf] {
+        // What:     `&self.tracks` borrows the `Vec` as a slice (the `Vec` derefs
+        //           to `&[PathBuf]`). Tail expression -> return value.
+        // Why:      Hand out a read-only view of the paths.
+        // TS map:   `return this.tracks;`
+        &self.tracks
+    }
+
     /// Whether the queue has no tracks.
     // What:     `pub fn is_empty(&self) -> bool`. Read-only borrow.
     // Why:      Convenience predicate; clippy also prefers this beside `len`.

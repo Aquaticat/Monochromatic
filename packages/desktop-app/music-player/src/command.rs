@@ -133,6 +133,41 @@ pub enum Command {
     SetShuffle(bool),
     /// Change the repeat mode.
     SetRepeat(RepeatMode),
+    // What:     `Restore { ... }` is a STRUCT variant carrying a saved session to
+    //           reinstate at launch: the queue paths, which track was current,
+    //           the position, and the volume/shuffle/repeat settings. The engine
+    //           loads the current track PAUSED at the saved position.
+    // Why:      Sent once on startup to resume where the user left off, without
+    //           coupling this enum to the persistence `Session` type.
+    // TS map:   `{ kind: "restore"; tracks: string[]; current: number | null;
+    //             position: number; volume: number; shuffle: boolean; repeat: RepeatMode }`
+    Restore {
+        // What:     `tracks: Vec<PathBuf>` the saved queue in load order.
+        // Why:      Rebuild the queue.
+        // TS map:   `tracks: string[]`.
+        tracks: Vec<PathBuf>,
+        // What:     `current: Option<usize>` which track was current (or `None`).
+        // Why:      Position the cursor on restore.
+        // TS map:   `current: number | null`.
+        current: Option<usize>,
+        // What:     `position: f64` saved playback position in seconds (same
+        //           seconds-as-f64 unit as `Seek`/`Position`).
+        // Why:      Resume mid-track.
+        // TS map:   `position: number`.
+        position: f64,
+        // What:     `volume: f32` saved gain.
+        // Why:      Restore the last volume.
+        // TS map:   `volume: number`.
+        volume: f32,
+        // What:     `shuffle: bool` saved shuffle state.
+        // Why:      Restore shuffle.
+        // TS map:   `shuffle: boolean`.
+        shuffle: bool,
+        // What:     `repeat: RepeatMode` saved repeat mode.
+        // Why:      Restore repeat.
+        // TS map:   `repeat: RepeatMode`.
+        repeat: RepeatMode,
+    },
     /// Shut the engine thread down.
     Quit,
 }

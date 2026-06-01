@@ -89,7 +89,8 @@ The Open button uses the XDG desktop portal file picker.
 
 ## Session
 
-The session model in `src/session.rs` saves the queue (file paths), current index, position, volume, and
-shuffle/repeat mode to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux),
-loads it back, and prunes files that have since moved. This is implemented and unit-tested. Wiring it into the
-engine (save on exit, restore on launch) is the remaining integration step.
+On exit the engine saves the queue (file paths), current index, position, volume, and shuffle/repeat mode to a
+JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). On launch, when no file
+arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
+track is loaded paused at the saved position, with files that have since moved pruned out. Command-line path
+arguments take precedence over a saved session.
