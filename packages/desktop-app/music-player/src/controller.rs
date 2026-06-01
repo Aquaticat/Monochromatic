@@ -304,23 +304,30 @@ impl Controller {
                 // TS map:   `this.afterMove(moved);`
                 self.after_move(moved);
             }
-            // What:     `Command::PlayIndex(index) => { ... }`. Jump to a queue slot.
-            // Why:      Click-to-play in the queue list.
-            // TS map:   `case "playIndex": ...`
-            Command::PlayIndex(index) => {
+            // What:     `Command::SelectIndex(index) => { ... }`. Make a queue slot
+            //           current and load it PAUSED, without starting playback.
+            // Why:      A single click selects (and pauses); only a click on the
+            //           already-selected row plays it (via a follow-up `TogglePlay`).
+            // TS map:   `case "selectIndex": ...`
+            Command::SelectIndex(index) => {
                 // What:     `if self.queue.play_index(index).is_some() { ... }`. Act only
-                //           on a valid index.
+                //           on a valid index. (`Queue::play_index` only moves the cursor
+                //           and rebuilds the page scope; it does not start audio.)
                 // Why:      Ignore out-of-range clicks.
                 // TS map:   `if (this.queue.playIndex(index) != null) { ... }`
                 if self.queue.play_index(index).is_some() {
-                    // What:     `let ok = self.load_current();`. Load the chosen track.
-                    // Why:      Start it.
-                    // TS map:   `const ok = this.loadCurrent();`
-                    let ok = self.load_current();
-                    // What:     `self.set_playing(ok);`. Play if loaded.
-                    // Why:      Reflect success.
-                    // TS map:   `this.setPlaying(ok);`
-                    self.set_playing(ok);
+                    // What:     `self.load_current();`. Load the chosen track so its
+                    //           name/duration show and its row highlights. The bool
+                    //           result is unused: we pause either way.
+                    // Why:      Make the track ready and current, without playing it.
+                    // TS map:   `this.loadCurrent();`
+                    self.load_current();
+                    // What:     `self.set_playing(false);`. Force PAUSED. If audio was
+                    //           playing (this or another track), it stops here.
+                    // Why:      "Single click merely selects (if currently playing, set
+                    //           to paused)" — selecting never auto-plays.
+                    // TS map:   `this.setPlaying(false);`
+                    self.set_playing(false);
                 }
             }
             // What:     `Command::Seek(secs) => self.seek(secs)`. Jump within the track.

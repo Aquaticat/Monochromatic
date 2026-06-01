@@ -13,8 +13,12 @@
 //!   fixed buckets: the 26 English letters A-Z (case-insensitive), plus a single
 //!   `#` catch-all for digits, symbols, CJK, and non-English letters.
 //!
-//! Pages come out sorted folder-pages-first (by path), then the A-Z letter pages,
-//! then the `#` catch-all.
+//! Pages come out sorted folder-pages-first (case-insensitively by path), then the
+//! A-Z letter pages, then the `#` catch-all. Folder labels are case-folded for the
+//! sort only (never for display or bucketing), so `daniwellP` and `r-906` interleave
+//! with the capitalized folder names instead of trailing after `Zedd`: raw codepoint
+//! order puts every lowercase letter (a-z, 0x61+) after every uppercase one (A-Z,
+//! 0x41-0x5A), which is the surprising "Zedd before daniwellP" ordering this avoids.
 
 // What:     `use std::collections::BTreeMap;`. `BTreeMap<K, V>` is an ordered map
 //           that keeps its keys SORTED (a balanced tree). Sibling the reader might
@@ -190,6 +194,26 @@ fn page_key(name: &str) -> (u8, String) {
     }
 }
 
+// What:     `fn sort_key(label: &str) -> String`. The case-folded form of a page
+//           label, used ONLY to order pages, never to display or bucket them.
+//           `label.to_uppercase()` is Unicode-aware (folds accented and non-English
+//           letters, not just ASCII) and returns a fresh owned `String`. A single
+//           linear pass over `label`, no recursion or rescanning. Private helper.
+// Why:      Folder labels are raw folder names in mixed case; ordering them as raw
+//           `String`s is codepoint order, which sorts every uppercase letter
+//           (A-Z, 0x41-0x5A) before every lowercase one (a-z, 0x61+), so `Zedd`
+//           lands before `daniwellP`. Folding case first gives the human "ignore
+//           case" order the tab bar wants. Letter pages (`A`-`Z`) and the `#`
+//           catch-all are already uppercase, so this is the identity for them.
+// TS map:   `function sortKey(label: string): string { return label.toUpperCase(); }`
+fn sort_key(label: &str) -> String {
+    // What:     `label.to_uppercase()`. Uppercase every character (Unicode-aware).
+    //           Tail expression -> return value.
+    // Why:      Collapse case so the ordering ignores it.
+    // TS map:   `return label.toUpperCase();`
+    label.to_uppercase()
+}
+
 // What:     `pub fn paginate(names: &[String]) -> Vec<Page>`. Group the display
 //           strings into pages. `&[String]` is a BORROWED slice of owned strings
 //           (read-only; we copy out of it, never mutate it).
@@ -210,14 +234,17 @@ fn page_key(name: &str) -> (u8, String) {
 // }
 // ```
 pub fn paginate(names: &[String]) -> Vec<Page> {
-    // What:     `let mut groups: BTreeMap<(u8, String), Vec<PageEntry>> = BTreeMap::new();`.
-    //           A fresh empty sorted map from a `(sort-group, label)` key to that
-    //           page's entries. `mut` marks it mutable. Tuples sort
-    //           lexicographically: by the `u8` group first, then the label.
+    // What:     `let mut groups: BTreeMap<(u8, String, String), Vec<PageEntry>> = BTreeMap::new();`.
+    //           A fresh empty sorted map keyed by `(sort-group, sort-key, label)` to
+    //           that page's entries. `mut` marks it mutable. Tuples sort
+    //           lexicographically: the `u8` group first, then the case-folded
+    //           `sort-key`, then the original `label` as a tiebreaker. The label
+    //           still rides in the key so two distinct folders that case-fold alike
+    //           (`Reol` and `REOL`) stay separate buckets, ordered deterministically.
     // Why:      Accumulate entries per page; the tree sorts folder pages, then A-Z,
-    //           then `#`, with no extra sort step.
-    // TS map:   `const groups = new Map<[number, string], PageEntry[]>();`
-    let mut groups: BTreeMap<(u8, String), Vec<PageEntry>> = BTreeMap::new();
+    //           then `#`, case-insensitively within each, with no extra sort step.
+    // TS map:   `const groups = new Map<[number, string, string], PageEntry[]>();`
+    let mut groups: BTreeMap<(u8, String, String), Vec<PageEntry>> = BTreeMap::new();
 
     // What:     `for (index, name) in names.iter().enumerate() { ... }`.
     //           `names.iter()` borrows each element as `&String`; `.enumerate()`
@@ -227,12 +254,20 @@ pub fn paginate(names: &[String]) -> Vec<Page> {
     //           name itself.
     // TS map:   `names.forEach((name, index) => { ... })`
     for (index, name) in names.iter().enumerate() {
-        // What:     `let key = page_key(name);`. Compute this name's `(group, label)`
-        //           key. `name` is a `&String`, which auto-derefs to the `&str` the
-        //           helper takes.
+        // What:     `let (group, label) = page_key(name);`. Compute this name's
+        //           `(group, label)` pair and destructure it. `name` is a `&String`,
+        //           which auto-derefs to the `&str` the helper takes.
         // Why:      Decide which page this name belongs to.
-        // TS map:   `const key = pageKey(name);`
-        let key = page_key(name);
+        // TS map:   `const [group, label] = pageKey(name);`
+        let (group, label) = page_key(name);
+        // What:     `let key = (group, sort_key(&label), label);`. Build the
+        //           `(group, sort-key, label)` map key: the case-folded label sits
+        //           between the group and the original label so ordering ignores
+        //           case while the original label still distinguishes buckets.
+        //           `label` MOVES into the tuple last (after `sort_key` borrows it).
+        // Why:      Case-insensitive page order without losing the display label.
+        // TS map:   `const key = `${group} ${sortKey(label)} ${label}`;`
+        let key = (group, sort_key(&label), label);
         // What:     `let entry = PageEntry { index, name: name.clone() };`. Build the
         //           entry. `index` uses field-init shorthand (variable name matches
         //           the field). `name.clone()` makes an OWNED copy of the borrowed
@@ -252,19 +287,19 @@ pub fn paginate(names: &[String]) -> Vec<Page> {
         groups.entry(key).or_default().push(entry);
     }
 
-    // What:     `groups.into_iter().map(|((_, label), entries)| Page { label, entries }).collect()`.
-    //           `.into_iter()` CONSUMES the map, yielding `((u8, String), Vec<PageEntry>)`
-    //           pairs in sorted-key order; `.map(|((_, label), entries)| ...)`
-    //           destructures each, DISCARDING the `u8` group (the `_`) and keeping
-    //           the label, then builds a `Page` (field-init shorthand); `.collect()`
-    //           gathers them into the `Vec<Page>` the return type names. Tail
-    //           expression -> return value.
+    // What:     `groups.into_iter().map(|((_, _, label), entries)| Page { label, entries }).collect()`.
+    //           `.into_iter()` CONSUMES the map, yielding `((u8, String, String), Vec<PageEntry>)`
+    //           pairs in sorted-key order; `.map(|((_, _, label), entries)| ...)`
+    //           destructures each, DISCARDING the `u8` group and the case-folded
+    //           sort-key (the two `_`s) and keeping the original label, then builds a
+    //           `Page` (field-init shorthand); `.collect()` gathers them into the
+    //           `Vec<Page>` the return type names. Tail expression -> return value.
     // Why:      Materialize the sorted buckets as the ordered list of pages; the
-    //           sort group was only needed to order them.
-    // TS map:   `return [...groups].map(([[_, label], entries]) => ({ label, entries }));`
+    //           sort group and sort-key were only needed to order them.
+    // TS map:   `return [...groups].map(([[_, _, label], entries]) => ({ label, entries }));`
     groups
         .into_iter()
-        .map(|((_, label), entries)| Page { label, entries })
+        .map(|((_, _, label), entries)| Page { label, entries })
         .collect()
 }
 
@@ -385,6 +420,54 @@ mod tests {
         // Why:      Sorting reorders pages but each entry keeps its real index.
         // TS map:   `expect(pages[0].entries[0].index).toBe(1);`
         assert_eq!(pages[0].entries[0].index, 1);
+    }
+
+    #[test]
+    fn folder_pages_sort_case_insensitively() {
+        // What:     four folder tracks whose top folders mix upper- and lowercase
+        //           first letters, given in an order a raw codepoint sort would
+        //           mangle (`Zedd` before `daniwellP`, `r-906` after `Z`).
+        // Why:      Reproduce the reported "Reol, ..., Zedd, daniwellP, ..., r-906"
+        //           ordering and prove the fix interleaves them case-insensitively.
+        // TS map:   `const pages = paginate(["Zedd/a.flac", "daniwellP/b.flac", "Reol/c.flac", "r-906/d.flac"]);`
+        let pages = paginate(&names(&[
+            "Zedd/a.flac",
+            "daniwellP/b.flac",
+            "Reol/c.flac",
+            "r-906/d.flac",
+        ]));
+        // What:     collect the labels in page order.
+        // Why:      Compare the full ordered sequence at once.
+        // TS map:   `const labels = pages.map(p => p.label);`
+        let labels: Vec<String> = pages.iter().map(|p| p.label.clone()).collect();
+        // What:     `assert_eq!(labels, vec!["daniwellP", "r-906", "Reol", "Zedd"]);`.
+        //           Case-folded order: `DANIWELLP` < `R-906` < `REOL` < `ZEDD` (the
+        //           `-` at 0x2D sorts before `E`, so `r-906` precedes `Reol`). The
+        //           displayed labels keep their ORIGINAL casing.
+        // Why:      Confirm lowercase-led folders no longer trail after `Z`, and the
+        //           label text is not uppercased for display.
+        // TS map:   `expect(labels).toEqual(["daniwellP", "r-906", "Reol", "Zedd"]);`
+        assert_eq!(labels, vec!["daniwellP", "r-906", "Reol", "Zedd"]);
+    }
+
+    #[test]
+    fn case_variant_folders_stay_distinct_pages() {
+        // What:     two folders whose names differ only in case (`Reol` vs `REOL`).
+        // Why:      Case-folding orders pages but must not MERGE genuinely distinct
+        //           folders; the original label rides in the sort key as a tiebreaker.
+        // TS map:   `const pages = paginate(["REOL/a.flac", "Reol/b.flac"]);`
+        let pages = paginate(&names(&["REOL/a.flac", "Reol/b.flac"]));
+        // What:     `assert_eq!(pages.len(), 2);`. Two separate pages, not one merged.
+        // Why:      `REOL` and `Reol` are different directories on disk.
+        // TS map:   `expect(pages.length).toBe(2);`
+        assert_eq!(pages.len(), 2);
+        // What:     collect the labels; both case variants survive, ordered by the
+        //           original label after the shared case-folded key (`REOL` < `Reol`
+        //           because uppercase letters precede lowercase in codepoint order).
+        // Why:      Deterministic, stable order for equal-fold labels.
+        // TS map:   `expect(pages.map(p => p.label)).toEqual(["REOL", "Reol"]);`
+        let labels: Vec<String> = pages.iter().map(|p| p.label.clone()).collect();
+        assert_eq!(labels, vec!["REOL", "Reol"]);
     }
 
     #[test]

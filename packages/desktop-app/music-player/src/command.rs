@@ -104,7 +104,7 @@ pub enum ShuffleMode {
 //   | { kind: "openPaths"; paths: string[]; play: boolean }
 //   | { kind: "togglePlay" } | { kind: "play" } | { kind: "pause" }
 //   | { kind: "next" } | { kind: "prev" }
-//   | { kind: "playIndex"; index: number }
+//   | { kind: "selectIndex"; index: number }
 //   | { kind: "seek"; secs: number }
 //   | { kind: "setVolume"; volume: number }
 //   | { kind: "setShuffle"; mode: ShuffleMode }
@@ -139,8 +139,16 @@ pub enum Command {
     Next,
     /// Skip to the previous track.
     Prev,
-    /// Jump straight to the track at this position in the queue.
-    PlayIndex(usize),
+    // What:     `SelectIndex(usize)` makes the track at this queue position current
+    //           and loads it PAUSED (it does not start playback). A single click on
+    //           an unselected row sends this; a second click on the now-current row
+    //           sends `TogglePlay` to start it, so "select then play" needs no
+    //           double-click detection.
+    // Why:      Selecting and playing are distinct user intents: a click highlights
+    //           and loads a track (pausing whatever was playing), and only a click on
+    //           the already-selected row begins playback.
+    // TS map:   `{ kind: "selectIndex"; index: number }`
+    SelectIndex(usize),
     // What:     `Seek(f64)` carries a target time in SECONDS as an `f64`.
     //           Siblings: `f32`, `u64` frames, `Duration`.
     // Why:      Same seconds-as-f64 unit as `Position`/`duration`; the engine

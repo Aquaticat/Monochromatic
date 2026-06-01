@@ -646,13 +646,15 @@ fn main() -> Result<(), slint::PlatformError> {
         move |on| engine.send(Command::SetRepeatTrack(on))
     });
 
-    // What:     `app.on_play_index(move |i| ...)`. Click-to-play handler; `i: i32`
+    // What:     `app.on_select_index(move |i| ...)`. Row-select handler; `i: i32`
     //           is the queue row. Sent as a `usize` index.
-    // Why:      Clicking a queue row plays it.
-    // TS map:   `app.onPlayIndex(i => engine.send(Command.PlayIndex(i)));`
-    app.on_play_index({
+    // Why:      A single click on an unselected row selects it (Rust loads it
+    //           paused); the UI sends `TogglePlay` instead when the clicked row is
+    //           already current, so this only ever carries a select.
+    // TS map:   `app.onSelectIndex(i => engine.send(Command.SelectIndex(i)));`
+    app.on_select_index({
         let engine = engine.clone();
-        move |i| engine.send(Command::PlayIndex(i as usize))
+        move |i| engine.send(Command::SelectIndex(i as usize))
     });
 
     // What:     `app.on_select_page(...)`. Tab-click handler; `p: i32` is the page

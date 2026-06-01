@@ -2,7 +2,7 @@
 // control row (left to right: an Open button, a three-state shuffle radio group
 // (Off / Within page / All), the transport buttons prev / play-pause / next, and
 // a "repeat track" checkbox; the custom radio and checkbox are drawn plain-HTML
-// style), then one scroll region holding the page-tab bar and the click-to-play
+// style), then one scroll region holding the page-tab bar and the click-to-select
 // queue list together, so the tabs and the list scroll as a single unit (driven
 // by a prominent custom scrollbar in a right-hand gutter). The queue is
 // paginated on two axes (decided per track in Rust): a track in a subfolder gets
@@ -12,8 +12,11 @@
 // showing its path relative to the loaded root (so deeper nesting stays visible).
 // The shuffle mode also chooses what playback loops over (Off/Within page stay
 // inside the current page; All spans the whole queue); that logic lives in Rust.
-// The currently playing track is the highlighted row, so no separate now-playing
-// title is drawn. All state comes IN from Rust via properties; all user actions
+// The currently playing (and selected) track is the highlighted row, so no
+// separate now-playing title is drawn; a single click selects a row (loading it
+// paused), and a click on the already-highlighted row toggles play/pause. The
+// window title mirrors the playing track and reverts to "Music Player" when
+// paused. All state comes IN from Rust via properties; all user actions
 // go OUT to Rust via callbacks. No playback logic (including the pagination
 // grouping) lives here.
 //
@@ -186,7 +189,11 @@ component VScrollBar inherits Rectangle {
 }
 
 export component AppWindow inherits Window {
-    title: "Music Player";
+    // Window title: the playing track's filename while audio is playing, plain
+    // "Music Player" when paused or idle. Bound to `playing` + `track-name` (both
+    // pushed from Rust), so the taskbar / window-list entry shows the song only
+    // during active playback and reverts the moment it pauses.
+    title: root.playing && root.track-name != "" ? root.track-name : "Music Player";
     preferred-width: 480px;
     preferred-height: 600px;
 
@@ -225,7 +232,11 @@ export component AppWindow inherits Window {
     callback set-shuffle-mode(int);
     // The user toggled the repeat-track checkbox; the argument is the new state.
     callback set-repeat-track(bool);
-    callback play-index(int);
+    // A single click on an UNSELECTED row selects it: Rust makes it current and
+    // loads it paused (pausing whatever was playing). A click on the already-current
+    // row instead toggles play/pause (see the row handler below). The argument is
+    // the track's full-queue index.
+    callback select-index(int);
     callback open-files();
     // The user clicked a page tab; the argument is the page index. Rust swaps the
     // visible page (refills `page-items` and updates `selected-page`).
@@ -434,8 +445,9 @@ export component AppWindow inherits Window {
                         }
 
                         // Only the selected page's tracks. `item.index` is the
-                        // track's position in the full queue, so highlight and play
-                        // map to the real track.
+                        // track's position in the full queue, so highlight, select,
+                        // and play map to the real track. The highlighted row
+                        // (current-index) doubles as the selection cursor.
                         for item in root.page-items: Rectangle {
                             height: 30px;
                             // Active row painted with the system accent (matching
@@ -443,8 +455,18 @@ export component AppWindow inherits Window {
                             // stay transparent over the window background.
                             background: item.index == root.current-index ? Palette.accent-background : transparent;
                             TouchArea {
+                                // Click the already-selected (highlighted) row to
+                                // toggle play/pause; click any other row to merely
+                                // select it (Rust loads it paused). A "double click
+                                // to play" then falls out for free: the first click
+                                // selects, the second (now on the selected row)
+                                // toggles to play, so no real double-click is needed.
                                 clicked => {
-                                    root.play-index(item.index);
+                                    if (item.index == root.current-index) {
+                                        root.toggle-play();
+                                    } else {
+                                        root.select-index(item.index);
+                                    }
                                 }
                                 Text {
                                     text: item.name;

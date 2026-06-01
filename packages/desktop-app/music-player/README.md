@@ -86,7 +86,9 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   a track in a subfolder gets a page per top-level folder under the loaded root (one level only; the label is
   that folder, with deeper nesting shown in the row path), and a track at the loaded root gets a first-letter
   page (the 26 English letters A-Z, case-insensitive, plus a `#` catch-all for digits, symbols, CJK, and
-  non-English letters). Pages sort folder-pages-first, then A-Z, then `#`. `page_of_index` finds the page
+  non-English letters). Pages sort folder-pages-first (case-insensitively by label, so lowercase-led folder
+  names like `daniwellP` and `r-906` interleave with the capitalized names instead of trailing after `Zedd`),
+  then A-Z, then `#`. `page_of_index` finds the page
   holding a given track. No GUI or audio, so it is unit-tested directly.
 - `src/relpath.rs`: pure relative-path display. `relative_display_paths` strips the longest common directory
   prefix shared by all queued tracks (always leaving at least the filename), so the UI shows `Artist/Album/01.flac`
@@ -111,8 +113,12 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   short duration rather than snapping. The wheel animation needs the pinned Slint 1.17 revision (it is absent from
   the 1.16 releases); see `docs/troubleshooting/slint-flickable-smooth-scroll.md`. Rows show each track's path
   relative to the loaded root (so deeper nesting stays
-  visible). The playing track is the highlighted row, and the view follows it across track changes, so there is
-  no separate now-playing title. The custom controls (radio group, checkbox, scrollbar, row highlight) take
+  visible). The highlighted row is both the currently selected and the playing track, and the view follows it
+  across track changes, so there is no separate now-playing title. A single click on an unselected row selects
+  it (Rust loads it paused, pausing whatever was playing); a click on the already-highlighted row toggles
+  play/pause. "Double click to play" falls out for free (first click selects, second toggles to play), so no
+  real double-click handling is needed. The window title shows the playing track's filename while audio plays
+  and reverts to "Music Player" when paused or idle. The custom controls (radio group, checkbox, scrollbar, row highlight) take
   their colours from the Slint system palette rather than hardcoded values, so they follow the OS accent colour
   and the light/dark theme: the highlighted row and the checked checkbox use the accent, the same as the active
   page tab's primary button.
