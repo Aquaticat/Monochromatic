@@ -59,9 +59,18 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # inside the container and the `directories` crate writes the session under
 # /work/.config, polluting the repo. The volume also persists the session
 # across runs.
+#
+# The host music directory (resolved with `xdg-user-dir MUSIC`) is bind-mounted
+# read-only at /music and exported as XDG_MUSIC_DIR, so the empty-launch
+# auto-load can find it. The music files live on the host and are not otherwise
+# visible in the container, and dirs-sys reads only the user-dirs.dirs file
+# (absent here), so passing the path explicitly is required.
 run = '''
 let xrd = $env.XDG_RUNTIME_DIR
 let wl = $env.WAYLAND_DISPLAY
+let home = ($env.HOME? | default '')
+let music = (if (which xdg-user-dir | is-not-empty) { (^xdg-user-dir MUSIC | str trim) } else { ($env.XDG_MUSIC_DIR? | default '') })
+let music_args = (if ($music != '' and $music != $home and ($music | path exists)) { [-v $"($music):/music:ro" -e XDG_MUSIC_DIR=/music] } else { [] })
 let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
 (
   podman run --rm --security-opt label=disable --userns=keep-id
@@ -72,6 +81,7 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
   -v $"($xrd)/bus:/run/host-bus"
   -e XDG_RUNTIME_DIR=/run
   -e XDG_CONFIG_HOME=/config
+  ...$music_args
   -e WAYLAND_DISPLAY=host-wayland
   -e PIPEWIRE_REMOTE=pipewire-0
   -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-bus

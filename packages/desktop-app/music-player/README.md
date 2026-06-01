@@ -101,6 +101,8 @@ into the bind-mounted source tree. On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
 track is loaded paused at the saved position, with files that have since moved pruned out. Command-line path
 arguments take precedence over a saved session. When no arguments are given and no queue remains to restore (none
-was stored, or every saved file has since moved and was pruned away), the XDG music directory (`XDG_MUSIC_DIR`,
-typically `~/Music`) is auto-loaded paused, so the queue is populated without playing; if that directory is unset
-or missing, the queue starts empty.
+was stored, or every saved file has since moved and was pruned away), the user's music directory is auto-loaded
+paused, so the queue is populated without playing. The directory is resolved from `XDG_MUSIC_DIR`, then the XDG
+user-dirs file, then the `xdg-user-dir MUSIC` command; if none yields an existing directory the queue starts empty.
+The containerized `run` task bind-mounts the host music directory read-only and exports `XDG_MUSIC_DIR`, since the
+music files and the user-dirs file are not otherwise visible inside the container.

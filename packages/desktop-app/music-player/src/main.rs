@@ -10,10 +10,12 @@
 // TS map:   like an auto-generated `import { AppWindow } from "./app.slint.gen";`
 slint::include_modules!();
 
-// What:     `use std::path::PathBuf;`. The owned filesystem-path type.
-// Why:      CLI arguments and picked files become `PathBuf`s for `OpenPaths`.
-// TS map:   `string` paths.
-use std::path::PathBuf;
+// What:     `use std::path::{Path, PathBuf};`. `PathBuf` is the OWNED filesystem
+//           path; `Path` is the BORROWED view (like `String` vs `&str`).
+// Why:      CLI arguments and picked files become owned `PathBuf`s; `Path::new`
+//           gives a cheap borrowed path for comparisons without allocating.
+// TS map:   both are just `string` paths in TS.
+use std::path::{Path, PathBuf};
 
 // What:     `use std::rc::Rc;`. `Rc<T>` is a single-threaded shared-ownership
 //           pointer (reference counted). Sibling: `Arc<T>` (atomic, multi-thread).
@@ -230,6 +232,127 @@ fn apply_update(app: &AppWindow, update: Update) {
         // TS map:   `case "repeat": app.repeatMode = repeatToInt(mode);`
         Update::Repeat(mode) => app.set_repeat_mode(repeat_to_int(mode)),
     }
+}
+
+// What:     `fn xdg_user_dir_music() -> Option<PathBuf>`. Last-resort lookup: shell
+//           out to the `xdg-user-dir MUSIC` command and use its printed path.
+// Why:      Some setups (and some `directories` parsing gaps) leave the music dir
+//           discoverable only through the official `xdg-user-dir` tool; this is the
+//           fallback when the env var and the user-dirs file both come up empty.
+// TS map:   `function xdgUserDirMusic(): string | null`
+fn xdg_user_dir_music() -> Option<PathBuf> {
+    // What:     `let output = std::process::Command::new("xdg-user-dir").arg("MUSIC").output().ok()?;`.
+    //           Build and run the external command, capturing its output.
+    //           `Command::new(name)` starts a builder; `.arg("MUSIC")` adds an
+    //           argument; `.output()` runs it to completion and returns
+    //           `io::Result<Output>` (stdout/stderr/status). `.ok()` turns the
+    //           `Result` into an `Option` (dropping the error); the `?` returns
+    //           `None` from this function if the command could not run (e.g. the
+    //           tool is not installed, as in the container).
+    // Why:      Ask the OS where the music directory is.
+    // TS map:   `let output; try { output = spawnSync("xdg-user-dir", ["MUSIC"]); } catch { return null; }`
+    let output = std::process::Command::new("xdg-user-dir")
+        .arg("MUSIC")
+        .output()
+        .ok()?;
+    // What:     `if !output.status.success() { return None; }`. `status.success()`
+    //           is true only on exit code 0; `!` negates it.
+    // Why:      A failed command yields no usable path.
+    // TS map:   `if (output.status !== 0) return null;`
+    if !output.status.success() {
+        return None;
+    }
+    // What:     `let text = String::from_utf8(output.stdout).ok()?;`. `output.stdout`
+    //           is the raw bytes (`Vec<u8>`); `String::from_utf8` validates them as
+    //           UTF-8 and returns `Result<String, _>`; `.ok()?` yields the `String`
+    //           or returns `None` on invalid UTF-8.
+    // Why:      We need the printed path as text.
+    // TS map:   `const text = output.stdout.toString("utf8");`
+    let text = String::from_utf8(output.stdout).ok()?;
+    // What:     `let trimmed = text.trim();`. `.trim()` returns a borrowed `&str`
+    //           with leading/trailing whitespace (including the trailing newline)
+    //           removed.
+    // Why:      Command output ends in a newline we must strip.
+    // TS map:   `const trimmed = text.trim();`
+    let trimmed = text.trim();
+    // What:     `if trimmed.is_empty() { return None; }`. Guard against empty output.
+    // Why:      No path was printed.
+    // TS map:   `if (!trimmed) return null;`
+    if trimmed.is_empty() {
+        return None;
+    }
+    // What:     `if let Some(home) = std::env::var_os("HOME") { if Path::new(&home) == Path::new(trimmed) { return None; } }`.
+    //           `xdg-user-dir MUSIC` prints `$HOME` when no music dir is configured;
+    //           compare the result to `$HOME` and reject that case. `Path::new(x)`
+    //           wraps a borrowed `&OsStr`/`&str` as a `&Path` with no allocation
+    //           (unlike `PathBuf::from`, which would allocate), and `&Path == &Path`
+    //           compares by path components.
+    // Why:      Avoid auto-loading the entire home directory when MUSIC is unset.
+    // TS map:   `if (trimmed === process.env.HOME) return null;`
+    if let Some(home) = std::env::var_os("HOME") {
+        if Path::new(&home) == Path::new(trimmed) {
+            return None;
+        }
+    }
+    // What:     `Some(PathBuf::from(trimmed))`. Wrap the path as present. Tail -> return.
+    // Why:      Hand back the discovered music directory.
+    // TS map:   `return trimmed;`
+    Some(PathBuf::from(trimmed))
+}
+
+// What:     `fn music_dir() -> Option<PathBuf>`. Find the user's music directory:
+//           the `XDG_MUSIC_DIR` environment variable first, then the XDG user-dirs
+//           file via the `directories` crate, then the `xdg-user-dir MUSIC`
+//           command. Returns `None` unless one yields an existing directory.
+// Why:      The containerized `run` task bind-mounts the host music folder and
+//           exports `XDG_MUSIC_DIR` as its in-container path; a native run has no
+//           such env, so we fall back to the user-dirs file and finally the
+//           `xdg-user-dir` tool. The `directories` crate reads only the file, never
+//           the env var, so the env lookup must be explicit here.
+// TS map:   `function musicDir(): string | null`
+fn music_dir() -> Option<PathBuf> {
+    // What:     `std::env::var_os("XDG_MUSIC_DIR")`. Read an environment variable as
+    //           an `Option<OsString>` (raw OS bytes, not required to be UTF-8).
+    //           Sibling: `var(...)` returns `Result<String, _>` and errors on
+    //           non-UTF-8; `var_os` returns `None` when unset and never errors.
+    // Why:      Paths may hold non-UTF-8 bytes, and "unset" is not an error here.
+    // TS map:   `process.env.XDG_MUSIC_DIR` (string | undefined)
+    std::env::var_os("XDG_MUSIC_DIR")
+        // What:     `.map(PathBuf::from)`. When set, convert the `OsString` into an
+        //           owned `PathBuf`. Passing `PathBuf::from` (the function itself) is
+        //           the closure shorthand.
+        // Why:      We want a path, not a raw string.
+        // TS map:   `.map(s => s as path)`
+        .map(PathBuf::from)
+        // What:     `.or_else(|| ...)`. If the env var was unset (`None`), run the
+        //           zero-argument closure `|| ...` to compute a fallback (lazy: it
+        //           runs only on `None`).
+        // Why:      A native run has no `XDG_MUSIC_DIR` env; read the user-dirs file.
+        // TS map:   `?? userDirs()?.audioDir`
+        .or_else(|| {
+            // What:     `directories::UserDirs::new().and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))`.
+            //           `UserDirs::new()` is `Option<UserDirs>`; `.and_then(...)` runs
+            //           only if present; `dirs.audio_dir()` is `Option<&Path>` parsed
+            //           from the XDG user-dirs file; `.map(|p| p.to_path_buf())` owns
+            //           the borrowed path.
+            // Why:      Standard music-dir lookup for a native (non-container) run.
+            // TS map:   `userDirs()?.audioDir`
+            directories::UserDirs::new()
+                .and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))
+        })
+        // What:     `.or_else(xdg_user_dir_music)`. If both the env var and the
+        //           user-dirs file came up empty, fall back to the `xdg-user-dir`
+        //           command. Passing the function by name is the closure shorthand
+        //           (its signature `() -> Option<PathBuf>` matches what `or_else`
+        //           wants).
+        // Why:      Final fallback for setups where only the tool knows the path.
+        // TS map:   `?? xdgUserDirMusic()`
+        .or_else(xdg_user_dir_music)
+        // What:     `.filter(|p| p.is_dir())`. Keep the path only if it exists and is
+        //           a directory; otherwise the whole result is `None`.
+        // Why:      Do not feed a missing or non-directory path to the engine.
+        // TS map:   `.filter(p => isDir(p))`
+        .filter(|p| p.is_dir())
 }
 
 // What:     `fn main() -> Result<(), slint::PlatformError>`. The entry point;
@@ -492,24 +615,11 @@ fn main() -> Result<(), slint::PlatformError> {
                 shuffle: session.shuffle,
                 repeat: session.repeat,
             });
-        } else if let Some(music_dir) = directories::UserDirs::new()
-            // What:     `.and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))`.
-            //           `UserDirs::new()` is `Option<UserDirs>`; `.and_then(...)` runs
-            //           the closure only if present. `dirs.audio_dir()` is
-            //           `Option<&Path>` (the XDG_MUSIC_DIR, e.g. ~/Music);
-            //           `.map(|p| p.to_path_buf())` copies the borrowed path into an
-            //           owned `PathBuf`. The whole chain is `Option<PathBuf>`.
-            // Why:      Locate the user's music folder without assuming a path.
-            // TS map:   `userDirs()?.audioDir`
-            .and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))
-            // What:     `.filter(|p| p.is_dir())`. Keep the path only if it exists and
-            //           is a directory; otherwise the `Option` becomes `None` and the
-            //           `if let` body is skipped.
-            // Why:      Skip the auto-load when no music directory is configured or
-            //           present, instead of feeding a missing path to the engine.
-            // TS map:   `.filter(p => isDir(p))`
-            .filter(|p| p.is_dir())
-        {
+        // What:     `} else if let Some(music_dir) = music_dir() {`. Otherwise try the
+        //           user's music directory (see the `music_dir` helper above).
+        // Why:      Populate a fresh launch from the music library.
+        // TS map:   `} else if (musicDir()) {`
+        } else if let Some(music_dir) = music_dir() {
             // What:     `engine.send(Command::OpenPaths { paths: vec![music_dir], play: false });`.
             //           Auto-load the music directory PAUSED (`play: false`), so the
             //           queue is populated without blasting audio on launch.
