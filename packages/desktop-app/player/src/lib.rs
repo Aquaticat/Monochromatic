@@ -33,3 +33,13 @@ pub mod decode;
 // Why:      libopus-backed `Source` for Opus, which symphonia cannot decode.
 // TS map:   `export * as opus from "./opus";`
 pub mod opus;
+
+// What:     `pub mod output;` the PipeWire audio output module (`src/output.rs`).
+// Why:      Thin FFI boundary: streams `f32` PCM to PipeWire via a ring buffer.
+// TS map:   `export * as output from "./output";`
+pub mod output;
+
+// What:     `pub mod engine;` the controller-thread module (`src/engine.rs`).
+// Why:      Owns the queue + decoder + output; turns commands into playback.
+// TS map:   `export * as engine from "./engine";`
+pub mod engine;
