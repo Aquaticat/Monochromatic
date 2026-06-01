@@ -13,6 +13,10 @@ Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, an
   decoder (frame count over sample rate), not from tags.
 - Sample rate: each track is declared to PipeWire at its own native rate, and PipeWire resamples to the device.
   Gapless playback is permanently out of scope.
+- Output safety: every sample passes through a fixed -1 dBFS headroom (the EBU R128 / ATSC A/85 true-peak
+  ceiling) and a hard clamp to the valid range, always on. The headroom leaves room for inter-sample (true)
+  peaks the DAC reconstructs above the stored sample values; the clamp catches decoder overshoot past full
+  scale, which lossy codecs routinely produce.
 
 ## Codecs
 
@@ -38,8 +42,14 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/opus.rs`: the libopus `Source` for Opus.
 - `src/output.rs`: the PipeWire FFI boundary. It owns the thread loop, context, and core, and `reconfigure`
   builds an output stream at a track's native format, returning the producer half of a lock-free ring buffer.
-- `src/engine.rs`: the controller thread. It owns the queue, the active decoder, and the output, turns commands
-  into playback, applies volume as PCM gain, auto-advances at track end, and emits position and state updates.
+- `src/playback.rs`: device-free playback helpers, kept apart so they are unit-testable: the per-sample output
+  stage (volume gain, the -1 dBFS headroom, the hard clamp), frame-to-seconds conversion, and recursive
+  folder-to-file expansion.
+- `src/controller.rs`: the playback state machine. It owns the queue, the active decoder, and the output, turns
+  commands into playback, applies the per-sample output stage, auto-advances at track end, and emits position
+  and state updates.
+- `src/engine.rs`: the worker-thread front door. `Engine::spawn` starts the background thread; `run` builds a
+  `Controller` and drives it from the command channel.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties.
 - `ui/app.slint`: the window markup (now-playing label, seek bar, transport row, volume slider, queue list).
