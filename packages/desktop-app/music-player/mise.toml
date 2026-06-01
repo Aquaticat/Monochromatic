@@ -69,6 +69,17 @@ run = '''
 let xrd = $env.XDG_RUNTIME_DIR
 let wl = $env.WAYLAND_DISPLAY
 let home = ($env.HOME? | default '')
+# Install the .desktop file on the HOST (not in the container) so KDE Plasma can
+# resolve application://monochromatic.music-player.desktop and attach the taskbar
+# progress (emitted over the passed-through session bus from inside the container)
+# to this window, matched by the Wayland app id == StartupWMClass. Best-effort:
+# skipped when $HOME is unset. KDE picks up a new .desktop file on next login if
+# it does not appear immediately.
+if ($home != '') {
+  let apps_dir = ($home | path join '.local/share/applications')
+  mkdir $apps_dir
+  cp --force share/applications/monochromatic.music-player.desktop $apps_dir
+}
 let music = (if (which xdg-user-dir | is-not-empty) { (^xdg-user-dir MUSIC | str trim) } else { ($env.XDG_MUSIC_DIR? | default '') })
 let music_args = (if ($music != '' and $music != $home and ($music | path exists)) { [-v $"($music):/music:ro" -e XDG_MUSIC_DIR=/music] } else { [] })
 let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })

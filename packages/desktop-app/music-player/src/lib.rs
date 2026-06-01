@@ -89,3 +89,10 @@ pub mod pagination;
 //           each track's path relative to the loaded root; unit-tested.
 // TS map:   `export * as relpath from "./relpath";`
 pub mod relpath;
+
+// What:     `pub mod launcher;` the desktop-shell integration module
+//           (`src/launcher.rs`): the Wayland app-id hook and the KDE taskbar
+//           progress signal.
+// Why:      Stamps the window app id and emits LauncherEntry progress over D-Bus.
+// TS map:   `export * as launcher from "./launcher";`
+pub mod launcher;

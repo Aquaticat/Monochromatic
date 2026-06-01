@@ -94,9 +94,16 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   prefix shared by all queued tracks (always leaving at least the filename), so the UI shows `Artist/Album/01.flac`
   rather than the full absolute path, or just `01.flac` when the whole queue is one folder. No I/O, so it is
   unit-tested directly.
+- `src/launcher.rs`: desktop-shell integration. `set_window_app_id` is a winit window-attributes hook that
+  stamps the Wayland app id (`monochromatic.music-player`); `Launcher` emits the
+  `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the OS taskbar progress
+  (fraction = position / duration, hidden when paused). Both are best-effort: no session bus or an unsupporting
+  shell silently disables progress. KDE Plasma renders it natively; GNOME needs Dash-to-Dock.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
-  properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
-  property edge, so the engine and queue model stay unaware of pagination.
+  properties. It installs the winit backend with the app-id hook before creating the window, creates the
+  `Launcher`, and pushes taskbar progress from each position/play-state update. It also derives the pagination
+  view (tabs and the visible page) from the full queue at the property edge, so the engine and queue model stay
+  unaware of pagination.
 - `ui/app.slint`: the window markup (seek bar, volume slider, one combined control row holding the Open button,
   a plain-HTML-styled three-state shuffle radio group, the prev/play-pause/next transport buttons, and the
   "repeat track" checkbox, and a shared scroll region holding the page-tab bar and the
@@ -139,6 +146,15 @@ rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
 container runs under the host uid: the D-Bus session bus authenticates with SASL EXTERNAL, which checks the asserted
 uid against the socket peer credential, and the dark/light theme watcher and the portal file picker (both using
 zbus) are rejected otherwise. See `docs/troubleshooting/podman-dbus-external-keep-id.md`.
+
+For OS taskbar progress, the `run` task installs `share/applications/monochromatic.music-player.desktop` into the
+host `~/.local/share/applications` before launching, so the shell can resolve
+`application://monochromatic.music-player.desktop`. The window's Wayland app id is stamped to
+`monochromatic.music-player` (matching the file's `StartupWMClass`) by a winit window-attributes hook, and the
+`com.canonical.Unity.LauncherEntry` `Update` signal (carrying `progress` and `progress-visible`) is emitted from
+inside the container over the same passed-through session bus. KDE Plasma renders the progress natively; GNOME
+needs Dash-to-Dock; other shells silently ignore it. A freshly installed `.desktop` file may need one login
+cycle before the shell associates it.
 
 The same Slint XDG-portal watcher that supplies the dark/light colour scheme also reads
 `org.freedesktop.appearance accent-color` and live-updates on change, so the UI follows the system accent colour

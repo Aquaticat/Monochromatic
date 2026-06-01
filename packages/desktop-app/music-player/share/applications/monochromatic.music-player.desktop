@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Music Player
+GenericName=Music Player
+Comment=Minimal Wayland + PipeWire music player
+Categories=AudioVideo;Audio;Player;
+Exec=music-player %F
+Icon=multimedia-player
+Terminal=false
+StartupNotify=true
+StartupWMClass=monochromatic.music-player
+MimeType=audio/flac;audio/mpeg;audio/ogg;audio/opus;audio/x-wav;audio/mp4;audio/aac;

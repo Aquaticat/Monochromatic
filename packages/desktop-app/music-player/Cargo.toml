@@ -26,6 +26,12 @@ path = "src/main.rs"
 # below MUST track the same rev. Revert both to a crates.io `version` once a
 # release including #11338 ships.
 slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+# Same Slint rev as above: the winit backend is constructed explicitly (not via
+# the default backend selector) so a window-attributes hook can set the Wayland
+# app_id, which KDE needs to attach taskbar progress to the running window. Its
+# re-exported `winit` (`i_slint_backend_winit::winit`) is reused for the
+# WindowAttributes ext trait, so no separate `winit` dependency is added.
+i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
 symphonia = { version = "0.5", features = ["all"] }
 opus = "0.3"
 pipewire = "0.8"
@@ -34,6 +40,11 @@ ringbuf = "0.4"
 directories = "5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Already in the tree transitively (Slint's color-scheme watcher, rfd's portal
+# picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
+# signal that drives the KDE taskbar progress. Default features include the
+# blocking API and async-io backend.
+zbus = "5"
 
 [build-dependencies]
 # Must match the `slint` git rev above (the compiler and runtime are versioned

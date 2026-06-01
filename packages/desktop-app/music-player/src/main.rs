@@ -56,6 +56,19 @@ use music_player::session::Session;
 // TS map:   `import * as pagination from "music-player/pagination";`
 use music_player::pagination;
 
+// What:     `use music_player::launcher::{self, Launcher};`. The desktop-shell
+//           integration: `set_window_app_id` (the winit app-id hook) and the
+//           `Launcher` that emits KDE taskbar progress.
+// Why:      `main` installs the hook and pushes progress from each update tick.
+// TS map:   `import { Launcher, setWindowAppId } from "music-player/launcher";`
+use music_player::launcher::{self, Launcher};
+
+// What:     `use i_slint_backend_winit::Backend;`. Slint's winit backend, built
+//           explicitly so a window-attributes hook can run.
+// Why:      The default backend selector gives no hook to set the Wayland app id.
+// TS map:   `import { Backend } from "slint-winit-backend";`
+use i_slint_backend_winit::Backend;
+
 // What:     `use slint::{ComponentHandle, Model, SharedString, VecModel};`.
 //           `ComponentHandle` is the trait giving `.as_weak()`/`.run()` on the
 //           window; `Model` is the trait whose `.iter()` reads a list property
@@ -517,6 +530,52 @@ fn music_dir() -> Option<PathBuf> {
 // Why:      Propagate window/backend failure as the exit status.
 // TS map:   `async function main(): Promise<void>` that may throw.
 fn main() -> Result<(), slint::PlatformError> {
+    // What:     Install Slint's winit backend explicitly, with a window-attributes
+    //           hook that stamps the Wayland app id. This MUST happen before the
+    //           first window is created (which would lock in the default platform).
+    // Why:      KDE attaches taskbar progress to the running window only when the
+    //           window's app id matches the `.desktop` file; the default backend
+    //           selector offers no hook to set it.
+    // TS map:   `slint.setPlatform(winitBackend({ windowAttributesHook: setWindowAppId }));`
+    {
+        // What:     `Backend::builder().with_window_attributes_hook(launcher::set_window_app_id)`.
+        //           Start a backend builder and register the app-id hook.
+        // Why:      The hook runs for each window Slint creates (here, the one).
+        // TS map:   `let builder = Backend.builder().withWindowAttributesHook(setWindowAppId);`
+        let mut builder =
+            Backend::builder().with_window_attributes_hook(launcher::set_window_app_id);
+        // What:     `let force_software = std::env::var("SLINT_BACKEND").map(|value| value.contains("software")).unwrap_or(false);`.
+        //           Honor the run task's software-renderer escape hatch.
+        // Why:      The explicit backend bypasses the default selector that would
+        //           otherwise read `SLINT_BACKEND`; preserve the software override
+        //           used when GPU passthrough is unavailable.
+        // TS map:   `const forceSoftware = (process.env.SLINT_BACKEND ?? "").includes("software");`
+        let force_software = std::env::var("SLINT_BACKEND")
+            .map(|value| value.contains("software"))
+            .unwrap_or(false);
+        // What:     `if force_software { builder = builder.with_renderer_name("renderer-software"); }`.
+        //           Select the software renderer by name (falls back to default if
+        //           unrecognized, since the builder allows fallback).
+        // Why:      Match the previous behaviour for headless / no-GPU runs.
+        // TS map:   `if (forceSoftware) builder = builder.withRendererName("renderer-software");`
+        if force_software {
+            builder = builder.with_renderer_name("renderer-software");
+        }
+        // What:     `let backend = builder.build()?;`. Build the backend; `?`
+        //           propagates a `PlatformError` (e.g. no display server).
+        // Why:      Construction can fail if `WAYLAND_DISPLAY`/`DISPLAY` is unset.
+        // TS map:   `const backend = builder.build();`
+        let backend = builder.build()?;
+        // What:     `slint::platform::set_platform(Box::new(backend)).expect(...);`.
+        //           Make it the process platform. `expect` because the only failure
+        //           is "a platform was already set", which cannot happen here (this
+        //           is the first Slint call).
+        // Why:      Subsequent `AppWindow::new()` uses this backend and its hook.
+        // TS map:   `slint.setPlatform(backend);`
+        slint::platform::set_platform(Box::new(backend))
+            .expect("no Slint platform should already be set");
+    }
+
     // What:     `let app = AppWindow::new()?;`. Build the window; `?` returns the
     //           error from `main` on failure.
     // Why:      We need the window before wiring anything.
@@ -531,10 +590,17 @@ fn main() -> Result<(), slint::PlatformError> {
     // TS map:   `const weak = new WeakRef(app);`
     let weak = app.as_weak();
 
+    // What:     `let launcher = Launcher::new();`. The KDE taskbar-progress emitter
+    //           (a cheap-to-clone session-bus handle, or a no-op without a bus).
+    // Why:      Each update tick clones one into the event-loop closure to push the
+    //           current play position to the taskbar.
+    // TS map:   `const launcher = Launcher.connect();`
+    let launcher = Launcher::new();
+
     // What:     `let engine = Rc::new(Engine::spawn(move |update| { ... }));`. Start
     //           the engine, giving it a callback that forwards each `Update` to the
-    //           UI thread. `move` makes the closure own `weak`. Wrap the engine in
-    //           `Rc` so multiple UI callbacks can share it.
+    //           UI thread. `move` makes the closure own `weak` and `launcher`. Wrap
+    //           the engine in `Rc` so multiple UI callbacks can share it.
     // Why:      One engine, shared by all the button handlers.
     // TS map:   `const engine = Engine.spawn(update => { ... });`
     //
@@ -549,6 +615,11 @@ fn main() -> Result<(), slint::PlatformError> {
         // Why:      Each update needs its own handle to move into the inner closure.
         // TS map:   `const w = weak;`
         let weak = weak.clone();
+        // What:     `let launcher = launcher.clone();`. Clone the progress emitter
+        //           for this call (same reason as `weak`: the outer closure is `Fn`).
+        // Why:      The inner closure moves it to the UI thread to emit progress.
+        // TS map:   `const l = launcher;`
+        let launcher = launcher.clone();
         // What:     `let _ = slint::invoke_from_event_loop(move || { ... });`. Run
         //           the inner closure ON the UI/event-loop thread (required for
         //           touching window properties). `let _ =` ignores the result
@@ -557,13 +628,56 @@ fn main() -> Result<(), slint::PlatformError> {
         //           UI thread.
         // TS map:   `queueMicrotaskOnUiThread(() => { ... });`
         let _ = slint::invoke_from_event_loop(move || {
-            // What:     `if let Some(app) = weak.upgrade() { apply_update(&app, update); }`.
-            //           `upgrade()` turns the weak handle back into a strong one if
-            //           the window still exists; if so, apply the update.
+            // What:     `if let Some(app) = weak.upgrade() { ... }`. `upgrade()` turns
+            //           the weak handle back into a strong one if the window still
+            //           exists; if so, apply the update and push taskbar progress.
             // Why:      The window may have closed before this runs.
-            // TS map:   `const app = weak.deref(); if (app) applyUpdate(app, update);`
+            // TS map:   `const app = weak.deref(); if (app) { ... }`
             if let Some(app) = weak.upgrade() {
+                // What:     `let progress_relevant = matches!(update, Update::Position(_) | Update::Playing(_) | Update::NowPlaying { .. });`.
+                //           Only position, play-state, and track changes move the bar.
+                //           `matches!` inspects the variant WITHOUT consuming `update`
+                //           (the patterns bind nothing), so `apply_update` can still
+                //           take it by value below.
+                // Why:      Skip emitting on queue/volume/shuffle/repeat updates.
+                // TS map:   `const progressRelevant = ["position","playing","nowPlaying"].includes(update.kind);`
+                let progress_relevant = matches!(
+                    update,
+                    Update::Position(_) | Update::Playing(_) | Update::NowPlaying { .. }
+                );
+                // What:     `apply_update(&app, update);`. Mirror the update into the
+                //           window's properties (consumes `update`).
+                // Why:      The UI reflects engine state.
+                // TS map:   `applyUpdate(app, update);`
                 apply_update(&app, update);
+                // What:     `if progress_relevant { ... }`. Recompute and emit the
+                //           taskbar progress from the now-updated properties.
+                // Why:      Read position/duration/playing AFTER `apply_update` so the
+                //           emitted fraction matches what the UI shows.
+                // TS map:   `if (progressRelevant) { ... }`
+                if progress_relevant {
+                    // What:     `let duration = app.get_duration();`. Current track
+                    //           length in seconds (Slint `float` = f32).
+                    // Why:      Denominator of the progress fraction.
+                    // TS map:   `const duration = app.duration;`
+                    let duration = app.get_duration();
+                    // What:     `let fraction = if duration > 0.0 { f64::from(app.get_position() / duration) } else { 0.0 };`.
+                    //           Position over duration, widened to f64; guard against a
+                    //           zero/absent duration (no track) to avoid NaN.
+                    // Why:      The protocol wants a 0..1 progress value.
+                    // TS map:   `const fraction = duration > 0 ? app.position / duration : 0;`
+                    let fraction = if duration > 0.0 {
+                        f64::from(app.get_position() / duration)
+                    } else {
+                        0.0
+                    };
+                    // What:     `launcher.set_progress(fraction, app.get_playing());`.
+                    //           Emit progress; visible only while actually playing, so
+                    //           pausing hides the bar.
+                    // Why:      Drive the KDE taskbar progress for the current track.
+                    // TS map:   `launcher.setProgress(fraction, app.playing);`
+                    launcher.set_progress(fraction, app.get_playing());
+                }
             }
         });
     }));
