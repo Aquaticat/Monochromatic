@@ -40,15 +40,38 @@ pub mod opus;
 pub mod output;
 
 // What:     `pub mod playback;` the device-free playback helpers (`src/playback.rs`):
-//           the per-sample volume/headroom/clamp stage and folder expansion.
+//           the per-sample gain/clamp stage, frame->seconds conversion, and folder
+//           expansion.
 // Why:      Pure logic kept apart so it is unit-tested and the files stay small.
 // TS map:   `export * as playback from "./playback";`
 pub mod playback;
 
-// What:     `pub mod controller;` the playback state machine (`src/controller.rs`).
+// What:     `pub mod truepeak;` the true-peak measurement module (`src/truepeak.rs`).
+// Why:      Oversampled inter-sample peak measurement + the normalization gain.
+// TS map:   `export * as truepeak from "./truepeak";`
+pub mod truepeak;
+
+// What:     `pub mod peakcache;` the persistent peak cache (`src/peakcache.rs`).
+// Why:      Memoizes measured peaks on disk, keyed by an opaque fingerprint.
+// TS map:   `export * as peakcache from "./peakcache";`
+pub mod peakcache;
+
+// What:     `pub mod measure;` the measurement orchestration (`src/measure.rs`).
+// Why:      Per-track gain resolution + the background queue-measurement sweep.
+// TS map:   `export * as measure from "./measure";`
+pub mod measure;
+
+// What:     `pub mod controller;` the playback state machine (`src/controller.rs`),
+//           with its loading/audio half in `src/controller_audio.rs`.
 // Why:      Owns the queue + decoder + output; turns commands into playback.
 // TS map:   `export * as controller from "./controller";`
 pub mod controller;
+
+// What:     `pub mod controller_audio;` the second `impl Controller` block
+//           (`src/controller_audio.rs`): loading and audio pumping.
+// Why:      Split out so each controller file stays within the line budget.
+// TS map:   part of the same `controller` class, in another file.
+pub mod controller_audio;
 
 // What:     `pub mod engine;` the worker-thread front door (`src/engine.rs`).
 // Why:      Spawns the worker and drives a `Controller` from the command channel.

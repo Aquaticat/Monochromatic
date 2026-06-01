@@ -13,10 +13,18 @@ Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, an
   decoder (frame count over sample rate), not from tags.
 - Sample rate: each track is declared to PipeWire at its own native rate, and PipeWire resamples to the device.
   Gapless playback is permanently out of scope.
-- Output safety: every sample passes through a fixed -1 dBFS headroom (the EBU R128 / ATSC A/85 true-peak
-  ceiling) and a hard clamp to the valid range, always on. The headroom leaves room for inter-sample (true)
-  peaks the DAC reconstructs above the stored sample values; the clamp catches decoder overshoot past full
-  scale, which lossy codecs routinely produce.
+- Output safety: per-track true-peak normalization, always on. Each track's true (inter-sample) peak is
+  measured by oversampling, and the track plays at a single constant gain that brings that peak down to a
+  -1 dBTP ceiling (the EBU R128 / ATSC A/85 true-peak ceiling). Normalization is attenuate-only: tracks already
+  below the ceiling are left untouched, and a quiet track is never boosted (which would risk a sudden loud
+  level). A hard clamp to the valid range backstops measurement error and any residual overshoot.
+- Peak cache: measuring a true peak means decoding the whole file, so each result is memoized on disk under the
+  config directory, keyed by an opaque fingerprint (a hash of path, size, and modified-time). The file stores
+  only `fingerprint -> peak` pairs; no filename, path, or tag is ever written, so it reveals nothing about the
+  library. On every queue load (an Open or the launch-time auto-load), a background thread pre-measures all the
+  queue's tracks into the cache, skipping any already cached, so re-opening a known folder does little work.
+  The currently loading track is measured synchronously (a cache miss decodes it before playback) so it plays
+  at the correct gain from the first sample; this is the per-track-normalization cost on first encounter.
 
 ## Codecs
 
@@ -42,12 +50,20 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/opus.rs`: the libopus `Source` for Opus.
 - `src/output.rs`: the PipeWire FFI boundary. It owns the thread loop, context, and core, and `reconfigure`
   builds an output stream at a track's native format, returning the producer half of a lock-free ring buffer.
-- `src/playback.rs`: device-free playback helpers, kept apart so they are unit-testable: the per-sample output
-  stage (volume gain, the -1 dBFS headroom, the hard clamp), frame-to-seconds conversion, and recursive
-  folder-to-file expansion.
-- `src/controller.rs`: the playback state machine. It owns the queue, the active decoder, and the output, turns
-  commands into playback, applies the per-sample output stage, auto-advances at track end, and emits position
-  and state updates.
+- `src/playback.rs`: device-free playback helpers, kept apart so they are unit-testable: the per-sample
+  gain-and-clamp stage, frame-to-seconds conversion, and recursive folder-to-file expansion.
+- `src/truepeak.rs`: streaming true-peak measurement. It oversamples each channel ~4x with a cubic
+  (Catmull-Rom) interpolation to estimate inter-sample peaks at constant memory, and turns a measured peak into
+  the attenuate-only normalization gain.
+- `src/peakcache.rs`: the persistent peak cache. It computes the opaque fingerprint, loads and saves the
+  `fingerprint -> peak` map atomically (write a temp file, then rename), and exposes get/insert.
+- `src/measure.rs`: measurement orchestration. `resolve_track_gain` returns a track's gain from the cache or
+  measures it now on a miss; `spawn_queue_measurement` runs the detached background sweep over a queue, gently
+  (a short sleep between measurements) and never cancelled.
+- `src/controller.rs`: the playback state machine (state struct, command handling, background-measurement
+  kickoff). It owns the queue, the active decoder, the output, and the shared peak cache.
+- `src/controller_audio.rs`: the second `impl Controller` block (loading, gain resolution, audio pumping,
+  position reporting), split out to keep each file within the line budget.
 - `src/engine.rs`: the worker-thread front door. `Engine::spawn` starts the background thread; `run` builds a
   `Controller` and drives it from the command channel.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to

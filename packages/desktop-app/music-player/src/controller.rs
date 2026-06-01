@@ -1,147 +1,146 @@
 //! Controller: all mutable playback state, owned by the engine worker thread.
-//! It holds the queue, the active decoder, the PipeWire output, and the
-//! command-driven logic that turns UI `Command`s into playback while pushing
-//! `Update`s back to the UI. `engine::run` drives it; the type stays crate
-//! -private because it holds the `!Send` `Output` and never leaves its thread.
+//! It holds the queue, the active decoder, the PipeWire output, and the shared
+//! true-peak cache. This file has the state struct, command handling, and the
+//! background-measurement kickoff; the loading and audio-pumping methods live in
+//! `controller_audio.rs` (a second `impl Controller` block, kept separate so each
+//! file stays within the line budget). The type stays crate-private because it
+//! holds the `!Send` `Output` and never leaves its thread.
 
-// What:     `use std::path::Path;`. `Path` is a borrowed path view (like `&str`);
-//           the owned form `PathBuf` is produced by `.clone()` here but never named,
-//           so only `Path` is imported.
-// Why:      `install_source` borrows a `&Path` to read the current file.
-// TS map:   `Path` is just `string` in TS.
-use std::path::Path;
-
-// What:     `use ringbuf::traits::Producer;`. Brings `push_slice` into scope for
-//           the producer half of the ring buffer.
-// Why:      We push decoded samples into the buffer the output gave us.
-// TS map:   importing the interface whose `pushSlice` we call.
-use ringbuf::traits::Producer;
+// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
+//           (atomic refcount; sibling: single-thread `Rc<T>`); `Mutex<T>` guards `T`
+//           so one thread touches it at a time.
+// Why:      The peak cache is shared with background measurement threads.
+// TS map:   no equivalent; `Arc<Mutex<T>>` ~ "a shared, lockable object".
+use std::sync::{Arc, Mutex};
 
 // What:     `use ringbuf::HeapProd;`. The WRITE half of a heap ring buffer.
-// Why:      The field type for the producer the output returns.
+// Why:      The `producer` field type.
 // TS map:   `type HeapProd<T> = RingProducer<T>;`
 use ringbuf::HeapProd;
 
-// What:     `use crate::command::{Command, Update};`. The UI->engine and
-//           engine->UI message enums.
+// What:     `use crate::command::{Command, Update};`. The UI->engine and engine->UI
+//           message enums.
 // Why:      We match `Command`s and emit `Update`s.
 // TS map:   `import { Command, Update } from "./command";`
 use crate::command::{Command, Update};
 
-// What:     `use crate::decode::{AudioSpec, Source};`. `AudioSpec` describes a
-//           decoded stream; `Source` is the decoder trait (its methods are in
-//           scope so we can call `next_chunk`/`seek`/`spec` on a `Box<dyn Source>`).
-// Why:      We hold and drive a decode source.
+// What:     `use crate::decode::{AudioSpec, Source};`. `AudioSpec` describes a decoded
+//           stream; `Source` is the decoder trait (a `Box<dyn Source>` field).
+// Why:      Struct fields name both types.
 // TS map:   `import { AudioSpec, Source } from "./decode";`
 use crate::decode::{AudioSpec, Source};
 
+// What:     `use crate::measure::spawn_queue_measurement;`. Starts the background
+//           sweep that pre-measures a queue's tracks.
+// Why:      Called on every queue load.
+// TS map:   `import { spawnQueueMeasurement } from "./measure";`
+use crate::measure::spawn_queue_measurement;
+
 // What:     `use crate::output::Output;`. The PipeWire output (FFI boundary).
-// Why:      We create one and reconfigure it per track.
+// Why:      The `output` field and `new`'s parameter name it.
 // TS map:   `import { Output } from "./output";`
 use crate::output::Output;
 
-// What:     `use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};`.
-//           The pure helpers: folder expansion, display-name extraction, frame ->
-//           seconds conversion, and the per-sample volume/headroom/clamp stage.
-// Why:      Keep the device-free logic in one tested module and call it here.
-// TS map:   `import { expandPaths, fileNameOf, framesToSecs, processSample } from "./playback";`
-use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};
+// What:     `use crate::peakcache::PeakCache;`. The persistent true-peak cache.
+// Why:      The shared `peaks` field's inner type.
+// TS map:   `import { PeakCache } from "./peakcache";`
+use crate::peakcache::PeakCache;
+
+// What:     `use crate::playback::expand_paths;`. Folder-to-file expansion.
+// Why:      `OpenPaths` expands folders into their tracks.
+// TS map:   `import { expandPaths } from "./playback";`
+use crate::playback::expand_paths;
 
 // What:     `use crate::queue::Queue;`. The pure play-queue model.
-// Why:      The engine owns one and asks it what to play next.
+// Why:      The `queue` field and `Queue::new()` name it.
 // TS map:   `import { Queue } from "./queue";`
 use crate::queue::Queue;
 
-// What:     `use crate::session::Session;`. The serializable saved-state record.
-// Why:      The engine builds one on quit and saves it to disk.
-// TS map:   `import { Session } from "./session";`
-use crate::session::Session;
-
-// What:     `const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;`. Minimum seconds of
-//           progress between `Position` updates to the UI. `f64` matches the
-//           seconds-as-f64 time contract.
-// Why:      Throttle position updates to ~10/second instead of per buffer.
-// TS map:   `const POSITION_EMIT_INTERVAL_SECS = 0.1;`
-const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;
-
-// What:     `pub(crate) struct Controller { ... }`. All mutable playback state,
-//           owned by the worker thread. Not `Send` (it holds the `!Send` `Output`),
-//           which is fine because it never leaves this thread. `pub(crate)` so
-//           `engine::run` can construct and drive it, but nothing outside the crate.
+// What:     `pub(crate) struct Controller { ... }`. All mutable playback state, owned
+//           by the worker thread. Not `Send` (holds the `!Send` `Output`), which is
+//           fine because it never leaves this thread. `pub(crate)` so `engine::run`
+//           can drive it. Fields are `pub(crate)` too so the second `impl` block in
+//           `controller_audio.rs` can reach them.
 // Why:      Bundle the state so methods can mutate it.
 // TS map:   `class Controller { ... }`
 pub(crate) struct Controller {
     // What:     `on_update: Box<dyn Fn(Update) + Send>`. The UI callback.
     // Why:      Push state changes back to the UI.
     // TS map:   `onUpdate: (u: Update) => void;`
-    on_update: Box<dyn Fn(Update) + Send>,
-    // What:     `output: Option<Output>`. The PipeWire output, or `None` in
-    //           silent mode.
+    pub(crate) on_update: Box<dyn Fn(Update) + Send>,
+    // What:     `output: Option<Output>`. The PipeWire output, or `None` in silent mode.
     // Why:      Reconfigured per track; absent if audio init failed.
     // TS map:   `output: Output | null;`
-    output: Option<Output>,
+    pub(crate) output: Option<Output>,
     // What:     `queue: Queue`. The play-queue model.
     // Why:      Decides track order and current track.
     // TS map:   `queue: Queue;`
-    queue: Queue,
+    pub(crate) queue: Queue,
     // What:     `source: Option<Box<dyn Source>>`. The active decoder, or `None`.
     // Why:      Produces the PCM we push.
     // TS map:   `source: Source | null;`
-    source: Option<Box<dyn Source>>,
-    // What:     `producer: Option<HeapProd<f32>>`. The ring-buffer write end for
-    //           the current stream, or `None`.
+    pub(crate) source: Option<Box<dyn Source>>,
+    // What:     `producer: Option<HeapProd<f32>>`. The ring-buffer write end, or `None`.
     // Why:      Where decoded samples go.
     // TS map:   `producer: RingProducer | null;`
-    producer: Option<HeapProd<f32>>,
+    pub(crate) producer: Option<HeapProd<f32>>,
     // What:     `spec: Option<AudioSpec>`. The current track's rate/channels/duration.
     // Why:      Drives position math and reconfigure calls.
     // TS map:   `spec: AudioSpec | null;`
-    spec: Option<AudioSpec>,
+    pub(crate) spec: Option<AudioSpec>,
     // What:     `playing: bool`. Whether we are actively feeding audio.
     // Why:      Pause/play gate.
     // TS map:   `playing: boolean;`
-    playing: bool,
-    // What:     `volume: f32`. Linear gain 0.0..=1.0 applied to samples.
+    pub(crate) playing: bool,
+    // What:     `volume: f32`. Linear user gain 0.0..=1.0 applied to samples.
     // Why:      Volume control (PCM-gain approach).
     // TS map:   `volume: number;`
-    volume: f32,
-    // What:     `position_frames: u64`. Frames pushed for the current track so
-    //           far. `u64` because long tracks exceed `u32` frame counts.
+    pub(crate) volume: f32,
+    // What:     `track_gain: f32`. The current track's normalization gain (<=1.0),
+    //           from true-peak measurement. Multiplied with `volume` per sample.
+    // Why:      Per-track true-peak normalization to the -1 dBTP ceiling.
+    // TS map:   `trackGain: number;`
+    pub(crate) track_gain: f32,
+    // What:     `peaks: Arc<Mutex<PeakCache>>`. The shared, persistent true-peak cache.
+    // Why:      Read on track load; written by load + background sweeps.
+    // TS map:   `peaks: SharedPeakCache;`
+    pub(crate) peaks: Arc<Mutex<PeakCache>>,
+    // What:     `position_frames: u64`. Frames pushed for the current track so far.
+    //           `u64` because long tracks exceed `u32` frame counts.
     // Why:      Position seconds = frames / rate.
     // TS map:   `positionFrames: number;`
-    position_frames: u64,
-    // What:     `last_emit_secs: f64`. Position (seconds) at the last `Position`
-    //           update we emitted.
+    pub(crate) position_frames: u64,
+    // What:     `last_emit_secs: f64`. Position (seconds) at the last `Position` update.
     // Why:      Throttle update frequency.
     // TS map:   `lastEmitSecs: number;`
-    last_emit_secs: f64,
-    // What:     `pending: Vec<f32>`. Gained samples decoded but not yet fully
-    //           pushed (the ring buffer was full).
+    pub(crate) last_emit_secs: f64,
+    // What:     `pending: Vec<f32>`. Gained samples decoded but not yet fully pushed.
     // Why:      Resume pushing them next cycle instead of dropping audio.
     // TS map:   `pending: number[];`
-    pending: Vec<f32>,
+    pub(crate) pending: Vec<f32>,
     // What:     `pending_pos: usize`. How many of `pending` are already pushed.
     // Why:      Push the remainder `pending[pending_pos..]` next time.
     // TS map:   `pendingPos: number;`
-    pending_pos: usize,
+    pub(crate) pending_pos: usize,
 }
 
-// What:     `impl Controller { ... }`. The controller's behaviour.
-// Why:      Command handling, loading, and audio pumping.
-// TS map:   the class body.
+// What:     `impl Controller { ... }`. The command/state half of the behaviour.
+// Why:      Construction, command handling, and the measurement kickoff.
+// TS map:   part of the class body.
 impl Controller {
     // What:     `pub(crate) fn new(on_update: Box<dyn Fn(Update) + Send>, output: Option<Output>) -> Controller`.
-    //           Build initial state (empty queue, nothing playing, full volume).
-    //           `pub(crate)` so `engine::run` can construct it.
+    //           Build initial state (empty queue, nothing playing, full volume + gain,
+    //           loaded peak cache). `pub(crate)` so `engine::run` can construct it.
     // Why:      Starting point for the worker.
     // TS map:   `constructor(onUpdate, output)`
     pub(crate) fn new(
         on_update: Box<dyn Fn(Update) + Send>,
         output: Option<Output>,
     ) -> Controller {
-        // What:     `Controller { ... }`. Struct literal with initial values.
-        //           `Queue::new()` builds an empty queue; volume starts at `1.0`.
-        // Why:      A clean idle state.
+        // What:     `Controller { ... }`. Struct literal. `Queue::new()` empty queue;
+        //           volume/gain start at 1.0; `PeakCache::load()` reads any saved peaks;
+        //           `Arc::new(Mutex::new(...))` wraps it for sharing.
+        // Why:      A clean idle state with the cache ready.
         // TS map:   `return new Controller(...);`
         Controller {
             on_update,
@@ -152,6 +151,8 @@ impl Controller {
             spec: None,
             playing: false,
             volume: 1.0,
+            track_gain: 1.0,
+            peaks: Arc::new(Mutex::new(PeakCache::load())),
             position_frames: 0,
             last_emit_secs: 0.0,
             pending: Vec::new(),
@@ -159,13 +160,13 @@ impl Controller {
         }
     }
 
-    // What:     `fn emit(&self, update: Update)`. Call the UI callback.
+    // What:     `pub(crate) fn emit(&self, update: Update)`. Call the UI callback.
+    //           `pub(crate)` because `controller_audio.rs` also emits.
     // Why:      One place to push updates out.
     // TS map:   `emit(update) { this.onUpdate(update); }`
-    fn emit(&self, update: Update) {
-        // What:     `(self.on_update)(update);`. Call the boxed closure with the
-        //           update. The parens around `self.on_update` are needed to call
-        //           the field rather than a method.
+    pub(crate) fn emit(&self, update: Update) {
+        // What:     `(self.on_update)(update);`. Call the boxed closure. The parens make
+        //           it call the field, not a method.
         // Why:      Deliver the update to the UI.
         // TS map:   `this.onUpdate(update);`
         (self.on_update)(update);
@@ -173,19 +174,18 @@ impl Controller {
 
     // What:     `fn set_playing(&mut self, on: bool)`. Set the flag and tell the UI.
     // Why:      Keep the play/pause button in sync.
-    // TS map:   `setPlaying(on) { this.playing = on; this.emit({kind:"playing",on}); }`
+    // TS map:   `setPlaying(on) { ... }`
     fn set_playing(&mut self, on: bool) {
         // What:     `self.playing = on;`. Update the gate.
         // Why:      Pump respects it.
         // TS map:   `this.playing = on;`
         self.playing = on;
         // What:     `if let Some(output) = self.output.as_ref() { output.set_playing(on); }`.
-        //           Tell the audio output too (no-op in silent mode). `.as_ref()`
-        //           borrows the `Option<Output>` as `Option<&Output>` so we can
-        //           call a method without taking ownership.
-        // Why:      Lets the realtime callback react instantly: on pause it stops
-        //           draining the ring buffer and emits silence, so the buffered
-        //           ~1 second of audio does NOT keep playing (the pause-delay bug).
+        //           Tell the audio output (no-op in silent mode). `.as_ref()` borrows
+        //           the `Option<Output>` as `Option<&Output>`.
+        // Why:      The realtime callback reacts instantly: on pause it stops draining
+        //           the ring buffer and emits silence, so buffered audio does not keep
+        //           playing (the pause-delay bug).
         // TS map:   `this.output?.setPlaying(on);`
         if let Some(output) = self.output.as_ref() {
             output.set_playing(on);
@@ -196,51 +196,23 @@ impl Controller {
         self.emit(Update::Playing(on));
     }
 
-    // What:     `fn current_session(&self) -> Session`. Snapshot the playback
-    //           state into a serializable `Session`.
-    // Why:      Persist where the user left off.
-    // TS map:   `currentSession(): Session`
-    fn current_session(&self) -> Session {
-        // What:     `let position_secs = frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));`.
-        //           Convert the frame counter to seconds. `self.spec.as_ref().map_or(0, |s| s.rate)`
-        //           reads the rate (0 when no spec); `frames_to_secs` returns 0.0 for a 0 rate.
-        // Why:      The session stores seconds, not frames; the helper holds the guard.
-        // TS map:   `const positionSecs = framesToSecs(this.positionFrames, this.spec ? this.spec.rate : 0);`
-        let position_secs =
-            frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));
-        // What:     `Session { ... }`. Build the record from the queue + state.
-        //           `self.queue.tracks().to_vec()` clones the borrowed paths into
-        //           an owned `Vec`. Tail expression -> return.
-        // Why:      Bundle everything the next launch needs.
-        // TS map:   `return { tracks: [...this.queue.tracks()], current: ..., ... };`
-        Session {
-            tracks: self.queue.tracks().to_vec(),
-            current: self.queue.current_index(),
-            position_secs,
-            volume: self.volume,
-            shuffle: self.queue.shuffle_on(),
-            repeat: self.queue.repeat(),
-        }
+    // What:     `fn start_queue_measurement(&self)`. Kick off the background sweep that
+    //           pre-measures every track in the current queue into the shared cache.
+    //           Read-only borrow (it only clones the track list and the cache handle).
+    // Why:      Called on every queue load so later track changes hit the cache.
+    // TS map:   `startQueueMeasurement(): void`
+    fn start_queue_measurement(&self) {
+        // What:     `spawn_queue_measurement(self.queue.tracks().to_vec(), Arc::clone(&self.peaks));`.
+        //           Spawn the detached sweep. `self.queue.tracks().to_vec()` clones the
+        //           queue's paths into an owned `Vec`; `Arc::clone(&self.peaks)` makes
+        //           another shared handle to the cache (bumps the refcount, same data).
+        // Why:      Hand the worker its own owned inputs; it runs independently.
+        // TS map:   `spawnQueueMeasurement([...this.queue.tracks()], this.peaks);`
+        spawn_queue_measurement(self.queue.tracks().to_vec(), Arc::clone(&self.peaks));
     }
 
-    // What:     `pub(crate) fn save_session(&self)`. Write the current session to
-    //           disk, logging (not propagating) any I/O error. `pub(crate)` so
-    //           `engine::run` can call it on quit.
-    // Why:      Called on quit; a failed save should not block shutdown.
-    // TS map:   `saveSession(): void`
-    pub(crate) fn save_session(&self) {
-        // What:     `if let Err(e) = self.current_session().save() { ... }`. `save`
-        //           returns `io::Result<()>`; on `Err` we log it.
-        // Why:      Best-effort persistence.
-        // TS map:   `try { currentSession().save(); } catch (e) { console.error(e); }`
-        if let Err(e) = self.current_session().save() {
-            eprintln!("music-player: session save failed: {e}");
-        }
-    }
-
-    // What:     `pub(crate) fn handle_command(&mut self, command: Command)`. Apply
-    //           one UI command to the state. `pub(crate)` so `engine::run` can call
-    //           it for each drained command.
+    // What:     `pub(crate) fn handle_command(&mut self, command: Command)`. Apply one
+    //           UI command. `pub(crate)` so `engine::run` can call it.
     // Why:      The core of UI control.
     // TS map:   `handleCommand(command: Command): void`
     pub(crate) fn handle_command(&mut self, command: Command) {
@@ -248,15 +220,13 @@ impl Controller {
         // Why:      Each command does a different thing.
         // TS map:   `switch (command.kind) { ... }`
         match command {
-            // What:     `Command::OpenPaths { paths, play } => { ... }`. Set the queue
-            //           to the given files/folders and load the first track, playing
-            //           it only when `play` is true.
-            // Why:      Opening files replaces the queue (ad-hoc queue model); the
-            //           launch-time auto-load loads paused.
+            // What:     `Command::OpenPaths { paths, play } => { ... }`. Replace the
+            //           queue with the given files/folders, load the first track, and
+            //           play it only when `play` is true.
+            // Why:      Opening replaces the queue; the launch auto-load loads paused.
             // TS map:   `case "openPaths": { const { paths, play } = command; ... }`
             Command::OpenPaths { paths, play } => {
-                // What:     `let tracks = expand_paths(paths);`. Turn folders into
-                //           their contained files (recursively); pass files through.
+                // What:     `let tracks = expand_paths(paths);`. Folders -> their files.
                 // Why:      The queue holds files, not directories.
                 // TS map:   `const tracks = expandPaths(paths);`
                 let tracks = expand_paths(paths);
@@ -264,26 +234,28 @@ impl Controller {
                 // Why:      New playlist.
                 // TS map:   `this.queue.setTracks(tracks);`
                 self.queue.set_tracks(tracks);
-                // What:     `self.emit(Update::Queue(self.queue.display_names()));`.
-                //           Send the filename list to the UI.
+                // What:     `self.emit(Update::Queue(self.queue.display_names()));`. Send
+                //           the filename list to the UI.
                 // Why:      Render the queue list.
-                // TS map:   `this.emit({ kind: "queue", names: this.queue.displayNames() });`
+                // TS map:   `this.emit({ kind: "queue", names: ... });`
                 self.emit(Update::Queue(self.queue.display_names()));
+                // What:     `self.start_queue_measurement();`. Pre-measure the whole
+                //           queue in the background (true-peak normalization cache).
+                // Why:      Every queue load (open or auto-load) warms the peak cache.
+                // TS map:   `this.startQueueMeasurement();`
+                self.start_queue_measurement();
                 // What:     `if self.queue.current_path().is_some() { ... } else { ... }`.
                 //           Load the first track if the queue is non-empty.
                 // Why:      Opening should make a track current.
                 // TS map:   `if (this.queue.currentPath()) { ... } else { ... }`
                 if self.queue.current_path().is_some() {
-                    // What:     `let ok = self.load_current();`. Load the current
-                    //           track; `ok` is whether a decoder was opened.
+                    // What:     `let ok = self.load_current();`. Load the current track.
                     // Why:      Make it ready to play.
                     // TS map:   `const ok = this.loadCurrent();`
                     let ok = self.load_current();
-                    // What:     `self.set_playing(play && ok);`. Play only when the
-                    //           caller asked to AND a track actually loaded; otherwise
-                    //           stay paused. `&&` short-circuits.
-                    // Why:      Auto-load (`play == false`) loads paused; a user open
-                    //           (`play == true`) starts playback.
+                    // What:     `self.set_playing(play && ok);`. Play only if asked AND a
+                    //           track loaded. `&&` short-circuits.
+                    // Why:      Auto-load loads paused; a user open starts playback.
                     // TS map:   `this.setPlaying(play && ok);`
                     self.set_playing(play && ok);
                 } else {
@@ -293,8 +265,8 @@ impl Controller {
                     self.set_playing(false);
                 }
             }
-            // What:     `Command::TogglePlay => self.set_playing(!self.playing)`.
-            //           Flip the play/pause state.
+            // What:     `Command::TogglePlay => self.set_playing(!self.playing)`. Flip
+            //           play/pause.
             // Why:      The play/pause button.
             // TS map:   `case "togglePlay": this.setPlaying(!this.playing);`
             Command::TogglePlay => self.set_playing(!self.playing),
@@ -306,18 +278,16 @@ impl Controller {
             // Why:      Explicit pause.
             // TS map:   `case "pause": this.setPlaying(false);`
             Command::Pause => self.set_playing(false),
-            // What:     `Command::Next => { ... }`. Advance the queue (not a natural
-            //           end) and load the result.
+            // What:     `Command::Next => { ... }`. Advance (not a natural end) and load.
             // Why:      Next button.
             // TS map:   `case "next": ...`
             Command::Next => {
-                // What:     `let moved = self.queue.advance(false);`. Step forward;
-                //           `Some` = there is a next track, `None` = end.
+                // What:     `let moved = self.queue.advance(false);`. Step forward.
                 // Why:      Decide whether to load or stop.
                 // TS map:   `const moved = this.queue.advance(false);`
                 let moved = self.queue.advance(false);
                 // What:     `self.after_move(moved);`. Load the new current or stop.
-                // Why:      Shared follow-up logic.
+                // Why:      Shared follow-up.
                 // TS map:   `this.afterMove(moved);`
                 self.after_move(moved);
             }
@@ -326,7 +296,7 @@ impl Controller {
             // TS map:   `case "prev": ...`
             Command::Prev => {
                 // What:     `let moved = self.queue.prev();`. Step back.
-                // Why:      Get the previous track index, if any.
+                // Why:      Get the previous index, if any.
                 // TS map:   `const moved = this.queue.prev();`
                 let moved = self.queue.prev();
                 // What:     `self.after_move(moved);`. Load or stop.
@@ -334,13 +304,12 @@ impl Controller {
                 // TS map:   `this.afterMove(moved);`
                 self.after_move(moved);
             }
-            // What:     `Command::PlayIndex(index) => { ... }`. Jump to a queue slot
-            //           and play it.
+            // What:     `Command::PlayIndex(index) => { ... }`. Jump to a queue slot.
             // Why:      Click-to-play in the queue list.
             // TS map:   `case "playIndex": ...`
             Command::PlayIndex(index) => {
-                // What:     `if self.queue.play_index(index).is_some() { ... }`. Only
-                //           act if the index is valid.
+                // What:     `if self.queue.play_index(index).is_some() { ... }`. Act only
+                //           on a valid index.
                 // Why:      Ignore out-of-range clicks.
                 // TS map:   `if (this.queue.playIndex(index) != null) { ... }`
                 if self.queue.play_index(index).is_some() {
@@ -354,15 +323,13 @@ impl Controller {
                     self.set_playing(ok);
                 }
             }
-            // What:     `Command::Seek(secs) => self.seek(secs)`. Jump within the
-            //           current track.
+            // What:     `Command::Seek(secs) => self.seek(secs)`. Jump within the track.
             // Why:      Seek bar drag.
             // TS map:   `case "seek": this.seek(secs);`
             Command::Seek(secs) => self.seek(secs),
-            // What:     `Command::SetVolume(v) => { self.volume = v; self.emit(...); }`.
-            //           Update the gain and mirror it.
+            // What:     `Command::SetVolume(v) => { ... }`. Update the gain and mirror it.
             // Why:      Volume slider.
-            // TS map:   `case "setVolume": this.volume = v; this.emit({kind:"volume",v});`
+            // TS map:   `case "setVolume": ...`
             Command::SetVolume(v) => {
                 // What:     `self.volume = v;`. Store the new gain.
                 // Why:      Applied to subsequently decoded samples.
@@ -373,13 +340,12 @@ impl Controller {
                 // TS map:   `this.emit({ kind: "volume", v });`
                 self.emit(Update::Volume(v));
             }
-            // What:     `Command::SetShuffle(on) => { ... }`. Toggle shuffle and
-            //           mirror it.
+            // What:     `Command::SetShuffle(on) => { ... }`. Toggle shuffle.
             // Why:      Shuffle button.
             // TS map:   `case "setShuffle": ...`
             Command::SetShuffle(on) => {
-                // What:     `self.queue.set_shuffle(on);`. Reorder play order while
-                //           keeping the current track.
+                // What:     `self.queue.set_shuffle(on);`. Reorder play order, keeping
+                //           the current track.
                 // Why:      Apply shuffle.
                 // TS map:   `this.queue.setShuffle(on);`
                 self.queue.set_shuffle(on);
@@ -392,18 +358,17 @@ impl Controller {
             // Why:      Repeat button.
             // TS map:   `case "setRepeat": ...`
             Command::SetRepeat(mode) => {
-                // What:     `self.queue.set_repeat(mode);`. Apply it to the queue.
+                // What:     `self.queue.set_repeat(mode);`. Apply it.
                 // Why:      Affects natural-end behaviour.
                 // TS map:   `this.queue.setRepeat(mode);`
                 self.queue.set_repeat(mode);
-                // What:     `self.emit(Update::Repeat(mode));`. Mirror state.
-                //           `mode` is `Copy`, so passing it twice is fine.
+                // What:     `self.emit(Update::Repeat(mode));`. Mirror state. `mode` is
+                //           `Copy`, so using it twice is fine.
                 // Why:      Button visual.
                 // TS map:   `this.emit({ kind: "repeat", mode });`
                 self.emit(Update::Repeat(mode));
             }
-            // What:     `Command::Restore { tracks, current, position, volume,
-            //           shuffle, repeat } => { ... }`. Reinstate a saved session,
+            // What:     `Command::Restore { ... } => { ... }`. Reinstate a saved session,
             //           loading the current track PAUSED at the saved position.
             // Why:      Resume where the user left off, on launch.
             // TS map:   `case "restore": { const { tracks, current, ... } = command; ... }`
@@ -423,16 +388,19 @@ impl Controller {
                 // Why:      Affects auto-advance.
                 // TS map:   `this.queue.setRepeat(repeat);`
                 self.queue.set_repeat(repeat);
-                // What:     `self.queue.set_tracks(tracks);`. Rebuild the queue
-                //           (cursor starts at the first track).
+                // What:     `self.queue.set_tracks(tracks);`. Rebuild the queue.
                 // Why:      Restore the playlist.
                 // TS map:   `this.queue.setTracks(tracks);`
                 self.queue.set_tracks(tracks);
-                // What:     `self.queue.set_shuffle(shuffle);`. Restore shuffle
-                //           ordering (keeps the current track).
+                // What:     `self.queue.set_shuffle(shuffle);`. Restore shuffle ordering.
                 // Why:      Restore shuffle state.
                 // TS map:   `this.queue.setShuffle(shuffle);`
                 self.queue.set_shuffle(shuffle);
+                // What:     `self.start_queue_measurement();`. Pre-measure the restored
+                //           queue in the background, like any other queue load.
+                // Why:      Warm the peak cache for the restored tracks too.
+                // TS map:   `this.startQueueMeasurement();`
+                self.start_queue_measurement();
                 // What:     `if let Some(idx) = current { self.queue.play_index(idx); }`.
                 //           Move the cursor to the saved current track, if any.
                 // Why:      Resume on the right track.
@@ -440,8 +408,8 @@ impl Controller {
                 if let Some(idx) = current {
                     self.queue.play_index(idx);
                 }
-                // What:     `self.emit(Update::Queue(self.queue.display_names()));`.
-                //           Push the queue list to the UI.
+                // What:     `self.emit(Update::Queue(self.queue.display_names()));`. Push
+                //           the queue list to the UI.
                 // Why:      Render the restored queue.
                 // TS map:   `this.emit({ kind: "queue", names: ... });`
                 self.emit(Update::Queue(self.queue.display_names()));
@@ -449,56 +417,57 @@ impl Controller {
                 // Why:      Sync the slider.
                 // TS map:   `this.emit({ kind: "volume", volume });`
                 self.emit(Update::Volume(volume));
-                // What:     `self.emit(Update::Shuffle(self.queue.shuffle_on()));`.
-                //           Mirror shuffle state.
+                // What:     `self.emit(Update::Shuffle(self.queue.shuffle_on()));`. Mirror
+                //           shuffle state.
                 // Why:      Sync the button.
-                // TS map:   `this.emit({ kind: "shuffle", on: this.queue.shuffleOn() });`
+                // TS map:   `this.emit({ kind: "shuffle", on: ... });`
                 self.emit(Update::Shuffle(self.queue.shuffle_on()));
                 // What:     `self.emit(Update::Repeat(self.queue.repeat()));`. Mirror
                 //           repeat mode.
                 // Why:      Sync the button.
-                // TS map:   `this.emit({ kind: "repeat", mode: this.queue.repeat() });`
+                // TS map:   `this.emit({ kind: "repeat", mode: ... });`
                 self.emit(Update::Repeat(self.queue.repeat()));
-                // What:     `self.playing = false;`. Restore PAUSED, not playing.
+                // What:     `self.playing = false;`. Restore PAUSED.
                 // Why:      Resuming should not blast audio on launch.
                 // TS map:   `this.playing = false;`
                 self.playing = false;
-                // What:     `let loaded = self.load_current();`. Load the current
-                //           track (creates the output stream, emits NowPlaying).
-                // Why:      Make the track ready to play from the saved position.
+                // What:     `let loaded = self.load_current();`. Load the current track.
+                // Why:      Make it ready to play from the saved position.
                 // TS map:   `const loaded = this.loadCurrent();`
                 let loaded = self.load_current();
                 // What:     `self.emit(Update::Playing(false));`. Mirror paused state.
                 // Why:      Show the Play button.
                 // TS map:   `this.emit({ kind: "playing", on: false });`
                 self.emit(Update::Playing(false));
-                // What:     `if loaded && position > 0.0 { self.seek(position); }`.
-                //           Jump to the saved position if a track loaded.
+                // What:     `if loaded && position > 0.0 { self.seek(position); }`. Jump
+                //           to the saved position if a track loaded.
                 // Why:      Resume mid-track.
                 // TS map:   `if (loaded && position > 0) this.seek(position);`
                 if loaded && position > 0.0 {
                     self.seek(position);
                 }
             }
-            // What:     `Command::Quit => {}`. Handled in `run`'s drain loop; this
-            //           arm just keeps the match exhaustive.
+            // What:     `Command::Quit => {}`. Handled in `run`'s drain loop; this arm
+            //           keeps the match exhaustive.
             // Why:      Rust requires every variant to be matched.
             // TS map:   `case "quit": break; // handled elsewhere`
             Command::Quit => {}
         }
     }
 
-    // What:     `fn after_move(&mut self, moved: Option<usize>)`. Shared follow-up
-    //           for Next/Prev: load the new current track, or stop at the end.
+    // What:     `pub(crate) fn after_move(&mut self, moved: Option<usize>)`. Shared
+    //           follow-up for Next/Prev/natural-end: load the new current track, or stop
+    //           at the end. `pub(crate)` so `on_track_end` (in `controller_audio.rs`)
+    //           can call it.
     // Why:      Avoid duplicating the load-or-stop logic.
     // TS map:   `afterMove(moved: number | null): void`
-    fn after_move(&mut self, moved: Option<usize>) {
+    pub(crate) fn after_move(&mut self, moved: Option<usize>) {
         // What:     `match moved { ... }`. `Some` = a track to load; `None` = end.
         // Why:      Two outcomes.
         // TS map:   `if (moved != null) { ... } else { ... }`
         match moved {
             // What:     `Some(_) => { if !self.load_current() { self.set_playing(false); } }`.
-            //           Load it; stop if loading failed. The `_` ignores the index.
+            //           Load it; stop if loading failed. `_` ignores the index.
             // Why:      Keep the current playing state when a track loads.
             // TS map:   `if (!this.loadCurrent()) this.setPlaying(false);`
             Some(_) => {
@@ -510,461 +479,6 @@ impl Controller {
             // Why:      Nothing more to play.
             // TS map:   `else this.setPlaying(false);`
             None => self.set_playing(false),
-        }
-    }
-
-    // What:     `fn load_current(&mut self) -> bool`. Open the queue's current
-    //           track into a decoder + reconfigure output. Returns whether a track
-    //           was successfully loaded. Skips past files that fail to open.
-    // Why:      One place that turns "current path" into live playback state.
-    // TS map:   `loadCurrent(): boolean`
-    fn load_current(&mut self) -> bool {
-        // What:     `loop { ... }`. Iterate over the queue, advancing past any
-        //           unreadable file. Iterative (not recursive) so a long run of
-        //           bad files cannot overflow the stack.
-        // Why:      Robustly find the next playable track.
-        // TS map:   `while (true) { ... }`
-        loop {
-            // What:     `let path = match self.queue.current_path() { ... };`. Copy
-            //           the current path out (`.clone()` makes an owned `PathBuf`),
-            //           or return `false` if the queue is empty.
-            // Why:      We need an owned path to open and to release the queue borrow.
-            // TS map:   `const path = this.queue.currentPath(); if (!path) return false;`
-            let path = match self.queue.current_path() {
-                // What:     `Some(p) => p.clone()`. Own the path.
-                // Why:      Outlive the borrow.
-                // TS map:   `path = currentPath;`
-                Some(p) => p.clone(),
-                // What:     `None => return false`. Empty queue.
-                // Why:      Nothing to load.
-                // TS map:   `return false;`
-                None => return false,
-            };
-
-            // What:     `match crate::decode::open(&path) { ... }`. Try to open a
-            //           decoder for the file. `&path` lends it.
-            // Why:      Build the source.
-            // TS map:   `try { const source = open(path); ... } catch (e) { ... }`
-            match crate::decode::open(&path) {
-                // What:     `Ok(source) => { self.install_source(source, &path); return true; }`.
-                //           Loaded: install it and report success.
-                // Why:      Begin playing this track.
-                // TS map:   `this.installSource(source, path); return true;`
-                Ok(source) => {
-                    self.install_source(source, &path);
-                    return true;
-                }
-                // What:     `Err(e) => { ... }`. Could not open this file.
-                // Why:      Skip to the next track.
-                // TS map:   `catch (e) { ... }`
-                Err(e) => {
-                    // What:     `eprintln!("music-player: cannot open {}: {e}", path.display());`.
-                    //           Log the failure. `path.display()` formats the path.
-                    // Why:      Surface the bad file.
-                    // TS map:   `console.error(`cannot open ${path}: ${e}`);`
-                    eprintln!("music-player: cannot open {}: {e}", path.display());
-                    // What:     `if self.queue.advance(false).is_none() { return false; }`.
-                    //           Step forward; if there is no next track, give up.
-                    // Why:      Avoid an endless loop when all files are bad.
-                    // TS map:   `if (this.queue.advance(false) == null) return false;`
-                    if self.queue.advance(false).is_none() {
-                        return false;
-                    }
-                    // Otherwise the loop retries with the new current track.
-                }
-            }
-        }
-    }
-
-    // What:     `fn install_source(&mut self, source: Box<dyn Source>, path: &Path)`.
-    //           Store the source, reconfigure the output to its native format,
-    //           reset position, and tell the UI what is now playing.
-    // Why:      The common setup after a successful `open`.
-    // TS map:   `installSource(source: Source, path: string): void`
-    fn install_source(&mut self, source: Box<dyn Source>, path: &Path) {
-        // What:     `let spec = source.spec();`. Copy the stream's rate/channels/
-        //           duration (`AudioSpec` is `Copy`).
-        // Why:      Needed to configure the output and the position math.
-        // TS map:   `const spec = source.spec();`
-        let spec = source.spec();
-
-        // What:     `if let Some(output) = self.output.as_mut() { ... }`. Only
-        //           reconfigure when audio is available (not silent mode).
-        // Why:      Skip audio setup when there is no output.
-        // TS map:   `if (this.output) { ... }`
-        if let Some(output) = self.output.as_mut() {
-            // What:     `let capacity_frames = spec.rate as usize;`. Size the ring
-            //           buffer to about one second of audio (rate frames).
-            // Why:      Enough buffering to avoid underruns without big latency.
-            // TS map:   `const capacityFrames = spec.rate;`
-            let capacity_frames = spec.rate as usize;
-            // What:     `match output.reconfigure(spec.rate, spec.channels, capacity_frames) { ... }`.
-            //           Rebuild the stream at this track's format; returns a new
-            //           producer (write end) on success.
-            // Why:      Per-track native rate; fresh buffer flushes old audio.
-            // TS map:   `try { this.producer = output.reconfigure(...); } catch (e) { ... }`
-            match output.reconfigure(spec.rate, spec.channels, capacity_frames) {
-                // What:     `Ok(prod) => self.producer = Some(prod)`. Store the new
-                //           write end.
-                // Why:      Push samples here from now on.
-                // TS map:   `this.producer = prod;`
-                Ok(prod) => self.producer = Some(prod),
-                // What:     `Err(e) => { eprintln!(...); self.producer = None; }`.
-                //           Log and drop into silent mode for this track.
-                // Why:      Don't crash if a stream fails to connect.
-                // TS map:   `console.error(e); this.producer = null;`
-                Err(e) => {
-                    eprintln!("music-player: audio reconfigure failed: {e}");
-                    self.producer = None;
-                }
-            }
-        }
-
-        // What:     `self.source = Some(source);`. Store the decoder.
-        // Why:      Pump decodes from it.
-        // TS map:   `this.source = source;`
-        self.source = Some(source);
-        // What:     `self.spec = Some(spec);`. Cache the format.
-        // Why:      Position math + future reconfigure (seek).
-        // TS map:   `this.spec = spec;`
-        self.spec = Some(spec);
-        // What:     `self.position_frames = 0;`. Restart the frame counter.
-        // Why:      New track starts at 0.
-        // TS map:   `this.positionFrames = 0;`
-        self.position_frames = 0;
-        // What:     `self.last_emit_secs = 0.0;`. Reset the throttle baseline.
-        // Why:      Emit the first position promptly.
-        // TS map:   `this.lastEmitSecs = 0;`
-        self.last_emit_secs = 0.0;
-        // What:     `self.pending.clear(); self.pending_pos = 0;`. Drop any leftover
-        //           samples from the previous track.
-        // Why:      Avoid mixing tracks.
-        // TS map:   `this.pending = []; this.pendingPos = 0;`
-        self.pending.clear();
-        self.pending_pos = 0;
-
-        // What:     `let name = file_name_of(path);`. The display filename.
-        // Why:      Filename-only metadata policy.
-        // TS map:   `const name = fileNameOf(path);`
-        let name = file_name_of(path);
-        // What:     `let index = self.queue.current_index();`. Its position in the
-        //           queue (or `None`).
-        // Why:      Lets the UI highlight the current row.
-        // TS map:   `const index = this.queue.currentIndex();`
-        let index = self.queue.current_index();
-        // What:     `self.emit(Update::NowPlaying { index, name, duration: spec.duration_secs });`.
-        //           Tell the UI the new track.
-        // Why:      Update the now-playing label and seek-bar maximum.
-        // TS map:   `this.emit({ kind: "nowPlaying", index, name, duration: spec.durationSecs });`
-        self.emit(Update::NowPlaying {
-            index,
-            name,
-            duration: spec.duration_secs,
-        });
-        // What:     `self.emit(Update::Position(0.0));`. Reset the seek bar to 0.
-        // Why:      New track starts at the beginning.
-        // TS map:   `this.emit({ kind: "position", secs: 0 });`
-        self.emit(Update::Position(0.0));
-    }
-
-    // What:     `fn seek(&mut self, secs: f64)`. Move playback to `secs` in the
-    //           current track and flush buffered audio.
-    // Why:      Seek-bar control.
-    // TS map:   `seek(secs: number): void`
-    fn seek(&mut self, secs: f64) {
-        // What:     `let spec = match self.spec { Some(s) => s, None => return };`.
-        //           Copy the format out, or do nothing if no track is loaded.
-        // Why:      Need the rate to recompute the frame position.
-        // TS map:   `const spec = this.spec; if (!spec) return;`
-        let spec = match self.spec {
-            // What:     `Some(s) => s`. Copy the spec.
-            // Why:      `AudioSpec` is `Copy`, so no borrow is held.
-            // TS map:   `spec = this.spec;`
-            Some(s) => s,
-            // What:     `None => return`. Nothing loaded.
-            // Why:      Ignore the seek.
-            // TS map:   `return;`
-            None => return,
-        };
-
-        // What:     `if let Some(source) = self.source.as_mut() { ... } else { return; }`.
-        //           Seek the decoder; bail if there is no source.
-        // Why:      The decoder must reposition.
-        // TS map:   `if (!this.source) return; this.source.seek(secs);`
-        if let Some(source) = self.source.as_mut() {
-            // What:     `if let Err(e) = source.seek(secs) { eprintln!(...); return; }`.
-            //           Attempt the seek; on error, log and abort the seek.
-            // Why:      A failed seek should not corrupt position state.
-            // TS map:   `try { source.seek(secs); } catch (e) { console.error(e); return; }`
-            if let Err(e) = source.seek(secs) {
-                eprintln!("music-player: seek failed: {e}");
-                return;
-            }
-        } else {
-            // What:     `return;`. No source -> nothing to seek.
-            // Why:      Guard.
-            // TS map:   `return;`
-            return;
-        }
-
-        // What:     `if let Some(output) = self.output.as_mut() { ... }`. Rebuild
-        //           the stream at the SAME format to flush stale buffered audio.
-        // Why:      Otherwise ~1s of pre-seek audio would still play.
-        // TS map:   `if (this.output) { this.producer = output.reconfigure(...); }`
-        if let Some(output) = self.output.as_mut() {
-            // What:     `match output.reconfigure(spec.rate, spec.channels, spec.rate as usize) { ... }`.
-            //           Same rate/channels, ~1s buffer; new empty producer.
-            // Why:      Clean slate after the jump.
-            // TS map:   `try { this.producer = output.reconfigure(...); } catch (e) { ... }`
-            match output.reconfigure(spec.rate, spec.channels, spec.rate as usize) {
-                // What:     `Ok(prod) => self.producer = Some(prod)`. Replace the
-                //           producer (old buffered samples are gone with the old buffer).
-                // Why:      Flush.
-                // TS map:   `this.producer = prod;`
-                Ok(prod) => self.producer = Some(prod),
-                // What:     `Err(e) => eprintln!(...)`. Log a reconfigure failure.
-                // Why:      Keep going (position still updates).
-                // TS map:   `console.error(e);`
-                Err(e) => eprintln!("music-player: seek reconfigure failed: {e}"),
-            }
-        }
-
-        // What:     `self.pending.clear(); self.pending_pos = 0;`. Drop leftover
-        //           pre-seek samples we had not pushed yet.
-        // Why:      They belong to the old position.
-        // TS map:   `this.pending = []; this.pendingPos = 0;`
-        self.pending.clear();
-        self.pending_pos = 0;
-
-        // What:     `self.position_frames = (secs * spec.rate as f64) as u64;`.
-        //           Convert the target seconds to a frame count. `as u64` truncates
-        //           the float to an integer frame index.
-        // Why:      Keep position reporting consistent after the jump.
-        // TS map:   `this.positionFrames = Math.floor(secs * spec.rate);`
-        self.position_frames = (secs * spec.rate as f64) as u64;
-        // What:     `self.last_emit_secs = secs;`. Update the throttle baseline.
-        // Why:      Avoid an immediate redundant emit.
-        // TS map:   `this.lastEmitSecs = secs;`
-        self.last_emit_secs = secs;
-        // What:     `self.emit(Update::Position(secs));`. Snap the UI seek bar.
-        // Why:      Reflect the jump immediately.
-        // TS map:   `this.emit({ kind: "position", secs });`
-        self.emit(Update::Position(secs));
-    }
-
-    // What:     `pub(crate) fn pump_audio(&mut self) -> bool`. Push at most one block
-    //           of audio into the ring buffer. Returns whether it did meaningful work
-    //           (so the caller knows whether to sleep). `pub(crate)` so `engine::run`
-    //           can call it each loop iteration.
-    // Why:      The decode->buffer feeding step, called every loop iteration.
-    // TS map:   `pumpAudio(): boolean`
-    pub(crate) fn pump_audio(&mut self) -> bool {
-        // What:     `if !self.playing { return false; }`. Paused: no work.
-        // Why:      Respect pause.
-        // TS map:   `if (!this.playing) return false;`
-        if !self.playing {
-            return false;
-        }
-        // What:     `if self.producer.is_none() || self.source.is_none() { return false; }`.
-        //           Need both a write end and a decoder.
-        // Why:      Nothing to do otherwise (e.g. silent mode or no track).
-        // TS map:   `if (!this.producer || !this.source) return false;`
-        if self.producer.is_none() || self.source.is_none() {
-            return false;
-        }
-
-        // What:     `if self.pending_pos < self.pending.len() { ... }`. There are
-        //           leftover samples from last time; try to push them first.
-        // Why:      Finish the previous block before decoding more.
-        // TS map:   `if (this.pendingPos < this.pending.length) { ... }`
-        if self.pending_pos < self.pending.len() {
-            // What:     `let pushed = if let Some(producer) = self.producer.as_mut() { producer.push_slice(&self.pending[self.pending_pos..]) } else { 0 };`.
-            //           Push the unsent tail; `push_slice` returns how many it
-            //           accepted (the buffer may be full). `&self.pending[a..]`
-            //           borrows a sub-slice (disjoint field from the producer).
-            // Why:      Make progress draining `pending`.
-            // TS map:   `const pushed = producer.pushSlice(this.pending.slice(this.pendingPos));`
-            let pushed = if let Some(producer) = self.producer.as_mut() {
-                producer.push_slice(&self.pending[self.pending_pos..])
-            } else {
-                0
-            };
-            // What:     `self.pending_pos += pushed;`. Advance the sent cursor.
-            // Why:      Track what is left.
-            // TS map:   `this.pendingPos += pushed;`
-            self.pending_pos += pushed;
-            // What:     `if self.pending_pos >= self.pending.len() { self.pending.clear(); self.pending_pos = 0; }`.
-            //           Fully drained: reset the buffer.
-            // Why:      Ready to decode the next block next time.
-            // TS map:   `if (this.pendingPos >= this.pending.length) { this.pending = []; this.pendingPos = 0; }`
-            if self.pending_pos >= self.pending.len() {
-                self.pending.clear();
-                self.pending_pos = 0;
-            }
-            // What:     `self.advance_position(pushed);`. Count pushed frames.
-            // Why:      Update the seek bar.
-            // TS map:   `this.advancePosition(pushed);`
-            self.advance_position(pushed);
-            // What:     `return pushed > 0;`. Did work only if something was pushed
-            //           (if `0`, the buffer is full -> idle this cycle).
-            // Why:      Tell the caller whether to sleep.
-            // TS map:   `return pushed > 0;`
-            return pushed > 0;
-        }
-
-        // What:     `let decoded = if let Some(source) = self.source.as_mut() { source.next_chunk() } else { return false; };`.
-        //           Decode the next block. The result is `Result<Vec<f32>, _>`.
-        // Why:      Produce more audio.
-        // TS map:   `const decoded = source.nextChunk();`
-        let decoded = if let Some(source) = self.source.as_mut() {
-            source.next_chunk()
-        } else {
-            return false;
-        };
-
-        // What:     `let mut chunk = match decoded { ... };`. Unwrap the decode
-        //           result; on error, log, end the track, and report work done.
-        // Why:      Handle decode failures without crashing.
-        // TS map:   `let chunk; try { chunk = decoded; } catch (e) { ...; this.onTrackEnd(); return true; }`
-        let mut chunk = match decoded {
-            // What:     `Ok(c) => c`. The decoded samples.
-            // Why:      Continue.
-            // TS map:   `chunk = c;`
-            Ok(c) => c,
-            // What:     `Err(e) => { eprintln!(...); self.on_track_end(); return true; }`.
-            //           Treat a decode error as the end of this track.
-            // Why:      Move on rather than stall.
-            // TS map:   `catch (e) { console.error(e); this.onTrackEnd(); return true; }`
-            Err(e) => {
-                eprintln!("music-player: decode error: {e}");
-                self.on_track_end();
-                return true;
-            }
-        };
-
-        // What:     `if chunk.is_empty() { self.on_track_end(); return true; }`. An
-        //           empty chunk is the decoder's end-of-stream signal.
-        // Why:      Advance to the next track at natural end.
-        // TS map:   `if (chunk.length === 0) { this.onTrackEnd(); return true; }`
-        if chunk.is_empty() {
-            self.on_track_end();
-            return true;
-        }
-
-        // What:     `let vol = self.volume;`. Snapshot the gain.
-        // Why:      Avoid borrowing `self` inside the loop below.
-        // TS map:   `const vol = this.volume;`
-        let vol = self.volume;
-        // What:     `for sample in chunk.iter_mut() { *sample = process_sample(*sample, vol); }`.
-        //           Run every sample through the output stage in place. `iter_mut`
-        //           yields `&mut f32`; `*sample` on the right READS the current
-        //           value, `*sample =` WRITES the processed one back through the
-        //           reference.
-        // Why:      `process_sample` applies the volume gain, the always-on -1 dB
-        //           headroom, and the hard clamp in one place, so the clipping
-        //           protection cannot be bypassed and is unit-testable.
-        // TS map:   `for (let i = 0; i < chunk.length; i++) chunk[i] = processSample(chunk[i], vol);`
-        for sample in chunk.iter_mut() {
-            *sample = process_sample(*sample, vol);
-        }
-
-        // What:     `let pushed = if let Some(producer) = self.producer.as_mut() { producer.push_slice(&chunk) } else { 0 };`.
-        //           Push the gained chunk; `push_slice` returns the accepted count.
-        // Why:      Feed the audio thread.
-        // TS map:   `const pushed = producer.pushSlice(chunk);`
-        let pushed = if let Some(producer) = self.producer.as_mut() {
-            producer.push_slice(&chunk)
-        } else {
-            0
-        };
-        // What:     `self.advance_position(pushed);`. Count pushed frames.
-        // Why:      Update the seek bar.
-        // TS map:   `this.advancePosition(pushed);`
-        self.advance_position(pushed);
-        // What:     `if pushed < chunk.len() { self.pending = chunk; self.pending_pos = pushed; }`.
-        //           If the buffer could not take all of it, stash the remainder.
-        // Why:      Push the rest next cycle instead of dropping samples.
-        // TS map:   `if (pushed < chunk.length) { this.pending = chunk; this.pendingPos = pushed; }`
-        if pushed < chunk.len() {
-            self.pending = chunk;
-            self.pending_pos = pushed;
-        }
-        // What:     `true`. We decoded and pushed: work was done.
-        // Why:      Caller should not sleep.
-        // TS map:   `return true;`
-        true
-    }
-
-    // What:     `fn on_track_end(&mut self)`. Natural end of the current track:
-    //           advance the queue (a natural end, so repeat-one replays) and load,
-    //           or stop at the end of the queue.
-    // Why:      Auto-advance between tracks.
-    // TS map:   `onTrackEnd(): void`
-    fn on_track_end(&mut self) {
-        // What:     `let moved = self.queue.advance(true);`. `true` = natural end,
-        //           which lets repeat-one replay the same track.
-        // Why:      Honour the repeat mode.
-        // TS map:   `const moved = this.queue.advance(true);`
-        let moved = self.queue.advance(true);
-        // What:     `self.after_move(moved);`. Load the next or stop.
-        // Why:      Shared follow-up logic.
-        // TS map:   `this.afterMove(moved);`
-        self.after_move(moved);
-    }
-
-    // What:     `fn advance_position(&mut self, samples_pushed: usize)`. Add the
-    //           pushed frames to the position counter and emit a throttled
-    //           `Position` update.
-    // Why:      Keep the seek bar moving without flooding the UI.
-    // TS map:   `advancePosition(samplesPushed: number): void`
-    fn advance_position(&mut self, samples_pushed: usize) {
-        // What:     `let channels = self.spec.as_ref().map_or(0, |s| s.channels) as u64;`.
-        //           Read the channel count (0 if no spec). `map_or(default, f)`
-        //           applies `f` when `Some`, else returns the default. `as u64`
-        //           widens for the division.
-        // Why:      Frames = interleaved samples / channels.
-        // TS map:   `const channels = this.spec ? this.spec.channels : 0;`
-        let channels = self.spec.as_ref().map_or(0, |s| s.channels) as u64;
-        // What:     `if channels == 0 { return; }`. Avoid divide-by-zero.
-        // Why:      No valid spec yet.
-        // TS map:   `if (channels === 0) return;`
-        if channels == 0 {
-            return;
-        }
-        // What:     `self.position_frames += samples_pushed as u64 / channels;`.
-        //           Convert pushed interleaved samples to frames and accumulate.
-        // Why:      Track playback progress.
-        // TS map:   `this.positionFrames += Math.floor(samplesPushed / channels);`
-        self.position_frames += samples_pushed as u64 / channels;
-        // What:     `let rate = self.spec.as_ref().map_or(0, |s| s.rate);`. The
-        //           sample rate (0 if unknown).
-        // Why:      Seconds = frames / rate.
-        // TS map:   `const rate = this.spec ? this.spec.rate : 0;`
-        let rate = self.spec.as_ref().map_or(0, |s| s.rate);
-        // What:     `if rate == 0 { return; }`. Avoid divide-by-zero.
-        // Why:      Cannot compute seconds.
-        // TS map:   `if (rate === 0) return;`
-        if rate == 0 {
-            return;
-        }
-        // What:     `let secs = frames_to_secs(self.position_frames, rate);`. Current
-        //           position in seconds (same helper the session snapshot uses).
-        // Why:      The unit the UI uses.
-        // TS map:   `const secs = framesToSecs(this.positionFrames, rate);`
-        let secs = frames_to_secs(self.position_frames, rate);
-        // What:     `if secs - self.last_emit_secs >= POSITION_EMIT_INTERVAL_SECS { ... }`.
-        //           Only emit when enough progress has accumulated.
-        // Why:      Throttle to ~10 updates/second.
-        // TS map:   `if (secs - this.lastEmitSecs >= POSITION_EMIT_INTERVAL_SECS) { ... }`
-        if secs - self.last_emit_secs >= POSITION_EMIT_INTERVAL_SECS {
-            // What:     `self.last_emit_secs = secs;`. Update the baseline.
-            // Why:      Next emit waits another interval.
-            // TS map:   `this.lastEmitSecs = secs;`
-            self.last_emit_secs = secs;
-            // What:     `self.emit(Update::Position(secs));`. Send the position.
-            // Why:      Move the seek bar.
-            // TS map:   `this.emit({ kind: "position", secs });`
-            self.emit(Update::Position(secs));
         }
     }
 }
