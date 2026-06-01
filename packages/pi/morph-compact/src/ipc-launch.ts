@@ -27,6 +27,7 @@ import {
   createOneShotSocketServer,
   readFromUnixSocket,
 } from './ipc-socket-unix.ts';
+import { sendVisibleCompactContext, } from './visible-context.ts';
 
 //region Constants
 
@@ -38,6 +39,18 @@ import {
  * instead of argv to avoid `E2BIG` errors.
  */
 export const MAX_COMPRESSED_ARG_BYTES = 100_000;
+
+//endregion
+
+//region Types
+
+/**
+ * Minimal pi API surface used by session-start context injection.
+ */
+type CompactContextInjectionApi = Pick<
+  ExtensionAPI,
+  'getFlag' | 'sendMessage' | 'sendUserMessage'
+>;
 
 //endregion
 
@@ -148,9 +161,37 @@ export async function launchWithLargeContext({
  * ```
  */
 export async function handleSessionStartInject(
-  extensionApi: ExtensionAPI,
+  extensionApi: CompactContextInjectionApi,
 ): Promise<void> {
   await injectCompactContext(extensionApi,);
+}
+
+/**
+ * Add a visible transcript marker, then deliver compacted context to the agent.
+ *
+ * @param api - pi extension API used for visible and agent-facing messages
+ *
+ * @param text - Morph-compressed context payload
+ *
+ * @example
+ * ```typescript
+ * deliverCompactContext({ api, text: compressedText });
+ * ```
+ */
+function deliverCompactContext(
+  {
+    api,
+    text,
+  }: {
+    readonly api: CompactContextInjectionApi;
+    readonly text: string;
+  },
+): void {
+  sendVisibleCompactContext({
+    pi: api,
+    text,
+  },);
+  api.sendUserMessage(text,);
 }
 
 /**
@@ -167,7 +208,7 @@ export async function handleSessionStartInject(
  * @param api - the pi extension API
  */
 async function injectCompactContext(
-  api: ExtensionAPI,
+  api: CompactContextInjectionApi,
 ): Promise<void> {
   // Tier 2: temp file
   /**
@@ -179,7 +220,10 @@ async function injectCompactContext(
      * Decoded compact payload read off disk for injection.
      */
     const text = readCompactFile(filePath,);
-    api.sendUserMessage(text,);
+    deliverCompactContext({
+      api,
+      text,
+    },);
     // Clean up the temp directory after reading
     try {
       rmSync(
@@ -206,7 +250,10 @@ async function injectCompactContext(
      * Payload read from the one-shot socket server before injection.
      */
     const text = await readFromUnixSocket(socketPath,);
-    api.sendUserMessage(text,);
+    deliverCompactContext({
+      api,
+      text,
+    },);
     // Unlink the socket file after reading
     try {
       unlinkSync(socketPath,);
@@ -227,7 +274,10 @@ async function injectCompactContext(
      * Payload read from the one-shot TCP server before injection.
      */
     const text = await readFromTcpSocket(tcpAddress,);
-    api.sendUserMessage(text,);
+    deliverCompactContext({
+      api,
+      text,
+    },);
   }
 }
 

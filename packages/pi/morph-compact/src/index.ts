@@ -43,6 +43,7 @@ import {
   launchWithLargeContext,
   MAX_COMPRESSED_ARG_BYTES,
 } from './ipc-launch.ts';
+import { registerVisibleContextRenderer, } from './visible-context.ts';
 
 //region Session state
 
@@ -239,6 +240,8 @@ export default function morphCompact(
       type: 'string',
     },
   );
+
+  registerVisibleContextRenderer({ pi, },);
 
   pi.on(
     'session_before_compact',
