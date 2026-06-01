@@ -95,6 +95,11 @@ const config: OxlintConfig = defineConfig({
     '**/*.cjs',
     '**/deprecated.*',
     '**/deprecated/**',
+    // Paused and deprecated package trees are out of the lint/format scope; one
+    // file in packages-paused also has a two-rule autofix oscillation that
+    // stalls `task-oxlint --fix` (see docs/troubleshooting/oxlint-multi-fix-convergence.md).
+    '**/packages-paused/**',
+    '**/packages-deprecated/**',
     '**/fixture/**',
     '**/invalid/**',
     '**/test-fixture/**',
