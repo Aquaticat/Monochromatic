@@ -17,6 +17,9 @@ From this workspace:
 pi install ./packages/pi/spawn
 ```
 
+The repository root depends on this package as a workspace dev dependency, so `pnpm install`
+links `spawn-pi` into `node_modules/.bin` for normal repo shells.
+
 For local development without installing:
 
 ```bash

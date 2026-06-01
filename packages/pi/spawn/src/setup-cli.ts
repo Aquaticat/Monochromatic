@@ -163,6 +163,8 @@ function cliPathFromExtensionPath(extensionPath: string,): string {
 /**
  * Detects whether `spawn-pi` is already discoverable on PATH.
  *
+ * @param env - environment values used for command lookup.
+ *
  * @returns whether `which spawn-pi` succeeds.
  *
  * @example
@@ -170,12 +172,15 @@ function cliPathFromExtensionPath(extensionPath: string,): string {
  * if (cliIsOnPath()) return;
  * ```
  */
-function cliIsOnPath(): boolean {
+function cliIsOnPath(env: Readonly<NodeJS.ProcessEnv> = process.env,): boolean {
   try {
     execFileSync(
       'which',
       ['spawn-pi',],
-      { stdio: 'ignore', },
+      {
+        env: { ...env, },
+        stdio: 'ignore',
+      },
     );
     return true;
   }
@@ -207,7 +212,7 @@ function autoSetupCli(
     readonly env?: Readonly<NodeJS.ProcessEnv>;
   },
 ): string | typeof NO_CLI_SETUP_WARNING {
-  if (cliIsOnPath())
+  if (cliIsOnPath(env,))
     return NO_CLI_SETUP_WARNING;
 
   /**

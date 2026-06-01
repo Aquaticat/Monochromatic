@@ -375,6 +375,9 @@ importers:
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:packages/module/image-diff
+      '@monochromatic-dev/pi-spawn':
+        specifier: workspace:*
+        version: link:packages/pi/spawn
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.67.0
