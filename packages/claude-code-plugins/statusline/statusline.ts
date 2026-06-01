@@ -106,7 +106,7 @@ const MODEL_DEFAULTS: Record<
   }
 > = {
   Opus: {
-    latestVersion: '4.7',
+    latestVersion: '4.8',
     defaultContext: '1M',
   },
   Sonnet: {
