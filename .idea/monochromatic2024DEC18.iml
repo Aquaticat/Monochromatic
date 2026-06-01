@@ -36,7 +36,13 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/webapp-content/ssg-test/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/playwright-report" />
       <excludeFolder url="file://$MODULE_DIR$/test-results" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/desktop-app/music-player/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/desktop-app/music-player/target" />
       <excludeFolder url="file://$MODULE_DIR$/packages/desktop-app/player/target" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/linter/rust/target" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/linter/rust/target/debug/build/crossbeam-utils-e00f0920b7fee6b5/out" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/linter/rust/target/debug/build/libc-5fd41a2d9e97be39/out" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/linter/rust/target/debug/build/memoffset-752e4b2c103aa69e/out" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
