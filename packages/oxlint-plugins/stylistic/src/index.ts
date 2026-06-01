@@ -5,6 +5,7 @@ import {
 
 import { argumentPerLine, } from './rules/argument-per-line.ts';
 import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
+import { blockBodyNewline, } from './rules/block-body-newline.ts';
 import { chainPerLine, } from './rules/chain-per-line.ts';
 import { commaDangle, } from './rules/comma-dangle.ts';
 import { destructurePerLine, } from './rules/destructure-per-line.ts';
@@ -22,9 +23,9 @@ import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
 
 /**
  * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
- * formatting across multi-element constructs, semicolon enforcement,
- * trailing comma enforcement, and explicit operator structure in nested
- * expressions.
+ * formatting across multi-element constructs, readable brace-delimited bodies,
+ * semicolon enforcement, trailing comma enforcement, and explicit operator
+ * structure in nested expressions.
  *
  * The per-line rules fire when 2 or more items share a source line and
  * auto-fix by placing every item on its own line with consistent
@@ -33,7 +34,8 @@ import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
  * force them to be multi-line.
  *
  * Statement-boundary rules enforce explicit semicolons and one statement
- * or declarator per line.
+ * or declarator per line. Body-boundary rules enforce readable newlines
+ * inside brace-delimited bodies.
  *
  * The expression-structure rules surface ambiguous operator precedence
  * by requiring explicit parentheses at operator boundaries.
@@ -63,6 +65,10 @@ const plugin: Plugin = eslintCompatPlugin({
     'tuple-per-line': tuplePerLine,
     'destructure-per-line': destructurePerLine,
     //endregion Per-line rules
+
+    //region Body boundaries: enforce readable newlines inside non-empty braces
+    'block-body-newline': blockBodyNewline,
+    //endregion Body boundaries
 
     //region Statement boundaries: enforce one-statement-per-line and one-declarator-per-line
     'one-var-declaration-per-line': oneVarDeclarationPerLine,

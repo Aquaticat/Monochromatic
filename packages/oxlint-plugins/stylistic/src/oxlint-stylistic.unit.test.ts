@@ -484,6 +484,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'block-body-newline valid cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/block-body-newline.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -617,6 +624,43 @@ await describe({
             const diagnostics = await lint('invalid/no-mixed-operators.ts',);
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(no-mixed-operators)',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'block-body-newline',
+      children: [
+        it({
+          name: 'reports dense non-empty brace-delimited bodies',
+          fn: async () => {
+            const diagnostics = await lint('invalid/block-body-newline.ts',);
+            /** block-body-newline diagnostics isolated from sibling fixture violations. */
+            const blockDiagnostics = diagnostics.filter(function isBlockBodyNewline(
+              diagnostic,
+            ): boolean {
+              return diagnostic.code === 'stylistic(block-body-newline)';
+            },);
+            // The fixture has eighteen dense non-empty bodies: function, arrow,
+            // if/else, loop, do-while, try/catch/finally, switch, class body,
+            // method, static block, module block, and comment boundary variants.
+            // Fully dense nested method/static/module blocks and line comments
+            // add more covered boundary shapes. Most report both boundaries;
+            // a line comment directly before an existing newline reports only the
+            // opening boundary because the closing brace is already after it.
+            expect(blockDiagnostics.length,).toBe(51,);
+            expect(
+              blockDiagnostics.some(function hasOpeningMessage(diagnostic,): boolean {
+                return diagnostic.message
+                  === 'Put the first body token on the line after the opening brace.';
+              },),
+            ).toBe(true,);
+            expect(
+              blockDiagnostics.some(function hasClosingMessage(diagnostic,): boolean {
+                return diagnostic.message
+                  === 'Put the closing brace on the line after the final body token.';
+              },),
+            ).toBe(true,);
           },
         },),
       ],
@@ -1023,6 +1067,50 @@ await describe({
             expect(fixedContent,).toContain('  3,\n',);
             expect(fixedContent,).toContain('  port: 3000,',);
             expect(fixedContent,).toContain('  port,',);
+          },
+        },),
+        it({
+          name: '--fix splits dense block body boundaries and preserves comments',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const blockSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'block-body-newline.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using blockCopy = createTempFixtureFile({
+              fileName: 'block-body-newline.ts',
+              sourcePath: blockSrc,
+            },);
+
+            await fixUntilStable(blockCopy.filePath,);
+
+            /** File content after all block-boundary fixes converge. */
+            const fixedContent = readFileSync(blockCopy.filePath, 'utf8',);
+            expect(fixedContent,).toContain('function denseFunction(): number {\n  return 1;\n}',);
+            expect(fixedContent,).toContain('const denseArrow = (): number => {\n  return denseFunction();\n};',);
+            expect(fixedContent,).toContain('if (condition) {\n  doThing();\n}',);
+            expect(fixedContent,).toContain('catch (error) {\n  throw error;\n}',);
+            expect(fixedContent,).toContain('switch (denseFunction()) {\n  case 1:',);
+            expect(fixedContent,).toContain('class DenseClassBody {\n  static value = 0;\n}',);
+            expect(fixedContent,).toContain('  static {\n    DenseClassBody.value = 1;\n  }',);
+            expect(fixedContent,).toContain('class FullyDenseMethod {\n  method(): number {\n    return 1;\n  }\n}',);
+            expect(fixedContent,).toContain('class FullyDenseStatic {\n  static {\n    DenseClassBody.value = 2;\n  }\n}',);
+            expect(fixedContent,).toContain('namespace DenseNamespace {\n  export const namespaceValue = 1;\n}',);
+            expect(fixedContent,).toContain('namespace OuterNamespace {\n  export namespace InnerNamespace {\n    export const inner = 1;\n  }\n}',);
+            expect(fixedContent,).toContain('function commentAtStart(): void {\n  /* keep start */doThing();\n}',);
+            expect(fixedContent,).toContain('function commentAtEnd(): void {\n  doThing();/* keep end */\n}',);
+            expect(fixedContent,).toContain('function commentOnly(): void {\n  /* keep only */\n}',);
+            expect(fixedContent,).toContain('function lineCommentAtStart(): void {\n  // keep line start\n  doThing();\n}',);
+            expect(fixedContent,).toContain('function lineCommentAtEnd(): void {\n  doThing(); // keep line end\n}',);
+
+            const diagnostics = await lint(blockCopy.filePath,);
+            expect(
+              diagnostics.filter(function isBlockBodyNewline(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(block-body-newline)';
+              },),
+            ).toEqual([],);
           },
         },),
         it({

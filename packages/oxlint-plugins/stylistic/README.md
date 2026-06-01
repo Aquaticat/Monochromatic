@@ -2,6 +2,7 @@
 
 Oxlint JS plugin for TypeScript stylistic rules:
 one-item-per-line formatting across multi-element constructs,
+readable newline boundaries inside brace-delimited bodies,
 statement-boundary semicolon enforcement,
 trailing comma enforcement,
 and explicit operator structure in nested expressions.
@@ -38,6 +39,21 @@ All per-line rules are auto-fixable via `oxlint --fix`.
 
 ### Statement boundaries
 
+- **block-body-newline**: require every non-empty brace-delimited body to put its
+  first token or comment on a line after `{` and its closing `}` on a line after
+  the final token or comment.
+  Covers `BlockStatement` bodies from functions, arrow functions, methods,
+  control-flow statements, loops, `try`, `catch`, and `finally`; also covers
+  `SwitchStatement`, `StaticBlock`, `ClassBody`, and `TSModuleBlock`.
+  Auto-fixable; the fixer only replaces whitespace after `{` and before `}` with
+  newlines plus existing indentation, so comments at the start or end of a block
+  remain in place.
+  Empty blocks with no tokens or comments between braces are allowed inline, so
+  `function noop(): void {}` is valid.
+  Comment-only blocks are non-empty and must be split, for example
+  `function f(): void { /* note */ }` becomes a three-line block.
+  The rule does not enforce Allman, Stroustrup, one-true-brace-style, or spacing
+  between `}` and `else`, `catch`, or `finally`.
 - **one-var-declaration-per-line**: each declarator in a `var`/`let`/`const`/`using` declaration on its own line.
   Operates in `'always'` mode: every multi-declarator declaration is flagged
   regardless of whether declarators have initializers.
@@ -185,9 +201,12 @@ keeping those rule files minimal.
 ## Source files
 
 - `index.ts`: plugin entry point; assembles all rules into the oxlint plugin object
+- `rules/block-body-newline.ts`: brace-delimited body boundary detection and autofix
 - `rules/comma-dangle.ts`: trailing comma detection and autofix for supported comma-delimited lists
 - `rules/`: one file per remaining rule, each exporting a `CreateOnceRule`
 - `utility/comma-dangle.ts`: shared trailing comma token lookup and reporting helpers
+- `utility/block-body-newline.ts`: shared brace token lookup, content detection, line lookup,
+  and nested dense-body indentation helpers
 - `utility/item-per-line.ts`: shared detection and reporting logic
 - `utility/item-per-line-fix.ts`: shared autofix logic (indentation detection, content rebuild)
 - `utility/needs-fix.ts`: line-sharing detection between items and container delimiters

@@ -20,6 +20,7 @@
     "stylistic/type-property-per-line": "error",
     "stylistic/tuple-per-line": "error",
     "stylistic/destructure-per-line": "error",
+    "stylistic/block-body-newline": "error",
     "stylistic/one-var-declaration-per-line": "error",
     "stylistic/max-statements-per-line": "error",
     "stylistic/semi": "error",
