@@ -4,7 +4,10 @@
  * @module
  */
 
-import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
+import type {
+  ContextEvent,
+  ExtensionAPI,
+} from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -12,6 +15,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { writeCompactFile, } from './ipc-file.ts';
 import { handleSessionStartInject, } from './ipc-launch.ts';
+import {
+  buildVisibleContextMessage,
+  filterVisibleContextMessages,
+} from './visible-context.ts';
 
 //region Test helpers
 
@@ -68,6 +75,56 @@ function createInjectionApi(
 await describe({
   name: '',
   children: [
+    describe({
+      name: filterVisibleContextMessages.name,
+      children: [
+        it({
+          name: 'removes visible transcript markers from agent context',
+          fn: async () => {
+            /**
+             * Full compacted context that should reach the agent only once,
+             * through the actual user message, not through the visible marker.
+             */
+            const text = 'Morph Compact hidden-from-agent sentinel';
+            /**
+             * Visible custom-message payload created by production code.
+             */
+            const visibleMessage = buildVisibleContextMessage({ text, },);
+            /**
+             * User message that represents the real agent-facing context.
+             */
+            const userMessage = {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text,
+                },
+              ],
+              timestamp: Date.now(),
+            };
+            /**
+             * Context event messages before filtering.
+             */
+            const messages = [
+              {
+                role: 'custom',
+                customType: visibleMessage.customType,
+                content: visibleMessage.content,
+                display: visibleMessage.display,
+                details: visibleMessage.details,
+                timestamp: Date.now(),
+              },
+              userMessage,
+            ] as ContextEvent['messages'];
+
+            const filtered = filterVisibleContextMessages({ messages, },);
+
+            expect(filtered,).toEqual([userMessage,],);
+          },
+        },),
+      ],
+    },),
     describe({
       name: handleSessionStartInject.name,
       children: [

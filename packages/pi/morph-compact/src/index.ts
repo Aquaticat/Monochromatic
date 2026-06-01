@@ -43,7 +43,10 @@ import {
   launchWithLargeContext,
   MAX_COMPRESSED_ARG_BYTES,
 } from './ipc-launch.ts';
-import { registerVisibleContextRenderer, } from './visible-context.ts';
+import {
+  filterVisibleContextMessages,
+  registerVisibleContextRenderer,
+} from './visible-context.ts';
 
 //region Session state
 
@@ -242,6 +245,17 @@ export default function morphCompact(
   );
 
   registerVisibleContextRenderer({ pi, },);
+
+  pi.on(
+    'context',
+    function hideVisibleContextMarkerFromAgent(event,) {
+      return {
+        messages: filterVisibleContextMessages({
+          messages: event.messages,
+        },),
+      };
+    },
+  );
 
   pi.on(
     'session_before_compact',

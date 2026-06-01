@@ -5,6 +5,7 @@
  */
 
 import type {
+  ContextEvent,
   ExtensionAPI,
   Theme,
 } from '@earendil-works/pi-coding-agent';
@@ -85,6 +86,16 @@ type VisibleContextMessage = {
    */
   readonly details: MorphContextMessageDetails;
 };
+
+/**
+ * Agent message array shape exposed by pi's `context` event.
+ */
+type ContextMessages = ContextEvent['messages'];
+
+/**
+ * Single agent message shape exposed by pi's `context` event.
+ */
+type ContextMessage = ContextMessages[number];
 
 //endregion Types
 
@@ -224,6 +235,53 @@ export function sendVisibleCompactContext(
   pi.sendMessage<MorphContextMessageDetails>(
     buildVisibleContextMessage({ text, },),
   );
+}
+
+/**
+ * Check whether a context message is Morph Compact's visible transcript marker.
+ *
+ * @param message - agent context message to inspect
+ *
+ * @returns whether message is a visible Morph Compact marker
+ *
+ * @example
+ * ```typescript
+ * isVisibleMorphContextMessage(message);
+ * ```
+ */
+function isVisibleMorphContextMessage(message: ContextMessage,): boolean {
+  return (message.role
+    === 'custom')
+    && (message.customType
+      === MORPH_CONTEXT_MESSAGE_TYPE);
+}
+
+/**
+ * Remove visible Morph Compact transcript markers from model context.
+ *
+ * The custom message exists only for the interactive transcript. The agent
+ * receives the real compacted context through the following user message, so
+ * forwarding this marker would duplicate metadata and leak UI copy to the model.
+ *
+ * @param messages - context messages about to be sent to the provider
+ *
+ * @returns context messages without visible Morph Compact UI markers
+ *
+ * @example
+ * ```typescript
+ * const messages = filterVisibleContextMessages({ messages: event.messages });
+ * ```
+ */
+export function filterVisibleContextMessages(
+  {
+    messages,
+  }: Readonly<{
+    readonly messages: readonly ContextMessage[];
+  }>,
+): ContextMessages {
+  return messages.filter(function keepNonVisibleMorphContextMessage(message,) {
+    return !isVisibleMorphContextMessage(message,);
+  },);
 }
 
 //endregion Message construction
