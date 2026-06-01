@@ -20,11 +20,11 @@ tokens 40% left (3h)
 Projected overflow appends the extrapolated end-of-window usage:
 
 ```text
-tokens 60% left →120% (4h)
+tokens 60% left →120% (40s)
 ```
 
-The `→120%` marker means the last two sampled provider responses imply the current burn rate
-will exceed available capacity before the reset time if it continues.
+The `→120%` marker means current used percentage, elapsed window time, and reset time imply that
+continued burn rate will exceed available capacity before the limiter replenishes.
 
 Multiple constrained limiters are joined with a centered dot:
 
@@ -48,11 +48,11 @@ It renders when either condition is true:
 - remaining capacity is 50% or lower
 - sampled burn rate projects above 100% before the reset time
 
-Projection needs two samples for the same header group.
-The first response records a baseline, and later responses compare usage growth over elapsed wall-clock time.
-This differs from the Claude Code statusline payload, which already provides `used_percentage` for fixed five-hour
-and seven-day windows.
-Pi has Anthropic headers instead, so the extension uses the reset timestamp and observed deltas.
+Projection mirrors the Claude Code statusline formatter: it derives elapsed time from a fixed window and reset time,
+then extrapolates current used percentage over the full window.
+Claude Code provides `used_percentage` for fixed five-hour and seven-day windows.
+Pi exposes Anthropic provider headers instead, and Anthropic token limiters are per-minute limits,
+so this extension applies the same projection to a 60 second token window.
 
 ## Colors
 

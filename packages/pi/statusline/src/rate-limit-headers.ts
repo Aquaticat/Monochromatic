@@ -6,6 +6,7 @@
 
 import {
   PERCENT_BASE,
+  RATE_LIMIT_WINDOW_SECONDS,
   type RateLimitHeaderFamily,
   type RateLimitSnapshot,
 } from './rate-limit-types.ts';
@@ -25,6 +26,7 @@ const RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
     limitHeader: 'anthropic-ratelimit-tokens-limit',
     remainingHeader: 'anthropic-ratelimit-tokens-remaining',
     resetHeader: 'anthropic-ratelimit-tokens-reset',
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
   },
   {
     key: 'input',
@@ -32,6 +34,7 @@ const RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
     limitHeader: 'anthropic-ratelimit-input-tokens-limit',
     remainingHeader: 'anthropic-ratelimit-input-tokens-remaining',
     resetHeader: 'anthropic-ratelimit-input-tokens-reset',
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
   },
   {
     key: 'output',
@@ -39,6 +42,7 @@ const RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
     limitHeader: 'anthropic-ratelimit-output-tokens-limit',
     remainingHeader: 'anthropic-ratelimit-output-tokens-remaining',
     resetHeader: 'anthropic-ratelimit-output-tokens-reset',
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
   },
   {
     key: 'unified',
@@ -46,6 +50,7 @@ const RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
     limitHeader: 'anthropic-ratelimit-unified-tokens-limit',
     remainingHeader: 'anthropic-ratelimit-unified-tokens-remaining',
     resetHeader: 'anthropic-ratelimit-unified-tokens-reset',
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
   },
   {
     key: 'priority-input',
@@ -53,6 +58,7 @@ const RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
     limitHeader: 'anthropic-priority-input-tokens-limit',
     remainingHeader: 'anthropic-priority-input-tokens-remaining',
     resetHeader: 'anthropic-priority-input-tokens-reset',
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
   },
   {
     key: 'priority-output',
@@ -60,6 +66,7 @@ const RATE_LIMIT_HEADER_FAMILIES: readonly RateLimitHeaderFamily[] = [
     limitHeader: 'anthropic-priority-output-tokens-limit',
     remainingHeader: 'anthropic-priority-output-tokens-remaining',
     resetHeader: 'anthropic-priority-output-tokens-reset',
+    windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
   },
 ];
 
@@ -327,6 +334,7 @@ function parseRateLimitSnapshot({
     limit,
     remaining,
     resetAtMs,
+    windowSeconds: family.windowSeconds,
     sampledAtMs: nowMs,
     usedPercent,
     remainingPercent,

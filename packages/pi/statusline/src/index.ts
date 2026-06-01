@@ -17,7 +17,6 @@ import {
 import { statuslineLogger, } from './log.ts';
 import {
   PLAIN_USAGE_WARNING_STYLE,
-  type RateLimitSnapshot,
   type UsageWarningStyle,
 } from './rate-limit-types.ts';
 import { formatUsageWarningStatus, } from './usage-warning.ts';
@@ -30,20 +29,6 @@ import { formatUsageWarningStatus, } from './usage-warning.ts';
 const STATUS_KEY = 'pi-statusline.usage';
 
 //endregion Constants
-
-//region Types
-
-/**
- * Mutable snapshot map surface used by state replacement.
- */
-type SnapshotState = Readonly<Pick<Map<string, RateLimitSnapshot>, 'clear' | 'set'>>;
-
-/**
- * Snapshot map surface needed when only clearing state.
- */
-type ClearableSnapshotState = Readonly<Pick<Map<string, RateLimitSnapshot>, 'clear'>>;
-
-//endregion Types
 
 //region UI helpers
 
@@ -110,9 +95,15 @@ function setUsageStatus({
     return;
 
   /**
+   * Whether a non-empty status should be shown.
+   */
+  const hasStatusText = statusText
+    .length
+    > 0;
+  /**
    * Next footer status value; `undefined` tells Pi to clear this key.
    */
-  const nextStatus = statusText.length > 0 ? statusText : undefined;
+  const nextStatus = hasStatusText ? statusText : undefined;
 
   ctx
     .ui
@@ -122,73 +113,33 @@ function setUsageStatus({
     );
 }
 
-//endregion UI helpers
-
-//region Snapshot state
-
 /**
- * Replaces mutable snapshot state with latest parsed samples.
- *
- * @param target - extension-owned mutable snapshot map
- *
- * @param source - latest parsed snapshot map
- *
- * @example
- * ```ts
- * replaceSnapshots({ target, source });
- * ```
- */
-function replaceSnapshots({
-  target,
-  source,
-}: Readonly<{
-  target: SnapshotState;
-  source: ReadonlyMap<string, RateLimitSnapshot>;
-}>,): void {
-  target.clear();
-  source.forEach(function rememberSnapshot(
-    snapshot,
-    key,
-  ): void {
-    target.set(
-      key,
-      snapshot,
-    );
-  },);
-}
-
-/**
- * Clears snapshot state and footer status.
+ * Clears footer status.
  *
  * @param ctx - Pi extension context
- *
- * @param snapshots - extension-owned mutable snapshot map
  *
  * @param log - tagged logger for lifecycle notes
  *
  * @example
  * ```ts
- * clearState({ ctx, snapshots, log });
+ * clearStatus({ ctx, log });
  * ```
  */
-function clearState({
+function clearStatus({
   ctx,
-  snapshots,
   log,
 }: Readonly<{
   ctx: ExtensionContext;
-  snapshots: ClearableSnapshotState;
   log: Logger;
 }>,): void {
-  snapshots.clear();
   setUsageStatus({
     ctx,
     statusText: '',
   },);
-  log.debug('cleared usage warning state',);
+  log.debug('cleared usage warning status',);
 }
 
-//endregion Snapshot state
+//endregion UI helpers
 
 //region Extension entry point
 
@@ -208,10 +159,6 @@ function clearState({
  */
 export default function statusline(pi: ExtensionAPI,): void {
   /**
-   * Latest snapshots keyed by limiter family for projection against the next response.
-   */
-  const snapshots = new Map<string, RateLimitSnapshot>();
-  /**
    * Entry-point logger tagged by function name.
    */
   const log = tagged({
@@ -225,9 +172,8 @@ export default function statusline(pi: ExtensionAPI,): void {
       _event,
       ctx,
     ) {
-      clearState({
+      clearStatus({
         ctx,
-        snapshots,
         log,
       },);
     },
@@ -239,9 +185,8 @@ export default function statusline(pi: ExtensionAPI,): void {
       _event,
       ctx,
     ) {
-      clearState({
+      clearStatus({
         ctx,
-        snapshots,
         log,
       },);
     },
@@ -260,19 +205,14 @@ export default function statusline(pi: ExtensionAPI,): void {
         ? styleFromContext(ctx,)
         : PLAIN_USAGE_WARNING_STYLE;
       /**
-       * Formatted status plus latest header samples.
+       * Formatted status from current provider response headers.
        */
       const result = formatUsageWarningStatus({
         headers: event.headers,
-        previousSnapshots: snapshots,
         nowMs: Date.now(),
         style,
       },);
 
-      replaceSnapshots({
-        target: snapshots,
-        source: result.snapshots,
-      },);
       setUsageStatus({
         ctx,
         statusText: result.statusText,

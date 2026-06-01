@@ -6,6 +6,7 @@ import {
 import { parseRateLimitSnapshots, } from './rate-limit-headers.ts';
 import {
   PLAIN_USAGE_WARNING_STYLE,
+  RATE_LIMIT_WINDOW_SECONDS,
   type RateLimitSnapshot,
   type UsageWarningStyle,
 } from './rate-limit-types.ts';
@@ -56,6 +57,20 @@ function inputHeaders({
     'anthropic-ratelimit-input-tokens-remaining': String(remaining,),
     'anthropic-ratelimit-input-tokens-reset': resetAt(resetOffsetMs,),
   };
+}
+
+function firstSnapshot(headers: Readonly<Record<string, string>>,): RateLimitSnapshot {
+  /**
+   * First parsed snapshot from supplied header fixture.
+   */
+  const [snapshot,] = parseRateLimitSnapshots({
+    headers,
+    nowMs: NOW_MS,
+  },);
+  if (snapshot === undefined)
+    throw new Error('Expected one parsed snapshot',);
+
+  return snapshot;
 }
 
 const ANGLE_STYLE: UsageWarningStyle = {
@@ -111,6 +126,7 @@ await describe({
             expect(snapshots.length,).toBe(1,);
             expect(snapshots[0]?.remaining,).toBe(100,);
             expect(snapshots[0]?.remainingPercent,).toBe(100,);
+            expect(snapshots[0]?.windowSeconds,).toBe(RATE_LIMIT_WINDOW_SECONDS,);
           },
         },),
         it({
@@ -133,40 +149,29 @@ await describe({
       name: projectUsagePercent.name,
       children: [
         it({
-          name: 'returns zero without stable increasing samples',
+          name: 'returns zero without stable elapsed window data',
           fn: async function testProjectionSuppression() {
-            const current = parseRateLimitSnapshots({
-              headers: tokenHeaders({ limit: 100, remaining: 96, resetOffsetMs: HOUR_MS, },),
-              nowMs: NOW_MS,
-            },)[0] as RateLimitSnapshot;
-            const previous = {
-              ...current,
-              sampledAtMs: NOW_MS - HOUR_MS,
-              usedPercent: 1,
-              remainingPercent: 99,
-            } satisfies RateLimitSnapshot;
+            const lowUsage = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 96, resetOffsetMs: 30 * SECOND_MS, },),
+            );
+            const futureReset = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: 70 * SECOND_MS, },),
+            );
 
-            expect(projectUsagePercent({ snapshot: current, nowMs: NOW_MS, },),)
+            expect(projectUsagePercent({ snapshot: lowUsage, nowMs: NOW_MS, },),)
               .toBe(0,);
-            expect(projectUsagePercent({ snapshot: current, previousSnapshot: previous, nowMs: NOW_MS, },),)
+            expect(projectUsagePercent({ snapshot: futureReset, nowMs: NOW_MS, },),)
               .toBe(0,);
           },
         },),
         it({
-          name: 'projects usage from sampled burn rate',
+          name: 'projects usage from current used percentage and reset time',
           fn: async function testProjectedUsage() {
-            const current = parseRateLimitSnapshots({
-              headers: tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 4 * HOUR_MS, },),
-              nowMs: NOW_MS,
-            },)[0] as RateLimitSnapshot;
-            const previous = {
-              ...current,
-              sampledAtMs: NOW_MS - HOUR_MS,
-              usedPercent: 20,
-              remainingPercent: 80,
-            } satisfies RateLimitSnapshot;
+            const snapshot = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
+            );
 
-            expect(projectUsagePercent({ snapshot: current, previousSnapshot: previous, nowMs: NOW_MS, },),)
+            expect(projectUsagePercent({ snapshot, nowMs: NOW_MS, },),)
               .toBe(120,);
           },
         },),
@@ -178,10 +183,9 @@ await describe({
         it({
           name: 'hides comfortable capacity without projected overflow',
           fn: async function testComfortableHidden() {
-            const snapshot = parseRateLimitSnapshots({
-              headers: tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: HOUR_MS, },),
-              nowMs: NOW_MS,
-            },)[0] as RateLimitSnapshot;
+            const snapshot = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: HOUR_MS, },),
+            );
 
             expect(formatUsageWarningSegment({
               snapshot,
@@ -193,14 +197,12 @@ await describe({
         it({
           name: 'formats low remaining capacity with severity colors',
           fn: async function testRemainingWarnings() {
-            const caution = parseRateLimitSnapshots({
-              headers: tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: HOUR_MS, },),
-              nowMs: NOW_MS,
-            },)[0] as RateLimitSnapshot;
-            const critical = parseRateLimitSnapshots({
-              headers: tokenHeaders({ limit: 100, remaining: 8, resetOffsetMs: HOUR_MS, },),
-              nowMs: NOW_MS,
-            },)[0] as RateLimitSnapshot;
+            const caution = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 20, resetOffsetMs: HOUR_MS, },),
+            );
+            const critical = firstSnapshot(
+              tokenHeaders({ limit: 100, remaining: 8, resetOffsetMs: HOUR_MS, },),
+            );
 
             expect(formatUsageWarningSegment({
               snapshot: caution,
@@ -222,21 +224,13 @@ await describe({
         it({
           name: 'renders projected overflow even above remaining threshold',
           fn: async function testProjectedOverflowStatus() {
-            const previous = formatUsageWarningStatus({
-              headers: tokenHeaders({ limit: 100, remaining: 80, resetOffsetMs: 5 * HOUR_MS, },),
-              previousSnapshots: new Map(),
-              nowMs: NOW_MS - HOUR_MS,
-              style: PLAIN_USAGE_WARNING_STYLE,
-            },).snapshots;
             const current = formatUsageWarningStatus({
-              headers: tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 4 * HOUR_MS, },),
-              previousSnapshots: previous,
+              headers: tokenHeaders({ limit: 100, remaining: 60, resetOffsetMs: 40 * SECOND_MS, },),
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('tokens 60% left →120% (4h)',);
-            expect(current.snapshots.size,).toBe(1,);
+            expect(current.statusText,).toBe('tokens 60% left →120% (40s)',);
           },
         },),
         it({
@@ -245,14 +239,13 @@ await describe({
             const current = formatUsageWarningStatus({
               headers: {
                 ...tokenHeaders({ limit: 100, remaining: 40, resetOffsetMs: 3 * HOUR_MS, },),
-                ...inputHeaders({ limit: 100, remaining: 20, resetOffsetMs: 45 * SECOND_MS, },),
+                ...inputHeaders({ limit: 100, remaining: 20, resetOffsetMs: MINUTE_MS, },),
               },
-              previousSnapshots: new Map(),
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
-            expect(current.statusText,).toBe('tokens 40% left (3h) · input 20% left (45s)',);
+            expect(current.statusText,).toBe('tokens 40% left (3h) · input 20% left (1m)',);
           },
         },),
         it({
@@ -260,13 +253,11 @@ await describe({
           fn: async function testEmptyStatus() {
             const current = formatUsageWarningStatus({
               headers: {},
-              previousSnapshots: new Map(),
               nowMs: NOW_MS,
               style: PLAIN_USAGE_WARNING_STYLE,
             },);
 
             expect(current.statusText,).toBe('',);
-            expect(current.snapshots.size,).toBe(0,);
           },
         },),
       ],

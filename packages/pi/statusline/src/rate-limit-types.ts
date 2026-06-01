@@ -22,6 +22,14 @@ const MILLISECONDS_PER_SECOND = 1_000;
 const SECONDS_PER_MINUTE = 60;
 
 /**
+ * Anthropic token rate-limit header window in seconds.
+ *
+ * Anthropic's Messages API token limits are per-minute ITPM and OTPM limits;
+ * the header reset timestamp marks when that token bucket fully replenishes.
+ */
+const RATE_LIMIT_WINDOW_SECONDS: number = SECONDS_PER_MINUTE;
+
+/**
  * Seconds in one hour.
  */
 const SECONDS_PER_HOUR = 3_600;
@@ -94,6 +102,10 @@ type RateLimitHeaderFamily = {
    * Header carrying RFC 3339 reset timestamp.
    */
   readonly resetHeader: string;
+  /**
+   * Fixed limiter window duration in seconds.
+   */
+  readonly windowSeconds: number;
 };
 
 /**
@@ -120,6 +132,10 @@ type RateLimitSnapshot = {
    * Reset timestamp in Unix epoch milliseconds.
    */
   readonly resetAtMs: number;
+  /**
+   * Fixed limiter window duration in seconds.
+   */
+  readonly windowSeconds: number;
   /**
    * Wall-clock sample time in Unix epoch milliseconds.
    */
@@ -160,10 +176,6 @@ type UsageWarningStatus = {
    * Footer status text. Empty string means the status should be cleared.
    */
   readonly statusText: string;
-  /**
-   * Latest valid snapshots keyed by limiter family.
-   */
-  readonly snapshots: ReadonlyMap<string, RateLimitSnapshot>;
 };
 
 //endregion Types
@@ -207,6 +219,7 @@ export {
   PLAIN_USAGE_WARNING_STYLE,
   PROJECTED_OVERFLOW_THRESHOLD,
   RATE_LIMIT_REMAINING_THRESHOLD,
+  RATE_LIMIT_WINDOW_SECONDS,
   SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,

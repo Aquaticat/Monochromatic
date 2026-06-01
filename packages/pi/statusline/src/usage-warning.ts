@@ -83,61 +83,47 @@ function formatRelativeTime({
 //region Projection
 
 /**
- * Projects usage at reset time from two sampled provider responses.
+ * Projects usage at fixed window end from current used percentage and reset time.
  *
- * Claude Code receives fixed-window `used_percentage` directly. Pi receives
- * Anthropic response headers instead, so this function estimates burn rate from
- * the previous and current samples for the same limiter.
+ * This mirrors the Claude Code statusline `formatRateLimit` projection:
+ * recover elapsed window time as `windowSeconds - secondsUntilReset`, then
+ * extrapolate current used percentage over the full window. Anthropic token
+ * response headers are per-minute limiters, so each parsed snapshot carries a
+ * 60 second window.
  *
  * @param snapshot - current limiter sample
  *
- * @param previousSnapshot - previous limiter sample with same key
- *
  * @param nowMs - current timestamp in epoch milliseconds
  *
- * @returns projected used percentage at reset, or zero when projection is not stable
+ * @returns projected used percentage at window end, or zero when projection is not stable
  *
  * @example
  * ```ts
- * projectUsagePercent({ snapshot, previousSnapshot, nowMs: Date.now() });
+ * projectUsagePercent({ snapshot, nowMs: Date.now() });
  * ```
  */
 function projectUsagePercent({
   snapshot,
-  previousSnapshot,
   nowMs,
 }: Readonly<{
   snapshot: RateLimitSnapshot;
-  previousSnapshot?: RateLimitSnapshot;
   nowMs: number;
 }>,): number {
-  if (previousSnapshot === undefined)
-    return 0;
-
   /**
-   * Elapsed seconds between the previous and current samples.
-   */
-  const elapsedSeconds = (nowMs - previousSnapshot.sampledAtMs) / MILLISECONDS_PER_SECOND;
-  /**
-   * Increase in used percentage between samples.
-   */
-  const usedDelta = snapshot.usedPercent - previousSnapshot.usedPercent;
-  /**
-   * Seconds remaining before the provider reports full reset.
+   * Seconds until provider reports the limiter as fully replenished.
    */
   const secondsUntilReset = (snapshot.resetAtMs - nowMs) / MILLISECONDS_PER_SECOND;
+  /**
+   * Elapsed seconds recovered from fixed limiter window and reset timestamp.
+   */
+  const elapsedSeconds = snapshot.windowSeconds - secondsUntilReset;
 
   if (elapsedSeconds < MIN_PROJECTION_ELAPSED_SECONDS)
-    return 0;
-  if (usedDelta <= 0)
-    return 0;
-  if (secondsUntilReset <= 0)
     return 0;
   if (snapshot.usedPercent < MIN_USAGE_PERCENT_FOR_PROJECTION)
     return 0;
 
-  return snapshot.usedPercent
-    + ((usedDelta / elapsedSeconds) * secondsUntilReset);
+  return (snapshot.usedPercent / elapsedSeconds) * snapshot.windowSeconds;
 }
 
 //endregion Projection
@@ -207,8 +193,6 @@ function formatProjectionMarker({
  *
  * @param snapshot - current limiter sample
  *
- * @param previousSnapshot - previous limiter sample with same key
- *
  * @param nowMs - current timestamp in epoch milliseconds
  *
  * @param style - theme style hooks
@@ -217,33 +201,25 @@ function formatProjectionMarker({
  *
  * @example
  * ```ts
- * formatUsageWarningSegment({ snapshot, previousSnapshot, nowMs: Date.now(), style });
+ * formatUsageWarningSegment({ snapshot, nowMs: Date.now(), style });
  * ```
  */
 function formatUsageWarningSegment({
   snapshot,
-  previousSnapshot,
   nowMs,
   style,
 }: Readonly<{
   snapshot: RateLimitSnapshot;
-  previousSnapshot?: RateLimitSnapshot;
   nowMs: number;
   style: UsageWarningStyle;
 }>,): string {
   /**
-   * Projected used percentage at reset time.
+   * Projected used percentage at fixed window end.
    */
-  const projectedPercent = previousSnapshot === undefined
-    ? projectUsagePercent({
-      snapshot,
-      nowMs,
-    },)
-    : projectUsagePercent({
-      snapshot,
-      previousSnapshot,
-      nowMs,
-    },);
+  const projectedPercent = projectUsagePercent({
+    snapshot,
+    nowMs,
+  },);
   /**
    * Whether projection exceeds available capacity.
    */
@@ -296,36 +272,6 @@ function isNonEmptySegment(segment: string,): boolean {
   return segment.length > 0;
 }
 
-/**
- * Converts snapshots into a map keyed by limiter family.
- *
- * @param snapshots - parsed limiter snapshots
- *
- * @returns map keyed by snapshot key
- *
- * @example
- * ```ts
- * snapshotsToMap(parseRateLimitSnapshots({ headers, nowMs }));
- * ```
- */
-function snapshotsToMap(
-  snapshots: readonly RateLimitSnapshot[],
-): ReadonlyMap<string, RateLimitSnapshot> {
-  /**
-   * Mutable map populated from latest valid snapshots.
-   */
-  const map = new Map<string, RateLimitSnapshot>();
-
-  snapshots.forEach(function addSnapshot(snapshot,): void {
-    map.set(
-      snapshot.key,
-      snapshot,
-    );
-  },);
-
-  return map;
-}
-
 //endregion Segment formatting
 
 //region Public formatter
@@ -335,27 +281,23 @@ function snapshotsToMap(
  *
  * @param headers - provider response headers from Pi
  *
- * @param previousSnapshots - prior valid samples keyed by limiter family
- *
  * @param nowMs - current timestamp in epoch milliseconds
  *
  * @param style - theme style hooks
  *
- * @returns status text plus latest snapshots for next projection pass
+ * @returns status text for visible warnings
  *
  * @example
  * ```ts
- * const result = formatUsageWarningStatus({ headers, previousSnapshots, nowMs: Date.now(), style });
+ * const result = formatUsageWarningStatus({ headers, nowMs: Date.now(), style });
  * ```
  */
 function formatUsageWarningStatus({
   headers,
-  previousSnapshots,
   nowMs,
   style,
 }: Readonly<{
   headers: Readonly<Record<string, string>>;
-  previousSnapshots: ReadonlyMap<string, RateLimitSnapshot>;
   nowMs: number;
   style: UsageWarningStyle;
 }>,): UsageWarningStatus {
@@ -371,21 +313,8 @@ function formatUsageWarningStatus({
    */
   const segments = snapshots
     .map(function formatSnapshot(snapshot,): string {
-      /**
-       * Prior sample for this limiter, if one was captured on an earlier response.
-       */
-      const previousSnapshot = previousSnapshots.get(snapshot.key,);
-      if (previousSnapshot === undefined) {
-        return formatUsageWarningSegment({
-          snapshot,
-          nowMs,
-          style,
-        },);
-      }
-
       return formatUsageWarningSegment({
         snapshot,
-        previousSnapshot,
         nowMs,
         style,
       },);
@@ -396,7 +325,6 @@ function formatUsageWarningStatus({
 
   return {
     statusText: segments.join(' · ',),
-    snapshots: snapshotsToMap(snapshots,),
   };
 }
 
