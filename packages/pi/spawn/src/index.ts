@@ -1,0 +1,405 @@
+/**
+ * Pi extension that coordinates spawn-pi result forwarding.
+ *
+ * @module
+ */
+
+import type {
+  AgentEndEvent,
+  ExtensionAPI,
+  ExtensionContext,
+} from '@earendil-works/pi-coding-agent';
+import {
+  SPAWN_EXTENSION_PATH_ENV,
+  SPAWN_ID_ENV,
+  SPAWN_PI_CUSTOM_TYPE,
+} from './constants.ts';
+import { extractLastAssistantText, } from './message-extract.ts';
+import {
+  autoSetupCli,
+  NO_CLI_SETUP_WARNING,
+} from './setup-cli.ts';
+import {
+  checkCompletedChildren,
+  claimSpawn,
+  completeSpawn,
+  NOTHING_TO_REPORT,
+  writePidMapping,
+} from './state.ts';
+
+//region Module constants
+
+/**
+ * Current extension module path, passed to child Pi so result delivery loads during local development.
+ *
+ * @example
+ * ```typescript
+ * process.env.PI_SPAWN_EXTENSION_PATH = EXTENSION_PATH;
+ * ```
+ */
+const EXTENSION_PATH = import.meta.filename;
+
+/**
+ * Poll interval for completed child spawn state files.
+ *
+ * @example
+ * ```typescript
+ * setInterval(check, SPAWN_MONITOR_INTERVAL_MS);
+ * ```
+ */
+const SPAWN_MONITOR_INTERVAL_MS = 1_000;
+
+/**
+ * Active completed-child monitors keyed by Pi API instance.
+ *
+ * @example
+ * ```typescript
+ * monitorTimers.set(pi, setInterval(check, 1000));
+ * ```
+ */
+const monitorTimers = new WeakMap<ExtensionAPI, ReturnType<typeof setInterval>>();
+
+//endregion Module constants
+
+//region Extension entry point
+
+/**
+ * Spawn-pi extension entry point.
+ *
+ * Registers session identity, child completion reporting, and parent result delivery.
+ *
+ * @param pi - Pi extension API.
+ *
+ * @example
+ * ```json
+ * { "packages": ["./packages/pi/spawn"] }
+ * ```
+ */
+export default function spawnPi(pi: ExtensionAPI,): void {
+  pi.on(
+    'session_start',
+    function handleSessionStart(
+      _event,
+      ctx,
+    ): void {
+      registerSession({
+        ctx,
+        extensionPath: EXTENSION_PATH,
+      },);
+      startCompletedChildMonitor({
+        pi,
+        ctx,
+      },);
+    },
+  );
+
+  pi.on(
+    'session_shutdown',
+    function handleSessionShutdown(): void {
+      stopCompletedChildMonitor({ pi, },);
+    },
+  );
+
+  pi.on(
+    'agent_end',
+    function handleAgentEnd(
+      event,
+      ctx,
+    ): void {
+      reportChildCompletion({
+        event,
+        ctx,
+      },);
+    },
+  );
+}
+
+//endregion Extension entry point
+
+//region Session registration
+
+/**
+ * Registers current Pi process as spawn-pi parent candidate and claims child spawn when applicable.
+ *
+ * @param ctx - current Pi extension context.
+ *
+ * @param extensionPath - extension module path to propagate to child Pi process.
+ *
+ * @example
+ * ```typescript
+ * registerSession({ ctx, extensionPath: '/pkg/dist/final/node/index.mjs' });
+ * ```
+ */
+function registerSession(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionContext is an external mutable interface; spawn-pi only reads it.
+  {
+    ctx,
+    extensionPath,
+  }: Readonly<{
+    readonly ctx: Readonly<ExtensionContext>;
+    readonly extensionPath: string;
+  }>,
+): void {
+  process.env[SPAWN_EXTENSION_PATH_ENV] = extensionPath;
+
+  /**
+   * Current Pi session identifier.
+   */
+  const sessionId = ctx
+    .sessionManager
+    .getSessionId();
+  /**
+   * Current Pi session file path, empty for in-memory sessions.
+   */
+  const sessionFile = ctx
+    .sessionManager
+    .getSessionFile()
+    ?? '';
+
+  writePidMapping({
+    pid: process.pid,
+    mapping: {
+      sessionId,
+      sessionFile,
+      cwd: ctx.cwd,
+      extensionPath,
+    },
+  },);
+
+  /**
+   * Spawn identifier inherited by child Pi process.
+   */
+  const spawnId = process.env[SPAWN_ID_ENV];
+  if (spawnId !== undefined) {
+    claimSpawn({
+      spawnId,
+      sessionId,
+      sessionFile,
+    },);
+  }
+
+  if (!ctx.hasUI)
+    return;
+
+  /**
+   * User-visible warning when CLI auto setup cannot fully complete.
+   */
+  const cliWarning = autoSetupCli({ extensionPath, },);
+  if (cliWarning !== NO_CLI_SETUP_WARNING) {
+    ctx
+      .ui
+      .notify(
+        cliWarning,
+        'warning',
+      );
+  }
+}
+
+//endregion Session registration
+
+//region Child reporting
+
+/**
+ * Reports first completed child Pi agent loop into spawn state.
+ *
+ * @param event - Pi agent-end event containing generated messages.
+ *
+ * @param ctx - current child Pi extension context.
+ *
+ * @example
+ * ```typescript
+ * reportChildCompletion({ event, ctx });
+ * ```
+ */
+function reportChildCompletion(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi AgentEndEvent and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
+  {
+    event,
+    ctx,
+  }: Readonly<{
+    readonly event: Readonly<AgentEndEvent>;
+    readonly ctx: Readonly<ExtensionContext>;
+  }>,
+): void {
+  /**
+   * Spawn identifier inherited by child Pi process.
+   */
+  const spawnId = process.env[SPAWN_ID_ENV];
+  if (spawnId === undefined)
+    return;
+
+  /**
+   * Pi session identifier owning completed child state.
+   */
+  const sessionId = ctx
+    .sessionManager
+    .getSessionId();
+
+  completeSpawn({
+    spawnId,
+    sessionId,
+    lastMessage: extractLastAssistantText(event.messages,),
+  },);
+}
+
+//endregion Child reporting
+
+//region Parent delivery
+
+/**
+ * Timer handle with optional Node-style `unref` method.
+ *
+ * @example
+ * ```typescript
+ * const timer: UnrefableTimer = setInterval(check, 1000);
+ * ```
+ */
+type UnrefableTimer = ReturnType<typeof setInterval> & {
+  /**
+   * Allows interval not to keep process alive when runtime supports it.
+   */
+  readonly unref?: () => void;
+};
+
+/**
+ * Starts or replaces completed-child monitor for a Pi session.
+ *
+ * @param pi - Pi extension API used for message injection.
+ *
+ * @param ctx - Pi extension context for current session.
+ *
+ * @example
+ * ```typescript
+ * startCompletedChildMonitor({ pi, ctx });
+ * ```
+ */
+function startCompletedChildMonitor(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionAPI and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
+  {
+    pi,
+    ctx,
+  }: Readonly<{
+    readonly pi: Readonly<ExtensionAPI>;
+    readonly ctx: Readonly<ExtensionContext>;
+  }>,
+): void {
+  stopCompletedChildMonitor({ pi, },);
+
+  deliverCompletedChildren({
+    pi,
+    ctx,
+  },);
+
+  /**
+   * Timer that checks for child results while parent Pi remains open.
+   */
+  const timer: UnrefableTimer = setInterval(
+    function pollCompletedChildren(): void {
+      deliverCompletedChildren({
+        pi,
+        ctx,
+      },);
+    },
+    SPAWN_MONITOR_INTERVAL_MS,
+  );
+  timer.unref?.();
+  monitorTimers.set(
+    pi,
+    timer,
+  );
+}
+
+/**
+ * Stops completed-child monitor for a Pi API instance.
+ *
+ * @param pi - Pi extension API whose monitor should stop.
+ *
+ * @example
+ * ```typescript
+ * stopCompletedChildMonitor({ pi });
+ * ```
+ */
+function stopCompletedChildMonitor(
+  {
+    pi,
+  }: {
+    readonly pi: ExtensionAPI;
+  },
+): void {
+  /**
+   * Existing timer for this Pi API instance.
+   */
+  const timer = monitorTimers.get(pi,);
+  if (timer === undefined)
+    return;
+
+  clearInterval(timer,);
+  monitorTimers.delete(pi,);
+}
+
+/**
+ * Consumes completed child results and injects them through Pi's custom-message API.
+ *
+ * @param pi - Pi extension API used for `sendMessage`.
+ *
+ * @param ctx - current parent Pi extension context.
+ *
+ * @returns whether a completed child result was delivered.
+ *
+ * @example
+ * ```typescript
+ * deliverCompletedChildren({ pi, ctx });
+ * ```
+ */
+function deliverCompletedChildren(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Pi ExtensionAPI and ExtensionContext are external mutable interfaces; spawn-pi only reads them.
+  {
+    pi,
+    ctx,
+  }: Readonly<{
+    readonly pi: Readonly<ExtensionAPI>;
+    readonly ctx: Readonly<ExtensionContext>;
+  }>,
+): boolean {
+  /**
+   * Parent session identifier whose children should be delivered.
+   */
+  const parentSessionId = ctx
+    .sessionManager
+    .getSessionId();
+
+  /**
+   * Completed child result text consumed atomically from state directory.
+   */
+  const context = checkCompletedChildren({
+    parentSessionId,
+    consume: true,
+  },);
+
+  if (context === NOTHING_TO_REPORT)
+    return false;
+
+  pi.sendMessage(
+    {
+      customType: SPAWN_PI_CUSTOM_TYPE,
+      content: context,
+      display: true,
+    },
+    {
+      deliverAs: 'steer',
+      triggerTurn: true,
+    },
+  );
+
+  return true;
+}
+
+//endregion Parent delivery
+
+export {
+  deliverCompletedChildren,
+  registerSession,
+  reportChildCompletion,
+  startCompletedChildMonitor,
+  stopCompletedChildMonitor,
+};
