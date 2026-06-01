@@ -87,6 +87,24 @@ const IDLE_SLEEP_MS: u64 = 5;
 // TS map:   `const POSITION_EMIT_INTERVAL_SECS = 0.1;`
 const POSITION_EMIT_INTERVAL_SECS: f64 = 0.1;
 
+// What:     `const HEADROOM_GAIN: f32 = 0.891_250_9;`. A fixed linear gain applied
+//           to EVERY output sample. The number is 10^(-1/20), i.e. -1 decibel below
+//           full scale (`10f32.powf` is not a `const fn`, so the precomputed value
+//           is written out; the `_` digit separators are cosmetic like `1_000`).
+//           `f32` (siblings: `f64`) because the PCM samples are `f32`; `f64` would
+//           force a cast on every multiply for no audible gain.
+// Why:      Leaves ~1 dB of room below full scale so INTER-SAMPLE (true) peaks,
+//           which a DAC reconstructs ABOVE the stored sample values, do not overflow
+//           the converter. -1 dBTP is the EBU R128 / ATSC A/85 true-peak ceiling.
+//           Always on (no toggle), per the feature request.
+// TS map:   `const HEADROOM_GAIN = 0.8912509; // 10 ** (-1 / 20), -1 dBFS`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HEADROOM_GAIN = 10 ** (-1 / 20); // -1 dBFS
+// ```
+const HEADROOM_GAIN: f32 = 0.891_250_9;
+
 // What:     `pub struct Engine { ... }`. The handle the UI keeps. It is `Send`
 //           (only a channel sender + a thread handle), unlike the controller's
 //           internal state.
@@ -1104,13 +1122,17 @@ impl Controller {
         // Why:      Avoid borrowing `self` inside the loop below.
         // TS map:   `const vol = this.volume;`
         let vol = self.volume;
-        // What:     `for sample in chunk.iter_mut() { *sample *= vol; }`. Apply the
-        //           volume gain in place. `iter_mut` yields `&mut f32`; `*sample`
-        //           writes through the reference.
-        // Why:      PCM-gain volume (the chosen approach).
-        // TS map:   `for (let i = 0; i < chunk.length; i++) chunk[i] *= vol;`
+        // What:     `for sample in chunk.iter_mut() { *sample = process_sample(*sample, vol); }`.
+        //           Run every sample through the output stage in place. `iter_mut`
+        //           yields `&mut f32`; `*sample` on the right READS the current
+        //           value, `*sample =` WRITES the processed one back through the
+        //           reference.
+        // Why:      `process_sample` applies the volume gain, the always-on -1 dB
+        //           headroom, and the hard clamp in one place, so the clipping
+        //           protection cannot be bypassed and is unit-testable.
+        // TS map:   `for (let i = 0; i < chunk.length; i++) chunk[i] = processSample(chunk[i], vol);`
         for sample in chunk.iter_mut() {
-            *sample *= vol;
+            *sample = process_sample(*sample, vol);
         }
 
         // What:     `let pushed = if let Some(producer) = self.producer.as_mut() { producer.push_slice(&chunk) } else { 0 };`.
@@ -1212,6 +1234,39 @@ impl Controller {
             self.emit(Update::Position(secs));
         }
     }
+}
+
+// What:     `fn process_sample(sample: f32, volume: f32) -> f32`. The per-sample
+//           output stage: apply the user volume, then the always-on headroom, then
+//           hard-clamp into the valid PCM range. A plain free function (not a method)
+//           so it is unit-testable without an audio device.
+// Why:      One spot defines exactly what reaches the ring buffer, so clipping
+//           protection cannot be skipped and its behaviour can be tested directly.
+// TS map:   `function processSample(sample: number, volume: number): number`
+fn process_sample(sample: f32, volume: f32) -> f32 {
+    // What:     `let scaled = sample * volume * HEADROOM_GAIN;`. Plain float multiply
+    //           (TS-identical): raw sample times the user gain (0.0..=1.0) times the
+    //           fixed -1 dB headroom factor.
+    // Why:      Attenuate first, leaving room for inter-sample peaks, before the clamp.
+    // TS map:   `const scaled = sample * volume * HEADROOM_GAIN;`
+    let scaled = sample * volume * HEADROOM_GAIN;
+    // What:     `scaled.clamp(-1.0, 1.0)`. `f32::clamp` returns `-1.0` when `scaled`
+    //           is below it, `1.0` when above, otherwise `scaled` unchanged. No
+    //           trailing `;`, so this tail expression is the return value. The bounds
+    //           `-1.0`/`1.0` are the valid range PipeWire's f32 PCM expects.
+    // Why:      Final guard: even after headroom a decoder can emit a sample past full
+    //           scale (lossy codecs routinely overshoot ±1.0), so clamping guarantees
+    //           nothing out of range reaches the device.
+    // TS map:   `return Math.max(-1, Math.min(1, scaled));`
+    // Gotcha:   `clamp` PANICS only if a BOUND is NaN; ours are constants, so it never
+    //           panics. A NaN `scaled` would pass through as NaN, but decoders do not
+    //           emit NaN, so that is not guarded here.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return Math.max(-1, Math.min(1, scaled));
+    // ```
+    scaled.clamp(-1.0, 1.0)
 }
 
 // What:     `fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf>`. Turn the
@@ -1567,5 +1622,63 @@ mod tests {
         // Why:      Leave no fixture behind.
         // TS map:   `fs.rmSync(root, { recursive: true, force: true });`
         let _ = fs::remove_dir_all(&root);
+    }
+
+    // What:     `fn approx_eq(a: f32, b: f32) -> bool` test helper: true when two
+    //           floats sit within a tiny tolerance of each other.
+    // Why:      Float math is not bit-exact, and a direct `==` on floats is both
+    //           fragile and flagged by clippy; compare distances instead.
+    // TS map:   `function approxEq(a: number, b: number): boolean`
+    fn approx_eq(a: f32, b: f32) -> bool {
+        // What:     `const TOLERANCE: f32 = 1e-6;`. Largest allowed difference;
+        //           `1e-6` is scientific notation for 0.000001.
+        // Why:      Far below any audible difference, loose enough for f32 rounding.
+        // TS map:   `const TOLERANCE = 1e-6;`
+        const TOLERANCE: f32 = 1e-6;
+        // What:     `(a - b).abs() < TOLERANCE`. Subtract, take the magnitude with
+        //           `.abs()`, then compare with `<`. Tail expression -> return.
+        // Why:      Distance-based equality avoids the float `==` trap.
+        // TS map:   `return Math.abs(a - b) < TOLERANCE;`
+        (a - b).abs() < TOLERANCE
+    }
+
+    // What:     `#[test]` marks the next function as a test case.
+    // Why:      `cargo test` discovers and runs it.
+    // TS map:   `test("process_sample ...", () => { ... })`.
+    #[test]
+    fn process_sample_applies_headroom_then_clamps() {
+        // What:     `assert!(approx_eq(process_sample(0.0, 1.0), 0.0));`. `assert!(cond)`
+        //           panics (failing the test) when `cond` is false.
+        // Why:      Silence in must stay silence out, whatever the gain.
+        // TS map:   `expect(approxEq(processSample(0, 1), 0)).toBe(true);`
+        assert!(approx_eq(process_sample(0.0, 1.0), 0.0));
+
+        // What:     full-scale input at full volume comes out attenuated by exactly
+        //           the headroom factor, NOT clamped (the result is below 1.0).
+        // Why:      Prove the always-on headroom is applied even when no clipping
+        //           would otherwise occur.
+        // TS map:   `expect(approxEq(processSample(1, 1), HEADROOM_GAIN)).toBe(true);`
+        assert!(approx_eq(process_sample(1.0, 1.0), HEADROOM_GAIN));
+        // What:     the negative full-scale input mirrors the positive one.
+        // Why:      Headroom is symmetric about zero.
+        // TS map:   `expect(approxEq(processSample(-1, 1), -HEADROOM_GAIN)).toBe(true);`
+        assert!(approx_eq(process_sample(-1.0, 1.0), -HEADROOM_GAIN));
+
+        // What:     an OVERSHOOTING sample (1.5) is scaled by headroom to ~1.337,
+        //           which still exceeds 1.0, so the clamp pins it to exactly 1.0.
+        // Why:      Prove the clamp catches decoder overshoot the headroom alone
+        //           cannot absorb (lossy codecs routinely exceed ±1.0).
+        // TS map:   `expect(approxEq(processSample(1.5, 1), 1)).toBe(true);`
+        assert!(approx_eq(process_sample(1.5, 1.0), 1.0));
+        // What:     the negative overshoot is pinned to exactly -1.0.
+        // Why:      Clamp is symmetric.
+        // TS map:   `expect(approxEq(processSample(-2, 1), -1)).toBe(true);`
+        assert!(approx_eq(process_sample(-2.0, 1.0), -1.0));
+
+        // What:     half volume scales the headroom'd value by 0.5
+        //           (1.0 * 0.5 * HEADROOM_GAIN).
+        // Why:      Prove the user volume multiplies in alongside the headroom.
+        // TS map:   `expect(approxEq(processSample(1, 0.5), 0.5 * HEADROOM_GAIN)).toBe(true);`
+        assert!(approx_eq(process_sample(1.0, 0.5), 0.5 * HEADROOM_GAIN));
     }
 }
