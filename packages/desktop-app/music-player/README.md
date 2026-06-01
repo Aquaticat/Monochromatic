@@ -96,11 +96,15 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   properties. It also derives the pagination view (tabs and the visible page) from the full queue at the
   property edge, so the engine and queue model stay unaware of pagination.
 - `ui/app.slint`: the window markup (seek bar, transport row, volume slider, a plain-HTML-styled three-state
-  shuffle radio group and "repeat track" checkbox, page-tab bar, queue list). The
+  shuffle radio group and "repeat track" checkbox, and a shared scroll region holding the page-tab bar and the
+  queue list). The
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
   `#` catch-all). Each tab shows one page; the tab bar wraps onto multiple rows to fit the window width (rather
-  than scrolling horizontally). Rows show each track's path relative to the loaded root (so deeper nesting stays
+  than scrolling horizontally). The tab bar and the list sit in one Flickable, so they scroll together (the tabs
+  scroll away with the list rather than staying pinned), driven by a prominent custom scrollbar in a right-hand
+  gutter, since the default std-widgets scrollbar is a near-invisible hairline. Rows show each track's path
+  relative to the loaded root (so deeper nesting stays
   visible). The playing track is the highlighted row, and the view follows it across track changes, so there is
   no separate now-playing title.
 

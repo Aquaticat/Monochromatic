@@ -1,7 +1,9 @@
 // The player window: a seek bar on top, a transport row (prev / play-pause /
 // next, open), a volume slider, a shuffle/repeat control row (a three-state
 // shuffle radio group and a "repeat track" checkbox, both drawn plain-HTML
-// style), a page-tab bar, and a click-to-play queue list below. The queue is
+// style), and one scroll region holding the page-tab bar and the click-to-play
+// queue list together, so the tabs and the list scroll as a single unit (driven
+// by a prominent custom scrollbar in a right-hand gutter). The queue is
 // paginated on two axes (decided per track in Rust): a track in a subfolder gets
 // a page per top-level folder under the loaded root (one level only; the tab is
 // that folder); a track at the loaded root gets a first-letter page (A-Z, plus a
@@ -18,7 +20,7 @@
 // slider, while their human-readable "m:ss" forms arrive as separate string
 // properties formatted in Rust (Slint's number formatting is awkward).
 
-import { Button, Slider, ListView, HorizontalBox, VerticalBox } from "std-widgets.slint";
+import { Button, Slider, HorizontalBox, VerticalBox } from "std-widgets.slint";
 
 // One row on the selected page: the display path (relative to the loaded root)
 // plus its index into the full queue. The index survives filtering, so clicking a
@@ -121,6 +123,56 @@ component CheckBox inherits Rectangle {
     TouchArea {
         clicked => {
             root.toggled();
+        }
+    }
+}
+
+// A prominent vertical scrollbar that drives a Flickable's viewport. It is drawn
+// deliberately wide and high-contrast (a visible track Rectangle plus a rounded
+// thumb), unlike the thin near-invisible default std-widgets bar. `maximum` is
+// the largest scroll distance (the content height minus the visible height);
+// `page-size` is the visible height; `value` two-way binds to the Flickable's
+// `viewport-y` (which Slint keeps <= 0, scrolling up as it grows negative). The
+// thumb's height is the visible fraction of the content, and dragging it moves
+// the viewport proportionally. Mirrors the Slint energy-monitor demo's
+// ScrollBar, turned vertical and made bolder.
+component VScrollBar inherits Rectangle {
+    in property <length> page-size;
+    in property <length> maximum;
+    in-out property <length> value;
+
+    // a wide gutter so the bar reads as a real scrollbar, not a hairline
+    width: 14px;
+    // only worth showing once the content actually overflows the viewport
+    visible: root.maximum > 0;
+    background: #2a2a2a;
+    border-radius: 7px;
+
+    // the draggable thumb: its length is the visible fraction of the content,
+    // and its position tracks how far we have scrolled
+    thumb := Rectangle {
+        x: 2px;
+        width: parent.width - 4px;
+        height: max(32px, (parent.height - 4px) * root.page-size / (root.maximum + root.page-size));
+        y: 2px + (parent.height - 4px - self.height) * (-root.value / root.maximum);
+        background: ta.pressed ? #cccccc : ta.has-hover ? #aaaaaa : #888888;
+        border-radius: self.width / 2;
+
+        ta := TouchArea {
+            // remember where the viewport sat when the drag began, so movement
+            // is measured relative to the press point (no jump on grab)
+            property <length> pressed-value;
+            pointer-event(event) => {
+                if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                    self.pressed-value = -root.value;
+                }
+            }
+            moved => {
+                if (self.pressed) {
+                    root.value = -max(0px, min(root.maximum, self.pressed-value
+                        + (self.mouse-y - self.pressed-y) * (root.maximum / (root.height - 4px - thumb.height))));
+                }
+            }
         }
     }
 }
@@ -291,53 +343,85 @@ export component AppWindow inherits Window {
             }
         }
 
-        // Page-tab bar: one tab per page (top-level folder or letter), shown only
-        // when the queue has at least one page. A FlexboxLayout lays the tabs out
-        // left-to-right and wraps them onto multiple rows when they exceed the
-        // window width (flex-wrap defaults to wrap), reflowing as the window
-        // resizes instead of scrolling horizontally. Each tab keeps its natural
-        // (variable) width. FlexboxLayout is a Slint experimental builtin, enabled
-        // via SLINT_ENABLE_EXPERIMENTAL_FEATURES in the Containerfile. alignment:
-        // start packs tabs from the left; vertical-stretch: 0 keeps the bar at its
-        // wrapped height so the queue list below gets the remaining space.
-        if root.page-labels.length > 0: FlexboxLayout {
-            spacing: 4px;
-            flex-wrap: wrap;
-            alignment: start;
-            vertical-stretch: 0;
-            for label[p] in root.page-labels: Button {
-                text: label;
-                // The active page's tab is drawn with the accent style.
-                primary: p == root.selected-page;
-                clicked => {
-                    root.select-page(p);
-                }
-            }
-        }
-
-        ListView {
+        // Queue area: the page-tab bar and the track list share one scroll
+        // region, so they scroll together as a single unit (the tabs scroll away
+        // with the list rather than staying pinned). A Flickable holds them
+        // stacked in a VerticalLayout; the prominent custom VScrollBar sits in a
+        // fixed gutter to its right. `viewport-width` is pinned to the visible
+        // width so only vertical scrolling happens; `viewport-height` is the
+        // stacked content's natural height (tabs plus all rows), which is what
+        // makes the region scrollable when it exceeds the visible height.
+        Rectangle {
             vertical-stretch: 1;
-            // Only the selected page's tracks. `item.index` is the track's position
-            // in the full queue, so highlight and play map to the real track.
-            for item in root.page-items: Rectangle {
-                height: 30px;
-                background: item.index == root.current-index ? #3060c0 : transparent;
-                TouchArea {
-                    clicked => {
-                        root.play-index(item.index);
+            HorizontalLayout {
+                flick := Flickable {
+                    horizontal-stretch: 1;
+                    viewport-width: self.width;
+                    viewport-height: content.preferred-height;
+                    content := VerticalLayout {
+                        // pack from the top at natural heights, leaving any slack
+                        // below the last row rather than stretching the rows
+                        alignment: start;
+
+                        // Page-tab bar: one tab per page (top-level folder or
+                        // letter), shown only when the queue has at least one page.
+                        // A FlexboxLayout lays the tabs left-to-right and wraps them
+                        // onto multiple rows when they exceed the width (flex-wrap
+                        // defaults to wrap). FlexboxLayout is a Slint experimental
+                        // builtin, enabled via SLINT_ENABLE_EXPERIMENTAL_FEATURES in
+                        // the Containerfile. alignment: start packs tabs from the
+                        // left; vertical-stretch: 0 keeps the bar at its wrapped
+                        // height so the rows below take their own height.
+                        if root.page-labels.length > 0: FlexboxLayout {
+                            spacing: 4px;
+                            flex-wrap: wrap;
+                            alignment: start;
+                            vertical-stretch: 0;
+                            for label[p] in root.page-labels: Button {
+                                text: label;
+                                // The active page's tab is drawn with the accent style.
+                                primary: p == root.selected-page;
+                                clicked => {
+                                    root.select-page(p);
+                                }
+                            }
+                        }
+
+                        // Only the selected page's tracks. `item.index` is the
+                        // track's position in the full queue, so highlight and play
+                        // map to the real track.
+                        for item in root.page-items: Rectangle {
+                            height: 30px;
+                            background: item.index == root.current-index ? #3060c0 : transparent;
+                            TouchArea {
+                                clicked => {
+                                    root.play-index(item.index);
+                                }
+                                Text {
+                                    text: item.name;
+                                    x: 8px;
+                                    width: parent.width - 16px;
+                                    vertical-alignment: center;
+                                    overflow: elide;
+                                    // Active row sits on the blue highlight, so white
+                                    // reads best; inactive rows sit on the theme
+                                    // background, which is dark under a dark system
+                                    // theme where black text vanished, so use light
+                                    // grey instead.
+                                    color: item.index == root.current-index ? white : #cccccc;
+                                }
+                            }
+                        }
                     }
-                    Text {
-                        text: item.name;
-                        x: 8px;
-                        width: parent.width - 16px;
-                        vertical-alignment: center;
-                        overflow: elide;
-                        // Active row sits on the blue highlight, so white reads
-                        // best; inactive rows sit on the theme background, which
-                        // is dark under a dark system theme where black text
-                        // vanished, so use light grey instead.
-                        color: item.index == root.current-index ? white : #cccccc;
-                    }
+                }
+
+                // Prominent scrollbar for the shared region. page-size is the
+                // visible height; maximum is how far the content overflows it;
+                // value drives (and follows) the Flickable's vertical offset.
+                VScrollBar {
+                    page-size: flick.height;
+                    maximum: flick.viewport-height - flick.height;
+                    value <=> flick.viewport-y;
                 }
             }
         }
