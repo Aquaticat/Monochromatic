@@ -369,14 +369,14 @@ export component AppWindow inherits Window {
             }
         }
 
-        // 48px gap between the control row and the queue area below. The spacer
-        // is 32px because the enclosing VerticalBox adds its own 8px spacing on
-        // each side of the spacer (8 + 32 + 8 = 48), so the visible gap is 48px
+        // 32px gap between the control row and the queue area below. The spacer
+        // is 16px because the enclosing VerticalBox adds its own 8px spacing on
+        // each side of the spacer (8 + 16 + 8 = 32), so the visible gap is 32px
         // while the 8px rhythm between the rows above is left untouched.
         // vertical-stretch: 0 keeps it fixed; the queue Rectangle (stretch 1)
         // absorbs all vertical slack, so the spacer never grows.
         Rectangle {
-            height: 32px;
+            height: 16px;
             vertical-stretch: 0;
         }
 
@@ -424,13 +424,13 @@ export component AppWindow inherits Window {
                             }
                         }
 
-                        // 48px gap between the page-tab bar and the track list.
+                        // 24px gap between the page-tab bar and the track list.
                         // Shown only when the tab bar is present (same condition as
                         // the bar) so an empty queue has no dangling gap. The
-                        // enclosing content VerticalLayout has no spacing, so 48px
-                        // here is exactly the 48px visible gap.
+                        // enclosing content VerticalLayout has no spacing, so 24px
+                        // here is exactly the 24px visible gap.
                         if root.page-labels.length > 0: Rectangle {
-                            height: 48px;
+                            height: 24px;
                         }
 
                         // Only the selected page's tracks. `item.index` is the
