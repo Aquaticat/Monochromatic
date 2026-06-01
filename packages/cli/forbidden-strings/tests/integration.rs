@@ -345,7 +345,7 @@ fn nul_byte_in_file_does_not_skip_scan() {
 
 // What:     `#[test] fn large_text_file_secret_after_probe_is_matched()`
 //           creates a > 8 KiB file with NO NUL byte and the deny-listed
-//           literal placed AFTER the first 8 KiB probe window. Asserts
+//           literal placed AFTER the first 8 KiB probe span. Asserts
 //           the scanner reads the whole file and finds the literal.
 // Why:      Validates the text-file path of `read_with_binary_check`:
 //           when the first 8 KiB has no NUL the heuristic must read
@@ -426,7 +426,7 @@ fn large_binary_file_secret_in_probe_before_nul_is_matched() {
 // What:     `#[test] fn large_binary_file_secret_after_probe_is_acceptably_missed()`
 //           creates a > 8 KiB file whose first 8 KiB contains a NUL
 //           byte and whose deny-listed literal sits AFTER the probe
-//           window. Asserts the scanner exits clean (the secret is
+//           span. Asserts the scanner exits clean (the secret is
 //           NOT reported).
 // Why:      Pins the "acceptable miss" half of the binary heuristic:
 //           when the probe shows the file is binary AND the file is

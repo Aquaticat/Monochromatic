@@ -87,7 +87,7 @@ export async function runParallelCpuBenchmark(workerCount: number,
   const workerScript = [
     'const { createHash } = require("node:crypto");',
     'let acc = 0;',
-    `for (let i = 0; i < ${String(hashesPerWorker,)}; i++) {`,
+    `for (let loopIndex = 0; loopIndex < ${String(hashesPerWorker,)}; loopIndex++) {`,
     '  const h = createHash("sha256");',
     '  h.update("parallel-" + String(i));',
     '  acc += h.digest("hex").length;',

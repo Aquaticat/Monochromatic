@@ -15,7 +15,7 @@ const l = tagged({
 },);
 
 /**
- * Minutes per fetch interval window.
+ * Minutes per fetch interval span.
  */
 const MINUTES_PER_INTERVAL = 5;
 

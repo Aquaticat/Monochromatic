@@ -32,10 +32,10 @@ const GLOB_META_CHARS = '*?{[';
  * ```
  */
 export function firstGlobMetaIndex(s: string,): number {
-  for (let idx = 0; idx < s
-    .length; idx += 1) {
-    if (GLOB_META_CHARS.includes(s.charAt(idx,),))
-      return idx;
+  for (let cursorIndex = 0; cursorIndex < s
+    .length; cursorIndex += 1) {
+    if (GLOB_META_CHARS.includes(s.charAt(cursorIndex,),))
+      return cursorIndex;
   }
   return -1;
 }

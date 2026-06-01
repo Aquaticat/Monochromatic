@@ -141,12 +141,12 @@ export function extractLatestQuery({
   if ((custom !== undefined) && (custom !== ''))
     return custom;
 
-  for (let index = branchEntries.length
-    - 1; index >= 0; index -= 1) {
+  for (let loopIndex = branchEntries.length
+    - 1; loopIndex >= 0; loopIndex -= 1) {
     /**
      * Current entry under inspection in the reverse-walk.
      */
-    const entry = branchEntries[index];
+    const entry = branchEntries[loopIndex];
     if (entry === undefined)
       continue;
     if (entry.type

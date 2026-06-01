@@ -159,12 +159,12 @@ export function findTsdocComment({
    */
   const comments = context.sourceCode
     .getCommentsBefore(node,);
-  for (let i = comments.length
-    - 1; i >= 0; i--) {
+  for (let loopIndex = comments.length
+    - 1; loopIndex >= 0; loopIndex--) {
     /**
      * Single comment candidate at index `i`; checked for the TSDoc block marker.
      */
-    const c = comments[i];
+    const c = comments[loopIndex];
     if ((c !== undefined) && isTsdocBlock(c,))
       return c;
   }

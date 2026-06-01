@@ -47,7 +47,7 @@ const ADVISOR_OUTPUT_TOKENS = 32;
 /** Advisor input token estimate used by selection tests. */
 const ADVISOR_INPUT_TOKENS = 16;
 
-/** Fixture context window. */
+/** Fixture context budget. */
 const CONTEXT_WINDOW = 4_096;
 
 /** Fixture maximum output tokens. */

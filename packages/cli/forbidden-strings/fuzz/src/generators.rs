@@ -1014,7 +1014,7 @@ impl<'a> Arbitrary<'a> for ClassNode {
         //           range expression. The `_` ignores the iteration
         //           variable.
         // Why:      Build `n` printable bytes for the class body.
-        // TS map:   `for (let i = 0; i < n; i++) { ... }`.
+        // TS map:   `for (let loopIndex = 0; loopIndex < n; loopIndex++) { ... }`.
         for _ in 0..n {
             // What:     `let pick = u.int_in_range(0u8..=4)?;`. Five
             //           variant choices: lowercase letter, digit,

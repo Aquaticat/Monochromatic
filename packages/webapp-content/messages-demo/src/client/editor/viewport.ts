@@ -34,7 +34,7 @@
 const ESTIMATED_LINE_HEIGHT_PX = 20;
 
 /**
- * Padding lines rendered above and below the visible window.
+ * Padding lines rendered above and below the visible viewport span.
  */
 const OVERSCAN_LINES = 5;
 
@@ -153,18 +153,18 @@ export function mountViewport(
     const starts: number[] = [
       0,
     ];
-    for (let index = 0; index < text
-      .length; index += 1) {
+    for (let loopIndex = 0; loopIndex < text
+      .length; loopIndex += 1) {
       if (text
-        .codePointAt(index,)
+        .codePointAt(loopIndex,)
         === /* '\n' */ 10)
-        starts.push(index + 1,);
+        starts.push(loopIndex + 1,);
     }
     lineStarts = starts;
   }
 
   /**
-   * Re-renders the visible window. Computes which lines fall inside
+   * Re-renders the visible viewport span. Computes which lines fall inside
    * the host's scroll viewport (with overscan) and writes those into
    * the surface as absolutely-positioned `<div class="ce-line">`s.
    *

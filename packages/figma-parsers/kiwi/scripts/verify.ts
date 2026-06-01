@@ -167,15 +167,15 @@ async function main(): Promise<void> {
       console.log(`  Document: ${nodeChanges.length} node changes`,);
 
       // Print first few nodes
-      for (let i = 0; i < Math
+      for (let loopIndex = 0; loopIndex < Math
         .min(
         3,
         nodeChanges.length,
-      ); i++) {
+      ); loopIndex++) {
         /**
          * Current node-change record from the preview loop; cast through `any` upstream is unavoidable.
          */
-        const nc = nodeChanges[i]!;
+        const nc = nodeChanges[loopIndex]!;
         /**
          * Display name pulled from the node; falls back to `?` so missing names do not break the log.
          */
@@ -186,7 +186,7 @@ async function main(): Promise<void> {
          */
         const type = nc.type as string
           ?? '?';
-        console.log(`    Node ${i + 1}: type=${type} name="${name}"`,);
+        console.log(`    Node ${loopIndex + 1}: type=${type} name="${name}"`,);
       }
 
       // Verify images

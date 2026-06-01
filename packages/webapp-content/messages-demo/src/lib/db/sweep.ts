@@ -25,7 +25,7 @@ import {
 } from './chain.ts';
 
 /**
- * Minutes in the orphan TTL window.
+ * Minutes in the orphan TTL span.
  */
 const ORPHAN_TTL_MINUTES = 15;
 

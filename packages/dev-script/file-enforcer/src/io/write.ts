@@ -150,7 +150,7 @@ export async function overwrite(
 /**
  * Writes content to dest only if the file does not already exist.
  * Uses {@link readExisting} to check for the file rather than a separate
- * `exists()` call, avoiding a TOCTOU race window.
+ * `exists()` call, avoiding a TOCTOU race gap.
  *
  * @param dest - Destination file path
  *

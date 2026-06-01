@@ -136,7 +136,7 @@ export async function cycle(): Promise<void> {
     await stopLlama();
 
     /**
-     * Verdict extracted from the LLM response and pushed into the sliding decision window.
+     * Verdict extracted from the LLM response and pushed into the sliding decision buffer.
      */
     const verdict = parseVerdict(result,);
     /* oxlint-disable no-magic-numbers -- sliding window indices 1..4 */

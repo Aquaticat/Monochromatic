@@ -285,7 +285,7 @@ rayon::join total: 94 ms      (max(walker, git) + ~2 ms join overhead)
 ```
 
 `rayon::join` did parallelise (total ≈ max not sum), but the walker
-is too fast (~10 ms) to fill the subprocess window. The ceiling for
+is too fast (~10 ms) to fill the subprocess runtime span. The ceiling for
 savings is ~10 ms, within measurement sigma. Apples-to-apples bench:
 
 ```text
@@ -700,7 +700,7 @@ The actual bottleneck on Linux: **the production residuals' literal
 anchors are too common in Linux kernel source.** Hundreds of
 `SK`/`hvs.`/`Q~`/`\d{15,16}` occurrences in test fixtures, hex
 constants, sample payloads. Each occurrence triggers a full regex
-verification on the surrounding window. That cost is bounded by the
+verification on the surrounding byte span. That cost is bounded by the
 regex engine's per-byte throughput, not by anything optimiser-side.
 
 ### Rayon batching tested and rejected (2026-05-03)
@@ -972,7 +972,7 @@ cd /tmp/claude/linux && hyperfine --warmup 2 --runs 5 --ignore-failure \
   --command-name 'r=2000' "$BIN --rules /tmp/claude/sweep-resid2000.txt --all"
 
 # L2 pathological case (1M-hit single file)
-bun -e 'const fs = await import("node:fs"); const line = "PLACEHOLDER_DOES_NOT_EXIST_IN_THIS_REPO_XX\n"; const buf = Buffer.alloc(line.length * 1_000_000); for (let i = 0; i < 1_000_000; i++) buf.write(line, i * line.length); fs.writeFileSync("/tmp/claude/million-hits.txt", buf);'
+bun -e 'const fs = await import("node:fs"); const line = "PLACEHOLDER_DOES_NOT_EXIST_IN_THIS_REPO_XX\n"; const buf = Buffer.alloc(line.length * 1_000_000); for (let loopIndex = 0; loopIndex < 1_000_000; loopIndex++) buf.write(line, loopIndex * line.length); fs.writeFileSync("/tmp/claude/million-hits.txt", buf);'
 /usr/bin/time -v $BIN --rules $EX /tmp/claude/million-hits.txt > /dev/null
 
 # Mmap A/B (only relevant if reconsidering the mmap rejection above)

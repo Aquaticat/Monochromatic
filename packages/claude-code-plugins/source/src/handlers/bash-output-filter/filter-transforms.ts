@@ -105,21 +105,21 @@ function collapseRepeatedChars(line: string,): string {
   const parts: string[] = [];
   // Single forward pass; `idx` jumps by whole runs, so the stride is variable
   // and the update happens in the body rather than a fixed `for` step.
-  for (let idx = 0; idx < line
+  for (let cursorIndex = 0; cursorIndex < line
     .length;) {
     /**
      * Character under the cursor; gates whether a run is even considered.
      */
-    const c = line.charAt(idx,);
+    const c = line.charAt(cursorIndex,);
     if (!isCollapseCandidate(c,)) {
       parts.push(c,);
-      idx += 1;
+      cursorIndex += 1;
       continue;
     }
     /**
      * Exclusive end of the current run of `c`, advanced by a linear scan.
      */
-    let runEnd = idx + 1;
+    let runEnd = cursorIndex + 1;
     while ((runEnd < line
       .length) && (line.charAt(runEnd,)
         === c)) {
@@ -128,17 +128,17 @@ function collapseRepeatedChars(line: string,): string {
     /**
      * Length of the current run; gates the collapse vs. emit-verbatim choice.
      */
-    const runLength = runEnd - idx;
+    const runLength = runEnd - cursorIndex;
     if (runLength >= COLLAPSE_THRESHOLD) {
       parts.push(`${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength} repeated characters)`,);
     }
     else {
       parts.push(line.slice(
-        idx,
+        cursorIndex,
         runEnd,
       ),);
     }
-    idx = runEnd;
+    cursorIndex = runEnd;
   }
   return parts.join('',);
 }

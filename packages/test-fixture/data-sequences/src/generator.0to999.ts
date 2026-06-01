@@ -278,7 +278,7 @@
  *     );
  *
  *     const values: number[] = [];
- *     for (let iteration = 0; iteration < 20; iteration++) {
+ *     for (let loopIteration = 0; loopIteration < 20; loopIteration++) {
  *       const result = await Promise.race([
  *         iterator.next(),
  *         timeoutPromise

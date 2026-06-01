@@ -435,11 +435,11 @@ async function dropAcked(
    */
   const before = input.queue
     .length;
-  for (let index = before - 1; index >= 0; index -= 1) {
+  for (let loopIndex = before - 1; loopIndex >= 0; loopIndex -= 1) {
     /**
      * Currently-visited entry; the guard below treats sparse holes as already-dropped.
      */
-    const entry = input.queue[index];
+    const entry = input.queue[loopIndex];
     if (entry === undefined)
       continue;
     if ((entry.draftId
@@ -449,7 +449,7 @@ async function dropAcked(
         .ack)) {
       input.queue
         .splice(
-        index,
+        loopIndex,
         1,
       );
     }

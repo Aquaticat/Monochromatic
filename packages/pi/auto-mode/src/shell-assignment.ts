@@ -90,19 +90,19 @@ function extractShellAssignmentNames(
    */
   const names: string[] = [];
 
-  for (let index = 0; index < word.length; index += 1) {
+  for (let loopIndex = 0; loopIndex < word.length; loopIndex += 1) {
     /**
      * Character where a shell identifier may begin.
      */
-    const candidateStart = word.at(index,) ?? '';
+    const candidateStart = word.at(loopIndex,) ?? '';
     if (!isShellIdentifierStartChar(candidateStart,))
       continue;
 
     /**
      * Previous character blocks matches from middle of longer identifiers.
      */
-    const previous = index > 0
-      ? word.at(index - 1,) ?? ''
+    const previous = loopIndex > 0
+      ? word.at(loopIndex - 1,) ?? ''
       : '';
     if (isShellIdentifierChar(previous,))
       continue;
@@ -112,13 +112,13 @@ function extractShellAssignmentNames(
      */
     const identifierEnd = findShellIdentifierEnd({
       word,
-      start: index,
+      start: loopIndex,
     },);
     if (word.at(identifierEnd,) !== '=')
       continue;
 
     names.push(word.slice(
-      index,
+      loopIndex,
       identifierEnd,
     ),);
   }
@@ -151,8 +151,8 @@ function isShellIdentifier(
   if (!isShellIdentifierStartChar(value.at(0,) ?? '',))
     return false;
 
-  for (let index = 1; index < value.length; index += 1) {
-    if (!isShellIdentifierChar(value.at(index,) ?? '',))
+  for (let loopIndex = 1; loopIndex < value.length; loopIndex += 1) {
+    if (!isShellIdentifierChar(value.at(loopIndex,) ?? '',))
       return false;
   }
 
@@ -182,9 +182,9 @@ function findShellIdentifierEnd(
     readonly start: number;
   },
 ): number {
-  for (let index = start + 1; index < word.length; index += 1) {
-    if (!isShellIdentifierChar(word.at(index,) ?? '',))
-      return index;
+  for (let loopIndex = start + 1; loopIndex < word.length; loopIndex += 1) {
+    if (!isShellIdentifierChar(word.at(loopIndex,) ?? '',))
+      return loopIndex;
   }
 
   return word.length;

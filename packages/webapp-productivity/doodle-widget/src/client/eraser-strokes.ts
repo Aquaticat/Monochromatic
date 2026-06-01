@@ -137,14 +137,14 @@ export function eraseStrokesAt({
      */
     let prevStrokePy = 0;
 
-    for (let i = 0; i
+    for (let loopIndex = 0; loopIndex
       < stroke
       .points
-      .length; i++) {
+      .length; loopIndex++) {
       /**
        * Skipped when undefined so sparse arrays do not break segment math.
        */
-      const p = stroke.points[i];
+      const p = stroke.points[loopIndex];
       if (p === undefined)
         continue;
       /**
@@ -179,7 +179,7 @@ export function eraseStrokesAt({
       // stroke *segment* (line from previous point to this point) is
       // close to or intersects the eraser segment. This catches fast
       // erases that cross between widely-spaced stroke points.
-      if ((!shouldErase) && (i > 0)) {
+      if ((!shouldErase) && (loopIndex > 0)) {
         /**
          * Segment-to-segment distance covers fast drags that skip between stroke samples.
          */

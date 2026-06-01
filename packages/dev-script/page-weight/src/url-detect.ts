@@ -41,12 +41,12 @@ export function startsWithUriScheme(s: string,): boolean {
   // is `:`. Indexed `charAt` (not `for...of`) preserves the prior UTF-16
   // code-unit semantics: a non-ASCII body char stops the run at its first code
   // unit, exactly as the recursion did, in O(n) time and O(1) stack.
-  for (let idx = 1; idx < lowered
-    .length; idx += 1) {
+  for (let cursorIndex = 1; cursorIndex < lowered
+    .length; cursorIndex += 1) {
     /**
      * Char at cursor; non-scheme characters end the run.
      */
-    const c = lowered.charAt(idx,);
+    const c = lowered.charAt(cursorIndex,);
     /**
      * Whether the cursor sits on a scheme-body character.
      */

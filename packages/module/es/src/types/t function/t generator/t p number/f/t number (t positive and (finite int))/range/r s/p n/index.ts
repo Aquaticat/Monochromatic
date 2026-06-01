@@ -52,9 +52,9 @@ export function* $(
   { length, }: { length: Int & Positive; },
 ): Generator<Int & (Positive | 0), void, undefined> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 0 satisfies Int & (Positive | 0) at runtime
-  for (let index: Int & (Positive | 0) = 0 as Int & (Positive | 0); index < length;
-    index++)
+  for (let loopIndex: Int & (Positive | 0) = 0 as Int & (Positive | 0); loopIndex < length;
+    loopIndex++)
   {
-    yield index;
+    yield loopIndex;
   }
 }

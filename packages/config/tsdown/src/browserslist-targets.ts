@@ -623,15 +623,15 @@ function compareVersions({
     rightParts.length,
   );
 
-  for (let index = 0; index < length; index += 1) {
+  for (let loopIndex = 0; loopIndex < length; loopIndex += 1) {
     /**
      * Left segment number, defaulting absent trailing segments to zero.
      */
-    const leftNumber = Number(leftParts[index] ?? '0',);
+    const leftNumber = Number(leftParts[loopIndex] ?? '0',);
     /**
      * Right segment number, defaulting absent trailing segments to zero.
      */
-    const rightNumber = Number(rightParts[index] ?? '0',);
+    const rightNumber = Number(rightParts[loopIndex] ?? '0',);
 
     if (Number.isNaN(leftNumber,))
       return left.localeCompare(right,);

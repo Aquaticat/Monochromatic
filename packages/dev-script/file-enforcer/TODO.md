@@ -14,7 +14,7 @@
 
 - `fs.watch` is platform-dependent and can miss events on some Linux filesystems (notably NFS, FUSE mounts).
   Consider a fallback to polling for unreliable backends.
-- Debounce currently uses a fixed 100ms window.
+- Debounce currently uses a fixed 100ms debounce period.
   Rapid burst edits (e.g., `git checkout` touching many files) may trigger multiple re-runs.
   A smarter strategy: accumulate events during debounce, then invalidate all changed paths in one batch re-run.
 - The watch loop blocks forever with `new Promise<never>(() => {})`.

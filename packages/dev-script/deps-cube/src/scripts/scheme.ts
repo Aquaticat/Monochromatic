@@ -6,7 +6,7 @@
  * passed to layer factories as raw `[r, g, b, a]` tuples; there's no
  * CSS variable resolution inside the canvas. This module picks the
  * right palette once at session start by branching on
- * `window.matchMedia('(prefers-color-scheme: dark)')`.
+ * `globalThis.matchMedia('(prefers-color-scheme: dark)')`.
  *
  * Threading the result through {@link ../deck-config.ts#buildLayers}
  * keeps the layer factories pure: they accept colours, they don't
@@ -95,7 +95,7 @@ const LIGHT_CHROME: ChromeColors = {
  * Returns the active {@link ChromeColors} palette based on the
  * browser's preferred colour scheme.
  *
- * Reads `window.matchMedia('(prefers-color-scheme: dark)').matches`
+ * Reads `globalThis.matchMedia('(prefers-color-scheme: dark)').matches`
  * exactly once; the result is captured in the controller and reused
  * for every `setProps` cycle. We don't listen for scheme changes
  * mid-session; re-detecting on every render would require teardown

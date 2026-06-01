@@ -104,13 +104,13 @@ function containsHiddenSegment(path: string,): boolean {
     return true;
   }
 
-  for (let idx = 0; idx < path
-    .length; idx += 1) {
+  for (let cursorIndex = 0; cursorIndex < path
+    .length; cursorIndex += 1) {
     if (
-      isPathSeparator(path.charAt(idx,),)
+      isPathSeparator(path.charAt(cursorIndex,),)
         && hasHiddenSegmentAt({
         path,
-        idx: idx + 1,
+        idx: cursorIndex + 1,
       },)
     ) {
       return true;

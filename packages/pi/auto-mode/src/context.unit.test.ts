@@ -342,7 +342,7 @@ await describe({
           },
         )
           .flat();
-        /** Context built from enough older activity to fill the minimum window. */
+        /** Context built from enough older activity to fill the minimum context budget. */
         const context = buildContext(
           contextFromBranch({
             branch: [

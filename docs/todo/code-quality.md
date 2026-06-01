@@ -39,9 +39,11 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 
 #### Remaining Files to Fix
 
-- Files with remaining `i` variables in for loops
 - Files with void expression issues in test assertions
-- Files with window references that need globalThis
+- Re-inventory variable abbreviations before opening new cleanup work.
+  The package-wide loop-counter and `window.` sweeps are complete:
+  `rg --line-number 'for \\(let [ijk]' packages` and
+  `rg --line-number '\\bwindow\\.' packages` return no matches on 2026-06-01.
 
 ### Medium Priority Issues
 
@@ -51,8 +53,8 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 
 ### Next Steps for Lint Cleanup
 
-1. Fix all instances of `i` variable usage with descriptive names
-2. Replace `window` with `globalThis` throughout the codebase
+1. Re-inventory abbreviation usage beyond package C-style loop counters.
+2. Fix remaining void expression issues in test assertions.
 
 **Cross-Reference**: See [Automation Todo](automation.md#code-quality-automation) for automated linting improvements.
 

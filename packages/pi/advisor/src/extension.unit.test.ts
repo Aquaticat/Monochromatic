@@ -29,7 +29,7 @@ import type { AdvisorConfig, } from './types.ts';
 
 //region Fixtures
 
-/** Fixture context window. */
+/** Fixture context budget. */
 const CONTEXT_WINDOW = 1_000;
 
 /** Fixture max output tokens. */

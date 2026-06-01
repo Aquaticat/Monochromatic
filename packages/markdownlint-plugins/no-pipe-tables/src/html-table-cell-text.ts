@@ -58,15 +58,15 @@ function normalizeMarkdownEscapes(markdownCellText: string,): string {
    */
   const normalized: string[] = [];
 
-  for (let index = 0; index < characters.length; index += 1) {
+  for (let loopIndex = 0; loopIndex < characters.length; loopIndex += 1) {
     /**
      * Current character under the cursor.
      */
-    const character = nonNullishOrThrow(characters[index],);
+    const character = nonNullishOrThrow(characters[loopIndex],);
     /**
      * Next character, used to decide whether a backslash is an escape marker.
      */
-    const nextCharacter = characters[index + 1];
+    const nextCharacter = characters[loopIndex + 1];
 
     if (character !== MARKDOWN_ESCAPE_PREFIX) {
       normalized.push(character,);
@@ -84,7 +84,7 @@ function normalizeMarkdownEscapes(markdownCellText: string,): string {
     }
 
     normalized.push(nextCharacter,);
-    index += 1;
+    loopIndex += 1;
   }
 
   return normalized.join('',);

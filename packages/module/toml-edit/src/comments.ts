@@ -130,11 +130,11 @@ function collectAttached(
      * Filled nearest-first while walking back, reversed to source order on return.
      */
     const collected: TomlComment[] = [];
-    for (let idx = initialIdx; idx >= 0; idx--) {
+    for (let cursorIndex = initialIdx; cursorIndex >= 0; cursorIndex--) {
       /**
        * Candidate comment so the gap check can decide if it is still attached.
        */
-      const comment = nonNullishOrThrow(comments[idx],);
+      const comment = nonNullishOrThrow(comments[cursorIndex],);
       /**
        * Start and end offsets of the candidate comment.
        */

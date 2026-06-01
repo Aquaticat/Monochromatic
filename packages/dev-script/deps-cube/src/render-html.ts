@@ -2,7 +2,7 @@
  * Composes the final HTML audit report.
  *
  * Bundles the browser-side controller via `Bun.build` (IIFE,
- * minified), inlines the probe array as `window.__PROBES__`, embeds
+ * minified), inlines the probe array as `globalThis.__PROBES__`, embeds
  * the control-panel HTML from {@link renderControls}, and wraps
  * everything in an HTML document with the package's CSS in a
  * `<style>` block. The output is a single self-contained HTML file:
@@ -201,7 +201,7 @@ export async function renderHtml(
    */
   const bundleJs = await bundleController();
   /**
-   * Probe array serialised for inlining as `window.__PROBES__`; escaped below to neutralise `</script>` sequences.
+   * Probe array serialised for inlining as `globalThis.__PROBES__`; escaped below to neutralise `</script>` sequences.
    */
   const probesJson = JSON.stringify(probes,);
   return `<!doctype html>
@@ -215,7 +215,7 @@ export async function renderHtml(
 <body>
   <main id="canvas-host"><canvas id="deck-canvas"></canvas></main>
   ${controlsHtml}
-  <script>window.__PROBES__ = ${escapeForScriptTag(probesJson,)};</script>
+  <script>globalThis.__PROBES__ = ${escapeForScriptTag(probesJson,)};</script>
   <script>${escapeForScriptTag(bundleJs,)}</script>
 </body>
 </html>

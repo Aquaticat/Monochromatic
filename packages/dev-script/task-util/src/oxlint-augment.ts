@@ -212,17 +212,17 @@ export function stripAnsi(text: string,): string {
    */
   const parts: string[] = [];
   // Single forward pass; `idx` jumps by whole ANSI sequences, so the stride is variable and updated in the body.
-  for (let idx = 0; idx < text
+  for (let cursorIndex = 0; cursorIndex < text
     .length;) {
     /**
      * Position of the next ESC byte; `-1` means no further ANSI sequences.
      */
     const escIdx = text.indexOf(
       ESC_CHAR,
-      idx,
+      cursorIndex,
     );
     if (escIdx === (-1)) {
-      parts.push(text.slice(idx,),);
+      parts.push(text.slice(cursorIndex,),);
       break;
     }
     /**
@@ -235,18 +235,18 @@ export function stripAnsi(text: string,): string {
     if (escLen === (-1)) {
       // Invalid escape: keep the ESC byte verbatim and resume just past it.
       parts.push(text.slice(
-        idx,
+        cursorIndex,
         escIdx + 1,
       ),);
-      idx = escIdx + 1;
+      cursorIndex = escIdx + 1;
     }
     else {
       // Valid ANSI sequence: keep the text before it and drop the sequence itself.
       parts.push(text.slice(
-        idx,
+        cursorIndex,
         escIdx,
       ),);
-      idx = escIdx + escLen;
+      cursorIndex = escIdx + escLen;
     }
   }
   return parts.join('',);
@@ -523,19 +523,19 @@ export function extractRuleName(line: string,): string | typeof NO_RULE {
   const stripped = stripAnsi(line,);
 
   // Single linear pass over the stripped line; attempt a header match at each `x`/`!` candidate.
-  for (let idx = 0; idx < stripped
-    .length; idx += 1) {
+  for (let cursorIndex = 0; cursorIndex < stripped
+    .length; cursorIndex += 1) {
     /**
      * Char at the cursor; only `x` or `!` can open a diagnostic header.
      */
-    const c = stripped.charAt(idx,);
+    const c = stripped.charAt(cursorIndex,);
     if ((c === 'x') || (c === '!')) {
       /**
        * Header-match attempt anchored at the candidate; a rule name on the first valid header, else `NO_RULE`.
        */
       const result = matchHeaderAt({
         text: stripped,
-        punctIdx: idx,
+        punctIdx: cursorIndex,
       },);
       if (result !== NO_RULE)
         return result;

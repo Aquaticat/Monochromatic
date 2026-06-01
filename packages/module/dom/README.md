@@ -22,12 +22,12 @@ Playwright e2e fixtures only; it is not part of the public surface.
 
 ### `prompt({ message, defaultValue?, classes? })`
 
-Async replacement for `window.prompt` that uses an HTML `<dialog>`,
+Async replacement for `globalThis.prompt` that uses an HTML `<dialog>`,
 so the dialog can be styled with CSS instead of locked to the browser's native chrome.
-Return shape mirrors native `window.prompt`:
+Return shape mirrors native `globalThis.prompt`:
 the entered string when the user clicks OK (including `''` for an empty field),
 or `null` when the user cancels (Esc, backdrop click, or the Cancel button).
-Unlike `window.prompt`, it never blocks the main thread;
+Unlike `globalThis.prompt`, it never blocks the main thread;
 the returned promise lets other work continue while the dialog is open.
 
 ```ts

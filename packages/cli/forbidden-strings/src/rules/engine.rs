@@ -2020,11 +2020,11 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
             // Why:      `(?:(?!abc)){4,12}(?:d)` -- the `(?:d)` open
             //           already incremented the count to 1; the
             //           matching close is the boundary at which we
-            //           can confirm the trailing window. But here we
+            //           can confirm the trailing context span. But here we
             //           want to keep counting -- the close is at
             //           parent depth and only ends THIS sibling
             //           group's contribution, not the trailing
-            //           window. So no firing at close-only.
+            //           span. So no firing at close-only.
             if let Some(parent) = stack.last_mut() {
                 if has_la_in_subtree {
                     parent.has_lookahead_subtree = true;

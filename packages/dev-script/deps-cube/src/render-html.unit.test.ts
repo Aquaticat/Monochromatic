@@ -7,7 +7,7 @@
  * the composed page is self-contained:
  *
  * - no external `<link rel="stylesheet">` or `<script src="…">` references
- * - the probe array is inlined as `window.__PROBES__`
+ * - the probe array is inlined as `globalThis.__PROBES__`
  * - the control panel HTML is embedded inside the document
  * - the stubbed bundle text appears inside a `<script>` block
  * - the document is properly tagged (doctype, charset, viewport, title)
@@ -168,7 +168,7 @@ await describe({
         expect(htmlLower.includes("rel='stylesheet'",),).toBe(false,);
         expect(hasScriptSrcAttribute(htmlLower,),).toBe(false,);
 
-        expect(html,).toContain('window.__PROBES__ =',);
+        expect(html,).toContain('globalThis.__PROBES__ =',);
         expect(html,).toContain('"preact"',);
 
         expect(html,).toContain(FIXTURE_BUNDLE,);

@@ -25,7 +25,7 @@ const completionsUrl = process.env
 //region Rate limiter (sliding-window counter)
 
 /**
- * Maximum requests allowed within the sliding window.
+ * Maximum requests allowed within the sliding rate-limit bucket.
  */
 const MAX_REQUESTS_PER_WINDOW = 30;
 
@@ -40,7 +40,7 @@ const WINDOW_DURATION_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
- * Timestamps of requests within the current window.
+ * Timestamps of requests within the current rate-limit bucket.
  * Mutable array because the sliding window requires `.shift()` to discard expired
  * entries and `.push()` to record new ones; a functional approach would allocate
  * a new array on every request for no benefit in this module-scoped singleton.
@@ -72,7 +72,7 @@ function isRateLimited(): boolean {
 }
 
 /**
- * Records the current timestamp in the sliding window.
+ * Records the current timestamp in the sliding rate-limit bucket.
  */
 function recordRequest(): void {
   requestTimestamps.push(Date.now(),);

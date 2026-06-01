@@ -456,7 +456,7 @@ function extractStateParam(s: string,): string {
  * leading `#`) and decodes it, falling back to `fallback` on any
  * failure.
  *
- * @param hash - The hash string (typically `window.location.hash`).
+ * @param hash - The hash string (typically `globalThis.location.hash`).
  *
  * @param fallback - State to return when the hash has no valid payload.
  *

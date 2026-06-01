@@ -16,7 +16,7 @@ import { reportMissing, } from './node-extraction.ts';
  * their TSDoc is owned by the enclosing VariableDeclaration or
  * MethodDefinition node.
  *
- * For-loop bindings (`for (const x of arr)`, `for (let i = 0; ...)`)
+ * For-loop bindings (`for (const x of arr)`, `for (let loopIndex = 0; ...)`)
  * are excluded because they have no natural site for TSDoc.
  *
  * @example

@@ -288,10 +288,10 @@ function synthesizeBody(
        * Accumulator of synthesised code lines; joined with `\n` below.
        */
       const lines = [];
-      for (let i = 0; i < lineCount; i += 1) {
+      for (let loopIndex = 0; loopIndex < lineCount; loopIndex += 1) {
         lines.push(`  ${
           pickWords({
-            seed: cursor + i,
+            seed: cursor + loopIndex,
             count: CODE_WORDS_PER_LINE,
           },)
         }`,);
@@ -359,11 +359,11 @@ function pickWords({
    * Accumulator of selected words; joined with spaces below.
    */
   const words: string[] = [];
-  for (let i = 0; i < count; i += 1) {
+  for (let loopIndex = 0; loopIndex < count; loopIndex += 1) {
     /**
      * Per-word pseudo-random value driving the lorem-word index.
      */
-    const r = rng(seed + i,);
+    const r = rng(seed + loopIndex,);
     /**
      * Picked word, defaulted to empty when the lorem corpus is empty.
      */
@@ -518,11 +518,11 @@ export async function runSeed(): Promise<void> {
   // Sequential creation keeps stdout progress lines monotonic and avoids
   // overwhelming the SQLite WAL with concurrent writers.
   /* oxlint-disable no-await-in-loop */
-  for (let index = 0; index < messageCount; index += 1) {
+  for (let loopIndex = 0; loopIndex < messageCount; loopIndex += 1) {
     /**
      * Per-index pseudo-random value driving the size-bucket switch.
      */
-    const r = rng(index,);
+    const r = rng(loopIndex,);
     // Size distribution: P50 ~500, P95 ~5 KB, P99 ~50 KB.
     /**
      * Target body length for this iteration; chosen from the bucket below.
@@ -530,39 +530,39 @@ export async function runSeed(): Promise<void> {
     let bytes = 0;
     if (r < P50_THRESHOLD)
       bytes = SIZE_P50_BASE + Math
-        .floor(rng(index + 1,)
+        .floor(rng(loopIndex + 1,)
           * SIZE_P50_RANGE,);
     else if (r < P95_THRESHOLD)
       bytes = SIZE_P95_BASE + Math
-        .floor(rng(index + 1,)
+        .floor(rng(loopIndex + 1,)
           * SIZE_P95_RANGE,);
     else if (r < P99_THRESHOLD)
       bytes = SIZE_P99_BASE + Math
-        .floor(rng(index + 1,)
+        .floor(rng(loopIndex + 1,)
           * SIZE_P99_RANGE,);
     else
       bytes = SIZE_TAIL_BASE + Math
-        .floor(rng(index + 1,)
+        .floor(rng(loopIndex + 1,)
           * SIZE_TAIL_RANGE,);
     /**
      * Synthesised body sized to the chosen bucket.
      */
     const body = synthesizeBody({
       targetBytes: bytes,
-      seed: index * SEED_MULTIPLIER,
+      seed: loopIndex * SEED_MULTIPLIER,
     },);
     /**
      * Cycled seed user; falls back to user-a when the modulo lookup misses.
      */
-    const userId = SEED_USER_IDS[index % SEED_USER_IDS
+    const userId = SEED_USER_IDS[loopIndex % SEED_USER_IDS
       .length]
       ?? SEED_USER_IDS[0];
     await createMessage({
       body,
       userId,
     },);
-    if (((index + 1) % PROGRESS_INTERVAL) === 0)
-      console.log(`  ${String(index + 1,)} / ${String(messageCount,)}`,);
+    if (((loopIndex + 1) % PROGRESS_INTERVAL) === 0)
+      console.log(`  ${String(loopIndex + 1,)} / ${String(messageCount,)}`,);
   }
   /* oxlint-enable no-await-in-loop */
   console.log('done',);

@@ -59,7 +59,7 @@
  *
  * // Test memory-intensive operations
  * const chunks = [];
- * for (let i = 0; i < array0to999.length; i += 100) {
+ * for (let loopIndex = 0; loopIndex < array0to999.length; loopIndex += 100) {
  *   chunks.push(array0to999.slice(i, i + 100));
  * }
  * console.log(chunks.length); // 10 chunks of 100 elements each

@@ -40,12 +40,12 @@ export function runStak(source: string,): string {
    * Label name to token index; populated in the first pass so jumps can resolve forward labels.
    */
   const labels = new Map<string, number>();
-  for (let i = 0; i < tokens
-    .length; i++) {
+  for (let loopIndex = 0; loopIndex < tokens
+    .length; loopIndex++) {
     /**
      * Current token in the label-indexing pass; undefined when the array has holes.
      */
-    const token = tokens[i];
+    const token = tokens[loopIndex];
     if (token === undefined)
       continue;
     /**
@@ -58,7 +58,7 @@ export function runStak(source: string,): string {
     if ((op === 'LABEL') && (name !== undefined)) {
       labels.set(
         name,
-        i,
+        loopIndex,
       );
     }
   }

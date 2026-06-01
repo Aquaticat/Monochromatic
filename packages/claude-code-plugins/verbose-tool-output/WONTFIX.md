@@ -50,7 +50,7 @@ to the terminal so the user can see what Claude sees.
 
 **`additionalContext` (hook JSON output)**
 
-- Injects text back into Claude's context window.
+- Injects text back into Claude's context budget.
 - Defeats the purpose: the goal was to show content to the user
   without polluting the model's context.
 

@@ -371,7 +371,7 @@ async function buildInternalFilter(
  * Each post-`ready` event runs through the filter chain. A passing event
  * (re)schedules a debounced restart: the timer is reset on every passing
  * event, so a burst within the window coalesces to a single restart at
- * the end of the window. When `options.initial !== false`, the child is
+ * the end of the debounce period. When `options.initial !== false`, the child is
  * spawned immediately after the watcher reaches ready.
  *
  * The handle's `stop()` aborts the shared abort signal first (so any
@@ -436,7 +436,7 @@ export async function startWatchRestart(
    */
   const internalFilter: WatchFilter = await buildInternalFilter(options,);
   /**
-   * Resolved debounce window.
+   * Resolved debounce delay.
    */
   const debounceMs: number = options.debounce
     ?? DEFAULT_DEBOUNCE_MS;

@@ -135,7 +135,7 @@ export function materialise(input: { table: Table; },): string {
 
 /**
  * Returns the substring `[from, to)` from the current document. Walks
- * pieces until accumulating the requested window. O(nodes before
+ * pieces until accumulating the requested slice. O(nodes before
  * window + window-bytes).
  *
  * @param input - half-open offset range; clamped to `[0, length]`
@@ -270,16 +270,16 @@ export function splitAt(
    */
   let cursor = 0;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  for (let index = 0; index
+  for (let loopIndex = 0; loopIndex
     < input
     .table
     .pieces
-    .length; index += 1) {
+    .length; loopIndex += 1) {
     /**
      * Currently-visited piece; null sentinel breaks the loop on sparse arrays.
      */
     const piece = input.table
-      .pieces[index];
+      .pieces[loopIndex];
     if (piece === undefined)
       break;
     /**
@@ -289,7 +289,7 @@ export function splitAt(
       .length;
     if (input.at
       === cursor)
-      return index;
+      return loopIndex;
     if (input.at
       < pieceEnd) {
       /**
@@ -315,12 +315,12 @@ export function splitAt(
       input.table
         .pieces
         .splice(
-        index,
+        loopIndex,
         1,
         left,
         right,
       );
-      return index + 1;
+      return loopIndex + 1;
     }
     cursor = pieceEnd;
   }

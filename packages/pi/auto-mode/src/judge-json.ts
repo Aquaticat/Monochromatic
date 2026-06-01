@@ -100,12 +100,12 @@ function findBalancedJsonObject(text: string,): string {
   let escape = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
-  for (let i = start; i < text
-    .length; i++) {
+  for (let loopIndex = start; loopIndex < text
+    .length; loopIndex++) {
     /**
      * Character at the current scan position, used by the state machine below.
      */
-    const ch = text[i];
+    const ch = text[loopIndex];
 
     if (escape) {
       escape = false;
@@ -129,7 +129,7 @@ function findBalancedJsonObject(text: string,): string {
       if (depth === 0) {
         return text.slice(
           start,
-          i + 1,
+          loopIndex + 1,
         );
       }
     }

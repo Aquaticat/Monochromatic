@@ -53,7 +53,7 @@ resolves it without `.desktop` entry scanning.
 ### Input automation: wtype
 
 Wayland keyboard input tool (equivalent of X11's `xdotool type`).
-Sends keystrokes to the focused Wayland window.
+Sends keystrokes to the focused Wayland surface.
 Requires inter-keystroke delay (`wtype -d <ms>`) to avoid dropped characters.
 Claude Code TUI uses Enter to submit prompts.
 

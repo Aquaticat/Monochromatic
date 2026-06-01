@@ -355,12 +355,12 @@ await describe({
           name: '5000 single-char inserts produces correct text',
           fn: async () => {
             const table = freshTable('',);
-            for (let index = 0; index < 5_000; index += 1) {
+            for (let loopIndex = 0; loopIndex < 5_000; loopIndex += 1) {
               applyToTable({
                 table,
                 changeset: {
-                  from: index,
-                  to: index,
+                  from: loopIndex,
+                  to: loopIndex,
                   insert: 'x',
                 },
               },);
@@ -378,12 +378,12 @@ await describe({
             '5000 inserts followed by collapse re-anchors to a single piece (verification 16b)',
           fn: async () => {
             const table = freshTable('',);
-            for (let index = 0; index < 5_000; index += 1) {
+            for (let loopIndex = 0; loopIndex < 5_000; loopIndex += 1) {
               applyToTable({
                 table,
                 changeset: {
-                  from: index,
-                  to: index,
+                  from: loopIndex,
+                  to: loopIndex,
                   insert: 'x',
                 },
               },);

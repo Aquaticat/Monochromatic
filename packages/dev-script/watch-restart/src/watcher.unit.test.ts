@@ -37,7 +37,7 @@ const POST_EVENT_WAIT_MS = 200;
 
 /**
  * Buffer for "no event should fire" assertions; longer than POST_EVENT_WAIT_MS
- * so the negative claim is well past chokidar's stability window.
+ * so the negative claim is well past chokidar's stability period.
  */
 const NO_EVENT_WAIT_MS = 400;
 

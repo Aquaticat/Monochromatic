@@ -57,7 +57,7 @@ export type ModelPricing = ModelIdentity & {
    */
   readonly cost: ModelTokenPricing;
   /**
-   * Maximum input-token context window.
+   * Maximum input-token context budget.
    */
   readonly contextWindow: number;
   /**

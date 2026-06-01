@@ -296,7 +296,7 @@ function formatRateLimit({
   const now = Math.floor(Date.now()
     / 1_000,);
   /**
-   * Seconds already consumed in the window; negative when `resets_at` is in the future by more than the window.
+   * Seconds already consumed in the window; negative when `resets_at` is in the future by more than the configured duration.
    */
   const elapsed = windowSeconds - (tier.resets_at
     - now);

@@ -49,7 +49,7 @@ use memchr::memchr_iter;
 // ```ts
 // function buildLineIndex(content: Uint8Array): number[] {
 //   const starts = [0];
-//   for (let i = 0; i < content.length; i++) {
+//   for (let loopIndex = 0; loopIndex < content.length; loopIndex++) {
 //     if (content[i] === 0x0a) starts.push(i + 1);
 //   }
 //   return starts;
@@ -76,7 +76,7 @@ pub fn build_line_index(content: &[u8]) -> Vec<usize> {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // for (let i = 0; i < content.length; i++) {
+    // for (let loopIndex = 0; loopIndex < content.length; loopIndex++) {
     //   if (content[i] === 0x0a) starts.push(i + 1);
     // }
     // ```

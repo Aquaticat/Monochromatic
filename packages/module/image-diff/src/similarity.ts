@@ -38,16 +38,16 @@ export function dotProduct({
    * a `b[i]!` non-null assertion at the same place the explicit guard below already handles.
    */
   let sum = 0;
-  for (let i = 0; i < a
-    .length; i++) {
+  for (let loopIndex = 0; loopIndex < a
+    .length; loopIndex++) {
     /**
      * Element from the first vector at index `i`; guarded against jagged-array sparsity.
      */
-    const ai = a[i];
+    const ai = a[loopIndex];
     /**
      * Element from the second vector at index `i`; guarded against jagged-array sparsity.
      */
-    const bi = b[i];
+    const bi = b[loopIndex];
     if ((ai === undefined) || (bi === undefined))
       break;
     sum += ai * bi;

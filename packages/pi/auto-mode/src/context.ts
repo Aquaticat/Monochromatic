@@ -130,12 +130,12 @@ function getReusableApproval(
   const branch = ctx.sessionManager
     .getBranch();
 
-  for (let i = branch.length
-    - 1; i >= 0; i--) {
+  for (let loopIndex = branch.length
+    - 1; loopIndex >= 0; loopIndex--) {
     /**
      * Branch entry inspected while walking newest to oldest.
      */
-    const entry = branch[i];
+    const entry = branch[loopIndex];
     if (entry === undefined)
       continue;
     if (!isVerdictEntry(entry,))

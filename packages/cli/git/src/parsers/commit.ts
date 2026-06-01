@@ -156,10 +156,10 @@ function normaliseInlineShort(token: string,): readonly string[] {
  * ```
  */
 function findValueOptionIndex(token: string,): number {
-  for (let i = 1; i < token
-    .length; i += 1) {
-    if (SHORT_VALUE_OPTIONS.has(`-${token[i]}`,))
-      return i;
+  for (let loopIndex = 1; loopIndex < token
+    .length; loopIndex += 1) {
+    if (SHORT_VALUE_OPTIONS.has(`-${token[loopIndex]}`,))
+      return loopIndex;
   }
   return -1;
 }

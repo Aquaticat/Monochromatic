@@ -187,9 +187,9 @@ function base64UrlDecode(value: string,): string {
    * Byte buffer copied from `binary`; decoded back to UTF-8 below.
    */
   const bytes = new Uint8Array(binary.length,);
-  for (let index = 0; index < binary
-    .length; index += 1)
-    bytes[index] = binary.codePointAt(index,)
+  for (let loopIndex = 0; loopIndex < binary
+    .length; loopIndex += 1)
+    bytes[loopIndex] = binary.codePointAt(loopIndex,)
       ?? 0;
   return new TextDecoder().decode(bytes,);
 }

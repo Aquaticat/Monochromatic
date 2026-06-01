@@ -3,7 +3,7 @@
  *
  * Bundled into the output HTML by `../render-html.ts` via `Bun.build`
  * (`format: 'iife'`, `minify: true`) and executed once the DOM has
- * loaded. Reads the embedded `window.__PROBES__` global injected by the
+ * loaded. Reads the embedded `globalThis.__PROBES__` global injected by the
  * HTML composer, instantiates a deck.gl `Deck` with the
  * {@link ../deck-config.ts#orbitView OrbitView}, delegates control
  * wiring to {@link ./controller-events.ts}, and keeps the URL hash
@@ -61,18 +61,10 @@ import {
 //region Globals
 
 declare global {
-  /* oxlint-disable typescript-eslint/consistent-type-definitions -- global declaration merging requires `interface`, not `type`. */
   /**
-   * Augmentation of the `Window` global so TypeScript sees the data
-   * literal injected by `../render-html.ts` at HTML-composition time.
+   * Probe array embedded by `render-html.ts` as a JS literal on the global object.
    */
-  interface Window {
-    /**
-     * Probe array embedded by `render-html.ts` as a JS literal.
-     */
-    __PROBES__?: readonly PackageProbe[];
-  }
-  /* oxlint-enable typescript-eslint/consistent-type-definitions */
+  var __PROBES__: readonly PackageProbe[];
 }
 
 //endregion Globals
@@ -99,19 +91,20 @@ type Session = {
  * `render-html.ts`. Throws if absent so a broken bundling step
  * surfaces loudly instead of silently rendering an empty scene.
  *
- * @returns Probe array from `window.__PROBES__`.
+ * @returns Probe array from `globalThis.__PROBES__`.
  *
- * @throws When `window.__PROBES__` was not injected.
+ * @throws When `globalThis.__PROBES__` was not injected.
  */
 function getProbes(): readonly PackageProbe[] {
-  /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- accessing the `Window`-augmented `__PROBES__` field requires the named global, not `globalThis`. */
+  if (!Object.hasOwn(
+    globalThis,
+    '__PROBES__',
+  ))
+    throw new Error('globalThis.__PROBES__ not injected; check render-html.ts',);
   /**
-   * Probe array injected onto `window` by `render-html.ts`; `undefined` signals a broken bundle.
+   * Probe array injected onto `globalThis` by `render-html.ts`.
    */
-  const probes = window.__PROBES__;
-  /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
-  if (probes === undefined)
-    throw new Error('window.__PROBES__ not injected; check render-html.ts',);
+  const probes = globalThis.__PROBES__;
   return probes;
 }
 
@@ -307,25 +300,23 @@ function onCanvasClick(info: PickingInfo,): void {
  * is created so the closure can capture the post-declaration binding
  * without a forward reference.
  *
- * @param probes - Probe array from `window.__PROBES__`.
+ * @param probes - Probe array from `globalThis.__PROBES__`.
  *
  * @returns Hydrated session ready for event wiring.
  */
 function createSession(
   { probes, }: { readonly probes: readonly PackageProbe[]; },
 ): Session {
-  /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- `window.location` is the canonical name; aliasing to `globalThis.location` only obscures intent for a browser-only file. */
   /**
    * Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults.
    */
   const initial = readStateFromHash({
-    hash: window.location
+    hash: globalThis.location
       .hash,
     fallback: defaultState({
       probes,
     },),
   },);
-  /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
   /**
    * Per-channel data extents used by every layer factory; recomputed only when the dim mapping changes.
    */

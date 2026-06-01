@@ -14,7 +14,7 @@ import {
 import { loadHarness, } from './test-setup.ts';
 
 declare global {
-  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- `string | null` mirrors the `prompt` return type, which mirrors the native `window.prompt` DOM API (string on OK, `null` on cancel)
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- `string | null` mirrors the `prompt` return type, which mirrors the native `globalThis.prompt` DOM API (string on OK, `null` on cancel)
   var pendingPrompt: Promise<string | null>;
 }
 
@@ -37,7 +37,7 @@ test.describe('prompt', () => {
     expect(result,).toBe('alice',);
   });
 
-  test('OK with empty input resolves to empty string (window.prompt parity)', async ({ page, },) => {
+  test('OK with empty input resolves to empty string (globalThis.prompt parity)', async ({ page, },) => {
     await loadHarness({ page, },);
 
     await page.evaluate(function openPrompt() {

@@ -29,7 +29,7 @@ export type AwaitWriteFinishOptions = {
    */
   readonly stabilityThreshold: number;
   /**
-   * Milliseconds between size re-stats during the stability window.
+   * Milliseconds between size re-stats during the stability period.
    */
   readonly pollInterval: number;
 };

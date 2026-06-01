@@ -312,7 +312,7 @@ function handleApply(data: Extract<InboundMessage, { kind: 'apply'; }>,): void {
 }
 
 /**
- * Routes the `query` message: returns the requested substring window.
+ * Routes the `query` message: returns the requested substring span.
  *
  * @param data - query message
  */

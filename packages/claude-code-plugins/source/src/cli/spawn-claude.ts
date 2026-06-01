@@ -83,7 +83,7 @@ const args = runSync(
     programName: 'spawn-claude',
     help: 'option',
     brief:
-      message`Spawn a steerable child Claude Code session in a visible terminal window.`,
+      message`Spawn a steerable child Claude Code session in a visible terminal instance.`,
   },
 );
 
@@ -146,7 +146,7 @@ else {
   );
 
   /**
-   * Detached child process running the spawned Claude session in a terminal window.
+   * Detached child process running the spawned Claude session in a terminal instance.
    */
   const proc = spawn(
     'terminal-exec',

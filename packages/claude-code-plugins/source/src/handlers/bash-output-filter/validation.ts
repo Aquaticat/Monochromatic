@@ -349,22 +349,22 @@ function hasTtyContainerInvoke(cmd: string,): boolean {
   const tokens = splitWhitespace(cmd,);
   // Scan adjacent token pairs for `(runtime, subcommand)`; on a hit, look for a
   // later TTY flag among the remaining tokens.
-  for (let idx = 0; (idx + 1) < tokens
-    .length; idx += 1) {
+  for (let cursorIndex = 0; (cursorIndex + 1) < tokens
+    .length; cursorIndex += 1) {
     /**
      * Candidate container runtime token.
      */
-    const runtime = tokens[idx]
+    const runtime = tokens[cursorIndex]
       ?? '';
     /**
      * Candidate subcommand token immediately following the runtime.
      */
-    const sub = tokens[idx + 1]
+    const sub = tokens[cursorIndex + 1]
       ?? '';
     if (CONTAINER_RUNTIMES.has(runtime,)
       && CONTAINER_TTY_SUBCOMMANDS
       .has(sub,)) {
-      for (const t of tokens.slice(idx + 2,)) {
+      for (const t of tokens.slice(cursorIndex + 2,)) {
         if (isTtyFlag(t,))
           return true;
       }
@@ -393,10 +393,10 @@ function hasBunBuild(cmd: string,): boolean {
    */
   const tokens = splitWhitespace(cmd,);
   // Scan adjacent token pairs for `bun` immediately followed by `build`.
-  for (let idx = 0; (idx + 1) < tokens
-    .length; idx += 1) {
-    if ((tokens[idx]
-      === 'bun') && (tokens[idx + 1]
+  for (let cursorIndex = 0; (cursorIndex + 1) < tokens
+    .length; cursorIndex += 1) {
+    if ((tokens[cursorIndex]
+      === 'bun') && (tokens[cursorIndex + 1]
         === 'build'))
       return true;
   }
@@ -496,27 +496,27 @@ function hasHeredoc(cmd: string,): boolean {
   // Walk each `<<` opener in order; skip an optional `<`/`-` variant marker and
   // any whitespace, then require a non-whitespace body char.
   for (
-    let idx = cmd.indexOf(
+    let cursorIndex = cmd.indexOf(
       '<<',
       0,
     );
-    idx !== (-1);
-    idx = cmd.indexOf(
+    cursorIndex !== (-1);
+    cursorIndex = cmd.indexOf(
       '<<',
-      idx + 1,
+      cursorIndex + 1,
     )
   ) {
     /**
      * Char after the `<<`; may indicate `<<<` or `<<-` variants.
      */
-    const afterOpener = cmd.charAt(idx + OPENER_LENGTH,);
+    const afterOpener = cmd.charAt(cursorIndex + OPENER_LENGTH,);
     /**
      * Cursor past the optional variant marker.
      */
     const afterMarker = ((afterOpener === '<') || (afterOpener === '-'))
-      ? (idx + OPENER_LENGTH
+      ? (cursorIndex + OPENER_LENGTH
         + 1)
-      : (idx + OPENER_LENGTH);
+      : (cursorIndex + OPENER_LENGTH);
     /**
      * Position of the candidate body char, advanced past whitespace after the marker.
      */

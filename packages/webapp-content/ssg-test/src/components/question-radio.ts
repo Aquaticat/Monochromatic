@@ -118,9 +118,9 @@ function fnv1a32(input: string,): string {
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- FNV-1a algorithm requires in-place XOR/multiply across the loop
   let hash = FNV_OFFSET_32;
-  for (let i = 0; i < input
-    .length; i++) {
-    hash ^= input.codePointAt(i,)
+  for (let loopIndex = 0; loopIndex < input
+    .length; loopIndex++) {
+    hash ^= input.codePointAt(loopIndex,)
       ?? 0;
     hash = Math.imul(
       hash,

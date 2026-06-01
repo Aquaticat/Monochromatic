@@ -372,7 +372,7 @@ export function* $(length: number,): Generator<number, void, undefined> {
   if (length < 0)
     throw new RangeError('Length must be non-negative',);
 
-  for (let index = 0; index < length; index++)
+  for (let loopIndex = 0; loopIndex < length; loopIndex++)
     yield index;
 }
 

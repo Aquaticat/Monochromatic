@@ -144,12 +144,12 @@ export function extractCssUrls(source: string,): string[] {
    * @returns next semantic token, or {@link NO_MORE_TOKENS} past the end
    */
   function nextSemanticToken(startIndex: number,): CSSToken | typeof NO_MORE_TOKENS {
-    for (let index = startIndex; index < tokens
-      .length; index += 1) {
+    for (let loopIndex = startIndex; loopIndex < tokens
+      .length; loopIndex += 1) {
       /**
        * Current token under inspection; skipped if it carries no semantic content.
        */
-      const token = nonNullishOrThrow(tokens[index],);
+      const token = nonNullishOrThrow(tokens[loopIndex],);
       if (!isTokenWhiteSpaceOrComment(token,))
         return token;
     }
@@ -171,12 +171,12 @@ export function extractCssUrls(source: string,): string[] {
       refs.add(local,);
   }
 
-  for (let index = 0; index < tokens
-    .length; index += 1) {
+  for (let loopIndex = 0; loopIndex < tokens
+    .length; loopIndex += 1) {
     /**
      * Current token in the linear scan; dispatch below depends on its kind.
      */
-    const token = nonNullishOrThrow(tokens[index],);
+    const token = nonNullishOrThrow(tokens[loopIndex],);
     if (isTokenURL(token,)) {
       addLocalRef(tokenValue(token,),);
       continue;
@@ -189,7 +189,7 @@ export function extractCssUrls(source: string,): string[] {
       /**
        * First semantic token after `url(`; expected to be the quoted URL string.
        */
-      const next = nextSemanticToken(index + 1,);
+      const next = nextSemanticToken(loopIndex + 1,);
       if ((next !== NO_MORE_TOKENS) && isTokenString(next,))
         addLocalRef(tokenValue(next,),);
       continue;
@@ -202,7 +202,7 @@ export function extractCssUrls(source: string,): string[] {
       /**
        * First semantic token after `@import`; expected to be the imported stylesheet URL.
        */
-      const next = nextSemanticToken(index + 1,);
+      const next = nextSemanticToken(loopIndex + 1,);
       if ((next !== NO_MORE_TOKENS) && isTokenString(next,))
         addLocalRef(tokenValue(next,),);
     }

@@ -183,9 +183,9 @@ function blockEndIndex({
   readonly lines: readonly string[];
   readonly start: number;
 },): number {
-  for (let idx = start; idx < lines.length; idx += 1) {
-    if (isBlankLine(lines[idx] ?? '',))
-      return idx;
+  for (let cursorIndex = start; cursorIndex < lines.length; cursorIndex += 1) {
+    if (isBlankLine(lines[cursorIndex] ?? '',))
+      return cursorIndex;
   }
   return lines.length;
 }
@@ -436,18 +436,18 @@ export function filterOxlintOutput({
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   // Index loop: `idx` jumps by whole blocks when one is dropped, so the stride is variable.
-  for (let idx = 0; idx < lines.length;) {
+  for (let cursorIndex = 0; cursorIndex < lines.length;) {
     /**
      * Current line; only a header opens a diagnostic block.
      */
-    const line = lines[idx] ?? '';
+    const line = lines[cursorIndex] ?? '';
     /**
      * Header classification, or the sentinel for blank/context/summary lines that pass through unchanged.
      */
     const header = classifyHeader(line,);
     if (header === NOT_DIAGNOSTIC_HEADER) {
       kept.push(line,);
-      idx += 1;
+      cursorIndex += 1;
       continue;
     }
 
@@ -456,13 +456,13 @@ export function filterOxlintOutput({
      */
     const end = blockEndIndex({
       lines,
-      start: idx,
+      start: cursorIndex,
     },);
     /**
      * This block's lines, header through last context line.
      */
     const block = lines.slice(
-      idx,
+      cursorIndex,
       end,
     );
 
@@ -477,7 +477,7 @@ export function filterOxlintOutput({
         remainingWarnings += 1;
       for (const blockLine of block)
         kept.push(blockLine,);
-      idx = end;
+      cursorIndex = end;
       continue;
     }
 
@@ -486,7 +486,7 @@ export function filterOxlintOutput({
     else
       suppressedWarnings += 1;
     // Drop the block and its trailing blank separator so no orphan blank remains.
-    idx = (isBlankLine(lines[end] ?? 'x',)) ? end + 1 : end;
+    cursorIndex = (isBlankLine(lines[end] ?? 'x',)) ? end + 1 : end;
   }
 
   return {

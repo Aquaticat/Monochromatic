@@ -128,12 +128,12 @@ export function compareVersions<TModel extends Pick<ModelPricing, 'id'>,>(
     leftVersions.length,
     rightVersions.length,
   );
-  for (let index = 0; index < maxLength; index++) {
+  for (let loopIndex = 0; loopIndex < maxLength; loopIndex++) {
     /**
      * Per-position delta with `b` first so higher versions sort earlier.
      */
-    const diff = (rightVersions[index]
-      ?? 0) - (leftVersions[index]
+    const diff = (rightVersions[loopIndex]
+      ?? 0) - (leftVersions[loopIndex]
         ?? 0);
     if (diff !== 0)
       return diff;

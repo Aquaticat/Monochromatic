@@ -138,16 +138,16 @@ export function extractParamsText(
        * Angle-bracket nesting counter so nested generics resolve before the params open.
        */
       let depth = 0;
-      for (let i = 0; i < tpText
-        .length; i++) {
-        if (tpText[i]
+      for (let loopIndex = 0; loopIndex < tpText
+        .length; loopIndex++) {
+        if (tpText[loopIndex]
           === '<')
           depth++;
-        else if (tpText[i]
+        else if (tpText[loopIndex]
           === '>') {
           depth--;
           if (depth === 0) {
-            start += i + 1;
+            start += loopIndex + 1;
             break;
           }
         }
@@ -173,16 +173,16 @@ export function extractParamsText(
    */
   let inString: string | typeof OUTSIDE_STRING = OUTSIDE_STRING;
 
-  for (let i = 0; i < rest
-    .length; i++) {
+  for (let loopIndex = 0; loopIndex < rest
+    .length; loopIndex++) {
     /**
      * Current character under the scanner cursor.
      */
-    const ch = rest[i];
+    const ch = rest[loopIndex];
 
     if (inString !== OUTSIDE_STRING) {
       if (ch === '\\') {
-        i++;
+        loopIndex++;
         continue;
       }
       if (ch === inString)
@@ -203,7 +203,7 @@ export function extractParamsText(
       if (depth === 0) {
         return rest.slice(
           0,
-          i + 1,
+          loopIndex + 1,
         );
       }
     }

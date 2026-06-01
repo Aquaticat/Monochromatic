@@ -3,7 +3,7 @@
  *
  * Artifact directories encode timestamps in a filesystem-safe slug format
  * (colons replaced with hyphens). This module reverses that encoding and
- * checks whether timestamps fall within a 24-hour recency window.
+ * checks whether timestamps fall within a 24-hour recency threshold.
  */
 
 import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';

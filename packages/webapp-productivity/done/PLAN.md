@@ -618,7 +618,7 @@ if (!res.ok) {
   return;
 }
 // Navigate to refresh data (full page load -- simple, no client-side state to sync)
-window.location.reload();
+globalThis.location.reload();
 ```
 
 ```ts
@@ -1319,7 +1319,7 @@ These patterns are confirmed working: no surprises expected during implementatio
 <td>Schema validation with error messages</td>
 </tr>
 <tr>
-<td>fetch() mutations + window.location.reload()</td>
+<td>fetch() mutations + globalThis.location.reload()</td>
 <td>**validated**</td>
 <td>Simple mutation pattern, no client-side state sync</td>
 </tr>

@@ -37,7 +37,7 @@ export const EXPENSIVE_INPUT = 5;
 export const EXPENSIVE_OUTPUT = 8;
 
 /**
- * Fixture context window.
+ * Fixture context budget.
  */
 const CONTEXT_WINDOW = 128_000;
 

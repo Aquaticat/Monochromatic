@@ -56,7 +56,7 @@
  * Working with generators for lazy evaluation:
  * ```ts
  * function* generateNumbers() {
- *   for (let i = 1; i <= 10; i++) {
+ *   for (let loopIndex = 1; loopIndex <= 10; loopIndex++) {
  *     yield i;
  *   }
  * }

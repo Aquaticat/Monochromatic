@@ -212,8 +212,8 @@ export function writeStr({
   readonly offset: number;
   readonly str: string;
 },): void {
-  for (let idx = 0; idx < len; idx++) {
-    buf[offset + idx] = str.codePointAt(idx,) ?? ASCII_SPACE;
+  for (let cursorIndex = 0; cursorIndex < len; cursorIndex++) {
+    buf[offset + cursorIndex] = str.codePointAt(cursorIndex,) ?? ASCII_SPACE;
   }
 }
 

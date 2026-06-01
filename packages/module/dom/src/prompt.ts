@@ -1,4 +1,4 @@
-// Prompt Dialog Polyfill: Drop-in replacement for window.prompt using dialog element
+// Prompt Dialog Polyfill: Drop-in replacement for globalThis.prompt using dialog element
 
 /**
  * Per-call class-name overrides for the dialog, cancel button, and OK button.
@@ -41,10 +41,10 @@ export const DEFAULT_PROMPT_CLASSES: Required<PromptClassNames> = {
   ok: 'prompt-polyfill-ok',
 };
 
-/* oxlint-disable require-await, no-restricted-syntax/no-nullish-union -- exposed as async so callers can `await` even though the work is event-driven; the `string | null` return mirrors the native `window.prompt` DOM API this polyfill replaces, which returns the entered string (including `''`) on OK or `null` on every cancel path */
+/* oxlint-disable require-await, no-restricted-syntax/no-nullish-union -- exposed as async so callers can `await` even though the work is event-driven; the `string | null` return mirrors the native `globalThis.prompt` DOM API this polyfill replaces, which returns the entered string (including `''`) on OK or `null` on every cancel path */
 /**
  * Creates a modern prompt dialog using the HTML dialog element.
- * This serves as a polyfill for window.prompt with enhanced styling capabilities.
+ * This serves as a polyfill for globalThis.prompt with enhanced styling capabilities.
  *
  * @param message - Message to display to the user
  *
@@ -58,7 +58,7 @@ export const DEFAULT_PROMPT_CLASSES: Required<PromptClassNames> = {
  * @returns Promise that resolves to the entered string when OK is clicked
  *   (including `''` for an empty field), or `null` when the user cancels
  *   via the Cancel button, the Esc key, or a backdrop click. Mirrors the
- *   distinction native `window.prompt` makes between empty-OK and cancel.
+ *   distinction native `globalThis.prompt` makes between empty-OK and cancel.
  *
  * @example
  * ```ts

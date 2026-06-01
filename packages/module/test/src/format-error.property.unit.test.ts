@@ -375,8 +375,8 @@ await describe({
               const memberCount = memberMessages.length;
               const lines = await formatErrorDeep(buildAggregate({ memberMessages, },),);
               expect(lines.length,).toBe(memberCount + 1,);
-              for (let index = 0; index < memberCount; index += 1) {
-                const prefix = `[${String(index + 1,)}/${String(memberCount,)}] `;
+              for (let loopIndex = 0; loopIndex < memberCount; loopIndex += 1) {
+                const prefix = `[${String(loopIndex + 1,)}/${String(memberCount,)}] `;
                 expect(
                   lines.some(function hasPrefix(line,) {
                     return line.startsWith(prefix,);

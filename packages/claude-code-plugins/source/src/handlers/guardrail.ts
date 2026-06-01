@@ -174,10 +174,10 @@ function invokesBunTest(command: string,): boolean {
   function scanForBoundary(fromIdx: number,): boolean {
     // Scan every position from `fromIdx`; a command separator immediately
     // followed by a `bun test` segment confirms the invocation.
-    for (let idx = fromIdx; idx < command
-      .length; idx += 1) {
-      if (isCommandBoundary(command.charAt(idx,),)
-        && matchesAt(idx + 1,))
+    for (let cursorIndex = fromIdx; cursorIndex < command
+      .length; cursorIndex += 1) {
+      if (isCommandBoundary(command.charAt(cursorIndex,),)
+        && matchesAt(cursorIndex + 1,))
         return true;
     }
     return false;

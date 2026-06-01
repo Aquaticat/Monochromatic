@@ -46,7 +46,7 @@ const REJECTING_COST_RATIO = 0.1;
 /** Major-version count used by budget selection fixtures. */
 const MAJOR_VERSIONS = 1;
 
-/** Fixture context window. */
+/** Fixture context budget. */
 const CONTEXT_WINDOW = 128_000;
 
 /** Fixture maximum output tokens. */

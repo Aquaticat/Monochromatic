@@ -82,7 +82,7 @@ Example:
 ```
 
 `maxContextChars` is optional.
-When omitted, Advisor derives the serialized-context budget from the selected model's context window.
+When omitted, Advisor derives the serialized-context budget from the selected model's context budget.
 When present, it caps the model-derived budget.
 
 Project config overrides global scalar values.
@@ -143,7 +143,7 @@ Log in to the provider or configure the provider's API key in Pi.
 
 ### Context truncation
 
-Advisor derives an effective serialized-context budget from the selected model's context window.
+Advisor derives an effective serialized-context budget from the selected model's context budget.
 It reserves tokens for the Advisor system prompt, provider framing overhead, and `maxAdvisorOutputTokens`.
 When serialized context exceeds that effective budget, Advisor keeps the head and tail and inserts an omission marker.
 Set `maxContextChars` only when a project needs a lower hard cap than the selected model allows.

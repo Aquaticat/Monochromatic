@@ -251,7 +251,7 @@ async function findSocketOwnerPid(): Promise<number> {
 /**
  * Kills the existing hall-monitor instance and acquires the lock.
  * Sends SIGTERM first, escalates to SIGKILL if the process does not exit
- * within the retry window.
+ * within the retry span.
  *
  * @throws when the lock cannot be acquired after killing the existing instance
  *
@@ -273,7 +273,7 @@ export async function killExisting(): Promise<void> {
     'SIGTERM',
   );
 
-  for (let i = 0; i < SIGTERM_RETRIES; i++) {
+  for (let loopIndex = 0; loopIndex < SIGTERM_RETRIES; loopIndex++) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential retry loop with delay
     await new Promise(function retryDelay(resolve,) {
       setTimeout(
@@ -297,7 +297,7 @@ export async function killExisting(): Promise<void> {
     // process may already be gone
   }
 
-  for (let i = 0; i < SIGKILL_RETRIES; i++) {
+  for (let loopIndex = 0; loopIndex < SIGKILL_RETRIES; loopIndex++) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential retry loop with delay
     await new Promise(function retryDelay(resolve,) {
       setTimeout(

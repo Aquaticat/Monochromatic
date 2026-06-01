@@ -150,20 +150,20 @@ function splitWhitespace(s: string,): string[] {
   const tokens: string[] = [];
   // Single forward pass; whitespace advances one char, a non-whitespace run is
   // sliced out in one piece. `idx` jumps over each token, so the stride varies.
-  for (let idx = 0; idx < s
+  for (let cursorIndex = 0; cursorIndex < s
     .length;) {
-    if (isWhitespace(s.charAt(idx,),)) {
-      idx += 1;
+    if (isWhitespace(s.charAt(cursorIndex,),)) {
+      cursorIndex += 1;
       continue;
     }
     /**
      * Inclusive start of the current non-whitespace token.
      */
-    const start = idx;
+    const start = cursorIndex;
     /**
      * Exclusive end of the token, advanced to the next whitespace or end of input.
      */
-    let end = idx + 1;
+    let end = cursorIndex + 1;
     while ((end < s
       .length) && (!isWhitespace(s.charAt(end,),))) {
       end += 1;
@@ -172,7 +172,7 @@ function splitWhitespace(s: string,): string[] {
       start,
       end,
     ),);
-    idx = end;
+    cursorIndex = end;
   }
   return tokens;
 }
@@ -297,20 +297,20 @@ function containsWordBoundedPhrase(
   // hit (monotonic, no rescan of earlier text) until a word-bounded match is
   // found or the matches are exhausted.
   for (
-    let idx = lowerHay.indexOf(
+    let cursorIndex = lowerHay.indexOf(
       lowerPhrase,
       0,
     );
-    idx !== (-1);
-    idx = lowerHay.indexOf(
+    cursorIndex !== (-1);
+    cursorIndex = lowerHay.indexOf(
       lowerPhrase,
-      idx + 1,
+      cursorIndex + 1,
     )
   ) {
     if (boundariesSatisfied({
       haystack: lowerHay,
       phrase: lowerPhrase,
-      index: idx,
+      index: cursorIndex,
     },)) {
       return true;
     }

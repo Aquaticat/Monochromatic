@@ -433,7 +433,7 @@ function parseKiwiSchema(data: Uint8Array,): KiwiSchema {
    */
   const structByName = new Map<string, KiwiStruct>();
 
-  for (let i = 0; i < definitionCount; i++) {
+  for (let loopIndex = 0; loopIndex < definitionCount; loopIndex++) {
     /**
      * Definition name read from the schema; reused for the lookup map keys.
      */
@@ -470,7 +470,7 @@ function parseKiwiSchema(data: Uint8Array,): KiwiSchema {
        * Field accumulator for the enum branch; populated by the inner loop.
        */
       const fields: KiwiEnumField[] = [];
-      for (let j = 0; j < fieldCount; j++) {
+      for (let fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++) {
         /**
          * Enum field label; paired with its numeric value below.
          */
@@ -508,7 +508,7 @@ function parseKiwiSchema(data: Uint8Array,): KiwiSchema {
        * Field accumulator for the struct/message branch; populated by the inner loop.
        */
       const fields: KiwiStructField[] = [];
-      for (let j = 0; j < fieldCount; j++) {
+      for (let fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++) {
         /**
          * Struct field label.
          */
@@ -714,7 +714,7 @@ function decodeStruct(
        * Decoded array elements accumulated before assignment to `result`.
        */
       const items: KiwiDecodedValue[] = [];
-      for (let i = 0; i < count; i++) {
+      for (let loopIndex = 0; loopIndex < count; loopIndex++) {
         items.push(decodeValue(
           reader,
           schema,
@@ -799,7 +799,7 @@ function decodeMessage(
          * Decoded array elements before assignment to `result`.
          */
         const items: KiwiDecodedValue[] = [];
-        for (let i = 0; i < count; i++) {
+        for (let loopIndex = 0; loopIndex < count; loopIndex++) {
           items.push(decodeValue(
             reader,
             schema,
@@ -967,7 +967,7 @@ function parseCanvasHeader(
 
   // Find null terminator within first 10 bytes
   /**
-   * Cursor seeking the 0x00 terminator inside the 10-byte magic window.
+   * Cursor seeking the 0x00 terminator inside the 10-byte magic-byte span.
    */
   let magicLen = 0;
   while ((magicLen < 10) && (data[magicLen]
@@ -1049,19 +1049,19 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
    * Byte offset where the zstd frame begins; -1 indicates no zstd payload was found.
    */
   let zstdOffset = -1;
-  for (let i = CANVAS_HEADER_SIZE; i < (canvasData.length
-    - 4); i++) {
+  for (let loopIndex = CANVAS_HEADER_SIZE; loopIndex < (canvasData.length
+    - 4); loopIndex++) {
     if (
-      (canvasData[i]
+      (canvasData[loopIndex]
         === zstdMagic[0])
-      && (canvasData[i + 1]
+      && (canvasData[loopIndex + 1]
         === zstdMagic[1])
-        && (canvasData[i + 2]
+        && (canvasData[loopIndex + 2]
           === zstdMagic[2])
-        && (canvasData[i + 3]
+        && (canvasData[loopIndex + 3]
           === zstdMagic[3])
     ) {
-      zstdOffset = i;
+      zstdOffset = loopIndex;
       break;
     }
   }
@@ -1370,14 +1370,14 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
    * EOCD record offset located by scanning backwards for its 4-byte signature.
    */
   let eocdOffset = -1;
-  for (let i = buffer.length
-    - 22; i >= 0; i--) {
+  for (let loopIndex = buffer.length
+    - 22; loopIndex >= 0; loopIndex--) {
     if (view.getUint32(
-      i,
+      loopIndex,
       true,
     )
       === 0x06_05_4B_50) {
-      eocdOffset = i;
+      eocdOffset = loopIndex;
       break;
     }
   }
@@ -1404,7 +1404,7 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
    * Walking cursor through the central directory; advanced by each entry's variable-length record.
    */
   let offset = centralDirOffset;
-  for (let i = 0; i < centralDirEntries; i++) {
+  for (let loopIndex = 0; loopIndex < centralDirEntries; loopIndex++) {
     /**
      * Central-directory entry signature; mismatched bytes mean a corrupted ZIP.
      */

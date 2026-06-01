@@ -316,8 +316,8 @@ test.describe('data visibility', () => {
     const count = await rows.count();
     expect(count,).toBeGreaterThan(0,);
 
-    for (let i = 0; i < count; i++) {
-      const scoreCell = rows.nth(i,).locator('td',).nth(1,);
+    for (let loopIndex = 0; loopIndex < count; loopIndex++) {
+      const scoreCell = rows.nth(loopIndex,).locator('td',).nth(1,);
       // oxlint-disable-next-line no-await-in-loop -- Playwright locator calls must be sequential within a loop
       const text = await scoreCell.textContent();
       expect(text?.trim(),).not.toBe('',);

@@ -280,14 +280,14 @@ await describe({
           fn: async () => {
             const zip = new ZipWriter();
             const data = new Uint8Array(1_024,);
-            for (let i = 0; i < data.length; i += 1)
-              data[i] = (i * 7) & 0xFF;
+            for (let loopIndex = 0; loopIndex < data.length; loopIndex += 1)
+              data[loopIndex] = (loopIndex * 7) & 0xFF;
             zip.add('blob.bin', data,);
             const bytes = zip.build();
             const extracted = await extractFromZip({ bytes, path: 'blob.bin', },);
             expect(extracted.length,).toBe(data.length,);
-            for (let i = 0; i < data.length; i += 1)
-              expect(extracted[i],).toBe(data[i],);
+            for (let loopIndex = 0; loopIndex < data.length; loopIndex += 1)
+              expect(extracted[loopIndex],).toBe(data[loopIndex],);
           },
         },),
         it({
@@ -325,8 +325,8 @@ await describe({
             const ba = a.build();
             const bb = b.build();
             expect(ba.length,).toBe(bb.length,);
-            for (let i = 0; i < ba.length; i += 1)
-              expect(ba[i],).toBe(bb[i],);
+            for (let loopIndex = 0; loopIndex < ba.length; loopIndex += 1)
+              expect(ba[loopIndex],).toBe(bb[loopIndex],);
           },
         },),
       ],

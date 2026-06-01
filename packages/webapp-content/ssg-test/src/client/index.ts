@@ -114,7 +114,7 @@ function findFirstOverlap(
      */
     const mid = (lo + hi) >>> 1;
     /**
-     * Entry inspected at the midpoint of the current search window.
+     * Entry inspected at the midpoint of the current search span.
      */
     const entry = nonNullishOrThrow(textEntries[mid],);
     if ((entry.start
@@ -189,12 +189,12 @@ function createRangesFromPairs({
       from,
     },);
 
-    for (let i = startIdx; i < textEntries
-      .length; i++) {
+    for (let loopIndex = startIdx; loopIndex < textEntries
+      .length; loopIndex++) {
       /**
        * Text entry inspected at the current scan index.
        */
-      const entry = nonNullishOrThrow(textEntries[i],);
+      const entry = nonNullishOrThrow(textEntries[loopIndex],);
       if (entry.start
         >= to)
         break;
