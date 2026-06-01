@@ -53,13 +53,7 @@ export { defaultConfig, } from './runner-config.ts';
 
 //region Message and timing types: chat message shape and streaming timing breakdown used by runner-stream.ts
 
-/**
- * Chat completions message shape
- */
-export type ChatMessage = {
-  readonly role: 'system' | 'user' | 'assistant';
-  readonly content: string;
-};
+export type { ChatMessage, } from '@monochromatic-dev/module-llm-types/ts';
 
 /**
  * Timing breakdown for a single API call

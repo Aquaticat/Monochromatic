@@ -6,6 +6,13 @@
  * cannot overwhelm the shared inference server.
  */
 
+import type {
+  ChatCompletionResponse,
+  ChatMessage,
+} from '@monochromatic-dev/module-llm-types/ts';
+
+export type { ChatMessage, };
+
 //region Configuration
 
 /**
@@ -83,20 +90,6 @@ function recordRequest(): void {
 //region Types
 
 /**
- * Message in a chat conversation.
- */
-export type ChatMessage = {
-  /**
-   * Role of the message author.
-   */
-  readonly role: 'system' | 'user' | 'assistant';
-  /**
-   * Text content of the message.
-   */
-  readonly content: string;
-};
-
-/**
  * Options for a chat completion request.
  */
 export type ChatCompletionOptions = {
@@ -116,29 +109,6 @@ export type ChatCompletionOptions = {
    * When `true`, request `response_format: \{ type: "json_object" \}`.
    */
   readonly jsonMode?: boolean;
-};
-
-/**
- * Single choice from a chat completion response.
- */
-type ChatCompletionResponseChoice = {
-  /**
-   * Message content of the choice.
-   */
-  message: {
-    role: string;
-    content: string;
-  };
-};
-
-/**
- * Full chat completion response from the API.
- */
-type ChatCompletionResponse = {
-  /**
-   * Array of completion choices.
-   */
-  choices: ChatCompletionResponseChoice[];
 };
 
 /**

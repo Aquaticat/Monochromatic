@@ -1,4 +1,9 @@
 import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
+import type {
+  ChatCompletionResponse,
+  CompletionUsage,
+  ContentPart,
+} from '@monochromatic-dev/module-llm-types/ts';
 
 import type { CaptureSet, } from './analyze/memory.ts';
 
@@ -29,44 +34,9 @@ OUTPUT FORMAT:
 - FINAL LINE must be exactly: VERDICT: PRODUCTIVE or VERDICT: UNPRODUCTIVE`;
 
 /**
- * Shape of the OpenAI-compatible chat message content array.
+ * Chat completion response extended with the token-usage block this monitor logs.
  */
-type ChatMessage = {
-  /**
-   * Role of the message sender.
-   */
-  role: string;
-  /**
-   * Array of text and image content parts.
-   */
-  content: (
-    | {
-      type: 'text';
-      text: string;
-    }
-    | {
-      type: 'image_url';
-      image_url: { url: string; };
-    }
-  )[];
-};
-
-/**
- * Shape of the OpenAI-compatible chat completion response.
- */
-type CompletionResponse = {
-  /**
-   * Array of completion choices.
-   */
-  choices: { message: { content: string; }; }[];
-  /**
-   * Token usage statistics.
-   */
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-  };
-};
+type CompletionResponse = ChatCompletionResponse & { readonly usage: CompletionUsage; };
 
 /**
  * Wraps a raw image buffer as a base64 data-URL content entry
@@ -237,7 +207,7 @@ export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   /**
    * Build content array by flat-mapping each capture into its message entries.
    */
-  const content: ChatMessage['content'] = capped.flatMap(
+  const content: ContentPart[] = capped.flatMap(
     function captureEntries(capture,) {
       /**
        * Human-readable local time used to label each capture in the prompt.

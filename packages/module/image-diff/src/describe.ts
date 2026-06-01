@@ -1,4 +1,10 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
+import type {
+  ChatCompletionResponse,
+  ChatRole,
+  ContentPart,
+} from '@monochromatic-dev/module-llm-types/ts';
+
 import { ABSENT, } from './describe.absent.ts';
 import { describeViaGemini, } from './describe.gemini.ts';
 import { toImageUri, } from './encoding.uri.ts';
@@ -30,23 +36,10 @@ Image A is the first image, Image B is the second.`;
 //region OpenRouter API types
 
 /**
- * Content part in an OpenRouter chat message.
+ * Vision chat message: one user turn carrying interleaved text and image parts.
  */
-type ContentPart =
-  | {
-    readonly type: 'text';
-    readonly text: string;
-  }
-  | {
-    readonly type: 'image_url';
-    readonly image_url: { readonly url: string; };
-  };
-
-/**
- * Chat message for the OpenRouter API.
- */
-type ChatMessage = {
-  readonly role: 'user';
+type VisionMessage = {
+  readonly role: Extract<ChatRole, 'user'>;
   readonly content: readonly ContentPart[];
 };
 
@@ -55,18 +48,7 @@ type ChatMessage = {
  */
 type ChatCompletionRequest = {
   readonly model: string;
-  readonly messages: readonly ChatMessage[];
-};
-
-/**
- * Response from the OpenRouter chat completions API.
- */
-type ChatCompletionResponse = {
-  readonly choices: readonly {
-    readonly message: {
-      readonly content: string;
-    };
-  }[];
+  readonly messages: readonly VisionMessage[];
 };
 
 //endregion OpenRouter API types

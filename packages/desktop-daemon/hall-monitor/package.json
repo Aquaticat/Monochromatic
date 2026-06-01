@@ -7,6 +7,7 @@
   "main": "src/index.ts",
   "dependencies": {
     "@monochromatic-dev/module-const": "workspace:*",
+    "@monochromatic-dev/module-llm-types": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {

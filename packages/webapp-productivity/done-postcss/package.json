@@ -8,6 +8,7 @@
     "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
+    "@monochromatic-dev/module-llm-types": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "h3": "catalog:",
     "postcss": "catalog:"

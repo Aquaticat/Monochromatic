@@ -21,6 +21,7 @@
     "dist/final"
   ],
   "dependencies": {
+    "@monochromatic-dev/module-llm-types": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"
