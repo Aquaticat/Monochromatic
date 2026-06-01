@@ -53,7 +53,10 @@ engine and the realtime callback share audio through a single-producer/single-co
 The host is an immutable-style Fedora without the PipeWire, Opus, and clang development headers, so all cargo work
 runs inside a Fedora container defined by `Containerfile`. The image carries the build toolchain and the GUI/audio
 runtime libraries; the `run` task passes the host Wayland, PipeWire, and D-Bus sockets and the DRI render node into
-the container so the window and audio reach the host session.
+the container so the window and audio reach the host session. The `run` task also uses `--userns=keep-id` so the
+container runs under the host uid: the D-Bus session bus authenticates with SASL EXTERNAL, which checks the asserted
+uid against the socket peer credential, and the dark/light theme watcher and the portal file picker (both using
+zbus) are rejected otherwise. See `docs/troubleshooting/podman-dbus-external-keep-id.md`.
 
 The source comments follow the repository's `dum-dum-non-ts` convention: every concept-introducing line carries a
 plain-English explanation and a TypeScript translation, because the maintainer reads TypeScript fluently and Rust

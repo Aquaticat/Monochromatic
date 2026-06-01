@@ -43,12 +43,22 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # Passthrough: Wayland socket, PipeWire socket, D-Bus session (for the rfd
 # portal picker), and the DRI render node for GPU GL. SLINT_BACKEND lets a
 # caller force the software renderer when GPU passthrough is unavailable.
+#
+# --userns=keep-id is REQUIRED for the host D-Bus session bus to work. The
+# session bus authenticates with SASL EXTERNAL, where the client asserts its
+# uid and the daemon checks it against the socket peer credential. Default
+# rootless podman runs the container as uid 0, which the host sees mapped to
+# the real uid, so zbus (used by Slint's color-scheme watcher AND by rfd's
+# portal file picker) asserts uid 0 and is rejected ("EXTERNAL rejected by
+# the server"). keep-id maps the host uid identically into the container, so
+# the asserted uid matches and the handshake succeeds. See
+# docs/troubleshooting/podman-dbus-external-keep-id.md.
 run = '''
 let xrd = $env.XDG_RUNTIME_DIR
 let wl = $env.WAYLAND_DISPLAY
 let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
 (
-  podman run --rm --security-opt label=disable
+  podman run --rm --security-opt label=disable --userns=keep-id
   --device /dev/dri --group-add keep-groups
   -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work
   -v $"($xrd)/($wl):/run/host-wayland"
