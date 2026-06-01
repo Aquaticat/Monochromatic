@@ -371,9 +371,8 @@ await describe({
       name: 'integration: real file conversion',
       children: [
         it({
-          name: 'converts real .fig, .deck, and .jam files end-to-end',
+          name: 'converts a real .fig file end-to-end',
           timeout: 30_000,
-          // One sequential test, not three concurrent it()s: kiwi's decompressZstd shares a per-call temp file, so concurrent parseFigmaFile runs (the harness runs sibling it()s concurrently) race on it.
           fn: async () => {
             const figFile = await parseFigmaFile(
               join(FIGMA_EXPORT_DIR, 'Color palette - base.fig',),
@@ -383,7 +382,12 @@ await describe({
             expect(figDoc.pages.size,).toBeGreaterThan(0,);
             expect(figDoc.shapes.size,).toBeGreaterThan(0,);
             expect(figZip.length,).toBeGreaterThan(1_000,);
-
+          },
+        },),
+        it({
+          name: 'converts a real .deck file end-to-end',
+          timeout: 30_000,
+          fn: async () => {
             const deckFile = await parseFigmaFile(
               join(FIGMA_EXPORT_DIR, 'MTM6162-040 participation 2 cover.deck',),
             );
@@ -391,7 +395,12 @@ await describe({
             expect(deckDoc.pages.size,).toBeGreaterThanOrEqual(1,);
             for (const page of deckDoc.pages.values())
               expect(page.name,).not.toBe('Internal Only Canvas',);
-
+          },
+        },),
+        it({
+          name: 'converts a real .jam file end-to-end',
+          timeout: 30_000,
+          fn: async () => {
             const jamFile = await parseFigmaFile(
               join(FIGMA_EXPORT_DIR, 'Todo app - Brainstorming.jam',),
             );
