@@ -110,6 +110,9 @@ export component AppWindow inherits Window {
             }
             Button {
                 text: "Open";
+                // Highlight (accent style) when the queue is empty, so a fresh
+                // launch points the user at the only useful action.
+                primary: root.queue.length == 0;
                 clicked => {
                     root.open-files();
                 }

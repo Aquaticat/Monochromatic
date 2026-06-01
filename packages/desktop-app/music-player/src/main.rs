@@ -394,10 +394,13 @@ fn main() -> Result<(), slint::PlatformError> {
         move |i| engine.send(Command::PlayIndex(i as usize))
     });
 
-    // What:     `app.on_open_files(...)`. Opens the file picker on a SEPARATE
-    //           thread (the dialog blocks) and sends the chosen files.
-    // Why:      A blocking dialog must not freeze the UI event loop.
-    // TS map:   `app.onOpenFiles(() => { showPickerAsync().then(files => tx.send(...)); });`
+    // What:     `app.on_open_files(...)`. Opens the FOLDER picker on a SEPARATE
+    //           thread (the dialog blocks) and sends the chosen directory.
+    // Why:      A blocking dialog must not freeze the UI event loop. The XDG
+    //           portal treats files and folders as separate dialog modes, so this
+    //           player picks a folder and scans it recursively (individual files
+    //           are still openable via command-line arguments).
+    // TS map:   `app.onOpenFiles(() => { showFolderPickerAsync().then(dir => tx.send(...)); });`
     app.on_open_files({
         // What:     `let tx = engine.sender();`. A `Send` clone of the command
         //           channel for the picker thread (the `Rc<Engine>` is `!Send`).
@@ -417,17 +420,20 @@ fn main() -> Result<(), slint::PlatformError> {
             // Why:      Keep the UI responsive while the dialog is open.
             // TS map:   `runInWorker(() => { ... });`
             std::thread::spawn(move || {
-                // What:     `if let Some(files) = rfd::FileDialog::new().pick_files() { ... }`.
-                //           Show a multi-file picker (XDG portal on Wayland). Returns
-                //           `Some(Vec<PathBuf>)` if the user chose files, else `None`.
-                // Why:      Let the user enqueue files.
-                // TS map:   `const files = await showOpenDialog({ multiple: true }); if (files) { ... }`
-                if let Some(files) = rfd::FileDialog::new().pick_files() {
-                    // What:     `let _ = tx.send(Command::OpenPaths(files));`. Send the
-                    //           selection to the engine; ignore a send error (engine gone).
-                    // Why:      Replace the queue with the chosen files.
-                    // TS map:   `tx.send(Command.OpenPaths(files));`
-                    let _ = tx.send(Command::OpenPaths(files));
+                // What:     `if let Some(dir) = rfd::FileDialog::new().pick_folder() { ... }`.
+                //           Show a folder picker (XDG portal on Wayland). Returns
+                //           `Some(PathBuf)` (one chosen directory) if the user
+                //           confirmed, else `None` (cancelled).
+                // Why:      Let the user enqueue a whole folder.
+                // TS map:   `const dir = await showOpenDialog({ directory: true }); if (dir) { ... }`
+                if let Some(dir) = rfd::FileDialog::new().pick_folder() {
+                    // What:     `let _ = tx.send(Command::OpenPaths(vec![dir]));`. Wrap
+                    //           the single folder in a one-element vector (`vec![...]`)
+                    //           and send it; the engine expands it recursively to its
+                    //           files. `let _ =` ignores a send error (engine gone).
+                    // Why:      Replace the queue with the folder's tracks.
+                    // TS map:   `tx.send(Command.OpenPaths([dir]));`
+                    let _ = tx.send(Command::OpenPaths(vec![dir]));
                 }
             });
         }

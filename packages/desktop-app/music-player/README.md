@@ -6,7 +6,8 @@ Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, an
 ## Scope
 
 - Output: Wayland for the window, PipeWire for audio. No X11 fallback, no ALSA/PulseAudio backends.
-- Source: an ad-hoc queue. Opening files or a folder replaces the queue; opening a folder enqueues its files.
+- Source: an ad-hoc queue. Opening a folder replaces the queue with the audio files found under it, scanning
+  subfolders recursively. Command-line file or folder arguments are expanded the same way.
 - Transport: play/pause, seek, volume, next/prev, shuffle, and repeat (off, all, one).
 - Metadata: filename only. No tag parsing and no album art. The seek bar's position and duration come from the
   decoder (frame count over sample rate), not from tags.
@@ -85,7 +86,8 @@ mise run //packages/desktop-app/music-player:gen:fixtures
 ```
 
 The binary also accepts file and folder paths as command-line arguments, which are enqueued and played on launch.
-The Open button uses the XDG desktop portal file picker.
+The Open button uses the XDG desktop portal folder picker, and a chosen folder is scanned recursively. Individual
+files can be enqueued through command-line arguments (the portal cannot offer files and folders in one dialog).
 
 ## Session
 

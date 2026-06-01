@@ -422,6 +422,17 @@ impl Controller {
         // Why:      Pump respects it.
         // TS map:   `this.playing = on;`
         self.playing = on;
+        // What:     `if let Some(output) = self.output.as_ref() { output.set_playing(on); }`.
+        //           Tell the audio output too (no-op in silent mode). `.as_ref()`
+        //           borrows the `Option<Output>` as `Option<&Output>` so we can
+        //           call a method without taking ownership.
+        // Why:      Lets the realtime callback react instantly: on pause it stops
+        //           draining the ring buffer and emits silence, so the buffered
+        //           ~1 second of audio does NOT keep playing (the pause-delay bug).
+        // TS map:   `this.output?.setPlaying(on);`
+        if let Some(output) = self.output.as_ref() {
+            output.set_playing(on);
+        }
         // What:     `self.emit(Update::Playing(on));`. Mirror to the UI.
         // Why:      Visual state.
         // TS map:   `this.emit({ kind: "playing", on });`
@@ -1199,9 +1210,11 @@ impl Controller {
 }
 
 // What:     `fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf>`. Turn the
-//           opened paths into a flat file list: directories expand to their
-//           (sorted) contained files; plain files pass through.
-// Why:      The queue holds files, but the UI may open a folder.
+//           opened paths into a flat file list: a directory expands to every file
+//           under it, RECURSIVELY (subfolders included); a plain path passes
+//           through unchanged.
+// Why:      The queue holds files, but the UI opens a folder, which should
+//           enqueue all of its tracks.
 // TS map:   `function expandPaths(paths: string[]): string[]`
 fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     // What:     `let mut out: Vec<PathBuf> = Vec::new();`. The accumulating result.
@@ -1215,59 +1228,16 @@ fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     // TS map:   `for (const path of paths) { ... }`
     for path in paths {
         // What:     `if path.is_dir() { ... } else { ... }`. `is_dir()` checks the
-        //           filesystem.
-        // Why:      Directories need expanding.
+        //           filesystem (following symlinks).
+        // Why:      Directories need recursive expansion.
         // TS map:   `if (isDir(path)) { ... } else { ... }`
         if path.is_dir() {
-            // What:     `match std::fs::read_dir(&path) { ... }`. List the directory;
-            //           returns `Result<ReadDir>` (an iterator of entries).
-            // Why:      Gather the folder's files.
-            // TS map:   `try { const entries = readdir(path); ... } catch (e) { ... }`
-            match std::fs::read_dir(&path) {
-                // What:     `Ok(entries) => { ... }`. Got the directory iterator.
-                // Why:      Walk its entries.
-                // TS map:   `entries => { ... }`
-                Ok(entries) => {
-                    // What:     `let mut files: Vec<PathBuf> = Vec::new();`. Files in
-                    //           this directory.
-                    // Why:      Collect, then sort for stable order.
-                    // TS map:   `const files: string[] = [];`
-                    let mut files: Vec<PathBuf> = Vec::new();
-                    // What:     `for entry in entries.flatten() { ... }`. Each item
-                    //           from `read_dir` is a `Result<DirEntry>`; `.flatten()`
-                    //           yields only the `Ok(DirEntry)` values, silently
-                    //           dropping any `Err` (unreadable entry). So `entry`
-                    //           here is already a `DirEntry`.
-                    // Why:      Iterate readable entries; skip broken ones robustly.
-                    // TS map:   `for (const entry of entries.filter(e => e.ok).map(e => e.value)) { ... }`
-                    for entry in entries.flatten() {
-                        // What:     `let p = entry.path();`. The entry's full path.
-                        // Why:      We classify and possibly keep it.
-                        // TS map:   `const p = entry.path;`
-                        let p = entry.path();
-                        // What:     `if p.is_file() { files.push(p); }`. Keep only
-                        //           files (ignore subdirectories; non-recursive).
-                        // Why:      The queue holds files.
-                        // TS map:   `if (isFile(p)) files.push(p);`
-                        if p.is_file() {
-                            files.push(p);
-                        }
-                    }
-                    // What:     `files.sort();`. Sort paths alphabetically in place.
-                    // Why:      Deterministic queue order.
-                    // TS map:   `files.sort();`
-                    files.sort();
-                    // What:     `out.extend(files);`. Append all of them, MOVING the
-                    //           elements into `out`.
-                    // Why:      Add the folder's files to the result.
-                    // TS map:   `out.push(...files);`
-                    out.extend(files);
-                }
-                // What:     `Err(e) => eprintln!(...)`. Log a directory-read failure.
-                // Why:      Skip the bad folder.
-                // TS map:   `catch (e) { console.error(e); }`
-                Err(e) => eprintln!("music-player: cannot read dir {}: {e}", path.display()),
-            }
+            // What:     `out.extend(collect_dir_files(&path));`. Append every file
+            //           found under the directory. `&path` lends it; `.extend(...)`
+            //           MOVES the returned files into `out`.
+            // Why:      Recursively enqueue the folder's tracks.
+            // TS map:   `out.push(...collectDirFiles(path));`
+            out.extend(collect_dir_files(&path));
         } else {
             // What:     `out.push(path);`. A plain path: keep it as-is (MOVES it).
             // Why:      Could be a file (or non-existent; the decoder will report).
@@ -1278,6 +1248,141 @@ fn expand_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
 
     // What:     `out`. Tail expression -> the expanded list is returned.
     // Why:      Hand back the flat file list.
+    // TS map:   `return out;`
+    out
+}
+
+// What:     `fn collect_dir_files(root: &Path) -> Vec<PathBuf>`. Walk a directory
+//           tree and return every file under it, sorted within each folder, with
+//           a folder's own files listed before its subfolders' files. `&Path` is
+//           a borrowed path (we only read it).
+// Why:      Opening a folder should enqueue all its tracks, including nested ones.
+// TS map:   `function collectDirFiles(root: string): string[]`
+fn collect_dir_files(root: &Path) -> Vec<PathBuf> {
+    // What:     `let mut out: Vec<PathBuf> = Vec::new();`. The collected files.
+    // Why:      Accumulate across the whole walk.
+    // TS map:   `const out: string[] = [];`
+    let mut out: Vec<PathBuf> = Vec::new();
+
+    // What:     `let mut stack: Vec<PathBuf> = vec![root.to_path_buf()];`. A
+    //           work-list of directories still to visit, seeded with the root.
+    //           `vec![...]` is the macro that builds a vector literal;
+    //           `root.to_path_buf()` copies the borrowed `&Path` into an OWNED
+    //           `PathBuf` we can store.
+    // Why:      An explicit stack walks the tree ITERATIVELY (no recursion), so a
+    //           deeply nested folder cannot overflow the call stack.
+    // TS map:   `const stack: string[] = [root];`
+    let mut stack: Vec<PathBuf> = vec![root.to_path_buf()];
+
+    // What:     `while let Some(dir) = stack.pop() { ... }`. Pop directories until
+    //           the work-list is empty. `stack.pop()` returns `Option<PathBuf>`:
+    //           `Some(dir)` while items remain, `None` when done (ends the loop).
+    // Why:      Process every pending directory.
+    // TS map:   `while (stack.length) { const dir = stack.pop()!; ... }`
+    while let Some(dir) = stack.pop() {
+        // What:     `let entries = match std::fs::read_dir(&dir) { ... };`. List the
+        //           directory; `read_dir` returns `Result<ReadDir>` (an iterator of
+        //           entries). `&dir` lends the path.
+        // Why:      Gather this folder's children, robust to unreadable folders.
+        // TS map:   `let entries; try { entries = readdir(dir); } catch (e) { ... }`
+        let entries = match std::fs::read_dir(&dir) {
+            // What:     `Ok(e) => e`. The directory iterator.
+            // Why:      Walk its entries.
+            // TS map:   `entries = e;`
+            Ok(e) => e,
+            // What:     `Err(e) => { eprintln!(...); continue; }`. Log the failure
+            //           and `continue` to the next work-list item.
+            // Why:      One bad folder should not abort the whole walk.
+            // TS map:   `catch (e) { console.error(e); continue; }`
+            Err(e) => {
+                eprintln!("music-player: cannot read dir {}: {e}", dir.display());
+                continue;
+            }
+        };
+
+        // What:     `let mut files: Vec<PathBuf> = Vec::new();`. Files directly in
+        //           this folder.
+        // Why:      Collected, sorted, then appended.
+        // TS map:   `const files: string[] = [];`
+        let mut files: Vec<PathBuf> = Vec::new();
+        // What:     `let mut subdirs: Vec<PathBuf> = Vec::new();`. Subfolders found
+        //           in this folder.
+        // Why:      Pushed onto the work-stack after sorting.
+        // TS map:   `const subdirs: string[] = [];`
+        let mut subdirs: Vec<PathBuf> = Vec::new();
+
+        // What:     `for entry in entries.flatten() { ... }`. Each `read_dir` item
+        //           is a `Result<DirEntry>`; `.flatten()` yields only the `Ok`
+        //           values, silently dropping unreadable entries. So `entry` is a
+        //           `DirEntry`.
+        // Why:      Iterate readable entries; skip broken ones robustly.
+        // TS map:   `for (const entry of entries.filter(e => e.ok).map(e => e.value)) { ... }`
+        for entry in entries.flatten() {
+            // What:     `let file_type = match entry.file_type() { ... };`.
+            //           `entry.file_type()` reports the entry kind WITHOUT following
+            //           symlinks (returns `Result<FileType>`); on error skip it.
+            // Why:      The non-following check lets us refuse to descend into
+            //           symlinked directories, avoiding infinite loops on a symlink
+            //           cycle.
+            // TS map:   `let ft; try { ft = entry.fileType(); } catch { continue; }`
+            let file_type = match entry.file_type() {
+                // What:     `Ok(ft) => ft`. The entry's type.
+                // Why:      Classify below.
+                // TS map:   `ft = ...;`
+                Ok(ft) => ft,
+                // What:     `Err(_) => continue`. Unreadable type: skip this entry.
+                //           `_` ignores the error value.
+                // Why:      Be robust.
+                // TS map:   `catch { continue; }`
+                Err(_) => continue,
+            };
+            // What:     `let p = entry.path();`. The entry's full path.
+            // Why:      Stored in one of the two buckets.
+            // TS map:   `const p = entry.path;`
+            let p = entry.path();
+            // What:     `if file_type.is_dir() { subdirs.push(p); } else if p.is_file() { files.push(p); }`.
+            //           A REAL subdirectory (symlinks excluded by `file_type`) goes
+            //           on the work-list; anything that resolves to a file
+            //           (`p.is_file()` DOES follow symlinks, so symlinked files
+            //           still count) is kept. A symlinked directory matches neither
+            //           and is ignored (loop-safe).
+            // Why:      Recurse only into real folders; collect real files.
+            // TS map:   `if (ft.isDirectory()) subdirs.push(p); else if (isFile(p)) files.push(p);`
+            if file_type.is_dir() {
+                subdirs.push(p);
+            } else if p.is_file() {
+                files.push(p);
+            }
+        }
+
+        // What:     `files.sort();`. Sort this folder's files alphabetically in place.
+        // Why:      Deterministic queue order.
+        // TS map:   `files.sort();`
+        files.sort();
+        // What:     `subdirs.sort();`. Sort subfolders alphabetically in place.
+        // Why:      Deterministic descent order.
+        // TS map:   `subdirs.sort();`
+        subdirs.sort();
+
+        // What:     `out.extend(files);`. Append this folder's files (a parent's
+        //           files precede its children's), MOVING them into `out`.
+        // Why:      Add the folder's tracks to the result.
+        // TS map:   `out.push(...files);`
+        out.extend(files);
+
+        // What:     `for dir in subdirs.into_iter().rev() { stack.push(dir); }`.
+        //           Push subfolders in REVERSE sorted order. `into_iter()` consumes
+        //           the vec by value; `.rev()` reverses the iteration.
+        // Why:      The stack pops last-in-first-out, so reversing here makes the
+        //           subfolders pop back out in sorted (ascending) order.
+        // TS map:   `for (const dir of [...subdirs].reverse()) stack.push(dir);`
+        for dir in subdirs.into_iter().rev() {
+            stack.push(dir);
+        }
+    }
+
+    // What:     `out`. Tail expression -> the recursively collected files.
+    // Why:      Hand back every file under `root`.
     // TS map:   `return out;`
     out
 }
@@ -1304,5 +1409,158 @@ fn file_name_of(path: &Path) -> String {
         // Why:      Always show something.
         // TS map:   `return String(path);`
         None => path.display().to_string(),
+    }
+}
+
+// What:     `#[cfg(test)] mod tests { ... }` declares a submodule compiled ONLY
+//           during `cargo test`. `#[cfg(test)]` is a conditional-compilation
+//           attribute.
+// Why:      Cover the pure path-expansion helper (the threaded engine itself is
+//           exercised by manual UI verification, not unit tests).
+// TS map:   like a `*.test.ts` file, but inlined and compiled out of prod.
+#[cfg(test)]
+mod tests {
+    // What:     `use super::*;` imports everything from the parent module into the
+    //           test scope. `super` means "one level up".
+    // Why:      Tests need `expand_paths`, `PathBuf`, etc.
+    // TS map:   `import * as parent from "./engine";`
+    use super::*;
+    // What:     `use std::fs;` brings the filesystem module into scope.
+    // Why:      The test builds a real directory tree to walk.
+    // TS map:   `import * as fs from "node:fs";`
+    use std::fs;
+    // What:     `use std::time::{SystemTime, UNIX_EPOCH};`. A clock reading and the
+    //           1970 epoch reference point.
+    // Why:      Build a unique temp-dir name so reruns do not collide.
+    // TS map:   `Date.now()`.
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    // What:     `fn unique_temp_dir() -> PathBuf` test helper: make and return a
+    //           fresh throwaway directory under the system temp dir.
+    // Why:      Verify on a disposable fixture, never real state.
+    // TS map:   `function uniqueTempDir(): string`.
+    fn unique_temp_dir() -> PathBuf {
+        // What:     `let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();`.
+        //           Current time minus the epoch -> a `Duration`; `.unwrap()`
+        //           extracts it (panics only if the clock predates 1970);
+        //           `.as_nanos()` gives a `u128` nanosecond count.
+        // Why:      A high-resolution component keeps the directory name unique.
+        // TS map:   `const nanos = BigInt(Date.now()) * 1_000_000n;`
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        // What:     `let dir = std::env::temp_dir().join(format!("music-player-expand-{}-{}", std::process::id(), nanos));`.
+        //           Build the path: system temp dir + a name carrying the process
+        //           id and the nanosecond stamp. `std::process::id()` is this
+        //           process's pid (a `u32`).
+        // Why:      Unique per process and per call.
+        // TS map:   `const dir = path.join(os.tmpdir(), `music-player-expand-${pid}-${nanos}`);`
+        let dir = std::env::temp_dir().join(format!(
+            "music-player-expand-{}-{}",
+            std::process::id(),
+            nanos
+        ));
+        // What:     `fs::create_dir_all(&dir).unwrap();`. Create the directory (and
+        //           any missing parents); `.unwrap()` fails the test on error.
+        //           `&dir` lends the path.
+        // Why:      The fixture root must exist before we populate it.
+        // TS map:   `fs.mkdirSync(dir, { recursive: true });`
+        fs::create_dir_all(&dir).unwrap();
+        // What:     `dir`. Tail expression -> return the created path.
+        // Why:      Hand the fixture root to the caller.
+        // TS map:   `return dir;`
+        dir
+    }
+
+    // What:     `#[test]` marks the next function as a test case.
+    // Why:      `cargo test` discovers and runs it.
+    // TS map:   `test("expand_paths ...", () => { ... })`.
+    #[test]
+    fn expand_paths_walks_directories_recursively_and_sorts() {
+        // What:     `let root = unique_temp_dir();`. Make the throwaway fixture.
+        // Why:      A real tree to expand.
+        // TS map:   `const root = uniqueTempDir();`
+        let root = unique_temp_dir();
+
+        // What:     `fs::write(root.join("b.flac"), b"x").unwrap();`. Create a file.
+        //           `root.join("b.flac")` builds the child path; `b"x"` is a BYTE
+        //           STRING literal (a `&[u8; 1]`, raw bytes, not text); `.unwrap()`
+        //           fails the test on I/O error.
+        // Why:      Two root files created out of alphabetical order, to prove the
+        //           walk sorts them.
+        // TS map:   `fs.writeFileSync(path.join(root, "b.flac"), "x");`
+        fs::write(root.join("b.flac"), b"x").unwrap();
+        // What:     create the second root file.
+        // Why:      Out-of-order sibling.
+        // TS map:   `fs.writeFileSync(path.join(root, "a.flac"), "x");`
+        fs::write(root.join("a.flac"), b"x").unwrap();
+
+        // What:     `let sub = root.join("sub");`. A subfolder path.
+        // Why:      Prove the walk descends one level.
+        // TS map:   `const sub = path.join(root, "sub");`
+        let sub = root.join("sub");
+        // What:     create the subfolder.
+        // Why:      It must exist before adding files.
+        // TS map:   `fs.mkdirSync(sub, { recursive: true });`
+        fs::create_dir_all(&sub).unwrap();
+        // What:     a file inside the subfolder.
+        // Why:      Expected after the root files.
+        // TS map:   `fs.writeFileSync(path.join(sub, "c.flac"), "x");`
+        fs::write(sub.join("c.flac"), b"x").unwrap();
+
+        // What:     `let nested = sub.join("nested");`. A deeper folder.
+        // Why:      Prove the walk descends more than one level.
+        // TS map:   `const nested = path.join(sub, "nested");`
+        let nested = sub.join("nested");
+        // What:     create the nested folder.
+        // Why:      Needed before its file.
+        // TS map:   `fs.mkdirSync(nested, { recursive: true });`
+        fs::create_dir_all(&nested).unwrap();
+        // What:     a file two levels down.
+        // Why:      Expected last.
+        // TS map:   `fs.writeFileSync(path.join(nested, "d.flac"), "x");`
+        fs::write(nested.join("d.flac"), b"x").unwrap();
+
+        // What:     `let got = expand_paths(vec![root.clone()]);`. Expand the root
+        //           folder. `vec![...]` wraps it in a one-element vector;
+        //           `root.clone()` copies the path (we reuse `root` afterwards).
+        // Why:      Exercise the recursive walk.
+        // TS map:   `const got = expandPaths([root]);`
+        let got = expand_paths(vec![root.clone()]);
+
+        // What:     `let expected = vec![ ... ];`. The order the walk must produce:
+        //           a folder's files (sorted) before its subfolders' files,
+        //           depth-first.
+        // Why:      Pin the deterministic ordering.
+        // TS map:   `const expected = [ ... ];`
+        let expected = vec![
+            root.join("a.flac"),
+            root.join("b.flac"),
+            sub.join("c.flac"),
+            nested.join("d.flac"),
+        ];
+        // What:     `assert_eq!(got, expected);`. Panics (failing the test) unless
+        //           the two vectors are equal.
+        // Why:      Confirm recursive collection and ordering.
+        // TS map:   `expect(got).toEqual(expected);`
+        assert_eq!(got, expected);
+
+        // What:     `let single = expand_paths(vec![root.join("a.flac")]);`. Expand a
+        //           plain FILE path (not a directory).
+        // Why:      A file should pass through unchanged.
+        // TS map:   `const single = expandPaths([path.join(root, "a.flac")]);`
+        let single = expand_paths(vec![root.join("a.flac")]);
+        // What:     `assert_eq!(single, vec![root.join("a.flac")]);`. One element, the
+        //           file itself.
+        // Why:      Files are not expanded.
+        // TS map:   `expect(single).toEqual([path.join(root, "a.flac")]);`
+        assert_eq!(single, vec![root.join("a.flac")]);
+
+        // What:     `let _ = fs::remove_dir_all(&root);`. Delete the throwaway tree;
+        //           `let _ =` discards the result (cleanup is best-effort).
+        // Why:      Leave no fixture behind.
+        // TS map:   `fs.rmSync(root, { recursive: true, force: true });`
+        let _ = fs::remove_dir_all(&root);
     }
 }

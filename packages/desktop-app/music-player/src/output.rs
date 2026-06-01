@@ -39,6 +39,43 @@ use std::io::Cursor;
 // ```
 use std::mem::size_of;
 
+// What:     `use std::sync::atomic::{AtomicBool, Ordering};`. `AtomicBool` is a
+//           `bool` that can be read and written from multiple threads WITHOUT a
+//           lock (the hardware guarantees the read/write is indivisible).
+//           `Ordering` says how strictly this access is ordered against other
+//           memory operations; siblings range from `Relaxed` (loosest, just
+//           atomicity) up to `SeqCst` (strictest, a global order).
+// Why:      The engine thread flips a "playing" flag and the realtime audio
+//           callback reads it; a plain `bool` shared across threads is undefined
+//           behaviour, so it must be atomic.
+// TS map:   no real equivalent; JS is single-threaded. Mentally: a one-slot
+//           shared cell both threads can poke safely, like a `SharedArrayBuffer`
+//           `Int32Array` flag read with `Atomics.load`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // a cross-thread boolean flag
+// let playing = false;
+// ```
+use std::sync::atomic::{AtomicBool, Ordering};
+
+// What:     `use std::sync::Arc;`. `Arc<T>` is an ATOMICALLY reference-counted
+//           shared pointer: cloning it just bumps a thread-safe counter, and the
+//           inner `T` is freed when the last clone drops. Sibling: `Rc<T>`, the
+//           same idea but NOT thread-safe (single-thread only).
+// Why:      The same `AtomicBool` must live in two places at once (the `Output`
+//           on the engine thread and the `ProcessData` on the audio thread);
+//           `Arc` lets both hold a clone of one shared cell. `Rc` would not
+//           compile here because the cell crosses a thread boundary.
+// TS map:   no equivalent; GC makes every object implicitly shared, so you would
+//           just close over the same variable.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // both closures capture the same `playing` variable
+// ```
+use std::sync::Arc;
+
 // What:     `use pipewire as pw;`. Import the crate and rename it `pw` for short.
 // Why:      Every PipeWire call below is `pw::...`.
 // TS map:   `import * as pw from "pipewire";`
@@ -155,6 +192,15 @@ struct ProcessData {
     //           when the buffer size first stabilises).
     // TS map:   `scratch: Float32Array;`
     scratch: Vec<f32>,
+    // What:     `playing: Arc<AtomicBool>`. A shared cross-thread flag: `true`
+    //           means feed real audio, `false` means output silence. This is a
+    //           CLONE of the same cell the `Output` (and engine) hold.
+    // Why:      Lets pause take effect instantly: the moment the engine flips the
+    //           flag, the very next realtime callback stops draining the ring
+    //           buffer and emits silence, instead of playing the ~1 second of
+    //           audio already buffered.
+    // TS map:   `playing: { value: boolean };` (a shared mutable box)
+    playing: Arc<AtomicBool>,
 }
 
 // What:     `pub struct Output { ... }`. Owns the whole PipeWire pipeline. FIELD
@@ -188,6 +234,13 @@ pub struct Output {
     // Why:      Drives the realtime callback; dropped last.
     // TS map:   `threadLoop: ThreadLoop;`
     thread_loop: ThreadLoop,
+    // What:     `playing: Arc<AtomicBool>`. The MASTER copy of the play/pause
+    //           flag. Created once here and cloned into each new `ProcessData` on
+    //           `reconfigure`, so the flag survives track changes.
+    // Why:      `set_playing` writes it from the engine thread; the realtime
+    //           callback reads its clone. One shared cell keeps them in sync.
+    // TS map:   `playing: { value: boolean };`
+    playing: Arc<AtomicBool>,
 }
 
 // What:     `impl Output { ... }`. Methods for the output pipeline.
@@ -248,15 +301,29 @@ impl Output {
         // TS map:   `threadLoop.start();`
         thread_loop.start();
 
-        // What:     `Ok(Output { listener: None, stream: None, core, _context: context,
-        //           thread_loop })`. Build the struct (no stream yet) and wrap in
-        //           `Ok`. Field shorthand for `core`/`thread_loop`. Tail -> return.
-        // Why:      Hand back the ready (but silent) output.
-        // TS map:   `return new Output(null, null, core, context, threadLoop);`
+        // What:     `let playing = Arc::new(AtomicBool::new(false));`. Build the
+        //           shared play/pause flag, initially `false` (paused). `Arc::new`
+        //           heap-allocates the cell and starts its reference count at 1;
+        //           `AtomicBool::new(false)` is the initial value.
+        // Why:      A brand-new output is silent until the engine says play.
+        // TS map:   `const playing = { value: false };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return new Output(null, null, core, context, threadLoop);
+        // const playing = { value: false };
+        // ```
+        let playing = Arc::new(AtomicBool::new(false));
+
+        // What:     `Ok(Output { listener: None, stream: None, core, _context: context,
+        //           thread_loop, playing })`. Build the struct (no stream yet) and
+        //           wrap in `Ok`. Field shorthand for `core`/`thread_loop`/`playing`.
+        //           Tail -> return.
+        // Why:      Hand back the ready (but silent) output.
+        // TS map:   `return new Output(null, null, core, context, threadLoop, playing);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return new Output(null, null, core, context, threadLoop, playing);
         // ```
         Ok(Output {
             listener: None,
@@ -264,6 +331,7 @@ impl Output {
             core,
             _context: context,
             thread_loop,
+            playing,
         })
     }
 
@@ -319,14 +387,20 @@ impl Output {
         let (producer, consumer) = rb.split();
 
         // What:     `let process_data = ProcessData { consumer, channels: channels_usize,
-        //           scratch: Vec::new() };`. Bundle the callback's state.
-        //           `Vec::new()` is an empty buffer (grows on first use).
-        // Why:      This is moved into the listener as the callback's `&mut` data.
-        // TS map:   `const processData = { consumer, channels, scratch: new Float32Array(0) };`
+        //           scratch: Vec::new(), playing: Arc::clone(&self.playing) };`. Bundle
+        //           the callback's state. `Vec::new()` is an empty buffer (grows on
+        //           first use). `Arc::clone(&self.playing)` makes another handle to
+        //           the SAME shared flag (bumps the reference count, does not copy
+        //           the bool); `&self.playing` lends the field to clone from.
+        // Why:      This is moved into the listener as the callback's `&mut` data;
+        //           the cloned flag lets the callback see pause/play decisions made
+        //           by the engine on the other thread.
+        // TS map:   `const processData = { consumer, channels, scratch: new Float32Array(0), playing };`
         let process_data = ProcessData {
             consumer,
             channels: channels_usize,
             scratch: Vec::new(),
+            playing: Arc::clone(&self.playing),
         };
 
         // What:     `let guard = self.thread_loop.lock();`. Lock the audio loop:
@@ -474,21 +548,42 @@ impl Output {
                                     pd.scratch.resize(want, 0.0);
                                 }
 
-                                // What:     `let got = pd.consumer.pop_slice(&mut pd.scratch[..want]);`.
-                                //           Pop up to `want` samples from the ring
-                                //           buffer into the scratch slice; returns
-                                //           how many were actually available (`usize`).
-                                // Why:      Pull decoded audio out of the queue.
-                                // TS map:   `const got = pd.consumer.popSlice(pd.scratch.subarray(0, want));`
-                                let got = pd.consumer.pop_slice(&mut pd.scratch[..want]);
+                                // What:     `let playing = pd.playing.load(Ordering::Relaxed);`.
+                                //           Read the shared pause/play flag.
+                                //           `.load(...)` is the atomic READ; `Relaxed`
+                                //           is the loosest ordering (we only need the
+                                //           value itself to be read indivisibly, with
+                                //           no ordering guarantee against other
+                                //           memory, which is correct for a lone flag).
+                                // Why:      Decide, on the realtime thread, whether to
+                                //           feed real audio or silence this cycle.
+                                // TS map:   `const playing = Atomics.load(playingFlag, 0) !== 0;`
+                                let playing = pd.playing.load(Ordering::Relaxed);
+
+                                // What:     `let got = if playing { pd.consumer.pop_slice(&mut pd.scratch[..want]) } else { 0 };`.
+                                //           When playing, pop up to `want` samples
+                                //           from the ring buffer (returns how many
+                                //           were available, a `usize`). When paused,
+                                //           pop NOTHING (`0`) so the buffered audio is
+                                //           preserved for a seamless resume.
+                                // Why:      Pausing must stop draining the buffer at
+                                //           once; otherwise the ~1 second already
+                                //           queued keeps playing (the pause-delay bug).
+                                // TS map:   `const got = playing ? pd.consumer.popSlice(pd.scratch.subarray(0, want)) : 0;`
+                                let got = if playing {
+                                    pd.consumer.pop_slice(&mut pd.scratch[..want])
+                                } else {
+                                    0
+                                };
 
                                 // What:     `for s in pd.scratch[got..want].iter_mut() { *s = 0.0; }`.
-                                //           Zero any samples we could NOT fill (the
-                                //           queue had fewer than `want`). `iter_mut`
-                                //           yields mutable references `s`; `*s`
-                                //           writes through the reference.
-                                // Why:      Output silence on underrun instead of
-                                //           stale/garbage data.
+                                //           Zero every sample we did NOT fill. `iter_mut`
+                                //           yields mutable references `s`; `*s` writes
+                                //           through the reference. When paused `got`
+                                //           is `0`, so this zeroes the WHOLE range:
+                                //           the callback emits pure silence.
+                                // Why:      Output silence on underrun (and while
+                                //           paused) instead of stale/garbage data.
                                 // TS map:   `for (let i = got; i < want; i++) pd.scratch[i] = 0;`
                                 for s in pd.scratch[got..want].iter_mut() {
                                     *s = 0.0;
@@ -704,6 +799,22 @@ impl Output {
         // return producer;
         // ```
         Ok(producer)
+    }
+
+    // What:     `pub fn set_playing(&self, on: bool)`. Flip the shared pause/play
+    //           flag. Takes `&self` (read-only borrow) because writing an atomic
+    //           does NOT need exclusive access; the cell handles concurrent writes.
+    // Why:      The engine calls this on pause/play so the realtime callback can
+    //           react immediately.
+    // TS map:   `setPlaying(on: boolean): void`
+    pub fn set_playing(&self, on: bool) {
+        // What:     `self.playing.store(on, Ordering::Relaxed);`. The atomic WRITE:
+        //           store `on` into the shared flag. `Relaxed` matches the loose
+        //           ordering used by the callback's `.load` (a lone flag needs no
+        //           stronger guarantee).
+        // Why:      Make the new state visible to the audio thread.
+        // TS map:   `Atomics.store(playingFlag, 0, on ? 1 : 0);`
+        self.playing.store(on, Ordering::Relaxed);
     }
 }
 
