@@ -2,8 +2,10 @@
 //!
 //! One demux path (symphonia probes the container and demuxes packets) feeds
 //! two decode paths: symphonia's own decoders for FLAC/WAV/MP3/Vorbis/AAC/ALAC,
-//! and the `opus` crate (libopus) for Opus, because symphonia 0.5's Opus
-//! decoder is an empty stub. `open()` picks the path; both implement `Source`.
+//! and the `opus` crate (libopus) for Opus, because the symphonia 0.6 meta-crate
+//! exposes no Opus decoder (the `symphonia-codec-opus` crate exists but is not
+//! wired into the `all` feature set). `open()` picks the path; both implement
+//! `Source`.
 
 // What:     `use std::fs::File;` brings the file-handle type into scope. `File`
 //           is an owning handle to an open OS file; dropping it closes the file.
@@ -15,18 +17,6 @@
 // import { open as fsOpen } from "node:fs/promises";
 // ```
 use std::fs::File;
-
-// What:     `use std::io::ErrorKind;` imports the enum that classifies I/O
-//           errors (NotFound, PermissionDenied, UnexpectedEof, ...).
-// Why:      End-of-stream shows up as an I/O error of kind `UnexpectedEof`;
-//           we match on that to stop decoding cleanly instead of erroring.
-// TS map:   like checking `err.code === "EOF"` on a Node error object.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // compare err.code against a string constant
-// ```
-use std::io::ErrorKind;
 
 // What:     `use std::path::Path;` imports the borrowed filesystem-path type.
 //           `Path` is an unsized, borrowed view of a path (sibling: `PathBuf`,
@@ -41,39 +31,40 @@ use std::io::ErrorKind;
 // ```
 use std::path::Path;
 
-// What:     `use symphonia::core::audio::SampleBuffer;` imports a helper that
-//           converts symphonia's internal planar audio buffer into a flat,
-//           interleaved sample array of a chosen type (here `f32`).
-// Why:      PipeWire and our pipeline want interleaved `f32`; this does it.
-// TS map:   a class that flattens `[[L,L,L],[R,R,R]]` into `[L,R,L,R,L,R]`.
+// What:     `use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};`
+//           imports decode machinery from the 0.6 `audio` codec sub-module:
+//           `AudioDecoder` (the trait every audio decoder implements; was the
+//           un-prefixed `Decoder` in 0.5, renamed because 0.6 also has video and
+//           subtitle decoder traits), `AudioDecoderOptions` (decoder knobs; we use
+//           defaults, which keep gapless playback on; was `DecoderOptions` in 0.5).
+// Why:      `SymphoniaSource` holds a `Box<dyn AudioDecoder>` and builds it with
+//           default options.
+// TS map:   importing two named exports from one module.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// class SampleBuffer { /* holds Float32Array */ }
+// import { AudioDecoder, AudioDecoderOptions } from "symphonia/codecs/audio";
 // ```
-use symphonia::core::audio::SampleBuffer;
+use symphonia::core::codecs::audio::{AudioDecoder, AudioDecoderOptions};
 
-// What:     `use symphonia::core::codecs::{...};` imports decoder machinery:
-//           `CodecParameters` (a description of a track's codec: rate,
-//           channels, frame count), `Decoder` (the trait every decoder
-//           implements), `DecoderOptions` (knobs, we use defaults),
-//           `CODEC_TYPE_NULL` (the "no codec / data track" sentinel),
-//           `CODEC_TYPE_OPUS` (the Opus codec id, value 0x1005).
-// Why:      We read params, build a decoder, and recognise Opus to route it.
-// TS map:   importing several named exports from one module.
+// What:     `use symphonia::core::codecs::audio::well_known::CODEC_ID_OPUS;` imports
+//           the Opus codec id constant (an `AudioCodecId`, a newtype around `u32`,
+//           value 0x1001). In 0.5 this was the top-level `CODEC_TYPE_OPUS`; 0.6
+//           moved well-known codec ids into a `well_known` sub-module and made each
+//           codec family (audio/video/subtitle) its own id type.
+// Why:      We compare the track's codec id against it to route Opus to libopus.
+// TS map:   `import { CODEC_ID_OPUS } from "symphonia/codecs/audio/wellKnown";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { CodecParameters, Decoder, DecoderOptions, CODEC_TYPE_NULL, CODEC_TYPE_OPUS } from "symphonia/codecs";
+// import { CODEC_ID_OPUS } from "symphonia/codecs/audio/wellKnown";
 // ```
-use symphonia::core::codecs::{
-    CodecParameters, Decoder, DecoderOptions, CODEC_TYPE_NULL, CODEC_TYPE_OPUS,
-};
+use symphonia::core::codecs::audio::well_known::CODEC_ID_OPUS;
 
 // What:     `use symphonia::core::errors::Error;` imports symphonia's own error
-//           enum (IoError, DecodeError, ResetRequired, ...).
-// Why:      We match its variants to tell "end of file" and "skip this packet"
-//           apart from real failures.
+//           enum (IoError, DecodeError, ResetRequired, ...). Same path and variants
+//           as 0.5.
+// Why:      We match its variants to skip a bad packet apart from real failures.
 // TS map:   a tagged-union error type from the library.
 //
 // In TS you'd write (pseudocode):
@@ -82,19 +73,36 @@ use symphonia::core::codecs::{
 // ```
 use symphonia::core::errors::Error;
 
+// What:     `use symphonia::core::formats::probe::Hint;` imports a struct that gives
+//           the prober a hint (like the file extension) to speed format detection.
+//           In 0.5 this lived at `symphonia::core::probe::Hint`; 0.6 moved the whole
+//           `probe` module under `formats`.
+// Why:      We pass the file extension so probing is fast and reliable.
+// TS map:   a small options object carrying `{ extension?: string }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Hint } from "symphonia/formats/probe";
+// ```
+use symphonia::core::formats::probe::Hint;
+
 // What:     `use symphonia::core::formats::{...};` imports demuxer types:
-//           `FormatOptions` (demux knobs, defaults), `FormatReader` (the trait
-//           a demuxed container implements: lists tracks, yields packets),
-//           `SeekMode` (Accurate vs Coarse), `SeekTo` (where to seek: by time
-//           or by frame).
-// Why:      We probe into a `FormatReader`, pull packets, and seek by time.
+//           `FormatOptions` (demux knobs, defaults), `FormatReader` (the trait a
+//           demuxed container implements: lists tracks, yields packets), `SeekMode`
+//           (Accurate vs Coarse), `SeekTo` (where to seek: by time or by frame),
+//           `Track` (one track's id + codec params + timing), `TrackType` (audio /
+//           video / subtitle, used to ask for the first audio track).
+// Why:      We probe into a `FormatReader`, pick the first audio `Track`, pull
+//           packets, and seek by absolute frame.
 // TS map:   named imports describing a container reader.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { FormatOptions, FormatReader, SeekMode, SeekTo } from "symphonia/formats";
+// import { FormatOptions, FormatReader, SeekMode, SeekTo, Track, TrackType } from "symphonia/formats";
 // ```
-use symphonia::core::formats::{FormatOptions, FormatReader, SeekMode, SeekTo};
+use symphonia::core::formats::{
+    FormatOptions, FormatReader, SeekMode, SeekTo, Track, TrackType,
+};
 
 // What:     `use symphonia::core::io::MediaSourceStream;` imports the buffered
 //           stream wrapper symphonia reads bytes from.
@@ -109,7 +117,7 @@ use symphonia::core::io::MediaSourceStream;
 
 // What:     `use symphonia::core::meta::MetadataOptions;` imports the tag/meta
 //           reader knobs (we pass defaults; we ignore tags entirely).
-// Why:      The probe call requires a `&MetadataOptions` argument.
+// Why:      The probe call requires a `MetadataOptions` argument.
 // TS map:   an options object we leave at defaults.
 //
 // In TS you'd write (pseudocode):
@@ -118,34 +126,26 @@ use symphonia::core::io::MediaSourceStream;
 // ```
 use symphonia::core::meta::MetadataOptions;
 
-// What:     `use symphonia::core::probe::Hint;` imports a struct that gives the
-//           prober a hint (like the file extension) to speed format detection.
-// Why:      We pass the file extension so probing is fast and reliable.
-// TS map:   a small options object carrying `{ extension?: string }`.
+// What:     `use symphonia::core::units::{Duration, Timestamp};` imports symphonia's
+//           0.6 timeline new-types. `Timestamp` wraps an `i64` count of timebase
+//           ticks (for these audio formats one tick = one frame at the sample rate);
+//           `Duration` wraps a `u64` span of the same ticks. In 0.5 `TimeStamp` was a
+//           bare `u64` alias; 0.6 made both real types that force checked/saturating
+//           arithmetic. Sibling you might expect for seeking: `Time` (seconds), which
+//           we deliberately do NOT use, because `SeekTo::Time` maps second 0 to frame
+//           0, and Ogg/Opus streams start at a non-zero frame (the encoder pre-skip),
+//           so "seek to 0 seconds" gets rejected as out-of-range; we seek by absolute
+//           frame instead (see `seek_format`).
+// Why:      `SeekTo::Timestamp` needs a `Timestamp`; `Timestamp::saturating_add` adds
+//           a `Duration`, which lets us offset the stream's start frame so "the
+//           beginning" lands on the real first frame rather than the invalid frame 0.
+// TS map:   `type Timestamp = number; type Duration = number;` (counts of frames).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Hint } from "symphonia/probe";
+// import { Duration, Timestamp } from "symphonia/units";
 // ```
-use symphonia::core::probe::Hint;
-
-// What:     `use symphonia::core::units::TimeStamp;` imports symphonia's frame-count
-//           timestamp type (a `u64` count of audio frames in a track's timebase).
-//           Sibling you might expect: `Time` (seconds + fractional seconds), which
-//           we deliberately do NOT use for seeking, because `SeekTo::Time` maps
-//           second 0 to frame 0, and Ogg/Opus streams start at a non-zero frame
-//           (the encoder pre-skip), so a "seek to 0 seconds" gets rejected as
-//           out-of-range. We seek by absolute frame instead (see `seek_format`).
-// Why:      `SeekTo::TimeStamp` needs a `TimeStamp` (frame count), which lets us add
-//           the stream's start frame so "the beginning" lands on the real first
-//           frame rather than the invalid frame 0.
-// TS map:   `type TimeStamp = number;` (a count of audio frames, not seconds).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { TimeStamp } from "symphonia/units";
-// ```
-use symphonia::core::units::TimeStamp;
+use symphonia::core::units::{Duration, Timestamp};
 
 // What:     `use crate::error::PlayerError;` imports our one app-wide error
 //           type. `crate::` means "from the root of this crate" (sibling form:
@@ -340,74 +340,65 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
         hint.with_extension(ext);
     }
 
-    // What:     `symphonia::default::get_probe().format(&hint, mss, &..., &...)?`.
-    //           `get_probe()` returns the global format prober; `.format(...)`
-    //           sniffs the stream and returns `Result<ProbeResult>`. `&hint`
-    //           lends the hint read-only; `mss` is MOVED in (the stream is
-    //           consumed); `&FormatOptions::default()` and
-    //           `&MetadataOptions::default()` lend default option structs.
-    //           Trailing `?` unwraps or returns the error.
+    // What:     `symphonia::default::get_probe().probe(&hint, mss, FormatOptions::default(),
+    //           MetadataOptions::default())?`. `get_probe()` returns the global format
+    //           prober; `.probe(...)` sniffs the stream and returns
+    //           `Result<Box<dyn FormatReader>>` (in 0.5 this was `.format(...)`
+    //           returning a `ProbeResult` you then unwrapped via `.format`; 0.6 hands
+    //           the reader back directly). `&hint` lends the hint read-only; `mss` is
+    //           MOVED in (the stream is consumed); the option structs are now passed
+    //           BY VALUE (0.5 took `&` references). Trailing `?` unwraps or returns.
     // Why:      Detect the container and obtain a demuxer for it.
-    // TS map:   `const probed = getProbe().format(hint, mss, {}, {});`
+    // TS map:   `const format = getProbe().probe(hint, mss, {}, {});`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const probed = getProbe().format(hint, mss, {}, {});
+    // const format = getProbe().probe(hint, mss, {}, {});
     // ```
-    let probed = symphonia::default::get_probe().format(
+    let format = symphonia::default::get_probe().probe(
         &hint,
         mss,
-        &FormatOptions::default(),
-        &MetadataOptions::default(),
+        FormatOptions::default(),
+        MetadataOptions::default(),
     )?;
 
-    // What:     `let format = probed.format;`. Moves the `Box<dyn FormatReader>`
-    //           out of the probe result into a local. (No `mut` needed yet; we
-    //           only read tracks before moving it into a source.)
-    // Why:      The demuxer we will hand to whichever source we build.
-    // TS map:   `const format = probed.format;`
-    let format = probed.format;
-
-    // What:     a BLOCK expression `{ ... }` that produces a `(u32, CodecParameters)`
-    //           tuple and binds it to `(track_id, params)`. The block scopes the
-    //           immutable borrow of `format` (from `.tracks()`) so it ends
-    //           before we move `format` into the source below.
-    // Why:      Read the track id and copy its codec params, then release the
-    //           borrow so `format` is free to move.
-    // TS map:   `const { trackId, params } = (() => { ... return {...}; })();`
+    // What:     a BLOCK expression `{ ... }` that produces a `(u32, bool, Track)`
+    //           tuple and binds it to `(track_id, is_opus, track)`. The block scopes
+    //           the immutable borrow of `format` (from `.first_track_known_codec()`)
+    //           so it ends before we move `format` into the source below.
+    // Why:      Read the track id, decide if it is Opus, and clone the track, then
+    //           release the borrow so `format` is free to move.
+    // TS map:   `const { trackId, isOpus, track } = (() => { ... })();`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const [trackId, params] = (() => {
-    //   const track = format.tracks().find(t => t.codecParams.codec !== CODEC_TYPE_NULL);
-    //   if (!track) throw new PlayerError.Unsupported("no audio track");
-    //   return [track.id, structuredClone(track.codecParams)];
+    // const [trackId, isOpus, track] = (() => {
+    //   const t = format.firstTrackKnownCodec(TrackType.Audio);
+    //   if (!t) throw new PlayerError.Unsupported("no audio track");
+    //   const audio = t.codecParams?.audio();
+    //   if (!audio) throw new PlayerError.Unsupported("track has no audio codec parameters");
+    //   return [t.id, audio.codec === CODEC_ID_OPUS, structuredClone(t)];
     // })();
     // ```
-    let (track_id, params) = {
-        // What:     `format.tracks().iter().find(|t| ...)`. `.tracks()` returns
-        //           `&[Track]` (a borrowed slice). `.iter()` makes an iterator of
-        //           `&Track`. `.find(|t| ...)` returns the first `Some(&Track)`
-        //           whose closure is true, else `None`. `|t| t.codec_params.codec
-        //           != CODEC_TYPE_NULL` keeps real audio tracks (skips data/null
-        //           tracks).
-        // Why:      Locate the first actual audio track to decode.
-        // TS map:   `tracks.find(t => t.codecParams.codec !== CODEC_TYPE_NULL)`
+    let (track_id, is_opus, track) = {
+        // What:     `format.first_track_known_codec(TrackType::Audio)`. A 0.6
+        //           `FormatReader` helper: returns `Option<&Track>` for the first
+        //           AUDIO track whose codec id is known (non-null). This replaces the
+        //           0.5 `tracks().iter().find(|t| t.codec_params.codec != CODEC_TYPE_NULL)`.
+        // Why:      Locate the first decodable audio track.
+        // TS map:   `format.firstTrackKnownCodec(TrackType.Audio)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const track = tracks.find(t => t.codecParams.codec !== CODEC_TYPE_NULL);
+        // const track = format.firstTrackKnownCodec(TrackType.Audio);
         // ```
         let track = format
-            .tracks()
-            .iter()
-            .find(|t| t.codec_params.codec != CODEC_TYPE_NULL)
-            // What:     `.ok_or_else(|| PlayerError::Unsupported(...))?`. Converts
-            //           the `Option<&Track>` into a `Result`: `Some(x)` -> `Ok(x)`,
-            //           `None` -> `Err(closure())`. The closure builds the error
-            //           lazily (only if `None`). `.to_string()` makes an OWNED
-            //           `String` from the `&str` literal (the error must own it).
-            //           Trailing `?` unwraps the `&Track` or returns the error.
+            .first_track_known_codec(TrackType::Audio)
+            // What:     `.ok_or_else(|| PlayerError::Unsupported(...))?`. Converts the
+            //           `Option<&Track>` into a `Result`: `Some(x)` -> `Ok(x)`,
+            //           `None` -> `Err(closure())`. `.to_string()` makes an OWNED
+            //           `String` from the `&str` literal. Trailing `?` unwraps the
+            //           `&Track` or returns the error.
             // Why:      A file with no audio track is unsupported; report it.
             // TS map:   `if (!track) throw new PlayerError.Unsupported("no audio track");`
             //
@@ -417,32 +408,55 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
             // ```
             .ok_or_else(|| PlayerError::Unsupported("no audio track".to_string()))?;
 
-        // What:     `(track.id, track.codec_params.clone())`. A tuple: `track.id`
-        //           is a `u32` (Copy, so just read). `.clone()` DEEP-COPIES the
-        //           `CodecParameters` so the copy outlives the `format` borrow.
-        //           Tail expression of the block -> the block's value.
-        // Why:      We need an owned copy of the params; the borrowed `&Track`
-        //           cannot survive moving `format`.
-        // TS map:   `[track.id, structuredClone(track.codecParams)]`
+        // What:     `track.codec_params.as_ref().and_then(|cp| cp.audio())`. In 0.6
+        //           `Track::codec_params` is `Option<CodecParameters>` (an enum over
+        //           audio/video/subtitle); `.as_ref()` turns `&Option<_>` into
+        //           `Option<&CodecParameters>`; `.and_then(|cp| cp.audio())` maps it to
+        //           `Option<&AudioCodecParameters>` (the audio variant) via the closure
+        //           `|cp| cp.audio()`. `.ok_or_else(...)?` unwraps or errors.
+        // Why:      We need the audio codec id to decide whether this is Opus.
+        // TS map:   `const audio = track.codecParams?.audio(); if (!audio) throw ...;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return [track.id, structuredClone(track.codecParams)];
+        // const audio = track.codecParams?.audio();
+        // if (!audio) throw new PlayerError.Unsupported("track has no audio codec parameters");
         // ```
-        (track.id, track.codec_params.clone())
+        let audio_params = track
+            .codec_params
+            .as_ref()
+            .and_then(|cp| cp.audio())
+            .ok_or_else(|| {
+                PlayerError::Unsupported("track has no audio codec parameters".to_string())
+            })?;
+
+        // What:     `(track.id, audio_params.codec == CODEC_ID_OPUS, track.clone())`.
+        //           `track.id` is a `u32` (Copy). `audio_params.codec == CODEC_ID_OPUS`
+        //           compares the `AudioCodecId` new-types (both `Copy`, `Eq`).
+        //           `track.clone()` DEEP-COPIES the `Track` (id + codec params + timing)
+        //           so it outlives the `format` borrow. Tail expression -> block value.
+        // Why:      We need an owned `Track` (carrying delay/num_frames/start_ts and the
+        //           audio params) to hand the source after we move `format`.
+        // TS map:   `[track.id, audio.codec === CODEC_ID_OPUS, structuredClone(track)]`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return [track.id, audio.codec === CODEC_ID_OPUS, structuredClone(track)];
+        // ```
+        (track.id, audio_params.codec == CODEC_ID_OPUS, track.clone())
     };
 
-    // What:     `if params.codec == CODEC_TYPE_OPUS { ... } else { ... }`. Compare
-    //           the track's codec id against the Opus constant.
+    // What:     `if is_opus { ... } else { ... }`. Branch on the Opus flag computed
+    //           above (the `track`/`format` borrow has ended, so `format` can move).
     // Why:      Opus needs the libopus path; everything else uses symphonia.
-    // TS map:   `if (params.codec === CODEC_TYPE_OPUS) { ... } else { ... }`
-    if params.codec == CODEC_TYPE_OPUS {
-        // What:     `OpusSource::new(format, params, track_id)?`. Calls the Opus
-        //           source constructor, MOVING `format` and `params` into it.
-        //           `?` unwraps or returns the error.
+    // TS map:   `if (isOpus) { ... } else { ... }`
+    if is_opus {
+        // What:     `OpusSource::new(format, track, track_id)?`. Calls the Opus source
+        //           constructor, MOVING `format` and the owned `track` into it. `?`
+        //           unwraps or returns the error.
         // Why:      Build the libopus-backed source.
-        // TS map:   `const source = OpusSource.create(format, params, trackId);`
-        let source = OpusSource::new(format, params, track_id)?;
+        // TS map:   `const source = OpusSource.create(format, track, trackId);`
+        let source = OpusSource::new(format, track, track_id)?;
 
         // What:     `Ok(Box::new(source))`. `Box::new(source)` heap-allocates and
         //           erases the concrete type to `dyn Source`; `Ok(...)` wraps it
@@ -456,11 +470,11 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
         // ```
         Ok(Box::new(source))
     } else {
-        // What:     `SymphoniaSource::new(format, params, track_id)?`. Builds the
-        //           symphonia-decoder source, moving `format`/`params` in.
+        // What:     `SymphoniaSource::new(format, track, track_id)?`. Builds the
+        //           symphonia-decoder source, moving `format`/`track` in.
         // Why:      Decode FLAC/WAV/MP3/Vorbis/AAC/ALAC with symphonia.
-        // TS map:   `const source = SymphoniaSource.create(format, params, trackId);`
-        let source = SymphoniaSource::new(format, params, track_id)?;
+        // TS map:   `const source = SymphoniaSource.create(format, track, trackId);`
+        let source = SymphoniaSource::new(format, track, track_id)?;
 
         // What:     `Ok(Box::new(source))`. Same boxing/wrapping as above.
         // Why:      Return the boxed trait object.
@@ -496,7 +510,9 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
 // function seekFormat(format, trackId, secs) {
 //   const track = format.tracks().find((t) => t.id === trackId);
 //   if (!track) throw new Error("seek: track not found");
-//   const { startTs, sampleRate, nFrames } = track.codecParams;
+//   const startTs = track.startTs;            // 0.6: timing lives on Track
+//   const nFrames = track.numFrames;          // 0.6: was track.codecParams.nFrames
+//   const sampleRate = track.codecParams?.audio()?.sampleRate;
 //   if (sampleRate == null) throw new Error("seek: unknown sample rate");
 //   const offset = Math.round(Math.max(0, secs) * sampleRate);
 //   let ts = startTs + offset;
@@ -533,34 +549,42 @@ pub(crate) fn seek_format(
         .find(|t| t.id == track_id)
         .ok_or_else(|| PlayerError::Unsupported("seek: track not found".to_string()))?;
 
-    // What:     `let start_ts: TimeStamp = track.codec_params.start_ts;`. Copy the
-    //           track's first-frame timestamp (a `u64` frame count) out of the
-    //           borrowed track. `TimeStamp` is a `u64` alias (sibling `Time` would be
-    //           seconds, which we are avoiding).
+    // What:     `let start_ts: Timestamp = track.start_ts;`. Copy the track's
+    //           first-frame timestamp out of the borrowed track. In 0.6 timing lives
+    //           directly on `Track` (was `codec_params.start_ts` in 0.5). `Timestamp`
+    //           is a `Copy` new-type around `i64` (sibling `Time` would be seconds,
+    //           which we are avoiding).
     // Why:      For Ogg/Opus this is the pre-skip frame; adding it shifts our
     //           "seconds from audible start" onto the container's absolute timeline.
-    // TS map:   `const startTs = track.codecParams.startTs;`
-    let start_ts: TimeStamp = track.codec_params.start_ts;
+    // TS map:   `const startTs = track.startTs;`
+    let start_ts: Timestamp = track.start_ts;
 
-    // What:     `let rate = track.codec_params.sample_rate.ok_or_else(|| ...)?;`.
-    //           `sample_rate` is `Option<u32>` (maybe-present frames-per-second);
-    //           `.ok_or_else(|| ...)` converts a `None` into our error; `?` unwraps.
-    // Why:      We convert seconds to frames with the rate; without it the seek
-    //           target is undefined, so failing loudly beats guessing.
-    // TS map:   `const rate = track.codecParams.sampleRate; if (rate == null) throw ...;`
+    // What:     `let rate = track.codec_params.as_ref().and_then(|cp| cp.audio())
+    //           .and_then(|a| a.sample_rate).ok_or_else(|| ...)?;`. Dig the sample rate
+    //           out of the optional audio codec params: `.as_ref()` borrows the
+    //           `Option<CodecParameters>`, `.and_then(|cp| cp.audio())` selects the
+    //           audio variant (`Option<&AudioCodecParameters>`), `.and_then(|a|
+    //           a.sample_rate)` reads its `Option<u32>` rate. `.ok_or_else(|| ...)`
+    //           turns any `None` along the way into our error; `?` unwraps.
+    // Why:      We convert seconds to frames with the rate; without it the seek target
+    //           is undefined, so failing loudly beats guessing.
+    // TS map:   `const rate = track.codecParams?.audio()?.sampleRate; if (rate == null) throw ...;`
     let rate = track
         .codec_params
-        .sample_rate
+        .as_ref()
+        .and_then(|cp| cp.audio())
+        .and_then(|a| a.sample_rate)
         .ok_or_else(|| PlayerError::Unsupported("seek: unknown sample rate".to_string()))?;
 
-    // What:     `let n_frames = track.codec_params.n_frames;`. Copy the optional total
-    //           audible frame count (`Option<u64>`; `Some(n)` if the container knew
-    //           the length, `None` otherwise).
+    // What:     `let n_frames = track.num_frames;`. Copy the optional total audible
+    //           frame count (`Option<u64>`; `Some(n)` if the container knew the length,
+    //           `None` otherwise). In 0.6 this is `Track::num_frames` (was
+    //           `codec_params.n_frames` in 0.5).
     // Why:      Used below to clamp the seek so we never ask for a frame past the end.
     //           This is the last read of `track`, so the borrow of `format` ends here
     //           and the mutable `format.seek(...)` below is allowed.
-    // TS map:   `const nFrames = track.codecParams.nFrames;`
-    let n_frames = track.codec_params.n_frames;
+    // TS map:   `const nFrames = track.numFrames;`
+    let n_frames = track.num_frames;
 
     // What:     `let secs_clamped = if secs > 0.0 { secs } else { 0.0 };`. Floor the
     //           requested offset at zero.
@@ -579,26 +603,35 @@ pub(crate) fn seek_format(
     // TS map:   `const offsetFrames = Math.round(secsClamped * rate);`
     let offset_frames = (secs_clamped * f64::from(rate)).round() as u64;
 
-    // What:     `let mut target_ts: TimeStamp = start_ts.saturating_add(offset_frames);`.
-    //           `mut` because we may clamp it below. `saturating_add` adds without
-    //           overflowing (it caps at `u64::MAX` instead of wrapping; sibling `+`
-    //           would panic on overflow in debug builds).
+    // What:     `let mut target_ts: Timestamp = start_ts.saturating_add(Duration::new(offset_frames));`.
+    //           `mut` because we may clamp it below. `Duration::new(offset_frames)`
+    //           wraps the `u64` frame offset as a `Duration` (0.6 forces typed timeline
+    //           arithmetic). `Timestamp::saturating_add(Duration)` adds without
+    //           overflowing (caps instead of wrapping; sibling `checked_add` would
+    //           return `Option` instead).
     // Why:      The absolute frame to seek to is the stream's start plus our offset.
     // TS map:   `let targetTs = startTs + offsetFrames;`
-    let mut target_ts: TimeStamp = start_ts.saturating_add(offset_frames);
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let targetTs = startTs + offsetFrames;
+    // ```
+    let mut target_ts: Timestamp = start_ts.saturating_add(Duration::new(offset_frames));
 
     // What:     `if let Some(n_frames) = n_frames { ... }`. Run the block only when the
     //           total length is known, binding the inner `u64` to `n_frames`.
     // Why:      Only clamp when we actually know where the end is.
     // TS map:   `if (nFrames != null) { ... }`
     if let Some(n_frames) = n_frames {
-        // What:     `let max_ts = start_ts.saturating_add(n_frames);`. The last valid
-        //           absolute frame is the start plus the audible length.
+        // What:     `let max_ts = start_ts.saturating_add(Duration::new(n_frames));`.
+        //           The last valid absolute frame is the start plus the audible length;
+        //           `Duration::new(n_frames)` wraps the `u64` count as a `Duration`.
         // Why:      Compute the upper bound the demuxer will accept.
         // TS map:   `const maxTs = startTs + nFrames;`
-        let max_ts = start_ts.saturating_add(n_frames);
+        let max_ts = start_ts.saturating_add(Duration::new(n_frames));
 
-        // What:     `if target_ts > max_ts { target_ts = max_ts; }`. Pull the target
+        // What:     `if target_ts > max_ts { target_ts = max_ts; }`. `Timestamp` derives
+        //           `Ord`, so `>` compares the wrapped `i64`s directly. Pull the target
         //           back to the end if rounding pushed it past the final frame.
         // Why:      Seeking one frame past the end would itself be out-of-range; the
         //           slider's maximum equals the duration, so this guards that edge.
@@ -608,12 +641,12 @@ pub(crate) fn seek_format(
         }
     }
 
-    // What:     `format.seek(SeekMode::Accurate, SeekTo::TimeStamp { ts: target_ts,
-    //           track_id })?`. `SeekMode::Accurate` lands exactly (sibling `Coarse`
-    //           is fast but approximate). `SeekTo::TimeStamp { ... }` seeks by an
-    //           absolute frame count (sibling `SeekTo::Time` seeks by seconds, which
-    //           is what caused the out-of-range bug). `?` converts a symphonia error
-    //           into `PlayerError` and returns it.
+    // What:     `format.seek(SeekMode::Accurate, SeekTo::Timestamp { ts: target_ts,
+    //           track_id })?`. `SeekMode::Accurate` lands exactly (sibling `Coarse` is
+    //           fast but approximate). `SeekTo::Timestamp { ... }` seeks by an absolute
+    //           timestamp (sibling `SeekTo::Time` seeks by seconds, which is what caused
+    //           the out-of-range bug). `seek` returns `Result<SeekedTo>`; we discard the
+    //           `SeekedTo` (the `;`) and let `?` convert/propagate any symphonia error.
     // Why:      Perform the actual reposition at the corrected absolute frame.
     // TS map:   `format.seek("accurate", { ts: targetTs, trackId });`
     //
@@ -623,7 +656,7 @@ pub(crate) fn seek_format(
     // ```
     format.seek(
         SeekMode::Accurate,
-        SeekTo::TimeStamp {
+        SeekTo::Timestamp {
             ts: target_ts,
             track_id,
         },
@@ -652,23 +685,17 @@ struct SymphoniaSource {
     // Why:      We pull packets from it each `next_chunk`.
     // TS map:   `format: FormatReader;`
     format: Box<dyn FormatReader>,
-    // What:     `decoder: Box<dyn Decoder>`. Owning, heap, type-erased decoder.
+    // What:     `decoder: Box<dyn AudioDecoder>`. Owning, heap, type-erased audio
+    //           decoder (0.6 renamed the 0.5 `Decoder` trait to `AudioDecoder`).
     // Why:      Turns packets into PCM audio buffers.
-    // TS map:   `decoder: Decoder;`
-    decoder: Box<dyn Decoder>,
+    // TS map:   `decoder: AudioDecoder;`
+    decoder: Box<dyn AudioDecoder>,
     // What:     `track_id: u32`. The id of the track we decode (a packet stream
     //           may interleave several tracks). `u32` because symphonia ids are
     //           `u32` (sibling `usize` would force casts against the API).
     // Why:      Skip packets that belong to other tracks.
     // TS map:   `trackId: number;`
     track_id: u32,
-    // What:     `sample_buf: Option<SampleBuffer<f32>>`. `Option<T>` = "maybe a
-    //           T": `Some(buf)` once allocated, `None` before the first decode.
-    //           We delay allocation until we know the buffer capacity.
-    // Why:      Reuse one interleaving buffer across calls instead of allocating
-    //           per packet; grow it only if a packet is larger.
-    // TS map:   `sampleBuf: SampleBuffer | null;`
-    sample_buf: Option<SampleBuffer<f32>>,
     // What:     `spec: AudioSpec`. The cached rate/channels/duration. NOTE: for
     //           some codecs (AAC/ALAC in MP4) the channel count is unknown until
     //           the first packet is decoded, so `new` refreshes this after priming.
@@ -696,58 +723,84 @@ struct SymphoniaSource {
 // Why:      Holds the `new` constructor.
 // TS map:   the non-interface methods of the class.
 impl SymphoniaSource {
-    // What:     `fn new(format: Box<dyn FormatReader>, params: CodecParameters,
+    // What:     `fn new(format: Box<dyn FormatReader>, track: Track,
     //           track_id: u32) -> Result<Self, PlayerError>`. `Self` is the type
-    //           being impl'd (`SymphoniaSource`). Takes ownership of `format`
-    //           and `params`.
-    // Why:      Build a decoder from the params and cache the spec.
-    // TS map:   `static create(format, params, trackId): SymphoniaSource`
+    //           being impl'd (`SymphoniaSource`). Takes ownership of `format` and the
+    //           owned `track` (0.6 moved timing onto `Track`, so we keep the whole
+    //           track instead of just the codec params).
+    // Why:      Build a decoder from the track's audio params and cache the spec.
+    // TS map:   `static create(format, track, trackId): SymphoniaSource`
     fn new(
         format: Box<dyn FormatReader>,
-        params: CodecParameters,
+        track: Track,
         track_id: u32,
     ) -> Result<Self, PlayerError> {
-        // What:     `symphonia::default::get_codecs().make(&params, &DecoderOptions::default())?`.
-        //           `get_codecs()` returns the global decoder registry; `.make`
-        //           builds a `Box<dyn Decoder>` for these params. `&params`
-        //           lends the params read-only; `&DecoderOptions::default()`
-        //           lends default options. `?` unwraps or returns the error.
-        // Why:      Obtain a concrete decoder for this codec.
-        // TS map:   `const decoder = getCodecs().make(params, {});`
+        // What:     `let audio_params = track.codec_params.as_ref().and_then(|cp|
+        //           cp.audio()).ok_or_else(|| ...)?;`. Dig the audio codec params out of
+        //           the optional `CodecParameters` enum: `.as_ref()` borrows the
+        //           `Option`, `.and_then(|cp| cp.audio())` selects the audio variant.
+        //           `.ok_or_else(...)` turns `None` into our error; `?` unwraps to a
+        //           `&AudioCodecParameters`.
+        // Why:      `make_audio_decoder` and the initial spec both read from it.
+        // TS map:   `const audio = track.codecParams?.audio(); if (!audio) throw ...;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const decoder = getCodecs().make(params, {});
+        // const audio = track.codecParams?.audio();
+        // if (!audio) throw new PlayerError.Unsupported("track has no audio codec parameters");
         // ```
-        let decoder = symphonia::default::get_codecs().make(&params, &DecoderOptions::default())?;
+        let audio_params = track
+            .codec_params
+            .as_ref()
+            .and_then(|cp| cp.audio())
+            .ok_or_else(|| {
+                PlayerError::Unsupported("track has no audio codec parameters".to_string())
+            })?;
 
-        // What:     `params.sample_rate.unwrap_or(0)`. `sample_rate` is
+        // What:     `symphonia::default::get_codecs().make_audio_decoder(audio_params,
+        //           &AudioDecoderOptions::default())?`. `get_codecs()` returns the global
+        //           codec registry; `.make_audio_decoder` builds a `Box<dyn AudioDecoder>`
+        //           for these audio params (0.5 had a single `.make(&CodecParameters, ...)`;
+        //           0.6 split it per codec family). `audio_params` is already a borrow;
+        //           `&AudioDecoderOptions::default()` lends default options. `?` unwraps.
+        // Why:      Obtain a concrete decoder for this codec.
+        // TS map:   `const decoder = getCodecs().makeAudioDecoder(audio, {});`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const decoder = getCodecs().makeAudioDecoder(audio, {});
+        // ```
+        let decoder = symphonia::default::get_codecs()
+            .make_audio_decoder(audio_params, &AudioDecoderOptions::default())?;
+
+        // What:     `audio_params.sample_rate.unwrap_or(0)`. `sample_rate` is
         //           `Option<u32>`; `.unwrap_or(0)` yields the inner value or `0`
         //           if absent. (Sibling `.unwrap_or_else(|| ...)` defers the
         //           default; ours is a constant so `unwrap_or` is enough.)
         // Why:      An initial rate; priming below refreshes it from the decoder.
-        // TS map:   `const rate = params.sampleRate ?? 0;`
+        // TS map:   `const rate = audio.sampleRate ?? 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const rate = params.sampleRate ?? 0;
+        // const rate = audio.sampleRate ?? 0;
         // ```
-        let rate = params.sample_rate.unwrap_or(0);
+        let rate = audio_params.sample_rate.unwrap_or(0);
 
-        // What:     `match params.channels { Some(c) => c.count(), None => 0 }`.
-        //           Pattern-match the `Option<Channels>`: if present, `c.count()`
-        //           returns the channel count as `usize`; else `0`.
+        // What:     `match &audio_params.channels { Some(c) => c.count(), None => 0 }`.
+        //           Pattern-match the borrowed `&Option<Channels>` (we match on `&...`
+        //           so `c` is a `&Channels`, leaving `audio_params` intact): if present,
+        //           `c.count()` returns the channel count as `usize`; else `0`.
         // Why:      An initial count; for AAC/ALAC it is `None` here and priming
         //           below fills it from the first decoded frame.
-        // TS map:   `const channels = params.channels ? params.channels.count() : 0;`
+        // TS map:   `const channels = audio.channels ? audio.channels.count() : 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const channels = params.channels ? params.channels.count() : 0;
+        // const channels = audio.channels ? audio.channels.count() : 0;
         // ```
-        let channels = match params.channels {
-            // What:     `Some(c) => c.count()`. Binds the inner `Channels` to `c`
-            //           and calls `.count()` (returns `usize`).
+        let channels = match &audio_params.channels {
+            // What:     `Some(c) => c.count()`. Binds the inner `Channels` by reference
+            //           to `c` and calls `.count()` (returns `usize`).
             // Why:      Real channel count when known.
             // TS map:   `case present: return c.count();`
             Some(c) => c.count(),
@@ -756,6 +809,13 @@ impl SymphoniaSource {
             // TS map:   `default: return 0;`
             None => 0,
         };
+
+        // What:     `let n_frames = track.num_frames;`. Copy the optional total frame
+        //           count off the track (Copy `Option<u64>`). Done before the struct
+        //           literal so the `audio_params` borrow of `track` is free to end.
+        // Why:      Duration is computed from it after priming reveals the true rate.
+        // TS map:   `const nFrames = track.numFrames;`
+        let n_frames = track.num_frames;
 
         // What:     `let spec = AudioSpec { rate, channels: channels as u16, duration_secs: 0.0 };`.
         //           Struct literal; `channels as u16` narrows the `usize` count to
@@ -775,19 +835,18 @@ impl SymphoniaSource {
         };
 
         // What:     `let mut source = SymphoniaSource { ... };`. Build the struct
-        //           (moving fields in), `sample_buf`/`pending` start empty,
-        //           `n_frames` from the container. `mut` because priming below
-        //           mutates it. NOT wrapped in `Ok` yet: we prime first.
+        //           (moving fields in), `pending` starts empty, `n_frames` from the
+        //           container. `mut` because priming below mutates it. NOT wrapped in
+        //           `Ok` yet: we prime first.
         // Why:      We need a live `source` to call `decode_next_raw` on for priming.
-        // TS map:   `const source = new SymphoniaSource(format, decoder, trackId, null, spec, null, params.nFrames);`
+        // TS map:   `const source = new SymphoniaSource(format, decoder, trackId, spec, null, nFrames);`
         let mut source = SymphoniaSource {
             format,
             decoder,
             track_id,
-            sample_buf: None,
             spec,
             pending: None,
-            n_frames: params.n_frames,
+            n_frames,
         };
 
         // What:     `let first = source.decode_next_raw()?;`. Decode the first
@@ -853,7 +912,7 @@ impl SymphoniaSource {
     //           PRIVATE helper (no `pub`): pull packets until one decodes to a
     //           non-empty interleaved block, returning it; an empty `Vec` means
     //           true end-of-stream. Also refreshes `self.spec.rate`/`channels` from
-    //           each decoded frame's actual signal spec.
+    //           each decoded frame's actual audio spec.
     // Why:      Shared by `new` (priming) and `next_chunk` so the decode loop is
     //           written once.
     // TS map:   `private decodeNextRaw(): number[]  // [] means EOF`
@@ -864,23 +923,24 @@ impl SymphoniaSource {
         // Why:      Keep pulling until we get audible samples or hit EOF.
         // TS map:   `while (true) { ... }`
         loop {
-            // What:     `let packet = match self.format.next_packet() { ... };`.
-            //           Demux the next packet, mapping EOF/reset to an empty Vec.
+            // What:     `let packet = match self.format.next_packet() { ... };`. In 0.6
+            //           `next_packet` returns `Result<Option<Packet>>`: `Ok(Some(p))` is
+            //           a packet, `Ok(None)` is clean end-of-stream (0.5 signalled EOF
+            //           via an `UnexpectedEof` IoError, which is now always an error).
             // Why:      Get a packet, handling end-of-stream cleanly.
-            // TS map:   `let packet; try { packet = format.nextPacket(); } catch (e) { if (isEof(e)) return []; throw e; }`
+            // TS map:   `const p = format.nextPacket(); if (p == null) return [];`
             let packet = match self.format.next_packet() {
-                // What:     `Ok(p) => p`. Unwrap the packet.
+                // What:     `Ok(Some(p)) => p`. A packet was produced; unwrap it.
                 // Why:      Something to consider.
-                // TS map:   `packet = p;`
-                Ok(p) => p,
-                // What:     EOF -> empty Vec (our EOF signal).
+                // TS map:   `if (p != null) packet = p;`
+                Ok(Some(p)) => p,
+                // What:     `Ok(None) => return Ok(Vec::new())`. End of stream -> empty
+                //           Vec (our EOF signal to callers).
                 // Why:      Normal end of file.
-                // TS map:   `if (e.kind === "UnexpectedEof") return [];`
-                Err(Error::IoError(e)) if e.kind() == ErrorKind::UnexpectedEof => {
-                    return Ok(Vec::new())
-                }
+                // TS map:   `if (p == null) return [];`
+                Ok(None) => return Ok(Vec::new()),
                 // What:     `Err(Error::ResetRequired) => return Ok(Vec::new())`.
-                // Why:      Treat reset-required as end-of-track.
+                // Why:      Treat reset-required (e.g. chained Ogg) as end-of-track.
                 // TS map:   `if (e.kind === "ResetRequired") return [];`
                 Err(Error::ResetRequired) => return Ok(Vec::new()),
                 // What:     `Err(e) => return Err(e.into())`. Convert+propagate.
@@ -889,150 +949,100 @@ impl SymphoniaSource {
                 Err(e) => return Err(e.into()),
             };
 
-            // What:     `if packet.track_id() != self.track_id { continue; }`. Skip
-            //           packets from other tracks.
+            // What:     `if packet.track_id != self.track_id { continue; }`. Skip
+            //           packets from other tracks. In 0.6 `track_id` is a public FIELD
+            //           (0.5 had a `track_id()` getter, now removed).
             // Why:      Containers can interleave multiple tracks.
-            // TS map:   `if (packet.trackId() !== this.trackId) continue;`
-            if packet.track_id() != self.track_id {
+            // TS map:   `if (packet.trackId !== this.trackId) continue;`
+            if packet.track_id != self.track_id {
                 continue;
             }
 
             // What:     `match self.decoder.decode(&packet) { ... }`. Decode the
-            //           packet; `&packet` lends it read-only.
+            //           packet; `&packet` lends it read-only. Returns a
+            //           `GenericAudioBufferRef` (an enum over sample formats) borrowing
+            //           the decoder.
             // Why:      Turn the packet into PCM, handling skippable errors.
             // TS map:   `let audio; try { audio = decoder.decode(packet); } catch (e) { ... }`
             match self.decoder.decode(&packet) {
-                // What:     `Ok(audio_buf) => { ... }`. `audio_buf` is the decoded
-                //           planar buffer (borrowed from the decoder).
-                // Why:      Convert to interleaved f32.
-                // TS map:   `case ok(audioBuf): ...`
-                Ok(audio_buf) => {
-                    // What:     `let capacity = audio_buf.capacity();`. Frame
-                    //           capacity (`usize`), read before moving `audio_buf`.
-                    // Why:      Size the interleaving buffer.
-                    // TS map:   `const capacity = audioBuf.capacity();`
-                    let capacity = audio_buf.capacity();
+                // What:     `Ok(decoded) => { ... }`. `decoded` is the decoded buffer
+                //           reference (borrows the decoder).
+                // Why:      Refresh the spec and copy out interleaved f32.
+                // TS map:   `case ok(decoded): ...`
+                Ok(decoded) => {
+                    // What:     `let spec = decoded.spec();`. `.spec()` returns
+                    //           `&AudioSpec` (0.5's `SignalSpec` was replaced by
+                    //           `AudioSpec`). Borrows `decoded` read-only.
+                    // Why:      The decoder's true rate/channels live here.
+                    // TS map:   `const spec = decoded.spec();`
+                    let spec = decoded.spec();
 
-                    // What:     `let signal_spec = *audio_buf.spec();`. `.spec()`
-                    //           returns `&SignalSpec`; `*` derefs+copies it (Copy).
-                    // Why:      Owned spec for the SampleBuffer and to refresh ours.
-                    // TS map:   `const signalSpec = { ...audioBuf.spec() };`
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // const signalSpec = { ...audioBuf.spec() };
-                    // ```
-                    let signal_spec = *audio_buf.spec();
-
-                    // What:     `self.spec.rate = signal_spec.rate;`. Overwrite the
-                    //           cached rate with the decoder's true rate. (Disjoint
-                    //           field from `self.decoder`, so allowed while
-                    //           `audio_buf` borrows the decoder.)
+                    // What:     `self.spec.rate = spec.rate();`. `.rate()` reads the
+                    //           sample rate (0.5 exposed a `rate` field; 0.6 uses a
+                    //           getter). Assigns into `self.spec` (disjoint from
+                    //           `self.decoder`, which `decoded` borrows).
                     // Why:      codec-header rate may be missing/wrong; trust the decode.
-                    // TS map:   `this.spec.rate = signalSpec.rate;`
-                    self.spec.rate = signal_spec.rate;
+                    // TS map:   `this.spec.rate = spec.rate();`
+                    self.spec.rate = spec.rate();
 
-                    // What:     `self.spec.channels = signal_spec.channels.count() as u16;`.
-                    //           `.count()` -> `usize`; `as u16` narrows to our field.
+                    // What:     `self.spec.channels = spec.channels().count() as u16;`.
+                    //           `.channels()` returns `&Channels`; `.count()` -> `usize`;
+                    //           `as u16` narrows to our field.
                     // Why:      Fills the channel count AAC/ALAC omit at probe time.
-                    // TS map:   `this.spec.channels = signalSpec.channels.count();`
-                    self.spec.channels = signal_spec.channels.count() as u16;
+                    // TS map:   `this.spec.channels = spec.channels().count();`
+                    self.spec.channels = spec.channels().count() as u16;
 
-                    // What:     `let need_new = match &self.sample_buf { ... };`.
-                    //           Decide whether to (re)allocate the interleaving buffer.
-                    // Why:      Allocate once, grow only when a packet is bigger.
-                    // TS map:   `const needNew = this.sampleBuf == null || this.sampleBuf.capacity() < capacity;`
-                    let need_new = match &self.sample_buf {
-                        // What:     `Some(b) => b.capacity() < capacity`. Reallocate
-                        //           only if the existing buffer is too small.
-                        // Why:      Grow on demand.
-                        // TS map:   `return b.capacity() < capacity;`
-                        Some(b) => b.capacity() < capacity,
-                        // What:     `None => true`. No buffer yet.
-                        // Why:      First decode.
-                        // TS map:   `return true;`
-                        None => true,
-                    };
+                    // What:     `let mut out: Vec<f32> = Vec::new();`. A fresh growable
+                    //           f32 buffer. Explicit type annotation so the copy below
+                    //           infers `Sout = f32`.
+                    // Why:      The owned interleaved block we will return; replacing
+                    //           0.5's reused `SampleBuffer` (0.6 has no `SampleBuffer`).
+                    // TS map:   `const out: number[] = [];`
+                    let mut out: Vec<f32> = Vec::new();
 
-                    // What:     `if need_new { self.sample_buf = Some(SampleBuffer::<f32>::new(capacity as u64, signal_spec)); }`.
-                    //           Allocate a flat f32 buffer; `capacity as u64` widens
-                    //           `usize` to the `Duration = u64` the API wants.
-                    // Why:      Ensure a big-enough interleaving buffer.
-                    // TS map:   `if (needNew) this.sampleBuf = new SampleBuffer(capacity, signalSpec);`
+                    // What:     `decoded.copy_to_vec_interleaved(&mut out);`. Copies the
+                    //           planar samples into `out` as interleaved f32, RESIZING
+                    //           `out` to the exact interleaved length first (so a stale
+                    //           length cannot leak through). `&mut out` lends it mutably.
+                    // Why:      Produce `[L,R,L,R,...]` in one call (0.5 needed a
+                    //           `SampleBuffer` + `copy_interleaved_ref` + `samples()`).
+                    // TS map:   `out = decoded.copyToVecInterleaved();`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // if (needNew) this.sampleBuf = new SampleBuffer(capacity, signalSpec);
+                    // decoded.copyToVecInterleaved(out);
                     // ```
-                    if need_new {
-                        self.sample_buf =
-                            Some(SampleBuffer::<f32>::new(capacity as u64, signal_spec));
-                    }
+                    decoded.copy_to_vec_interleaved(&mut out);
 
-                    // What:     `let buf = match self.sample_buf.as_mut() { ... };`.
-                    //           `.as_mut()` -> `Option<&mut SampleBuffer>`.
-                    // Why:      Mutable handle to the (now present) buffer.
-                    // TS map:   `const buf = this.sampleBuf!;`
-                    let buf = match self.sample_buf.as_mut() {
-                        // What:     `Some(b) => b`. Unwrap the mutable reference.
-                        // Why:      We just ensured it exists.
-                        // TS map:   `buf = this.sampleBuf;`
-                        Some(b) => b,
-                        // What:     `None => return Err(...)`. Defensive: unreachable.
-                        // Why:      Never proceed on an impossible state.
-                        // TS map:   `throw new PlayerError.Audio("sample buffer missing");`
-                        None => {
-                            return Err(PlayerError::Audio(
-                                "sample buffer missing after allocation".to_string(),
-                            ))
-                        }
-                    };
-
-                    // What:     `buf.copy_interleaved_ref(audio_buf);`. MOVES
-                    //           `audio_buf` in; writes planar samples interleaved.
-                    // Why:      Produce `[L,R,L,R,...]`.
-                    // TS map:   `buf.copyInterleavedRef(audioBuf);`
-                    buf.copy_interleaved_ref(audio_buf);
-
-                    // What:     `let samples = buf.samples();`. Borrowed `&[f32]` of
-                    //           the valid interleaved range just written.
-                    // Why:      Inspect length before deciding to return or skip.
-                    // TS map:   `const samples = buf.samples();`
-                    let samples = buf.samples();
-
-                    // What:     `if samples.is_empty() { continue; }`. A 0-frame
-                    //           packet (e.g. Vorbis priming) yields nothing; fetch
-                    //           the next packet instead of signalling EOF.
+                    // What:     `if out.is_empty() { continue; }`. A 0-frame packet
+                    //           (e.g. Vorbis priming) yields nothing; fetch the next
+                    //           packet instead of signalling EOF.
                     // Why:      An empty return means EOF to callers; do not confuse
                     //           a priming packet with end-of-stream.
-                    // TS map:   `if (samples.length === 0) continue;`
-                    if samples.is_empty() {
+                    // TS map:   `if (out.length === 0) continue;`
+                    if out.is_empty() {
                         continue;
                     }
 
-                    // What:     `return Ok(samples.to_vec());`. `.to_vec()` COPIES
-                    //           the slice into an owned `Vec<f32>`; `Ok(...)` wraps.
+                    // What:     `return Ok(out);`. Wrap the owned interleaved samples as
+                    //           success and return (moves `out`, no extra copy).
                     // Why:      Hand back owned interleaved samples.
-                    // TS map:   `return Array.from(samples);`
+                    // TS map:   `return out;`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // return Array.from(samples);
+                    // return out;
                     // ```
-                    return Ok(samples.to_vec());
+                    return Ok(out);
                 }
                 // What:     `Err(Error::DecodeError(_)) => continue`. Skip one bad
                 //           packet (the `_` ignores the message).
                 // Why:      One corrupt packet should not kill playback.
                 // TS map:   `if (e.kind === "DecodeError") continue;`
                 Err(Error::DecodeError(_)) => continue,
-                // What:     EOF from the decoder -> end-of-track.
-                // Why:      Stop cleanly.
-                // TS map:   `if (e.kind === "UnexpectedEof") return [];`
-                Err(Error::IoError(e)) if e.kind() == ErrorKind::UnexpectedEof => {
-                    return Ok(Vec::new())
-                }
-                // What:     `Err(Error::IoError(_)) => continue`. Transient I/O: skip.
+                // What:     `Err(Error::IoError(_)) => continue`. A packet that failed
+                //           to decode due to an I/O error is skipped (per the 0.6
+                //           decode-loop guidance); true EOF now arrives as `Ok(None)`.
                 // Why:      Robustness against partial packets.
                 // TS map:   `if (e.kind === "IoError") continue;`
                 Err(Error::IoError(_)) => continue,

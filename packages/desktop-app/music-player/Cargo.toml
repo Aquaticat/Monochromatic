@@ -32,7 +32,7 @@ slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa7
 # re-exported `winit` (`i_slint_backend_winit::winit`) is reused for the
 # WindowAttributes ext trait, so no separate `winit` dependency is added.
 i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
-symphonia = { version = "0.5", features = ["all"] }
+symphonia = { version = "0.6", features = ["all"] }
 opus = "0.3"
 pipewire = "0.8"
 # Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the

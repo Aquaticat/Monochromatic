@@ -1,31 +1,12 @@
-//! Opus decode path. symphonia 0.5 demuxes Ogg/Opus (parsing `OpusHead`,
-//! reporting the pre-skip in `codec_params.delay`, and yielding raw Opus
-//! packets) but its own Opus decoder is an empty stub, so we feed those raw
-//! packets to libopus through the `opus` crate. Output is always 48 kHz.
-
-// What:     `use std::io::ErrorKind;` imports the I/O error classifier enum.
-// Why:      End-of-stream is an `IoError` of kind `UnexpectedEof`; we match it.
-// TS map:   comparing `err.code === "EOF"`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // compare err.code to a string
-// ```
-use std::io::ErrorKind;
-
-// What:     `use symphonia::core::codecs::CodecParameters;` imports the struct
-//           describing a track's codec (channels, frame count, pre-skip delay).
-// Why:      `new` reads channels/delay/frame-count from it.
-// TS map:   `import { CodecParameters } from "symphonia/codecs";`
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { CodecParameters } from "symphonia/codecs";
-// ```
-use symphonia::core::codecs::CodecParameters;
+//! Opus decode path. symphonia 0.6 demuxes Ogg/Opus (parsing `OpusHead`,
+//! reporting the pre-skip in `Track::delay`, and yielding raw Opus packets) but
+//! the symphonia meta-crate exposes no Opus decoder (the `symphonia-codec-opus`
+//! crate exists but is not wired into the `all` feature set), so we feed those
+//! raw packets to libopus through the `opus` crate. Output is always 48 kHz.
 
 // What:     `use symphonia::core::errors::Error;` imports symphonia's error enum.
-// Why:      We match its `IoError`/`ResetRequired` variants to detect EOF.
+// Why:      We match its `ResetRequired` variant (treated as end-of-track) and
+//           propagate any other error.
 // TS map:   `import { SymphoniaError } from "symphonia/errors";`
 //
 // In TS you'd write (pseudocode):
@@ -34,18 +15,21 @@ use symphonia::core::codecs::CodecParameters;
 // ```
 use symphonia::core::errors::Error;
 
-// What:     `use symphonia::core::formats::FormatReader;`. `FormatReader` = the
-//           demuxer trait. The seeking enums (`SeekMode`/`SeekTo`) are no longer
-//           imported here because the actual seek now happens inside `seek_format`
-//           in `decode.rs`; this module only holds the demuxer and delegates.
-// Why:      `OpusSource` stores a `Box<dyn FormatReader>` and hands it to the helper.
-// TS map:   `import { FormatReader } from "symphonia/formats";`
+// What:     `use symphonia::core::formats::{FormatReader, Track};`. `FormatReader` =
+//           the demuxer trait; `Track` = one track's id, codec params, and timing
+//           (channels, pre-skip `delay`, `num_frames`). The seeking enums
+//           (`SeekMode`/`SeekTo`) are not imported here because the actual seek
+//           happens inside `seek_format` in `decode.rs`; this module holds the
+//           demuxer and delegates.
+// Why:      `OpusSource` stores a `Box<dyn FormatReader>` and reads channels/delay/
+//           frame-count from the owned `Track` `new` receives.
+// TS map:   `import { FormatReader, Track } from "symphonia/formats";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { FormatReader } from "symphonia/formats";
+// import { FormatReader, Track } from "symphonia/formats";
 // ```
-use symphonia::core::formats::FormatReader;
+use symphonia::core::formats::{FormatReader, Track};
 
 // What:     `use crate::decode::{AudioSpec, Source, seek_format};` imports our spec
 //           record, the `Source` interface, and the shared seek helper from the
@@ -143,21 +127,43 @@ pub struct OpusSource {
 // Why:      Holds `new`.
 // TS map:   the static/non-interface methods of the class.
 impl OpusSource {
-    // What:     `pub fn new(format: Box<dyn FormatReader>, params: CodecParameters,
-    //           track_id: u32) -> Result<Self, PlayerError>`. Takes ownership of
-    //           the demuxer and params; builds a libopus decoder.
+    // What:     `pub fn new(format: Box<dyn FormatReader>, track: Track,
+    //           track_id: u32) -> Result<Self, PlayerError>`. Takes ownership of the
+    //           demuxer and the owned `Track`; builds a libopus decoder.
     // Why:      Set up Opus decoding for this track, rejecting >2 channels.
-    // TS map:   `static create(format, params, trackId): OpusSource`
+    // TS map:   `static create(format, track, trackId): OpusSource`
     pub fn new(
         format: Box<dyn FormatReader>,
-        params: CodecParameters,
+        track: Track,
         track_id: u32,
     ) -> Result<Self, PlayerError> {
-        // What:     `let channels = match params.channels { ... };`. Pattern-match
-        //           the `Option<Channels>` to a numeric count, erroring if absent.
+        // What:     `let audio_params = track.codec_params.as_ref().and_then(|cp|
+        //           cp.audio()).ok_or_else(|| ...)?;`. Select the audio codec params out
+        //           of the optional `CodecParameters` enum (`.as_ref()` borrows the
+        //           `Option`, `.and_then(|cp| cp.audio())` picks the audio variant).
+        //           `.ok_or_else(...)` turns `None` into our error; `?` unwraps.
+        // Why:      The channel layout lives on the audio params.
+        // TS map:   `const audio = track.codecParams?.audio(); if (!audio) throw ...;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const audio = track.codecParams?.audio();
+        // if (!audio) throw new PlayerError.Unsupported("opus: no audio codec parameters");
+        // ```
+        let audio_params = track
+            .codec_params
+            .as_ref()
+            .and_then(|cp| cp.audio())
+            .ok_or_else(|| {
+                PlayerError::Unsupported("opus: no audio codec parameters".to_string())
+            })?;
+
+        // What:     `let channels = match &audio_params.channels { ... };`. Pattern-match
+        //           the borrowed `&Option<Channels>` to a numeric count, erroring if
+        //           absent. Matching on `&...` keeps `c` a `&Channels`.
         // Why:      We must know the layout to configure libopus.
-        // TS map:   `const channels = params.channels?.count(); if (channels == null) throw ...;`
-        let channels = match params.channels {
+        // TS map:   `const channels = audio.channels?.count(); if (channels == null) throw ...;`
+        let channels = match &audio_params.channels {
             // What:     `Some(c) => c.count()`. Present: `.count()` -> `usize`.
             // Why:      Real channel count.
             // TS map:   `channels = c.count();`
@@ -211,24 +217,26 @@ impl OpusSource {
         // ```
         let decoder = opus::Decoder::new(OPUS_RATE, opus_channels)?;
 
-        // What:     `let pre_skip = params.delay.unwrap_or(0) as usize;`. `delay`
-        //           is `Option<u32>` (the pre-skip the Ogg mapper read from
-        //           `OpusHead`); `.unwrap_or(0)` defaults to 0; `as usize` widens
-        //           to the buffer-math type.
+        // What:     `let pre_skip = track.delay.unwrap_or(0) as usize;`. In 0.6 the
+        //           pre-skip lives on `Track::delay` (`Option<u32>`; the Ogg mapper read
+        //           it from `OpusHead`), not on the codec params as in 0.5.
+        //           `.unwrap_or(0)` defaults to 0; `as usize` widens to the buffer-math
+        //           type.
         // Why:      Number of priming frames-per-channel to discard at the start.
-        // TS map:   `const preSkip = params.delay ?? 0;`
+        // TS map:   `const preSkip = track.delay ?? 0;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const preSkip = params.delay ?? 0;
+        // const preSkip = track.delay ?? 0;
         // ```
-        let pre_skip = params.delay.unwrap_or(0) as usize;
+        let pre_skip = track.delay.unwrap_or(0) as usize;
 
-        // What:     `let duration_secs = match params.n_frames { ... };`. Compute
-        //           seconds from the total frame count (always at 48 kHz for Opus).
+        // What:     `let duration_secs = match track.num_frames { ... };`. Compute
+        //           seconds from the total frame count (0.6 `Track::num_frames`; always
+        //           at 48 kHz for Opus).
         // Why:      The seek bar needs the track length.
-        // TS map:   `const durationSecs = params.nFrames != null ? params.nFrames / 48000 : 0;`
-        let duration_secs = match params.n_frames {
+        // TS map:   `const durationSecs = track.numFrames != null ? track.numFrames / 48000 : 0;`
+        let duration_secs = match track.num_frames {
             // What:     `Some(n) => n as f64 / OPUS_RATE as f64`. Cast both to f64
             //           before dividing (integer division would truncate).
             // Why:      seconds = frames / 48000.
@@ -315,22 +323,22 @@ impl Source for OpusSource {
         // Why:      Keep going until we have audible samples or hit EOF.
         // TS map:   `while (true) { ... }`
         loop {
-            // What:     `let packet = match self.format.next_packet() { ... };`.
-            //           Demux the next packet, mapping EOF/reset to an empty Vec.
+            // What:     `let packet = match self.format.next_packet() { ... };`. In 0.6
+            //           `next_packet` returns `Result<Option<Packet>>`: `Ok(Some(p))` is
+            //           a packet, `Ok(None)` is clean end-of-stream (0.5 signalled EOF
+            //           via an `UnexpectedEof` IoError).
             // Why:      Get a raw Opus packet, handling end-of-stream.
-            // TS map:   `let packet; try { packet = format.nextPacket(); } catch (e) { if (isEof(e)) return []; throw e; }`
+            // TS map:   `const p = format.nextPacket(); if (p == null) return [];`
             let packet = match self.format.next_packet() {
-                // What:     `Ok(p) => p`. Unwrap the packet on success.
+                // What:     `Ok(Some(p)) => p`. A packet was produced; unwrap it.
                 // Why:      We have something to decode.
-                // TS map:   `packet = p;`
-                Ok(p) => p,
-                // What:     `Err(Error::IoError(e)) if e.kind() == ErrorKind::UnexpectedEof
-                //           => return Ok(Vec::new())`. EOF -> empty Vec (our signal).
+                // TS map:   `if (p != null) packet = p;`
+                Ok(Some(p)) => p,
+                // What:     `Ok(None) => return Ok(Vec::new())`. End of stream -> empty
+                //           Vec (our signal).
                 // Why:      End of file -> stop cleanly.
-                // TS map:   `if (e.kind === "UnexpectedEof") return [];`
-                Err(Error::IoError(e)) if e.kind() == ErrorKind::UnexpectedEof => {
-                    return Ok(Vec::new())
-                }
+                // TS map:   `if (p == null) return [];`
+                Ok(None) => return Ok(Vec::new()),
                 // What:     `Err(Error::ResetRequired) => return Ok(Vec::new())`.
                 //           Treat reset-required as end-of-track.
                 // Why:      Simple player: end instead of resetting.
@@ -343,30 +351,33 @@ impl Source for OpusSource {
                 Err(e) => return Err(e.into()),
             };
 
-            // What:     `if packet.track_id() != self.track_id { continue; }`. Skip
-            //           packets that are not our Opus track.
+            // What:     `if packet.track_id != self.track_id { continue; }`. Skip
+            //           packets that are not our Opus track. In 0.6 `track_id` is a
+            //           public FIELD (the 0.5 `track_id()` getter was removed).
             // Why:      A container can interleave multiple tracks.
-            // TS map:   `if (packet.trackId() !== this.trackId) continue;`
-            if packet.track_id() != self.track_id {
+            // TS map:   `if (packet.trackId !== this.trackId) continue;`
+            if packet.track_id != self.track_id {
                 continue;
             }
 
-            // What:     `let frames = self.decoder.decode_float(packet.buf(),
-            //           &mut self.scratch, false)?;`. `packet.buf()` is the raw
-            //           Opus bytes (`&[u8]`); `&mut self.scratch` lends the output
-            //           buffer mutably; `false` = "this is not forward-error-
-            //           correction recovery". Returns frames PER CHANNEL (`usize`).
-            //           `?` converts an `opus::Error` to `PlayerError`.
+            // What:     `let frames = self.decoder.decode_float(&packet.data,
+            //           &mut self.scratch, false)?;`. `packet.data` is the raw Opus
+            //           bytes (`Box<[u8]>`; 0.6 made it a public field, replacing the
+            //           0.5 `packet.buf()` getter); `&packet.data` deref-coerces to the
+            //           `&[u8]` libopus wants. `&mut self.scratch` lends the output
+            //           buffer mutably; `false` = "this is not forward-error-correction
+            //           recovery". Returns frames PER CHANNEL (`usize`). `?` converts an
+            //           `opus::Error` to `PlayerError`.
             // Why:      Decode one packet into the scratch buffer.
-            // TS map:   `const frames = decoder.decodeFloat(packet.buf(), scratch, false);`
+            // TS map:   `const frames = decoder.decodeFloat(packet.data, scratch, false);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const frames = decoder.decodeFloat(packet.buf(), scratch, false);
+            // const frames = decoder.decodeFloat(packet.data, scratch, false);
             // ```
             let frames = self
                 .decoder
-                .decode_float(packet.buf(), &mut self.scratch, false)?;
+                .decode_float(&packet.data, &mut self.scratch, false)?;
 
             // What:     `let total = frames * self.channels;`. Total INTERLEAVED
             //           sample count (frames-per-channel times channels).
