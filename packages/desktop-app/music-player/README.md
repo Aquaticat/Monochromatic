@@ -146,8 +146,12 @@ from rustup (current stable), not Fedora's `rust` package, because the Slint dep
 revision (1.17.0-dev) that needs rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
 `docs/troubleshooting/slint-flickable-smooth-scroll.md`.
 
-For OS taskbar progress, the `run` task installs `share/applications/monochromatic.music-player.desktop` into the
-host `~/.local/share/applications` before launching, so the shell can resolve
+For OS taskbar progress, the `run` task installs two files onto the host before launching: the freshly built
+binary into `~/.local/bin/music-player`, and `share/applications/monochromatic.music-player.desktop` into
+`~/.local/share/applications`. The binary install is what makes the `.desktop` launcher work from the shell: its
+`Exec=music-player` is resolved on the systemd user PATH (which includes `~/.local/bin` but not this package's
+`target/release`), so launching from KDE without the install fails with "binary not found". Installing both means
+the KDE launcher and `mise run` exercise the exact same binary. With the `.desktop` present, the shell can resolve
 `application://monochromatic.music-player.desktop`. The window's Wayland app id is stamped to
 `monochromatic.music-player` (matching the file's `StartupWMClass`) by a winit window-attributes hook, and the
 `com.canonical.Unity.LauncherEntry` `Update` signal (carrying `progress` and `progress-visible`) is emitted on the
@@ -187,7 +191,8 @@ mise run //packages/desktop-app/music-player:test
 # release build
 mise run //packages/desktop-app/music-player:build
 
-# build in the container, then run the GUI on the host (optional file/folder args)
+# build in the container, install to ~/.local/bin + ~/.local/share/applications,
+# then run the GUI on the host (optional file/folder args)
 mise run //packages/desktop-app/music-player:run -- path/to/song.flac path/to/folder
 
 # regenerate the per-codec test fixtures with host ffmpeg (rarely needed)

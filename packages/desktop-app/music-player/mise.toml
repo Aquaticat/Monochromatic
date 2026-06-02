@@ -56,27 +56,39 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # if set (to force the software renderer).
 run = '''
 let home = ($env.HOME? | default '')
-# Install the .desktop file so the shell (KDE Plasma) can resolve
-# application://monochromatic.music-player.desktop and attach the taskbar progress
-# to this window, matched by the Wayland app id == StartupWMClass. Best-effort:
-# skipped when $HOME is unset. KDE picks up a new .desktop file on next login if it
-# does not appear immediately.
-if ($home != '') {
-  let apps_dir = ($home | path join '.local/share/applications')
-  mkdir $apps_dir
-  cp --force share/applications/monochromatic.music-player.desktop $apps_dir
-}
-let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
-# Build the release binary in the container; the bind-mounted target/ surfaces it
-# on the host at target/release/music-player.
+# Build the release binary in the container first; the bind-mounted target/
+# surfaces it on the host at target/release/music-player.
 (
   podman run --rm --security-opt label=disable
   -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work
   localhost/monochromatic/music-player
   cargo build --release
 )
-# Run the freshly built binary directly on the host.
-^./target/release/music-player ...$extras
+# Install onto the host so the KDE .desktop launcher and `mise run` exercise the
+# SAME binary. The .desktop uses a bare `Exec=music-player`, which KDE resolves on
+# the systemd user PATH: that PATH includes ~/.local/bin (verified via
+# `systemctl --user show-environment`) but NOT this package's target/release, so the
+# binary must be copied to ~/.local/bin or the launcher fails with "binary not
+# found". The .desktop is installed alongside so the shell can resolve
+# application://monochromatic.music-player.desktop and attach taskbar progress to the
+# window (matched by Wayland app id == StartupWMClass). Best-effort: when $HOME is
+# unset, both installs are skipped and the freshly built target/release copy is run
+# instead. KDE picks up a new .desktop file on next login if it does not appear
+# immediately.
+let bin = if ($home != '') {
+  let apps_dir = ($home | path join '.local/share/applications')
+  mkdir $apps_dir
+  cp --force share/applications/monochromatic.music-player.desktop $apps_dir
+  let bin_dir = ($home | path join '.local/bin')
+  mkdir $bin_dir
+  cp --force target/release/music-player $bin_dir
+  ($bin_dir | path join 'music-player')
+} else {
+  './target/release/music-player'
+}
+let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
+# Run the installed binary directly on the host (same path KDE launches).
+^$bin ...$extras
 '''
 
 [tasks."gen:fixtures"]
