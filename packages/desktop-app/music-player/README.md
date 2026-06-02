@@ -112,10 +112,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   narrow to fit them. The
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
-  `#` catch-all). Each tab shows one page; the tab bar wraps onto multiple rows to fit the window width (rather
-  than scrolling horizontally). The tab bar and the list sit in one Flickable, so they scroll together (the tabs
-  scroll away with the list rather than staying pinned), driven by a prominent custom scrollbar in a right-hand
-  gutter, since the default std-widgets scrollbar is a near-invisible hairline. Scrolling is animated by the
+  `#` catch-all). Each tab shows one page. The page-tab bar and the selected page's track rows stay in one
+  Flickable with one scrollbar, but their shared content is a wrapping FlexboxLayout: when their minimum widths
+  fit, the complete page grid and selected track list sit beside each other; when they do not fit, flex wrapping
+  returns them to the vertical tab-then-list order without an explicit breakpoint. The full page grid remains
+  visible, so late-alphabet artists stay discoverable. The shared Flickable still lets page navigation and track
+  rows scroll away together, driven by a prominent custom scrollbar in a right-hand gutter, since the default
+  std-widgets scrollbar is a near-invisible hairline. Scrolling is animated by the
   Flickable itself: touchpad and touchscreen gestures fling with momentum, and mouse-wheel notches ease in over a
   short duration rather than snapping. The wheel animation needs the pinned Slint 1.17 revision (it is absent from
   the 1.16 releases); see `docs/troubleshooting/slint-flickable-smooth-scroll.md`. Rows show each track's path
@@ -125,10 +128,31 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   it (Rust loads it paused, pausing whatever was playing); a click on the already-highlighted row toggles
   play/pause. "Double click to play" falls out for free (first click selects, second toggles to play), so no
   real double-click handling is needed. The window title shows the playing track's list path (the same
-  `folder/.../file` string the queue row shows) while audio plays, and reverts to "Music Player" when paused. The custom controls (radio group, checkbox, scrollbar, row highlight) take
-  their colours from the Slint system palette rather than hardcoded values, so they follow the OS accent colour
+  `folder/.../file` string the queue row shows) while audio plays, and reverts to "Music Player" when paused.
+  The custom controls (radio group, checkbox, scrollbar, row highlight) take their colours from the Slint system
+  palette rather than hardcoded values, so they follow the OS accent colour
   and the light/dark theme: the highlighted row and the checked checkbox use the accent, the same as the active
   page tab's primary button.
+
+## Page navigation UX choices
+
+The player keeps page navigation and tracks in one shared Flickable and uses responsive flex wrapping for the two
+regions. This preserves the everything-shown-at-once browsing model when the viewport has room, keeps every page
+button discoverable, and avoids separate scroll positions.
+
+Rejected alternatives:
+
+- Auto-collapse after each page click: rejected because collapsing content above the track list changes the shared
+  scroll geometry immediately after selection, which risks surprising jumps.
+- Height-capped page navigation plus `More pages`: rejected because hidden overflow makes late-alphabet artists
+  such as Y and Z less discoverable.
+- Text-link index: rejected because it weakens the button affordance used by active and inactive page tabs.
+- Visible `Tracks` skip button: rejected because a skip link mixed into the page grid looks like a page despite
+  not being one; focus-only skip links remain an accessibility pattern, not the primary navigation here.
+- Permanent separate scroll containers: rejected because separate panes would keep page navigation consuming space
+  while the track list scrolls, and would introduce an extra scroll position in a compact player.
+- Breakpoint-specific layouts: rejected because Slint flex constraints can express the desired transition through
+  minimum widths and wrapping, keeping the layout rule local to the two content regions.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The
