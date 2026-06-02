@@ -431,36 +431,35 @@ export component AppWindow inherits Window {
                         // remain visible, but it shares the first scroll screen
                         // with the selected page's rows.
                         //
-                        // The flex bar is wrapped in a VerticalLayout (alignment:
-                        // start) instead of sitting directly in the HorizontalLayout.
-                        // That HorizontalLayout's alignment: stretch would otherwise
-                        // stretch the bar's height to match the much taller track
-                        // list beside it, and the flexbox's align-content/align-items:
-                        // stretch defaults would then inflate every tab button to
-                        // fill that height, so the tags came out bigger than in the
-                        // 1-column layout. alignment: start pins the bar to its
-                        // natural wrapped height at the top (matching the narrow bar
-                        // and the track-list column's own start packing), leaving the
-                        // vertical slack below it, so the tags stay the same size in
-                        // both layouts.
-                        if root.page-labels.length > 0: VerticalLayout {
+                        // align-content and align-items are pinned to start because
+                        // both default to stretch on FlexboxLayout. This bar shares a
+                        // HorizontalLayout (alignment: stretch) with the much taller
+                        // track list, so the bar is handed more cross-axis (vertical)
+                        // height than its wrapped rows need. With the stretch defaults
+                        // that surplus inflates every tab: align-content stretches the
+                        // wrapped flex lines apart and align-items stretches each
+                        // button to its line, so the tags came out far bigger than in
+                        // the 1-column layout. start keeps the lines and buttons at
+                        // their natural height, packed at the top, with the surplus
+                        // left as empty space below, so the tags match the 1-column
+                        // size. (The narrow bar never hits this: it is laid out at the
+                        // same width it is measured at, so it gets no surplus height.)
+                        if root.page-labels.length > 0: FlexboxLayout {
                             min-width: 320px;
                             preferred-width: 480px;
                             horizontal-stretch: 1;
-                            vertical-stretch: 0;
+                            spacing: 4px;
+                            flex-wrap: wrap;
                             alignment: start;
-                            FlexboxLayout {
-                                spacing: 4px;
-                                flex-wrap: wrap;
-                                alignment: start;
-                                vertical-stretch: 0;
-                                for label[p] in root.page-labels: Button {
-                                    text: label;
-                                    // The active page's tab is drawn with the accent style.
-                                    primary: p == root.selected-page;
-                                    clicked => {
-                                        root.select-page(p);
-                                    }
+                            align-content: start;
+                            align-items: start;
+                            vertical-stretch: 0;
+                            for label[p] in root.page-labels: Button {
+                                text: label;
+                                // The active page's tab is drawn with the accent style.
+                                primary: p == root.selected-page;
+                                clicked => {
+                                    root.select-page(p);
                                 }
                             }
                         }
