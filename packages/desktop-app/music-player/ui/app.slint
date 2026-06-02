@@ -156,20 +156,21 @@ component VScrollBar inherits Rectangle {
     width: 14px;
     // only worth showing once the content actually overflows the viewport
     visible: root.maximum > 0;
-    // recessed track surface from the system palette
-    background: Palette.alternate-background;
+    // theme-tinted translucent track: white at 10% alpha on a dark scheme,
+    // black at 10% alpha on a light scheme (the unknown scheme falls back to dark-on-light)
+    background: Palette.color-scheme == ColorScheme.dark ? #ffffff.with-alpha(0.1) : #000000.with-alpha(0.1);
     border-radius: 7px;
 
     // the draggable thumb: its length is the visible fraction of the content,
-    // and its position tracks how far we have scrolled. Palette-derived greys so
-    // it stays prominent and high-contrast on any theme: border at rest, brighter
-    // toward the foreground colour on hover and while grabbed.
+    // and its position tracks how far we have scrolled. Accent-tinted so it reads
+    // as the active control: 60% accent alpha at rest, 80% on hover, full accent
+    // while grabbed.
     thumb := Rectangle {
         x: 2px;
         width: parent.width - 4px;
         height: max(32px, (parent.height - 4px) * root.page-size / (root.maximum + root.page-size));
         y: 2px + (parent.height - 4px - self.height) * (-root.value / root.maximum);
-        background: ta.pressed ? Palette.foreground : ta.has-hover ? Palette.foreground.with-alpha(0.7) : Palette.border;
+        background: ta.pressed ? Palette.accent-background : ta.has-hover ? Palette.accent-background.with-alpha(0.8) : Palette.accent-background.with-alpha(0.6);
         border-radius: self.width / 2;
 
         ta := TouchArea {
