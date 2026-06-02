@@ -198,6 +198,10 @@ export component AppWindow inherits Window {
     preferred-width: 480px;
     preferred-height: 600px;
 
+    // Pure black under dark mode (OLED-friendly, maximum contrast) instead of the
+    // style's near-black Palette.background; light mode keeps the adaptive default.
+    background: Palette.color-scheme == ColorScheme.dark ? #000000 : Palette.background;
+
     // Inputs from Rust (the engine pushes these via Update messages).
     in property <string> track-name: "";
     in property <float> position: 0;
