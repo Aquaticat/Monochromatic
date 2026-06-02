@@ -113,4 +113,11 @@ for s in $specs {
   print $"generating ($out)"
   ffmpeg -y -f lavfi -i "sine=frequency=440:duration=0.3" -ac 2 -ar 48000 ...$s.args $out
 }
+# offset.opus: a remux of tone.opus with a +0.5s timestamp offset, so its first
+# audio frame is NOT frame 0 (track start_ts becomes non-zero). This reproduces
+# the real-world Ogg/Opus seek-to-start bug (seeking to second 0 mapped to frame
+# 0, which the demuxer rejects as out-of-range). The seek_to_start_of_offset_opus
+# regression test depends on this fixture.
+print "generating fixtures/offset.opus"
+ffmpeg -y -i fixtures/tone.opus -c copy -output_ts_offset 0.5 fixtures/offset.opus
 '''

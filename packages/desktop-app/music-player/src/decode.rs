@@ -129,16 +129,23 @@ use symphonia::core::meta::MetadataOptions;
 // ```
 use symphonia::core::probe::Hint;
 
-// What:     `use symphonia::core::units::Time;` imports symphonia's time type
-//           (seconds + fractional seconds) used for seeking.
-// Why:      `SeekTo::Time` needs a `Time`; `Time::from(f64_seconds)` builds one.
-// TS map:   a wrapper around a `number` of seconds.
+// What:     `use symphonia::core::units::TimeStamp;` imports symphonia's frame-count
+//           timestamp type (a `u64` count of audio frames in a track's timebase).
+//           Sibling you might expect: `Time` (seconds + fractional seconds), which
+//           we deliberately do NOT use for seeking, because `SeekTo::Time` maps
+//           second 0 to frame 0, and Ogg/Opus streams start at a non-zero frame
+//           (the encoder pre-skip), so a "seek to 0 seconds" gets rejected as
+//           out-of-range. We seek by absolute frame instead (see `seek_format`).
+// Why:      `SeekTo::TimeStamp` needs a `TimeStamp` (frame count), which lets us add
+//           the stream's start frame so "the beginning" lands on the real first
+//           frame rather than the invalid frame 0.
+// TS map:   `type TimeStamp = number;` (a count of audio frames, not seconds).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Time } from "symphonia/units";
+// import { TimeStamp } from "symphonia/units";
 // ```
-use symphonia::core::units::Time;
+use symphonia::core::units::TimeStamp;
 
 // What:     `use crate::error::PlayerError;` imports our one app-wide error
 //           type. `crate::` means "from the root of this crate" (sibling form:
@@ -465,6 +472,172 @@ pub fn open(path: &Path) -> Result<Box<dyn Source>, PlayerError> {
         // ```
         Ok(Box::new(source))
     }
+}
+
+// What:     `pub(crate) fn seek_format(format: &mut dyn FormatReader, track_id: u32,
+//           secs: f64) -> Result<(), PlayerError>`. Reposition a demuxer to a
+//           wall-clock offset, expressed as SECONDS FROM THE AUDIBLE START, by
+//           converting it to an ABSOLUTE frame timestamp the container accepts.
+//           `&mut dyn FormatReader` is a mutable borrow of any demuxer (we lend it,
+//           the caller keeps ownership; sibling `Box<dyn FormatReader>` would take
+//           ownership, which we do not want here).
+// Why:      `SeekTo::Time { time: 0s }` maps to frame 0, but Ogg/Opus streams begin
+//           at a non-zero frame (the encoder pre-skip becomes the track's
+//           `start_ts`), so seeking to "0 seconds" was rejected with
+//           "requested seek timestamp is out-of-range for stream" whenever the user
+//           dragged the bar to the very beginning. Adding `start_ts` makes second 0
+//           land on the real first audible frame. Shared by both decode paths
+//           (`SymphoniaSource` here and `OpusSource` in `opus.rs`) so the fix and the
+//           timeline math live in exactly one place.
+// TS map:   `function seekFormat(format: FormatReader, trackId: number, secs: number): void`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function seekFormat(format, trackId, secs) {
+//   const track = format.tracks().find((t) => t.id === trackId);
+//   if (!track) throw new Error("seek: track not found");
+//   const { startTs, sampleRate, nFrames } = track.codecParams;
+//   if (sampleRate == null) throw new Error("seek: unknown sample rate");
+//   const offset = Math.round(Math.max(0, secs) * sampleRate);
+//   let ts = startTs + offset;
+//   if (nFrames != null) ts = Math.min(ts, startTs + nFrames);
+//   format.seek("accurate", { ts, trackId });
+// }
+// ```
+pub(crate) fn seek_format(
+    format: &mut dyn FormatReader,
+    track_id: u32,
+    secs: f64,
+) -> Result<(), PlayerError> {
+    // What:     `format.tracks().iter().find(|t| t.id == track_id)`. `tracks()`
+    //           borrows the demuxer's track list (`&[Track]`, a borrowed slice;
+    //           siblings `Vec<Track>`/`[Track; N]` would be owned/fixed-size);
+    //           `.iter()` makes a read-only cursor over it; `.find(|t| ...)` returns
+    //           the first track whose `id` matches, as `Option<&Track>`. The closure
+    //           `|t| t.id == track_id` takes each track by reference `t` and compares
+    //           its `id` field. `.ok_or_else(|| ...)` turns `None` into our error.
+    //           `?` unwraps the `Some` or returns the error.
+    // Why:      We need this track's timeline parameters; a missing id means the
+    //           caller passed a stale track, which is a real failure.
+    // TS map:   `const track = format.tracks().find((t) => t.id === trackId);
+    //            if (!track) throw new Error("seek: track not found");`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const track = format.tracks().find((t) => t.id === trackId);
+    // if (!track) throw new Error("seek: track not found");
+    // ```
+    let track = format
+        .tracks()
+        .iter()
+        .find(|t| t.id == track_id)
+        .ok_or_else(|| PlayerError::Unsupported("seek: track not found".to_string()))?;
+
+    // What:     `let start_ts: TimeStamp = track.codec_params.start_ts;`. Copy the
+    //           track's first-frame timestamp (a `u64` frame count) out of the
+    //           borrowed track. `TimeStamp` is a `u64` alias (sibling `Time` would be
+    //           seconds, which we are avoiding).
+    // Why:      For Ogg/Opus this is the pre-skip frame; adding it shifts our
+    //           "seconds from audible start" onto the container's absolute timeline.
+    // TS map:   `const startTs = track.codecParams.startTs;`
+    let start_ts: TimeStamp = track.codec_params.start_ts;
+
+    // What:     `let rate = track.codec_params.sample_rate.ok_or_else(|| ...)?;`.
+    //           `sample_rate` is `Option<u32>` (maybe-present frames-per-second);
+    //           `.ok_or_else(|| ...)` converts a `None` into our error; `?` unwraps.
+    // Why:      We convert seconds to frames with the rate; without it the seek
+    //           target is undefined, so failing loudly beats guessing.
+    // TS map:   `const rate = track.codecParams.sampleRate; if (rate == null) throw ...;`
+    let rate = track
+        .codec_params
+        .sample_rate
+        .ok_or_else(|| PlayerError::Unsupported("seek: unknown sample rate".to_string()))?;
+
+    // What:     `let n_frames = track.codec_params.n_frames;`. Copy the optional total
+    //           audible frame count (`Option<u64>`; `Some(n)` if the container knew
+    //           the length, `None` otherwise).
+    // Why:      Used below to clamp the seek so we never ask for a frame past the end.
+    //           This is the last read of `track`, so the borrow of `format` ends here
+    //           and the mutable `format.seek(...)` below is allowed.
+    // TS map:   `const nFrames = track.codecParams.nFrames;`
+    let n_frames = track.codec_params.n_frames;
+
+    // What:     `let secs_clamped = if secs > 0.0 { secs } else { 0.0 };`. Floor the
+    //           requested offset at zero.
+    // Why:      The slider's minimum is 0, but a stray negative would make the
+    //           frame-count cast below saturate oddly; clamping keeps it well-defined.
+    // TS map:   `const secsClamped = Math.max(0, secs);`
+    let secs_clamped = if secs > 0.0 { secs } else { 0.0 };
+
+    // What:     `let offset_frames = (secs_clamped * f64::from(rate)).round() as u64;`.
+    //           `f64::from(rate)` widens the `u32` rate to `f64` losslessly; the
+    //           multiply gives a fractional frame count; `.round()` picks the nearest
+    //           whole frame; `as u64` truncates the now-integral float to a frame
+    //           count (a float-to-int `as` cast saturates at 0 / `u64::MAX` instead of
+    //           wrapping).
+    // Why:      Convert "seconds from start" into "frames from start".
+    // TS map:   `const offsetFrames = Math.round(secsClamped * rate);`
+    let offset_frames = (secs_clamped * f64::from(rate)).round() as u64;
+
+    // What:     `let mut target_ts: TimeStamp = start_ts.saturating_add(offset_frames);`.
+    //           `mut` because we may clamp it below. `saturating_add` adds without
+    //           overflowing (it caps at `u64::MAX` instead of wrapping; sibling `+`
+    //           would panic on overflow in debug builds).
+    // Why:      The absolute frame to seek to is the stream's start plus our offset.
+    // TS map:   `let targetTs = startTs + offsetFrames;`
+    let mut target_ts: TimeStamp = start_ts.saturating_add(offset_frames);
+
+    // What:     `if let Some(n_frames) = n_frames { ... }`. Run the block only when the
+    //           total length is known, binding the inner `u64` to `n_frames`.
+    // Why:      Only clamp when we actually know where the end is.
+    // TS map:   `if (nFrames != null) { ... }`
+    if let Some(n_frames) = n_frames {
+        // What:     `let max_ts = start_ts.saturating_add(n_frames);`. The last valid
+        //           absolute frame is the start plus the audible length.
+        // Why:      Compute the upper bound the demuxer will accept.
+        // TS map:   `const maxTs = startTs + nFrames;`
+        let max_ts = start_ts.saturating_add(n_frames);
+
+        // What:     `if target_ts > max_ts { target_ts = max_ts; }`. Pull the target
+        //           back to the end if rounding pushed it past the final frame.
+        // Why:      Seeking one frame past the end would itself be out-of-range; the
+        //           slider's maximum equals the duration, so this guards that edge.
+        // TS map:   `if (targetTs > maxTs) targetTs = maxTs;`
+        if target_ts > max_ts {
+            target_ts = max_ts;
+        }
+    }
+
+    // What:     `format.seek(SeekMode::Accurate, SeekTo::TimeStamp { ts: target_ts,
+    //           track_id })?`. `SeekMode::Accurate` lands exactly (sibling `Coarse`
+    //           is fast but approximate). `SeekTo::TimeStamp { ... }` seeks by an
+    //           absolute frame count (sibling `SeekTo::Time` seeks by seconds, which
+    //           is what caused the out-of-range bug). `?` converts a symphonia error
+    //           into `PlayerError` and returns it.
+    // Why:      Perform the actual reposition at the corrected absolute frame.
+    // TS map:   `format.seek("accurate", { ts: targetTs, trackId });`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // format.seek("accurate", { ts: targetTs, trackId });
+    // ```
+    format.seek(
+        SeekMode::Accurate,
+        SeekTo::TimeStamp {
+            ts: target_ts,
+            track_id,
+        },
+    )?;
+
+    // What:     `Ok(())`. Wrap the unit value `()` as success. Tail -> return.
+    // Why:      Seek succeeded; there is no value to hand back.
+    // TS map:   `return;`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return;
+    // ```
+    Ok(())
 }
 
 // What:     `struct SymphoniaSource { ... }`. A record holding the live decode
@@ -930,27 +1103,23 @@ impl Source for SymphoniaSource {
     // Why:      Implement the seek control.
     // TS map:   `seek(secs: number): void`
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError> {
-        // What:     `self.format.seek(SeekMode::Accurate, SeekTo::Time { time:
-        //           Time::from(secs), track_id: Some(self.track_id) })?`.
-        //           `SeekMode::Accurate` = land exactly (sibling `Coarse` = fast
-        //           but approximate). `SeekTo::Time { ... }` seeks by time;
-        //           `Time::from(secs)` converts our f64 seconds; `Some(self.track_id)`
-        //           wraps the track id in `Option` (sibling `None` = "any track").
-        //           `?` unwraps/returns.
-        // Why:      Reposition the stream precisely at `secs`.
-        // TS map:   `format.seek("accurate", { time: secs, trackId: this.trackId });`
+        // What:     `seek_format(self.format.as_mut(), self.track_id, secs)?`. Call the
+        //           shared helper (defined above this struct). `self.format` is a
+        //           `Box<dyn FormatReader>` (an owned, heap demuxer); `.as_mut()`
+        //           reborrows it as a `&mut dyn FormatReader` so the helper can seek it
+        //           without taking ownership. `?` unwraps the `Ok` or returns the
+        //           error.
+        // Why:      The helper converts our "seconds from audible start" into the
+        //           container's absolute frame timestamp (adding the stream's
+        //           `start_ts`), so dragging the bar to the very beginning seeks to the
+        //           real first frame instead of the invalid frame 0.
+        // TS map:   `seekFormat(this.format, this.trackId, secs);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // format.seek("accurate", { time: secs, trackId: this.trackId });
+        // seekFormat(this.format, this.trackId, secs);
         // ```
-        self.format.seek(
-            SeekMode::Accurate,
-            SeekTo::Time {
-                time: Time::from(secs),
-                track_id: Some(self.track_id),
-            },
-        )?;
+        seek_format(self.format.as_mut(), self.track_id, secs)?;
 
         // What:     `self.decoder.reset();`. Clears the decoder's internal state
         //           so it does not emit stale samples from before the seek.
@@ -1152,6 +1321,61 @@ mod tests {
     #[test]
     fn decodes_opus() {
         check_fixture("tone.opus");
+    }
+
+    // What:     `#[test]` regression for seeking to the very beginning of an Ogg/Opus
+    //           stream whose first audio frame is NOT frame 0.
+    // Why:      `fixtures/offset.opus` is an Opus file remuxed with a +0.5s timestamp
+    //           offset, so its track `start_ts` is non-zero (~23352 frames). The old
+    //           seek used `SeekTo::Time { 0s }`, which maps to frame 0; the Ogg
+    //           demuxer rejects any frame below `start_ts` with
+    //           "requested seek timestamp is out-of-range for stream", so dragging the
+    //           bar to the beginning errored. The fix (`seek_format`) seeks to
+    //           `start_ts + 0`, the real first frame. This test fails (the original
+    //           bug) if the seek is ever reverted to `SeekTo::Time`.
+    // TS map:   `it("seeks to start of an offset opus stream", ...)`
+    #[test]
+    fn seek_to_start_of_offset_opus_succeeds() {
+        // What:     `let path = Path::new("fixtures").join("offset.opus");`. Build the
+        //           path to the committed offset fixture (see `gen:fixtures`).
+        // Why:      This is the only fixture with a non-zero start frame.
+        // TS map:   `const path = join("fixtures", "offset.opus");`
+        let path = Path::new("fixtures").join("offset.opus");
+
+        // What:     `let mut source = open(&path).expect("offset.opus should open");`.
+        //           `open(&path)` lends the path and returns `Result<Box<dyn Source>>`;
+        //           `.expect(msg)` unwraps `Ok` or panics (failing the test). `mut`
+        //           because seeking and decoding mutate the source.
+        // Why:      Drive the real decode path the player uses, not a hand-rolled one.
+        // TS map:   `const source = open(path); // throws on error`
+        let mut source = open(&path).expect("offset.opus should open");
+
+        // What:     `source.seek(0.0).expect(...)`. Seek to second 0 (the beginning),
+        //           unwrapping the `Result<(), PlayerError>` and panicking on error.
+        // Why:      This is the exact action that errored before the fix; it must now
+        //           succeed.
+        // TS map:   `source.seek(0); // must not throw`
+        source
+            .seek(0.0)
+            .expect("seek to the beginning must not be out-of-range");
+
+        // What:     `let chunk = source.next_chunk().expect(...)`. Pull one decoded
+        //           block after the seek, unwrapping the `Result<Vec<f32>>`.
+        // Why:      Confirm the post-seek position is actually decodable, not just that
+        //           `seek` returned `Ok`.
+        // TS map:   `const chunk = source.nextChunk(); // throws on error`
+        let chunk = source
+            .next_chunk()
+            .expect("decoding after seek-to-start should yield samples");
+
+        // What:     `assert!(!chunk.is_empty(), ...)`. `!` negates; require a non-empty
+        //           block.
+        // Why:      An empty first block would mean the seek landed at end-of-stream.
+        // TS map:   `expect(chunk.length).toBeGreaterThan(0);`
+        assert!(
+            !chunk.is_empty(),
+            "first chunk after seeking to the start should not be empty"
+        );
     }
 
     // What:     `#[test]` AAC-LC (in MP4) path.

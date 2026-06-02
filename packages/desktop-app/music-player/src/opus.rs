@@ -34,38 +34,31 @@ use symphonia::core::codecs::CodecParameters;
 // ```
 use symphonia::core::errors::Error;
 
-// What:     `use symphonia::core::formats::{FormatReader, SeekMode, SeekTo};`.
-//           `FormatReader` = the demuxer trait; `SeekMode`/`SeekTo` = how/where
-//           to seek.
-// Why:      We hold a demuxer and seek by time.
-// TS map:   `import { FormatReader, SeekMode, SeekTo } from "symphonia/formats";`
+// What:     `use symphonia::core::formats::FormatReader;`. `FormatReader` = the
+//           demuxer trait. The seeking enums (`SeekMode`/`SeekTo`) are no longer
+//           imported here because the actual seek now happens inside `seek_format`
+//           in `decode.rs`; this module only holds the demuxer and delegates.
+// Why:      `OpusSource` stores a `Box<dyn FormatReader>` and hands it to the helper.
+// TS map:   `import { FormatReader } from "symphonia/formats";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { FormatReader, SeekMode, SeekTo } from "symphonia/formats";
+// import { FormatReader } from "symphonia/formats";
 // ```
-use symphonia::core::formats::{FormatReader, SeekMode, SeekTo};
+use symphonia::core::formats::FormatReader;
 
-// What:     `use symphonia::core::units::Time;` imports the seconds-based time type.
-// Why:      `SeekTo::Time` needs a `Time`, built via `Time::from(f64)`.
-// TS map:   `import { Time } from "symphonia/units";`
+// What:     `use crate::decode::{AudioSpec, Source, seek_format};` imports our spec
+//           record, the `Source` interface, and the shared seek helper from the
+//           sibling `decode.rs` module.
+// Why:      `OpusSource` returns an `AudioSpec`, implements `Source`, and delegates
+//           its `seek` to `seek_format` so the start-frame math lives in one place.
+// TS map:   `import { AudioSpec, Source, seekFormat } from "./decode";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Time } from "symphonia/units";
+// import { AudioSpec, Source, seekFormat } from "./decode";
 // ```
-use symphonia::core::units::Time;
-
-// What:     `use crate::decode::{AudioSpec, Source};` imports our spec record and
-//           the `Source` interface from the sibling `decode.rs` module.
-// Why:      `OpusSource` returns an `AudioSpec` and implements `Source`.
-// TS map:   `import { AudioSpec, Source } from "./decode";`
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { AudioSpec, Source } from "./decode";
-// ```
-use crate::decode::{AudioSpec, Source};
+use crate::decode::{AudioSpec, Source, seek_format};
 
 // What:     `use crate::error::PlayerError;` imports our app-wide error type.
 // Why:      Every fallible method here returns `PlayerError`.
@@ -439,24 +432,24 @@ impl Source for OpusSource {
     // Why:      Implement seeking for Opus.
     // TS map:   `seek(secs: number): void`
     fn seek(&mut self, secs: f64) -> Result<(), PlayerError> {
-        // What:     `self.format.seek(SeekMode::Accurate, SeekTo::Time { time:
-        //           Time::from(secs), track_id: Some(self.track_id) })?`. Seek by
-        //           time, exactly; `Some(self.track_id)` targets our track. `?`
-        //           unwraps/returns.
-        // Why:      Reposition the Ogg stream at `secs`.
-        // TS map:   `format.seek("accurate", { time: secs, trackId: this.trackId });`
+        // What:     `seek_format(self.format.as_mut(), self.track_id, secs)?`. Call the
+        //           shared helper from `decode.rs`. `self.format` is a
+        //           `Box<dyn FormatReader>` (an owned, heap Ogg demuxer); `.as_mut()`
+        //           reborrows it as `&mut dyn FormatReader` so the helper can seek it
+        //           without taking ownership. `?` unwraps the `Ok` or returns the
+        //           error.
+        // Why:      Opus streams begin at a non-zero frame (the pre-skip becomes the
+        //           track's `start_ts`), so the old `SeekTo::Time { time: 0s }` mapped
+        //           to frame 0 and was rejected as out-of-range whenever the bar was
+        //           dragged to the beginning. The helper adds `start_ts`, so second 0
+        //           lands on the first audible frame.
+        // TS map:   `seekFormat(this.format, this.trackId, secs);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // format.seek("accurate", { time: secs, trackId: this.trackId });
+        // seekFormat(this.format, this.trackId, secs);
         // ```
-        self.format.seek(
-            SeekMode::Accurate,
-            SeekTo::Time {
-                time: Time::from(secs),
-                track_id: Some(self.track_id),
-            },
-        )?;
+        seek_format(self.format.as_mut(), self.track_id, secs)?;
 
         // What:     `self.decoder.reset_state()?;`. Clears libopus's internal
         //           state so post-seek output has no leftover from before. Returns
