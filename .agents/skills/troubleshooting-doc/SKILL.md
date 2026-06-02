@@ -74,17 +74,26 @@ treated as a publicity incident.
 
 1. **Is it really upstream's fault?** Distinguish behaviour from
    wording from architectural restriction.
-2. **Can upstream fix it?** Trace the depth: one-line change versus
-   touching the algebraic or structural core.
+2. **Can upstream fix it?** This fails only when upstream genuinely
+   cannot: an architectural or algebraic-core limitation that makes the
+   fix impossible. A fix that is large, structural, or spread across
+   several files still meets this constraint. Trace the depth to scope
+   the prototype, not to decide pass/fail.
 3. **Are they supporting this use case?** Look for docs, examples,
    tests, or stated value propositions covering the combination.
-4. **Will they likely fix it?** Check commit history and recent
-   release deltas for movement in the relevant code path; cite the
-   commits.
+4. **Will they likely fix it?** This fails only when upstream is
+   actively leaning no, shown by their docs (a documented won't-fix or
+   stated non-goal) or direct communication (a maintainer declining a
+   comparable request). Absence of signal is not a fail: no existing
+   issue, no recent commits in the path, or silence all still meet this
+   constraint. Check commit history and release deltas to inform the
+   draft, not to gate it; cite what you find.
 5. **Have we prototyped a minimal fix compatible with their
-   architecture?** Speculative "suggested fix" prose without code, a
-   correctness argument, or tests against a nontrivial set does not
-   count.
+   architecture?** "Minimal" means the smallest set of changes that
+   actually solves the issue; it does not constrain the fix's
+   complexity. The minimal set may span several files or be intricate.
+   Speculative "suggested fix" prose without code, a correctness
+   argument, or tests against a nontrivial set does not count.
 
 ### Auto-prototype when constraints 1-4 hold or sorta-hold
 
@@ -102,8 +111,11 @@ the minimal fix yourself before declaring the audit done:
    pre-existing directory for this step.
 2. Confirm the clone's `origin` URL and checked-out commit/tag match the
    upstream source cited in the doc before editing.
-3. Apply the smallest change that addresses the cause identified in
-   "Root cause." Keep it to the line(s) constraint 2 named.
+3. Apply the minimal set of changes that solves the cause identified in
+   "Root cause": the smallest complete fix, not the simplest-looking
+   one. Do not pad it with unrelated cleanup, and do not shrink it below
+   what actually solves the issue because it looks large or spans
+   several files.
 4. Verify with the least-trusting harness that proves the change: prefer
    a targeted minimal program or existing reproduction harness over the
    upstream package's full test/build scripts. Run upstream scripts only
@@ -125,17 +137,19 @@ the minimal fix yourself before declaring the audit done:
    what is recorded. With this recording in place, the audit ends
    with all five constraints "yes" and the draft becomes fileable.
 
-A one-line terminfo or config-table change costs less than the
-5-constraint audit itself; the prototype is the cheap step, not the
-expensive one. The trigger is "constraints 1-4 hold or sorta-hold and
-constraint 2 named a small, scoped change"; not "we are sure
-upstream will accept this."
+The trigger is "constraints 1-4 hold or sorta-hold"; not "the fix is
+already known to be small" and not "we are sure upstream will accept
+this." A large or multi-file minimal set is still in scope: prototype
+it. Sometimes the minimal fix is a one-line terminfo or config-table
+change that costs less than the audit itself, but size is never the
+gate, neither to skip the prototype nor to require it.
 
-If prototyping reveals the change is not actually small, breaks the
-architectural core, or fails the tool's existing tests in unrelated
-places, re-evaluate constraints 2 and 4 with the new evidence and
-revise the audit. The prototype is also a probe; a failed probe is
-useful data, not a wasted step.
+If prototyping reveals the change breaks the architectural core or
+fails the tool's existing tests in unrelated places, re-evaluate
+constraints 2 and 4 with the new evidence and revise the audit. A fix
+that is merely large or intricate is not grounds to re-evaluate; only
+an architectural blocker is. The prototype is also a probe; a failed
+probe is useful data, not a wasted step.
 
 AGENTS.md's "never modify files in cloned third-party repositories"
 rule still applies to local workarounds (where editing source bypasses
