@@ -17,9 +17,7 @@ use std::{
 //           the shell process, and `MasterPty` owns the read/write side.
 // Why:      This crate avoids hand-written `forkpty` and `ioctl` setup.
 // TS map:   `import { openPty, CommandBuilder } from "portable-pty"`.
-use portable_pty::{
-    native_pty_system, Child, CommandBuilder, MasterPty, PtySize, PtySystem,
-};
+use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 
 // What:     `use crate::engine::ViewportGeometry;` imports the shared terminal
 //           size model from the engine module.
