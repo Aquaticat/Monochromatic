@@ -36,70 +36,47 @@ description = "cargo test inside the container"
 run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo test --release"
 
 [tasks.run]
-description = "Run the music-player GUI against the host Wayland + PipeWire (pass file/folder paths after --)"
+description = "Build in the container, then run the music-player GUI on the host (pass file/folder paths after --)"
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue"
 '''
-# Passthrough: Wayland socket, PipeWire socket, D-Bus session (for the rfd
-# portal picker), and the DRI render node for GPU GL. SLINT_BACKEND lets a
-# caller force the software renderer when GPU passthrough is unavailable.
+# The binary is BUILT in the container (the host lacks the PipeWire/Opus/clang dev
+# headers) but RUN directly on the host. Running on the host means the window,
+# audio, D-Bus, and the KDE taskbar all use the host session natively: no socket
+# passthrough, no --userns=keep-id, and the .desktop association + LauncherEntry
+# taskbar progress work without the container's SASL EXTERNAL uid juggling. The
+# container-built binary links only against runtime libs present on the host
+# (verified with `ldd`), and a binary built on the older container glibc (Fedora
+# 41) runs on the newer host glibc (Fedora 44+).
 #
-# --userns=keep-id is REQUIRED for the host D-Bus session bus to work. The
-# session bus authenticates with SASL EXTERNAL, where the client asserts its
-# uid and the daemon checks it against the socket peer credential. Default
-# rootless podman runs the container as uid 0, which the host sees mapped to
-# the real uid, so zbus (used by Slint's color-scheme watcher AND by rfd's
-# portal file picker) asserts uid 0 and is rejected ("EXTERNAL rejected by
-# the server"). keep-id maps the host uid identically into the container, so
-# the asserted uid matches and the handshake succeeds. See
-# docs/troubleshooting/podman-dbus-external-keep-id.md.
-#
-# XDG_CONFIG_HOME=/config (a named volume) keeps the session file out of the
-# bind-mounted source tree. Without it, HOME resolves to the /work workdir
-# inside the container and the `directories` crate writes the session under
-# /work/.config, polluting the repo. The volume also persists the session
-# across runs.
-#
-# The host music directory (resolved with `xdg-user-dir MUSIC`) is bind-mounted
-# read-only at /music and exported as XDG_MUSIC_DIR, so the empty-launch
-# auto-load can find it. The music files live on the host and are not otherwise
-# visible in the container, and dirs-sys reads only the user-dirs.dirs file
-# (absent here), so passing the path explicitly is required.
+# The host environment already provides WAYLAND_DISPLAY, XDG_RUNTIME_DIR, the
+# D-Bus session bus, PipeWire, and the XDG user dirs, so the empty-launch auto-load
+# finds the music directory, GPU GL uses /dev/dri directly, and the session file
+# lands in the real ~/.config/music-player. SLINT_BACKEND is read from the host env
+# if set (to force the software renderer).
 run = '''
-let xrd = $env.XDG_RUNTIME_DIR
-let wl = $env.WAYLAND_DISPLAY
 let home = ($env.HOME? | default '')
-# Install the .desktop file on the HOST (not in the container) so KDE Plasma can
-# resolve application://monochromatic.music-player.desktop and attach the taskbar
-# progress (emitted over the passed-through session bus from inside the container)
+# Install the .desktop file so the shell (KDE Plasma) can resolve
+# application://monochromatic.music-player.desktop and attach the taskbar progress
 # to this window, matched by the Wayland app id == StartupWMClass. Best-effort:
-# skipped when $HOME is unset. KDE picks up a new .desktop file on next login if
-# it does not appear immediately.
+# skipped when $HOME is unset. KDE picks up a new .desktop file on next login if it
+# does not appear immediately.
 if ($home != '') {
   let apps_dir = ($home | path join '.local/share/applications')
   mkdir $apps_dir
   cp --force share/applications/monochromatic.music-player.desktop $apps_dir
 }
-let music = (if (which xdg-user-dir | is-not-empty) { (^xdg-user-dir MUSIC | str trim) } else { ($env.XDG_MUSIC_DIR? | default '') })
-let music_args = (if ($music != '' and $music != $home and ($music | path exists)) { [-v $"($music):/music:ro" -e XDG_MUSIC_DIR=/music] } else { [] })
 let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
+# Build the release binary in the container; the bind-mounted target/ surfaces it
+# on the host at target/release/music-player.
 (
-  podman run --rm --security-opt label=disable --userns=keep-id
-  --device /dev/dri --group-add keep-groups
-  -v $"(pwd):/work" -v music-player-cargo:/cargo -v music-player-config:/config -w /work
-  -v $"($xrd)/($wl):/run/host-wayland"
-  -v $"($xrd)/pipewire-0:/run/pipewire-0"
-  -v $"($xrd)/bus:/run/host-bus"
-  -e XDG_RUNTIME_DIR=/run
-  -e XDG_CONFIG_HOME=/config
-  ...$music_args
-  -e WAYLAND_DISPLAY=host-wayland
-  -e PIPEWIRE_REMOTE=pipewire-0
-  -e DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-bus
-  ...(if ($env.SLINT_BACKEND? != null) { [-e $"SLINT_BACKEND=($env.SLINT_BACKEND)"] } else { [] })
+  podman run --rm --security-opt label=disable
+  -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work
   localhost/monochromatic/music-player
-  cargo run --release -- ...$extras
+  cargo build --release
 )
+# Run the freshly built binary directly on the host.
+^./target/release/music-player ...$extras
 '''
 
 [tasks."gen:fixtures"]

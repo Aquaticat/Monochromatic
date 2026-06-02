@@ -136,25 +136,23 @@ engine and the realtime callback share audio through a single-producer/single-co
 
 ## Build environment
 
-The host is an immutable-style Fedora without the PipeWire, Opus, and clang development headers, so all cargo work
-runs inside a Fedora container defined by `Containerfile`. The image carries the build toolchain and the GUI/audio
-runtime libraries; the `run` task passes the host Wayland, PipeWire, and D-Bus sockets and the DRI render node into
-the container so the window and audio reach the host session. The Rust toolchain comes from rustup (current stable),
-not Fedora's `rust` package, because the Slint dependency is pinned to a git master revision (1.17.0-dev) that needs
-rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
-`docs/troubleshooting/slint-flickable-smooth-scroll.md`. The `run` task also uses `--userns=keep-id` so the
-container runs under the host uid: the D-Bus session bus authenticates with SASL EXTERNAL, which checks the asserted
-uid against the socket peer credential, and the dark/light theme watcher and the portal file picker (both using
-zbus) are rejected otherwise. See `docs/troubleshooting/podman-dbus-external-keep-id.md`.
+The host is an immutable-style Fedora without the PipeWire, Opus, and clang development headers, so all cargo
+builds, checks, clippy, and tests run inside a Fedora container defined by `Containerfile`, which carries the
+build toolchain plus the GUI/audio runtime libraries. The `run` task, by contrast, BUILDS the release binary in
+the container but RUNS it directly on the host: the container-built binary (Fedora 41 glibc) links only against
+runtime libraries already present on the host (Fedora 44+), so it executes natively and integrates with the host
+Wayland, PipeWire, D-Bus, and KDE taskbar without socket passthrough or uid juggling. The Rust toolchain comes
+from rustup (current stable), not Fedora's `rust` package, because the Slint dependency is pinned to a git master
+revision (1.17.0-dev) that needs rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
+`docs/troubleshooting/slint-flickable-smooth-scroll.md`.
 
 For OS taskbar progress, the `run` task installs `share/applications/monochromatic.music-player.desktop` into the
 host `~/.local/share/applications` before launching, so the shell can resolve
 `application://monochromatic.music-player.desktop`. The window's Wayland app id is stamped to
 `monochromatic.music-player` (matching the file's `StartupWMClass`) by a winit window-attributes hook, and the
-`com.canonical.Unity.LauncherEntry` `Update` signal (carrying `progress` and `progress-visible`) is emitted from
-inside the container over the same passed-through session bus. KDE Plasma renders the progress natively; GNOME
-needs Dash-to-Dock; other shells silently ignore it. A freshly installed `.desktop` file may need one login
-cycle before the shell associates it.
+`com.canonical.Unity.LauncherEntry` `Update` signal (carrying `progress` and `progress-visible`) is emitted on the
+host session bus. KDE Plasma renders the progress natively; GNOME needs Dash-to-Dock; other shells silently
+ignore it. A freshly installed `.desktop` file may need one login cycle before the shell associates it.
 
 The same Slint XDG-portal watcher that supplies the dark/light colour scheme also reads
 `org.freedesktop.appearance accent-color` and live-updates on change, so the UI follows the system accent colour
@@ -171,8 +169,9 @@ less so.
 
 ## Commands
 
-All commands run through mise tasks, which wrap `podman run`. Run them from this package directory, or prefix with
-the package path from the repository root.
+All commands run through mise tasks. Build, lint, and test wrap `podman run`; `run` builds in the container and
+then executes the binary on the host. Run them from this package directory, or prefix with the package path from
+the repository root.
 
 ```bash
 # build the container image (after editing the Containerfile)
@@ -188,7 +187,7 @@ mise run //packages/desktop-app/music-player:test
 # release build
 mise run //packages/desktop-app/music-player:build
 
-# run the GUI against the host Wayland + PipeWire (optional file/folder args)
+# build in the container, then run the GUI on the host (optional file/folder args)
 mise run //packages/desktop-app/music-player:run -- path/to/song.flac path/to/folder
 
 # regenerate the per-codec test fixtures with host ffmpeg (rarely needed)
@@ -202,14 +201,13 @@ files can be enqueued through command-line arguments (the portal cannot offer fi
 ## Session
 
 On exit the engine saves the queue (file paths), current index, position, volume, shuffle mode, and the
-repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux). The `run` task sets
-`XDG_CONFIG_HOME` to a `music-player-config` named volume so the session persists across runs and is not written
-into the bind-mounted source tree. On launch, when no file
+repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux).
+Because `run` executes on the host, this is the real `~/.config/music-player`, persisting naturally across runs.
+On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
 track is loaded paused at the saved position, with files that have since moved pruned out. Command-line path
 arguments take precedence over a saved session. When no arguments are given and no queue remains to restore (none
 was stored, or every saved file has since moved and was pruned away), the user's music directory is auto-loaded
 paused, so the queue is populated without playing. The directory is resolved from `XDG_MUSIC_DIR`, then the XDG
-user-dirs file, then the `xdg-user-dir MUSIC` command; if none yields an existing directory the queue starts empty.
-The containerized `run` task bind-mounts the host music directory read-only and exports `XDG_MUSIC_DIR`, since the
-music files and the user-dirs file are not otherwise visible inside the container.
+user-dirs file, then the `xdg-user-dir MUSIC` command; running on the host, these resolve directly, so no
+bind-mount or `XDG_MUSIC_DIR` injection is needed.
