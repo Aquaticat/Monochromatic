@@ -430,20 +430,37 @@ export component AppWindow inherits Window {
                         // or letter). It stays complete, so late-alphabet pages
                         // remain visible, but it shares the first scroll screen
                         // with the selected page's rows.
-                        if root.page-labels.length > 0: FlexboxLayout {
+                        //
+                        // The flex bar is wrapped in a VerticalLayout (alignment:
+                        // start) instead of sitting directly in the HorizontalLayout.
+                        // That HorizontalLayout's alignment: stretch would otherwise
+                        // stretch the bar's height to match the much taller track
+                        // list beside it, and the flexbox's align-content/align-items:
+                        // stretch defaults would then inflate every tab button to
+                        // fill that height, so the tags came out bigger than in the
+                        // 1-column layout. alignment: start pins the bar to its
+                        // natural wrapped height at the top (matching the narrow bar
+                        // and the track-list column's own start packing), leaving the
+                        // vertical slack below it, so the tags stay the same size in
+                        // both layouts.
+                        if root.page-labels.length > 0: VerticalLayout {
                             min-width: 320px;
                             preferred-width: 480px;
                             horizontal-stretch: 1;
-                            spacing: 4px;
-                            flex-wrap: wrap;
-                            alignment: start;
                             vertical-stretch: 0;
-                            for label[p] in root.page-labels: Button {
-                                text: label;
-                                // The active page's tab is drawn with the accent style.
-                                primary: p == root.selected-page;
-                                clicked => {
-                                    root.select-page(p);
+                            alignment: start;
+                            FlexboxLayout {
+                                spacing: 4px;
+                                flex-wrap: wrap;
+                                alignment: start;
+                                vertical-stretch: 0;
+                                for label[p] in root.page-labels: Button {
+                                    text: label;
+                                    // The active page's tab is drawn with the accent style.
+                                    primary: p == root.selected-page;
+                                    clicked => {
+                                        root.select-page(p);
+                                    }
                                 }
                             }
                         }
