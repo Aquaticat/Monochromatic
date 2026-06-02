@@ -123,6 +123,34 @@ impl ViewportGeometry {
         cell_width_px: f32,
         cell_height_px: f32,
     ) -> Self {
+        // What:     `let safe_cell_width_px = ...` creates an immutable local from an
+        //           `if` expression. Sibling `cell_width_px` is the raw caller value.
+        // Why:      A transient zero measured font width would otherwise divide by zero.
+        // TS map:   `const safeCellWidthPx = cellWidthPx > 0 ? cellWidthPx : 1`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const safeCellWidthPx = cellWidthPx > 0 ? cellWidthPx : 1;
+        // ```
+        let safe_cell_width_px = if cell_width_px > 0.0 {
+            cell_width_px
+        } else {
+            1.0
+        };
+        // What:     `let safe_cell_height_px = ...` creates an immutable local from an
+        //           `if` expression. Sibling `cell_height_px` is the raw caller value.
+        // Why:      A transient zero cell height would otherwise divide by zero.
+        // TS map:   `const safeCellHeightPx = cellHeightPx > 0 ? cellHeightPx : 1`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const safeCellHeightPx = cellHeightPx > 0 ? cellHeightPx : 1;
+        // ```
+        let safe_cell_height_px = if cell_height_px > 0.0 {
+            cell_height_px
+        } else {
+            1.0
+        };
         // What:     `.max(1.0).floor() as u16` clamps, floors, and narrows the
         //           column count to Ghostty's `u16` input type.
         // Why:      A window can never have a zero-column terminal.
@@ -130,32 +158,32 @@ impl ViewportGeometry {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const cols = Math.max(1, Math.floor(widthPx / cellWidthPx));
+        // const cols = Math.max(1, Math.floor(widthPx / safeCellWidthPx));
         // ```
-        let cols = (width_px / cell_width_px).max(1.0).floor() as u16;
+        let cols = (width_px / safe_cell_width_px).max(1.0).floor() as u16;
         // What:     `.max(1.0).floor() as u16` computes rows the same way.
         // Why:      A window can never have a zero-row terminal.
         // TS map:   `Math.max(1, Math.floor(height / cellHeight))`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const rows = Math.max(1, Math.floor(heightPx / cellHeightPx));
+        // const rows = Math.max(1, Math.floor(heightPx / safeCellHeightPx));
         // ```
-        let rows = (height_px / cell_height_px).max(1.0).floor() as u16;
+        let rows = (height_px / safe_cell_height_px).max(1.0).floor() as u16;
         // What:     `Self { ... }` constructs the geometry record. Tail expression
         //           means this is returned.
-        // Why:      Callers need both computed grid and original cell metrics.
-        // TS map:   `return { cols, rows, cellWidthPx, cellHeightPx }`.
+        // Why:      Callers need both computed grid and sanitized cell metrics.
+        // TS map:   `return { cols, rows, cellWidthPx: safeCellWidthPx, cellHeightPx: safeCellHeightPx }`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return { cols, rows, cellWidthPx, cellHeightPx };
+        // return { cols, rows, cellWidthPx: safeCellWidthPx, cellHeightPx: safeCellHeightPx };
         // ```
         Self {
             cols,
             rows,
-            cell_width_px,
-            cell_height_px,
+            cell_width_px: safe_cell_width_px,
+            cell_height_px: safe_cell_height_px,
         }
     }
 }

@@ -3,7 +3,8 @@
 // What:     `pub const DEFAULT_CELL_WIDTH_PX: f32 = 9.0;` declares a public
 //           32-bit floating-point constant. Sibling numeric types include `f64`,
 //           `u32`, and `usize`; `f32` matches Slint's `float`/`length` mapping.
-// Why:      Rust and Slint must agree on the cell width used for resize math.
+// Why:      Rust tests and non-UI callers need a fallback cell width; the Slint
+//           binary replaces this with renderer-measured font metrics at runtime.
 // TS map:   `export const DEFAULT_CELL_WIDTH_PX = 9`.
 //
 // In TS you'd write (pseudocode):

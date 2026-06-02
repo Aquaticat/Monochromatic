@@ -87,8 +87,11 @@ stderr destination unchanged.
 
 ## Font rendering
 
-The Slint UI uses system `monospace` and Slint's `font-weight` and `font-italic` properties for VT bold and italic
-styles.
+The Slint UI uses `JetBrains Mono` because the target's generic system `monospace` resolves to Noto Sans Mono, whose
+narrow glyphs leave visibly loose prompt spacing when Slint renders terminal output one cell at a time.
+A hidden Slint `Text` probe measures a 32-character monospace sample through the same renderer used for terminal cells;
+Slint exposes that measured width to Rust so Ghostty resize math and Slint cell placement share one metric.
+Slint's `font-weight` and `font-italic` properties render VT bold and italic styles.
 Do not fake bold by drawing the same glyph a second time with an x-offset; shell prompts commonly use bold SGR, and the
 duplicate glyph pass makes those prompt characters look distorted.
 

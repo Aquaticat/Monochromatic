@@ -38,16 +38,28 @@ export component AppWindow inherits Window {
     in property <length> content-height: 432px;
     in property <string> status: "";
 
+    out property <float> effective-cell-width: root.cell-width / 1px;
+    out property <float> effective-cell-height: root.cell-height / 1px;
+
     in-out property <length> scroll-y: 0px;
 
     callback scroll-changed(float);
-    callback viewport-resized(float, float);
+    callback viewport-resized(float, float, float, float);
     callback terminal-key(string, bool, bool);
 
-    private property <length> cell-width: 9px;
+    private property <length> cell-width: max(terminal-metric-probe.preferred-width / 32, 1px);
     private property <length> cell-height: 18px;
     private property <length> terminal-font-size: 14px;
-    private property <string> terminal-font-family: "monospace";
+    private property <string> terminal-font-family: "JetBrains Mono";
+
+    terminal-metric-probe := Text {
+        x: 0px;
+        y: -1000px;
+        text: "00000000000000000000000000000000";
+        font-family: root.terminal-font-family;
+        font-size: root.terminal-font-size;
+        font-weight: FontWeight.normal;
+    }
 
     VerticalLayout {
         spacing: 0px;
@@ -74,11 +86,21 @@ export component AppWindow inherits Window {
             background: #101010;
 
             changed width => {
-                root.viewport-resized(self.width / 1px, self.height / 1px);
+                root.viewport-resized(
+                    self.width / 1px,
+                    self.height / 1px,
+                    root.effective-cell-width,
+                    root.effective-cell-height,
+                );
             }
 
             changed height => {
-                root.viewport-resized(self.width / 1px, self.height / 1px);
+                root.viewport-resized(
+                    self.width / 1px,
+                    self.height / 1px,
+                    root.effective-cell-width,
+                    root.effective-cell-height,
+                );
             }
 
             terminal-focus := FocusScope {

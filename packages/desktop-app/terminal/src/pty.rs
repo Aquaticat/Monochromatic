@@ -275,6 +275,12 @@ mod tests {
     // Why:      PTY tests need the same size object as the app.
     // TS map:   `import type { ViewportGeometry } from "./engine"`.
     use crate::engine::ViewportGeometry;
+    // What:     `use crate::scroll::DEFAULT_CELL_WIDTH_PX;` imports the shared
+    //           terminal cell width. Sibling constants include cell height and
+    //           scroll mapping helpers.
+    // Why:      The PTY resize fixture should stay aligned with UI and engine metrics.
+    // TS map:   `import { DEFAULT_CELL_WIDTH_PX } from "./scroll"`.
+    use crate::scroll::DEFAULT_CELL_WIDTH_PX;
     // What:     `use portable_pty::CommandBuilder;` imports the PTY command builder.
     // Why:      The test spawns a deterministic shell command.
     // TS map:   `import { CommandBuilder } from "portable-pty"`.
@@ -289,7 +295,7 @@ mod tests {
         let geometry = ViewportGeometry {
             cols: 20,
             rows: 4,
-            cell_width_px: 9.0,
+            cell_width_px: DEFAULT_CELL_WIDTH_PX,
             cell_height_px: 18.0,
         };
         let (sender, receiver) = mpsc::channel();

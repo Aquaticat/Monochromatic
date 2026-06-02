@@ -100,7 +100,6 @@ use terminal_app::{
     launcher,
     pty::{PtyEvent, PtySession},
     render::{Rgb, TerminalSnapshot},
-    scroll::{DEFAULT_CELL_HEIGHT_PX, DEFAULT_CELL_WIDTH_PX},
 };
 
 // What:     `const MAX_SCROLLBACK_ROWS: usize = 10_000;` declares a row-count
@@ -264,21 +263,24 @@ fn refresh_from_scroll(
 }
 
 // What:     `fn refresh_from_resize(...) -> Result<(), Box<dyn Error>>` handles
-//           Slint viewport-size notifications.
-// Why:      Resize support lives at the app boundary with the same cell metrics.
-// TS map:   `function refreshFromResize(app, engine, width, height): void`.
+//           Slint viewport-size and cell-metric notifications.
+// Why:      Resize support must use the same measured font metrics that Slint uses
+//           for cell placement.
+// TS map:   `function refreshFromResize(app, engine, width, height, cellWidth, cellHeight): void`.
 fn refresh_from_resize(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
     pty: &Rc<RefCell<PtySession>>,
     width_px: f32,
     height_px: f32,
+    cell_width_px: f32,
+    cell_height_px: f32,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let geometry = ViewportGeometry::from_pixels(
         width_px,
         height_px,
-        DEFAULT_CELL_WIDTH_PX,
-        DEFAULT_CELL_HEIGHT_PX,
+        cell_width_px,
+        cell_height_px,
     );
     let mut engine = engine.borrow_mut();
     engine.resize(geometry)?;
@@ -349,10 +351,10 @@ fn refresh_from_pty_events(
         return Ok(());
     }
     // What:     `let bottom_scroll_px = ...` computes the pixel offset for the active
-    //           bottom viewport.
+    //           bottom viewport with Slint's current measured cell height.
     // Why:      New terminal output should keep the prompt visible.
-    // TS map:   `const bottomScrollPx = engine.scrollbackRows() * CELL_HEIGHT`.
-    let bottom_scroll_px = engine.scrollback_rows()? as f32 * DEFAULT_CELL_HEIGHT_PX;
+    // TS map:   `const bottomScrollPx = engine.scrollbackRows() * app.effectiveCellHeight`.
+    let bottom_scroll_px = engine.scrollback_rows()? as f32 * app.get_effective_cell_height();
     // What:     `engine.set_pixel_scroll(bottom_scroll_px)?` syncs Ghostty's whole-row
     //           viewport to the bottom row.
     // Why:      Slint and Ghostty must agree before rendering the snapshot.
@@ -431,11 +433,20 @@ fn log_callback_error(context: &str, error: Box<dyn std::error::Error>) {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     install_backend()?;
     let app = AppWindow::new()?;
+    // What:     `app.get_effective_cell_width()` reads the cell width measured by
+    //           Slint from the current system monospace font.
+    // Why:      The initial Ghostty geometry must match the UI's actual cell placement.
+    // TS map:   `const initialCellWidthPx = app.effectiveCellWidth`.
+    let initial_cell_width_px = app.get_effective_cell_width();
+    // What:     `app.get_effective_cell_height()` reads the Slint cell height.
+    // Why:      Initial resize and scrolling should use one shared metric source.
+    // TS map:   `const initialCellHeightPx = app.effectiveCellHeight`.
+    let initial_cell_height_px = app.get_effective_cell_height();
     let initial_geometry = ViewportGeometry {
         cols: 80,
         rows: 24,
-        cell_width_px: DEFAULT_CELL_WIDTH_PX,
-        cell_height_px: DEFAULT_CELL_HEIGHT_PX,
+        cell_width_px: initial_cell_width_px,
+        cell_height_px: initial_cell_height_px,
     };
     let mut engine = TerminalEngine::new(initial_geometry, MAX_SCROLLBACK_ROWS)?;
     let (pty_sender, pty_receiver) = mpsc::channel();
@@ -469,9 +480,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.on_viewport_resized({
         let engine = Rc::clone(&engine);
         let pty = Rc::clone(&pty);
-        move |width_px, height_px| {
+        move |width_px, height_px, cell_width_px, cell_height_px| {
             if let Some(app) = weak_for_resize.upgrade() {
-                if let Err(error) = refresh_from_resize(&app, &engine, &pty, width_px, height_px) {
+                if let Err(error) = refresh_from_resize(
+                    &app,
+                    &engine,
+                    &pty,
+                    width_px,
+                    height_px,
+                    cell_width_px,
+                    cell_height_px,
+                ) {
                     log_callback_error("resize refresh failed", error);
                 }
             }
