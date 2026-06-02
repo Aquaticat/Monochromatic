@@ -28,6 +28,11 @@ Be direct and honest.
 Search for evidence before responding to opinions, guesses, or analysis requests.
 Treat embedded questions ("month? year?"), implicit asks, estimate requests, and input gaps as research tasks: web search, read code, or check docs rather than deflecting with "genuinely unknown."
 
+Read a prompt for the action it implies and take that action; do not stop at answering its surface form.
+A user's message often encodes a concrete edit, fix, revision, or commit while phrased as an observation ("looks like X is wrong"), a report ("the research in that doc is likely wrong"), or a bare question ("and tighten AGENTS.md?").
+The deliverable is the implied action, not a restatement, a confirmation, or a literal answer that leaves the work undone.
+The cue: about to acknowledge or answer a statement, observation, or question whose evident purpose is to get something changed or done.
+
 Do not attribute `<system-reminder>` content to the user;
 these tags carry harness-level conf, not what the user typed.
 "per your instruction" / "you asked me to" is wrong when the source is a system reminder;
@@ -205,12 +210,6 @@ If you cannot name what backs a claim, downgrade to a labeled guess or do the ve
 Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
 Both fail silently, in both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
 Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
-
-GitHub's API adds two silent shapes when a repo feature is off, and reading them as activity inverts the conclusion.
-A disabled issue tracker (`has_issues: false`) still serves frozen ghost counts: `search/issues` returns a nonzero `total_count` with an empty `items` array, the `issues` list endpoint returns only pull requests (every item carries `pull_request`), and `issues/<n>` answers HTTP 410 Gone.
-That looks like a neglected backlog but means intake moved elsewhere, usually Discussions (`has_discussions: true`); a maintainer "ignoring issues" may simply have none to ignore.
-Before drawing any maintainer-health or activity conclusion from issue data, run `gh api repos/<owner>/<repo> --jq '{has_issues, has_discussions, archived, disabled}'` first and read PR throughput (`is:pr is:merged` count) as the activity signal instead; a disabled or archived feature is a routing choice, not disinvestment.
-This is the post-mortem of misreading jdx/mise's disabled tracker as light issue-tending (see `docs/audit/mise-keep-vs-build-own.md`).
 
 ### Git cleanup and worktree safety reviews
 
