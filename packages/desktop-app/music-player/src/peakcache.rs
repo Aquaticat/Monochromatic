@@ -151,6 +151,48 @@ pub(crate) struct PeakCache {
     unsaved: usize,
 }
 
+// What:     `pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()>`.
+//           Write `json` to `path` atomically: stage it in a sibling `.tmp` file,
+//           then rename over the real file. `&Path`/`&str` borrow the inputs
+//           read-only (we do not take ownership). `pub(crate)` so the background
+//           sweep can call it WITHOUT holding the cache lock.
+// Why:      Saving is the only part of persistence that touches the disk; pulling
+//           it out as a free function lets a caller serialize under the lock, then
+//           release the lock and do the slow file I/O here. That matters because the
+//           sweep runs at idle scheduling priority: holding the shared cache mutex
+//           across a disk write could stall the engine thread (which also locks the
+//           cache on track load) if the idle sweep is starved mid-write.
+// TS map:   `function writeAtomic(path: string, json: string): void  // throws on IO error`
+pub(crate) fn write_atomic(path: &Path, json: &str) -> std::io::Result<()> {
+    // What:     `if let Some(parent) = path.parent() { std::fs::create_dir_all(parent)?; }`.
+    //           Ensure the directory exists; `?` propagates an IO error.
+    // Why:      First save has no config dir yet.
+    // TS map:   `mkdirSync(dirname(path), { recursive: true });`
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    // What:     `let tmp = path.with_extension("tmp");`. A sibling temp path
+    //           (`peaks.json` -> `peaks.tmp`); `with_extension` returns an owned
+    //           `PathBuf`.
+    // Why:      Write here first, then atomically rename onto the real file.
+    // TS map:   `const tmp = path.replace(/\.json$/, ".tmp");`
+    let tmp = path.with_extension("tmp");
+    // What:     `std::fs::write(&tmp, json)?;`. Write the bytes to the temp file.
+    //           `&tmp`/`json` lend the path and contents.
+    // Why:      Stage the new contents.
+    // TS map:   `writeFileSync(tmp, json);`
+    std::fs::write(&tmp, json)?;
+    // What:     `std::fs::rename(&tmp, path)?;`. Atomically replace the real file
+    //           (same-filesystem rename is atomic on POSIX).
+    // Why:      Readers always see a complete file, never a half-written one.
+    // TS map:   `renameSync(tmp, path);`
+    std::fs::rename(&tmp, path)?;
+    // What:     `Ok(())`. Success with no value. Tail -> return.
+    // Why:      Signal the write succeeded.
+    // TS map:   `return;`
+    Ok(())
+}
+
 // What:     `impl PeakCache { ... }`. The cache's behaviour.
 // Why:      Load, query, insert, and persist.
 // TS map:   the class body.
@@ -253,34 +295,17 @@ impl PeakCache {
             Some(p) => p,
             None => return Ok(()),
         };
-        // What:     `if let Some(parent) = path.parent() { std::fs::create_dir_all(parent)?; }`.
-        //           Ensure the directory exists; `?` propagates an IO error.
-        // Why:      First save has no config dir yet.
-        // TS map:   `mkdirSync(dirname(path), { recursive: true });`
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
         // What:     `let json = serde_json::to_string(&self.map).map_err(std::io::Error::other)?;`.
         //           Serialize the map to JSON; convert any serde error into an
         //           `io::Error` so `?` can propagate it through our `io::Result`.
         // Why:      Produce the bytes; unify error types for `?`.
         // TS map:   `const json = JSON.stringify(this.map);`
         let json = serde_json::to_string(&self.map).map_err(std::io::Error::other)?;
-        // What:     `let tmp = path.with_extension("tmp");`. A sibling temp path
-        //           (`peaks.json` -> `peaks.tmp`). `with_extension` replaces the
-        //           extension and returns an owned `PathBuf`.
-        // Why:      Write here first, then atomically rename onto the real file.
-        // TS map:   `const tmp = path.replace(/\.json$/, ".tmp");`
-        let tmp = path.with_extension("tmp");
-        // What:     `std::fs::write(&tmp, json)?;`. Write the JSON to the temp file.
-        // Why:      Stage the new contents.
-        // TS map:   `writeFileSync(tmp, json);`
-        std::fs::write(&tmp, json)?;
-        // What:     `std::fs::rename(&tmp, path)?;`. Atomically replace the real file
-        //           with the temp one (same-filesystem rename is atomic on POSIX).
-        // Why:      Readers always see a complete file, never a half-written one.
-        // TS map:   `renameSync(tmp, path);`
-        std::fs::rename(&tmp, path)?;
+        // What:     `write_atomic(path, &json)?;`. Stage-and-rename the bytes to disk
+        //           via the shared free function; `?` propagates an IO error.
+        // Why:      One place owns the atomic-write dance.
+        // TS map:   `writeAtomic(path, json);`
+        write_atomic(path, &json)?;
         // What:     `self.unsaved = 0;`. Everything is now on disk.
         // Why:      Reset the batch counter.
         // TS map:   `this.unsaved = 0;`
@@ -289,6 +314,56 @@ impl PeakCache {
         // Why:      Signal the save succeeded.
         // TS map:   `return;`
         Ok(())
+    }
+
+    // What:     `pub(crate) fn pending_save(&self) -> Option<(PathBuf, String, usize)>`.
+    //           Take a SNAPSHOT for an out-of-lock write: if there is a path and at
+    //           least one unsaved insert, serialize the map now (under the caller's
+    //           lock) and return the owned `(path, json, count)`. `None` means
+    //           nothing to write. Read-only borrow of self.
+    // Why:      Lets the background sweep do the slow disk write WITHOUT holding the
+    //           cache mutex: it calls this under the lock (fast, in-memory), releases
+    //           the lock, writes with `write_atomic`, then calls `mark_saved(count)`.
+    // TS map:   `pendingSave(): [path: string, json: string, count: number] | null`
+    pub(crate) fn pending_save(&self) -> Option<(PathBuf, String, usize)> {
+        // What:     `if self.unsaved == 0 { return None; }`. Nothing new to persist.
+        // Why:      Skip redundant writes.
+        // TS map:   `if (this.unsaved === 0) return null;`
+        if self.unsaved == 0 {
+            return None;
+        }
+        // What:     `let path = self.path.clone()?;`. Clone the target path (owned
+        //           `PathBuf`); `?` returns `None` if there is no path (in-memory mode).
+        // Why:      The caller writes after releasing the lock, so it needs an owned path.
+        // TS map:   `const path = this.path; if (!path) return null;`
+        let path = self.path.clone()?;
+        // What:     `let json = serde_json::to_string(&self.map).ok()?;`. Serialize the
+        //           map; `.ok()` drops a serde error into `None`; `?` then returns `None`.
+        // Why:      Capture the bytes while the lock is held, so the later write is a
+        //           pure file operation.
+        // TS map:   `let json; try { json = JSON.stringify(this.map); } catch { return null; }`
+        let json = serde_json::to_string(&self.map).ok()?;
+        // What:     `Some((path, json, self.unsaved))`. Hand back the snapshot plus the
+        //           number of unsaved entries it covers. Tail -> return.
+        // Why:      `mark_saved` will subtract this exact count later.
+        // TS map:   `return [path, json, this.unsaved];`
+        Some((path, json, self.unsaved))
+    }
+
+    // What:     `pub(crate) fn mark_saved(&mut self, count: usize)`. After a successful
+    //           out-of-lock write of a `pending_save` snapshot, subtract the snapshot's
+    //           entry count from the unsaved counter.
+    // Why:      Inserts that happened AFTER the snapshot (e.g. the engine thread
+    //           measuring a just-loaded track) must stay counted as unsaved, so we
+    //           subtract `count` rather than resetting to zero.
+    // TS map:   `markSaved(count: number): void`
+    pub(crate) fn mark_saved(&mut self, count: usize) {
+        // What:     `self.unsaved = self.unsaved.saturating_sub(count);`. Subtract, but
+        //           clamp at 0 instead of underflowing (a concurrent `save()` may have
+        //           already reset the counter). `saturating_sub` never wraps below 0.
+        // Why:      Keep the counter non-negative and correct under concurrent saves.
+        // TS map:   `this.unsaved = Math.max(0, this.unsaved - count);`
+        self.unsaved = self.unsaved.saturating_sub(count);
     }
 }
 

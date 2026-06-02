@@ -25,10 +25,14 @@ use std::sync::{Arc, Mutex};
 // TS map:   a Worker.
 use std::thread;
 
-// What:     `use std::time::Duration;`. A span of time.
-// Why:      The gentle sleep between measurements.
-// TS map:   milliseconds for `setTimeout`.
-use std::time::Duration;
+// What:     `use std::time::{Duration, Instant};`. `Duration` is a span of time;
+//           `Instant` is a monotonic clock reading (a point in time you can measure
+//           elapsed time from). Sibling you might expect: `SystemTime` (wall clock,
+//           can jump backwards); `Instant` is the right one for "how long since X".
+// Why:      `Duration` for the gentle sleep and the save interval; `Instant` to know
+//           when the last save happened so we can flush on a time bound.
+// TS map:   `Duration` ~ a number of ms; `Instant` ~ `performance.now()`.
+use std::time::{Duration, Instant};
 
 // What:     `use crate::peakcache::{self, PeakCache};`. The cache module (for
 //           `peakcache::fingerprint`) and the `PeakCache` type.
@@ -53,6 +57,16 @@ const SAVE_BATCH: usize = 16;
 // Why:      Yield CPU so the background scan does not starve the realtime audio path.
 // TS map:   `const MEASURE_GAP_MS = 20;`
 const MEASURE_GAP_MS: u64 = 20;
+
+// What:     `const SAVE_INTERVAL_SECS: u64 = 10;`. Maximum seconds between cache
+//           flushes during a sweep, independent of how many tracks were measured.
+//           `u64` is what `Duration::from_secs` wants.
+// Why:      The sweep is detached and dies at process exit, so anything unsaved when
+//           the user quits is lost and re-measured next launch. Flushing at least
+//           this often bounds that loss to ~10 seconds of work, so a large library
+//           actually finishes caching across short sessions instead of restarting.
+// TS map:   `const SAVE_INTERVAL_SECS = 10;`
+const SAVE_INTERVAL_SECS: u64 = 10;
 
 // What:     `pub(crate) fn resolve_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> f32`.
 //           Return the normalization gain for the track at `path`: a cache hit returns
@@ -143,12 +157,110 @@ pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<Pea
     thread::spawn(move || run_sweep(tracks, cache));
 }
 
+// What:     `#[cfg(target_os = "linux")] fn lower_current_thread_to_idle()`. Move the
+//           CALLING thread into the Linux `SCHED_IDLE` scheduling class. The
+//           `#[cfg(...)]` attribute compiles this version ONLY on Linux.
+// Why:      The sweep decodes whole files back-to-back (CPU-bound). `SCHED_IDLE`
+//           threads run only when no normal-priority thread wants the CPU, on ANY
+//           core, so the sweep never competes with the realtime audio thread, the UI,
+//           or other applications. It still finishes when the machine is otherwise
+//           idle.
+// TS map:   no equivalent; Node/browsers expose no thread scheduling class.
+#[cfg(target_os = "linux")]
+fn lower_current_thread_to_idle() {
+    // What:     `let param = libc::sched_param { sched_priority: 0 };`. The scheduler
+    //           parameter struct; `SCHED_IDLE` ignores the priority, so 0 is the only
+    //           valid value. `libc::` names the raw C library bindings.
+    // Why:      `sched_setscheduler` requires a `*const sched_param` argument.
+    // TS map:   `const param = { sched_priority: 0 };`
+    let param = libc::sched_param { sched_priority: 0 };
+    // What:     `let result = unsafe { libc::sched_setscheduler(0, libc::SCHED_IDLE, &param) };`.
+    //           Call the C function. `unsafe { ... }` is required for ANY raw FFI call
+    //           (Rust cannot verify the C contract). The first arg `0` means "the
+    //           calling thread"; `libc::SCHED_IDLE` selects the idle class; `&param`
+    //           lends the struct as a raw pointer. Returns `0` on success, `-1` on
+    //           error (a `c_int`).
+    // Why:      Actually change this thread's scheduling class.
+    // TS map:   `const result = schedSetscheduler(0, SCHED_IDLE, param);`
+    let result = unsafe { libc::sched_setscheduler(0, libc::SCHED_IDLE, &param) };
+    // What:     `if result != 0 { eprintln!(...); }`. On failure, log to stderr and
+    //           carry on. `result` is `-1` on error.
+    // Why:      Best-effort: a failure just means the sweep runs at normal priority,
+    //           which is still correct, only less polite. Never abort the sweep.
+    // TS map:   `if (result !== 0) console.error("...");`
+    if result != 0 {
+        eprintln!("music-player: could not lower sweep thread to SCHED_IDLE");
+    }
+}
+
+// What:     `#[cfg(not(target_os = "linux"))] fn lower_current_thread_to_idle()`. The
+//           no-op fallback compiled on every NON-Linux target.
+// Why:      Keep `run_sweep` portable: the call site stays the same and simply does
+//           nothing where the syscall is unavailable.
+// TS map:   `function lowerCurrentThreadToIdle() {}`
+#[cfg(not(target_os = "linux"))]
+fn lower_current_thread_to_idle() {}
+
+// What:     `fn flush_pending(cache: &Arc<Mutex<PeakCache>>)`. Persist any unsaved
+//           cache entries to disk WITHOUT holding the cache lock during the file
+//           write. `&Arc<...>` borrows the shared handle (we do not take ownership).
+//           Module-private.
+// Why:      The sweep runs at idle priority; if it held the mutex across the disk
+//           write and got starved, the engine thread (which locks the cache on track
+//           load) would block. So we snapshot under the lock, release it, write, then
+//           briefly re-lock only to update the counter.
+// TS map:   `function flushPending(cache: SharedPeakCache): void`
+fn flush_pending(cache: &Arc<Mutex<PeakCache>>) {
+    // What:     `let snapshot = { let guard = cache.lock().unwrap(); guard.pending_save() };`.
+    //           Lock the cache, take an owned `(path, json, count)` snapshot (or
+    //           `None`), and release the lock at the end of the block. `.lock()`
+    //           returns a `Result` (poisoned if a holder panicked); `.unwrap()` takes
+    //           the guard or panics.
+    // Why:      Serialize while locked (fast, in-memory); write while unlocked.
+    // TS map:   `const snapshot = withLock(cache, c => c.pendingSave());`
+    let snapshot = {
+        let guard = cache.lock().unwrap();
+        guard.pending_save()
+    };
+    // What:     `if let Some((path, json, count)) = snapshot { ... }`. Only write when
+    //           there was something to save. Destructures the owned tuple.
+    // Why:      Skip the disk entirely when nothing changed.
+    // TS map:   `if (snapshot) { const [path, json, count] = snapshot; ... }`
+    if let Some((path, json, count)) = snapshot {
+        // What:     `if peakcache::write_atomic(&path, &json).is_ok() { ... }`. Do the
+        //           file write with NO lock held; `.is_ok()` checks the `Result`
+        //           without unwrapping (an IO error just means we retry next interval).
+        // Why:      The slow part happens off the lock; only update the counter if the
+        //           write actually landed.
+        // TS map:   `let ok = true; try { writeAtomic(path, json); } catch { ok = false; } if (ok) {...}`
+        if peakcache::write_atomic(&path, &json).is_ok() {
+            // What:     `cache.lock().unwrap().mark_saved(count);`. Re-lock briefly and
+            //           subtract the snapshot's entry count from the unsaved counter.
+            // Why:      Record that these entries are now on disk.
+            // TS map:   `withLock(cache, c => c.markSaved(count));`
+            cache.lock().unwrap().mark_saved(count);
+        }
+    }
+}
+
 // What:     `fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`. The
 //           background body: measure each uncached track, batching saves, sleeping
 //           briefly after each real measurement. Module-private.
 // Why:      Keep the thread logic in one place.
 // TS map:   `function runSweep(tracks: string[], cache: SharedPeakCache): void`
 fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
+    // What:     `lower_current_thread_to_idle();`. Drop this thread to idle scheduling
+    //           priority before any decoding (no-op off Linux).
+    // Why:      Make the whole sweep non-disruptive: its CPU-heavy decoding yields to
+    //           audio, UI, and everything else.
+    // TS map:   `lowerCurrentThreadToIdle();`
+    lower_current_thread_to_idle();
+    // What:     `let mut last_save = Instant::now();`. Remember when we last flushed the
+    //           cache to disk. `let mut` because we update it after each save.
+    // Why:      Drive the time-based flush (every `SAVE_INTERVAL_SECS`) so progress
+    //           survives an early quit.
+    // TS map:   `let lastSave = performance.now();`
+    let mut last_save = Instant::now();
     // What:     `for path in tracks { ... }`. Consume each path by value.
     // Why:      Visit every queue entry.
     // TS map:   `for (const path of tracks) { ... }`
@@ -181,37 +293,55 @@ fn run_sweep(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>) {
             Ok(p) => p,
             Err(_) => continue,
         };
-        // What:     a scoped block holding the lock only as long as needed.
-        // Why:      Release the lock before sleeping below.
-        // TS map:   `{ const guard = lock(cache); ... }`
-        {
+        // What:     `let unsaved = { let mut guard = cache.lock().unwrap(); guard.insert(key, peak); guard.unsaved() };`.
+        //           Lock the cache, record the measurement, read the unsaved count, and
+        //           release the lock at the end of the block.
+        // Why:      Memoize the peak; the count decides whether a batch flush is due.
+        // TS map:   `const unsaved = withLock(cache, c => { c.insert(key, peak); return c.unsaved(); });`
+        let unsaved = {
             // What:     `let mut guard = cache.lock().unwrap();`. Take the lock to mutate.
-            // Why:      Insert and maybe persist.
+            // Why:      Insert under the lock.
             // TS map:   `const guard = lock(cache);`
             let mut guard = cache.lock().unwrap();
             // What:     `guard.insert(key, peak);`. Record the measurement.
             // Why:      Memoize.
             // TS map:   `guard.insert(key, peak);`
             guard.insert(key, peak);
-            // What:     `if guard.unsaved() >= SAVE_BATCH { let _ = guard.save(); }`.
-            //           Flush once a batch has accumulated; ignore IO errors.
-            // Why:      Amortize disk writes over many tracks.
-            // TS map:   `if (guard.unsaved() >= SAVE_BATCH) try { guard.save(); } catch {}`
-            if guard.unsaved() >= SAVE_BATCH {
-                let _ = guard.save();
-            }
+            // What:     `guard.unsaved()`. Tail of the block -> the count value.
+            // Why:      Hand the count out of the locked scope.
+            // TS map:   `return guard.unsaved();`
+            guard.unsaved()
+        };
+        // What:     `if unsaved >= SAVE_BATCH || last_save.elapsed() >= Duration::from_secs(SAVE_INTERVAL_SECS) { ... }`.
+        //           Flush when a batch has accumulated OR enough time has passed.
+        //           `last_save.elapsed()` is the `Duration` since the last flush.
+        // Why:      The batch bound amortizes writes when measuring many tracks fast
+        //           (warm restart); the time bound guarantees progress is saved even
+        //           when each decode is slow at idle priority.
+        // TS map:   `if (unsaved >= SAVE_BATCH || (now - lastSave) >= SAVE_INTERVAL) { ... }`
+        if unsaved >= SAVE_BATCH
+            || last_save.elapsed() >= Duration::from_secs(SAVE_INTERVAL_SECS)
+        {
+            // What:     `flush_pending(&cache);`. Persist out-of-lock.
+            // Why:      Write the accumulated measurements without blocking the engine.
+            // TS map:   `flushPending(cache);`
+            flush_pending(&cache);
+            // What:     `last_save = Instant::now();`. Reset the flush timer.
+            // Why:      Start the next interval from now.
+            // TS map:   `lastSave = performance.now();`
+            last_save = Instant::now();
         }
         // What:     `thread::sleep(Duration::from_millis(MEASURE_GAP_MS));`. Pause after a
         //           real measurement.
-        // Why:      Keep CPU pressure off the realtime audio thread.
+        // Why:      Extra politeness on top of idle priority: a fixed gap between tracks.
         // TS map:   `await sleep(MEASURE_GAP_MS);`
         thread::sleep(Duration::from_millis(MEASURE_GAP_MS));
     }
-    // What:     `let _ = cache.lock().unwrap().save();`. Final flush of any entries left
-    //           below the batch threshold; ignore IO errors.
+    // What:     `flush_pending(&cache);`. Final flush of any entries left below the
+    //           batch threshold, out-of-lock.
     // Why:      Do not lose the tail of the queue's measurements.
-    // TS map:   `try { withLock(cache, c => c.save()); } catch {}`
-    let _ = cache.lock().unwrap().save();
+    // TS map:   `flushPending(cache);`
+    flush_pending(&cache);
 }
 
 // What:     `#[cfg(test)] mod tests { ... }`. Test-only submodule.

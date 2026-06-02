@@ -35,6 +35,10 @@ i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3
 symphonia = { version = "0.5", features = ["all"] }
 opus = "0.3"
 pipewire = "0.8"
+# Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the
+# background true-peak measurement sweep at idle priority so it never competes
+# with the realtime audio thread or the UI. std exposes no scheduling-class API.
+libc = "0.2"
 rfd = "0.15"
 ringbuf = "0.4"
 directories = "5"
