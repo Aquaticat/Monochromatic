@@ -172,21 +172,29 @@ component VScrollBar inherits Rectangle {
         y: 2px + (parent.height - 4px - self.height) * (-root.value / root.maximum);
         background: ta.pressed ? Palette.accent-background : ta.has-hover ? Palette.accent-background.with-alpha(0.8) : Palette.accent-background.with-alpha(0.6);
         border-radius: self.width / 2;
+    }
 
-        ta := TouchArea {
-            // remember where the viewport sat when the drag began, so movement
-            // is measured relative to the press point (no jump on grab)
-            property <length> pressed-value;
-            pointer-event(event) => {
-                if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
-                    self.pressed-value = -root.value;
-                }
+    // the drag handler fills the whole bar as a sibling of the thumb, never a
+    // child of it. A TouchArea nested inside the thumb moves with the thumb as the
+    // thumb chases the pointer, so its mouse-y is measured in a frame that follows
+    // the drag, which halves the apparent travel (1cm mouse to 0.5cm thumb).
+    // Anchored to the static bar instead, mouse-y is absolute and the thumb tracks
+    // the pointer 1:1. Mirrors the Slint energy-monitor ScrollBar, whose
+    // i-touch-area is likewise a sibling of i-handle filling the bar
+    // (demos/energy-monitor/ui/widgets/scroll_view.slint).
+    ta := TouchArea {
+        // remember where the viewport sat when the drag began, so movement
+        // is measured relative to the press point (no jump on grab)
+        property <length> pressed-value;
+        pointer-event(event) => {
+            if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                self.pressed-value = -root.value;
             }
-            moved => {
-                if (self.pressed) {
-                    root.value = -max(0px, min(root.maximum, self.pressed-value
-                        + (self.mouse-y - self.pressed-y) * (root.maximum / (root.height - 4px - thumb.height))));
-                }
+        }
+        moved => {
+            if (self.pressed) {
+                root.value = -max(0px, min(root.maximum, self.pressed-value
+                    + (self.mouse-y - self.pressed-y) * (root.maximum / (root.height - 4px - thumb.height))));
             }
         }
     }
