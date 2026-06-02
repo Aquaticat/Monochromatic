@@ -276,9 +276,12 @@ fails on direct maintainer evidence, so the decision is do not file.
    feasibility was never the blocker.
 
 Decision: do not file. The gate fails at constraint 4 on concrete maintainer
-evidence (PR #9839). Filing a new issue would re-raise a request the maintainer
-already declined and duplicate an existing closed PR, which is the publicity
-incident the default-do-not-file policy guards against.
+evidence (PR #9839). The mechanism is moot anyway: `gh api repos/jdx/mise`
+reports `has_issues: false`, so Issues are disabled and intake is routed to
+Discussions; any contribution would be a PR or Discussion, not an issue.
+Re-raising it there would still duplicate an existing closed PR and a request the
+maintainer already declined, which is the publicity incident the
+default-do-not-file policy guards against.
 
 This reverses an earlier "fileable" reading in this doc's history, and the
 reversal is the lesson. The first revision failed constraint 4 for the wrong
