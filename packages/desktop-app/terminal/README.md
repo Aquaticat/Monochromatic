@@ -85,6 +85,13 @@ PTY output into Ghostty.
 The filter drops only lines containing `unimplemented OSC callback` and forwards every other stderr line to the original
 stderr destination unchanged.
 
+## Font rendering
+
+The Slint UI uses system `monospace` and Slint's `font-weight` and `font-italic` properties for VT bold and italic
+styles.
+Do not fake bold by drawing the same glyph a second time with an x-offset; shell prompts commonly use bold SGR, and the
+duplicate glyph pass makes those prompt characters look distorted.
+
 ## Runtime library staging
 
 `libghostty-vt-sys` links the vendored Ghostty core as `libghostty-vt.so.0`.

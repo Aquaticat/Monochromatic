@@ -47,6 +47,7 @@ export component AppWindow inherits Window {
     private property <length> cell-width: 9px;
     private property <length> cell-height: 18px;
     private property <length> terminal-font-size: 14px;
+    private property <string> terminal-font-family: "monospace";
 
     VerticalLayout {
         spacing: 0px;
@@ -185,21 +186,10 @@ export component AppWindow inherits Window {
                                 height: parent.height;
                                 text: cell.text;
                                 color: cell.foreground;
-                                font-family: "monospace";
+                                font-family: root.terminal-font-family;
                                 font-size: root.terminal-font-size;
-                                vertical-alignment: center;
-                                horizontal-alignment: left;
-                            }
-
-                            if cell.bold && cell.text != "": Text {
-                                x: 1px;
-                                y: 0px;
-                                width: parent.width;
-                                height: parent.height;
-                                text: cell.text;
-                                color: cell.foreground;
-                                font-family: "monospace";
-                                font-size: root.terminal-font-size;
+                                font-weight: cell.bold ? FontWeight.bold : FontWeight.normal;
+                                font-italic: cell.italic;
                                 vertical-alignment: center;
                                 horizontal-alignment: left;
                             }
