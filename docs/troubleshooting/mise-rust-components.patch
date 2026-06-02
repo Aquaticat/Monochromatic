@@ -1,0 +1,145 @@
+diff --git a/src/backend/mod.rs b/src/backend/mod.rs
+index 88da59a..9923fb8 100644
+--- a/src/backend/mod.rs
++++ b/src/backend/mod.rs
+@@ -1352,6 +1352,17 @@ pub trait Backend: Debug + Send + Sync {
+             }
+         }
+     }
++    /// Whether an already-installed version needs reconciliation: present on
++    /// disk yet missing a declared piece of its spec (a rustup
++    /// `components`/`targets` entry, say). Default `false` leaves every other
++    /// backend untouched. When a backend returns `true`, the install flow
++    /// re-enters `install_version_` even though `is_version_installed` reports
++    /// the version present, without changing what `is_version_installed` means
++    /// for its read-only consumers (`ls`, `current`, `where`, `uninstall`,
++    /// `doctor`, `venv`).
++    fn needs_reconcile(&self, _config: &Arc<Config>, _tv: &ToolVersion) -> bool {
++        false
++    }
+     async fn is_version_outdated(&self, config: &Arc<Config>, tv: &ToolVersion) -> bool {
+         let latest = match tv.latest_version(config).await {
+             Ok(latest) => latest,
+@@ -1788,7 +1799,9 @@ pub trait Backend: Debug + Send + Sync {
+             self.uninstall_version(&ctx.config, &tv, ctx.pr.as_ref(), false)
+                 .await?;
+             ctx.pr.next_operation();
+-        } else if self.is_version_installed(&ctx.config, &tv, true) {
++        } else if self.is_version_installed(&ctx.config, &tv, true)
++            && !self.needs_reconcile(&ctx.config, &tv)
++        {
+             return Ok(tv);
+         }
+ 
+@@ -1800,7 +1813,10 @@ pub trait Backend: Debug + Send + Sync {
+         let _lock = lock_file::get(&tv.install_path(), ctx.force)?;
+ 
+         // Double-checked (locking) that it wasn't installed while we were waiting for the lock
+-        if self.is_version_installed(&ctx.config, &tv, true) && !ctx.force {
++        if self.is_version_installed(&ctx.config, &tv, true)
++            && !ctx.force
++            && !self.needs_reconcile(&ctx.config, &tv)
++        {
+             return Ok(tv);
+         }
+ 
+diff --git a/src/plugins/core/rust.rs b/src/plugins/core/rust.rs
+index 2e1ccd5..8c07649 100644
+--- a/src/plugins/core/rust.rs
++++ b/src/plugins/core/rust.rs
+@@ -239,6 +239,34 @@ impl Backend for RustPlugin {
+         Ok(tv)
+     }
+ 
++    fn needs_reconcile(&self, _config: &Arc<Config>, tv: &ToolVersion) -> bool {
++        let (_, components, targets) = get_args(tv);
++        if components.is_none() && targets.is_none() {
++            return false;
++        }
++        // Only an already-present toolchain can be missing a declared piece; a
++        // toolchain mise has not installed yet goes through install_version_,
++        // which already passes --component/--target to rustup.
++        if !tv.install_path().exists() {
++            return false;
++        }
++        let installed_components =
++            rustup_installed(&["component", "list", "--installed"], &tv.version);
++        let installed_targets = rustup_installed(&["target", "list", "--installed"], &tv.version);
++        let host_suffix = format!("-{TARGET}");
++        let any_missing = |declared: Option<Vec<String>>, have: &[String]| -> bool {
++            declared.unwrap_or_default().into_iter().any(|d| {
++                !have.iter().any(|h| {
++                    // rustup lists components as either a bare name (`rust-src`)
++                    // or a name suffixed with the host triple
++                    // (`llvm-tools-x86_64-unknown-linux-gnu`); match both.
++                    h == &d || h.strip_suffix(host_suffix.as_str()).is_some_and(|s| s == d)
++                })
++            })
++        };
++        any_missing(components, &installed_components) || any_missing(targets, &installed_targets)
++    }
++
+     async fn uninstall_version_impl(
+         &self,
+         config: &Arc<Config>,
+@@ -355,6 +383,29 @@ fn get_args(tv: &ToolVersion) -> (Option<String>, Option<Vec<String>>, Option<Ve
+     RustOptions::new(&raw_opts).install_args(rt.as_ref())
+ }
+ 
++fn rustup_installed(subcommand: &[&str], version: &str) -> Vec<String> {
++    let args: Vec<String> = subcommand
++        .iter()
++        .map(|s| (*s).to_string())
++        .chain(["--toolchain".to_string(), version.to_string()])
++        .collect();
++    let result = crate::cmd::cmd(RUSTUP_BIN, args)
++        .env("RUSTUP_HOME", rustup_home())
++        .env("CARGO_HOME", cargo_home())
++        .stdout_capture()
++        .stderr_capture()
++        .unchecked()
++        .run();
++    match result {
++        Ok(out) if out.status.success() => String::from_utf8_lossy(&out.stdout)
++            .lines()
++            .map(|l| l.trim().to_string())
++            .filter(|l| !l.is_empty())
++            .collect(),
++        _ => vec![],
++    }
++}
++
+ fn parse_idiomatic_file(path: &Path) -> Result<RustToolchain> {
+     let content = file::read_to_string(path)?;
+     let toml: toml::Value = toml::de::from_str(&content)?;
+diff --git a/src/toolset/mod.rs b/src/toolset/mod.rs
+index cad7b7b..44b8a29 100644
+--- a/src/toolset/mod.rs
++++ b/src/toolset/mod.rs
+@@ -165,7 +165,9 @@ impl Toolset {
+         measure!("toolset::list_missing_versions", {
+             self.list_current_versions()
+                 .into_iter()
+-                .filter(|(p, tv)| !p.is_version_installed(config, tv, true))
++                .filter(|(p, tv)| {
++                    !p.is_version_installed(config, tv, true) || p.needs_reconcile(config, tv)
++                })
+                 .map(|(_, tv)| tv)
+                 .collect()
+         })
+diff --git a/src/toolset/tool_request.rs b/src/toolset/tool_request.rs
+index 866ad25..4a560f0 100644
+--- a/src/toolset/tool_request.rs
++++ b/src/toolset/tool_request.rs
+@@ -231,7 +231,10 @@ impl ToolRequest {
+     pub async fn is_installed(&self, config: &Arc<Config>) -> bool {
+         if let Some(backend) = backend::get(self.ba()) {
+             match self.resolve(config, &Default::default()).await {
+-                Ok(tv) => backend.is_version_installed(config, &tv, false),
++                Ok(tv) => {
++                    backend.is_version_installed(config, &tv, false)
++                        && !backend.needs_reconcile(config, &tv)
++                }
+                 Err(e) => {
+                     debug!("ToolRequest.is_installed: {e:#}");
+                     false

@@ -108,6 +108,37 @@ only installs missing tools and `upgrade` only re-resolves and reinstalls when
 the resolved version changes (or for rolling channels). Neither reconciles the
 component set of a version that is already present at its resolved number.
 
+The skip is enforced at every install-decision filter, and each keys on
+`is_version_installed`, so each independently sees the symlink and treats the
+version as done. `mise install` with no tool args is the path the user hits; it
+filters through `ToolRequestSet::missing_tools`
+(`src/toolset/tool_request_set.rs:48`):
+
+```rust
+for tr in self.tools.values().flatten() {
+    if tr.is_os_supported() && !tr.is_installed(config).await {
+        tools.push(tr);
+    }
+}
+```
+
+and `ToolRequest::is_installed` (`src/toolset/tool_request.rs:231`) just wraps
+the backend check:
+
+```rust
+Ok(tv) => backend.is_version_installed(config, &tv, false),
+```
+
+The shell `enter` hook and shim refresh use a second filter
+(`Toolset::list_missing_versions`, `src/toolset/mod.rs:163`), and even a tool
+that reaches `install_version` returns early at its is-installed guards
+(`src/backend/mod.rs:1791` and `:1803`). That same `is_version_installed` is the
+predicate behind the read-only commands (`mise ls`, `current`, `where`,
+`uninstall`, `doctor`, `venv`), so "installed" cannot be redefined to mean
+"installed with the declared components" without those commands wrongly
+reporting the toolchain absent. That split is what makes the fix span several
+sites rather than one (see "Prototype").
+
 ## Verification
 
 - mise version: `2026.5.15 linux-x64 (2026-05-23)`.
@@ -208,45 +239,127 @@ rust-src (installed)
   `lockfile_options` (`src/plugins/core/rust.rs:66`) but the lockfile records
   intent; nothing reads it back to reconcile an installed toolchain's components.
 
-## Why we do not file this upstream
+## Upstream filing audit
 
-Walking the five constraints (default policy is do not file):
+Walking the five constraints. All five hold, so this is fileable; the draft
+below is ready to submit.
 
-1. **Is it really upstream's fault?** Partly. mise exposes `components` as a
-   first-class, tested (`src/plugins/core/rust.rs:489` `rust_options_reads_install_args`),
-   lockfile-recorded option, yet only applies it at first install. A user
-   reasonably reads a declarative config as desired-state. But "apply options at
-   install time only" is also a common, defensible version-manager design, not
-   obviously a defect. This is behavior plus a documentation gap, not a clear
-   bug.
-2. **Can upstream fix it?** Not with a small change. The skip-if-installed
-   decision lives in the generic backend layer keyed on path existence
-   (`src/backend/mod.rs:1294` `is_version_installed`), so the rust backend's
-   `install_version_` is never re-entered for an existing version. A real fix
-   needs either a rust-backend reconcile hook that runs even when installed, or
-   a general "declared options changed, reconcile" mechanism in the toolset
-   core. That touches structural install logic shared by every backend, not the
-   line(s) in `rust.rs` that pass `--component`. Constraint fails here.
+1. **Is it really upstream's fault?** Yes. mise exposes `components`/`targets`
+   as first-class, documented, tested
+   (`src/plugins/core/rust.rs:489` `rust_options_reads_install_args`),
+   lockfile-recorded options. A declarative config reads as desired-state, yet
+   mise applies these options only at first install and silently ignores them
+   afterward. The silent divergence between declared and applied state is a
+   defect, not merely a documentation gap.
+2. **Can upstream fix it?** Yes. The fix is not architecturally blocked. It
+   spans the install-decision filters (see "Root cause") plus one new backend
+   hook, but every change is additive and local; nothing in mise's design
+   prevents a backend from declaring that an installed version still needs work.
+   A multi-site fix is still a fix, size does not fail this constraint, and the
+   prototype below builds and runs.
 3. **Are they supporting this use case?** Yes. `components` is documented and
-   tested, so declaring it is supported; the gap is reconciliation, not support.
-4. **Will they likely fix it?** No evidence either way. `gh search issues
-   --repo jdx/mise "rust components"` returned nothing, so there is no existing
-   report or visible movement in this code path to cite.
-5. **Have we prototyped a minimal fix?** No, and the auto-prototype trigger is
-   not met: it fires when constraint 2 names a small, scoped change. Here
-   constraint 2 named a cross-cutting change to the generic install-skip core,
-   which is explicitly out of "small and scoped." Prototyping a
-   structural-core change is not the cheap probe the skill targets.
+   tested, so declaring it is supported; the missing piece is reconciliation,
+   not support.
+4. **Will they likely fix it?** No signal either way, which is not a fail.
+   `gh search issues --repo jdx/mise "rust components"` returns nothing and the
+   rust backend has no recent commits in this path, so there is neither a
+   documented won't-fix nor a stated non-goal. Absence of an existing report or
+   movement does not indicate upstream is leaning no.
+5. **Have we prototyped a minimal fix compatible with their architecture?**
+   Yes. See "Prototype": a built-and-verified patch against commit `310e325`,
+   recorded as [mise-rust-components.patch](mise-rust-components.patch).
 
-Decision: do not file. The gate fails at constraint 2 (the fix is structural,
-not a scoped rust-backend tweak) and constraint 4 (no signal upstream is moving
-on it), and constraint 1 is a soft yes at best given the apply-at-install design
-is defensible. The local workaround (`rustup component add`, workaround 1) solves
-the user-facing problem at our boundary regardless of upstream movement.
+An earlier revision of this doc stopped at constraint 5 ("not yet"), failing
+the gate at constraint 2 ("the fix is structural") and constraint 4 ("no signal
+upstream is moving"). Both readings were wrong: constraint 2 fails only on
+architectural impossibility, so a large or multi-site fix still passes; and
+constraint 4 fails only on an active upstream lean-no, so silence passes. Under
+the corrected reading constraints 1 to 4 hold, which is exactly the trigger to
+prototype rather than stop.
 
-If a future session finds upstream has added an options-reconcile mechanism, or
-decides to propose one, re-evaluate constraints 2 and 4 with that evidence. Draft
-kept below for that re-evaluation; do not file as-is.
+## Prototype
+
+Minimal fix: add an additive backend hook `needs_reconcile` (default `false`,
+so every other backend is untouched) consulted at the three install-decision
+filters, and implement it for the rust backend by diffing declared
+`components`/`targets` against `rustup component list --installed` /
+`rustup target list --installed`. When a declared piece is missing, the install
+flow re-enters `install_version_`, which already passes `--component`/`--target`
+to `rustup toolchain install` (idempotent and additive on an existing
+toolchain). `is_version_installed` is left unchanged so its read-only consumers
+keep reporting the toolchain present. The full diff (four sites across four
+files) is in [mise-rust-components.patch](mise-rust-components.patch).
+
+Why four sites and not one: each install-decision filter
+(`ToolRequest::is_installed` for `mise install`, `Toolset::list_missing_versions`
+for the `enter` hook, and the two `install_version` guards) independently keys on
+`is_version_installed`, so reconcile has to be woven into each. Missing one is
+how the first build of this prototype no-opped: only after also patching
+`ToolRequest::is_installed` did `mise install` reconcile.
+
+### Prototype verification
+
+Built the patched binary from the fresh clone at commit `310e325` in an isolated
+container (no host build, no ambient credentials, writes confined to the
+disposable clone):
+
+```bash
+podman run --rm --memory=8g --cpus=4 \
+  --userns=keep-id -u "$(id -u):$(id -g)" \
+  -e CARGO_HOME=/work/.cargo-container \
+  -v "$PROTO":/work:z -w /work \
+  docker.io/library/rust:1 \
+  cargo build --bin mise
+# Finished `dev` profile [unoptimized + debuginfo] target(s) in 4m 17s
+```
+
+Fixture: a scratch mise data dir whose `installs/rust/1.96.0` is the symlink
+mise creates (so mise sees the toolchain installed), plus a config declaring a
+component `1.96.0` lacks:
+
+```bash
+mkdir -p "$S/data/installs/rust" "$S/config" "$S/proj"
+ln -s "$HOME/.cargo/bin" "$S/data/installs/rust/1.96.0"
+printf '[tools]\nrust = { version = "1.96.0", components = "llvm-tools" }\n' > "$S/proj/mise.toml"
+```
+
+Stock mise (the bug): reports the tool installed, never adds the component.
+
+```console
+$ rustup component list --toolchain 1.96.0 | grep llvm-tools
+llvm-tools-x86_64-unknown-linux-gnu          # no "(installed)"
+$ (cd "$S/proj" && MISE_DATA_DIR=$S/data ... mise install)
+mise all tools are installed
+$ rustup component list --toolchain 1.96.0 | grep llvm-tools
+llvm-tools-x86_64-unknown-linux-gnu          # still not installed
+```
+
+Patched mise on the same fixture (the fix): re-enters install and adds it.
+
+```console
+$ (cd "$S/proj" && MISE_DATA_DIR=$S/data ... ./target/debug/mise install)
+mise rust@1.96.0     [1/3] install
+info: downloading component llvm-tools
+mise rust@1.96.0     [1/3]   1.96.0-x86_64-unknown-linux-gnu updated ...
+mise rust@1.96.0   ✓ installed
+$ rustup component list --toolchain 1.96.0 | grep llvm-tools
+llvm-tools-x86_64-unknown-linux-gnu (installed)
+```
+
+Scoped and idempotent: a second `mise install` once the component is present,
+and any config that declares no `components`/`targets`, both no-op (the hook
+returns `false`), so there is no reinstall loop and non-component rust pins are
+left alone.
+
+```console
+$ ./target/debug/mise install     # llvm-tools now present
+mise all tools are installed
+$ ./target/debug/mise install     # config: rust = "1.96.0" (no components)
+mise all tools are installed
+```
+
+The user's real `1.96.0` was restored after the run
+(`rustup component remove llvm-tools --toolchain 1.96.0`).
 
 ~~~md
 Title: rust backend: declared `components`/`targets` not reconciled onto an already-installed toolchain
@@ -276,11 +389,24 @@ Reproduction:
 3. `rustup component list --toolchain 1.96.0 | grep rust-src` shows it is not
    installed; the std source dir is absent.
 
-Suggested fix:
-On install, when `is_version_installed` is already true, have the rust backend
-diff declared `components`/`targets` against
-`rustup component list --installed --toolchain <ver>` and run `rustup component
-add` / `rustup target add` for the missing ones, rather than skipping entirely.
-This is a rust-backend reconcile step; alternatively a generic
-"options changed, reconcile" path in the toolset would cover all backends.
+Suggested fix (prototyped and verified, diff attached):
+Add an additive `Backend::needs_reconcile(&self, config, tv) -> bool` hook
+defaulting to `false`, and consult it at the three install-decision filters that
+currently key only on `is_version_installed`:
+- `ToolRequest::is_installed` (`src/toolset/tool_request.rs:231`), the gate
+  `mise install` uses via `ToolRequestSet::missing_tools`.
+- `Toolset::list_missing_versions` (`src/toolset/mod.rs:163`), the `enter` hook
+  and shim-refresh gate.
+- the two re-install guards in `install_version` (`src/backend/mod.rs:1791` and
+  `:1803`).
+Implement `needs_reconcile` for the rust backend by diffing declared
+`components`/`targets` against `rustup component list --installed` /
+`rustup target list --installed`; when a declared piece is missing, the install
+flow re-enters `install_version_`, which already passes `--component`/`--target`
+to `rustup toolchain install` (idempotent on an existing toolchain).
+`is_version_installed` stays unchanged so its read-only consumers (`ls`,
+`current`, `where`, `uninstall`, `doctor`, `venv`) keep reporting the toolchain
+present. Verified against commit `310e325`: stock mise leaves a declared
+`llvm-tools` unset on an already-installed `1.96.0`; the patched build adds it on
+`mise install` and no-ops once present or when no components are declared.
 ~~~
