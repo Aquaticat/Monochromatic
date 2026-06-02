@@ -227,6 +227,12 @@ Every search result carries two claims: the search ran correctly, and the lines 
 Both fail silently, in both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
 Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
+GitHub's API adds two silent shapes when a repo feature is off, and reading them as activity inverts the conclusion.
+A disabled issue tracker (`has_issues: false`) still serves frozen ghost counts: `search/issues` returns a nonzero `total_count` with an empty `items` array, the `issues` list endpoint returns only pull requests (every item carries `pull_request`), and `issues/<n>` answers HTTP 410 Gone.
+That looks like a neglected backlog but means intake moved elsewhere, usually Discussions (`has_discussions: true`); a maintainer "ignoring issues" may simply have none to ignore.
+Before drawing any maintainer-health or activity conclusion from issue data, run `gh api repos/<owner>/<repo> --jq '{has_issues, has_discussions, archived, disabled}'` first and read PR throughput (`is:pr is:merged` count) as the activity signal instead; a disabled or archived feature is a routing choice, not disinvestment.
+This is the post-mortem of misreading jdx/mise's disabled tracker as light issue-tending (see `docs/audit/mise-keep-vs-build-own.md`).
+
 ### Git cleanup and worktree safety reviews
 
 When reviewing a plan or change that touches `git clean`, destructive git guards, worktree safety, or ignored-file cleanup, inspect ignored root artifacts before final findings.
