@@ -1,0 +1,26 @@
+//! Compiles the Slint terminal UI into generated Rust code.
+
+// What:     `fn main()` is Cargo's build-script entry point. Cargo runs this
+//           function before compiling the crate itself.
+// Why:      The app needs generated Rust types for `ui/app.slint` before
+//           `src/main.rs` can use `slint::include_modules!()`.
+// TS map:   A prebuild script that generates TypeScript declarations before
+//           the real app compile starts.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// generateUiBindings("ui/app.slint");
+// ```
+fn main() {
+    // What:     `slint_build::compile(...)` invokes Slint's Rust build helper,
+    //           and `.expect(...)` unwraps the success value or panics with the
+    //           message when the markup compiler returns an error.
+    // Why:      A broken `.slint` file should stop the build immediately.
+    // TS map:   `compileSlint("ui/app.slint") ?? throw`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // compileSlint("ui/app.slint");
+    // ```
+    slint_build::compile("ui/app.slint").expect("Slint UI compilation failed");
+}

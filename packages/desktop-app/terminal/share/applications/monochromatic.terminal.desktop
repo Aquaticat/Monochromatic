@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Monochromatic Terminal
+GenericName=Terminal Emulator
+Comment=Slint terminal prototype backed by libghostty-vt
+Categories=System;TerminalEmulator;
+Exec=monochromatic-terminal
+Icon=utilities-terminal
+Terminal=false
+StartupNotify=true
+StartupWMClass=monochromatic.terminal

@@ -1,0 +1,56 @@
+# Cargo work runs inside the Fedora build container because libghostty-vt-sys
+# needs Zig 0.15.x and the host may not have the Slint native runtime headers.
+# The package dir is bind-mounted at /work. The cargo registry and git cache
+# live in a named volume so the Ghostty source fetch and crate downloads persist.
+
+[tasks.image]
+description = "Build the Fedora build/run container image"
+run = "podman build --tag localhost/monochromatic/terminal --file Containerfile ."
+
+[tasks.build]
+description = "Release build inside the container"
+run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo build --release"
+
+[tasks."build:debug"]
+description = "Debug build inside the container"
+run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo build"
+
+[tasks.lint]
+description = "cargo check inside the container"
+run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo check"
+
+[tasks."lint:clippy"]
+description = "Run clippy with warnings denied inside the container"
+run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo clippy --release -- --deny warnings"
+
+[tasks."lint:max-lines"]
+description = "Enforce the 300 code-line budget on .rs files"
+run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
+
+[tasks.test]
+description = "cargo test inside the container"
+run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo test --release"
+
+[tasks.run]
+description = "Build in the container, install desktop metadata, then run the GUI on the host"
+run = '''
+let home = ($env.HOME? | default '')
+(
+  podman run --rm --memory=4g --cpus=4 --security-opt label=disable
+  --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work
+  localhost/monochromatic/terminal
+  cargo build --release
+)
+let bin = if ($home != '') {
+  let apps_dir = ($home | path join '.local/share/applications')
+  mkdir $apps_dir
+  cp --force share/applications/monochromatic.terminal.desktop $apps_dir
+  let bin_dir = ($home | path join '.local/bin')
+  mkdir $bin_dir
+  cp --force target/release/monochromatic-terminal $bin_dir
+  ($bin_dir | path join 'monochromatic-terminal')
+} else {
+  './target/release/monochromatic-terminal'
+}
+^$bin
+'''

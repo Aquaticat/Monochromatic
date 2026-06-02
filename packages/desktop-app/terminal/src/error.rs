@@ -1,0 +1,173 @@
+//! Error type shared by terminal engine operations.
+
+// What:     `use std::fmt;` imports Rust's formatting traits and helper types.
+//           The sibling module would be `std::error` for error traits.
+// Why:      `Display` needs `fmt::Formatter` and `fmt::Result`.
+// TS map:   `import * as fmt from "std/fmt";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { formatError } from "std/fmt";
+// ```
+use std::fmt;
+
+// What:     `#[derive(Debug)]` asks the compiler to generate debug printing for
+//           the enum below.
+// Why:      Rust's `Error` trait requires `Debug` so failures can be inspected.
+// TS map:   TypeScript objects can always be logged, so no annotation exists.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type TerminalError = { kind: "ghostty"; source: Error };
+// ```
+#[derive(Debug)]
+// What:     `pub enum TerminalError` declares a public tagged union. The sibling
+//           shape would be a `struct` for one fixed record, but this can grow
+//           named variants as more engine error sources appear.
+// Why:      The engine currently wraps libghostty-vt errors and keeps room for
+//           future PTY or renderer errors without changing callers.
+// TS map:   `type TerminalError = { kind: "ghostty", source: Error }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type TerminalError = { kind: "ghostty"; source: Error };
+// ```
+pub enum TerminalError {
+    // What:     `Ghostty(libghostty_vt::Error)` is an enum variant that wraps one
+    //           libghostty-vt error value. `::` is Rust's path separator.
+    // Why:      Keep the upstream error available as the source.
+    // TS map:   `{ kind: "ghostty", source }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // { kind: "ghostty", source }
+    // ```
+    Ghostty(libghostty_vt::Error),
+}
+
+// What:     `impl fmt::Display for TerminalError` teaches Rust how to print the
+//           error for humans. The sibling trait is `Debug`, generated above.
+// Why:      `Box<dyn Error>` and `eprintln!` use this text.
+// TS map:   `TerminalError.prototype.toString = ...`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function terminalErrorToString(error: TerminalError): string { ... }
+// ```
+impl fmt::Display for TerminalError {
+    // What:     `fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result`
+    //           is the required formatting method. `&self` borrows the error;
+    //           `&mut` lends the output formatter mutably; `'_` lets Rust infer a
+    //           short lifetime.
+    // Why:      The formatter is where the human-readable message is written.
+    // TS map:   `toString(): string` except Rust writes into a formatter object.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function toString(error: TerminalError): string {
+    //   return `libghostty-vt error: ${error.source}`;
+    // }
+    // ```
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // What:     `match self` branches on the enum variant by borrowing `self`.
+        // Why:      Each variant can print its own message.
+        // TS map:   `if (error.kind === "ghostty") { ... }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (error.kind === "ghostty") return `libghostty-vt error: ${error.source}`;
+        // ```
+        match self {
+            // What:     `TerminalError::Ghostty(source)` extracts the wrapped
+            //           upstream error from the enum variant.
+            // Why:      Include the underlying libghostty-vt failure in the text.
+            // TS map:   `const { source } = error` inside the ghostty branch.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return `libghostty-vt error: ${source}`;
+            // ```
+            TerminalError::Ghostty(source) => write!(formatter, "libghostty-vt error: {source}"),
+        }
+    }
+}
+
+// What:     `impl std::error::Error for TerminalError` marks the enum as a real
+//           Rust error type. The sibling trait is `Display`, implemented above.
+// Why:      `main` can return `Box<dyn std::error::Error>` and still carry this.
+// TS map:   `class TerminalError extends Error`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// class TerminalError extends Error {}
+// ```
+impl std::error::Error for TerminalError {
+    // What:     `fn source(&self) -> Option<&(dyn std::error::Error + 'static)>`
+    //           returns a borrowed nested error if one exists. `Option` is Rust's
+    //           `value | null`; `dyn` means trait object.
+    // Why:      Error reporters can show the libghostty-vt cause chain.
+    // TS map:   `get cause(): Error | undefined`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return error.source;
+    // ```
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        // What:     `match self` branches on the enum and returns `Some(source)`.
+        //           `Some` wraps a present value for `Option`; `&` keeps it borrowed.
+        // Why:      Preserve the underlying Ghostty error for diagnostics.
+        // TS map:   `return error.kind === "ghostty" ? error.source : undefined`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return error.source;
+        // ```
+        match self {
+            // What:     `Some(source)` constructs the present `Option` variant with
+            //           a borrowed trait-object-compatible error.
+            // Why:      Expose the cause without copying or owning it.
+            // TS map:   `return source`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return source;
+            // ```
+            TerminalError::Ghostty(source) => Some(source),
+        }
+    }
+}
+
+// What:     `impl From<libghostty_vt::Error> for TerminalError` defines an
+//           automatic conversion. The sibling manual path is calling the enum
+//           variant directly.
+// Why:      Engine methods can use `?` on libghostty-vt results.
+// TS map:   `function fromGhostty(source: Error): TerminalError`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function fromGhostty(source: Error): TerminalError {
+//   return { kind: "ghostty", source };
+// }
+// ```
+impl From<libghostty_vt::Error> for TerminalError {
+    // What:     `fn from(source: libghostty_vt::Error) -> Self` consumes the
+    //           upstream error and returns this crate's error enum.
+    // Why:      This is the hook the `?` operator uses for conversion.
+    // TS map:   `return { kind: "ghostty", source }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return { kind: "ghostty", source };
+    // ```
+    fn from(source: libghostty_vt::Error) -> Self {
+        // What:     `TerminalError::Ghostty(source)` constructs the wrapper variant.
+        // Why:      Keep the upstream error intact.
+        // TS map:   `{ kind: "ghostty", source }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return { kind: "ghostty", source };
+        // ```
+        TerminalError::Ghostty(source)
+    }
+}

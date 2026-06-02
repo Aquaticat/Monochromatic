@@ -1,0 +1,142 @@
+// Terminal prototype window. Slint owns the pixel scroll position through the
+// Flickable's viewport-y. Rust receives that pixel offset, maps it to a whole
+// libghostty-vt row plus a fractional remainder, asks libghostty-vt for the
+// whole-row viewport, and then places the visible cells at absolute row
+// positions inside the Flickable content. Slint's pixel viewport translation
+// supplies the smooth fractional motion.
+
+import { Palette } from "std-widgets.slint";
+
+// One rendered terminal cell. Rust flattens libghostty-vt rows into this model
+// so Slint can draw positioned rectangles and text without understanding VT
+// state, scrollback, or style resolution.
+struct TerminalCell {
+    row: int,
+    col: int,
+    text: string,
+    foreground: color,
+    background: color,
+    bold: bool,
+    italic: bool,
+    inverse: bool,
+    underline: bool,
+}
+
+export component AppWindow inherits Window {
+    title: "Monochromatic Terminal";
+    preferred-width: 760px;
+    preferred-height: 520px;
+    background: #101010;
+
+    in property <[TerminalCell]> cells: [];
+    in property <int> total-rows: 1;
+    in property <int> scrollback-rows: 0;
+    in property <int> viewport-rows: 24;
+    in property <int> viewport-cols: 80;
+    in property <int> whole-row-offset: 0;
+    in property <length> content-height: 432px;
+    in property <string> status: "";
+
+    in-out property <length> scroll-y: 0px;
+
+    callback scroll-changed(float);
+    callback viewport-resized(float, float);
+
+    private property <length> cell-width: 9px;
+    private property <length> cell-height: 18px;
+    private property <length> terminal-font-size: 14px;
+
+    VerticalLayout {
+        spacing: 0px;
+
+        Rectangle {
+            height: 32px;
+            background: Palette.alternate-background;
+            border-color: Palette.border;
+            border-width: 1px;
+
+            Text {
+                x: 10px;
+                width: parent.width - 20px;
+                height: parent.height;
+                text: root.status;
+                color: Palette.foreground;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+
+        terminal-area := Rectangle {
+            vertical-stretch: 1;
+            background: #101010;
+
+            changed width => {
+                root.viewport-resized(self.width / 1px, self.height / 1px);
+            }
+
+            changed height => {
+                root.viewport-resized(self.width / 1px, self.height / 1px);
+            }
+
+            Flickable {
+                width: parent.width;
+                height: parent.height;
+                viewport-width: self.width;
+                viewport-height: max(root.content-height, self.height);
+                viewport-y <=> root.scroll-y;
+
+                changed viewport-y => {
+                    root.scroll-changed((0px - self.viewport-y) / 1px);
+                }
+
+                content := Rectangle {
+                    width: parent.width;
+                    height: max(root.content-height, parent.height);
+                    background: #101010;
+
+                    for cell in root.cells: Rectangle {
+                        x: cell.col * root.cell-width;
+                        y: (root.whole-row-offset + cell.row) * root.cell-height;
+                        width: root.cell-width;
+                        height: root.cell-height;
+                        background: cell.background;
+
+                        if cell.text != "": Text {
+                            x: 0px;
+                            y: 0px;
+                            width: parent.width;
+                            height: parent.height;
+                            text: cell.text;
+                            color: cell.foreground;
+                            font-family: "monospace";
+                            font-size: root.terminal-font-size;
+                            vertical-alignment: center;
+                            horizontal-alignment: left;
+                        }
+
+                        if cell.bold && cell.text != "": Text {
+                            x: 1px;
+                            y: 0px;
+                            width: parent.width;
+                            height: parent.height;
+                            text: cell.text;
+                            color: cell.foreground;
+                            font-family: "monospace";
+                            font-size: root.terminal-font-size;
+                            vertical-alignment: center;
+                            horizontal-alignment: left;
+                        }
+
+                        if cell.underline && cell.text != "": Rectangle {
+                            x: 0px;
+                            y: parent.height - 2px;
+                            width: parent.width;
+                            height: 1px;
+                            background: cell.foreground;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
