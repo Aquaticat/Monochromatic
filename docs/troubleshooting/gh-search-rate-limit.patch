@@ -1,0 +1,132 @@
+diff --git a/pkg/search/searcher.go b/pkg/search/searcher.go
+index 5b05e16..a3fa96f 100644
+--- a/pkg/search/searcher.go
++++ b/pkg/search/searcher.go
+@@ -93,6 +93,16 @@ func (s searcher) Code(query Query) (CodeResult, error) {
+ 		result.Items = append(result.Items, page.Items[:numItemsToAdd]...)
+ 		numItemsToRetrieve = numItemsToRetrieve - numItemsToAdd
+ 
++		// A page with no items cannot advance us toward the requested limit.
++		// The search API can report Total > 0 yet return an empty Items array
++		// together with a rel="next" link (observed with the advanced issue
++		// search lexical backend). Without this guard the loop follows next
++		// links across the entire result set, ignoring the limit and
++		// exhausting the per-minute search rate limit.
++		if len(page.Items) == 0 {
++			break
++		}
++
+ 		query.Page = nextPage(link)
+ 		if query.Page == 0 {
+ 			break
+@@ -122,6 +132,16 @@ func (s searcher) Commits(query Query) (CommitsResult, error) {
+ 		result.Items = append(result.Items, page.Items[:numItemsToAdd]...)
+ 		numItemsToRetrieve = numItemsToRetrieve - numItemsToAdd
+ 
++		// A page with no items cannot advance us toward the requested limit.
++		// The search API can report Total > 0 yet return an empty Items array
++		// together with a rel="next" link (observed with the advanced issue
++		// search lexical backend). Without this guard the loop follows next
++		// links across the entire result set, ignoring the limit and
++		// exhausting the per-minute search rate limit.
++		if len(page.Items) == 0 {
++			break
++		}
++
+ 		query.Page = nextPage(link)
+ 		if query.Page == 0 {
+ 			break
+@@ -150,6 +170,16 @@ func (s searcher) Repositories(query Query) (RepositoriesResult, error) {
+ 		result.Items = append(result.Items, page.Items[:numItemsToAdd]...)
+ 		numItemsToRetrieve = numItemsToRetrieve - numItemsToAdd
+ 
++		// A page with no items cannot advance us toward the requested limit.
++		// The search API can report Total > 0 yet return an empty Items array
++		// together with a rel="next" link (observed with the advanced issue
++		// search lexical backend). Without this guard the loop follows next
++		// links across the entire result set, ignoring the limit and
++		// exhausting the per-minute search rate limit.
++		if len(page.Items) == 0 {
++			break
++		}
++
+ 		query.Page = nextPage(link)
+ 		if query.Page == 0 {
+ 			break
+@@ -177,6 +207,16 @@ func (s searcher) Issues(query Query) (IssuesResult, error) {
+ 		result.Items = append(result.Items, page.Items[:numItemsToAdd]...)
+ 		numItemsToRetrieve = numItemsToRetrieve - numItemsToAdd
+ 
++		// A page with no items cannot advance us toward the requested limit.
++		// The search API can report Total > 0 yet return an empty Items array
++		// together with a rel="next" link (observed with the advanced issue
++		// search lexical backend). Without this guard the loop follows next
++		// links across the entire result set, ignoring the limit and
++		// exhausting the per-minute search rate limit.
++		if len(page.Items) == 0 {
++			break
++		}
++
+ 		query.Page = nextPage(link)
+ 		if query.Page == 0 {
+ 			break
+diff --git a/pkg/search/searcher_emptypage_test.go b/pkg/search/searcher_emptypage_test.go
+new file mode 100644
+index 0000000..ab35fd7
+--- /dev/null
++++ b/pkg/search/searcher_emptypage_test.go
+@@ -0,0 +1,54 @@
++package search
++
++import (
++	"net/http"
++	"net/url"
++	"testing"
++
++	fd "github.com/cli/cli/v2/internal/featuredetection"
++	"github.com/cli/cli/v2/pkg/httpmock"
++	"github.com/stretchr/testify/assert"
++)
++
++// TestSearcherIssuesStopsOnEmptyPage reproduces the unbounded pagination
++// fan-out. The search API can report total_count > 0 while returning an empty
++// items array together with a rel="next" Link header (observed with the
++// advanced issue search lexical backend). Without an empty-page guard, the
++// pagination loop in searcher.Issues follows next links across the entire
++// result set, ignoring --limit and exhausting the per-minute search rate limit.
++//
++// Only the page-1 stub is registered. Pre-patch the loop requests page 2, which
++// has no stub, so searcher.Issues returns an error and the assertions fail.
++// Post-patch the searcher stops after the first empty page, so only one request
++// is made and reg.Verify confirms exactly the single registered stub was used.
++func TestSearcherIssuesStopsOnEmptyPage(t *testing.T) {
++	query := Query{
++		Keywords: []string{"rust"},
++		Kind:     "issues",
++		Limit:    3,
++	}
++	values := url.Values{
++		"page":     []string{"1"},
++		"per_page": []string{"3"},
++		"q":        []string{"rust"},
++	}
++
++	reg := &httpmock.Registry{}
++	defer reg.Verify(t)
++
++	res := httpmock.JSONResponse(map[string]interface{}{
++		"incomplete_results": false,
++		"total_count":        732,
++		"items":              []interface{}{},
++	})
++	res = httpmock.WithHeader(res, "Link", `<https://api.github.com/search/issues?page=2&per_page=3&q=rust>; rel="next"`)
++	reg.Register(httpmock.QueryMatcher("GET", "search/issues", values), res)
++
++	client := &http.Client{Transport: reg}
++	searcher := NewSearcher(client, "github.com", fd.AdvancedIssueSearchUnsupported())
++
++	result, err := searcher.Issues(query)
++	assert.NoError(t, err)
++	assert.Equal(t, 732, result.Total)
++	assert.Len(t, result.Items, 0)
++}
