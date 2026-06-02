@@ -8,7 +8,9 @@ import {
   extensionArguments,
   initialSpawnState,
   piCommandArguments,
+  SESSION_NOT_FOUND_WARNING,
   terminalInvocation,
+  UNLINKED_SPAWN_TITLE,
 } from './cli-core.ts';
 import type { PidMapping, } from './paths.ts';
 
@@ -72,6 +74,12 @@ await describe({
             },),).toEqual([],);
           },
         },),
+        it({
+          name: 'omits extension flag when parent mapping is absent',
+          fn: async function testAbsentIdentityExtensionArgs() {
+            expect(extensionArguments({},),).toEqual([],);
+          },
+        },),
       ],
     },),
     describe({
@@ -94,6 +102,22 @@ await describe({
               'openai/gpt-5.1',
               '--thinking',
               'high',
+              'do work',
+            ],);
+          },
+        },),
+        it({
+          name: 'omits extension path while preserving extra arguments without identity',
+          fn: async function testPiArgumentsWithoutIdentity() {
+            expect(piCommandArguments({
+              args: {
+                prompt: 'do work',
+                extraArguments: '--model openai/gpt-5.1',
+              },
+            },),).toEqual([
+              'pi',
+              '--model',
+              'openai/gpt-5.1',
               'do work',
             ],);
           },
@@ -123,6 +147,40 @@ await describe({
                 'do work',
               ],
             },);
+          },
+        },),
+        it({
+          name: 'wraps unlinked child pi invocation without extension arguments',
+          fn: async function testUnlinkedTerminalInvocation() {
+            expect(terminalInvocation({
+              args: {
+                prompt: 'do work',
+                extraArguments: '--thinking high',
+              },
+            },),).toEqual({
+              command: 'terminal-exec',
+              args: [
+                `--title=${UNLINKED_SPAWN_TITLE}`,
+                '--',
+                'pi',
+                '--thinking',
+                'high',
+                'do work',
+              ],
+            },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'fallback warning',
+      children: [
+        it({
+          name: 'explains that child Pi launches without result forwarding',
+          fn: async function testSessionNotFoundWarning() {
+            expect(SESSION_NOT_FOUND_WARNING,).toContain('Could not find calling Pi session',);
+            expect(SESSION_NOT_FOUND_WARNING,).toContain('without result forwarding',);
+            expect(SESSION_NOT_FOUND_WARNING,).toContain('spawn-pi extension',);
           },
         },),
       ],

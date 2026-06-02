@@ -21,7 +21,10 @@ import { runSync, } from '@optique/run';
 
 import {
   initialSpawnState,
+  SESSION_NOT_FOUND_WARNING,
+  type SpawnPiArgs,
   terminalInvocation,
+  type TerminalInvocation,
 } from './cli-core.ts';
 import { SPAWN_ID_ENV, } from './constants.ts';
 import {
@@ -79,7 +82,100 @@ const args = runSync(
 
 //endregion Parser
 
+//region Launch helpers
+
+/**
+ * Launches terminal-exec as a detached visible child process.
+ *
+ * @param cwd - working directory for terminal-exec.
+ *
+ * @param env - environment variables inherited by terminal-exec.
+ *
+ * @param invocation - terminal-exec command and arguments to spawn.
+ *
+ * @example
+ * ```typescript
+ * launchDetachedTerminal({ cwd: '/repo', env: process.env, invocation });
+ * ```
+ */
+function launchDetachedTerminal(
+  {
+    cwd,
+    env,
+    invocation,
+  }: {
+    readonly cwd: string;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly invocation: TerminalInvocation;
+  },
+): void {
+  /**
+   * Detached terminal-exec process for visible child Pi session.
+   */
+  const proc = spawn(
+    invocation.command,
+    invocation.args,
+    {
+      cwd,
+      env: { ...env, },
+      detached: true,
+      stdio: 'ignore',
+    },
+  );
+
+  proc.unref();
+}
+
+/**
+ * Builds spawn-pi argument object without parser-produced undefined slots.
+ *
+ * @param extraArguments - optional extra Pi CLI arguments.
+ *
+ * @param prompt - initial prompt for spawned Pi.
+ *
+ * @returns normalized spawn-pi argument object.
+ *
+ * @example
+ * ```typescript
+ * spawnPiArgs({ prompt: 'work' });
+ * ```
+ */
+function spawnPiArgs(
+  {
+    extraArguments,
+    prompt,
+  }: {
+    readonly extraArguments?: string;
+    readonly prompt: string;
+  },
+): SpawnPiArgs {
+  return extraArguments === undefined
+    ? { prompt, }
+    : {
+      extraArguments,
+      prompt,
+    };
+}
+
+//endregion Launch helpers
+
 //region Launch
+
+/**
+ * Working directory for child Pi process.
+ */
+const cwd = args.cwd
+  ?? process.cwd();
+
+/**
+ * Terminal invocation arguments without parser-produced undefined slots.
+ */
+const spawnArgs = args.extraArguments === undefined
+  ? spawnPiArgs({ prompt: args.prompt, },)
+  : spawnPiArgs({
+    extraArguments: args.extraArguments,
+    prompt: args.prompt,
+  },);
 
 /**
  * Resolved parent Pi session identity for this CLI invocation.
@@ -87,21 +183,26 @@ const args = runSync(
 const identity = findCallingSession();
 
 if (identity === SESSION_NOT_FOUND) {
-  console.error(
-    'Error: Could not find calling Pi session. Ensure the spawn-pi extension is loaded in the parent Pi session.',
-  );
-  process.exitCode = 1;
+  console.error(SESSION_NOT_FOUND_WARNING,);
+
+  /**
+   * Terminal invocation used to open an unlinked child Pi.
+   */
+  const invocation = terminalInvocation({ args: spawnArgs, },);
+
+  launchDetachedTerminal({
+    cwd,
+    env: process.env,
+    invocation,
+  },);
+
+  console.log(JSON.stringify({ resultForwarding: false, },),);
 }
 else {
   /**
    * Unique identifier for this spawned child session.
    */
   const spawnId = randomUUID();
-  /**
-   * Working directory for child Pi process.
-   */
-  const cwd = args.cwd
-    ?? process.cwd();
   /**
    * Initial state written before launching child terminal.
    */
@@ -114,16 +215,6 @@ else {
   writeInitialSpawnState({ state, },);
 
   /**
-   * Terminal invocation arguments without parser-produced undefined slots.
-   */
-  const spawnArgs = args.extraArguments === undefined
-    ? { prompt: args.prompt, }
-    : {
-      extraArguments: args.extraArguments,
-      prompt: args.prompt,
-    };
-
-  /**
    * Terminal invocation used to open child Pi.
    */
   const invocation = terminalInvocation({
@@ -132,24 +223,14 @@ else {
     identity,
   },);
 
-  /**
-   * Detached terminal-exec process for visible child Pi session.
-   */
-  const proc = spawn(
-    invocation.command,
-    invocation.args,
-    {
-      cwd,
-      env: {
-        ...process.env,
-        [SPAWN_ID_ENV]: spawnId,
-      },
-      detached: true,
-      stdio: 'ignore',
+  launchDetachedTerminal({
+    cwd,
+    env: {
+      ...process.env,
+      [SPAWN_ID_ENV]: spawnId,
     },
-  );
-
-  proc.unref();
+    invocation,
+  },);
 
   console.log(JSON.stringify({ spawnId, },),);
 }

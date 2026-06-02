@@ -50,6 +50,15 @@ After the child Pi agent loop finishes its first response, the parent extension
 uses Pi's `sendMessage` API to inject a visible custom message containing the child session id,
 session file, and last assistant message.
 
+If no parent Pi session mapping exists, `spawn-pi` prints a warning, launches the child Pi
+without result forwarding, and prints:
+
+```json
+{"resultForwarding":false}
+```
+
+Load or reload the spawn-pi extension in the parent Pi session to restore result forwarding.
+
 ## How it works
 
 The package has two pieces.
@@ -97,6 +106,9 @@ then delivers the formatted result as a `spawn-pi` custom message with `triggerT
 
 ## Limitations
 
+- If no parent session mapping exists, `spawn-pi` falls back to an unlinked child Pi session.
+  The child terminal still opens, but no spawn state is written and no result is injected back
+  into the parent session.
 - Result forwarding is first-result forwarding. After the parent consumes a child result,
   later manual conversation inside that child terminal is not reported through the same spawn id.
 - The process-tree lookup uses Linux `/proc`. If that fails, the CLI falls back to the most
