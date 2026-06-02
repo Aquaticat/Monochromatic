@@ -113,15 +113,16 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
   `#` catch-all). Each tab shows one page. The page-tab bar and the selected page's track rows stay in one
-  Flickable with one scrollbar, but their shared content is a wrapping FlexboxLayout: when their minimum widths
-  fit, the complete page grid and selected track list sit beside each other; when they do not fit, flex wrapping
-  returns them to the vertical tab-then-list order without an explicit breakpoint. The full page grid remains
+  Flickable with one scrollbar. Wide windows show the complete page grid beside the selected page's rows; narrow
+  windows use the original vertical tab-then-list order. The switch is an explicit width breakpoint, because the
+  breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop at the pinned Slint
+  revision; see `../../../docs/troubleshooting/slint-flickable-flexbox-layout-loop.md`. The full page grid remains
   visible, so late-alphabet artists stay discoverable. The shared Flickable still lets page navigation and track
   rows scroll away together, driven by a prominent custom scrollbar in a right-hand gutter, since the default
   std-widgets scrollbar is a near-invisible hairline. Scrolling is animated by the
   Flickable itself: touchpad and touchscreen gestures fling with momentum, and mouse-wheel notches ease in over a
   short duration rather than snapping. The wheel animation needs the pinned Slint 1.17 revision (it is absent from
-  the 1.16 releases); see `docs/troubleshooting/slint-flickable-smooth-scroll.md`. Rows show each track's path
+  the 1.16 releases); see `../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`. Rows show each track's path
   relative to the loaded root (so deeper nesting stays
   visible). The highlighted row is both the currently selected and the playing track, and the view follows it
   across track changes, so there is no separate now-playing title. A single click on an unselected row selects
@@ -136,9 +137,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 
 ## Page navigation UX choices
 
-The player keeps page navigation and tracks in one shared Flickable and uses responsive flex wrapping for the two
-regions. This preserves the everything-shown-at-once browsing model when the viewport has room, keeps every page
-button discoverable, and avoids separate scroll positions.
+The player keeps page navigation and tracks in one shared Flickable. Wide windows show the full page-button grid
+beside the selected page's rows, and narrow windows keep the original vertical tab-then-list order. This preserves
+the everything-shown-at-once browsing model when the viewport has room, keeps every page button discoverable, and
+avoids separate scroll positions.
 
 Rejected alternatives:
 
@@ -151,8 +153,11 @@ Rejected alternatives:
   not being one; focus-only skip links remain an accessibility pattern, not the primary navigation here.
 - Permanent separate scroll containers: rejected because separate panes would keep page navigation consuming space
   while the track list scrolls, and would introduce an extra scroll position in a compact player.
-- Breakpoint-specific layouts: rejected because Slint flex constraints can express the desired transition through
-  minimum widths and wrapping, keeping the layout rule local to the two content regions.
+- Breakpointless wrapping `FlexboxLayout` inside `Flickable`: rejected after source-auditing the pinned Slint
+  revision, because `Flickable` forwards preferred width from layout children and wrapped flex cross-axis layout
+  needs the assigned width. This produced binding-loop warnings and runtime `Recursion detected` panics. The
+  current breakpoint keeps the wide and narrow geometries explicit while preserving complete page-button
+  discoverability.
 
 Three threads cooperate: the Slint event loop (UI), the engine controller thread, and PipeWire's own realtime
 thread. The UI and engine talk over a command channel; updates return via `slint::invoke_from_event_loop`. The
@@ -168,7 +173,7 @@ runtime libraries already present on the host (Fedora 44+), so it executes nativ
 Wayland, PipeWire, D-Bus, and KDE taskbar without socket passthrough or uid juggling. The Rust toolchain comes
 from rustup (current stable), not Fedora's `rust` package, because the Slint dependency is pinned to a git master
 revision (1.17.0-dev) that needs rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
-`docs/troubleshooting/slint-flickable-smooth-scroll.md`.
+`../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
 
 For OS taskbar progress, the `run` task installs two files onto the host before launching: the freshly built
 binary into `~/.local/bin/music-player`, and `share/applications/monochromatic.music-player.desktop` into
