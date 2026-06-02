@@ -409,7 +409,11 @@ an additive comment on #10426 carrying what the thread lacks.
 All five hold, but because #10426 already exists the fileable artefact is the
 additive comment below, not a new issue.
 
-### Additive comment draft for cli/cli#10426 (ready to post)
+### Additive comment posted to cli/cli#10426
+
+Posted 2026-06-02 as
+[cli/cli#10426 (comment)](https://github.com/cli/cli/issues/10426#issuecomment-4607753229).
+The text below is the as-posted record.
 
 ~~~md
 A related and arguably worse manifestation of this, on `gh search issues`
