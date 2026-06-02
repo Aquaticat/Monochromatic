@@ -92,6 +92,11 @@ narrow glyphs leave visibly loose prompt spacing when Slint renders terminal out
 A hidden Slint `Text` probe measures a 32-character monospace sample through the same renderer used for terminal cells;
 Slint exposes that measured width to Rust so Ghostty resize math and Slint cell placement share one metric.
 Slint's `font-weight` and `font-italic` properties render VT bold and italic styles.
+The terminal content starts after a 2px horizontal gutter, and resize math subtracts that gutter before computing PTY
+columns.
+The Slint scene paints cell backgrounds first, then glyphs with one-cell horizontal bleed, then underlines.
+This keeps fallback Nerd Font icons used by tools such as `lsd` from being clipped at the window edge or erased by the
+next cell's background while preserving PTY column alignment.
 Do not fake bold by drawing the same glyph a second time with an x-offset; shell prompts commonly use bold SGR, and the
 duplicate glyph pass makes those prompt characters look distorted.
 

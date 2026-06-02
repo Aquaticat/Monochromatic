@@ -51,6 +51,8 @@ export component AppWindow inherits Window {
     private property <length> cell-height: 18px;
     private property <length> terminal-font-size: 14px;
     private property <string> terminal-font-family: "JetBrains Mono";
+    private property <length> terminal-horizontal-padding: 2px;
+    private property <length> terminal-glyph-bleed: root.cell-width;
 
     terminal-metric-probe := Text {
         x: 0px;
@@ -87,7 +89,7 @@ export component AppWindow inherits Window {
 
             changed width => {
                 root.viewport-resized(
-                    self.width / 1px,
+                    max(self.width - root.terminal-horizontal-padding * 2, 1px) / 1px,
                     self.height / 1px,
                     root.effective-cell-width,
                     root.effective-cell-height,
@@ -96,7 +98,7 @@ export component AppWindow inherits Window {
 
             changed height => {
                 root.viewport-resized(
-                    self.width / 1px,
+                    max(self.width - root.terminal-horizontal-padding * 2, 1px) / 1px,
                     self.height / 1px,
                     root.effective-cell-width,
                     root.effective-cell-height,
@@ -195,34 +197,36 @@ export component AppWindow inherits Window {
                         background: #101010;
 
                         for cell in root.cells: Rectangle {
-                            x: cell.col * root.cell-width;
+                            x: root.terminal-horizontal-padding + cell.col * root.cell-width;
                             y: (root.whole-row-offset + cell.row) * root.cell-height;
                             width: root.cell-width;
                             height: root.cell-height;
                             background: cell.background;
+                        }
 
-                            if cell.text != "": Text {
-                                x: 0px;
-                                y: 0px;
-                                width: parent.width;
-                                height: parent.height;
-                                text: cell.text;
-                                color: cell.foreground;
-                                font-family: root.terminal-font-family;
-                                font-size: root.terminal-font-size;
-                                font-weight: cell.bold ? FontWeight.bold : FontWeight.normal;
-                                font-italic: cell.italic;
-                                vertical-alignment: center;
-                                horizontal-alignment: left;
-                            }
+                        for cell in root.cells: Text {
+                            visible: cell.text != "";
+                            x: root.terminal-horizontal-padding + cell.col * root.cell-width;
+                            y: (root.whole-row-offset + cell.row) * root.cell-height;
+                            width: root.cell-width + root.terminal-glyph-bleed;
+                            height: root.cell-height;
+                            text: cell.text;
+                            color: cell.foreground;
+                            font-family: root.terminal-font-family;
+                            font-size: root.terminal-font-size;
+                            font-weight: cell.bold ? FontWeight.bold : FontWeight.normal;
+                            font-italic: cell.italic;
+                            vertical-alignment: center;
+                            horizontal-alignment: left;
+                        }
 
-                            if cell.underline && cell.text != "": Rectangle {
-                                x: 0px;
-                                y: parent.height - 2px;
-                                width: parent.width;
-                                height: 1px;
-                                background: cell.foreground;
-                            }
+                        for cell in root.cells: Rectangle {
+                            visible: cell.underline && cell.text != "";
+                            x: root.terminal-horizontal-padding + cell.col * root.cell-width;
+                            y: (root.whole-row-offset + cell.row) * root.cell-height + root.cell-height - 2px;
+                            width: root.cell-width;
+                            height: 1px;
+                            background: cell.foreground;
                         }
                     }
                 }
