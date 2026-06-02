@@ -2,12 +2,13 @@
 // control row (left to right: an Open button, a three-state shuffle radio group
 // (Off / Within page / All), the transport buttons prev / play-pause / next, and
 // a "repeat track" checkbox; the custom radio and checkbox are drawn plain-HTML
-// style), then one shared scroll region. That region uses a wrapping flex layout:
-// the page-tab bar and selected-page track list sit side by side when the window
-// has room, and wrap back into the old vertical order when it does not. Both
-// cases keep one Flickable, so page navigation and tracks share one scrollbar and
-// no hidden page picker, nested scrolling, or click-triggered layout jump is
-// introduced. The queue is paginated on two axes (decided per track in Rust): a
+// style), then the scrolling queue area. A width breakpoint switches its shape:
+// when the window has room the page-tab bar and selected-page track list sit side
+// by side as two INDEPENDENT scroll containers (each with its own Flickable and
+// scrollbar, so a long list never scrolls the tab bar away and vice versa); when
+// it does not, they collapse into the old vertical tab-then-list order under one
+// shared Flickable and scrollbar. No hidden page picker or click-triggered layout
+// jump is introduced. The queue is paginated on two axes (decided per track in Rust): a
 // track in a subfolder gets a page per top-level folder under the loaded root
 // (one level only; the tab is that folder); a track at the loaded root gets a
 // first-letter page (A-Z, plus a `#` catch-all). The list shows only the selected
@@ -398,79 +399,96 @@ export component AppWindow inherits Window {
             vertical-stretch: 0;
         }
 
-        // Queue area: the page-tab bar and the track list share one scroll
-        // region, so they move under one scrollbar. A breakpoint switches only
-        // the content geometry: wide windows show the full page grid beside the
-        // selected page's rows, while narrow windows keep the original vertical
-        // tab-then-list order. Slint's Flickable pass forwards preferred size from
-        // layout children, and FlexboxLayout's wrapped cross-axis size depends on
-        // its assigned width; a single wrapping flex root inside Flickable creates
-        // a viewport/content binding loop. The breakpoint keeps the wide and
-        // narrow geometries explicit enough for Slint's layout-info analysis.
+        // Queue area. The width breakpoint splits both geometry AND scrolling.
+        //
+        // Wide (>= 900px): the page-tab bar and the track list are two
+        // INDEPENDENT scroll containers side by side, each with its own
+        // Flickable and VScrollBar. A long track list scrolls under its own bar
+        // without moving the tab bar (and a tall tab grid scrolls without moving
+        // the list). Each Flickable fills the queue height and scrolls only its
+        // own content.
+        //
+        // Narrow (< 900px): one shared Flickable keeps the original vertical
+        // tab-then-list order under a single scrollbar.
+        //
+        // Every Flickable wraps its content in a VerticalLayout (alignment:
+        // start) and pins viewport-width to self.width. The wrapping page-tab
+        // FlexboxLayout must not be a Flickable's bare content root: its wrapped
+        // cross-axis height depends on its assigned width, and a bare flex root
+        // makes the viewport/content size binding loop. Wrapping it keeps the
+        // geometry top-down and analysable by Slint's layout-info pass. The 18px
+        // reserved on each Flickable's right edge is the scrollbar gutter.
         Rectangle {
             vertical-stretch: 1;
-            flick := Flickable {
-                x: 0px;
-                y: 0px;
-                width: max(0px, parent.width - 18px);
-                height: parent.height;
-                viewport-width: self.width;
-                viewport-height: content.preferred-height;
-                content := VerticalLayout {
-                    // Pack from the top at natural heights, leaving any slack
-                    // below the last row rather than stretching the rows.
-                    alignment: start;
 
-                    if root.width >= 900px: HorizontalLayout {
-                        spacing: 24px;
-                        alignment: stretch;
-                        vertical-stretch: 0;
+            // Wide: two independent scroll containers.
+            if root.width >= 900px: HorizontalLayout {
+                spacing: 24px;
+                alignment: stretch;
 
-                        // Wide page-tab bar: one tab per page (top-level folder
-                        // or letter). It stays complete, so late-alphabet pages
-                        // remain visible, but it shares the first scroll screen
-                        // with the selected page's rows.
-                        //
-                        // align-content and align-items are pinned to start because
-                        // both default to stretch on FlexboxLayout. This bar shares a
-                        // HorizontalLayout (alignment: stretch) with the much taller
-                        // track list, so the bar is handed more cross-axis (vertical)
-                        // height than its wrapped rows need. With the stretch defaults
-                        // that surplus inflates every tab: align-content stretches the
-                        // wrapped flex lines apart and align-items stretches each
-                        // button to its line, so the tags came out far bigger than in
-                        // the 1-column layout. start keeps the lines and buttons at
-                        // their natural height, packed at the top, with the surplus
-                        // left as empty space below, so the tags match the 1-column
-                        // size. (The narrow bar never hits this: it is laid out at the
-                        // same width it is measured at, so it gets no surplus height.)
-                        if root.page-labels.length > 0: FlexboxLayout {
-                            min-width: 320px;
-                            preferred-width: 480px;
-                            horizontal-stretch: 1;
-                            spacing: 4px;
-                            flex-wrap: wrap;
+                // Left scroll container: the page-tab bar (one tab per page, a
+                // top-level folder or a letter). Present only when there are
+                // pages, so an empty library leaves the full width to the list.
+                if root.page-labels.length > 0: Rectangle {
+                    min-width: 320px;
+                    preferred-width: 480px;
+                    horizontal-stretch: 1;
+                    tabsFlick := Flickable {
+                        x: 0px;
+                        y: 0px;
+                        width: max(0px, parent.width - 18px);
+                        height: parent.height;
+                        viewport-width: self.width;
+                        viewport-height: tabsContent.preferred-height;
+                        tabsContent := VerticalLayout {
                             alignment: start;
-                            align-content: start;
-                            align-items: start;
-                            vertical-stretch: 0;
-                            for label[p] in root.page-labels: Button {
-                                text: label;
-                                // The active page's tab is drawn with the accent style.
-                                primary: p == root.selected-page;
-                                clicked => {
-                                    root.select-page(p);
+                            // align-content and align-items default to stretch on
+                            // FlexboxLayout; pin both to start so the wrapped tab
+                            // lines and the buttons keep their natural height,
+                            // packed at the top, rather than being inflated by any
+                            // surplus cross-axis height.
+                            FlexboxLayout {
+                                spacing: 4px;
+                                flex-wrap: wrap;
+                                alignment: start;
+                                align-content: start;
+                                align-items: start;
+                                vertical-stretch: 0;
+                                for label[p] in root.page-labels: Button {
+                                    text: label;
+                                    // Active page's tab drawn with the accent style.
+                                    primary: p == root.selected-page;
+                                    clicked => {
+                                        root.select-page(p);
+                                    }
                                 }
                             }
                         }
+                    }
+                    VScrollBar {
+                        x: parent.width - self.width;
+                        y: 0px;
+                        height: parent.height;
+                        page-size: tabsFlick.height;
+                        maximum: tabsFlick.viewport-height - tabsFlick.height;
+                        value <=> tabsFlick.viewport-y;
+                    }
+                }
 
-                        // Wide selected-page rows. The larger stretch factor gives
-                        // long track names more room than page navigation.
-                        VerticalLayout {
-                            min-width: 320px;
-                            preferred-width: 480px;
-                            horizontal-stretch: 2;
-                            vertical-stretch: 0;
+                // Right scroll container: the selected page's rows. The larger
+                // stretch factor gives long track names more room than the tabs.
+                Rectangle {
+                    min-width: 320px;
+                    preferred-width: 480px;
+                    horizontal-stretch: 2;
+                    rowsFlick := Flickable {
+                        x: 0px;
+                        y: 0px;
+                        width: max(0px, parent.width - 18px);
+                        height: parent.height;
+                        viewport-width: self.width;
+                        viewport-height: rowsContent.preferred-height;
+                        rowsContent := VerticalLayout {
                             alignment: start;
                             for item in root.page-items: Rectangle {
                                 height: 30px;
@@ -510,84 +528,92 @@ export component AppWindow inherits Window {
                             }
                         }
                     }
+                    VScrollBar {
+                        x: parent.width - self.width;
+                        y: 0px;
+                        height: parent.height;
+                        page-size: rowsFlick.height;
+                        maximum: rowsFlick.viewport-height - rowsFlick.height;
+                        value <=> rowsFlick.viewport-y;
+                    }
+                }
+            }
 
-                    // Narrow page-tab bar: the original vertical order, one tab
-                    // grid followed by the selected page's rows.
-                    if root.width < 900px && root.page-labels.length > 0: FlexboxLayout {
-                        spacing: 4px;
-                        flex-wrap: wrap;
+            // Narrow: one shared scroll region, the original tab-then-list order.
+            if root.width < 900px: Rectangle {
+                narrowFlick := Flickable {
+                    x: 0px;
+                    y: 0px;
+                    width: max(0px, parent.width - 18px);
+                    height: parent.height;
+                    viewport-width: self.width;
+                    viewport-height: narrowContent.preferred-height;
+                    narrowContent := VerticalLayout {
+                        // Pack from the top at natural heights, leaving any slack
+                        // below the last row rather than stretching the rows.
                         alignment: start;
-                        vertical-stretch: 0;
-                        for label[p] in root.page-labels: Button {
-                            text: label;
-                            // The active page's tab is drawn with the accent style.
-                            primary: p == root.selected-page;
-                            clicked => {
-                                root.select-page(p);
+
+                        // Narrow page-tab bar: the vertical order, one tab grid
+                        // followed by the selected page's rows.
+                        if root.page-labels.length > 0: FlexboxLayout {
+                            spacing: 4px;
+                            flex-wrap: wrap;
+                            alignment: start;
+                            align-content: start;
+                            align-items: start;
+                            vertical-stretch: 0;
+                            for label[p] in root.page-labels: Button {
+                                text: label;
+                                // Active page's tab drawn with the accent style.
+                                primary: p == root.selected-page;
+                                clicked => {
+                                    root.select-page(p);
+                                }
                             }
                         }
-                    }
 
-                    // 24px gap between the narrow page-tab bar and the track list.
-                    // The wide layout uses HorizontalLayout spacing instead.
-                    if root.width < 900px && root.page-labels.length > 0: Rectangle {
-                        height: 24px;
-                    }
+                        // 24px gap between the narrow page-tab bar and the list.
+                        if root.page-labels.length > 0: Rectangle {
+                            height: 24px;
+                        }
 
-                    // Narrow selected-page rows.
-                    if root.width < 900px: VerticalLayout {
-                        vertical-stretch: 0;
-                        alignment: start;
-                        for item in root.page-items: Rectangle {
-                            height: 30px;
-                            preferred-height: 30px;
-                            // Active row painted with the system accent (matching
-                            // the active page tab's primary Button); inactive rows
-                            // stay transparent over the window background.
-                            background: item.index == root.current-index ? Palette.accent-background : transparent;
-                            TouchArea {
-                                // Click the already-selected (highlighted) row to
-                                // toggle play/pause; click any other row to merely
-                                // select it (Rust loads it paused). A "double click
-                                // to play" then falls out for free: the first click
-                                // selects, the second (now on the selected row)
-                                // toggles to play, so no real double-click is needed.
-                                clicked => {
-                                    if (item.index == root.current-index) {
-                                        root.toggle-play();
-                                    } else {
-                                        root.select-index(item.index);
+                        // Narrow selected-page rows.
+                        VerticalLayout {
+                            vertical-stretch: 0;
+                            alignment: start;
+                            for item in root.page-items: Rectangle {
+                                height: 30px;
+                                preferred-height: 30px;
+                                background: item.index == root.current-index ? Palette.accent-background : transparent;
+                                TouchArea {
+                                    clicked => {
+                                        if (item.index == root.current-index) {
+                                            root.toggle-play();
+                                        } else {
+                                            root.select-index(item.index);
+                                        }
                                     }
-                                }
-                                Text {
-                                    text: item.name;
-                                    x: 8px;
-                                    width: parent.width - 16px;
-                                    vertical-alignment: center;
-                                    overflow: elide;
-                                    // Active row uses the palette's on-accent ink so
-                                    // it stays legible on the accent fill (it can be a
-                                    // light tint under the dark scheme); inactive rows
-                                    // use the palette foreground, which tracks the
-                                    // system light/dark theme.
-                                    color: item.index == root.current-index ? Palette.accent-foreground : Palette.foreground;
+                                    Text {
+                                        text: item.name;
+                                        x: 8px;
+                                        width: parent.width - 16px;
+                                        vertical-alignment: center;
+                                        overflow: elide;
+                                        color: item.index == root.current-index ? Palette.accent-foreground : Palette.foreground;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-
-            // Prominent scrollbar for the shared region. page-size is the
-            // visible height; maximum is how far the content overflows it;
-            // value drives (and follows) the Flickable's vertical offset.
-            VScrollBar {
-                x: parent.width - self.width;
-                y: 0px;
-                height: parent.height;
-                page-size: flick.height;
-                maximum: flick.viewport-height - flick.height;
-                value <=> flick.viewport-y;
+                VScrollBar {
+                    x: parent.width - self.width;
+                    y: 0px;
+                    height: parent.height;
+                    page-size: narrowFlick.height;
+                    maximum: narrowFlick.viewport-height - narrowFlick.height;
+                    value <=> narrowFlick.viewport-y;
+                }
             }
         }
     }

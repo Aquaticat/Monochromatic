@@ -106,19 +106,23 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   unaware of pagination.
 - `ui/app.slint`: the window markup (seek bar, volume slider, one combined control row holding the Open button,
   a plain-HTML-styled three-state shuffle radio group, the prev/play-pause/next transport buttons, and the
-  "repeat track" checkbox, and a shared scroll region holding the page-tab bar and the
+  "repeat track" checkbox, and the scrolling queue area holding the page-tab bar and the
   queue list). The control row is a FlexboxLayout: the four groups spread across the row with at least 48px
   between them (a 48px taffy column gap plus space-between), and wrap onto more rows when the window is too
   narrow to fit them. The
   queue is paginated on two axes: a track in a subfolder gets a page per top-level folder under the loaded root
   (one level only; the tab is that folder), and a track at the loaded root gets a first-letter page (A-Z plus a
-  `#` catch-all). Each tab shows one page. The page-tab bar and the selected page's track rows stay in one
-  Flickable with one scrollbar. Wide windows show the complete page grid beside the selected page's rows; narrow
-  windows use the original vertical tab-then-list order. The switch is an explicit width breakpoint, because the
+  `#` catch-all). Each tab shows one page. Wide windows show the complete page grid beside the selected page's
+  rows as two independent scroll containers, each with its own Flickable and scrollbar, so a long track list
+  scrolls without moving the tab bar and a tall tab grid scrolls without moving the list. Narrow windows collapse
+  them into the original vertical tab-then-list order under one shared Flickable and scrollbar. The switch is an
+  explicit width breakpoint, because the
   breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop at the pinned Slint
   revision; see `../../../docs/troubleshooting/slint-flickable-flexbox-layout-loop.md`. The full page grid remains
-  visible, so late-alphabet artists stay discoverable. The shared Flickable still lets page navigation and track
-  rows scroll away together, driven by a prominent custom scrollbar in a right-hand gutter, since the default
+  visible, so late-alphabet artists stay discoverable. The wide page-tab FlexboxLayout pins `align-content` and
+  `align-items` to start (both default to stretch), so its buttons keep the same natural size as in the narrow
+  layout instead of inflating to fill the taller list column. Each scroll region is driven by a prominent custom
+  scrollbar in a right-hand gutter, since the default
   std-widgets scrollbar is a near-invisible hairline. Scrolling is animated by the
   Flickable itself: touchpad and touchscreen gestures fling with momentum, and mouse-wheel notches ease in over a
   short duration rather than snapping. The wheel animation needs the pinned Slint 1.17 revision (it is absent from
@@ -140,10 +144,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 
 ## Page navigation UX choices
 
-The player keeps page navigation and tracks in one shared Flickable. Wide windows show the full page-button grid
-beside the selected page's rows, and narrow windows keep the original vertical tab-then-list order. This preserves
-the everything-shown-at-once browsing model when the viewport has room, keeps every page button discoverable, and
-avoids separate scroll positions.
+Wide windows show the full page-button grid beside the selected page's rows as two independent scroll containers,
+so the page grid and the track list scroll separately; narrow windows keep the original vertical tab-then-list
+order under one shared Flickable. This preserves the everything-shown-at-once browsing model when the viewport has
+room and keeps every page button discoverable.
 
 Rejected alternatives:
 
@@ -154,8 +158,10 @@ Rejected alternatives:
 - Text-link index: rejected because it weakens the button affordance used by active and inactive page tabs.
 - Visible `Tracks` skip button: rejected because a skip link mixed into the page grid looks like a page despite
   not being one; focus-only skip links remain an accessibility pattern, not the primary navigation here.
-- Permanent separate scroll containers: rejected because separate panes would keep page navigation consuming space
-  while the track list scrolls, and would introduce an extra scroll position in a compact player.
+- Separate scroll containers in the narrow layout too: rejected because two panes in a compact window would keep
+  page navigation consuming vertical space while the track list scrolls, and would add a second scroll position in
+  a small player. Wide windows do split into two independent scroll containers, where the horizontal room makes the
+  separate panes worthwhile.
 - Breakpointless wrapping `FlexboxLayout` inside `Flickable`: rejected after source-auditing the pinned Slint
   revision, because `Flickable` forwards preferred width from layout children and wrapped flex cross-axis layout
   needs the assigned width. This produced binding-loop warnings and runtime `Recursion detected` panics. The
