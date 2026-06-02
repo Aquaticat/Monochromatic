@@ -46,6 +46,12 @@ pub mod output;
 // TS map:   `export * as playback from "./playback";`
 pub mod playback;
 
+// What:     `pub mod progress;` the progress-surface debounce helper module.
+// Why:      The binary uses this pure, unit-tested timing gate for the Slint seek
+//           bar and KDE taskbar progress.
+// TS map:   `export * as progress from "./progress";`
+pub mod progress;
+
 // What:     `pub mod truepeak;` the true-peak measurement module (`src/truepeak.rs`).
 // Why:      Oversampled inter-sample peak measurement + the normalization gain.
 // TS map:   `export * as truepeak from "./truepeak";`

@@ -10,6 +10,13 @@
 // TS map:   like an auto-generated `import { AppWindow } from "./app.slint.gen";`
 slint::include_modules!();
 
+// What:     `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
+//           binary crate.
+// Why:      The progress debounce bridge uses generated Slint types, so it belongs
+//           beside `main.rs`, not in the reusable library crate.
+// TS map:   `import * as uiProgress from "./ui_progress";`
+mod ui_progress;
+
 // What:     `use std::path::{Path, PathBuf};`. `PathBuf` is the OWNED filesystem
 //           path; `Path` is the BORROWED view (like `String` vs `&str`).
 // Why:      CLI arguments and picked files become owned `PathBuf`s; `Path::new`
@@ -29,6 +36,21 @@ use std::path::{Path, PathBuf};
 // ```
 use std::rc::Rc;
 
+// What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
+//           (atomic refcount; sibling: single-thread `Rc<T>`), and `Mutex<T>` is a
+//           lock that lets one thread mutate `T` at a time.
+// Why:      The engine update callback must be `Send`, so progress debounce state
+//           cannot be an `Rc`; an `Arc<Mutex<_>>` crosses into the UI callback
+//           safely and still mutates only one small state object.
+// TS map:   no exact equivalent; mentally a shared object plus `lock(() => ...)`.
+use std::sync::{Arc, Mutex};
+
+// What:     `use std::time::Instant;`. `Instant` is a monotonic timestamp.
+//           Sibling: `Duration`, the elapsed span produced by `Instant::elapsed`.
+// Why:      Progress debounce decisions use elapsed time since startup.
+// TS map:   `const startedAt = performance.now();`
+use std::time::Instant;
+
 // What:     `use music_player::command::{Command, ShuffleMode, Update};`. The
 //           message types from our library crate. The package is `music-player`
 //           but a Rust crate identifier cannot contain `-`, so the lib crate is
@@ -41,6 +63,12 @@ use music_player::command::{Command, ShuffleMode, Update};
 // Why:      We spawn it and send commands.
 // TS map:   `import { Engine } from "music-player/engine";`
 use music_player::engine::Engine;
+
+// What:     `use music_player::progress::ProgressDebouncer;`. The pure debounce
+//           state shared with the binary-only UI bridge.
+// Why:      The binary owns the state object; `ui_progress` owns the Slint wiring.
+// TS map:   `import { ProgressDebouncer } from "music-player/progress";`
+use music_player::progress::ProgressDebouncer;
 
 // What:     `use music_player::session::Session;`. The saved-state record.
 // Why:      We load it on launch to restore the last session.
@@ -404,6 +432,8 @@ fn apply_update(app: &AppWindow, update: Update) {
     }
 }
 
+
+
 // What:     `fn xdg_user_dir_music() -> Option<PathBuf>`. Last-resort lookup: shell
 //           out to the `xdg-user-dir MUSIC` command and use its printed path.
 // Why:      Some setups (and some `directories` parsing gaps) leave the music dir
@@ -597,6 +627,19 @@ fn main() -> Result<(), slint::PlatformError> {
     // TS map:   `const launcher = Launcher.connect();`
     let launcher = Launcher::new();
 
+    // What:     `let progress_started_at = Instant::now();`. Capture a monotonic
+    //           timestamp once, before update handling begins.
+    // Why:      Later update callbacks turn this into elapsed time for debouncing.
+    // TS map:   `const progressStartedAt = performance.now();`
+    let progress_started_at = Instant::now();
+    // What:     `let progress_debouncer = Arc::new(Mutex::new(ProgressDebouncer::new()));`.
+    //           Shared debounce state protected by a mutex. `Arc` makes it Sendable
+    //           across the engine callback; `Mutex` gives mutable access inside.
+    // Why:      The engine callback is cross-thread, but all progress decisions need
+    //           one shared baseline.
+    // TS map:   `const progressDebouncer = new ProgressDebouncer();`
+    let progress_debouncer = Arc::new(Mutex::new(ProgressDebouncer::new()));
+
     // What:     `let engine = Rc::new(Engine::spawn(move |update| { ... }));`. Start
     //           the engine, giving it a callback that forwards each `Update` to the
     //           UI thread. `move` makes the closure own `weak` and `launcher`. Wrap
@@ -620,6 +663,17 @@ fn main() -> Result<(), slint::PlatformError> {
         // Why:      The inner closure moves it to the UI thread to emit progress.
         // TS map:   `const l = launcher;`
         let launcher = launcher.clone();
+        // What:     `let progress_debouncer = Arc::clone(&progress_debouncer);`.
+        //           Clone the shared debounce handle for this update.
+        // Why:      The inner event-loop closure needs to own a handle to the same
+        //           debounce state.
+        // TS map:   `const progressDebouncerForUpdate = progressDebouncer;`
+        let progress_debouncer = Arc::clone(&progress_debouncer);
+        // What:     `let progress_elapsed = progress_started_at.elapsed();`. Measure
+        //           elapsed monotonic time at the moment this update is queued.
+        // Why:      Debounce decisions use time between accepted progress updates.
+        // TS map:   `const progressElapsed = performance.now() - progressStartedAt;`
+        let progress_elapsed = progress_started_at.elapsed();
         // What:     `let _ = slint::invoke_from_event_loop(move || { ... });`. Run
         //           the inner closure ON the UI/event-loop thread (required for
         //           touching window properties). `let _ =` ignores the result
@@ -634,50 +688,18 @@ fn main() -> Result<(), slint::PlatformError> {
             // Why:      The window may have closed before this runs.
             // TS map:   `const app = weak.deref(); if (app) { ... }`
             if let Some(app) = weak.upgrade() {
-                // What:     `let progress_relevant = matches!(update, Update::Position(_) | Update::Playing(_) | Update::NowPlaying { .. });`.
-                //           Only position, play-state, and track changes move the bar.
-                //           `matches!` inspects the variant WITHOUT consuming `update`
-                //           (the patterns bind nothing), so `apply_update` can still
-                //           take it by value below.
-                // Why:      Skip emitting on queue/volume/shuffle/repeat updates.
-                // TS map:   `const progressRelevant = ["position","playing","nowPlaying"].includes(update.kind);`
-                let progress_relevant = matches!(
+                // What:     `ui_progress::apply_update_with_progress_debounce(...)`.
+                //           Apply the update through the progress debounce bridge.
+                // Why:      State updates stay immediate, while seek-bar and taskbar
+                //           progress updates are rate-limited.
+                // TS map:   `uiProgress.applyUpdateWithProgressDebounce(app, launcher, update);`
+                ui_progress::apply_update_with_progress_debounce(
+                    &app,
+                    &launcher,
+                    &progress_debouncer,
+                    progress_elapsed,
                     update,
-                    Update::Position(_) | Update::Playing(_) | Update::NowPlaying { .. }
                 );
-                // What:     `apply_update(&app, update);`. Mirror the update into the
-                //           window's properties (consumes `update`).
-                // Why:      The UI reflects engine state.
-                // TS map:   `applyUpdate(app, update);`
-                apply_update(&app, update);
-                // What:     `if progress_relevant { ... }`. Recompute and emit the
-                //           taskbar progress from the now-updated properties.
-                // Why:      Read position/duration/playing AFTER `apply_update` so the
-                //           emitted fraction matches what the UI shows.
-                // TS map:   `if (progressRelevant) { ... }`
-                if progress_relevant {
-                    // What:     `let duration = app.get_duration();`. Current track
-                    //           length in seconds (Slint `float` = f32).
-                    // Why:      Denominator of the progress fraction.
-                    // TS map:   `const duration = app.duration;`
-                    let duration = app.get_duration();
-                    // What:     `let fraction = if duration > 0.0 { f64::from(app.get_position() / duration) } else { 0.0 };`.
-                    //           Position over duration, widened to f64; guard against a
-                    //           zero/absent duration (no track) to avoid NaN.
-                    // Why:      The protocol wants a 0..1 progress value.
-                    // TS map:   `const fraction = duration > 0 ? app.position / duration : 0;`
-                    let fraction = if duration > 0.0 {
-                        f64::from(app.get_position() / duration)
-                    } else {
-                        0.0
-                    };
-                    // What:     `launcher.set_progress(fraction, app.get_playing());`.
-                    //           Emit progress; visible only while actually playing, so
-                    //           pausing hides the bar.
-                    // Why:      Drive the KDE taskbar progress for the current track.
-                    // TS map:   `launcher.setProgress(fraction, app.playing);`
-                    launcher.set_progress(fraction, app.get_playing());
-                }
             }
         });
     }));

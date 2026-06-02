@@ -134,6 +134,9 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   palette rather than hardcoded values, so they follow the OS accent colour
   and the light/dark theme: the highlighted row and the checked checkbox use the accent, the same as the active
   page tab's primary button.
+  Seek-bar movement and KDE taskbar progress updates are debounced through the same Rust helper, while play/pause
+  state still emits immediately. This prevents sub-second or zero-duration tracks from flickering the on-screen
+  progress bar or flashing an empty taskbar progress indicator.
 
 ## Page navigation UX choices
 
