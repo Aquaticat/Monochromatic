@@ -76,6 +76,15 @@ use std::sync::atomic::{AtomicBool, Ordering};
 // ```
 use std::sync::Arc;
 
+// What:     `use std::thread::Thread;`. `Thread` is a cheap, cloneable HANDLE to a
+//           running thread (it wraps an internal `Arc`). We only ever call
+//           `.unpark()` on it. Sibling you might expect: `JoinHandle`, which OWNS the
+//           thread and can wait for it; `Thread` is just a wake-able reference.
+// Why:      The realtime audio callback holds one so it can wake (`unpark`) the
+//           engine worker after it drains the ring buffer, telling it to decode more.
+// TS map:   `type Thread = WorkerRef;` (a reference you can post "wake up" to)
+use std::thread::Thread;
+
 // What:     `use pipewire as pw;`. Import the crate and rename it `pw` for short.
 // Why:      Every PipeWire call below is `pw::...`.
 // TS map:   `import * as pw from "pipewire";`
@@ -201,6 +210,13 @@ struct ProcessData {
     //           audio already buffered.
     // TS map:   `playing: { value: boolean };` (a shared mutable box)
     playing: Arc<AtomicBool>,
+    // What:     `worker: Thread`. A cloneable handle to the engine worker thread.
+    //           The callback calls `.unpark()` on it after popping samples.
+    // Why:      Popping frees space in the ring buffer; waking the worker lets it
+    //           decode more right away instead of waiting for a timeout. This is what
+    //           replaces the old busy-poll without re-introducing audio gaps.
+    // TS map:   `worker: WorkerRef;`
+    worker: Thread,
 }
 
 // What:     `pub struct Output { ... }`. Owns the whole PipeWire pipeline. FIELD
@@ -241,17 +257,26 @@ pub struct Output {
     //           callback reads its clone. One shared cell keeps them in sync.
     // TS map:   `playing: { value: boolean };`
     playing: Arc<AtomicBool>,
+    // What:     `worker: Thread`. The engine worker's thread handle, kept so each
+    //           new stream's callback (built in `reconfigure`) can be handed a clone.
+    // Why:      The callback needs it to `unpark()` the worker when the ring buffer
+    //           drains; storing it here lets it survive across per-track reconfigures.
+    // TS map:   `worker: WorkerRef;`
+    worker: Thread,
 }
 
 // What:     `impl Output { ... }`. Methods for the output pipeline.
 // Why:      Construction and per-track reconfiguration.
 // TS map:   the class body.
 impl Output {
-    // What:     `pub fn new() -> Result<Output, PlayerError>`. Initialise
+    // What:     `pub fn new(worker: Thread) -> Result<Output, PlayerError>`. Initialise
     //           PipeWire, build the loop/context/core, and start the loop thread.
-    // Why:      One-time setup of the audio pipeline.
-    // TS map:   `static async create(): Promise<Output>`
-    pub fn new() -> Result<Output, PlayerError> {
+    //           `worker` is the engine worker's thread handle, taken by value (the
+    //           caller hands us its own clone).
+    // Why:      One-time setup of the audio pipeline; we keep `worker` so per-track
+    //           callbacks can wake the worker on drain.
+    // TS map:   `static async create(worker: WorkerRef): Promise<Output>`
+    pub fn new(worker: Thread) -> Result<Output, PlayerError> {
         // What:     `pw::init();`. Initialises the PipeWire library (global C
         //           setup). Safe to call; idempotent in practice.
         // Why:      Required before any other PipeWire call.
@@ -332,6 +357,7 @@ impl Output {
             _context: context,
             thread_loop,
             playing,
+            worker,
         })
     }
 
@@ -401,6 +427,12 @@ impl Output {
             channels: channels_usize,
             scratch: Vec::new(),
             playing: Arc::clone(&self.playing),
+            // What:     `worker: self.worker.clone()`. Clone the worker handle (a
+            //           refcount bump, not a new thread) into the callback's state.
+            // Why:      The realtime callback uses it to `unpark()` the worker after
+            //           it drains samples, so the worker refills the freed space.
+            // TS map:   `worker: this.worker,`
+            worker: self.worker.clone(),
         };
 
         // What:     `let guard = self.thread_loop.lock();`. Lock the audio loop:
@@ -575,6 +607,23 @@ impl Output {
                                 } else {
                                     0
                                 };
+
+                                // What:     `if got > 0 { pd.worker.unpark(); }`. When
+                                //           we popped at least one sample we freed
+                                //           space in the ring buffer; `unpark()` wakes
+                                //           the engine worker (or leaves a one-shot
+                                //           permit if it is not parked yet) so it
+                                //           decodes more to refill that space.
+                                // Why:      This is the backpressure signal that lets
+                                //           the worker BLOCK when the buffer is full
+                                //           instead of busy-looping. `unpark` is
+                                //           wait-free (an atomic plus a futex wake on
+                                //           Linux): no lock, no allocation, so it is
+                                //           safe to call from this realtime callback.
+                                // TS map:   `if (got > 0) worker.postWakeUp();`
+                                if got > 0 {
+                                    pd.worker.unpark();
+                                }
 
                                 // What:     `for s in pd.scratch[got..want].iter_mut() { *s = 0.0; }`.
                                 //           Zero every sample we did NOT fill. `iter_mut`

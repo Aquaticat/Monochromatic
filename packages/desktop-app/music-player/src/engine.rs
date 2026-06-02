@@ -18,11 +18,17 @@
 //           `Receiver.try_recv` ~ a non-blocking `queue.tryPop`.
 use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 
-// What:     `use std::thread::{self, JoinHandle};`. `thread::spawn` starts a
-//           worker; a `JoinHandle` lets us wait for it to finish.
-// Why:      The engine runs on its own thread.
-// TS map:   closest is a Worker plus a promise that resolves when it exits.
-use std::thread::{self, JoinHandle};
+// What:     `use std::thread::{self, JoinHandle, Thread};`. `thread::spawn` starts
+//           a worker; a `JoinHandle` lets us wait for it to finish; a `Thread` is a
+//           cheap, cloneable HANDLE to a running thread (it wraps an internal
+//           `Arc`), used here only to call `.unpark()` on the worker. Sibling you
+//           might expect: there is no separate "thread id" type you'd pass around;
+//           `Thread` is that handle.
+// Why:      The engine runs on its own thread, and other threads need a `Thread`
+//           handle to wake it from a park (see `park_timeout` in `run`).
+// TS map:   `JoinHandle` ~ a Worker plus a promise that resolves when it exits;
+//           `Thread` ~ a reference to that Worker you can post a "wake up" to.
+use std::thread::{self, JoinHandle, Thread};
 
 // What:     `use std::time::Duration;`. A span of time (here, a sleep interval).
 // Why:      We sleep briefly when idle to avoid busy-spinning the CPU.
@@ -45,11 +51,23 @@ use crate::controller::Controller;
 // TS map:   `import { Output } from "./output";`
 use crate::output::Output;
 
-// What:     `const IDLE_SLEEP_MS: u64 = 5;`. Milliseconds to sleep when there is
-//           no audio work this cycle. `u64` is what `Duration::from_millis` wants.
-// Why:      Avoid pegging a CPU core while paused or buffer-full.
-// TS map:   `const IDLE_SLEEP_MS = 5;`
-const IDLE_SLEEP_MS: u64 = 5;
+// What:     `const IDLE_PARK_FALLBACK_MS: u64 = 100;`. Milliseconds the worker will
+//           PARK (block, using ~0 CPU) when there is no audio work this cycle, if
+//           nothing wakes it sooner. `u64` (not `u32`/`i64`) is what
+//           `Duration::from_millis` wants. The worker is normally woken EARLY by an
+//           `unpark()` call: the audio callback unparks it after draining the ring
+//           buffer (space freed -> decode more), and command senders unpark it after
+//           queueing a command (act on it now). This timeout is only a SAFETY NET in
+//           case an `unpark` is ever missed; it caps any stall well under the ~1
+//           second the ring buffer holds, so a missed wake never causes an audio
+//           gap.
+// Why:      Replaces the old busy-poll: the worker used to skip its sleep whenever a
+//           push accepted even one sample, so during playback it spun a whole CPU
+//           core. Parking until explicitly woken drops idle CPU to near zero.
+// TS map:   no exact equivalent; mentally `await Promise.race([wokenSignal,
+//           sleep(100)])`, where `wokenSignal` resolves the instant someone calls
+//           `unpark()`.
+const IDLE_PARK_FALLBACK_MS: u64 = 100;
 
 // What:     `pub struct Engine { ... }`. The handle the UI keeps. It is `Send`
 //           (only a channel sender + a thread handle), unlike the controller's
@@ -61,12 +79,64 @@ pub struct Engine {
     // Why:      `send` pushes commands to the worker.
     // TS map:   `tx: Sender<Command>;`
     tx: Sender<Command>,
+    // What:     `worker: Thread`. A cloneable handle to the worker thread (the one
+    //           running `run`). We never join through this; we only call
+    //           `.unpark()` on it.
+    // Why:      After sending a command we must WAKE the worker, which is otherwise
+    //           parked (blocked) when idle; without this the command would sit
+    //           unhandled until the fallback timeout fires.
+    // TS map:   `worker: WorkerRef;` (a thing you can post "wake up" to)
+    worker: Thread,
     // What:     `handle: Option<JoinHandle<()>>`. The worker's join handle, or
     //           `None` after we have joined it. `JoinHandle<()>` = the thread
     //           returns nothing.
     // Why:      `Drop` joins the thread so the output cleans up before exit.
     // TS map:   `handle: ThreadHandle | null;`
     handle: Option<JoinHandle<()>>,
+}
+
+// What:     `#[derive(Clone)] pub struct CommandSender { ... }`. A small bundle of
+//           the command channel's send end PLUS the worker's `Thread` handle.
+//           `#[derive(Clone)]` auto-generates a `.clone()` that clones both fields
+//           (both are cheap: a `Sender` clone shares the channel, a `Thread` clone
+//           bumps an internal refcount).
+// Why:      Threads other than the UI (the file-picker thread) need to send commands
+//           AND wake the worker. Handing out a bare `Sender` would let them queue a
+//           command without unparking, so it would not be acted on until the timeout.
+// TS map:   `class CommandSender { tx; worker; clone() {...} }`
+#[derive(Clone)]
+pub struct CommandSender {
+    // What:     `tx: Sender<Command>`. The send end of the command channel.
+    // Why:      The picker thread pushes `OpenPaths` through it.
+    // TS map:   `tx: Sender<Command>;`
+    tx: Sender<Command>,
+    // What:     `worker: Thread`. The same worker handle `Engine` holds.
+    // Why:      Wake the worker after queueing a command.
+    // TS map:   `worker: WorkerRef;`
+    worker: Thread,
+}
+
+// What:     `impl CommandSender { ... }`. Its one method.
+// Why:      Mirror `Engine::send` for off-UI threads.
+// TS map:   the class body.
+impl CommandSender {
+    // What:     `pub fn send(&self, command: Command)`. Queue a command, then wake
+    //           the worker. Read-only borrow of self.
+    // Why:      Same contract as `Engine::send`, usable from another OS thread.
+    // TS map:   `send(command: Command): void`
+    pub fn send(&self, command: Command) {
+        // What:     `let _ = self.tx.send(command);`. `send` returns a `Result` that
+        //           errs only if the worker is gone; `let _ =` DISCARDS it.
+        // Why:      A dead worker during shutdown is not worth surfacing.
+        // TS map:   `try { this.tx.send(command); } catch {}`
+        let _ = self.tx.send(command);
+        // What:     `self.worker.unpark();`. Wake the worker if it is parked; if it
+        //           is not parked yet, this leaves a one-shot "permit" so its next
+        //           `park` returns immediately (so the wake is never lost).
+        // Why:      Make the worker act on the command now, not after the timeout.
+        // TS map:   `this.worker.postWakeUp();`
+        self.worker.unpark();
+    }
 }
 
 // What:     `impl Engine { ... }`. The handle's methods.
@@ -108,28 +178,48 @@ impl Engine {
         // ```
         let handle = thread::spawn(move || run(rx, callback));
 
-        // What:     `Engine { tx, handle: Some(handle) }`. Build the handle. Tail
-        //           -> return.
+        // What:     `let worker = handle.thread().clone();`. `handle.thread()` borrows
+        //           the spawned thread's `Thread` handle (`&Thread`); `.clone()`
+        //           makes an owned copy (bumps an internal refcount, does not copy
+        //           the thread).
+        // Why:      Store a handle we can `unpark()` to wake the worker after sending
+        //           a command. It refers to the SAME thread that `run` sees via
+        //           `thread::current()`.
+        // TS map:   `const worker = handle.workerRef;`
+        let worker = handle.thread().clone();
+
+        // What:     `Engine { tx, worker, handle: Some(handle) }`. Build the handle.
+        //           `Some(handle)` wraps the join handle so `Drop` can `.take()` it.
+        //           Tail -> return.
         // Why:      Hand the UI its control surface.
-        // TS map:   `return new Engine(tx, handle);`
+        // TS map:   `return new Engine(tx, worker, handle);`
         Engine {
             tx,
+            worker,
             handle: Some(handle),
         }
     }
 
-    // What:     `pub fn sender(&self) -> Sender<Command>`. Hand out a CLONE of the
-    //           command channel's send end. `Sender` is `Clone` and `Send`, so the
-    //           clone can be moved to another OS thread (the file-picker thread).
+    // What:     `pub fn sender(&self) -> CommandSender`. Hand out a `CommandSender`
+    //           (a CLONE of the channel's send end bundled with the worker `Thread`
+    //           handle). Both inner parts are `Send`, so the bundle can be moved to
+    //           another OS thread (the file-picker thread).
     // Why:      The file dialog runs on its own thread and must send `OpenPaths`
-    //           back; it cannot hold the `!Send` `Rc<Engine>` the UI uses.
-    // TS map:   `sender(): Sender<Command>` (returns a thread-safe queue handle)
-    pub fn sender(&self) -> Sender<Command> {
-        // What:     `self.tx.clone()`. Duplicate the sender (both refer to the same
-        //           underlying channel). Tail -> return.
-        // Why:      Give the caller its own handle.
-        // TS map:   `return this.tx.clone();`
-        self.tx.clone()
+    //           back AND wake the worker; it cannot hold the `!Send` `Rc<Engine>` the
+    //           UI uses. Returning the bundle (not a bare `Sender`) guarantees that
+    //           off-UI sends also unpark the worker.
+    // TS map:   `sender(): CommandSender` (a thread-safe queue handle that also wakes)
+    pub fn sender(&self) -> CommandSender {
+        // What:     `CommandSender { tx: self.tx.clone(), worker: self.worker.clone() }`.
+        //           `self.tx.clone()` duplicates the sender (both refer to the same
+        //           channel); `self.worker.clone()` duplicates the worker handle
+        //           (refcount bump). Tail -> return.
+        // Why:      Give the caller its own send-and-wake handle.
+        // TS map:   `return new CommandSender(this.tx.clone(), this.worker);`
+        CommandSender {
+            tx: self.tx.clone(),
+            worker: self.worker.clone(),
+        }
     }
 
     // What:     `pub fn send(&self, command: Command)`. Forward a command to the
@@ -142,6 +232,12 @@ impl Engine {
         // Why:      A dead worker during shutdown is not worth surfacing.
         // TS map:   `try { this.tx.send(command); } catch {}`
         let _ = self.tx.send(command);
+        // What:     `self.worker.unpark();`. Wake the parked worker; if it is not
+        //           parked yet, this leaves a one-shot permit so its next `park`
+        //           returns immediately (the wake is never lost).
+        // Why:      Act on the command now instead of after the fallback timeout.
+        // TS map:   `this.worker.postWakeUp();`
+        self.worker.unpark();
     }
 }
 
@@ -158,6 +254,12 @@ impl Drop for Engine {
         // Why:      Break the worker's loop.
         // TS map:   `try { this.tx.send(Command.Quit); } catch {}`
         let _ = self.tx.send(Command::Quit);
+
+        // What:     `self.worker.unpark();`. Wake the worker if it is parked, so it
+        //           sees the `Quit` immediately rather than after the timeout.
+        // Why:      Make shutdown prompt.
+        // TS map:   `this.worker.postWakeUp();`
+        self.worker.unpark();
 
         // What:     `if let Some(handle) = self.handle.take() { let _ = handle.join(); }`.
         //           `.take()` moves the handle out (leaving `None`); `join()` waits
@@ -176,11 +278,16 @@ impl Drop for Engine {
 // Why:      Everything playback-related lives on this one thread.
 // TS map:   `function run(rx: Receiver<Command>, onUpdate: (u: Update) => void): void`
 fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
-    // What:     `let output = match Output::new() { ... };`. Try to start PipeWire.
-    //           On failure we log and run WITHOUT audio (the UI still works).
-    // Why:      Never crash the app if audio init fails.
-    // TS map:   `let output; try { output = Output.create(); } catch (e) { console.error(e); output = null; }`
-    let output = match Output::new() {
+    // What:     `let output = match Output::new(thread::current()) { ... };`. Try to
+    //           start PipeWire, handing it a handle to THIS thread. `thread::current()`
+    //           returns the running thread's `Thread` handle; it is the same thread
+    //           `Engine` stored via `handle.thread()`. On failure we log and run
+    //           WITHOUT audio (the UI still works).
+    // Why:      Never crash the app if audio init fails; the output keeps the handle
+    //           so its realtime callback can `unpark()` us when the ring buffer
+    //           drains.
+    // TS map:   `let output; try { output = Output.create(currentWorkerRef); } catch (e) { console.error(e); output = null; }`
+    let output = match Output::new(thread::current()) {
         // What:     `Ok(o) => Some(o)`. Audio is available.
         // Why:      Keep the output.
         // TS map:   `output = o;`
@@ -266,12 +373,20 @@ fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
         // TS map:   `const didWork = controller.pumpAudio();`
         let did_work = controller.pump_audio();
 
-        // What:     `if !did_work { std::thread::sleep(Duration::from_millis(IDLE_SLEEP_MS)); }`.
-        //           When idle (paused / buffer full / no track), sleep briefly.
-        // Why:      Avoid burning CPU; commands are still drained next iteration.
-        // TS map:   `if (!didWork) await sleep(IDLE_SLEEP_MS);`
+        // What:     `if !did_work { thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)); }`.
+        //           When idle (paused / buffer full / no track), PARK: block the
+        //           thread (using ~0 CPU) until someone calls `unpark()` on this
+        //           thread, or the timeout elapses, whichever comes first.
+        //           `park_timeout` also returns immediately if an `unpark` permit was
+        //           already left while we were busy, so a wake racing with this call
+        //           is never lost.
+        // Why:      The audio callback unparks us when it drains the ring buffer
+        //           (space to decode into) and command senders unpark us when they
+        //           queue work. Blocking instead of looping is what stops the worker
+        //           from pegging a CPU core; the timeout is only a safety net.
+        // TS map:   `if (!didWork) await Promise.race([wokenSignal, sleep(100)]);`
         if !did_work {
-            std::thread::sleep(Duration::from_millis(IDLE_SLEEP_MS));
+            thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS));
         }
     }
 }

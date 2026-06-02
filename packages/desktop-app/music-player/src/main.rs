@@ -803,9 +803,11 @@ fn main() -> Result<(), slint::PlatformError> {
     //           are still openable via command-line arguments).
     // TS map:   `app.onOpenFiles(() => { showFolderPickerAsync().then(dir => tx.send(...)); });`
     app.on_open_files({
-        // What:     `let tx = engine.sender();`. A `Send` clone of the command
-        //           channel for the picker thread (the `Rc<Engine>` is `!Send`).
-        // Why:      The thread cannot hold the `Rc`; it holds the sender instead.
+        // What:     `let tx = engine.sender();`. A `Send` `CommandSender` (the command
+        //           channel's send end bundled with the worker handle) for the picker
+        //           thread (the `Rc<Engine>` is `!Send`).
+        // Why:      The thread cannot hold the `Rc`; it holds the sender instead, and
+        //           sending through it also wakes the worker.
         // TS map:   `const tx = engine.sender();`
         let tx = engine.sender();
         // What:     `move || { ... }`. The handler.
@@ -828,14 +830,16 @@ fn main() -> Result<(), slint::PlatformError> {
                 // Why:      Let the user enqueue a whole folder.
                 // TS map:   `const dir = await showOpenDialog({ directory: true }); if (dir) { ... }`
                 if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                    // What:     `let _ = tx.send(Command::OpenPaths { paths: vec![dir], play: true });`.
+                    // What:     `tx.send(Command::OpenPaths { paths: vec![dir], play: true });`.
                     //           Wrap the single folder in a one-element vector
                     //           (`vec![...]`) and send it with `play: true` (a user
                     //           open should start playback); the engine expands it
-                    //           recursively. `let _ =` ignores a send error (engine gone).
+                    //           recursively. `CommandSender::send` returns nothing and
+                    //           swallows a send error (engine gone) internally, then
+                    //           wakes the worker.
                     // Why:      Replace the queue with the folder's tracks and play.
                     // TS map:   `tx.send(Command.OpenPaths({ paths: [dir], play: true }));`
-                    let _ = tx.send(Command::OpenPaths {
+                    tx.send(Command::OpenPaths {
                         paths: vec![dir],
                         play: true,
                     });
