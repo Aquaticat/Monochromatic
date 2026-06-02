@@ -11,9 +11,13 @@ alternatives are recorded in
 
 - Nightly Rust toolchain. `cargo-fuzz` injects
   `-Cllvm-args=-sanitizer-coverage-*` flags that only work on
-  nightly. The fuzz mise tasks all set `RUSTUP_TOOLCHAIN=nightly`,
-  so `rustup toolchain install nightly --component rust-src` once
-  per machine is enough.
+  nightly. This package is its own mise config root whose
+  [`mise.toml`](./mise.toml) declares
+  `rust = { version = "nightly", components = "rust-src" }`, so
+  `mise install` provisions nightly (with std sources) and sets
+  `RUSTUP_TOOLCHAIN=nightly` for every task here. The scope is this
+  directory only, so the published forbidden-strings CLI stays on
+  the repo's stable toolchain.
 - `cargo-fuzz` 0.13.1. Installed automatically by `mise install`
   from the root [`mise.no-env.toml`](../../../mise.no-env.toml)
   `[tools]` entry.
@@ -32,8 +36,8 @@ with a redacted reproducer (pattern source + content SHA-256, no
 raw bytes).
 
 All seven targets share a single tuned dictionary at
-`fuzz/dictionaries/forbidden-strings.dict` (one dictionary, not per-target). Each
-target has its own per-target seed corpus under `fuzz/corpus/<target>/`. Crash
+`dictionaries/forbidden-strings.dict` (one dictionary, not per-target). Each
+target has its own per-target seed corpus under `corpus/<target>/`. Crash
 output uses a Unicode-literal-aware printable renderer (the May 2026 mojibake fix
 in commit `099bfe84`).
 
@@ -63,23 +67,24 @@ in commit `099bfe84`).
 
 ## Local commands (via mise)
 
-All fuzz commands set `RUSTUP_TOOLCHAIN=nightly` automatically.
+All commands run on nightly automatically: this config root's
+`rust = nightly` tool sets `RUSTUP_TOOLCHAIN` for every task.
 
 ```bash
 # List every target name.
-mise run //packages/cli/forbidden-strings:fuzz:list
+mise run //packages/fuzz/forbidden-strings:list
 
 # Build every target.
-mise run //packages/cli/forbidden-strings:fuzz:build
+mise run //packages/fuzz/forbidden-strings:build
 
 # 30-second smoke run across every target (uses the dictionary).
-mise run //packages/cli/forbidden-strings:fuzz:smoke
+mise run //packages/fuzz/forbidden-strings:smoke
 
 # Single-target campaign with passthrough libFuzzer args.
-mise run //packages/cli/forbidden-strings:fuzz:run fuzz_extract_gate_soundness -- -max_total_time=120
+mise run //packages/fuzz/forbidden-strings:run fuzz_extract_gate_soundness -- -max_total_time=120
 
 # Regenerate the curated corpus from rules/<area>_tests.rs.
-mise run //packages/cli/forbidden-strings:fuzz:seed
+mise run //packages/fuzz/forbidden-strings:seed
 ```
 
 ## Bounded-container wrapper (resource-exhaustion rule)
@@ -97,7 +102,7 @@ podman run \
   -v "$PWD":/work \
   -w /work \
   <rust-nightly-image> \
-  mise run //packages/cli/forbidden-strings:fuzz:smoke
+  mise run //packages/fuzz/forbidden-strings:smoke
 ```
 
 The image needs nightly Rust, cargo-fuzz 0.13.1, and clang. A
@@ -106,28 +111,28 @@ prebuilt image isn't handy.
 
 ## Corpus and artifact policy
 
-- `fuzz/corpus/<target>/seed-*` -- curated seed files committed
-  to the repo (re-included via `fuzz/.gitignore`). 192 unique
+- `corpus/<target>/seed-*` -- curated seed files committed
+  to the repo (re-included via `.gitignore`). 192 unique
   literals per target, extracted from
   `rules/{extract,atom,engine,algebra}_tests.rs` by
   `seed-from-tests`.
-- `fuzz/corpus/<target>/<other>` -- libFuzzer's corpus growth.
+- `corpus/<target>/<other>` -- libFuzzer's corpus growth.
   Ignored.
-- `fuzz/artifacts/` -- libFuzzer's crash reproducers. Always
-  ignored. Open one with `cat fuzz/artifacts/<target>/crash-*`
+- `artifacts/` -- libFuzzer's crash reproducers. Always
+  ignored. Open one with `cat artifacts/<target>/crash-*`
   ONLY in a private session; the artifact bytes are the exact
   fuzzer-mutated input that triggered the crash and may contain
   secret-shaped bytes.
-- `fuzz/coverage/` -- coverage data. Ignored.
-- `fuzz/Cargo.lock` -- committed (re-included via root
+- `coverage/` -- coverage data. Ignored.
+- `Cargo.lock` -- committed (re-included via root
   `.gitignore`) so the fuzz toolchain stays reproducible.
 
 The local deny-list (`/forbidden-strings.local.txt`) must NEVER
 enter the corpus, dictionary, or reproducer text. The seeder's
 guard is narrower than that policy: it runs `git check-ignore -v` on
-`../forbidden-strings.local.txt` before reading anything, and bails
+`../../cli/forbidden-strings/forbidden-strings.local.txt` before reading anything, and bails
 if the file exists and is NOT gitignored (see
-`fuzz/src/bin/seed-from-tests.rs:119-154`). The seeder itself only
+`src/bin/seed-from-tests.rs`). The seeder itself only
 reads files in `TEST_FILES`, so the guard is defence-in-depth against a
 future edit that adds the deny-list to that list. Hand-curated
 corpus / dictionary / reproducer edits remain entirely the
@@ -139,14 +144,14 @@ byte sequence copied into one of those artifacts by hand.
 When a target reports a crash:
 
 1. The reproducer lives at
-   `fuzz/artifacts/<target>/crash-<sha>`. Note its path.
+   `artifacts/<target>/crash-<sha>`. Note its path.
 2. Re-run the exact input to confirm:
    ```bash
-   mise run //packages/cli/forbidden-strings:fuzz:run \
-     <target> -- fuzz/artifacts/<target>/crash-<sha>
+   mise run //packages/fuzz/forbidden-strings:run \
+     <target> -- artifacts/<target>/crash-<sha>
    ```
 3. Minimize it via `cargo +nightly fuzz tmin <target>
-   fuzz/artifacts/<target>/crash-<sha>` -- libFuzzer finds the
+   artifacts/<target>/crash-<sha>` -- libFuzzer finds the
    smallest input that still reproduces the panic.
 4. Format the minimised input for readability via
    `cargo +nightly fuzz fmt <target> <path>` (decodes the bytes
@@ -167,7 +172,7 @@ shapes) and lets them unwind quietly so `compile_rule_src`'s `catch_unwind` can
 intercept them and the fuzz run can move on to the next input. Genuine panics
 in our own code still call the default hook and `abort()` so libFuzzer records a
 crash. The installation is `Once`-guarded so the hook installs exactly once per
-process. See `fuzz/fuzz_targets/fuzz_extract_gate_soundness.rs:147-192` for the
+process. See `fuzz_targets/fuzz_extract_gate_soundness.rs:147-192` for the
 implementation and
 [`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md)
 for the full bug list.
@@ -184,8 +189,8 @@ the `extract_tests.rs`, `atom_tests.rs`, `engine_tests.rs`,
 `algebra_tests.rs` files):
 
 ```bash
-mise run //packages/cli/forbidden-strings:fuzz:seed
-git add packages/cli/forbidden-strings/fuzz/corpus/
+mise run //packages/fuzz/forbidden-strings:seed
+git add packages/fuzz/forbidden-strings/corpus/
 ```
 
 Without the refresh, the curated seed corpus rots and libFuzzer
@@ -202,7 +207,7 @@ bug:
    skip fix).
 3. Run inside the bounded container:
    ```bash
-   mise run //packages/cli/forbidden-strings:fuzz:run \
+   mise run //packages/fuzz/forbidden-strings:run \
      fuzz_extract_gate_soundness -- -max_total_time=120
    ```
 4. Confirm libFuzzer reports a soundness failure with the

@@ -541,12 +541,14 @@ so they are safe to enable in CI when investigating slow scans.
 ## Fuzzing
 
 Coverage-guided fuzzing for the scanner's regex routing, AC-gate extractor,
-walker helpers, residual-shard partitioner, and hit formatter lives in
-[`fuzz/`](./fuzz/). Targets are exercised locally and on demand only;
-CI integration is deferred. See [FUZZING.md](./FUZZING.md) for prerequisites,
-the seven-target invariant list, mise commands, the bounded-container
-wrapper, corpus and artifact policy, crash reproduction guidance, and
-the soundness-by-revert validation step.
+walker helpers, residual-shard partitioner, and hit formatter lives in its own
+package, [`packages/fuzz/forbidden-strings`](../../fuzz/forbidden-strings/), so a
+scoped nightly toolchain does not force this published crate onto nightly.
+Targets are exercised locally and on demand only; CI integration is deferred.
+See that package's [README](../../fuzz/forbidden-strings/README.md) for
+prerequisites, the seven-target invariant list, mise commands, the
+bounded-container wrapper, corpus and artifact policy, crash reproduction
+guidance, and the soundness-by-revert validation step.
 
 ## Architecture
 

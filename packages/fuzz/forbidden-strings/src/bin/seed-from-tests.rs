@@ -3,7 +3,8 @@
 //           `packages/cli/forbidden-strings/src/rules/{extract,atom,engine,algebra}_tests.rs`,
 //           extracts every double-quoted string literal, and
 //           writes each unique one as a raw-byte seed file under
-//           `fuzz/corpus/<target>/seed-<sha8>`. Run manually as
+//           `corpus/<target>/seed-<sha8>` (relative to this fuzz
+//           crate root). Run manually as
 //           `cargo +nightly run --bin seed-from-tests --release`.
 // Why:      libFuzzer benefits enormously from a hand-curated
 //           seed corpus that already contains "interesting" inputs.
@@ -31,13 +32,13 @@ use std::process::Command;
 //           the count up front -- a slice is fine here.
 // Why:      Single source of truth for what to seed from.
 const TEST_FILES: &[&str] = &[
-    "../src/rules/extract_tests.rs",
-    "../src/rules/atom_tests.rs",
-    "../src/rules/engine_tests.rs",
-    "../src/rules/algebra_tests.rs",
+    "../../cli/forbidden-strings/src/rules/extract_tests.rs",
+    "../../cli/forbidden-strings/src/rules/atom_tests.rs",
+    "../../cli/forbidden-strings/src/rules/engine_tests.rs",
+    "../../cli/forbidden-strings/src/rules/algebra_tests.rs",
 ];
 
-// What:     `const FORBIDDEN_LOCAL: &str = "../forbidden-strings.local.txt";`.
+// What:     `const FORBIDDEN_LOCAL: &str = "../../cli/forbidden-strings/forbidden-strings.local.txt";`.
 //           Sentinel path that MUST NOT be read by the seeder.
 //           The seeder checks `git check-ignore` on this path
 //           before doing anything; if the file is NOT ignored
@@ -48,7 +49,7 @@ const TEST_FILES: &[&str] = &[
 //           supposed to read only test fixtures; a defensive
 //           guard catches accidental future regressions where
 //           someone adds the local file to `TEST_FILES`.
-const FORBIDDEN_LOCAL: &str = "../forbidden-strings.local.txt";
+const FORBIDDEN_LOCAL: &str = "../../cli/forbidden-strings/forbidden-strings.local.txt";
 
 // What:     `const TARGETS: &[&str]`. The set of fuzz targets that
 //           get seeded. Each gets its own `corpus/<target>/` dir.

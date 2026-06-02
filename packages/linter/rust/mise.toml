@@ -29,7 +29,7 @@ arg "[args]" var=#true help="Paths to lint and flags such as --max 300"
 '''
 # `usage_args` arrives shell-quoted as `'a' 'b'`; split on the inter-arg
 # separator `"' '"` then trim the lone outer quotes, mirroring the
-# forbidden-strings fuzz:run task.
+# packages/fuzz/forbidden-strings run task.
 run = '''
 let extras = (
   $env.usage_args?

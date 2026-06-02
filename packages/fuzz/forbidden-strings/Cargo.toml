@@ -14,7 +14,7 @@ rayon = "1"
 sha2 = "0.10"
 
 [dependencies.forbidden-strings]
-path = ".."
+path = "../../cli/forbidden-strings"
 features = ["fuzzing"]
 
 # Use independent workspace for fuzzers
@@ -31,7 +31,8 @@ path = "src/lib.rs"
 
 # Inherit `panic = "unwind"` from the parent crate so libFuzzer can capture
 # and minimize crashes via unwinding. The parent currently also uses `unwind`
-# (load-bearing for the resharp-panic safety wrapper, see ../Cargo.toml:49-97),
+# (load-bearing for the resharp-panic safety wrapper, see
+# ../../cli/forbidden-strings/Cargo.toml:49-97),
 # so these settings do not currently change the panic strategy. They are spelled
 # out anyway so the fuzz harness keeps working if the parent's setting changes
 # again — under `panic = "abort"`, panics would abort the process before

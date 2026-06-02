@@ -1,0 +1,76 @@
+[tools]
+# cargo-fuzz needs nightly: it injects `-Cllvm-args=-sanitizer-coverage-*`
+# RUSTFLAGS that only compile on nightly. Declaring rust here (a child config
+# root) overrides the repo's stable toolchain for this directory only, so the
+# published forbidden-strings CLI (packages/cli/forbidden-strings) keeps
+# building on stable. mise sets RUSTUP_TOOLCHAIN=nightly for tasks run here and
+# auto-installs the toolchain. Floating "nightly" tracks the latest; pin to a
+# dated channel (e.g. version = "nightly-2026-05-23") if reproducible fuzz
+# builds matter, at the cost of a periodic manual bump.
+# rust-src is requested so the toolchain carries std sources for IDE code
+# insight against this crate; cargo-fuzz's default ASAN path does not require it.
+rust = { version = "nightly", components = "rust-src" }
+
+[tasks.list]
+description = "List all fuzz targets"
+run = "cargo fuzz list --fuzz-dir ."
+
+[tasks.build]
+description = "Build all fuzz targets"
+# `--target x86_64-unknown-linux-gnu` is load-bearing: cargo-fuzz 0.13.1
+# defaults to `x86_64-unknown-linux-musl` on Linux, but the ASAN flags it
+# sets via RUSTFLAGS conflict with musl's static libc
+# (`sanitizer is incompatible with statically linked libc, disable it
+# using -C target-feature=-crt-static`). Forcing gnu picks a target where
+# dynamic libc satisfies the sanitizer. macOS / Windows hosts cannot use
+# this task as-written; would need a per-platform target switch.
+run = "cargo fuzz build --fuzz-dir . --target x86_64-unknown-linux-gnu"
+
+[tasks.smoke]
+description = "Run every fuzz target for 30s with the dictionary as a smoke test"
+# `--target x86_64-unknown-linux-gnu` rationale: see build.
+run = """
+let targets = (cargo fuzz list --fuzz-dir . | lines | where {|t| ($t | str trim) != "" })
+for target in $targets {
+  print $"--- ($target) ---"
+  cargo fuzz run --fuzz-dir . $target --target x86_64-unknown-linux-gnu -- -max_total_time=30 -rss_limit_mb=2048 -dict=dictionaries/forbidden-strings.dict
+}
+"""
+
+[tasks.run]
+description = "Run one fuzz target (pass the target name and libFuzzer args after --)"
+usage = """
+arg "target" help="Fuzz target name (e.g. fuzz_extract_gate_soundness)"
+arg "[args]" var=#true help="Extra libFuzzer args to pass through"
+"""
+# `--target x86_64-unknown-linux-gnu` rationale: see build.
+#
+# `usage_args` arrives shell-quoted: mise/usage formats the variadic
+# `[args]` collection as `'-flag1=v1' '-flag2=v2'` so a downstream shell
+# can re-split safely. Nushell's `split row ' '` splits on every space
+# and keeps the surrounding quotes as part of each element, so cargo
+# then forwards them to libfuzzer as `'-max_total_time=10'` (literal
+# quote chars). libfuzzer treats anything not starting with `-` as a
+# corpus directory, so the run fails with
+# "The required directory '-max_total_time=10' does not exist".
+#
+# Fix: split on the inter-arg separator `"' '"` (quote space quote)
+# and then trim the lone outer quotes off the first and last elements.
+# Limitation: libfuzzer flags must not contain literal single quotes;
+# they never do in practice (numbers and flag names only).
+run = """
+let target = $env.usage_target
+let extras = (
+  $env.usage_args?
+  | default ''
+  | str trim
+  | split row "' '"
+  | each {|p| $p | str trim --char "'" }
+  | where {|p| $p != '' }
+)
+cargo fuzz run --fuzz-dir . $target --target x86_64-unknown-linux-gnu -- -dict=dictionaries/forbidden-strings.dict ...$extras
+"""
+
+[tasks.seed]
+description = "Regenerate the curated corpus from forbidden-strings rules/<area>_tests.rs"
+run = "cargo run --release --bin seed-from-tests"

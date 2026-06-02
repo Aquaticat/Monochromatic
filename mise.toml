@@ -42,7 +42,7 @@ ripgrep = "latest"
 # Replacing strings
 "cargo:fastmod" = "latest"
 
-# Coverage-guided fuzzing for forbidden-strings (see packages/cli/forbidden-strings/fuzz/).
+# Coverage-guided fuzzing for forbidden-strings (see packages/fuzz/forbidden-strings/).
 # Pinned to 0.13.1 because the API around `--fuzzing-workspace=true` and
 # the libfuzzer-sys integration has shifted across point releases; this
 # version is what was verified locally for the rollout.
@@ -71,7 +71,11 @@ watchexec = "latest"
 "aqua:nushell/nushell" = "latest"
 
 # For reliable timeout
-rust = "latest"
+# components = "rust-src" carries std sources for IDE code insight (RustRover /
+# IntelliJ Rust). mise only applies components when it installs a toolchain, so
+# an already-installed version needs a one-time
+# `rustup component add rust-src --toolchain <ver>` (or a reinstall) to pick it up.
+rust = { version = "latest", components = "rust-src" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
@@ -629,6 +633,7 @@ _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true
 _.path = [
   "node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
+  "packages/pi/statusline/node_modules/.bin",
   "packages/pi/spawn/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/pi/current-time-context/node_modules/.bin",
