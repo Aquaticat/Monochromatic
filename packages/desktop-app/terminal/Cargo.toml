@@ -25,6 +25,9 @@ i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3
 # Safe Rust binding for Ghostty's terminal core. Default features are disabled
 # because this prototype renders text cells only and does not need Kitty images.
 libghostty-vt = { version = "0.1.1", default-features = false }
+# WezTerm's PTY abstraction. It gives this app safe shell spawn, read, write,
+# and resize operations without hand-written forkpty or ioctl setup.
+portable-pty = "0.9.0"
 
 [build-dependencies]
 # Must match the `slint` git rev above.

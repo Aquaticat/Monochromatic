@@ -2,18 +2,21 @@
 
 A Slint desktop terminal prototype backed by Ghostty's `libghostty-vt` terminal core.
 
-The first checkpoint demonstrates smooth Slint-owned pixel scrolling over `libghostty-vt` scrollback.
-It feeds deterministic demo VT bytes instead of spawning a PTY.
-The engine is structured so a PTY reader can replace the demo feeder without changing the renderer or scroll bridge.
+The prototype runs the user's shell inside a PTY, feeds shell output through `libghostty-vt`, and keeps smooth
+Slint-owned pixel scrolling over scrollback.
+A background PTY reader thread forwards bytes to the Slint UI thread, where `TerminalEngine` remains because
+`libghostty-vt` handles are `!Send + !Sync`.
 
 ## Scope
 
 - Terminal core: `libghostty-vt` 0.1.1, not `alacritty_terminal`, `termwiz`, or raw `vte`.
 - UI: Slint `Flickable` owns pixel scroll state and smooth wheel or touch motion.
 - Rendering: Rust extracts rows, cells, resolved colors, and style flags from `RenderState`.
-- Resize: Slint reports viewport pixels to Rust. Rust computes terminal columns and rows from fixed cell metrics and calls
-  `Terminal::resize`.
-- Input: demo VT content only for this checkpoint.
+- Resize: Slint reports viewport pixels to Rust. Rust computes terminal columns and rows from fixed cell metrics, calls
+  `Terminal::resize`, and resizes the PTY.
+- Input: `FocusScope` forwards text, arrows, editing keys, Ctrl-letter shortcuts, and Alt-prefixed keys to the PTY.
+- PTY: `portable-pty` spawns `$SHELL` or `/bin/sh`, reads output on a worker thread, writes keyboard bytes, and resizes
+  the kernel PTY.
 
 ## Scroll bridge
 
@@ -64,7 +67,14 @@ It also confirms `TerminalScrollbar { total, offset, len }`, `TOTAL_ROWS`, and `
 
 `lib.rs` notes all handles are `!Send + !Sync`.
 This prototype keeps `TerminalEngine` on the Slint UI thread inside `Rc<RefCell<_>>`.
-A future PTY reader should send byte chunks to the UI thread or to a dedicated terminal thread that owns all Ghostty handles.
+The PTY reader thread sends byte chunks through `std::sync::mpsc`; a Slint `Timer` drains that channel on the UI thread and
+feeds `TerminalEngine`.
+
+## PTY dependency
+
+`portable-pty` is used for PTY process management.
+It supplies safe shell spawn, reader, writer, and resize operations without hand-written `forkpty` setup.
+The decision and rejected alternatives are recorded in `docs/decisions/terminal.md`.
 
 ## Runtime library staging
 
@@ -81,18 +91,20 @@ The `run` task also copies those shared libraries to `~/.local/lib/monochromatic
 - `src/scroll.rs`: pure pixel-to-row mapping and unit tests.
 - `src/render.rs`: renderer-neutral RGB, cell, and snapshot models.
 - `src/engine.rs`: `TerminalEngine`, VT feeding, resize, viewport mapping, and render extraction.
-- `src/demo.rs`: deterministic demo VT stream for the first checkpoint.
+- `src/input.rs`: Slint key text to terminal byte encoding and unit tests.
+- `src/pty.rs`: `portable-pty` shell spawning, PTY output events, input writes, resize, and tests.
+- `src/demo.rs`: deterministic demo VT stream kept for fixture content and future comparisons.
 - `src/launcher.rs`: Wayland app-id hook, matching `monochromatic.terminal.desktop`.
-- `src/main.rs`: Slint window wiring and conversion from engine snapshots to Slint models.
-- `ui/app.slint`: terminal viewport, `Flickable`, cell renderer, and resize or scroll callbacks.
+- `src/main.rs`: Slint window wiring, PTY output draining, key input writes, and snapshot conversion.
+- `ui/app.slint`: terminal viewport, `Flickable`, `FocusScope`, cell renderer, and resize or scroll callbacks.
 - `Containerfile`: Fedora build environment with Rust, Slint runtime libraries, and Zig 0.15.2.
 - `mise.toml`: package-local build, lint, test, runtime-library staging, and run tasks.
 
 ## Known remaining work
 
-- Spawn a PTY and connect process output to `TerminalEngine::feed`.
-- Encode keyboard and mouse input back to the PTY with libghostty-vt key and mouse helpers.
+- Encode mouse input back to the PTY with libghostty-vt mouse helpers.
 - Add cursor rendering and selection rendering.
+- Preserve scroll position when output arrives while the user is reading old scrollback.
 - Replace fixed cell metrics with measured monospace font metrics.
 - Move terminal ownership to a dedicated thread once PTY throughput matters.
 

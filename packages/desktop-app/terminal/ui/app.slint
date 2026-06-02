@@ -27,6 +27,7 @@ export component AppWindow inherits Window {
     preferred-width: 760px;
     preferred-height: 520px;
     background: #101010;
+    forward-focus: terminal-focus;
 
     in property <[TerminalCell]> cells: [];
     in property <int> total-rows: 1;
@@ -41,6 +42,7 @@ export component AppWindow inherits Window {
 
     callback scroll-changed(float);
     callback viewport-resized(float, float);
+    callback terminal-key(string, bool, bool);
 
     private property <length> cell-width: 9px;
     private property <length> cell-height: 18px;
@@ -78,61 +80,137 @@ export component AppWindow inherits Window {
                 root.viewport-resized(self.width / 1px, self.height / 1px);
             }
 
-            Flickable {
+            terminal-focus := FocusScope {
                 width: parent.width;
                 height: parent.height;
-                viewport-width: self.width;
-                viewport-height: max(root.content-height, self.height);
-                viewport-y <=> root.scroll-y;
+                focus-on-click: true;
 
-                changed viewport-y => {
-                    root.scroll-changed((0px - self.viewport-y) / 1px);
+                key-pressed(event) => {
+                    if event.text == Key.Backspace {
+                        root.terminal-key("Backspace", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Tab {
+                        root.terminal-key("Tab", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Return {
+                        root.terminal-key("Return", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Escape {
+                        root.terminal-key("Escape", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Backtab {
+                        root.terminal-key("Backtab", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Delete {
+                        root.terminal-key("Delete", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Insert {
+                        root.terminal-key("Insert", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.UpArrow {
+                        root.terminal-key("UpArrow", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.DownArrow {
+                        root.terminal-key("DownArrow", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.LeftArrow {
+                        root.terminal-key("LeftArrow", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.RightArrow {
+                        root.terminal-key("RightArrow", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Home {
+                        root.terminal-key("Home", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.End {
+                        root.terminal-key("End", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.PageUp {
+                        root.terminal-key("PageUp", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.PageDown {
+                        root.terminal-key("PageDown", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F1 {
+                        root.terminal-key("F1", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F2 {
+                        root.terminal-key("F2", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F3 {
+                        root.terminal-key("F3", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F4 {
+                        root.terminal-key("F4", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F5 {
+                        root.terminal-key("F5", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F6 {
+                        root.terminal-key("F6", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F7 {
+                        root.terminal-key("F7", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F8 {
+                        root.terminal-key("F8", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F9 {
+                        root.terminal-key("F9", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F10 {
+                        root.terminal-key("F10", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F11 {
+                        root.terminal-key("F11", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.F12 {
+                        root.terminal-key("F12", event.modifiers.control, event.modifiers.alt);
+                    } else if event.text == Key.Shift {
+                    } else if event.text == Key.ShiftR {
+                    } else if event.text == Key.Control {
+                    } else if event.text == Key.ControlR {
+                    } else if event.text == Key.Alt {
+                    } else if event.text == Key.AltGr {
+                    } else if event.text == Key.CapsLock {
+                    } else if event.text == Key.Meta {
+                    } else if event.text == Key.MetaR {
+                    } else {
+                        root.terminal-key(event.text, event.modifiers.control, event.modifiers.alt);
+                    }
+                    accept
                 }
 
-                content := Rectangle {
+                Flickable {
                     width: parent.width;
-                    height: max(root.content-height, parent.height);
-                    background: #101010;
+                    height: parent.height;
+                    viewport-width: self.width;
+                    viewport-height: max(root.content-height, self.height);
+                    viewport-y <=> root.scroll-y;
 
-                    for cell in root.cells: Rectangle {
-                        x: cell.col * root.cell-width;
-                        y: (root.whole-row-offset + cell.row) * root.cell-height;
-                        width: root.cell-width;
-                        height: root.cell-height;
-                        background: cell.background;
+                    changed viewport-y => {
+                        root.scroll-changed((0px - self.viewport-y) / 1px);
+                    }
 
-                        if cell.text != "": Text {
-                            x: 0px;
-                            y: 0px;
-                            width: parent.width;
-                            height: parent.height;
-                            text: cell.text;
-                            color: cell.foreground;
-                            font-family: "monospace";
-                            font-size: root.terminal-font-size;
-                            vertical-alignment: center;
-                            horizontal-alignment: left;
-                        }
+                    content := Rectangle {
+                        width: parent.width;
+                        height: max(root.content-height, parent.height);
+                        background: #101010;
 
-                        if cell.bold && cell.text != "": Text {
-                            x: 1px;
-                            y: 0px;
-                            width: parent.width;
-                            height: parent.height;
-                            text: cell.text;
-                            color: cell.foreground;
-                            font-family: "monospace";
-                            font-size: root.terminal-font-size;
-                            vertical-alignment: center;
-                            horizontal-alignment: left;
-                        }
+                        for cell in root.cells: Rectangle {
+                            x: cell.col * root.cell-width;
+                            y: (root.whole-row-offset + cell.row) * root.cell-height;
+                            width: root.cell-width;
+                            height: root.cell-height;
+                            background: cell.background;
 
-                        if cell.underline && cell.text != "": Rectangle {
-                            x: 0px;
-                            y: parent.height - 2px;
-                            width: parent.width;
-                            height: 1px;
-                            background: cell.foreground;
+                            if cell.text != "": Text {
+                                x: 0px;
+                                y: 0px;
+                                width: parent.width;
+                                height: parent.height;
+                                text: cell.text;
+                                color: cell.foreground;
+                                font-family: "monospace";
+                                font-size: root.terminal-font-size;
+                                vertical-alignment: center;
+                                horizontal-alignment: left;
+                            }
+
+                            if cell.bold && cell.text != "": Text {
+                                x: 1px;
+                                y: 0px;
+                                width: parent.width;
+                                height: parent.height;
+                                text: cell.text;
+                                color: cell.foreground;
+                                font-family: "monospace";
+                                font-size: root.terminal-font-size;
+                                vertical-alignment: center;
+                                horizontal-alignment: left;
+                            }
+
+                            if cell.underline && cell.text != "": Rectangle {
+                                x: 0px;
+                                y: parent.height - 2px;
+                                width: parent.width;
+                                height: 1px;
+                                background: cell.foreground;
+                            }
                         }
                     }
                 }

@@ -34,6 +34,28 @@ use std::cell::RefCell;
 // ```
 use std::rc::Rc;
 
+// What:     `use std::sync::mpsc` imports Rust's multi-producer single-consumer
+//           channel module. The sibling `sync_channel` variant adds backpressure.
+// Why:      The PTY reader thread sends byte events to the Slint UI thread.
+// TS map:   `import { channel } from "std/sync"`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const { sender, receiver } = channel();
+// ```
+use std::sync::mpsc;
+
+// What:     `use std::time::Duration;` imports a time-span type. Sibling integer
+//           milliseconds would be less explicit at timer call sites.
+// Why:      The Slint timer needs a typed polling interval.
+// TS map:   `import { Duration } from "std/time"`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const duration = Duration.fromMillis(16);
+// ```
+use std::time::Duration;
+
 // What:     `use i_slint_backend_winit::Backend;` imports Slint's winit backend
 //           builder type.
 // Why:      The app installs a window-attributes hook for the Wayland app id.
@@ -55,21 +77,22 @@ use i_slint_backend_winit::Backend;
 // ```ts
 // import { Color, VecModel } from "slint";
 // ```
-use slint::{Color, ComponentHandle, SharedString, VecModel};
+use slint::{Color, ComponentHandle, SharedString, Timer, TimerMode, VecModel};
 
 // What:     `use terminal_app::{...};` imports this package's library modules.
 //           Cargo package `terminal` exposes the lib crate as `terminal_app`.
 // Why:      The binary stays thin and delegates VT/render logic to the library.
-// TS map:   `import { demo, TerminalEngine } from "terminal-app"`.
+// TS map:   `import { TerminalEngine, PtySession } from "terminal-app"`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { demo, TerminalEngine, ViewportGeometry } from "terminal-app";
+// import { encodeTerminalKey, TerminalEngine, PtySession, ViewportGeometry } from "terminal-app";
 // ```
 use terminal_app::{
-    demo,
     engine::{TerminalEngine, ViewportGeometry},
+    input::encode_terminal_key,
     launcher,
+    pty::{PtyEvent, PtySession},
     render::{Rgb, TerminalSnapshot},
     scroll::{DEFAULT_CELL_HEIGHT_PX, DEFAULT_CELL_WIDTH_PX},
 };
@@ -79,6 +102,12 @@ use terminal_app::{
 // Why:      Demo content can keep history while avoiding unbounded scrollback.
 // TS map:   `const MAX_SCROLLBACK_ROWS = 10000`.
 const MAX_SCROLLBACK_ROWS: usize = 10_000;
+
+// What:     `const OUTPUT_POLL_INTERVAL_MS: u64 = 16;` declares the PTY output
+//           polling interval. `u64` is what `Duration::from_millis` expects.
+// Why:      Around 60Hz keeps prompt/output latency low without busy waiting.
+// TS map:   `const OUTPUT_POLL_INTERVAL_MS = 16`.
+const OUTPUT_POLL_INTERVAL_MS: u64 = 16;
 
 // What:     `fn install_backend() -> Result<(), slint::PlatformError>` builds and
 //           installs the explicit Slint platform backend.
@@ -189,7 +218,7 @@ fn apply_snapshot(app: &AppWindow, snapshot: TerminalSnapshot) {
         snapshot.whole_row_offset,
         snapshot.fractional_px,
         if snapshot.title.is_empty() {
-            "demo VT feed, PTY not wired yet"
+            "interactive PTY shell"
         } else {
             snapshot.title.as_str()
         },
@@ -235,6 +264,7 @@ fn refresh_from_scroll(
 fn refresh_from_resize(
     app: &AppWindow,
     engine: &Rc<RefCell<TerminalEngine>>,
+    pty: &Rc<RefCell<PtySession>>,
     width_px: f32,
     height_px: f32,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -246,11 +276,134 @@ fn refresh_from_resize(
     );
     let mut engine = engine.borrow_mut();
     engine.resize(geometry)?;
+    pty.borrow().resize(geometry)?;
     let pixel_scroll = 0.0 - app.get_scroll_y();
     let mapping = engine.set_pixel_scroll(pixel_scroll)?;
     let snapshot = engine.snapshot(mapping)?;
     drop(engine);
     apply_snapshot(app, snapshot);
+    Ok(())
+}
+
+// What:     `fn refresh_from_pty_events(...) -> Result<(), Box<dyn Error>>` drains
+//           PTY reader events and refreshes the Slint model.
+// Why:      The background reader cannot touch `TerminalEngine`, so the UI thread
+//           feeds Ghostty from this timer callback.
+// TS map:   `function refreshFromPtyEvents(app, engine, receiver): void`.
+fn refresh_from_pty_events(
+    app: &AppWindow,
+    engine: &Rc<RefCell<TerminalEngine>>,
+    receiver: &mpsc::Receiver<PtyEvent>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // What:     `let mut engine = engine.borrow_mut()` takes a checked mutable
+    //           borrow of the UI-thread terminal engine.
+    // Why:      Feeding PTY bytes mutates Ghostty state and render state.
+    // TS map:   `const engineValue = engineRef.current`.
+    let mut engine = engine.borrow_mut();
+    // What:     `let mut saw_output = false` tracks whether any bytes arrived.
+    // Why:      EOF or error events update status but do not require a snapshot.
+    // TS map:   `let sawOutput = false`.
+    let mut saw_output = false;
+    // What:     `let mut reader_message = None` stores the latest reader status.
+    // Why:      The status line can show PTY closure or read failure after draining.
+    // TS map:   `let readerMessage: string | null = null`.
+    let mut reader_message = None;
+    // What:     `for event in receiver.try_iter()` drains all queued PTY events without
+    //           blocking the Slint event loop.
+    // Why:      One timer tick should coalesce bursts into one render refresh.
+    // TS map:   `for (const event of receiver.drainReady()) { ... }`.
+    for event in receiver.try_iter() {
+        // What:     `match event` branches on output vs reader lifecycle messages.
+        // Why:      Output feeds Ghostty; stopped messages update the UI status.
+        // TS map:   `if (event.type === "output") ... else ...`.
+        match event {
+            // What:     `PtyEvent::Output(bytes)` moves an owned PTY byte chunk.
+            // Why:      Ghostty parses exactly these bytes as terminal output.
+            // TS map:   `engine.feed(event.bytes)`.
+            PtyEvent::Output(bytes) => {
+                engine.feed(bytes.as_slice())?;
+                saw_output = true;
+            }
+            // What:     `PtyEvent::ReaderStopped(message)` moves a reader status string.
+            // Why:      The terminal can tell the user when the shell exits or reading fails.
+            // TS map:   `readerMessage = event.message`.
+            PtyEvent::ReaderStopped(message) => {
+                reader_message = Some(message);
+            }
+        }
+    }
+    // What:     `if !saw_output { ... }` handles ticks with only lifecycle events.
+    // Why:      Avoid redundant render extraction when no terminal bytes arrived.
+    // TS map:   `if (!sawOutput) { setStatusMaybe(); return; }`.
+    if !saw_output {
+        drop(engine);
+        if let Some(message) = reader_message {
+            app.set_status(SharedString::from(message.as_str()));
+        }
+        return Ok(());
+    }
+    // What:     `let bottom_scroll_px = ...` computes the pixel offset for the active
+    //           bottom viewport.
+    // Why:      New terminal output should keep the prompt visible.
+    // TS map:   `const bottomScrollPx = engine.scrollbackRows() * CELL_HEIGHT`.
+    let bottom_scroll_px = engine.scrollback_rows()? as f32 * DEFAULT_CELL_HEIGHT_PX;
+    // What:     `engine.set_pixel_scroll(bottom_scroll_px)?` syncs Ghostty's whole-row
+    //           viewport to the bottom row.
+    // Why:      Slint and Ghostty must agree before rendering the snapshot.
+    // TS map:   `const mapping = engine.setPixelScroll(bottomScrollPx)`.
+    let mapping = engine.set_pixel_scroll(bottom_scroll_px)?;
+    // What:     `engine.snapshot(mapping)?` extracts visible cells after all PTY output.
+    // Why:      One snapshot per timer tick keeps output bursts efficient.
+    // TS map:   `const snapshot = engine.snapshot(mapping)`.
+    let snapshot = engine.snapshot(mapping)?;
+    // What:     `drop(engine)` releases the mutable engine borrow before UI property sets.
+    // Why:      Slint setters may trigger callbacks that need the engine again.
+    // TS map:   No direct equivalent; JS has no borrow checker.
+    drop(engine);
+    // What:     `apply_snapshot(app, snapshot)` updates all render properties.
+    // Why:      Slint redraws from the owned cell model.
+    // TS map:   `applySnapshot(app, snapshot)`.
+    apply_snapshot(app, snapshot);
+    // What:     `app.set_scroll_y(0.0 - bottom_scroll_px)` moves Slint's Flickable to bottom.
+    // Why:      The prompt should stay visible as the shell produces output.
+    // TS map:   `app.scrollY = -bottomScrollPx`.
+    app.set_scroll_y(0.0 - bottom_scroll_px);
+    // What:     `if let Some(message) = reader_message { ... }` applies lifecycle status
+    //           after rendering, if one arrived in the same tick.
+    // Why:      Shell-exit text should not be overwritten by `apply_snapshot`.
+    // TS map:   `if (readerMessage) app.status = readerMessage`.
+    if let Some(message) = reader_message {
+        app.set_status(SharedString::from(message.as_str()));
+    }
+    // What:     `Ok(())` returns success.
+    // Why:      All ready PTY events were handled.
+    // TS map:   `return`.
+    Ok(())
+}
+
+// What:     `fn write_terminal_key(...) -> Result<(), Box<dyn Error>>` converts one
+//           Slint key callback into PTY bytes.
+// Why:      Keyboard input should reach the spawned shell.
+// TS map:   `function writeTerminalKey(pty, keyText, control, alt): void`.
+fn write_terminal_key(
+    pty: &Rc<RefCell<PtySession>>,
+    key_text: SharedString,
+    control: bool,
+    alt: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // What:     `encode_terminal_key(...)` returns bytes or `None` for ignored keys.
+    // Why:      Modifier-only and unknown non-printable events should not hit the shell.
+    // TS map:   `const bytes = encodeTerminalKey(keyText, control, alt)`.
+    if let Some(bytes) = encode_terminal_key(key_text.as_str(), control, alt) {
+        // What:     `pty.borrow_mut().write_bytes(bytes.as_slice())?` mutably borrows the
+        //           PTY writer and writes the encoded bytes.
+        // Why:      The shell receives keyboard input through the PTY master.
+        // TS map:   `pty.writeBytes(bytes)`.
+        pty.borrow_mut().write_bytes(bytes.as_slice())?;
+    }
+    // What:     `Ok(())` returns success.
+    // Why:      The key was either written or intentionally ignored.
+    // TS map:   `return`.
     Ok(())
 }
 
@@ -279,14 +432,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         cell_height_px: DEFAULT_CELL_HEIGHT_PX,
     };
     let mut engine = TerminalEngine::new(initial_geometry, MAX_SCROLLBACK_ROWS)?;
-    let demo_bytes = demo::demo_vt();
-    engine.feed(demo_bytes.as_slice())?;
-    let initial_scroll_px = engine.scrollback_rows()? as f32 * DEFAULT_CELL_HEIGHT_PX;
-    let initial_mapping = engine.set_pixel_scroll(initial_scroll_px)?;
+    let (pty_sender, pty_receiver) = mpsc::channel();
+    let pty = PtySession::spawn_shell(initial_geometry, pty_sender)?;
+    let initial_mapping = engine.set_pixel_scroll(0.0)?;
     let initial_snapshot = engine.snapshot(initial_mapping)?;
     apply_snapshot(&app, initial_snapshot);
-    app.set_scroll_y(0.0 - initial_scroll_px);
+    app.set_scroll_y(0.0);
     let engine = Rc::new(RefCell::new(engine));
+    let pty = Rc::new(RefCell::new(pty));
 
     let weak_for_scroll = app.as_weak();
     app.on_scroll_changed({
@@ -303,15 +456,43 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let weak_for_resize = app.as_weak();
     app.on_viewport_resized({
         let engine = Rc::clone(&engine);
+        let pty = Rc::clone(&pty);
         move |width_px, height_px| {
             if let Some(app) = weak_for_resize.upgrade() {
-                if let Err(error) = refresh_from_resize(&app, &engine, width_px, height_px) {
+                if let Err(error) = refresh_from_resize(&app, &engine, &pty, width_px, height_px) {
                     log_callback_error("resize refresh failed", error);
                 }
             }
         }
     });
 
+    app.on_terminal_key({
+        let pty = Rc::clone(&pty);
+        move |key_text, control, alt| {
+            if let Err(error) = write_terminal_key(&pty, key_text, control, alt) {
+                log_callback_error("terminal input write failed", error);
+            }
+        }
+    });
+
+    let output_timer = Timer::default();
+    let weak_for_output = app.as_weak();
+    output_timer.start(
+        TimerMode::Repeated,
+        Duration::from_millis(OUTPUT_POLL_INTERVAL_MS),
+        {
+            let engine = Rc::clone(&engine);
+            move || {
+                if let Some(app) = weak_for_output.upgrade() {
+                    if let Err(error) = refresh_from_pty_events(&app, &engine, &pty_receiver) {
+                        log_callback_error("PTY output refresh failed", error);
+                    }
+                }
+            }
+        },
+    );
+
     app.run()?;
+    output_timer.stop();
     Ok(())
 }
