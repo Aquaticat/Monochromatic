@@ -162,6 +162,35 @@ The consumer-side workaround belongs at our boundary (e.g. a parse-time
 guard in the consuming crate) where it solves the user-facing problem
 regardless of upstream movement.
 
+## Check for an existing issue before filing
+
+A duplicate report is itself a publicity incident, so before opening
+anything new, search the upstream tracker for the same behaviour:
+`gh search issues` and `gh search prs` across open and closed state,
+with terms drawn from the symptom and the root cause, not just the tool
+name. Constraint 4 already runs this search to gauge movement; this step
+acts on a hit. Read the matching thread and its comments in full, not
+just the title.
+
+If a matching issue exists, do not open a second one. The contribution
+becomes a comment on that issue, and the comment carries only what
+genuinely advances the thread beyond what is already there: a sharper
+root-cause trace, a reproduction they lack, affected-version data, the
+prototyped fix and diff, or a workaround not yet mentioned. Diff your
+findings against the existing thread before writing.
+
+If nothing you have is absent from the thread, the comment is empty:
+post nothing. A bare "+1", "me too", "still happens", or a subscribe is
+not additive and is not a comment worth making. An empty comment is the
+correct outcome when the thread already says everything you would, not a
+gap to fill.
+
+Record the duplicate in the doc: link the existing issue, and when there
+is additive content keep the drafted comment the same way the draft
+issue is kept (in a `~~~md` fence, ready to post). When there is nothing
+to add, say so explicitly so a future session does not re-derive the
+same empty comment.
+
 ## Draft format (kept as reference, do not file as-is)
 
 Even when you decide not to file, keep the draft so the rationale is
@@ -171,6 +200,10 @@ future filer can copy it cleanly. The draft contains: title, labels,
 description with the same source trace as the "Root cause" section,
 reproduction code from "Verification", and a "Suggested fix" naming
 concrete code locations.
+
+When "Check for an existing issue" found a duplicate, the kept artefact
+is the additive comment draft (or an explicit note that there was
+nothing to add), not a new-issue draft presented as fileable.
 
 ## Quality checks before declaring the doc done
 
@@ -182,6 +215,10 @@ concrete code locations.
   so the rationale is auditable.
 - The draft issue is wrapped in a fenced block and marked "do not file
   as-is" unless all five constraints hold.
+- The upstream tracker was searched for a duplicate. If one exists, the
+  doc links it and either keeps a fenced, additive-only comment draft or
+  states explicitly there is nothing to add; it does not also present a
+  new-issue draft as fileable.
 - If constraints 1-4 held or sorta-held but constraint 5 read "not
   yet," the audit is incomplete; either run the auto-prototype step
   and record the result, or document why prototyping was attempted and
