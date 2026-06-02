@@ -1,5 +1,11 @@
 //! Thin Slint binary for the libghostty-vt terminal prototype.
 
+// What:     `mod stderr_filter;` declares a binary-local Rust module from
+//           `src/stderr_filter.rs`.
+// Why:      Process stderr filtering is an app-shell concern, not terminal library API.
+// TS map:   `import * as stderrFilter from "./stderr_filter"`.
+mod stderr_filter;
+
 // What:     `slint::include_modules!()` is a macro call. The `!` means Rust runs
 //           generated code at compile time, importing types built from app.slint.
 // Why:      `AppWindow` and the generated `TerminalCell` struct come from Slint.
@@ -434,6 +440,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut engine = TerminalEngine::new(initial_geometry, MAX_SCROLLBACK_ROWS)?;
     let (pty_sender, pty_receiver) = mpsc::channel();
     let pty = PtySession::spawn_shell(initial_geometry, pty_sender)?;
+    // What:     `stderr_filter::install_ghostty_stderr_filter()?` redirects process
+    //           stderr through a line filter after the child shell is already spawned.
+    // Why:      Ghostty's debug-only `unimplemented OSC callback` lines should vanish,
+    //           while the child shell should not inherit the filter's backup fd.
+    // TS map:   `stderrFilter.installGhosttyStderrFilter()`.
+    stderr_filter::install_ghostty_stderr_filter()?;
     let initial_mapping = engine.set_pixel_scroll(0.0)?;
     let initial_snapshot = engine.snapshot(initial_mapping)?;
     apply_snapshot(&app, initial_snapshot);

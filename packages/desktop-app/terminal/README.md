@@ -76,6 +76,15 @@ feeds `TerminalEngine`.
 It supplies safe shell spawn, reader, writer, and resize operations without hand-written `forkpty` setup.
 The decision and rejected alternatives are recorded in `docs/decisions/terminal.md`.
 
+## Ghostty debug logging
+
+Debug builds of the vendored Ghostty core can write `debug(stream): unimplemented OSC callback: ...` directly to process
+stderr when a shell emits OSC commands that Ghostty parses but does not implement yet.
+`src/stderr_filter.rs` installs a Unix stderr pipe filter after the PTY shell has spawned and before the UI timer drains
+PTY output into Ghostty.
+The filter drops only lines containing `unimplemented OSC callback` and forwards every other stderr line to the original
+stderr destination unchanged.
+
 ## Runtime library staging
 
 `libghostty-vt-sys` links the vendored Ghostty core as `libghostty-vt.so.0`.
@@ -93,6 +102,7 @@ The `run` task also copies those shared libraries to `~/.local/lib/monochromatic
 - `src/engine.rs`: `TerminalEngine`, VT feeding, resize, viewport mapping, and render extraction.
 - `src/input.rs`: Slint key text to terminal byte encoding and unit tests.
 - `src/pty.rs`: `portable-pty` shell spawning, PTY output events, input writes, resize, and tests.
+- `src/stderr_filter.rs`: process stderr line filter for Ghostty's unimplemented OSC callback debug noise.
 - `src/demo.rs`: deterministic demo VT stream kept for fixture content and future comparisons.
 - `src/launcher.rs`: Wayland app-id hook, matching `monochromatic.terminal.desktop`.
 - `src/main.rs`: Slint window wiring, PTY output draining, key input writes, and snapshot conversion.
