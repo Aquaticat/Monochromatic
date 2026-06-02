@@ -55,7 +55,7 @@ use libghostty_vt::terminal::ScrollViewport;
 // ```
 use crate::{
     error::TerminalError,
-    render::{Rgb, TerminalCell, TerminalSnapshot},
+    render::{TerminalCell, TerminalSnapshot},
     scroll::map_pixel_scroll,
     scroll::ScrollMapping,
 };
@@ -250,16 +250,19 @@ impl TerminalEngine {
         })
     }
 
-    // What:     `pub fn feed(&mut self, bytes: &[u8])` takes a mutable engine and a
-    //           borrowed byte slice. `&[u8]` is like a read-only Uint8Array view.
-    // Why:      PTY I/O or demo data can push raw VT bytes through Ghostty.
-    // TS map:   `feed(bytes: Uint8Array): void`.
+    // What:     `pub fn feed(&mut self, bytes: &[u8]) -> Result<(), TerminalError>`
+    //           takes a mutable engine and a borrowed byte slice, then returns a
+    //           fallible result. `&[u8]` is like a read-only Uint8Array view.
+    // Why:      PTY I/O or demo data can push raw VT bytes through Ghostty, and the
+    //           engine must refresh its remembered bottom-row offset afterward.
+    // TS map:   `feed(bytes: Uint8Array): void` that throws on metadata failure.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // this.terminal.vtWrite(bytes);
+    // this.viewportTopRow = this.terminal.scrollbackRows();
     // ```
-    pub fn feed(&mut self, bytes: &[u8]) {
+    pub fn feed(&mut self, bytes: &[u8]) -> Result<(), TerminalError> {
         // What:     `self.terminal.vt_write(bytes)` parses untrusted VT bytes.
         // Why:      This updates screen, cursor, style, and scrollback state.
         // TS map:   `this.terminal.vtWrite(bytes)`.
@@ -279,6 +282,27 @@ impl TerminalEngine {
         // this.terminal.scrollViewport("bottom");
         // ```
         self.terminal.scroll_viewport(ScrollViewport::Bottom);
+        // What:     `self.viewport_top_row = self.terminal.scrollback_rows()?` reads
+        //           Ghostty's current bottom offset and stores it. `?` propagates
+        //           libghostty-vt errors through `TerminalError`.
+        // Why:      Later absolute pixel-scroll requests need a correct relative
+        //           starting point for `ScrollViewport::Delta`.
+        // TS map:   `this.viewportTopRow = this.terminal.scrollbackRows()`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.viewportTopRow = this.terminal.scrollbackRows();
+        // ```
+        self.viewport_top_row = self.terminal.scrollback_rows()?;
+        // What:     `Ok(())` constructs a successful `Result` carrying unit.
+        // Why:      Feeding and viewport bookkeeping completed.
+        // TS map:   `return`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return;
+        // ```
+        Ok(())
     }
 
     // What:     `pub fn resize(&mut self, geometry: ViewportGeometry) -> Result...`
@@ -408,106 +432,116 @@ impl TerminalEngine {
         // Why:      Row indexes are `usize` in this crate.
         // TS map:   `const viewportRows = snapshot.rows`.
         let viewport_rows = usize::from(snapshot.rows()?);
-        // What:     `let mut cells = Vec::new()` creates an owned growable array.
-        // Why:      We push cells while walking the render iterators.
-        // TS map:   `const cells = []`.
-        let mut cells = Vec::new();
-        // What:     `let mut row_iteration = self.row_iterator.update(&snapshot)?`
-        //           attaches the reusable row iterator to this snapshot.
-        // Why:      Rows are valid only while this snapshot borrow is alive.
-        // TS map:   `const rowIteration = rowIterator.update(snapshot)`.
-        let mut row_iteration = self.row_iterator.update(&snapshot)?;
-        // What:     `let mut row_index = 0usize` creates a mutable row counter.
-        //           `usize` matches vector indexing; `u32` would need casts.
-        // Why:      The iterator yields row data but not its numeric index.
-        // TS map:   `let rowIndex = 0`.
-        let mut row_index = 0usize;
-        // What:     `while let Some(row) = row_iteration.next()` loops over rows
-        //           from the lending iterator until it returns `None`.
-        // Why:      libghostty-vt exposes rows through this stateful cursor API.
-        // TS map:   `while ((row = rowIterator.next()) !== null) { ... }`.
-        while let Some(row) = row_iteration.next() {
-            // What:     `let mut cell_iteration = self.cell_iterator.update(row)?`
-            //           attaches the cell iterator to the current row.
-            // Why:      Cell data is row-scoped in the render-state API.
-            // TS map:   `const cellIteration = cellIterator.update(row)`.
-            let mut cell_iteration = self.cell_iterator.update(row)?;
-            // What:     `let mut col_index = 0usize` tracks the current column.
-            // Why:      The cell iterator yields cells in left-to-right order.
-            // TS map:   `let colIndex = 0`.
-            let mut col_index = 0usize;
-            // What:     `while let Some(cell) = cell_iteration.next()` loops over
-            //           cells until the row cursor is exhausted.
-            // Why:      This copies every visible/styled cell into an owned model.
-            // TS map:   `while ((cell = cellIterator.next()) !== null) { ... }`.
-            while let Some(cell) = cell_iteration.next() {
-                // What:     `let text: String = cell.graphemes()?.into_iter().collect()`
-                //           copies Ghostty grapheme codepoints into owned UTF-8 text.
-                // Why:      The Slint model cannot borrow from Ghostty iterators.
-                // TS map:   `const text = cell.graphemes().join("")`.
-                let text: String = cell.graphemes()?.into_iter().collect();
-                // What:     `let style = cell.style()?` copies SGR flags for the cell.
-                // Why:      Bold, italic, inverse, and underline are UI-visible styles.
-                // TS map:   `const style = cell.style()`.
-                let style = cell.style()?;
-                // What:     `let raw_foreground = cell.fg_color()?.unwrap_or(...)`
-                //           uses Ghostty's resolved color or the default foreground.
-                // Why:      Slint receives concrete RGB, never palette indexes.
-                // TS map:   `const fg = cell.fgColor ?? colors.foreground`.
-                let raw_foreground = cell.fg_color()?.unwrap_or(colors.foreground);
-                // What:     `let raw_background_option = cell.bg_color()?` reads the
-                //           optional resolved background color.
-                // Why:      Empty cells with no custom background can be skipped.
-                // TS map:   `const bgMaybe = cell.bgColor`.
-                let raw_background_option = cell.bg_color()?;
-                // What:     `let (foreground, background) = resolve_inverse(...)`
-                //           returns possibly swapped colors for inverse video.
-                // Why:      The UI can draw inverse cells without extra style logic.
-                // TS map:   `const { foreground, background } = resolveInverse(...)`.
-                let (foreground, background) = resolve_inverse(
-                    raw_foreground,
-                    raw_background_option.unwrap_or(colors.background),
-                    style.inverse,
-                );
-                // What:     `if should_copy_cell(...) { ... }` skips plain empty cells.
-                // Why:      The Slint model stays smaller while preserving styled blanks.
-                // TS map:   `if (text || bgMaybe || style.inverse) cells.push(...)`.
-                if should_copy_cell(text.as_str(), raw_background_option, style.inverse) {
-                    // What:     `cells.push(TerminalCell { ... })` appends one owned
-                    //           cell model to the growable vector.
-                    // Why:      This cell has visible text or visible styling.
-                    // TS map:   `cells.push({ row, col, text, foreground, background })`.
-                    cells.push(TerminalCell {
-                        row: row_index,
-                        col: col_index,
-                        text,
-                        foreground: foreground.into(),
-                        background: background.into(),
-                        bold: style.bold,
-                        italic: style.italic,
-                        inverse: style.inverse,
-                        underline: style.underline != Underline::None,
-                    });
+        // What:     `let cells = { ... }` starts a scoped block that returns the
+        //           owned cell vector at the end. The block is not a closure; it
+        //           just limits how long row-iterator borrows can live.
+        // Why:      Clippy rejects manual `drop` for non-`Drop` iterator guards, so
+        //           lexical scope is the correct way to end their borrows.
+        // TS map:   `const cells = (() => { const cells = []; ...; return cells; })()`.
+        let cells = {
+            // What:     `let mut cells = Vec::new()` creates an owned growable array.
+            // Why:      We push cells while walking the render iterators.
+            // TS map:   `const cells = []`.
+            let mut cells = Vec::new();
+            // What:     `let mut row_iteration = self.row_iterator.update(&snapshot)?`
+            //           attaches the reusable row iterator to this snapshot.
+            // Why:      Rows are valid only while this snapshot borrow is alive.
+            // TS map:   `const rowIteration = rowIterator.update(snapshot)`.
+            let mut row_iteration = self.row_iterator.update(&snapshot)?;
+            // What:     `let mut row_index = 0usize` creates a mutable row counter.
+            //           `usize` matches vector indexing; `u32` would need casts.
+            // Why:      The iterator yields row data but not its numeric index.
+            // TS map:   `let rowIndex = 0`.
+            let mut row_index = 0usize;
+            // What:     `while let Some(row) = row_iteration.next()` loops over rows
+            //           from the lending iterator until it returns `None`.
+            // Why:      libghostty-vt exposes rows through this stateful cursor API.
+            // TS map:   `while ((row = rowIterator.next()) !== null) { ... }`.
+            while let Some(row) = row_iteration.next() {
+                // What:     `let mut cell_iteration = self.cell_iterator.update(row)?`
+                //           attaches the cell iterator to the current row.
+                // Why:      Cell data is row-scoped in the render-state API.
+                // TS map:   `const cellIteration = cellIterator.update(row)`.
+                let mut cell_iteration = self.cell_iterator.update(row)?;
+                // What:     `let mut col_index = 0usize` tracks the current column.
+                // Why:      The cell iterator yields cells in left-to-right order.
+                // TS map:   `let colIndex = 0`.
+                let mut col_index = 0usize;
+                // What:     `while let Some(cell) = cell_iteration.next()` loops over
+                //           cells until the row cursor is exhausted.
+                // Why:      This copies every visible/styled cell into an owned model.
+                // TS map:   `while ((cell = cellIterator.next()) !== null) { ... }`.
+                while let Some(cell) = cell_iteration.next() {
+                    // What:     `let text: String = cell.graphemes()?.into_iter().collect()`
+                    //           copies Ghostty grapheme codepoints into owned UTF-8 text.
+                    // Why:      The Slint model cannot borrow from Ghostty iterators.
+                    // TS map:   `const text = cell.graphemes().join("")`.
+                    let text: String = cell.graphemes()?.into_iter().collect();
+                    // What:     `let style = cell.style()?` copies SGR flags for the cell.
+                    // Why:      Bold, italic, inverse, and underline are UI-visible styles.
+                    // TS map:   `const style = cell.style()`.
+                    let style = cell.style()?;
+                    // What:     `let raw_foreground = cell.fg_color()?.unwrap_or(...)`
+                    //           uses Ghostty's resolved color or the default foreground.
+                    // Why:      Slint receives concrete RGB, never palette indexes.
+                    // TS map:   `const fg = cell.fgColor ?? colors.foreground`.
+                    let raw_foreground = cell.fg_color()?.unwrap_or(colors.foreground);
+                    // What:     `let raw_background_option = cell.bg_color()?` reads the
+                    //           optional resolved background color.
+                    // Why:      Empty cells with no custom background can be skipped.
+                    // TS map:   `const bgMaybe = cell.bgColor`.
+                    let raw_background_option = cell.bg_color()?;
+                    // What:     `let (foreground, background) = resolve_inverse(...)`
+                    //           returns possibly swapped colors for inverse video.
+                    // Why:      The UI can draw inverse cells without extra style logic.
+                    // TS map:   `const { foreground, background } = resolveInverse(...)`.
+                    let (foreground, background) = resolve_inverse(
+                        raw_foreground,
+                        raw_background_option.unwrap_or(colors.background),
+                        style.inverse,
+                    );
+                    // What:     `if should_copy_cell(...) { ... }` skips plain empty cells.
+                    // Why:      The Slint model stays smaller while preserving styled blanks.
+                    // TS map:   `if (text || bgMaybe || style.inverse) cells.push(...)`.
+                    if should_copy_cell(text.as_str(), raw_background_option, style.inverse) {
+                        // What:     `cells.push(TerminalCell { ... })` appends one owned
+                        //           cell model to the growable vector.
+                        // Why:      This cell has visible text or visible styling.
+                        // TS map:   `cells.push({ row, col, text, foreground, background })`.
+                        cells.push(TerminalCell {
+                            row: row_index,
+                            col: col_index,
+                            text,
+                            foreground: foreground.into(),
+                            background: background.into(),
+                            bold: style.bold,
+                            italic: style.italic,
+                            inverse: style.inverse,
+                            underline: style.underline != Underline::None,
+                        });
+                    }
+                    // What:     `col_index += 1` advances the mutable column counter.
+                    // Why:      The next cell is one grid column to the right.
+                    // TS map:   `colIndex += 1`.
+                    col_index += 1;
                 }
-                // What:     `col_index += 1` advances the mutable column counter.
-                // Why:      The next cell is one grid column to the right.
-                // TS map:   `colIndex += 1`.
-                col_index += 1;
+                // What:     `row.set_dirty(false)?` clears Ghostty's per-row dirty flag.
+                // Why:      A real renderer would use dirty tracking; this prototype keeps
+                //           the state tidy after copying the row.
+                // TS map:   `row.setDirty(false)`.
+                row.set_dirty(false)?;
+                // What:     `row_index += 1` advances the row counter.
+                // Why:      The next render row is one grid row lower.
+                // TS map:   `rowIndex += 1`.
+                row_index += 1;
             }
-            // What:     `row.set_dirty(false)?` clears Ghostty's per-row dirty flag.
-            // Why:      A real renderer would use dirty tracking; this prototype keeps
-            //           the state tidy after copying the row.
-            // TS map:   `row.setDirty(false)`.
-            row.set_dirty(false)?;
-            // What:     `row_index += 1` advances the row counter.
-            // Why:      The next render row is one grid row lower.
-            // TS map:   `rowIndex += 1`.
-            row_index += 1;
-        }
-        // What:     `drop(row_iteration)` explicitly ends the borrow of render state.
-        // Why:      The code below reads terminal metadata after iterator use.
-        // TS map:   No equivalent; garbage collection has no borrow checker.
-        drop(row_iteration);
+            // What:     `cells` without a trailing semicolon is the block's return
+            //           value. This moves the owned vector out of the scoped block.
+            // Why:      Returning here ends the row and cell iterator borrows before
+            //           the terminal metadata reads below.
+            // TS map:   `return cells` from the scoped helper.
+            cells
+        };
         // What:     `let total_rows = self.terminal.total_rows()?` reads total active
         //           screen rows including scrollback from Ghostty.
         // Why:      Slint sizes the Flickable content from this count.
@@ -639,7 +673,7 @@ mod tests {
             cell_height_px: DEFAULT_CELL_HEIGHT_PX,
         };
         let mut engine = TerminalEngine::new(geometry, 100)?;
-        engine.feed(b"\x1b[1mBold\x1b[0m plain\r\n");
+        engine.feed(b"\x1b[1mBold\x1b[0m plain\r\n")?;
         let mapping = engine.set_pixel_scroll(0.0)?;
         let snapshot = engine.snapshot(mapping)?;
         let bold_cell = snapshot
@@ -666,7 +700,7 @@ mod tests {
             cell_height_px: DEFAULT_CELL_HEIGHT_PX,
         };
         let mut engine = TerminalEngine::new(geometry, 100)?;
-        engine.feed(b"one\r\ntwo\r\nthree\r\nfour\r\n");
+        engine.feed(b"one\r\ntwo\r\nthree\r\nfour\r\n")?;
         let mapping = engine.set_pixel_scroll(0.0)?;
         let snapshot = engine.snapshot(mapping)?;
         let top_text: String = snapshot

@@ -12,6 +12,23 @@
 // generateUiBindings("ui/app.slint");
 // ```
 fn main() {
+    // What:     `println!("cargo:rustc-link-arg-bin=...")` sends a Cargo
+    //           build-script instruction to stdout. Cargo reads this line and
+    //           passes `-Wl,-rpath,$ORIGIN/../lib/monochromatic-terminal` only
+    //           to the `monochromatic-terminal` binary link step.
+    // Why:      The crates.io `libghostty-vt-sys` package links Ghostty's VT core
+    //           as `libghostty-vt.so.0`, so the installed binary needs a stable
+    //           relative library lookup path beside `~/.local/bin`.
+    // TS map:   No direct TS equivalent. Mentally, this is build-time metadata
+    //           saying "when bundling, load native .so files from ../lib/...".
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // bundler.addRuntimeLibraryPath("$ORIGIN/../lib/monochromatic-terminal");
+    // ```
+    println!(
+        "cargo:rustc-link-arg-bin=monochromatic-terminal=-Wl,-rpath,$ORIGIN/../lib/monochromatic-terminal",
+    );
     // What:     `slint_build::compile(...)` invokes Slint's Rust build helper,
     //           and `.expect(...)` unwraps the success value or panics with the
     //           message when the markup compiler returns an error.

@@ -66,6 +66,15 @@ It also confirms `TerminalScrollbar { total, offset, len }`, `TOTAL_ROWS`, and `
 This prototype keeps `TerminalEngine` on the Slint UI thread inside `Rc<RefCell<_>>`.
 A future PTY reader should send byte chunks to the UI thread or to a dedicated terminal thread that owns all Ghostty handles.
 
+## Runtime library staging
+
+`libghostty-vt-sys` links the vendored Ghostty core as `libghostty-vt.so.0`.
+The package build script adds an rpath of `$ORIGIN/../lib/monochromatic-terminal` to `monochromatic-terminal`.
+The `build`, `build:debug`, and `run` mise tasks copy `libghostty-vt.so*` from Cargo's build output into
+`target/lib/monochromatic-terminal` so `target/release/monochromatic-terminal` can run from the package directory.
+The `run` task also copies those shared libraries to `~/.local/lib/monochromatic-terminal` before installing the binary in
+`~/.local/bin`.
+
 ## Layout
 
 - `src/lib.rs`: module root.
@@ -77,7 +86,7 @@ A future PTY reader should send byte chunks to the UI thread or to a dedicated t
 - `src/main.rs`: Slint window wiring and conversion from engine snapshots to Slint models.
 - `ui/app.slint`: terminal viewport, `Flickable`, cell renderer, and resize or scroll callbacks.
 - `Containerfile`: Fedora build environment with Rust, Slint runtime libraries, and Zig 0.15.2.
-- `mise.toml`: package-local build, lint, test, and run tasks.
+- `mise.toml`: package-local build, lint, test, runtime-library staging, and run tasks.
 
 ## Known remaining work
 

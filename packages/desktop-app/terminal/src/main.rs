@@ -280,7 +280,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let mut engine = TerminalEngine::new(initial_geometry, MAX_SCROLLBACK_ROWS)?;
     let demo_bytes = demo::demo_vt();
-    engine.feed(demo_bytes.as_slice());
+    engine.feed(demo_bytes.as_slice())?;
     let initial_scroll_px = engine.scrollback_rows()? as f32 * DEFAULT_CELL_HEIGHT_PX;
     let initial_mapping = engine.set_pixel_scroll(initial_scroll_px)?;
     let initial_snapshot = engine.snapshot(initial_mapping)?;

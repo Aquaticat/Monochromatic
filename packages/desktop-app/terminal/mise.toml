@@ -8,12 +8,58 @@ description = "Build the Fedora build/run container image"
 run = "podman build --tag localhost/monochromatic/terminal --file Containerfile ."
 
 [tasks.build]
-description = "Release build inside the container"
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo build --release"
+description = "Release build inside the container, then stage runtime shared libraries"
+run = '''
+(
+  podman run --rm --memory=4g --cpus=4 --security-opt label=disable
+  --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work
+  localhost/monochromatic/terminal
+  cargo build --release
+)
+mise run //packages/desktop-app/terminal:stage:runtime-libs:release
+'''
 
 [tasks."build:debug"]
-description = "Debug build inside the container"
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo build"
+description = "Debug build inside the container, then stage runtime shared libraries"
+run = '''
+(
+  podman run --rm --memory=4g --cpus=4 --security-opt label=disable
+  --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work
+  localhost/monochromatic/terminal
+  cargo build
+)
+mise run //packages/desktop-app/terminal:stage:runtime-libs:debug
+'''
+
+[tasks."stage:runtime-libs:release"]
+description = "Copy release libghostty-vt shared libraries into the binary rpath directory"
+run = '''
+let lib_dirs = (glob "target/release/build/libghostty-vt-sys-*/out/ghostty-install/lib" | sort)
+if ($lib_dirs | is-empty) {
+  error make { msg: "missing release libghostty-vt build output; run build first" }
+}
+let source_lib_dir = ($lib_dirs | last)
+let staged_lib_dir = "target/lib/monochromatic-terminal"
+mkdir $staged_lib_dir
+for name in ["libghostty-vt.so" "libghostty-vt.so.0" "libghostty-vt.so.0.1.0"] {
+  cp --force ($source_lib_dir | path join $name) $staged_lib_dir
+}
+'''
+
+[tasks."stage:runtime-libs:debug"]
+description = "Copy debug libghostty-vt shared libraries into the binary rpath directory"
+run = '''
+let lib_dirs = (glob "target/debug/build/libghostty-vt-sys-*/out/ghostty-install/lib" | sort)
+if ($lib_dirs | is-empty) {
+  error make { msg: "missing debug libghostty-vt build output; run build:debug first" }
+}
+let source_lib_dir = ($lib_dirs | last)
+let staged_lib_dir = "target/lib/monochromatic-terminal"
+mkdir $staged_lib_dir
+for name in ["libghostty-vt.so" "libghostty-vt.so.0" "libghostty-vt.so.0.1.0"] {
+  cp --force ($source_lib_dir | path join $name) $staged_lib_dir
+}
+'''
 
 [tasks.lint]
 description = "cargo check inside the container"
@@ -32,7 +78,7 @@ description = "cargo test inside the container"
 run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo test --release"
 
 [tasks.run]
-description = "Build in the container, install desktop metadata, then run the GUI on the host"
+description = "Build in the container, install desktop metadata and runtime libraries, then run the GUI on the host"
 run = '''
 let home = ($env.HOME? | default '')
 (
@@ -41,6 +87,8 @@ let home = ($env.HOME? | default '')
   localhost/monochromatic/terminal
   cargo build --release
 )
+mise run //packages/desktop-app/terminal:stage:runtime-libs:release
+let staged_lib_dir = "target/lib/monochromatic-terminal"
 let bin = if ($home != '') {
   let apps_dir = ($home | path join '.local/share/applications')
   mkdir $apps_dir
@@ -48,6 +96,11 @@ let bin = if ($home != '') {
   let bin_dir = ($home | path join '.local/bin')
   mkdir $bin_dir
   cp --force target/release/monochromatic-terminal $bin_dir
+  let installed_lib_dir = ($home | path join '.local/lib/monochromatic-terminal')
+  mkdir $installed_lib_dir
+  for name in ["libghostty-vt.so" "libghostty-vt.so.0" "libghostty-vt.so.0.1.0"] {
+    cp --force ($staged_lib_dir | path join $name) $installed_lib_dir
+  }
   ($bin_dir | path join 'monochromatic-terminal')
 } else {
   './target/release/monochromatic-terminal'
