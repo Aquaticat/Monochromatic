@@ -241,8 +241,8 @@ rust-src (installed)
 
 ## Upstream filing audit
 
-Walking the five constraints. All five hold, so this is fileable; the draft
-below is ready to submit.
+Walking the five constraints. Constraints 1 to 3 and 5 hold, but constraint 4
+fails on direct maintainer evidence, so the decision is do not file.
 
 1. **Is it really upstream's fault?** Yes. mise exposes `components`/`targets`
    as first-class, documented, tested
@@ -251,31 +251,75 @@ below is ready to submit.
    mise applies these options only at first install and silently ignores them
    afterward. The silent divergence between declared and applied state is a
    defect, not merely a documentation gap.
-2. **Can upstream fix it?** Yes. The fix is not architecturally blocked. It
-   spans the install-decision filters (see "Root cause") plus one new backend
-   hook, but every change is additive and local; nothing in mise's design
-   prevents a backend from declaring that an installed version still needs work.
-   A multi-site fix is still a fix, size does not fail this constraint, and the
-   prototype below builds and runs.
-3. **Are they supporting this use case?** Yes. `components` is documented and
-   tested, so declaring it is supported; the missing piece is reconciliation,
-   not support.
-4. **Will they likely fix it?** No signal either way, which is not a fail.
-   `gh search issues --repo jdx/mise "rust components"` returns nothing and the
-   rust backend has no recent commits in this path, so there is neither a
-   documented won't-fix nor a stated non-goal. Absence of an existing report or
-   movement does not indicate upstream is leaning no.
+2. **Can upstream fix it?** Yes. The fix is not architecturally blocked, and
+   upstream has already written it: closed PR #9839 (see "Existing upstream
+   work") implements the same additive install-only predicate this doc
+   prototyped. Constraint 2 passes.
+3. **Are they supporting this use case?** Partly. `components` is documented and
+   tested, but the maintainer questions whether mise should manage rust
+   toolchains at all (the rust backend, see constraint 4), so support for this
+   specific combination is shaky.
+4. **Will they likely fix it?** No, and this is the constraint that fails. It
+   fails on direct maintainer communication, not absence of signal. On the
+   near-identical PR #9839, the maintainer (jdx) wrote "it's too hacky and this
+   isn't a bug I really care that much to resolve" and "I'm half-tempted to just
+   deprecate rust since I don't use it" (adding "though I know some do like it").
+   The author then withdrew the PR. "Deprecate rust" here means the rust backend
+   that manages rustup toolchains for users, not Rust the language mise is
+   written in; the whole thread is about managing rust toolchains through mise,
+   which is precisely this use case. A maintainer declining a comparable request
+   is exactly the lean-no this constraint tests for.
 5. **Have we prototyped a minimal fix compatible with their architecture?**
    Yes. See "Prototype": a built-and-verified patch against commit `310e325`,
-   recorded as [mise-rust-components.patch](mise-rust-components.patch).
+   recorded as [mise-rust-components.patch](mise-rust-components.patch). It
+   converges independently on PR #9839's design, further evidence that
+   feasibility was never the blocker.
 
-An earlier revision of this doc stopped at constraint 5 ("not yet"), failing
-the gate at constraint 2 ("the fix is structural") and constraint 4 ("no signal
-upstream is moving"). Both readings were wrong: constraint 2 fails only on
-architectural impossibility, so a large or multi-site fix still passes; and
-constraint 4 fails only on an active upstream lean-no, so silence passes. Under
-the corrected reading constraints 1 to 4 hold, which is exactly the trigger to
-prototype rather than stop.
+Decision: do not file. The gate fails at constraint 4 on concrete maintainer
+evidence (PR #9839). Filing a new issue would re-raise a request the maintainer
+already declined and duplicate an existing closed PR, which is the publicity
+incident the default-do-not-file policy guards against.
+
+This reverses an earlier "fileable" reading in this doc's history, and the
+reversal is the lesson. The first revision failed constraint 4 for the wrong
+reason ("no signal, therefore unsure"); correcting that to "absence of signal is
+not a fail" flipped the conclusion to fileable. Running the duplicate-check step
+then surfaced PR #9839 and the maintainer's comments: there was a signal all
+along, and it is a clear lean-no. Constraint 4 fails on that evidence, not on
+silence.
+
+## Existing upstream work (duplicate check)
+
+Searching `jdx/mise` issues and PRs found the relevant prior work. Run that
+search with single `gh api -X GET search/issues` requests, not `gh search`,
+which fans out into many paginated requests and trips a secondary rate limit
+(see `docs/troubleshooting/gh-search-rate-limit.md`).
+
+- **PR #9839 "fix(rust): reinstall incomplete rustup toolchains"** (closed
+  2026-05-13, author-withdrawn). Adds an install-only completeness predicate on
+  the `Backend` trait defaulting to the cheap installed check, threads it through
+  the install-decision sites (missing detection, dry-run exit, pre-install skip,
+  post-lock double-check), and teaches the rust backend to treat the
+  `installs/rust/<version>` marker as incomplete when rustup state (profile
+  components, explicit components/targets) is absent. This is the same fix this
+  doc prototyped, arrived at independently. The maintainer declined it as "too
+  hacky" (constraint 4). https://github.com/jdx/mise/pull/9839
+- **PR #9988 "fix(rust): include toolchain install options in lock identity"**
+  (merged 2026-05-31). Records `profile`/`components`/`targets` in the lock
+  identity so a default-profile lock entry is not treated as equivalent to one
+  that also installs `clippy`/`rustfmt` or extra targets. This changes what the
+  lockfile records, not whether `mise install` reconciles an already-installed
+  toolchain, so the reconcile-on-install behavior stayed declined.
+  https://github.com/jdx/mise/pull/9988
+- **PR #10178 "fix(rust): store toolchain options on idiomatic requests"**
+  (open). Attaches `rust-toolchain.toml` options to the generated requests.
+  Adjacent, not a reconcile fix. https://github.com/jdx/mise/pull/10178
+
+No comment was posted on #9839: it is closed, the maintainer already declined
+the approach, and this doc's prototype is a subset of what #9839 built (no e2e
+suite, no `profile = "default"` rustfmt/clippy handling, no custom
+`MISE_RUSTUP_HOME`/`MISE_CARGO_HOME` coverage), so there is nothing additive to
+contribute. Per the duplicate-check rule, the correct comment is the empty one.
 
 ## Prototype
 
@@ -360,6 +404,15 @@ mise all tools are installed
 
 The user's real `1.96.0` was restored after the run
 (`rustup component remove llvm-tools --toolchain 1.96.0`).
+
+## Draft (do not file: duplicate of declined PR #9839)
+
+Kept for auditability only. Do not file: the maintainer already declined this
+exact fix on PR #9839 (constraint 4 above), so a new issue would re-raise a
+declined request and duplicate a closed PR. The prototype below remains valid as
+evidence the fix is feasible, but feasibility is not the blocker. If a future
+maintainer reverses the "too hacky / not worth resolving" stance, re-run the
+duplicate check and re-evaluate constraint 4 against the then-current thread.
 
 ~~~md
 Title: rust backend: declared `components`/`targets` not reconciled onto an already-installed toolchain
