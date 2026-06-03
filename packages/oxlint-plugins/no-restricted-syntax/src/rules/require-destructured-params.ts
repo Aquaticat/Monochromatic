@@ -14,9 +14,11 @@ import type {
  * ```
  */
 const REQUIRE_DESTRUCTURED_PARAMS_MESSAGE = [
-  'Multiple positional parameters are easy to mix up. ',
-  'Use one destructured object parameter instead, for example ',
-  '`function createUser({ name, age }) { ... }`.',
+  'For function declarations with 2 or more inputs, use one destructured object parameter, ',
+  'for example `function createUser({ name, age }) { ... }`. ',
+  'Allowed positional parameters: single-parameter declarations, ',
+  'and callback function expressions whose API supplies the argument list, ',
+  'such as `items.toSorted(function byName(left, right) { ... })`.',
 ].join('',);
 
 /**

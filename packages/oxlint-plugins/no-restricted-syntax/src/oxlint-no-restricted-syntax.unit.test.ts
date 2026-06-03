@@ -361,7 +361,7 @@ await describe({
       children: [
         it({
           name:
-            'require-destructured-params explains why named params help',
+            'require-destructured-params explains allowed named and positional params',
           fn: async () => {
             const diagnostics = await lint('invalid/require-destructured-params.ts',);
             const messages = diagnostics
@@ -372,9 +372,13 @@ await describe({
                 return diagnostic.message;
               },);
             expect(messages,).toEqual([
-              'Multiple positional parameters are easy to mix up. '
-                + 'Use one destructured object parameter instead, for example '
-                + '`function createUser({ name, age }) { ... }`.',
+              [
+                'For function declarations with 2 or more inputs, use one destructured object parameter, ',
+                'for example `function createUser({ name, age }) { ... }`. ',
+                'Allowed positional parameters: single-parameter declarations, ',
+                'and callback function expressions whose API supplies the argument list, ',
+                'such as `items.toSorted(function byName(left, right) { ... })`.',
+              ].join('',),
             ],);
           },
         },),
