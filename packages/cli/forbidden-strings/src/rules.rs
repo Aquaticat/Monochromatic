@@ -18,6 +18,7 @@
 mod atom;
 mod engine;
 mod extract;
+mod nesting;
 mod parse;
 mod regex_syntax;
 mod shards;
@@ -51,6 +52,8 @@ mod atom_tests;
 mod engine_tests;
 #[cfg(test)]
 mod extract_tests;
+#[cfg(test)]
+mod nesting_tests;
 
 // What:     Public surface re-exports so external callers (`scan.rs`,
 //           `main.rs`) can keep using `crate::rules::Foo` without
@@ -79,6 +82,7 @@ pub use engine::{
     stacked_quantifier,
     CompiledRegex,
 };
+pub use nesting::nesting_depth;
 pub use extract::extract_gating_substrings;
 pub use parse::{parse_rule_source, ParsedRule};
 pub use shards::build_residual_shards;
@@ -589,6 +593,33 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     // }
     // ```
     if requires_resharp(src) {
+        // What:     `if let Some(reason) = nesting_depth(src)` runs the
+        //           nesting-depth guard FIRST among the resharp checks.
+        //           `nesting_depth` returns `Some(reason)` when the rule
+        //           nests groups past a safe cap. `if let Some(reason) =
+        //           ...` is Rust's one-arm pattern match that binds
+        //           `reason` only in the present (`Some`) case.
+        // Why:      Deeply nested complement (`~(...)`) or lookaround
+        //           (`(?=...)`) groups abort the scanner with an
+        //           uncatchable stack overflow inside resharp's
+        //           `Regex::new` (Bug G, unfixed upstream at 0.6.8).
+        //           Reject on the source shape before any other check or
+        //           `Regex::new`: catch_unwind cannot intercept a
+        //           stack-overflow SIGABRT, so this is the only defense.
+        // TS map:   `const reason = nestingDepth(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = nestingDepth(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = nesting_depth(src) {
+            eprintln!(
+                "forbidden-strings: pre-validator nesting_depth rejected rule {:?}",
+                src
+            );
+            return Err(format!("(resharp): {}", reason));
+        }
         // What:     `if let Some(reason) = lookaround_in_complement(src)`
         //           runs the resharp pre-flight guard. The function
         //           returns `Some(reason_string)` when the source
