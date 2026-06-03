@@ -59,15 +59,17 @@ zbus = "5"
 slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
 
 [profile.release]
-# Drop the ~8.5 MB .symtab/.strtab symbol table from the shipped binary; it is
-# never loaded at runtime (no .debug_* sections are emitted in release anyway).
-# "symbols" keeps unwind info intact, so panic backtraces and Drop-on-panic are
-# unchanged. strip alone takes the binary 30 MB -> ~21.5 MB; the remaining
-# ~21 MB is real code/rodata (static Slint + symphonia-all).
+# strip: drop the ~8.5 MB .symtab/.strtab symbol table (never loaded at runtime;
+# no .debug_* sections are emitted in release anyway). "symbols" keeps unwind
+# info intact, so panic backtraces and Drop-on-panic are unchanged. Mandatory.
 strip = "symbols"
-# No `lto` on purpose. Measured on this crate: thin LTO (default 16 codegen
-# units) was strictly worse than strip alone, both bigger (~21.8 MB vs ~21.5 MB)
-# and slower (~1m29s vs ~1m15s build); only fat `lto = true` + `codegen-units =
-# 1` shrank it, to ~16.4 MB, at a ~2 min build. Build speed wins here, so LTO
-# stays off. Re-enable fat LTO only if shipped size starts to matter more than
-# build time. panic stays "unwind".
+# Fat LTO: whole-program inlining and dead-code elimination across the entire
+# dependency graph (Slint, symphonia-all, zbus). This is what actually shrinks
+# .text; thin LTO was measured to give ~no gain over strip alone on this crate.
+# Measured here: fat LTO + default 16 codegen-units -> ~17.5 MB at ~2m06s.
+# codegen-units = 1 reaches ~16.4 MB at about the SAME build time (fat LTO's
+# serial whole-program link dominates either way, so one unit buys no speed-up),
+# but that extra ~1.1 MB is not worth carrying an extra knob, so codegen-units
+# stays at the default. Release builds run ~2 min vs ~10s unoptimised; the
+# run-debug mise task is the fast-iteration path. panic stays "unwind" (default).
+lto = true

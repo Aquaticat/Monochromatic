@@ -155,6 +155,29 @@ let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each 
 ^$bin ...$extras
 '''
 
+[tasks."run-debug"]
+description = "Debug build (host if dev libs present, else container), then run it on the host for fast iteration (pass file/folder paths after --)"
+usage = '''
+arg "[args]" var=#true help="File or folder paths to enqueue"
+'''
+# Fast-iteration sibling of `run`. `run` builds the optimised release binary
+# (fat LTO, ~1-2 min) and installs it to ~/.local/bin so the KDE .desktop
+# launcher and `mise run` exercise the SAME binary. This task skips all of that:
+# it builds the unoptimised DEBUG binary (~10s incremental, no LTO/strip) and
+# runs target/debug/music-player directly. It deliberately does NOT copy into
+# ~/.local/bin or install the .desktop, so the installed release binary the
+# launcher resolves is left untouched. The host session still supplies
+# WAYLAND_DISPLAY, XDG_RUNTIME_DIR, the D-Bus bus, PipeWire, and the XDG user
+# dirs, so the GUI, audio, and auto-load behave exactly as under `run`.
+run = '''
+# Build the debug binary host-first; the container fallback surfaces it on the
+# host at target/debug/music-player via the bind-mounted target/.
+if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }
+let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
+# Run the freshly built debug binary directly on the host.
+^'./target/debug/music-player' ...$extras
+'''
+
 [tasks."gen:fixtures"]
 description = "Generate tiny per-codec audio fixtures with host ffmpeg (run once, commit results)"
 # Runs on the host: ffmpeg is present there. 0.3s 440Hz stereo sine per codec.
