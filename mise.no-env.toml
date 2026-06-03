@@ -78,6 +78,16 @@ rust = { version = "latest", components = "rust-src" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
+# Test runner for every Rust package (replaces `cargo test`). nextest gives a
+# per-test process isolation model, faster parallel scheduling, and clearer
+# output. The `cargo:` backend resolves through cargo-binstall (installed just
+# above) to a prebuilt binary, so no slow source build. Inherited by child
+# config roots (e.g. packages/fuzz/forbidden-strings), so the nightly fuzz
+# crate gets the same runner without its own entry. The two podman-built
+# desktop apps install nextest inside their Containerfiles instead, since the
+# container filesystem does not see host mise tools.
+"cargo:cargo-nextest" = "latest"
+
 # Compression
 "github:facebook/zstd" = "latest"
 
