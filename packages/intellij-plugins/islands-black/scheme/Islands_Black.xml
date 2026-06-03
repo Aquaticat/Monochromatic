@@ -31,6 +31,26 @@
         <option name="FOREGROUND" value="ffffff"/>
       </value>
     </option>
+    <option name="DEFAULT_DOC_MARKUP">
+      <value>
+        <option name="FOREGROUND" value="ffffff"/>
+      </value>
+    </option>
+    <option name="DEFAULT_DOC_COMMENT_TAG">
+      <value>
+        <option name="FOREGROUND" value="ffffff"/>
+      </value>
+    </option>
+    <option name="DEFAULT_DOC_COMMENT_TAG_VALUE">
+      <value>
+        <option name="FOREGROUND" value="ffffff"/>
+      </value>
+    </option>
+    <option name="TODO_DEFAULT_ATTRIBUTES">
+      <value>
+        <option name="FOREGROUND" value="ffffff"/>
+      </value>
+    </option>
     <option name="BLOCK_TERMINAL_BLACK">
       <value>
         <option name="FOREGROUND" value="0"/>
