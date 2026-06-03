@@ -67,18 +67,6 @@ fn parse_hit(line: &str) -> Option<(usize, usize, usize, usize)> {
     Some((line_num, col_start, col_end, rule_idx))
 }
 
-// What:     `fn is_utf8_start_byte(b: u8) -> bool`. UTF-8 start
-//           bytes are either ASCII (0xxxxxxx) or have the high two
-//           bits as 11 (110xxxxx for 2-byte, 1110xxxx for 3-byte,
-//           11110xxx for 4-byte). Continuation bytes are
-//           10xxxxxx (0x80..=0xBF) -- NOT start bytes.
-// Why:      Plan §7.2 invariant 2: cols may not cross UTF-8
-//           boundary.
-// TS map:   `function isUtf8StartByte(b: number): boolean`.
-fn is_utf8_start_byte(b: u8) -> bool {
-    (b & 0xC0) != 0x80
-}
-
 // What:     `fn position_key(hit: &str) -> Option<String>`. Strips
 //           the trailing ` rule=N` so position-only comparisons
 //           ignore rule-index renumbering when we shuffle rule
@@ -172,36 +160,23 @@ fuzz_target!(|input: RulesetAndContent| {
         );
         assert!(col_start <= col_end, "col_start > col_end: ({}, {})", col_start, col_end);
 
-        // What:     Re-derive the line byte range from content,
-        //           then check the col offsets fall on UTF-8 start
-        //           bytes (invariant 2).
-        // Why:      Past bugs (em-dash, 6-byte mojibake) emitted
-        //           cols pointing INTO a continuation byte; this
-        //           catches that shape automatically.
-        let li = build_line_index(content);
-        if line_num <= li.len() {
-            let line_start = li[line_num - 1];
-            let start_byte_off = line_start + col_start - 1;
-            let end_byte_off = line_start + col_end - 1;
-            if start_byte_off < content.len() {
-                assert!(
-                    is_utf8_start_byte(content[start_byte_off]),
-                    "col_start lands on UTF-8 continuation byte: line={} col={} byte=0x{:02x}",
-                    line_num,
-                    col_start,
-                    content[start_byte_off],
-                );
-            }
-            if end_byte_off < content.len() {
-                assert!(
-                    is_utf8_start_byte(content[end_byte_off]),
-                    "col_end lands on UTF-8 continuation byte: line={} col={} byte=0x{:02x}",
-                    line_num,
-                    col_end,
-                    content[end_byte_off],
-                );
-            }
-        }
+        // Invariant 2 (match positions land on UTF-8 char boundaries) was
+        // removed: it is unsound for this scanner. The scanner reports
+        // 1-based BYTE columns (`line_and_col_indexed`: offset - line_start
+        // + 1), like ripgrep, and its matchers are byte-oriented, so on
+        // arbitrary content a rule can match a sub-char byte range (e.g.
+        // only the lead byte of `©` = C2 A9, or only the trailing
+        // continuation byte). The reported byte columns then legitimately
+        // fall mid-char, so asserting char-boundary alignment produces
+        // false failures; and the only sound refinement (gate the check on
+        // the reconstructed matched range being valid UTF-8) is tautological
+        // because valid UTF-8 already implies the boundaries it would
+        // assert. The original motivation, the walk_literal_bytes u8->char
+        // mojibake regression, is covered directly by the
+        // fuzz_literal_roundtrip target, the char-by-char walk in atom.rs,
+        // and the escaped_underscore_gate_round_trips_through_aho_corasick
+        // unit test. The remaining invariants here (line/col in range, col
+        // ordering, format shape, thread-count invariance) still hold.
     }
 
     //endregion
