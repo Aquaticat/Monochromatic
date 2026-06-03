@@ -46,6 +46,21 @@ RUN curl --proto '=https' --tlsv1.2 --silent --show-error --fail https://sh.rust
       | env CARGO_HOME=/usr/local sh -s -- -y --no-modify-path --profile minimal \
           --default-toolchain stable --component clippy
 
+# cargo-nextest is the test runner the `test` mise task invokes
+# (`cargo nextest run`). Install the prebuilt binary from get.nexte.st into
+# /usr/local/bin (already on PATH, persistent in the image) rather than
+# `cargo install cargo-nextest`, which would add a multi-minute source compile
+# to every image rebuild. Arch-aware, mirroring the Zig block above; `tar`/`xz`
+# are already installed for the Ghostty/Zig fetch.
+RUN arch="$(uname -m)" \
+    && case "$arch" in \
+      x86_64) nextest_url="https://get.nexte.st/latest/linux" ;; \
+      aarch64) nextest_url="https://get.nexte.st/latest/linux-arm" ;; \
+      *) echo "unsupported architecture: $arch" >&2; exit 1 ;; \
+    esac \
+    && curl --proto '=https' --tlsv1.2 --location --silent --show-error --fail "$nextest_url" \
+      | tar zxf - -C /usr/local/bin
+
 ENV CARGO_HOME=/cargo
 # Property changed callbacks and the pinned Slint Flickable improvements are
 # compiled consistently for build, lint, test, and run tasks.

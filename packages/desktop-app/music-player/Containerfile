@@ -51,6 +51,22 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
       | env CARGO_HOME=/usr/local sh -s -- -y --no-modify-path --profile minimal \
           --default-toolchain stable --component clippy
 
+# cargo-nextest is the test runner the `test` mise task invokes
+# (`cargo nextest run`). Install the prebuilt binary from get.nexte.st into
+# /usr/local/bin (already on PATH, persistent in the image) rather than
+# `cargo install cargo-nextest`, which would add a multi-minute source compile
+# to every image rebuild. Arch-aware: get.nexte.st serves separate x86_64 and
+# aarch64 builds. The standard Fedora image already ships `tar`/`gzip` for the
+# `tar zxf` extraction.
+RUN arch="$(uname -m)" \
+    && case "$arch" in \
+      x86_64) nextest_url="https://get.nexte.st/latest/linux" ;; \
+      aarch64) nextest_url="https://get.nexte.st/latest/linux-arm" ;; \
+      *) echo "unsupported architecture: $arch" >&2; exit 1 ;; \
+    esac \
+    && curl --proto '=https' --tlsv1.2 --location --silent --show-error --fail "$nextest_url" \
+      | tar zxf - -C /usr/local/bin
+
 ENV CARGO_HOME=/cargo
 # Enable Slint's experimental builtins so `FlexboxLayout` (used for the wrapping,
 # variable-width page-tab bar) is recognised. slint-build reads this env var at

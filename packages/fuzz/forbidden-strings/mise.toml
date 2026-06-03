@@ -11,6 +11,16 @@
 # insight against this crate; cargo-fuzz's default ASAN path does not require it.
 rust = { version = "nightly", components = "rust-src" }
 
+[tasks.test]
+description = "cargo nextest run --lib (unit tests for the structured generator)"
+# Scoped to `--lib`: the library target hosts the generator unit tests
+# (src/generators_tests.rs). The fuzz_targets/* bins are libFuzzer harnesses
+# that only link under cargo-fuzz's injected sanitizer-coverage RUSTFLAGS, so a
+# plain `cargo nextest run` over all targets would fail to build them. nextest
+# is inherited from the repo-root [tools]; the nightly toolchain pinned in this
+# config's [tools] applies, which nextest runs under without issue.
+run = "cargo nextest run --lib --release"
+
 [tasks.list]
 description = "List all fuzz targets"
 run = "cargo fuzz list --fuzz-dir ."

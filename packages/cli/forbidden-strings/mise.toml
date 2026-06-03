@@ -37,8 +37,8 @@ description = "Fallback local publish. Canonical path is .github/workflows/cargo
 run = "cargo publish"
 
 [tasks.test]
-description = "cargo test"
-run = "cargo test --release"
+description = "cargo nextest run"
+run = "cargo nextest run --release"
 
 # Fuzzing moved to its own config root at packages/fuzz/forbidden-strings so a
 # scoped nightly toolchain does not force this published crate onto nightly.

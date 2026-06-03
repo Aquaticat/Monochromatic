@@ -40,8 +40,8 @@ description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
-description = "cargo test inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo test --release"
+description = "cargo nextest run inside the container"
+run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo nextest run --release"
 
 [tasks.run]
 description = "Build in the container, then run the music-player GUI on the host (pass file/folder paths after --)"

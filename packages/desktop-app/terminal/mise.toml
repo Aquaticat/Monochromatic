@@ -82,8 +82,8 @@ description = "Enforce the 300 code-line budget on .rs files"
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
-description = "cargo test inside the container"
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo test --release"
+description = "cargo nextest run inside the container"
+run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo nextest run --release"
 
 [tasks.run]
 description = "Build in the container, install desktop metadata and runtime libraries, then run the GUI on the host"
