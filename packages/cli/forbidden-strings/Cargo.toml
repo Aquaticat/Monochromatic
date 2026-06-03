@@ -45,61 +45,69 @@ ignore = "0.4"
 memchr = "2"
 rayon = "1"
 regex = "1"
-resharp = "0.6"
+# Floor raised to 0.6.8: it carries the Bug B/C/E/F fixes verified in
+# docs/troubleshooting/resharp.md (intersection-with-lookbehind no longer
+# corrupts, the algebra arithmetic no longer overflows, and the prefix loop
+# no longer hangs). Caret semantics keep this within 0.6.x (`>=0.6.8, <0.7`).
+resharp = "0.6.8"
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:
 #
 # `src/rules/engine.rs` and `src/rules.rs` use `std::panic::catch_unwind`
-# to intercept panics inside the resharp algebra / engine, which still
-# panics on a handful of fuzzer-discovered rule shapes (re-verified
-# against 0.6.3 and git HEAD on 2026-05-23; behaviour unchanged from
-# 0.5.3, only source lines drifted):
-#   - `attempt to add with overflow` inside resharp-algebra
-#     `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2479` at HEAD,
-#     `:2470` in 0.6.0; compile path; `Regex::new` on shapes like
-#     `(?:\w|$)(?:(?![1g]\_X)& a)` mixing intersection (`&`),
-#     `\w` shorthand, and an end-anchor alternation);
-#   - `should not contain lookbehind` inside resharp-algebra `strip_lb`
-#     (`resharp-algebra/src/lib.rs:2007` at HEAD; was `unexpected end
-#     0 > N` in resharp `scan_fwd_all` / `engine.rs:1020` through 0.6.0;
-#     runtime path; `find_all` on shapes like `(?:(?=a)&(?<=_))` mixing
-#     intersection (`&`) with lookbehind, content >= 64 bytes).
+# to intercept panics inside the resharp algebra / engine. The specific
+# fuzzer-discovered shapes that motivated this combo are all resolved
+# upstream as of resharp 0.6.8 (behaviourally re-verified 2026-06-03;
+# see docs/troubleshooting/resharp.md, "bump to resharp 0.6.8"):
+#   - `attempt to add with overflow` in `attempt_rw_concat_2`
+#     (`resharp-algebra`) on shapes like `(?:\w|$)(?:(?![1g]\_X)& a)`
+#     (intersection + `\w` + end-anchor) and the nested-lookahead-in-
+#     quantified-group shapes: 0.6.8 uses `saturating_add`, so these now
+#     compile cleanly (intersection case) or are rejected at compile with
+#     `Algebra(UnsupportedPattern)` (nested-lookahead case), no overflow;
+#   - `should not contain lookbehind` in `strip_lb` (`resharp-algebra`) on
+#     `(?:(?=a)&(?<=_))` (intersection + lookbehind): through 0.6.3 this
+#     corrupted matches in release (62 spurious on a 64-byte input) and
+#     tripped a `debug_assert!` in debug; 0.6.8 fails closed at
+#     `Regex::new` with `Algebra(UnsupportedPattern)`, so it never reaches
+#     find_all.
 #
-# Two profile settings are load-bearing here:
+# The combo is kept regardless, as defense-in-depth for UNKNOWN shapes:
+# resharp's algebra is large and the fuzz targets in
+# packages/fuzz/forbidden-strings keep finding new edge cases; a future
+# overflow or panic shape should fail closed, not corrupt CI.
 #
 # 1. `panic = "unwind"`: `catch_unwind` only intercepts when the process
 #    unwinds. Under `panic = "abort"` the process dies before the unwind
-#    barrier runs, and the scanner -- a CI gate -- aborts instead of
-#    surfacing the bad rule.
+#    barrier runs, and the scanner (a CI gate) aborts instead of
+#    surfacing the bad rule. This does not help against a stack-overflow
+#    SIGABRT (Bug G, deeply nested complement/lookaround, still unfixed
+#    upstream at 0.6.8); that needs the depth pre-validator tracked in the
+#    troubleshooting doc, not this profile.
 #
-# 2. `overflow-checks = true`: the algebra panic is Rust's standard
-#    checked-arithmetic panic from a `+` on `usize`. Cargo's default
-#    release profile disables overflow checks for speed; without this
-#    setting the `add` silently wraps, resharp builds the wrong DFA,
-#    and the rule fails open (zero hits on content that should match).
-#    That is the worst case for a secret scanner: a corrupt rule
-#    silently passes CI. With this setting the wrap becomes a real
-#    panic that catch_unwind can intercept and convert to "rule=N
-#    engine error", which `scan.rs` already emits as a fail-closed
-#    synthetic hit.
+# 2. `overflow-checks = true`: an algebra overflow is Rust's standard
+#    checked-arithmetic panic from a `+`. Cargo's default release profile
+#    disables overflow checks for speed; without this setting an unknown
+#    overflowing add would silently wrap, resharp would build the wrong
+#    DFA, and the rule would fail open (zero hits on content that should
+#    match). That is the worst case for a secret scanner: a corrupt rule
+#    silently passes CI. With this setting the wrap becomes a real panic
+#    that catch_unwind converts to "rule=N engine error", which `scan.rs`
+#    emits as a fail-closed synthetic hit.
 #
 # Note about `debug-assertions`: deliberately left at the release default
-# of OFF. The second crash shape (`strip_lb`'s `debug_assert!` at
-# `resharp-algebra/src/lib.rs:2007` at HEAD, formerly `engine.rs:1020`)
-# lives behind a `debug_assert!`. With debug-assertions OFF in release,
-# that shape does NOT panic; instead it returns wrong (corrupted) matches:
-# the 2026-05-23 re-verification reproduced 62 spurious matches on a
-# 64-byte input for shape `(?:(?=a)&(?<=_))`. The pre-validator
-# `intersection_with_lookbehind` in `src/rules/engine.rs` is therefore
-# load-bearing for that shape: it must reject the input BEFORE resharp
-# sees it, because the catch_unwind net cannot help when there is no
-# panic. We do not turn debug-assertions on in release because the
-# `regex`, `ignore`, and `rayon` deps have hot-path debug_asserts and
-# the perf cost was not measured to be acceptable on the CI gate.
+# of OFF. Some resharp postcondition checks live behind `debug_assert!`
+# (the historical `strip_lb` assertion was one), so with debug-assertions
+# OFF a future such shape returns wrong matches rather than panicking, and
+# catch_unwind cannot help. The pre-validators in `src/rules/engine.rs`
+# (and the fuzz targets, which run with debug-assertions ON) are the
+# durable cover for that class. We do not turn debug-assertions on in
+# release because the `regex`, `ignore`, and `rayon` deps have hot-path
+# debug_asserts and the perf cost was not measured to be acceptable on the
+# CI gate.
 #
-# See docs/troubleshooting/resharp.md for the full panic shapes and the
-# pre-validator coverage in `src/rules.rs` / `src/rules/engine.rs`.
+# See docs/troubleshooting/resharp.md for the full per-bug status at 0.6.8
+# and the pre-validator coverage in `src/rules.rs` / `src/rules/engine.rs`.
 [profile.release]
 lto = true
 codegen-units = 1

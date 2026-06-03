@@ -811,24 +811,33 @@ fn compile_rule_src_does_not_panic_on_known_bad_shapes() {
 fn find_all_catches_runtime_panic_via_catch_unwind() {
     // What:     We construct the resharp::Regex directly (not
     //           through compile_rule_src) so the pre-validator
-    //           does not reject the shape. Then drive find_all on
-    //           a 64-byte content slice -- the bisected minimum
-    //           for the runtime panic at `engine.rs:1020`.
-    // Why:      The wrapper must convert panic to Err regardless
-    //           of whether the pre-validator covered the shape.
+    //           does not reject the shape, then assert no process
+    //           panic for the intersection-with-lookbehind shape.
+    // Why:      The load-bearing invariant is "no process panic",
+    //           whether upstream rejects the shape at construction
+    //           or the catch_unwind net absorbs a runtime panic.
+    //           Through resharp 0.6.3 this shape compiled and then
+    //           corrupted (release) or panicked (debug) inside
+    //           find_all at `engine.rs:1020` / `strip_lb`, which the
+    //           wrapper guarded. resharp 0.6.8 fixed it the other
+    //           way: `Regex::new` now fails closed with
+    //           `Algebra(UnsupportedPattern)`, so the shape never
+    //           reaches find_all. Both outcomes satisfy the
+    //           invariant; the wrapper stays in find_all as a hedge
+    //           for unknown future shapes (see
+    //           docs/troubleshooting/resharp.md, 0.6.8 bump section).
     // TS map:   `new Regex(shape).findAll(longContent);` then
-    //           assert `Err`.
-    let re = resharp::Regex::new("(?:(?=a)&(?<=_))").expect("compile resharp regex");
-    let cr = CompiledRegex::Resharp(re);
-    // Long content so the panic actually fires. The exact
-    // threshold (~64 bytes) is encoded by the resharp engine and
-    // not part of our API; we use a comfortably large buffer.
-    let content = vec![b'a'; 128];
-    let result = cr.find_all(&content);
-    // Either Ok or Err is acceptable here -- the load-bearing
-    // assertion is "no process panic". The test framework would
-    // abort if the panic escaped the wrapper.
-    let _ = result;
+    //           assert no throw.
+    if let Ok(re) = resharp::Regex::new("(?:(?=a)&(?<=_))") {
+        let cr = CompiledRegex::Resharp(re);
+        // Long content so any latent runtime panic would fire. The
+        // exact threshold (~64 bytes) is encoded by the resharp engine
+        // and not part of our API; we use a comfortably large buffer.
+        let content = vec![b'a'; 128];
+        // Either Ok or Err is acceptable -- the test framework would
+        // abort if a panic escaped the catch_unwind net.
+        let _ = cr.find_all(&content);
+    }
 }
 
 use super::engine::stacked_quantifier;
