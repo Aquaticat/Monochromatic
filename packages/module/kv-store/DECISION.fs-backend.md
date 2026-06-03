@@ -157,29 +157,53 @@ internal uniformity, Option 3 is the logger-consistent option that still ships s
 
 ## Sync browser persistence
 
-Relevant only if the sync variant ships (it is chosen). OPFS sync access handle
-(`createSyncAccessHandle`) is Web Worker-only and async to obtain, so a main-thread sync browser
-backend cannot be OPFS.
+Relevant only because the sync variant ships. An earlier draft ranked "OPFS-Worker-only" first; that
+was a defect. A file-per-key sync OPFS backend is not implementable, for two independent reasons.
+
+-   Per-key handle acquisition is async. `navigator.storage.getDirectory()`,
+    `getFileHandle(name, { create })`, and `createSyncAccessHandle()` all return Promises, and the sync
+    access handle is Web Worker-only. The `SyncStorageBackend` contract (`src/types.ts:207`) requires
+    `get`, `set`, and `delete` to be synchronous for any key, including one first seen at `set` time, so
+    there is no synchronous way to open that key's file. Only operations on an already-open
+    `FileSystemSyncAccessHandle` are synchronous.
+-   Filename hashing is async in the browser. SHA-256 via `SubtleCrypto.digest()` returns a Promise, so
+    a sync backend cannot derive a hashed filename synchronously. node's `node:crypto` `createHash` is
+    synchronous, so the node sync backend is unaffected; this blocker is browser-specific.
+
+The data-sharing-parity argument that drove the earlier ranking does not hold either. A sync OPFS
+backend cannot use file-per-key, so its on-disk layout would differ from the async file-per-key OPFS
+backend, and the two would not interoperate without also rewriting the async backend around the same
+container format. The cited parity benefit does not exist without a much larger redesign.
+
+Implementable choices:
 
 -   localStorage:
-    -   Pros: synchronous on the main thread, persistent, universal.
-    -   Cons: roughly 5MB origin cap; it is web storage, not a filesystem, so it diverges from the OPFS
-        async choice; a browser sync store and async store would not share data (OPFS files versus
-        localStorage keys), unlike node where both point at the same fs directory.
--   OPFS sync access handle (Worker-only):
-    -   Pros: consistent with the async OPFS choice; a true filesystem; sync and async stores share the
-        same OPFS files, matching node's behavior.
-    -   Cons: throws outside a Web Worker, so it is unusable from typical main-thread browser code.
+    -   Pros: synchronous on the main thread for arbitrary keys, persistent, universal; localStorage
+        keys are arbitrary strings, so no filesystem-safe filename and no async hashing is needed.
+    -   Cons: roughly 5MB origin cap; not a filesystem; a browser sync store and async store do not
+        share data, unlike node where both point at the same fs directory.
+-   Single pre-opened OPFS container file (Worker-only):
+    -   Pros: keeps data in OPFS; synchronous operations after an async setup.
+    -   Cons: Worker-only; abandons file-per-key for one container that needs its own format,
+        compaction, and versioning; a sync access handle takes an exclusive lock, so concurrent backends
+        on the same file conflict; still does not interoperate with the async file-per-key backend.
 
-Ranking: **OPFS-Worker-only > localStorage**, decided by cross-variant data-sharing parity with node
-and semantic consistency with the async OPFS pick. This flips to localStorage if sync on the browser
-main thread is needed (for example a sync memoize store running in page code).
+Revised ranking: **localStorage > single-container OPFS**, decided by which option satisfies a
+synchronously-constructible, main-thread sync backend for arbitrary keys. localStorage does; the
+container design is Worker-only and is a separate storage format, warranted only if browser sync must
+live in OPFS.
+
+Note on the factory shape: making `createSyncFileBackend` an async factory (returning a backend whose
+operations are sync) does not by itself rescue file-per-key OPFS, since a key first seen after
+construction still needs an async handle. The async-setup-then-sync-ops shape only works combined with
+the single pre-opened container.
 
 ## Open questions for the reviewer
 
 1.  Mechanism: Option 2 (recommended), Option 3, or Option 1 (which would reverse the async-plus-sync
     decision).
-2.  Sync browser persistence: OPFS-Worker-only (recommended) or localStorage.
+2.  Sync browser persistence: localStorage (recommended) or single-container OPFS (Worker-only). A
+    file-per-key sync OPFS backend is not implementable.
 3.  Whether logger consistency should outweigh internal uniformity, which is the crux of Option 2
     versus Option 3.
 
@@ -189,7 +213,9 @@ main thread is needed (for example a sync memoize store running in page code).
     Keys carry `/`, `:`, and path separators, and exceed the 255-byte filename limit. Hash the key
     (sha256 hex) for the filename rather than encoding it, and add adversarial filename tests
     (path traversal tokens, separators, long keys, empty key) per the boundary-encoding rule in
-    AGENTS.md.
+    AGENTS.md. The node backends hash with `node:crypto` `createHash` (synchronous); the async browser
+    backend can hash with Web Crypto. The browser sync backend (localStorage) sidesteps hashing
+    entirely by using raw arbitrary-string keys, since `SubtleCrypto.digest()` is async.
 -   Writes should be atomic (write to a temp sibling, then rename) so a concurrent reader never observes
     a torn file; the file-enforcer manifest's plain `writeFileSync` lacked this.
 -   `get` returns `undefined` on a missing entry (ENOENT), and rethrows other errors.
