@@ -32,6 +32,28 @@ stays a recommended next step):
   safe consumer-side guard. A minimal fix (a re-entrancy guard on the
   distribution rewrites) is now prototyped and verified; file-ready, held for
   go-ahead. See "Intersection over alternation: unbounded algebra recursion".
+- Hardened `find_all` drops zero-width matches (new, found 2026-06-03): a
+  soundness defect. The `hardened(true)` engine returns no matches for a
+  pattern that `is_match` and `find_anchored` both report matching (e.g. `\B|,`
+  on a single non-word byte). Prototyped and verified (differential-clean
+  against published 0.6.8); file-ready. See "Hardened find_all drops zero-width
+  matches".
+- Compile-time timeouts on small patterns (new, found 2026-06-03): a lookbehind
+  and a `\p{L}` pattern each exceed libFuzzer's 10s per-input timeout inside
+  `Regex::with_options`. Triage only: the exact fuzzer inputs were not captured
+  and the partial patterns do not reproduce in isolation. See "Compile-time
+  timeouts on small patterns (triage)".
+
+Combined upstream PR (2026-06-03): the four file-ready fixes (Bug G `max_depth`,
+the intersection-over-alternation re-entrancy guard, the hardened zero-width
+`find_all` fix, and the flaky-test calibration) are bundled as one branch
+`fix/zerowidth-findall-and-stack-overflow-guards` in the user's fork
+(`~/resharp`, `https://github.com/Aquaticat/resharp`), based on `c6623fe`
+(0.6.8), four commits (one per fix). The full draft, per-fix root-cause traces,
+verification, and combined diff are in the out-of-band local file
+`docs/todo/resharp-bugs-202606031308-pr.local.md` (gitignored, not committed).
+The combined patch is `/tmp/agent/resharp-combined-202606031308.patch`. Pushing
+and opening the PR is held for the user.
 
 A flaky upstream timing test (`rev_bot_skip_terminates_fast`) surfaced while
 verifying the prototype; it fails identically on stock 0.6.8. Its absolute
@@ -58,9 +80,10 @@ belt-and-suspenders; over-rejection is fail-closed-safe.
 
 Still-live items, each with its own section below: Bug A
 (complement-of-lookaround), Bug G (deep-nesting stack overflow),
-intersection over alternation (algebra-recursion stack overflow), the flaky
-`rev_bot_skip_terminates_fast` timing test, and the lower-severity flags H,
-I, J.
+intersection over alternation (algebra-recursion stack overflow), hardened
+`find_all` dropping zero-width matches (soundness), compile-time timeouts on
+small patterns (triage), the flaky `rev_bot_skip_terminates_fast` timing
+test, and the lower-severity flags H, I, J.
 
 ## Bump to resharp 0.6.8 (2026-06-03): plan executed
 
@@ -171,8 +194,11 @@ items waited on; both are now actioned:
   `self.max_depth` directly rather than the 0.6.4 `self.parser()` wrapper). It
   builds clean and the cap holds: `compl` nested 30,000 deep returns a clean
   `Err` instead of aborting, the boundary is exact (999 compiles, 1,001
-  rejects), and real rules still compile. The refreshed 16-line patch is ready
-  but NOT filed (a shared-state action; held for explicit go-ahead).
+  rejects), and real rules still compile. Re-verified again 2026-06-03 in a
+  fresh `c6623fe` clone (`compl`/`look`/`group` all `Ok` at 999, `Err` at 1,001;
+  `compl`/`look` at 30,000 and `group` at 60,000 return a clean `Err`, no abort)
+  and bundled into the combined PR branch (see the "Combined upstream PR" note
+  near the top). NOT pushed (a shared-state action; held for the user).
 
 The fuzz campaign that the "Probe method" note above deferred was also run
 against 0.6.8 (the `smoke` task over all seven targets, AddressSanitizer
@@ -277,11 +303,14 @@ the Bug G `max_depth` patch.
 ### Prototype (2026-06-03): re-entrancy guard on the distribution rewrites
 
 A minimal fix breaks the cycle without touching the distribution rewrites'
-semantics. Patch: `/tmp/agent/resharp-interalt-reentrancy-guard-0.6.8.patch`
-(41 insertions, `resharp-algebra/src/lib.rs` only).
+semantics. The re-materialized 2026-06-03 patch is part of the combined PR
+branch and `/tmp/agent/resharp-combined-202606031308.patch`
+(`resharp-algebra/src/lib.rs` only, ~33 insertions; the per-fix diff is in
+`docs/todo/resharp-bugs-202606031308-pr.local.md`).
 
 Mechanism: add an in-progress set
-`rw_active: FxHashSet<(Kind, NodeId, NodeId)>` to `RegexBuilder`, and wrap
+`rw_active: FxHashSet<(u8, NodeId, NodeId)>` to `RegexBuilder` (the `u8` tags
+inter=0 / union=1 so the two rewrites do not alias), and wrap
 `attempt_rw_inter_2` and `attempt_rw_union_2` so that re-entering either with a
 `(kind, left, right)` triple already on the stack returns `None` (decline the
 rewrite). `mk_inter` / `mk_union` then fall through to building the plain
@@ -316,6 +345,217 @@ Verification (all on the capped probe, gnu target, 8 MB stack):
 A cleaner upstream fix would make the two distributions converge to a canonical
 form instead of declining on re-entry, but the guard is the minimal change that
 proves the defect is fixable and stops the abort with no semantic change.
+
+Re-materialized and re-verified 2026-06-03 in a fresh `c6623fe` (0.6.8) clone
+(the prior session's `/tmp/agent` patch was cleaned). The guard is one of the
+four fixes in the combined PR branch (see the "Combined upstream PR" note near
+the top). Re-verification on the combined build: the full release suite passes
+(`engine_test` 124/0 including the now-green `rev_bot_skip_terminates_fast`,
+`properties_test` 36/0, all binaries 0 failed), the minimal reproducer compiles,
+previously-OK patterns compile, and a guarded-vs-published-0.6.8 `find_all`
+differential over 10 intersection/union patterns x 7 inputs (70 checks) shows
+0 differences. The fuzz target `fuzz_regex_engine_dispatch` is the compile
+target this overflow class belongs to: it exercises `compile_rule_src` on every
+generated rule and now skips the `&`+`|` compile-dispatch comparison to avoid the
+abort (keeping the soundness assert).
+
+---
+
+## Hardened find_all drops zero-width matches (found 2026-06-03)
+
+### Symptom
+
+`Regex::find_all` on the hardened engine (`RegexOptions::default().hardened(true)`)
+silently under-reports: it drops a zero-width match at position 0 and at
+end-of-input, while `is_match` and `find_anchored` both report the match and the
+default (non-hardened) engine returns it. This is a soundness defect (matches
+present in the language are not returned), specific to hardened mode.
+
+Reproduction against published 0.6.8:
+
+```rust
+use resharp::{Regex, RegexOptions, Match};
+let re = Regex::with_options(r"\B|,", RegexOptions::default().hardened(true)).unwrap();
+let hay: &[u8] = &[0xAB]; // one non-word byte
+assert!(re.is_match(hay).unwrap());                              // true
+assert_eq!(re.find_anchored(hay).unwrap(), Some(Match { start: 0, end: 0 }));
+assert_eq!(re.find_all(hay).unwrap(), Vec::new());              // BUG: empty
+// default engine is correct:
+assert_eq!(
+    Regex::new(r"\B|,").unwrap().find_all(hay).unwrap(),
+    vec![Match { start: 0, end: 0 }, Match { start: 1, end: 1 }],
+);
+```
+
+The drop is precisely at the two boundary positions. For `"  "` (two spaces,
+all `\B` positions): hardened returns `[{1,1}]` while default returns
+`[{0,0},{1,1},{2,2}]` (interior position 1 kept, boundary positions 0 and 2
+dropped). For `"abc"` where `\B` only holds at interior positions 1 and 2,
+hardened and default agree (the dropped boundary positions do not match anyway,
+so nothing is lost there, which is why this hid).
+
+### Root cause
+
+`find_all` routes hardened patterns to `find_all_dfa` ->
+`find_all_dfa_inner` -> the hardened active-set branch
+(`resharp-engine/src/lib.rs:1734`), which calls `scan_fwd_active_set`
+(`resharp-engine/src/fas.rs:348`). For `\B|,` the pattern is neither
+`always_nullable` nor `rev_trivial` (confirmed: removing the `&& !self.hardened`
+guard at `lib.rs:1719` does not change the result), so the
+`find_all_nullable_slow` path that handles nullable patterns is not taken; the
+matches come from `scan_fwd_active_set`.
+
+`scan_fwd_active_set` spawns matches from the reverse-scan `nulls` set and
+records the best end in `max[i]`, using `max[i] == 0` as the "no match" sentinel
+(`fas.rs:365`). Its non-`ALWAYS_NULLABLE` emission loop (`fas.rs:532-538`) is:
+
+```rust
+for &i in nulls.iter().rev() {
+    if i < skip_until || max[i] == 0 {
+        continue;
+    }
+    emit(i, max[i], &mut skip_until);
+}
+```
+
+Two gaps:
+
+1. A zero-width match at position 0 has end 0, which collides with the
+   `max[i] == 0` "no match" sentinel, so position 0 is skipped.
+2. The scan loops only `while pos < data_end`, so it never spawns a match
+   starting at `data_end`; `max[data_end]` stays 0 and the end position is never
+   emitted.
+
+The correct default path `scan_fwd_all` (`resharp-engine/src/engine.rs:894`)
+avoids both: it uses `NO_MATCH` (not 0) as its sentinel, emits position 0
+explicitly with `l_max_end` seeded from `initial_nullability` (lines 911-962),
+and emits `Match{data_end, data_end}` unconditionally when `data_end` is in
+`nulls` (lines 970-975). In this engine, membership of a boundary position in
+`nulls` (computed by the reverse scan) is itself the confirmation that a match
+starts there; the forward scan only determines the end.
+
+### Verification
+
+A probe crate (`resharp = "=0.6.8"`, release) reproduces the empty `find_all`
+on the hardened engine while `is_match`/`find_anchored`/default all report the
+match. The prototype below makes hardened agree with default with 0 differences
+across 11 zero-width/nullable patterns x 8 inputs, and resharp's own release
+suite stays green.
+
+### Prototype (2026-06-03): emit boundary matches in the active-set scan
+
+Part of the combined PR branch (see the "Combined upstream PR" note near the
+top); the per-fix diff is in
+`docs/todo/resharp-bugs-202606031308-pr.local.md` and the standalone patch is
+`/tmp/agent/resharp-hardened-zerowidth-findall-0.6.8.patch`. The fix changes the
+non-`ALWAYS_NULLABLE` emission branch of `scan_fwd_active_set` so the two
+boundary positions in `nulls` are treated as confirmed matches (the reverse
+scan guarantees them, exactly as `scan_fwd_all` does) and emits with
+`max[i].max(i)` (end == i for a zero-width match, a no-op for a confirmed longer
+match whose end is always >= i). Interior candidates are unchanged: they still
+require `max[i] != 0`.
+
+```diff
+         } else {
+             for &i in nulls.iter().rev() {
+-                if i < skip_until || max[i] == 0 {
++                if i < skip_until {
++                    continue;
++                }
++                if i != 0 && i != data_end && max[i] == 0 {
+                     continue;
+                 }
+-                emit(i, max[i], &mut skip_until);
++                emit(i, max[i].max(i), &mut skip_until);
+             }
+         }
+```
+
+Verification on the patched `c6623fe` clone:
+
+- The reproducer now returns `[{0,0},{1,1}]`; `"  "` returns
+  `[{0,0},{1,1},{2,2}]`.
+- Differential `find_all` over 11 patterns (`\B|,`, `\b|x`, `a*`, `x*|,`, `.*`,
+  `(?:a)?`, `\B|a`, `,|\B`, `[^a]*`, `a|`, `\b|,`) x 8 inputs: hardened ==
+  default, 0 differences (patterns that fail to compile in both modes are not
+  mode discrepancies).
+- `cargo test --release --workspace --no-fail-fast`: every binary green
+  (`engine_test` 124/0, `properties_test` 36/0).
+
+### Five-constraint upstream-filing check
+
+1. Upstream's fault? Yes. `find_all` is documented to return all matches; the
+   hardened engine returning fewer than the default engine for the same pattern
+   is a soundness defect, not a documented mode difference.
+2. Can upstream fix it? Yes; the minimal fix is the localized emission change
+   above (the default path already does the right thing).
+3. Supporting this use case? Yes. Hardened mode is a headline feature ("hardened
+   mode for untrusted patterns"); it must not change which matches `find_all`
+   returns, only the algorithm.
+4. Likely to fix? Plausible; the maintainer is responsive and the fix is small,
+   localized, and differential-clean.
+5. Prototyped a minimal fix? Yes, verified (above), in the combined PR branch.
+
+All five hold; file-ready as part of the combined PR. Held for the user to push.
+
+### Consumer-side note
+
+forbidden-strings compiles its rules with the default engine, not
+`hardened(true)`, so production is not affected. No consumer-side guard is
+needed; the fix is purely upstream.
+
+---
+
+## Compile-time timeouts on small patterns (triage)
+
+### Symptom
+
+The 0.6.8 fuzz campaign (`fuzz_regex_engine_dispatch` and companions, libFuzzer
+`-timeout=10`) reported two small patterns whose `Regex::with_options` compile
+(via `compile_rule_src`) exceeds the 10s per-input timeout: a lookbehind of the
+shape `(?<=b\b)_*...` and a `\p{L}`-bearing pattern. These are likely
+pathological compile-time slowdowns rather than non-termination, but that is not
+confirmed.
+
+### Status: triage only, not reproduced in isolation
+
+The exact libFuzzer inputs were not captured (no `timeout-<hash>` artifact on
+hand; the harness prints a `pattern_sha256` but the full mutated string was not
+recorded), and the reported patterns are partial (`(?<=b\b)_*...` is truncated;
+"`\p{L}`-bearing" is unspecified). Reconstruction attempts on 0.6.8 (release,
+`podman --memory=2g --cpus=2`, 60s timeout per pattern) do not reproduce a >10s
+compile:
+
+- Lookbehind family (`(?<=b\b)_*`, `+a`, `+.*`, `+x_*y`, `&~(a)`, `$`, `\b`,
+  `~(a)`, `&_*`, `(?=a)`, `\p{L}*`, and variants): all compile in under 1s; the
+  slowest is `(?<=b\b)_*a` at ~0.76s (and it returns `Err`).
+- `\p{L}` family (`\p{L}`, `+`, `*`, `{2,8}`, `&~(a)`, `*&~(.*x.*)`,
+  `(?<=\p{L})_*`, `\p{L}\p{L}*`, `~(\p{L})`, plus `(?i)`/`(?iu)` case-insensitive
+  variants): all under ~0.55s; the slowest is `\p{L}{2,8}` and `(?iu)\p{L}{2,8}`
+  at ~0.54s.
+
+So the nearest small reconstructions are two orders of magnitude under the
+threshold. The amplifying structure must live in the parts the report omits (the
+`...` tail and the specific `\p{L}` combination), which a single fuzzer mutation
+can supply but which guesswork did not recover.
+
+### Recommended next step
+
+Capture the exact libFuzzer timeout artifact (or the `pattern_sha256` plus the
+corpus entry) and re-run `Regex::with_options` on it directly. If it reproduces
+a >10s compile, sample the stack under load (`gdb -p $PID -ex 'thread apply all
+bt'`, as was done for the former Bug E hang) to localize the hot pass, then
+decide whether it is a missing fixpoint/visited guard (like Bug E) or a genuine
+super-linear blowup. Until then there is no root cause and no fix to file.
+
+### Consumer-side note
+
+forbidden-strings rules are trusted config, not attacker input, and resharp
+exposes no compile timeout to wrap. The existing `complement_intersection_
+quantified_group` and `nested_lookahead_in_quantified_group` pre-validators
+cover the known compile-time blowup shapes; a lookbehind/`\p{L}` compile
+slowdown of this kind is not currently guarded, but no production rule has the
+shape. This is tracked as triage, not a defended bug.
 
 ---
 
@@ -1523,8 +1763,9 @@ cargo test --release --workspace --no-fail-fast -- --skip rev_bot_skip_terminate
 
 ### Prototype (2026-06-03): self-calibrating linearity assertion
 
-Patch: `/tmp/agent/resharp-rev-bot-skip-test-calibration-0.6.8.patch`
-(`resharp-engine/tests/engine_test.rs` only).
+The calibration patch (`resharp-engine/tests/engine_test.rs` only) is part of
+the combined PR branch and `/tmp/agent/resharp-combined-202606031308.patch`; the
+per-fix diff is in `docs/todo/resharp-bugs-202606031308-pr.local.md`.
 
 The fix replaces the absolute `< 500 us` budget with a self-calibrating
 linearity check. It times `\z` find_all at 1 MiB and at 4 MiB (best of 3 runs
@@ -1544,11 +1785,17 @@ Verification:
   0.6.8 checkout (the test fix is independent of the algebra re-entrancy guard:
   the two patches touch different files and were applied separately).
 - The original absolute-bound test failed 100% of runs on both builds.
+- Re-verified 2026-06-03 on the combined PR build: the recalibrated test runs in
+  release (it is `#[cfg_attr(debug_assertions, ignore)]`) and passes
+  (`rev_bot_skip_terminates_fast ... ok`) within the full
+  `cargo test --release --workspace --no-fail-fast` run.
 
-This is file-ready alongside the intersection/alternation fix. Filing stays held
-for an explicit go-ahead. Per the Claude Code / out-of-scope exemptions this repo
-follows for non-actionable upstream churn, a flaky timing assertion in a
-dependency's own test suite would normally just be recorded here; the prototype
-exists so the fix can be offered upstream cheaply if wanted.
+This is one of the four fixes in the combined PR branch (see the "Combined
+upstream PR" note near the top). Pushing stays held for the user. Per the
+Claude Code / out-of-scope exemptions this repo follows for non-actionable
+upstream churn, a flaky timing assertion in a dependency's own test suite would
+normally just be recorded here; the prototype exists so the fix can be offered
+upstream cheaply, and it is bundled with the three behavioural fixes since the
+maintainer is fine with big PRs.
 
 [resharp]: https://github.com/ieviev/resharp
