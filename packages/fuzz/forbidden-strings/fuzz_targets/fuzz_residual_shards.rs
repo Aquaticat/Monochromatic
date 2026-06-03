@@ -29,7 +29,27 @@ fuzz_target!(|input: RulesetAndContent| {
     let mut regex_specs: Vec<(usize, String)> = Vec::new();
     for (i, rule) in input.rules.iter().enumerate() {
         let src = rule.render();
-        if compile_rule_src(&src).is_ok() {
+        // What:     `compile_rule_src(&src).is_ok() && !src.contains('&')`.
+        //           Keep only rules that compile individually AND do not
+        //           contain intersection (`&`).
+        // Why:      `build_residual_shards` COMBINES surviving rules into
+        //           a union shard (`(R1|R2|...)`). If any member contains
+        //           `&`, the union is `(...|A&B|...)`, the intersection-
+        //           over-alternation shape that drives resharp 0.6.x into
+        //           unbounded algebra-distribution recursion (mk_union /
+        //           mk_inter / attempt_rw_inter_2 / attempt_rw_union_2)
+        //           and overflows the stack inside `Regex::new`
+        //           (uncatchable; see docs/troubleshooting/resharp.md,
+        //           "intersection over alternation"). Each member compiles
+        //           alone, so the earlier filter does not catch it; the
+        //           blowup is created by the combination. Drop `&`-rules
+        //           from shard fuzzing: there is no safe consumer-side
+        //           pre-validator (a guard broad enough to catch the
+        //           overflow also rejects real rules), so this harness
+        //           keeps the combination-logic coverage on the common
+        //           non-intersection rules. Over-skipping (`&` even inside
+        //           a class) is safe here.
+        if compile_rule_src(&src).is_ok() && !src.contains('&') {
             regex_specs.push((i, src));
         }
     }
