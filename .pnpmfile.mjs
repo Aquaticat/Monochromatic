@@ -10,6 +10,11 @@
  * removal cases (`"banned-pkg": "-"`). This hook owns the cases where a stub
  * should land in `node_modules` so consumers can still resolve the import.
  *
+ * Re-resolution caveat: pnpm's `pnpmfileChecksum` hashes this file's bytes only,
+ * not the imported `.pnpmfile.policies.json`. After editing the policy data,
+ * touch this file (or run `pnpm install --force`) so pnpm re-runs resolution;
+ * a data-only edit alone leaves the checksum unchanged and the old graph cached.
+ *
  * See `docs/dependency-blocklist.md` for the policy reference, the decision
  * rule between throw / silent / remove, and worked examples.
  */
