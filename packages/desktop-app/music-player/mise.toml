@@ -1,36 +1,65 @@
-# All cargo work runs inside the Fedora build container (see Containerfile):
-# the host lacks the pipewire/opus/clang dev headers and must stay clean.
-# The package dir is bind-mounted at /work; the cargo registry lives in a
-# named volume so rebuilds stay fast. `label=disable` avoids relabeling the
-# host source tree under SELinux.
+# Cargo work runs on the HOST when the native dev libraries are present, and
+# falls back to the Fedora build container otherwise (see Containerfile).
+# Host build deps (layer with rpm-ostree on an immutable Fedora):
+#   pipewire-devel opus-devel fontconfig-devel freetype-devel
+# plus rustup/cargo, libclang, and Zig-less audio toolchain already on PATH.
+# The {{vars.host_ok}} predicate probes pkg-config for those libraries; when any
+# is missing the {{vars.container_cargo}} prefix runs the same cargo command in
+# podman instead (package dir bind-mounted at /work, cargo registry in a named
+# volume, `label=disable` to skip SELinux relabeling of the host tree).
+# The *:container tasks force the podman path regardless of host libraries so the
+# container build stays asserted; verify:container is the umbrella assertion.
 # Why podman and not mise-managed deps (conda route rejected):
 # see ../../../docs/decisions/desktop-app-podman-build.md
+
+[env]
+# Slint's experimental builtins (FlexboxLayout in the page-tab bar) must be
+# enabled for the markup compiler on the host exactly as the Containerfile bakes
+# them for the container path; without it the UI compile fails with "Unknown
+# element". podman does not forward host env into the container, so this only
+# affects the host branch (the image sets its own copy).
+SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
+# Host libclang ships only versioned (libclang.so.NN, no unversioned symlink),
+# so point bindgen (libspa-sys, audiopus_sys) at the lib dir explicitly. Host
+# only; not forwarded into the container, which carries its own clang-devel.
+LIBCLANG_PATH = "/usr/lib64"
+
+[vars]
+# True when the host can build natively: cargo on PATH and every native library
+# pipewire/opus/Slint link against resolvable through pkg-config. pkg-config
+# --exists with several modules succeeds only when all are found (fontconfig
+# also validates its freetype2 Requires).
+host_ok = '((which cargo | is-not-empty) and ((^pkg-config --exists libpipewire-0.3 opus fontconfig freetype2 | complete | get exit_code) == 0))'
+# Forced-container cargo prefix: build the image when it is missing, then run
+# the cargo subcommand appended by the caller inside podman.
+container_cargo = '(if ((^podman image exists localhost/monochromatic/music-player | complete | get exit_code) != 0) { ^podman build -t localhost/monochromatic/music-player -f Containerfile . }); ^podman run --rm --security-opt label=disable -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo'
 
 [tasks.image]
 description = "Build the Fedora build/run container image"
 run = "podman build -t localhost/monochromatic/music-player -f Containerfile ."
 
 [tasks.build]
-description = "Release build inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo build --release"
+description = "Release build (host if dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo build --release } else { {{vars.container_cargo}} build --release }'
 
 [tasks."build:debug"]
-description = "Debug build inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo build"
+description = "Debug build (host if dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo build } else { {{vars.container_cargo}} build }'
 
 [tasks.lint]
-description = "cargo check (no codegen) inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo check"
+description = "cargo check, no codegen (host if dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo check } else { {{vars.container_cargo}} check }'
 
 [tasks."lint:clippy"]
-description = "Run clippy with warnings denied inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo clippy --release -- -D warnings"
+description = "Run clippy with warnings denied (host if dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo clippy --release -- -D warnings } else { {{vars.container_cargo}} clippy --release -- -D warnings }'
 
 [tasks."format:clippy"]
-description = "Apply clippy's machine-applicable suggestions in place inside the container"
-# --allow-no-vcs: only the package dir is bind-mounted at /work, so the repo
-# root .git is not visible and cargo fix would otherwise refuse to run.
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs"
+description = "Apply clippy's machine-applicable suggestions in place (host if dev libs present, else container)"
+# --allow-no-vcs is harmless on the host (the repo .git is visible) and required
+# in the container, where only the package dir is bind-mounted at /work so the
+# repo-root .git is not visible and cargo fix would otherwise refuse to run.
+run = 'if {{vars.host_ok}} { cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
 
 [tasks."lint:max-lines"]
 description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust-linter)"
@@ -40,22 +69,48 @@ description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
-description = "cargo nextest run inside the container"
-run = "podman run --rm --security-opt label=disable -v $\"(pwd):/work\" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo nextest run --release"
+description = "cargo nextest run (host if dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
+
+[tasks."build:container"]
+description = "Release build forced inside the container (asserts the container path)"
+run = '{{vars.container_cargo}} build --release'
+
+[tasks."lint:clippy:container"]
+description = "clippy with warnings denied forced inside the container"
+run = '{{vars.container_cargo}} clippy --release -- -D warnings'
+
+[tasks."test:container"]
+description = "cargo nextest run forced inside the container"
+run = '{{vars.container_cargo}} nextest run --release'
+
+[tasks."verify:container"]
+description = "Assert the container build/clippy/test path works even when the host has the dev libs"
+# Aborts on the first failing step so a broken container path fails the task
+# rather than being masked by a later passing step (nushell `;` is not fail-fast).
+run = '''
+mise run image
+{{vars.container_cargo}} build --release
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container release build failed" } }
+{{vars.container_cargo}} clippy --release -- -D warnings
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container clippy failed" } }
+{{vars.container_cargo}} nextest run --release
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container tests failed" } }
+'''
 
 [tasks.run]
-description = "Build in the container, then run the music-player GUI on the host (pass file/folder paths after --)"
+description = "Build (host if dev libs present, else container), then run the music-player GUI on the host (pass file/folder paths after --)"
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue"
 '''
-# The binary is BUILT in the container (the host lacks the PipeWire/Opus/clang dev
-# headers) but RUN directly on the host. Running on the host means the window,
-# audio, D-Bus, and the KDE taskbar all use the host session natively: no socket
-# passthrough, no --userns=keep-id, and the .desktop association + LauncherEntry
-# taskbar progress work without the container's SASL EXTERNAL uid juggling. The
-# container-built binary links only against runtime libs present on the host
-# (verified with `ldd`), and a binary built on the older container glibc (Fedora
-# 41) runs on the newer host glibc (Fedora 44+).
+# The binary is BUILT host-first (or in the container when the host lacks the
+# PipeWire/Opus/clang dev headers) and RUN directly on the host. Running on the
+# host means the window, audio, D-Bus, and the KDE taskbar all use the host
+# session natively: no socket passthrough, no --userns=keep-id, and the .desktop
+# association + LauncherEntry taskbar progress work without the container's SASL
+# EXTERNAL uid juggling. A container-built binary links only against runtime libs
+# present on the host (verified with `ldd`), and a binary built on the older
+# container glibc (Fedora 41) runs on the newer host glibc (Fedora 44+).
 #
 # The host environment already provides WAYLAND_DISPLAY, XDG_RUNTIME_DIR, the
 # D-Bus session bus, PipeWire, and the XDG user dirs, so the empty-launch auto-load
@@ -64,14 +119,9 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # if set (to force the software renderer).
 run = '''
 let home = ($env.HOME? | default '')
-# Build the release binary in the container first; the bind-mounted target/
-# surfaces it on the host at target/release/music-player.
-(
-  podman run --rm --security-opt label=disable
-  -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work
-  localhost/monochromatic/music-player
-  cargo build --release
-)
+# Build the release binary host-first; the container fallback surfaces it on the
+# host at target/release/music-player via the bind-mounted target/.
+if {{vars.host_ok}} { cargo build --release } else { {{vars.container_cargo}} build --release }
 # Install onto the host so the KDE .desktop launcher and `mise run` exercise the
 # SAME binary. The .desktop uses a bare `Exec=music-player`, which KDE resolves on
 # the systemd user PATH: that PATH includes ~/.local/bin (verified via

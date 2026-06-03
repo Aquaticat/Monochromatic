@@ -135,14 +135,25 @@ The `run` task also copies those shared libraries to `~/.local/lib/monochromatic
 
 ## Commands
 
-Build the container image after editing `Containerfile`:
+Cargo work runs on the host when Zig and the native dev libraries are present, and falls back to the Fedora
+container otherwise. Each task evaluates a `host_ok` predicate (cargo and zig on PATH plus
+`pkg-config --exists fontconfig freetype2`); when all resolve it builds natively, and when any is missing it runs
+the identical cargo command in podman. Zig 0.15.2 comes from the repo-wide mise `zig` tool. On an immutable-style
+Fedora the host libraries are layered with:
+
+```bash
+rpm-ostree install fontconfig-devel freetype-devel
+```
+
+Building the container image is only needed for the container path; the host fallback also builds it
+automatically when missing.
 
 ```bash
 # packages/desktop-app/terminal
 mise run //packages/desktop-app/terminal:image
 ```
 
-Run compile checks, max-lines linting, clippy, and tests:
+Run compile checks, max-lines linting, clippy, and tests (host if Zig + dev libs present, else container):
 
 ```bash
 # packages/desktop-app/terminal
@@ -152,15 +163,21 @@ mise run //packages/desktop-app/terminal:lint:clippy
 mise run //packages/desktop-app/terminal:test
 ```
 
-Build a release binary:
+Build a release binary (and stage the libghostty-vt runtime libraries):
 
 ```bash
 # packages/desktop-app/terminal
 mise run //packages/desktop-app/terminal:build
 ```
 
-Build in the container, install the `.desktop` file plus binary into the host user profile,
-and run the GUI on the host session:
+Force the container path, asserting the container build still works on any host:
+
+```bash
+# packages/desktop-app/terminal
+mise run //packages/desktop-app/terminal:verify:container
+```
+
+Build, install the `.desktop` file plus binary into the host user profile, and run the GUI on the host session:
 
 ```bash
 # packages/desktop-app/terminal

@@ -174,15 +174,28 @@ engine and the realtime callback share audio through a single-producer/single-co
 
 ## Build environment
 
-The host is an immutable-style Fedora without the PipeWire, Opus, and clang development headers, so all cargo
-builds, checks, clippy, and tests run inside a Fedora container defined by `Containerfile`, which carries the
-build toolchain plus the GUI/audio runtime libraries. The `run` task, by contrast, BUILDS the release binary in
-the container but RUNS it directly on the host: the container-built binary (Fedora 41 glibc) links only against
-runtime libraries already present on the host (Fedora 44+), so it executes natively and integrates with the host
-Wayland, PipeWire, D-Bus, and KDE taskbar without socket passthrough or uid juggling. The Rust toolchain comes
-from rustup (current stable), not Fedora's `rust` package, because the Slint dependency is pinned to a git master
-revision (1.17.0-dev) that needs rustc 1.92 or newer; see the `slint` dependency comment in `Cargo.toml` and
-`../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
+Cargo work runs on the host when the native development libraries are present, and falls back to the Fedora
+container defined by `Containerfile` otherwise. Each task evaluates a `host_ok` predicate (cargo on PATH plus
+`pkg-config --exists libpipewire-0.3 opus fontconfig freetype2`); when all resolve it builds natively, and when
+any is missing it runs the identical cargo command in podman. On an immutable-style Fedora the host libraries are
+layered with:
+
+```bash
+rpm-ostree install pipewire-devel opus-devel fontconfig-devel freetype-devel
+```
+
+The runtime GUI/audio libraries (mesa, wayland, libxkbcommon, fontconfig, freetype) and a CJK font ship with a
+KDE desktop already, and libclang for the bindgen step is present via the layered LLVM. The `run` task always
+RUNS the binary directly on the host so the window, audio, D-Bus, and KDE taskbar use the host session natively;
+a container-built binary (Fedora 41 glibc) still links only against runtime libraries present on the host
+(Fedora 44+), so the fallback path executes natively too. The Rust toolchain comes from the repo-wide mise `rust`
+tool on the host and from rustup (current stable) in the container, not Fedora's `rust` package, because the
+Slint dependency is pinned to a git master revision (1.17.0-dev) that needs rustc 1.92 or newer; see the `slint`
+dependency comment in `Cargo.toml` and `../../../docs/troubleshooting/slint-flickable-smooth-scroll.md`.
+
+The `*:container` tasks force the podman path regardless of host libraries, so the container build stays
+asserted even on a fully provisioned host; `verify:container` is the umbrella assertion (image, build, clippy,
+test in the container).
 
 For OS taskbar progress, the `run` task installs two files onto the host before launching: the freshly built
 binary into `~/.local/bin/music-player`, and `share/applications/monochromatic.music-player.desktop` into
@@ -211,15 +224,16 @@ less so.
 
 ## Commands
 
-All commands run through mise tasks. Build, lint, and test wrap `podman run`; `run` builds in the container and
-then executes the binary on the host. Run them from this package directory, or prefix with the package path from
-the repository root.
+All commands run through mise tasks. Build, lint, and test run on the host when the dev libraries are present and
+fall back to `podman run` otherwise; `run` builds the same way and then executes the binary on the host. Run them
+from this package directory, or prefix with the package path from the repository root.
 
 ```bash
-# build the container image (after editing the Containerfile)
+# build the container image (only needed for the container path; the host
+# fallback also builds it automatically when missing)
 mise run //packages/desktop-app/music-player:image
 
-# compile checks
+# compile checks (host if dev libs present, else container)
 mise run //packages/desktop-app/music-player:lint          # cargo check
 mise run //packages/desktop-app/music-player:lint:clippy   # clippy, warnings denied
 
@@ -229,9 +243,12 @@ mise run //packages/desktop-app/music-player:test
 # release build
 mise run //packages/desktop-app/music-player:build
 
-# build in the container, install to ~/.local/bin + ~/.local/share/applications,
+# build, install to ~/.local/bin + ~/.local/share/applications,
 # then run the GUI on the host (optional file/folder args)
 mise run //packages/desktop-app/music-player:run -- path/to/song.flac path/to/folder
+
+# force the container path (asserts the container build still works on any host)
+mise run //packages/desktop-app/music-player:verify:container
 
 # regenerate the per-codec test fixtures with host ffmpeg (rarely needed)
 mise run //packages/desktop-app/music-player:gen:fixtures

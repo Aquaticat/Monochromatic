@@ -1,35 +1,54 @@
-# Cargo work runs inside the Fedora build container because libghostty-vt-sys
-# needs Zig 0.15.x and the host may not have the Slint native runtime headers.
-# The package dir is bind-mounted at /work. The cargo registry and git cache
-# live in a named volume so the Ghostty source fetch and crate downloads persist.
+# Cargo work runs on the HOST when Zig and the native dev libraries are present,
+# and falls back to the Fedora build container otherwise (see Containerfile).
+# Host build deps: Zig 0.15.x (provided repo-wide via the root mise `zig` tool)
+# plus fontconfig-devel and freetype-devel (layer with rpm-ostree on an immutable
+# Fedora). libghostty-vt-sys compiles vendored Ghostty with Zig either way.
+# The {{vars.host_ok}} predicate probes for zig and pkg-config fontconfig/freetype2;
+# when anything is missing the {{vars.container_cargo}} prefix runs the same cargo
+# command in podman instead (package dir bind-mounted at /work, cargo registry and
+# Ghostty git cache in a named volume, `label=disable` to skip SELinux relabeling).
+# The *:container tasks force the podman path regardless of host libraries so the
+# container build stays asserted; verify:container is the umbrella assertion.
 # Why podman and not mise-managed deps (conda route rejected):
 # see ../../../docs/decisions/desktop-app-podman-build.md
+
+[env]
+# Property-changed callbacks and the pinned Slint Flickable improvements must be
+# compiled consistently on the host, matching the Containerfile's baked ENV.
+# podman does not forward host env into the container, so this only affects the
+# host branch (the image sets its own copy).
+SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
+# Host libclang ships only versioned (libclang.so.NN, no unversioned symlink), so
+# point bindgen (libghostty-vt-sys) at the lib dir explicitly. Host only; not
+# forwarded into the container, which carries its own clang.
+LIBCLANG_PATH = "/usr/lib64"
+
+[vars]
+# True when the host can build natively: cargo and zig on PATH and the Slint font
+# libraries resolvable through pkg-config (fontconfig also validates freetype2).
+host_ok = '((which cargo | is-not-empty) and (which zig | is-not-empty) and ((^pkg-config --exists fontconfig freetype2 | complete | get exit_code) == 0))'
+# Forced-container cargo prefix: build the image when it is missing, then run the
+# cargo subcommand appended by the caller inside podman. Memory and cpu caps bound
+# the vendored Ghostty + Slint compile.
+container_cargo = '(if ((^podman image exists localhost/monochromatic/terminal | complete | get exit_code) != 0) { ^podman build --tag localhost/monochromatic/terminal --file Containerfile . }); ^podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo'
 
 [tasks.image]
 description = "Build the Fedora build/run container image"
 run = "podman build --tag localhost/monochromatic/terminal --file Containerfile ."
 
 [tasks.build]
-description = "Release build inside the container, then stage runtime shared libraries"
+description = "Release build (host if Zig + dev libs present, else container), then stage runtime shared libraries"
 run = '''
-(
-  podman run --rm --memory=4g --cpus=4 --security-opt label=disable
-  --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work
-  localhost/monochromatic/terminal
-  cargo build --release
-)
+if {{vars.host_ok}} { cargo build --release } else { {{vars.container_cargo}} build --release }
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "terminal release build failed" } }
 mise run //packages/desktop-app/terminal:stage:runtime-libs:release
 '''
 
 [tasks."build:debug"]
-description = "Debug build inside the container, then stage runtime shared libraries"
+description = "Debug build (host if Zig + dev libs present, else container), then stage runtime shared libraries"
 run = '''
-(
-  podman run --rm --memory=4g --cpus=4 --security-opt label=disable
-  --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work
-  localhost/monochromatic/terminal
-  cargo build
-)
+if {{vars.host_ok}} { cargo build } else { {{vars.container_cargo}} build }
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "terminal debug build failed" } }
 mise run //packages/desktop-app/terminal:stage:runtime-libs:debug
 '''
 
@@ -64,37 +83,64 @@ for name in ["libghostty-vt.so" "libghostty-vt.so.0" "libghostty-vt.so.0.1.0"] {
 '''
 
 [tasks.lint]
-description = "cargo check inside the container"
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo check"
+description = "cargo check (host if Zig + dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo check } else { {{vars.container_cargo}} check }'
 
 [tasks."lint:clippy"]
-description = "Run clippy with warnings denied inside the container"
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo clippy --release -- --deny warnings"
+description = "Run clippy with warnings denied (host if Zig + dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo clippy --release -- --deny warnings } else { {{vars.container_cargo}} clippy --release -- --deny warnings }'
 
 [tasks."format:clippy"]
-description = "Apply clippy's machine-applicable suggestions in place inside the container"
-# --allow-no-vcs: only the package dir is bind-mounted at /work, so the repo
-# root .git is not visible and cargo fix would otherwise refuse to run.
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs"
+description = "Apply clippy's machine-applicable suggestions in place (host if Zig + dev libs present, else container)"
+# --allow-no-vcs is harmless on the host (the repo .git is visible) and required
+# in the container, where only the package dir is bind-mounted at /work so the
+# repo-root .git is not visible and cargo fix would otherwise refuse to run.
+run = 'if {{vars.host_ok}} { cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
 
 [tasks."lint:max-lines"]
 description = "Enforce the 300 code-line budget on .rs files"
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
-description = "cargo nextest run inside the container"
-run = "podman run --rm --memory=4g --cpus=4 --security-opt label=disable --volume $\"(pwd):/work\" --volume terminal-cargo:/cargo --workdir /work localhost/monochromatic/terminal cargo nextest run --release"
+description = "cargo nextest run (host if Zig + dev libs present, else container)"
+run = 'if {{vars.host_ok}} { cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
+
+[tasks."build:container"]
+description = "Release build forced inside the container, then stage runtime libraries (asserts the container path)"
+run = '''
+{{vars.container_cargo}} build --release
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container release build failed" } }
+mise run //packages/desktop-app/terminal:stage:runtime-libs:release
+'''
+
+[tasks."lint:clippy:container"]
+description = "clippy with warnings denied forced inside the container"
+run = '{{vars.container_cargo}} clippy --release -- --deny warnings'
+
+[tasks."test:container"]
+description = "cargo nextest run forced inside the container"
+run = '{{vars.container_cargo}} nextest run --release'
+
+[tasks."verify:container"]
+description = "Assert the container build/clippy/test path works even when the host has Zig and the dev libs"
+# Aborts on the first failing step so a broken container path fails the task
+# rather than being masked by a later passing step (nushell `;` is not fail-fast).
+run = '''
+mise run image
+{{vars.container_cargo}} build --release
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container release build failed" } }
+{{vars.container_cargo}} clippy --release -- --deny warnings
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container clippy failed" } }
+{{vars.container_cargo}} nextest run --release
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "container tests failed" } }
+'''
 
 [tasks.run]
-description = "Build in the container, install desktop metadata and runtime libraries, then run the GUI on the host"
+description = "Build (host if Zig + dev libs present, else container), install desktop metadata and runtime libraries, then run the GUI on the host"
 run = '''
 let home = ($env.HOME? | default '')
-(
-  podman run --rm --memory=4g --cpus=4 --security-opt label=disable
-  --volume $"(pwd):/work" --volume terminal-cargo:/cargo --workdir /work
-  localhost/monochromatic/terminal
-  cargo build --release
-)
+if {{vars.host_ok}} { cargo build --release } else { {{vars.container_cargo}} build --release }
+if $env.LAST_EXIT_CODE != 0 { error make { msg: "terminal release build failed" } }
 mise run //packages/desktop-app/terminal:stage:runtime-libs:release
 let staged_lib_dir = "target/lib/monochromatic-terminal"
 let bin = if ($home != '') {
