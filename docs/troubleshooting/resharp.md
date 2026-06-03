@@ -4,6 +4,32 @@ This document tracks the upstream resharp bugs that `forbidden-strings`
 defends against, the consumer-side guards that block each, and the
 verification path for each finding.
 
+Current status (2026-06-03, resharp 0.6.8): the lockfile and the
+`packages/cli/forbidden-strings/Cargo.toml` requirement floor are bumped
+from 0.6.3 to 0.6.8, executing the "wait then bump then re-fuzz" plan under
+"Plan (decided 2026-05-23)" below. Behavioural re-verification at 0.6.8
+(targeted probe crates, not a fresh fuzz campaign; the full fuzz re-run
+stays a recommended next step):
+
+- Bugs B, C, E, F: fixed upstream. Bug C and Bug E compile cleanly and fast;
+  Bug B and Bug F are now rejected at `Regex::new` with
+  `Algebra(UnsupportedPattern)` (fail closed, no release corruption, no
+  arithmetic overflow). Their four pre-validators are now belt-and-suspenders
+  rather than load-bearing.
+- Bug A: unchanged (complement-of-lookaround still rejected). New at 0.6.8:
+  the `\A`/`\z`-inside-complement workaround is now also rejected, so it no
+  longer compiles; the literal-whitespace and `\W` workarounds still work.
+- Bug D: was fixed-and-clean at 0.6.3; 0.6.8 tightened further and now
+  rejects the shape at compile. Still fail-closed-safe.
+- Bug G: still unfixed at 0.6.8 (`max_depth` was not upstreamed). The deep-
+  complement stack-overflow floor dropped below 20,000 levels. The
+  consumer-side depth pre-validator and the upstream filing are now
+  unblocked (the bump-trigger is met); both are held for a separate
+  go-ahead.
+
+Full per-bug method and probe output: see "Bump to resharp 0.6.8
+(2026-06-03)" below.
+
 Six bugs are tracked (A through F). All were re-verified on 2026-05-23
 against published resharp 0.6.3 and against git HEAD `e0b8aba`
 (`https://github.com/ieviev/resharp`, 2 commits past the 0.6.3 release
@@ -34,7 +60,9 @@ published 0.6.4 build is still pending. See "Upstream response
 (2026-05-23)" below for the reply, the source diff, and the
 wait-then-bump-then-re-fuzz plan.
 
-Status:
+Status (0.6.3 / HEAD baseline; superseded for the current pin by "Current
+status (2026-06-03, resharp 0.6.8)" above, where Bugs B, C, E, F are fixed
+and Bug D tightened further):
 
 - **Bug A** (`\b`/`\B`/`^`/`$` or any lookaround inside a `~(...)` complement
   body fails to compile): unchanged from 0.6.0 through 0.6.3/HEAD.
@@ -203,6 +231,123 @@ Until that re-fuzz lands, treat every bug below as live-and-defended at
 our boundary: the pre-validators and the `overflow-checks = true` +
 `panic = "unwind"` + `catch_unwind` profile combo remain the durable
 consumer-side fix regardless of upstream movement.
+
+## Bump to resharp 0.6.8 (2026-06-03): plan executed
+
+The "Plan (decided 2026-05-23)" above held the lockfile at 0.6.3 until the
+maintainer's follow-up release. resharp 0.6.8 (published 2026-06-03, the
+crates.io `max_version`) is that release line. This pass bumped
+`packages/cli/forbidden-strings/Cargo.toml` from `resharp = "0.6"` to
+`resharp = "0.6.8"` and updated `Cargo.lock` (resharp, resharp-algebra, and
+resharp-parser all 0.6.3 to 0.6.8), then re-verified every tracked bug
+behaviourally against the published 0.6.8 build.
+
+### What 0.6.8 changed upstream
+
+Read against a fresh clone of `https://github.com/ieviev/resharp` at
+`c6623fe` (the `0.6.8` commit). The 0.6.4 fix code (Bugs B, C, E, F) is
+present and was extended across 0.6.5 through 0.6.8:
+
+- `resharp-engine/src/prefix.rs:23-35`: the Bug E `visited` set plus
+  clear-and-break (our prototype, shipped in 0.6.4) is unchanged.
+- `resharp-algebra/src/lib.rs:2543`: the Bug C / Bug F
+  `tail_rel.saturating_add(la_rel)` is present (it shipped in 0.6.4; 0.6.5
+  separately replaced the `incr_rel` helper with `u32::saturating_add` in
+  upstream PR #6, hardening related `rel` arithmetic).
+- `resharp-algebra/src/lib.rs:2040-2049`: `strip_lb` keeps the Bug B fail-
+  closed `if self.contains_lookbehind(result) { return Err(...) }`, and
+  `strip_lb_inner` was rewritten to recurse through intersection, union,
+  and concat operands. Despite that rewrite the Bug B shape still ends up
+  rejected (now at `Regex::new`, see below), so the "reallow properly"
+  follow-up the maintainer mentioned did not re-admit it.
+- Commits `b552bc7 ensure unsupported patterns are rejected`,
+  `8252fe9 word boundaries rewrites`, `2a89b6b improve word boundary
+  rewrites`, `37dfa20 distribute inter before supported check`, and
+  `cb527d6 short circuit non overlapping intersections` tightened the
+  unsupported-pattern rejection. Net effect: several shapes that used to
+  overflow, corrupt, or compile-then-misbehave now fail closed at
+  `Regex::new` with `Algebra(UnsupportedPattern)`, and a couple of shapes
+  that used to compile (Bug A `\A`/`\z`-in-complement, Bug D) now also
+  reject.
+- `PatternFlags` (`resharp-parser/src/lib.rs`) still has no `max_depth`
+  field and `parse_inner` has no depth check, so Bug G is unfixed. The
+  unrelated `max_depth` in `resharp-engine/src/lib.rs:1323` is a prefix-
+  length cap in the anchored `is_match` heuristic, not a nesting bound.
+
+### Probe method
+
+A throwaway crate (`resharp = "=0.6.8"`, release profile matching this
+crate: `lto`, `codegen-units = 1`, `opt-level = 3`, `panic = "unwind"`,
+`overflow-checks = true`) calls `Regex::new` and `find_all` directly on
+each tracked shape, built and run in both debug (debug-assertions and
+overflow-checks ON) and release. Bug G's deliberately stack-overflowing
+deep-nesting runs were isolated in `podman run --memory=2g --cpus=2 --rm`
+(fedora:44), one input per `timeout`, so an abort is observable by exit
+code without risking the host. This is a targeted re-verification of the
+known shapes, not a fresh fuzz campaign; re-running the
+`fuzz_extract_gate_soundness` and companion targets against 0.6.8 stays a
+recommended next step.
+
+### Per-bug results at 0.6.8
+
+- Bug A (`em&~(.*\bnpm\b.*)`, `em&~(^foo$)`, `em&~((?=foo).*)`): still
+  `Algebra(UnsupportedPattern)`; `em&~(.*\B.*)` still
+  `Parse(UnsupportedResharpRegex)`. Unchanged. New: `em&~(\Afoo\z)` now
+  also returns `Algebra(UnsupportedPattern)` in both profiles (it compiled
+  cleanly through 0.6.3), so the `\A`/`\z` workaround no longer holds. The
+  literal-whitespace control `em&~(.* (npm|git) .*)` still compiles, which
+  is the workaround the production rules already use.
+- Bug B (`(?:(?=a)&(?<=_))`): `Regex::new` now returns
+  `Algebra(UnsupportedPattern)` in debug and release, so `find_all` never
+  runs. The 0.6.3 release corruption (62 spurious matches on 64 bytes
+  ending in `_`, 127 on 128 bytes of `a`) and the debug `strip_lb` panic
+  are both gone, replaced by a clean compile-time rejection. Fail closed.
+- Bug C (`(?:\w|$)(?:(?![1g]\_X)& a)`): `COMPILE-OK` in debug and release,
+  no `attempt to add with overflow`. Fixed.
+- Bug D (`(a|(?![_]))(?!a)`): now `Algebra(UnsupportedPattern)` at compile
+  in release (it compiled and returned clean matches at 0.6.3); the
+  lookbehind variant `(a|(?<!_))(?<!a)` returns
+  `Parse(UnsupportedResharpRegex)`. Further tightened, still fail-closed.
+- Bug E (`abc~(\w)&(?:aaa)*`): `COMPILE-OK` in milliseconds, no hang.
+  Fixed.
+- Bug F (`(?:(?!\?){1,2}){3}`, `(?:(?:(?!\?)){1,5}){2,4}`,
+  `(?:(?!abc)){4,12}a`): all `Algebra(UnsupportedPattern)` at compile in
+  debug and release, no overflow panic. Fixed (fail-closed).
+- Bug G (nested `~(...)` / `(?=...)`): unchanged. In release the complement
+  and lookahead nests still abort with a stack overflow (exit 134); the
+  abort floor for `compl` dropped to at-or-below 20,000 levels (`compl
+  20000` aborts at 0.6.8 versus returning `Ok` at 0.6.4), so the heavier
+  algebra walks now cost more stack per level. Plain `group` still reaches
+  the size guard (`Ok` at 49,000, `Err(Parse(UnsupportedResharpRegex))` at
+  60,000). `catch_unwind` cannot intercept the SIGABRT.
+
+### Pre-validator decision
+
+Every pre-validator stays in place. For Bugs B, C, E, F (and D) the upstream
+shapes are now fixed or fail-closed, so the matching pre-validators in
+`packages/cli/forbidden-strings/src/rules/engine.rs` are belt-and-
+suspenders: they reject the same shapes upstream rejects, or shapes that now
+compile harmlessly, and over-rejection is fail-closed-safe (the production
+corpus has no rules of these shapes). Bug A's `lookaround_in_complement`
+stays load-bearing: upstream still rejects, but the pre-validator rejects
+earlier with an actionable, doc-pointing message. No pre-validator is
+loosened in this pass; loosening would trade a safe over-rejection for a
+dependence on exact upstream behaviour, with no production benefit.
+
+### Now-unblocked follow-ups (held for go-ahead)
+
+The bump satisfies the "next upstream release bump" condition both deferred
+items waited on:
+
+- Bug G upstream filing: the draft under "Draft upstream issue (Bug G,
+  fileable, held until the next bump)" is now fileable. Re-run `git apply
+  --check` of the prototype `max_depth` diff against 0.6.8 first (resharp's
+  `main` moves fast), then file. Not filed in this pass: filing is a
+  shared-state action and awaits explicit go-ahead.
+- Bug G consumer-side `nesting_depth` pre-validator: still not implemented.
+  The dropped complement floor (now at-or-below 20,000) makes a low cap (for
+  example 1,000) more clearly correct, but implementing it edits scanner
+  source and is held for a separate go-ahead.
 
 ---
 
@@ -493,7 +638,10 @@ fn main() {
 
 - `/em&~(.*foo.*)/` (simple literal in complement body)
 - `/em&~((?i)foo)/`, `/em&~([a-z]+)/`, `/em&~(.*[^a-z].*)/` (other features in complement body)
-- `/em&~(\Afoo\z)/` (`\A`/`\z` text anchors inside complement; no lookaround rewrite)
+- `/em&~(\Afoo\z)/` (`\A`/`\z` text anchors inside complement; no lookaround rewrite).
+  At 0.6.3 only: 0.6.8 now rejects this with `Algebra(UnsupportedPattern)`
+  (see "Bump to resharp 0.6.8"), so the `\A`/`\z` workaround below no longer
+  compiles.
 - `/em\b/`, `/\bem\b&_*/`, `/\bem\b&_*&~(.*foo.*)/` (`\b` outside complement body)
 - `/(?=\bem\b).*/` (`\b` inside a lookaround body, not inside a complement)
 - 500 alternatives in a single `~(.*(w0|w1|...|w499).*)` with simple bodies
@@ -569,19 +717,24 @@ rather than just bordered by a word boundary.
 Tokens at the absolute start or end of the scanned content
 (no character before or after) still slip through.
 
-### Use `\A`/`\z` instead of `^`/`$` inside complement bodies
+### Use `\A`/`\z` instead of `^`/`$` inside complement bodies (broken at 0.6.8)
+
+This workaround compiled at 0.6.3 but no longer compiles at 0.6.8:
 
 ```text
-# fails
+# fails (0.6.3 and 0.6.8)
 /em&~(^foo$)/
 
-# compiles
+# compiled at 0.6.3; rejected at 0.6.8 with Algebra(UnsupportedPattern)
 /em&~(\Afoo\z)/
 ```
 
-Semantics shift from "any line whose entirety is `foo`"
-to "the entire scanned content is exactly `foo`".
-Useful only when the rule already scans whole-file content rather than per-line.
+When it did compile, the semantics shifted from "any line whose entirety is
+`foo`" to "the entire scanned content is exactly `foo`", useful only when
+the rule already scans whole-file content rather than per-line. At 0.6.8 the
+unsupported-pattern tightening (commit `b552bc7`) rejects `\A`/`\z` inside a
+complement too, so use the literal-whitespace or `\W` substitutions above
+instead (those still compile at 0.6.8). See "Bump to resharp 0.6.8".
 
 ### Move the boundary check outside the complement (does not reliably work)
 
@@ -1014,6 +1167,15 @@ The `unexpected end` `debug_assert!` still exists (drifted to
 `engine.rs:1000-1002`), but this shape no longer reaches it. Do not file
 this upstream: it reports an already-resolved defect. The historical
 analysis below is retained for the record.
+
+Update (2026-06-03, resharp 0.6.8): 0.6.8 tightened this further. The
+forward shape `(a|(?![_]))(?!a)`, which compiled and returned clean matches
+at 0.6.3, now returns `Algebra(UnsupportedPattern)` at compile in release
+and never reaches `find_all`; the lookbehind variant still rejects. So at
+0.6.8 the shape is fail-closed at compile rather than compile-and-run-clean.
+The `lookaround_in_alternation_with_sibling` pre-validator now agrees with
+upstream's rejection and stays as belt-and-suspenders. See "Bump to resharp
+0.6.8".
 
 ### Symptom (historical, no longer reproduces)
 
@@ -1554,6 +1716,15 @@ This pre-validator is not yet implemented. Implementing it edits
 forbidden-strings source and is held for a separate go-ahead; this pass
 flags the issue, it does not change the scanner.
 
+Update (2026-06-03, resharp 0.6.8): Bug G is unchanged at 0.6.8 (no
+`max_depth` upstream), and the release `compl` overflow floor dropped to
+at-or-below 20,000 levels (`compl 20000` now aborts; it returned `Ok` at
+0.6.4), so the heavier algebra walks cost more stack per level. The cap of
+1,000 is still comfortably below that floor. Implementing the
+`nesting_depth` pre-validator and filing the upstream issue are now
+unblocked (the bump-trigger they waited on is met) and still held for
+go-ahead; see "Now-unblocked follow-ups" under "Bump to resharp 0.6.8".
+
 ### Verification
 
 Probe crate `Cargo.toml`:
@@ -1757,6 +1928,19 @@ patterns), folding Bug G into the same single bump-and-re-fuzz pass the plan
 near the top of this doc describes. Re-run `git apply --check` of the
 prototype diff against that release before filing, since resharp's `main`
 moves fast.
+
+Update (2026-06-03): that release bump happened (0.6.3 to 0.6.8), so the
+wait is over and the draft is unblocked. Bug G is still unfixed at 0.6.8
+(constraint re-check is unchanged: `max_depth` was not upstreamed). Tracker
+re-checked 2026-06-03 (`gh issue list -R ieviev/resharp --state all`): the
+tracker grew to 11 issues, including a wave of correctness and UB reports
+(#7 through #10) fixed across 0.6.6 to 0.6.8 and a closed #11 "Building basic
+regex uses 10+ GB of RAM and takes forever". None is the deep-nesting
+stack-overflow abort: #11 is a separate memory and time blowup, not a stack
+overflow, and the rest are unrelated, so Bug G is still not a duplicate.
+Before filing, re-run `git apply --check` of the prototype `max_depth` diff
+against the 0.6.8 source, since it moved since 0.6.4. Filing is a shared-state
+action and is held for explicit go-ahead.
 
 ### Draft upstream issue (Bug G, fileable, held until the next bump)
 
