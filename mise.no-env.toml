@@ -70,11 +70,20 @@ watchexec = "latest"
 "aqua:nushell/nushell" = "latest"
 
 # For reliable timeout
-# components = "rust-src" carries std sources for IDE code insight (RustRover /
-# IntelliJ Rust). mise only applies components when it installs a toolchain, so
-# an already-installed version needs a one-time
-# `rustup component add rust-src --toolchain <ver>` (or a reinstall) to pick it up.
-rust = { version = "latest", components = "rust-src" }
+# Rust toolchain, managed repo-wide here (no per-package override).
+# Pinned to nightly because cargo-fuzz (coverage-guided fuzzing under
+# packages/fuzz/forbidden-strings/) injects `-Cllvm-args=-sanitizer-coverage-*`
+# RUSTFLAGS that only compile on nightly; a single root toolchain keeps every
+# crate on one channel rather than forking stable/nightly per directory.
+# Floating "nightly" tracks the latest; pin to a dated channel
+# (e.g. "nightly-2026-05-23") if reproducible builds matter.
+# mise applies components only when it installs the toolchain, so an
+# already-installed nightly needs a one-time
+# `rustup component add <comp> --toolchain nightly`:
+#   rust-src           -- std sources for IDE code insight (RustRover / IntelliJ Rust).
+#   llvm-tools-preview -- llvm-cov / llvm-profdata for `cargo fuzz coverage`.
+# ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
+rust = { version = "nightly", components = "rust-src,llvm-tools-preview" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
@@ -87,6 +96,14 @@ cargo-binstall = "latest"
 # desktop apps install nextest inside their Containerfiles instead, since the
 # container filesystem does not see host mise tools.
 "cargo:cargo-nextest" = "latest"
+
+# Zig toolchain for packages/desktop-app/terminal: its libghostty-vt-sys
+# build-dependency compiles vendored Ghostty with Zig and requires Zig 0.15.x
+# (Fedora packages an older 0.14). Pinned to 0.15.2 to match the version the
+# terminal Containerfile fetches (ENV ZIG_VERSION=0.15.2) and
+# docs/decisions/desktop-app-podman-build.md, so a host-native build links the
+# same Ghostty core as the container build. Bump both together.
+zig = "0.15.2"
 
 # Compression
 "github:facebook/zstd" = "latest"
