@@ -66,6 +66,36 @@ fuzz_target!(|input: RuleAndContent| {
         );
     }
 
+    // What:     `if src.contains('&') && src.contains('|') { return; }`.
+    //           Skip the compile-dispatch comparison below (but NOT the
+    //           under-classification assert above) for any rule that
+    //           combines intersection (`&`) with alternation (`|`).
+    // Why:      resharp 0.6.x can fall into UNBOUNDED mutual recursion in
+    //           its algebra distribution when intersection meets a nested,
+    //           flagged/anchored alternation operand. The cycle is
+    //           mk_union -> iter_union(attempt_rw_inter_2) -> mk_inter ->
+    //           attempt_rw_union_2 -> mk_union, distributing `A & (B|C)`
+    //           into `(A&B)|(A&C)` without reaching a fixpoint, so
+    //           `Regex::new` overflows the stack (ASAN: stack-overflow)
+    //           and aborts. It is uncatchable (SIGABRT, not absorbed by a
+    //           1 GB stack) and has no safe consumer-side pre-validator: a
+    //           guard broad enough to catch it also rejects real rules
+    //           like the AWS-key line `(?:A3T...|AKIA|...)&~(AKIA2{16})`,
+    //           which use a positive alternation under intersection and
+    //           compile fine. See docs/troubleshooting/resharp.md
+    //           ("intersection over alternation"). The check is crude
+    //           (it counts `&`/`|` even inside classes); over-skipping is
+    //           safe here because it only drops the dispatch comparison
+    //           for some `&`+`|` rules, never the soundness assert above.
+    // TS map:   `if (src.includes("&") && src.includes("|")) return;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (src.includes("&") && src.includes("|")) return;
+    // ```
+    if src.contains('&') && src.contains('|') {
+        return;
+    }
     // What:     `let compiled = match compile_rule_src(&src) { ... };`.
     //           Compile and skip rejections. Routing comparison
     //           only fires on successful compiles.
