@@ -361,6 +361,25 @@ await describe({
       children: [
         it({
           name:
+            'require-destructured-params explains why named params help',
+          fn: async () => {
+            const diagnostics = await lint('invalid/require-destructured-params.ts',);
+            const messages = diagnostics
+              .filter(function isRequireDestructuredParams(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(require-destructured-params)';
+              },)
+              .map(function pickMessage(diagnostic,): string {
+                return diagnostic.message;
+              },);
+            expect(messages,).toEqual([
+              'Multiple positional parameters are easy to mix up. '
+                + 'Use one destructured object parameter instead, for example '
+                + '`function createUser({ name, age }) { ... }`.',
+            ],);
+          },
+        },),
+        it({
+          name:
             'no-regex reports each regex form with specific guidance',
           fn: async () => {
             const diagnostics = await lint('invalid/no-regex.ts',);

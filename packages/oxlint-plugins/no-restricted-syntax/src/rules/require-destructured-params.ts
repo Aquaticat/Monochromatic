@@ -6,6 +6,20 @@ import type {
 } from '@oxlint/plugins';
 
 /**
+ * Friendly diagnostic for declarations that should use named parameters.
+ *
+ * @example
+ * ```ts
+ * REQUIRE_DESTRUCTURED_PARAMS_MESSAGE;
+ * ```
+ */
+const REQUIRE_DESTRUCTURED_PARAMS_MESSAGE = [
+  'Multiple positional parameters are easy to mix up. ',
+  'Use one destructured object parameter instead, for example ',
+  '`function createUser({ name, age }) { ... }`.',
+].join('',);
+
+/**
  * Requires function declarations with 2 or more parameters to use
  * a single destructured object parameter (named params pattern).
  *
@@ -34,8 +48,7 @@ export const requireDestructuredParams: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      required:
-        'Function declarations with 2+ parameters must use a single destructured object parameter.',
+      required: REQUIRE_DESTRUCTURED_PARAMS_MESSAGE,
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
