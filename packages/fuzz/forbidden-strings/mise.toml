@@ -9,7 +9,10 @@
 # builds matter, at the cost of a periodic manual bump.
 # rust-src is requested so the toolchain carries std sources for IDE code
 # insight against this crate; cargo-fuzz's default ASAN path does not require it.
-rust = { version = "nightly", components = "rust-src" }
+# llvm-tools-preview supplies llvm-cov / llvm-profdata for `cargo fuzz coverage`;
+# ASAN backtrace symbolization uses the system llvm-symbolizer, installed
+# separately (not a rustup component).
+rust = { version = "nightly", components = "rust-src,llvm-tools-preview" }
 
 [tasks.test]
 description = "cargo nextest run --lib (unit tests for the structured generator)"
