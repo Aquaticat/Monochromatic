@@ -432,7 +432,8 @@ on the table.
     `storeId` so it never collides with other origin data.
 -   `set` propagates storage-full errors. node `ENOSPC`, OPFS and localStorage `QuotaExceededError`
     surface to the caller, since the store does not catch backend `set` failures
-    (`src/create-store.ts:154`).
+    (`src/create-store.ts:154`). Verified: localStorage in Chrome 149 over an `http://127.0.0.1` origin
+    throws `QuotaExceededError` after ~4.94 MB (5,177,344 bytes).
 -   The localStorage sync backend must detect unavailability (private-browsing mode or disabled storage
     throws on access) and fail construction clearly rather than at first use.
 -   Verification must run at the user boundary: exercise the real built artifact against a throwaway
