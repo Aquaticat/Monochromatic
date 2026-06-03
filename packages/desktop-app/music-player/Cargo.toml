@@ -64,10 +64,9 @@ slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762
 # "symbols" keeps unwind info intact, so panic backtraces and Drop-on-panic are
 # unchanged. The remaining ~15 MB .text is real code (static Slint + symphonia).
 strip = "symbols"
-# Cross-crate inlining and dead-code elimination across the whole dependency
-# graph (Slint, symphonia-all, zbus). Trims .text on top of strip; trade-off is
-# a much slower release link. panic stays "unwind" (default) deliberately.
-lto = true
-# One codegen unit maximises LTO's cross-unit optimisation and shrinks .text
-# further, at the cost of no per-unit parallelism in the final crate's codegen.
-codegen-units = 1
+# Thin LTO: per-unit cross-module inlining and dead-code elimination that
+# parallelises and links far faster than fat `lto = true`, for most of the .text
+# savings. codegen-units is left at the release default (16) so codegen stays
+# parallel; fat LTO + codegen-units = 1 saved a little more but the link cost ~2
+# min, which is not worth it here. panic stays "unwind" (default) deliberately.
+lto = "thin"
