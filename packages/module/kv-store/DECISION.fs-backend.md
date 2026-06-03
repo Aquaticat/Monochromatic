@@ -300,6 +300,18 @@ key files slows those operations and stresses some filesystems. Shard by a hash 
 first two hex characters as a subdirectory) if large keyspaces are expected. memoize's default LRU bound
 (1024) caps this for memoize, but a directly-constructed unbounded store does not (see Hazard 3).
 
+### Hazard 10: the built-export wiring is partly unprecedented
+
+Overriding `entry` to emit a second module per build is precedented: `deps-cube`'s
+`tsdown.node.config.ts` spreads the base config and sets `entry: ['./src/index.ts', './src/cli.ts']`,
+landing both as `.mjs` in one `outDir`. Changing this package's tsdown config is allowed (not required).
+What no repo package does yet is ship a built subpath whose `node` and `browser` conditions resolve to
+divergent built files; that part is new here, so validate the emitted filenames, the per-entry `.d.mts`,
+and condition resolution under both Node and a bundler before relying on it. Two placements are
+possible: expose `./fs` as a new subpath (isolates the divergence, leaves the `.` entry untouched), or
+fold the backend into `.` (reuses the existing `node`/`default` conditions but requires splitting
+`index.ts` into per-runtime entry files). `./fs` is the smaller change.
+
 ### Non-blockers confirmed
 
 -   Type libs are sufficient. `@monochromatic-dev/config-typescript/dom` sets
