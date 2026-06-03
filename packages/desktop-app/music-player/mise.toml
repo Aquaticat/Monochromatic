@@ -3,6 +3,8 @@
 # The package dir is bind-mounted at /work; the cargo registry lives in a
 # named volume so rebuilds stay fast. `label=disable` avoids relabeling the
 # host source tree under SELinux.
+# Why podman and not mise-managed deps (conda route rejected):
+# see ../../../docs/decisions/desktop-app-podman-build.md
 
 [tasks.image]
 description = "Build the Fedora build/run container image"

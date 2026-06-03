@@ -2,6 +2,8 @@
 # needs Zig 0.15.x and the host may not have the Slint native runtime headers.
 # The package dir is bind-mounted at /work. The cargo registry and git cache
 # live in a named volume so the Ghostty source fetch and crate downloads persist.
+# Why podman and not mise-managed deps (conda route rejected):
+# see ../../../docs/decisions/desktop-app-podman-build.md
 
 [tasks.image]
 description = "Build the Fedora build/run container image"
