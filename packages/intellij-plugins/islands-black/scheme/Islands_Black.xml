@@ -51,6 +51,7 @@
     <option name="TODO_DEFAULT_ATTRIBUTES">
       <value>
         <option name="FOREGROUND" value="ffffff"/>
+        <option name="FONT_TYPE" value="1"/>
       </value>
     </option>
     <option name="BLOCK_TERMINAL_BLACK">
