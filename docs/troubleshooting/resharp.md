@@ -334,20 +334,123 @@ earlier with an actionable, doc-pointing message. No pre-validator is
 loosened in this pass; loosening would trade a safe over-rejection for a
 dependence on exact upstream behaviour, with no production benefit.
 
-### Now-unblocked follow-ups (held for go-ahead)
+### Now-unblocked follow-ups (actioned 2026-06-03)
 
-The bump satisfies the "next upstream release bump" condition both deferred
-items waited on:
+The bump satisfied the "next upstream release bump" condition both deferred
+items waited on; both are now actioned:
 
-- Bug G upstream filing: the draft under "Draft upstream issue (Bug G,
-  fileable, held until the next bump)" is now fileable. Re-run `git apply
-  --check` of the prototype `max_depth` diff against 0.6.8 first (resharp's
-  `main` moves fast), then file. Not filed in this pass: filing is a
-  shared-state action and awaits explicit go-ahead.
-- Bug G consumer-side `nesting_depth` pre-validator: still not implemented.
-  The dropped complement floor (now at-or-below 20,000) makes a low cap (for
-  example 1,000) more clearly correct, but implementing it edits scanner
-  source and is held for a separate go-ahead.
+- Bug G consumer-side `nesting_depth` pre-validator: implemented in
+  `packages/cli/forbidden-strings/src/rules/nesting.rs` (cap 1,000), wired as
+  the first check on the resharp path in `compile_rule_src`, with tests in
+  `nesting_tests.rs`. It byte-scans paren depth outside character classes and
+  rejects before resharp's `Regex::new`, fail-closed and safe to over-reject.
+- Bug G upstream filing prep: the prototype `max_depth` diff was re-ported and
+  re-validated against a fresh 0.6.8 clone (the literal 0.6.4 diff no longer
+  applies: line drift plus the parse-loop check now reads `self.stack_group` /
+  `self.max_depth` directly rather than the 0.6.4 `self.parser()` wrapper). It
+  builds clean and the cap holds: `compl` nested 30,000 deep returns a clean
+  `Err` instead of aborting, the boundary is exact (999 compiles, 1,001
+  rejects), and real rules still compile. The refreshed 16-line patch is ready
+  but NOT filed (a shared-state action; held for explicit go-ahead).
+
+The fuzz campaign that the "Probe method" note above deferred was also run
+against 0.6.8 (the `smoke` task over all seven targets, AddressSanitizer
+instrumented). `fuzz_extract_gate_soundness` (the Bug B to F soundness target)
+is clean. The campaign surfaced one new resharp defect, below.
+
+## Intersection over alternation: unbounded algebra recursion (found 2026-06-03)
+
+A defect distinct from Bug G, surfaced by `fuzz_regex_engine_dispatch` and
+`fuzz_residual_shards` during the 0.6.8 campaign.
+
+### Symptom
+
+`resharp::Regex::new` overflows the stack (AddressSanitizer reports
+`stack-overflow`, the process aborts via SIGABRT) on patterns that combine
+intersection (`&`) with a nested, flagged or anchored alternation operand.
+Minimal reproducer:
+
+```text
+(?iu)(?:@2222&(?:(?:(?:(?:(?:i22|222)|(?:222|^))|café)|café)|café))
+```
+
+The abort is uncatchable: it is a stack overflow, not an arithmetic panic, so
+`catch_unwind` cannot intercept it; and it is NOT absorbed by a larger stack
+(re-tested under `ulimit -s 1000000`, about 1 GB: still overflows), so the
+recursion is effectively non-terminating, not merely deep.
+
+### Root cause
+
+The recursion cycle, symbolized from the ASAN trace, is resharp's algebra
+distributing intersection over union and back:
+
+```text
+<resharp_algebra::RegexBuilder>::mk_union
+<resharp_algebra::NodeId>::iter_union::<...attempt_rw_inter_2::{closure}>
+<resharp_algebra::RegexBuilder>::mk_inter
+<resharp_algebra::RegexBuilder>::attempt_rw_union_2
+(back to mk_union)
+```
+
+`attempt_rw_inter_2` distributes `A & (B|C)` into `(A&B)|(A&C)`, and
+`attempt_rw_union_2` distributes the result back, so the two rewrites
+ping-pong without reaching a fixpoint for this operand shape. The 0.6.x
+commits `37dfa20 distribute inter before supported check` and `cb527d6 short
+circuit non overlapping intersections` are in this code path.
+
+### Bisection: the trigger is a feature interaction, not just nesting
+
+Simpler variants compile cleanly on 0.6.8 (probe crate, capped container):
+
+- `a&(b|c)` and `a&(((((b|c)|d)|e)|f)|g)` (a 5-level nested alternation under
+  intersection, no flags, no anchor) both return `COMPILE-OK`.
+- The production rule
+  `/\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z2-7]{16})\b&~(AKIA2{16})/`
+  (line 105 of the generated baseline) returns `COMPILE-OK`.
+
+Only the full combination (intersection + nested alternation + `(?iu)` flags +
+a `^` anchor inside the alternation + unicode literals) overflows. The trigger
+is a narrow multi-feature interaction, not a single measurable axis.
+
+### Defense (consumer side): none safe; fuzz targets skip the combo
+
+There is no safe consumer-side pre-validator. A guard broad enough to catch
+the overflow (for example "reject `&` co-occurring with a positive `|`") also
+rejects the line-105 AWS-key rule above, which has a positive alternation
+under intersection and compiles fine. `nesting_depth` does not catch it either
+(paren depth is about 7, far below the cap, because the blowup is algebraic,
+not paren-nesting), and `catch_unwind` cannot catch the abort.
+
+Two fuzz targets reach it and now skip the combo:
+
+- `fuzz_regex_engine_dispatch` skips the compile-dispatch comparison for any
+  `&`+`|` rule (keeping the soundness-critical under-classification assert).
+- `fuzz_residual_shards` drops `&`-rules before `build_residual_shards` unions
+  the survivors (the union `(...|A&B|...)` is what creates the combo from
+  individually-safe rules).
+
+Production is UNDEFENDED but unaffected in practice: the trusted corpus uses
+only flat alternations under intersection (which compile), and rules are
+config, not attacker input. A hand-written rule of the trigger shape would
+abort the scanner.
+
+### Five-constraint upstream-filing check
+
+1. Upstream's fault? Yes. A parser-reachable pattern that aborts the process
+   via non-terminating algebra recursion is a defect.
+2. Can upstream fix it? Plausibly the same shape as Bug E: a visited-set /
+   fixpoint guard on the `attempt_rw_inter_2` / `attempt_rw_union_2`
+   distribution so it cannot re-enter the same rewrite indefinitely. Touches
+   the algebra core, so larger than Bug E's prefix loop.
+3. Supporting this use case? Yes. Intersection and alternation are both
+   headline features; combining them is natural.
+4. Likely to fix? Plausible; the maintainer is responsive and the recent
+   commits actively rework intersection distribution.
+5. Prototyped a minimal fix? No. A terminating distribution rewrite needs care
+   in the algebra core and is not yet prototyped.
+
+Constraint 5 fails, so this is NOT filed. Revisit with a prototype (a
+memoization / visited guard on the distribution rewrites) before filing.
 
 ---
 
@@ -1712,18 +1815,16 @@ deeply nested rules. A complementary mitigation is to run `Regex::new` on a
 thread with a large explicit stack, but that only moves the finite ceiling;
 the pre-validator is the actual fix.
 
-This pre-validator is not yet implemented. Implementing it edits
-forbidden-strings source and is held for a separate go-ahead; this pass
-flags the issue, it does not change the scanner.
-
-Update (2026-06-03, resharp 0.6.8): Bug G is unchanged at 0.6.8 (no
-`max_depth` upstream), and the release `compl` overflow floor dropped to
-at-or-below 20,000 levels (`compl 20000` now aborts; it returned `Ok` at
-0.6.4), so the heavier algebra walks cost more stack per level. The cap of
-1,000 is still comfortably below that floor. Implementing the
-`nesting_depth` pre-validator and filing the upstream issue are now
-unblocked (the bump-trigger they waited on is met) and still held for
-go-ahead; see "Now-unblocked follow-ups" under "Bump to resharp 0.6.8".
+Update (2026-06-03, resharp 0.6.8): this pre-validator is now IMPLEMENTED in
+`packages/cli/forbidden-strings/src/rules/nesting.rs` (cap 1,000), wired as
+the first check on the resharp path in `compile_rule_src`, with tests in
+`nesting_tests.rs`. Bug G itself is unchanged at 0.6.8 (no `max_depth`
+upstream), and the release `compl` overflow floor dropped to at-or-below
+20,000 levels (`compl 20000` now aborts; it returned `Ok` at 0.6.4), so the
+heavier algebra walks cost more stack per level. The cap of 1,000 is still
+comfortably below that floor. The upstream `max_depth` patch was re-validated
+against 0.6.8 but not filed; see "Now-unblocked follow-ups" under "Bump to
+resharp 0.6.8".
 
 ### Verification
 
