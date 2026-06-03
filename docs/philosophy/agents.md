@@ -129,6 +129,16 @@ Rationale, mechanism, and examples relocated here stay discoverable through the 
 If a rule is genuinely crippled without relocated detail, move the detail back into AGENTS.md rather than pointing here.
 A specific reference (exact section heading) is acceptable only when unavoidable; a vague "see PHILOSOPHY" never is.
 
+### Implementation details behind a `mise run` task
+
+How a task is wired internally is not an agent-facing rule.
+Agents run tests with `mise run test` (or a package's `:test`), so they never need to know that Rust packages run on `cargo nextest run` instead of `cargo test`, that the fuzz crate scopes its run to `--lib`, or that Rust unit tests live in co-located `<name>_tests.rs` sidecars declared from the source file with `#[cfg(test)] #[path = "..."] mod tests;`.
+The runner choice lives in the mise tasks; the sidecar layout lives in the source files themselves.
+An agent editing a Rust file sees the existing `mod tests;` stub at the bottom and the sibling `*_tests.rs` beside it, and follows the pattern by example, the same way it infers any local convention from the code in front of it.
+Restating that in AGENTS.md spends tokens every session to describe what the code already shows in context, and it invites the rule to drift from the implementation it documents.
+Keep AGENTS.md to rules that change what an agent decides at a fork it would otherwise get wrong; leave runner choice and test-file mechanics to the tasks and the code.
+This is the test-tooling instance of the general rule above ("Code examples for rules that are self-explanatory" and "Detailed sub-rules for generic workflows"): a convention an agent will copy from its surroundings does not need a written rule.
+
 ## What was compressed (2025-02-25)
 
 AGENTS.md was reduced from 5839 words to ~1500 words at the time. (As of 2026-05-09, the post-2025 monotonic regrowth had brought it back to 6672 words / 684 lines before the second compression pass; see "What was compressed (2026-05-09)" below.)
