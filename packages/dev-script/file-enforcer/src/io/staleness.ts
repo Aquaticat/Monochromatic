@@ -70,7 +70,7 @@ async function entryMetadataMatches(entry: StalenessEntry,): Promise<boolean> {
   /**
    * Current metadata for source files.
    */
-  const currentSources = await readFileStamps(sourcePaths,);
+  const currentSources = readFileStamps(sourcePaths,);
   if (currentSources === MISSING_STAMPS)
     return false;
   if (!fileStampListsMatch({
@@ -90,7 +90,7 @@ async function entryMetadataMatches(entry: StalenessEntry,): Promise<boolean> {
   /**
    * Current metadata for destination files.
    */
-  const currentDestinations = await readFileStamps(destinationPaths,);
+  const currentDestinations = readFileStamps(destinationPaths,);
   if (currentDestinations === MISSING_STAMPS)
     return false;
 
@@ -195,10 +195,10 @@ export async function freshStalenessEntryExists(
  * const sourceFiles = await sourceStampsForReads(['./AGENTS.md']);
  * ```
  */
-async function sourceStampsForReads(
+function sourceStampsForReads(
   trackedReads: readonly string[],
-): Promise<StalenessEntry['sourceFiles'] | typeof MISSING_STAMPS> {
-  return await readFileStamps([
+): StalenessEntry['sourceFiles'] | typeof MISSING_STAMPS {
+  return readFileStamps([
     ...configDependencyPaths(),
     ...trackedReads,
   ],);
@@ -224,7 +224,7 @@ async function sourceStampsForReads(
  * await rememberFreshStalenessEntry({ key, kind: 'single', trackedReads, trackedGlobs, destinations });
  * ```
  */
-export async function rememberFreshStalenessEntry(
+export function rememberFreshStalenessEntry(
   {
     manifestPath,
     key,
@@ -239,18 +239,18 @@ export async function rememberFreshStalenessEntry(
     readonly trackedGlobs: readonly TrackedGlob[];
     readonly destinations: readonly StalenessDestination[];
   },
-): Promise<void> {
+): void {
   /**
    * Source file metadata, including the config file as an implicit dependency.
    */
-  const sourceFiles = await sourceStampsForReads(trackedReads,);
+  const sourceFiles = sourceStampsForReads(trackedReads,);
   if (sourceFiles === MISSING_STAMPS)
     return;
 
   /**
    * Destination metadata after reconciliation.
    */
-  const destinationFiles = await destinationStamps(destinations,);
+  const destinationFiles = destinationStamps(destinations,);
   if (destinationFiles === MISSING_STAMPS)
     return;
 

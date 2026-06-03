@@ -7,7 +7,6 @@ import {
   overwriteIfNotExists,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
-import type { GlobResults, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import type browserslist from 'browserslist';
 
 /**
@@ -39,55 +38,6 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
   };
 
   return browserslistModule.default;
-}
-
-/**
- * Builds the literal CLAUDE.md mirror from AGENTS.md.
- *
- * @returns CLAUDE.md content.
- *
- * @example
- * ```ts
- * const content = await buildClaudeMd();
- * ```
- */
-async function buildClaudeMd(): Promise<string> {
-  return `Generated from AGENTS.md by file-enforcer.
-    
-    ### Spawning child Claude sessions
-
-General purpose agents are banned because of bugs.
-
-Use \`spawn-claude\` outside sandbox to launch steerable child Claude Code sessions in visible terminal windows.
-The child session runs independently; results are forwarded back to the parent automatically via hooks.
-
-Use \`terminal-exec -- <command> ...\` outside sandbox for arbitrary commands that need a visible terminal window, including Codex. \`spawn-claude\` is only for Claude Code child sessions.
-
-\`\`\`bash
-spawn-claude "implement feature X"
-spawn-claude --cwd /some/path "fix the bug in module Y"
-spawn-claude --extra-arguments "--model sonnet" "refactor this module"
-terminal-exec -- codex exec --cd /some/path "investigate issue Z"
-\`\`\`
-
-The command prints \`{"spawnId":"<uuid>"}\` on success.
-Completed child results are injected into context automatically between tool calls.
-
-${await cat(['./AGENTS.md',],)}`;
-}
-
-/**
- * Reads canonical skill markdown files for legacy mirror destinations.
- *
- * @returns Glob results for canonical skill docs.
- *
- * @example
- * ```ts
- * const skills = await readSkillFiles();
- * ```
- */
-async function readSkillFiles(): Promise<GlobResults> {
-  return await cat('./.agents/skills/*/*.md',);
 }
 
 /**
@@ -153,8 +103,8 @@ async function generateForbiddenStringsRules(): Promise<void> {
   },);
   await overwrite({
     dest: './forbidden-strings.local.txt',
-    content: async function buildForbiddenStringsRules(): Promise<string> {
-      return `# Generated from forbidden-strings.local.example.txt + forbidden-strings.append.local.txt by file-enforcer.
+    content:
+      `# Generated from forbidden-strings.local.example.txt + forbidden-strings.append.local.txt by file-enforcer.
 # Do not edit manually. To change baseline rules, edit
 # packages/cli/forbidden-strings/src/mise.port-betterleaks.ts and re-run it.
 # To add per-repo rules, edit forbidden-strings.append.local.txt.
@@ -162,8 +112,7 @@ async function generateForbiddenStringsRules(): Promise<void> {
 ${await cat([
         './forbidden-strings.local.example.txt',
         './forbidden-strings.append.local.txt',
-      ],)}`;
-    },
+      ],)}`,
   },);
 }
 
@@ -204,14 +153,18 @@ async function generateResolvedBrowserslistTargets(): Promise<void> {
  * for legacy consumers.
  */
 async function mirrorSkills(): Promise<void> {
+  /**
+   * Concatenated SKILL.md contents from the canonical .agents/skills tree, mirrored verbatim to legacy consumer dirs.
+   */
+  const skills = await cat('./.agents/skills/*/*.md',);
   await Promise.all([
     overwriteEach({
       destGlob: './.factory/skills/*/*.md',
-      files: readSkillFiles,
+      files: skills,
     },),
     overwriteEach({
       destGlob: './.claude/skills/*/*.md',
-      files: readSkillFiles,
+      files: skills,
     },),
   ],);
 }
@@ -220,7 +173,28 @@ await Promise.all([
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
   overwrite({
     dest: './CLAUDE.md',
-    content: buildClaudeMd,
+    content: `Generated from AGENTS.md by file-enforcer.
+    
+    ### Spawning child Claude sessions
+
+General purpose agents are banned because of bugs.
+
+Use \`spawn-claude\` outside sandbox to launch steerable child Claude Code sessions in visible terminal windows.
+The child session runs independently; results are forwarded back to the parent automatically via hooks.
+
+Use \`terminal-exec -- <command> ...\` outside sandbox for arbitrary commands that need a visible terminal window, including Codex. \`spawn-claude\` is only for Claude Code child sessions.
+
+\`\`\`bash
+spawn-claude "implement feature X"
+spawn-claude --cwd /some/path "fix the bug in module Y"
+spawn-claude --extra-arguments "--model sonnet" "refactor this module"
+terminal-exec -- codex exec --cd /some/path "investigate issue Z"
+\`\`\`
+
+The command prints \`{"spawnId":"<uuid>"}\` on success.
+Completed child results are injected into context automatically between tool calls.
+
+${await cat(['./AGENTS.md',],)}`,
   },),
 
   generateMiseToml(),

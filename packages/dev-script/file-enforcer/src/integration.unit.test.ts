@@ -12,6 +12,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+import spawn from 'nano-spawn';
 import {
   reads,
   reset,
@@ -266,6 +267,42 @@ await describe({
 
         /** Original content should be preserved */
         expect(await readFile(join(tempDir, 'keep.txt',), 'utf8',),).toBe('original',);
+      },
+    },),
+    it({
+      name: 'direct file-enforcer config exits before builders when manifest is fresh',
+      fn: async () => {
+        const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-integ-',),);
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return rm(tempDir, { recursive: true, force: true, },);
+          },
+        };
+        const markerPath = join(tempDir, 'runs.txt',);
+        const destPath = join(tempDir, 'output.txt',);
+        const configPath = join(tempDir, 'file-enforcer.config.ts',);
+        const configContent = `
+            import { appendFile } from 'node:fs/promises';
+            import { overwrite } from '${join(import.meta.dirname, 'index.ts',)}';
+            await appendFile('${markerPath}', 'ran\\n');
+            await overwrite({
+              dest: '${destPath}',
+              content: 'stable',
+            });
+          `;
+        await writeFile(configPath, configContent,);
+
+        await spawn('bun', [configPath,], { cwd: tempDir, },);
+        await spawn('bun', [configPath,], { cwd: tempDir, },);
+
+        expect(await readFile(markerPath, 'utf8',),).toBe('ran\n',);
+        expect(await readFile(destPath, 'utf8',),).toBe('stable',);
+
+        await writeFile(destPath, 'external edit',);
+        await spawn('bun', [configPath,], { cwd: tempDir, },);
+
+        expect(await readFile(markerPath, 'utf8',),).toBe('ran\nran\n',);
+        expect(await readFile(destPath, 'utf8',),).toBe('stable',);
       },
     },),
     it({

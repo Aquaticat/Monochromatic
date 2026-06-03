@@ -4,6 +4,7 @@ import {
 } from 'node:path';
 import { setActiveConfigPath, } from '../context.ts';
 import { invalidatePaths, } from '../io/cache.ts';
+import { freshStalenessManifest, } from '../io/staleness-run.ts';
 import {
   l,
   tagged,
@@ -88,6 +89,12 @@ export function startWatching(configPath: string,): Promise<never> {
     rl.info('re-running config...',);
     invalidatePaths(changedPaths,);
     reset();
+    if (await freshStalenessManifest({})) {
+      rl.info('staleness cache fresh; skipping config import',);
+      closeAllWatchers();
+      setupWatchers();
+      return;
+    }
     try {
       await import(`${absoluteConfig}?v=${String(Date.now(),)}`);
     }

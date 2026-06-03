@@ -24,9 +24,7 @@ import {
 
 await overwrite({
   dest: './CLAUDE.md',
-  content: async function buildClaudeMd(): Promise<string> {
-    return await cat(['./AGENTS.md',],);
-  },
+  content: await cat(['./AGENTS.md',],),
 });
 ```
 
@@ -53,40 +51,21 @@ bun packages/dev-script/file-enforcer/src/index.ts --watch
 ### Writing
 
 - `overwrite({ dest, content })`: writes content to dest; skips when existing content is identical.
-  When `content` is a named function, file-enforcer first checks the persisted staleness manifest.
-  If previous source mtimes, glob path sets, and destination metadata still match, it skips the function,
-  dest read, and content compare.
 - `overwriteIfNotExists({ dest, content })`: writes only if the file does not exist
 - `overwriteEach({ destGlob, files })`: mirrors each `GlobResults` entry to a destination using positional
   wildcard substitution; source glob is read from the array.
-  When `files` is a named function, file-enforcer applies the same staleness gate to the whole mirror rule.
 - `overwriteTomlKey({ dest, path, value })`: updates a single key in an existing TOML file, preserving comments
   and unmutated whitespace via splice mode; throws when dest does not exist
 
 ### Staleness cache
 
-Lazy `overwrite()` and `overwriteEach()` builders persist a manifest at
-`node_modules/.cache/file-enforcer/staleness-manifest.json` by default.
+One-shot runs persist a manifest at `node_modules/.cache/file-enforcer/staleness-manifest.json`.
+The default manifest path walks up from the current directory until it finds `node_modules`, then writes under that root.
 The manifest records the config file, files read through `cat()` or `addWatchedPaths()`, glob expansions,
 and managed destination metadata.
-On a no-op run, matching metadata lets file-enforcer register the previous watched paths and destinations
-without re-running the builder or reading destination content.
+On a no-op run, matching metadata exits before consumer config code runs, so existing configs do not need to change.
 
-Use lazy builders only when all dependencies are trackable through `cat()` or `addWatchedPaths()`.
-Keep eager content for builders that inspect opaque external state, such as package data or custom directory walks,
-unless the config registers those inputs explicitly.
-
-Pass `manifestPath` for throwaway fixtures or benchmarks that should not share the default cache:
-
-```ts
-await overwrite({
-  dest: '/tmp/out.txt',
-  manifestPath: '/tmp/file-enforcer-manifest.json',
-  content: async function buildOut(): Promise<string> {
-    return await cat(['/tmp/source.txt',],);
-  },
-});
-```
+Pass `manifestPath` only for throwaway fixtures or benchmarks that should not share the default cache.
 
 ### Transforms
 

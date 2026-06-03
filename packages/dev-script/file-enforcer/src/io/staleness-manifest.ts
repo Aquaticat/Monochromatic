@@ -8,12 +8,11 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { configDependencyPaths, } from '../context.ts';
-import {
-  l,
-  tagged,
-} from '../log.ts';
 import { isStalenessManifest, } from './staleness-guards.ts';
+import {
+  findNodeModulesRoot,
+  NODE_MODULES_DIRECTORY_NAME,
+} from './staleness-root.ts';
 import {
   CACHE_DIRECTORY_NAME,
   EACH_ENTRY_PREFIX,
@@ -61,6 +60,63 @@ type WriteManifestOptions = Readonly<{
 const manifestCache: Map<string, StalenessManifest> = new Map<string, StalenessManifest>();
 
 /**
+ * Manifest paths changed in memory and awaiting a process-exit flush.
+ */
+const dirtyManifestPaths: Set<string> = new Set<string>();
+
+/**
+ * Writes one cached manifest to disk.
+ *
+ * @param manifestPath - Absolute manifest path to flush.
+ *
+ * @example
+ * ```ts
+ * flushManifestPath('/repo/node_modules/.cache/file-enforcer/staleness-manifest.json');
+ * ```
+ */
+function flushManifestPath(manifestPath: string,): void {
+  /**
+   * Cached manifest to flush.
+   */
+  const manifest = manifestCache.get(manifestPath,);
+  if (manifest === undefined)
+    return;
+
+  mkdirSync(
+    dirname(manifestPath,),
+    { recursive: true, },
+  );
+  writeFileSync(
+    manifestPath,
+    `${JSON.stringify(
+      manifest,
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+/**
+ * Flushes all dirty manifests before a normal process exit.
+ *
+ * @example
+ * ```ts
+ * flushDirtyManifests();
+ * ```
+ */
+function flushDirtyManifests(): void {
+  dirtyManifestPaths.forEach(function flushDirtyManifest(manifestPath,): void {
+    flushManifestPath(manifestPath,);
+  },);
+  dirtyManifestPaths.clear();
+}
+
+process.on(
+  'exit',
+  flushDirtyManifests,
+);
+
+/**
  * Returns the default empty manifest.
  *
  * @returns Empty manifest for a cache file that does not exist yet.
@@ -98,14 +154,12 @@ export function resolveManifestPath(
     return resolve(manifestPath,);
 
   /**
-   * First implicit config dependency, or current directory when no entry path exists.
+   * Workspace root discovered by walking up until `node_modules` exists.
    */
-  const anchorPath = configDependencyPaths()[0]
-    ?? process.cwd();
-
+  const nodeModulesRoot = findNodeModulesRoot(process.cwd(),);
   return join(
-    dirname(anchorPath,),
-    'node_modules',
+    nodeModulesRoot,
+    NODE_MODULES_DIRECTORY_NAME,
     '.cache',
     CACHE_DIRECTORY_NAME,
     MANIFEST_FILE_NAME,
@@ -157,14 +211,6 @@ export function stalenessKeyForDestGlob(destGlob: string,): string {
  * ```
  */
 function readManifestFromDisk(manifestPath: string,): StalenessManifest {
-  /**
-   * Function-scoped logger tagged for manifest diagnostics.
-   */
-  const rl = tagged({
-    tag: readManifestFromDisk.name,
-    l,
-  },);
-
   try {
     /**
      * Raw JSON manifest content.
@@ -180,7 +226,6 @@ function readManifestFromDisk(manifestPath: string,): StalenessManifest {
     if (isStalenessManifest(parsedManifest,))
       return parsedManifest;
 
-    rl.debug(`ignoring invalid staleness manifest: ${manifestPath}`,);
     return emptyManifest();
   }
   catch {
@@ -237,16 +282,12 @@ export function writeManifest(
     manifest,
   }: WriteManifestOptions,
 ): void {
-  mkdirSync(
-    dirname(manifestPath,),
-    { recursive: true, },
-  );
-  writeFileSync(
+  manifestCache.set(
     manifestPath,
-    `${JSON.stringify(
-      manifest,
-      null,
-      2,
-    )}\n`,
+    {
+      version: manifest.version,
+      entries: { ...manifest.entries, },
+    },
   );
+  dirtyManifestPaths.add(manifestPath,);
 }

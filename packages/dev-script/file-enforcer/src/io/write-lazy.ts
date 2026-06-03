@@ -42,6 +42,7 @@ export type WriteIfChanged = (
     readonly dest: string;
     readonly content: string;
     readonly sourcePath?: string;
+    readonly recordStaleness?: boolean;
   },
 ) => Promise<void>;
 
@@ -133,13 +134,15 @@ export async function writeLazyIfChanged(
     ? {
       dest,
       content: captured.value,
+      recordStaleness: false,
     }
     : {
       dest,
       content: captured.value,
       sourcePath,
+      recordStaleness: false,
     },);
-  await rememberFreshStalenessEntry(manifestPath === undefined
+  rememberFreshStalenessEntry(manifestPath === undefined
     ? {
       key,
       kind: 'single',
@@ -221,8 +224,9 @@ export async function writeLazyEach(
   await writeGlobDestinations({
     destinations,
     writeIfChanged,
+    recordStaleness: false,
   },);
-  await rememberFreshStalenessEntry(manifestPath === undefined
+  rememberFreshStalenessEntry(manifestPath === undefined
     ? {
       key,
       kind: 'each',

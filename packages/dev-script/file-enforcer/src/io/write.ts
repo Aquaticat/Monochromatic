@@ -29,6 +29,10 @@ import {
   writeLazyEach,
   writeLazyIfChanged,
 } from './write-lazy.ts';
+import {
+  rememberEagerEach,
+  rememberEagerWrite,
+} from './write-staleness.ts';
 
 /**
  * Ensures the parent directory of a file path exists before writing.
@@ -85,16 +89,24 @@ export async function readExisting(filePath: string,): Promise<string | typeof M
  * @param content - Content string to write
  *
  * @param sourcePath - Optional source path for log messages (used by overwriteEach)
+ *
+ * @param manifestPath - Optional staleness manifest path override
+ *
+ * @param recordStaleness - Whether reconciliation should record eager staleness metadata
  */
 async function writeIfChanged(
   {
     dest,
     content,
     sourcePath,
+    manifestPath,
+    recordStaleness,
   }: {
     readonly dest: string;
     readonly content: string;
     readonly sourcePath?: string;
+    readonly manifestPath?: string;
+    readonly recordStaleness?: boolean;
   },
 ): Promise<void> {
   /**
@@ -113,6 +125,18 @@ async function writeIfChanged(
     rl.debug(
       `skip (unchanged): ${sourcePath !== undefined ? `${sourcePath} -> ` : ''}${dest}`,
     );
+    if (recordStaleness !== false) {
+      rememberEagerWrite(manifestPath === undefined
+        ? {
+          dest,
+          content,
+        }
+        : {
+          dest,
+          content,
+          manifestPath,
+        },);
+    }
     return;
   }
   await ensureDir(dest,);
@@ -125,6 +149,18 @@ async function writeIfChanged(
     content,
   },);
   trackWriteTime(dest,);
+  if (recordStaleness !== false) {
+    rememberEagerWrite(manifestPath === undefined
+      ? {
+        dest,
+        content,
+      }
+      : {
+        dest,
+        content,
+        manifestPath,
+      },);
+  }
   rl.info(`${sourcePath !== undefined ? `${sourcePath} -> ` : '-> '}${dest}`,);
 }
 
@@ -182,10 +218,16 @@ export async function overwrite(
     return;
   }
 
-  await writeIfChanged({
-    dest,
-    content,
-  },);
+  await writeIfChanged(manifestPath === undefined
+    ? {
+      dest,
+      content,
+    }
+    : {
+      dest,
+      content,
+      manifestPath,
+    },);
 }
 
 /**
@@ -274,11 +316,25 @@ export async function overwriteEach(
   }
 
   l.info(`overwriteEach: ${String(files.length,)} files`,);
+  /**
+   * Concrete destinations for the eager glob mirror rule.
+   */
+  const destinations = destinationsForFiles({
+    destGlob,
+    files,
+  },);
   await writeGlobDestinations({
-    destinations: destinationsForFiles({
-      destGlob,
-      files,
-    },),
+    destinations,
     writeIfChanged: writeIfChangedForLazy,
   },);
+  rememberEagerEach(manifestPath === undefined
+    ? {
+      destGlob,
+      destinations,
+    }
+    : {
+      destGlob,
+      destinations,
+      manifestPath,
+    },);
 }

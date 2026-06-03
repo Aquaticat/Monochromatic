@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   cat,
+  freshStalenessManifest,
   invalidatePaths,
   overwrite,
   overwriteEach,
@@ -93,6 +94,73 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: 'eager staleness manifest',
+      concurrency: 1,
+      children: [
+        it({
+          name: 'reports fresh after eager overwrite sources and destinations are unchanged',
+          fn: async function reportsFreshEagerOverwrite(): Promise<void> {
+            const tempDir = await setup();
+            await using _cleanup = {
+              [Symbol.asyncDispose](): Promise<void> {
+                return teardown(tempDir,);
+              },
+            };
+            reset();
+            resetWriteTimestamps();
+            const source = join(tempDir, 'source.txt',);
+            const dest = join(tempDir, 'dest.txt',);
+            const manifestPath = join(tempDir, 'manifest.json',);
+            await writeFile(source, 'alpha',);
+
+            await overwrite({
+              dest,
+              content: await cat([source,],),
+              manifestPath,
+            },);
+            reset();
+            resetWriteTimestamps();
+
+            const fresh = await freshStalenessManifest({ manifestPath, },);
+
+            expect(fresh,).toBe(true,);
+            const sourceTracked = reads.has(resolve(source,),);
+            const destTracked = writes.has(resolve(dest,),);
+            expect(sourceTracked,).toBe(true,);
+            expect(destTracked,).toBe(true,);
+          },
+        },),
+        it({
+          name: 'reports stale after an eager overwrite source changes',
+          fn: async function reportsStaleChangedEagerSource(): Promise<void> {
+            const tempDir = await setup();
+            await using _cleanup = {
+              [Symbol.asyncDispose](): Promise<void> {
+                return teardown(tempDir,);
+              },
+            };
+            reset();
+            resetWriteTimestamps();
+            const source = join(tempDir, 'source.txt',);
+            const dest = join(tempDir, 'dest.txt',);
+            const manifestPath = join(tempDir, 'manifest.json',);
+            await writeFile(source, 'alpha',);
+
+            await overwrite({
+              dest,
+              content: await cat([source,],),
+              manifestPath,
+            },);
+            await writeFile(source, 'beta',);
+            reset();
+            resetWriteTimestamps();
+
+            expect(await freshStalenessManifest({ manifestPath, },),).toBe(false,);
+          },
+        },),
+      ],
+    },),
     describe({
       name: 'lazy overwrite staleness cache',
       concurrency: 1,

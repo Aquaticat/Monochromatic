@@ -1,3 +1,6 @@
+// oxlint-disable-next-line import/no-unassigned-import -- direct config staleness guard must run before public re-exports evaluate.
+import './io/staleness-direct-exit.ts';
+
 export {
   invalidatePaths,
   readCache,
@@ -16,6 +19,7 @@ export {
   expandGlob,
   mirrorGlobPath,
 } from './io/glob.ts';
+export { freshStalenessManifest, } from './io/staleness-run.ts';
 export type {
   ContentBuilder,
   GlobResultsBuilder,
@@ -77,6 +81,7 @@ export { evaluatePredicate, } from './platform/evaluate-predicate.ts';
 export {
   addWatchedPaths,
   captureTrackedSources,
+  globs,
   reads,
   reset,
   resetWriteTimestamps,

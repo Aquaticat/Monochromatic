@@ -25,6 +25,19 @@ await import(resolve(import.meta.dirname, 'setup-fixture.ts',));
 
 /** Absolute path to the perf config */
 const CONFIG = resolve(import.meta.dirname, 'perf.config.ts',);
+/** Absolute path to the file-enforcer CLI source */
+const CLI = resolve(
+  import.meta.dirname,
+  '..',
+  '..',
+  '..',
+  'dev-script',
+  'file-enforcer',
+  'src',
+  'cli.ts',
+);
+/** Command string that runs the perf config through the CLI */
+const RUN_CONFIG = `bun ${CLI} ${CONFIG}`;
 
 /** Fixture root and subdirectories, respects $TMPDIR for sandbox compatibility */
 const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf',);
@@ -67,21 +80,21 @@ await runHyperfine('Cold run (all files written)', [
   '5',
   '--prepare',
   `rm -rf ${DEST_DIR} && mkdir -p ${DEST_DIR}`,
-  `bun ${CONFIG}`,
+  RUN_CONFIG,
 ],);
 
 // 2. Warm run: populate dest first, then re-run (all content-based skips)
 console.log('\n[e2e] populating dest for warm runs...',);
 await rm(DEST_DIR, { recursive: true, force: true, },);
 await mkdir(DEST_DIR, { recursive: true, },);
-await spawn('bun', [CONFIG,],);
+await spawn('bun', [CLI, CONFIG,],);
 
 await runHyperfine('Warm run (all unchanged)', [
   '--warmup',
   '2',
   '--runs',
   '10',
-  `bun ${CONFIG}`,
+  RUN_CONFIG,
 ],);
 
 // 3. One source file modified between runs (forces re-read + re-write of affected dests)
@@ -92,7 +105,7 @@ await runHyperfine('1 source changed', [
   '10',
   '--prepare',
   `echo "# Modified at $(date +%s%N)" >> ${SOURCE_FILE}`,
-  `bun ${CONFIG}`,
+  RUN_CONFIG,
 ],);
 
 // 4. One dest file modified between runs (simulates external edit, triggers re-write)
@@ -103,7 +116,7 @@ await runHyperfine('1 dest changed', [
   '10',
   '--prepare',
   `echo "# Externally modified at $(date +%s%N)" >> ${DEST_FILE}`,
-  `bun ${CONFIG}`,
+  RUN_CONFIG,
 ],);
 
 //endregion Benchmark scenarios

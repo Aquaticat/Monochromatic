@@ -19,7 +19,6 @@ import {
   resolve,
 } from 'node:path';
 
-import { invalidatePaths, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import spawn from 'nano-spawn';
 
 import {
@@ -141,6 +140,29 @@ console.error(
 
 /** Absolute path to the benchmark configuration file */
 const CONFIG_PATH = resolve(import.meta.dirname, 'perf.config.ts',);
+/** Absolute path to the file-enforcer CLI source */
+const CLI_PATH = resolve(
+  import.meta.dirname,
+  '..',
+  '..',
+  '..',
+  'dev-script',
+  'file-enforcer',
+  'src',
+  'cli.ts',
+);
+
+/**
+ * Runs the benchmark configuration through the public CLI.
+ *
+ * @example
+ * ```ts
+ * await runConfig();
+ * ```
+ */
+async function runConfig(): Promise<void> {
+  await spawn('bun', [CLI_PATH, CONFIG_PATH,],);
+}
 
 /** Timing entry for one config execution */
 type TimingEntry = {
@@ -160,7 +182,7 @@ const timings: TimingEntry[] = [];
 const coldResult = await measureRegion({
   counters,
   run: async function runCold() {
-    await import(`${CONFIG_PATH}?v=cold`,);
+    await runConfig();
   },
 },);
 timings.push({ label: 'cold', ms: coldResult.ms, counters: coldResult.counters, },);
@@ -178,7 +200,7 @@ for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
   const warmResult = await measureRegion({
     counters,
     run: async function runWarm() {
-      await import(`${CONFIG_PATH}?v=warm-${String(warmIndex,)}`,);
+      await runConfig();
     },
   },);
   timings.push({
@@ -198,12 +220,11 @@ const sourceFile = join(fixtureDir, 'src', 'pkg-00', 'docs', 'readme.md',);
 /** Original content of the source file before modification */
 const sourceContent = await readFile(sourceFile, 'utf8',);
 await writeFile(sourceFile, `${sourceContent}\n# Modified for benchmark`,);
-invalidatePaths([sourceFile,],);
-/** Source-changed timing and counters after invalidating one source file. */
+/** Source-changed timing and counters after modifying one source file. */
 const srcChangedResult = await measureRegion({
   counters,
   run: async function runSrcChanged() {
-    await import(`${CONFIG_PATH}?v=src-changed`,);
+    await runConfig();
   },
 },);
 timings.push({
@@ -220,12 +241,11 @@ const destFile = join(fixtureDir, 'dest', 'combined-0.md',);
 /** Original content of the destination file before modification */
 const destContent = await readFile(destFile, 'utf8',);
 await writeFile(destFile, `${destContent}\n# Externally modified`,);
-invalidatePaths([destFile,],);
 /** Dest-changed timing and counters after an external edit to one dest file. */
 const destChangedResult = await measureRegion({
   counters,
   run: async function runDestChanged() {
-    await import(`${CONFIG_PATH}?v=dest-changed`,);
+    await runConfig();
   },
 },);
 timings.push({

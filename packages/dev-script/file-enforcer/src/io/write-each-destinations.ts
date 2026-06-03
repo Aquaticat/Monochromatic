@@ -56,6 +56,8 @@ export function destinationsForFiles(
  *
  * @param writeIfChanged - Reconciliation function from `write.ts`.
  *
+ * @param recordStaleness - Whether each destination write should record eager staleness metadata.
+ *
  * @example
  * ```ts
  * await writeGlobDestinations({ destinations, writeIfChanged });
@@ -65,18 +67,27 @@ export async function writeGlobDestinations(
   {
     destinations,
     writeIfChanged,
+    recordStaleness,
   }: {
     readonly destinations: readonly GlobDestination[];
     readonly writeIfChanged: WriteIfChanged;
+    readonly recordStaleness?: boolean;
   },
 ): Promise<void> {
   await Promise.all(
     destinations.map(async function writeOneDestination(destination,): Promise<void> {
-      await writeIfChanged({
-        dest: destination.path,
-        content: destination.content,
-        sourcePath: destination.sourcePath,
-      },);
+      await writeIfChanged(recordStaleness === undefined
+        ? {
+          dest: destination.path,
+          content: destination.content,
+          sourcePath: destination.sourcePath,
+        }
+        : {
+          dest: destination.path,
+          content: destination.content,
+          sourcePath: destination.sourcePath,
+          recordStaleness,
+        },);
     },),
   );
 }

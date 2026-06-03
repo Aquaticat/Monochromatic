@@ -32,6 +32,11 @@ const _writes: Set<string> = new Set<string>();
  */
 const _writeTimestamps: Map<string, number> = new Map<string, number>();
 
+/**
+ * Internal mutable map of glob expansions observed during config execution.
+ */
+const _globs: Map<string, readonly string[]> = new Map<string, readonly string[]>();
+
 //endregion Private mutable collections
 
 //region Read-only public views
@@ -60,6 +65,12 @@ export const writes: ReadonlySet<string> = _writes;
  */
 export const writeTimestamps: ReadonlyMap<string, number> = _writeTimestamps;
 
+/**
+ * Glob expansions observed during config execution, keyed by pattern.
+ * Read-only; use {@link trackGlob} to add entries.
+ */
+export const globs: ReadonlyMap<string, readonly string[]> = _globs;
+
 //endregion Read-only public views
 
 //region Mutation functions
@@ -77,6 +88,7 @@ export const writeTimestamps: ReadonlyMap<string, number> = _writeTimestamps;
 export function reset(): void {
   _reads.clear();
   _writes.clear();
+  _globs.clear();
 }
 
 /**
@@ -197,9 +209,19 @@ export function trackGlob(
     readonly paths: readonly string[];
   },
 ): void {
+  /**
+   * Absolute path set matched by this glob.
+   */
+  const absolutePaths = [...new Set(paths.map(function toAbsolutePath(path,): string {
+    return resolve(path,);
+  },),),].toSorted();
+  _globs.set(
+    pattern,
+    absolutePaths,
+  );
   recordGlobInActiveCapture({
     pattern,
-    paths,
+    paths: absolutePaths,
   },);
 }
 
