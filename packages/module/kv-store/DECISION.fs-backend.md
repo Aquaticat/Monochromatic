@@ -236,6 +236,11 @@ value. For pure persistence, use the file backend as the **sole** backend (`back
 which sidesteps consensus. Layer only with the file at strictly highest priority, and only for backend
 redundancy, not caching.
 
+Confirmed against the real prototype backend: `[fileBackend]` alone round-trips a value persisted across
+store instances; `[new Map(), fileBackend]` (equal priority) throws the same consensus failure; and
+`[coldMap(priority 1), fileBackend(priority 0)]` returns ABSENT and physically deletes the on-disk file
+on a single read (`files before: 1`, `files after: 0`).
+
 ### Hazard 2: layering buys no read acceleration
 
 `get` queries every backend on every call (`src/backends-async.ts:43-55`, `src/backends-sync.ts:40-51`);
