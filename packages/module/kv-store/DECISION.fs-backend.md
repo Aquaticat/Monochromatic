@@ -338,14 +338,27 @@ Remediation ranking: **shard by hash prefix > accept flat and document.** Shardi
 per directory at any scale, at a little path complexity; a flat directory is simpler but degrades at
 large N, acceptable only when an eviction bound (Hazard 3) keeps the count small.
 
-### Hazard 10: the built-export wiring is partly unprecedented
+### Hazard 10: built-export wiring (verified working in a throwaway build)
 
-Overriding `entry` to emit a second module per build is precedented: `deps-cube`'s
-`tsdown.node.config.ts` spreads the base config and sets `entry: ['./src/index.ts', './src/cli.ts']`,
-landing both as `.mjs` in one `outDir`. Changing this package's tsdown config is allowed (not required).
-What no repo package does yet is ship a built subpath whose `node` and `browser` conditions resolve to
-divergent built files; that part is new here, so validate the emitted filenames, the per-entry `.d.mts`,
-and condition resolution under both Node and a bundler before relying on it. Two placements are
+Prototyped end-to-end in a throwaway worktree (full `pnpm install`, real `mise run build:js`). Both
+configs spread the base and add a second entry (the `deps-cube` precedent): node entry
+`['./src/index.ts', './src/backend-fs.node.ts']`, neutral entry `['./src/index.ts',
+'./src/backend-fs.browser.ts']`. Results:
+
+-   Filenames are predictable: `dist/final/node/backend-fs.node.{mjs,d.mts}` and
+    `dist/final/neutral/backend-fs.browser.{mjs,d.mts}`.
+-   The dts is split: both builds emit a shared `types-<hash>.d.mts` chunk that the per-entry `.d.mts`
+    import relatively; the chunk ships under the existing `files: ['dist/final']` glob.
+-   `backend-fs.browser.mjs` is node-free. The only `node:` reference in the neutral build is in
+    `index.mjs`, and it is logger's guarded dynamic `await import('node:fs/promises')`, which a browser
+    never executes; this predates the fs backend.
+-   With a `./fs` export carrying `types`, `node`, `browser`, and `default`, Bun resolved the `node`
+    condition to `backend-fs.node.mjs`; `createFileBackend` and `createSyncFileBackend` round-tripped
+    set/get against a real temp directory and a miss returned `undefined`. `tsgo --build` type-checks
+    the two impls under the package's `/dom` config.
+
+So the wiring works; the one path not exercised in a real browser bundler is the `browser` condition
+resolving to the OPFS build, which a bundler selects by the same condition mechanism. Two placements are
 possible: expose `./fs` as a new subpath (isolates the divergence, leaves the `.` entry untouched), or
 fold the backend into `.` (reuses the existing `node`/`default` conditions but requires splitting
 `index.ts` into per-runtime entry files).
@@ -386,6 +399,32 @@ Hazard 3 fix already required; supersede-on-salt-change next because prompt sema
 mere bound, at the cost of a new index or scan; built-in TTL over caller-managed because a library
 default beats pushing the work onto every caller. memoize is changeable, so options two through four are
 on the table.
+
+### Hazard 12: the backend contracts omit the optional `clear` and `size` the stores use
+
+`StorageBackend` (`src/types.ts:153`) and `SyncStorageBackend` (`src/types.ts:199`) declare only `get`,
+`set`, `delete`, and optional `priority`. Neither declares `clear`, yet `store.clear()` calls
+`backend.clear()` when `'clear' in backend` (`src/create-store.ts:226`, `src/create-sync-store.ts:239`),
+and `SyncStore.size` reads `backends[0].size` (`src/create-sync-store.ts:143`). Verified with
+`tsgo --build` in the prototype: an object-literal backend implementing `clear` typed as bare
+`StorageBackend` fails with `TS2353: Object literal may only specify known properties, and 'clear' does
+not exist in type 'StorageBackend'`. So a conforming backend that implements the store-supported `clear`
+(Hazard 5 requires it) cannot be written as a plain typed literal.
+
+Remediation ranking: **add optional `clear`/`size` to the contracts > widen at the backend via an
+intersection type > build off a non-literal binding.**
+
+-   Add `clear?` (both contracts) and `size?` (sync): pros, the contract finally matches what the stores
+    probe and it fixes every backend at once; cons, a public type change (acceptable pre-public).
+-   Intersection type at the backend (`StorageBackend & { clear: () => Promise<void> }`): pros, no core
+    change; cons, every backend re-declares the same members and the public type still understates the
+    surface.
+-   Non-literal binding to dodge the excess-property check: pros, smallest diff; cons, hides the gap
+    without fixing it, a footgun for the next implementer.
+
+Ranking reasons: add-to-contracts first because the gap is in the contract and the package is pre-public,
+so fix it at the source; intersection over non-literal because an explicit local type is clearer than a
+binding trick that silently sidesteps the check.
 
 ### Non-blockers confirmed
 
