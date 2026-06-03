@@ -24,13 +24,18 @@ use forbidden_strings::fuzz_api::*;
 //           metacharacters).
 // Why:      We control the input; the escaper does what a manual
 //           translator would do. The walker is the system under
-//           test.
+//           test. The escape set MUST stay in sync with
+//           `walk_literal_bytes`'s break set, or the round-trip is
+//           a false failure: `_` is a resharp wildcard that the
+//           walker stops on (the "BUG 10" fix in atom.rs), so a
+//           bare `_` must be escaped to `\_` here, otherwise the
+//           walker recovers nothing for input like `_foo`.
 fn escape_literal(s: &str) -> String {
     let mut out = String::with_capacity(s.len() * 2);
     for c in s.chars() {
         match c {
             '.' | '*' | '+' | '?' | '|' | '(' | ')' | '[' | ']' | '{' | '}'
-            | '^' | '$' | '\\' | '&' | '~' => {
+            | '^' | '$' | '\\' | '&' | '~' | '_' => {
                 out.push('\\');
                 out.push(c);
             }
