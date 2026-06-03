@@ -6,8 +6,9 @@ verification path for each finding.
 
 Current status (2026-06-03, resharp 0.6.8): the lockfile and the
 `packages/cli/forbidden-strings/Cargo.toml` requirement floor are bumped
-from 0.6.3 to 0.6.8, executing the "wait then bump then re-fuzz" plan under
-"Plan (decided 2026-05-23)" below. Behavioural re-verification at 0.6.8
+from 0.6.3 to 0.6.8, executing the wait-then-bump-then-re-fuzz plan recorded
+for 0.6.3 (since removed as spent; git history has it). Behavioural
+re-verification at 0.6.8
 (targeted probe crates, not a fresh fuzz campaign; the full fuzz re-run
 stays a recommended next step):
 
@@ -40,212 +41,31 @@ prototype; both are documented under "Flaky upstream test" below.
 Full per-bug method and probe output: see "Bump to resharp 0.6.8
 (2026-06-03)" below.
 
-Six bugs are tracked (A through F). All were re-verified on 2026-05-23
-against published resharp 0.6.3 and against git HEAD `e0b8aba`
-(`https://github.com/ieviev/resharp`, 2 commits past the 0.6.3 release
-commit `0b7732c`), using standalone probe crates built in debug
-(debug-assertions and overflow-checks both on, matching cargo-fuzz
-defaults) and in release (both off). Each still-live bug now has a
-minimal prototype fix verified against HEAD; the combined patch is at
-[resharp.patch](resharp.patch) and the
-single merged upstream issue body is at
-the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed). See the
-"Prototype fixes" section for the per-bug results.
+Fixed upstream (historical breadcrumb): Bugs B, C, D, E, F were tracked
+here through their full investigation and were fixed upstream in resharp
+0.6.4 (the maintainer shipped our prototype patches the same day we filed
+the merged issue [ieviev/resharp#5](https://github.com/ieviev/resharp/issues/5)),
+then re-verified fixed or fail-closed at 0.6.8. Their detailed per-bug
+sections and the spent filing / prototype / plan narrative were removed
+2026-06-03 once that work landed; git history before that commit holds the
+full analysis. Their consumer-side pre-validators
+(`intersection_with_lookbehind`, `intersection_with_word_end_alternation`,
+`lookaround_in_alternation_with_sibling`,
+`complement_intersection_quantified_group`,
+`nested_lookahead_in_quantified_group`) in
+`packages/cli/forbidden-strings/src/rules/engine.rs` stay as
+belt-and-suspenders; over-rejection is fail-closed-safe.
 
-A later pass on 2026-05-25 against published resharp 0.6.4 (the current
-latest, which already carries the Bug B/C/E/F fixes) added Bug G, an
-uncatchable stack-overflow abort on deeply nested complement and lookaround
-patterns, plus three lower-severity flags (H, I, J) and a set of negative
-results. Those live in the "2026-05-25 follow-up pass (resharp 0.6.4)"
-section below and were verified against 0.6.4, not the 0.6.3 / `e0b8aba`
-baseline the A through F catalogues use.
-
-Update (2026-05-23, post-filing): the maintainer responded the same day
-and published resharp 0.6.4, whose sole fix commit (`bd780ef`) reproduces
-our prototype patch (source-verified: the Bug A render string is
-byte-for-byte identical to ours and the Bug B/C/E/F hunks match). The
-verification catalogues below stay against published 0.6.3 and HEAD
-`e0b8aba` (which predates 0.6.4); a behavioural re-fuzz against the
-published 0.6.4 build is still pending. See "Upstream response
-(2026-05-23)" below for the reply, the source diff, and the
-wait-then-bump-then-re-fuzz plan.
-
-Status (0.6.3 / HEAD baseline; superseded for the current pin by "Current
-status (2026-06-03, resharp 0.6.8)" above, where Bugs B, C, E, F are fixed
-and Bug D tightened further):
-
-- **Bug A** (`\b`/`\B`/`^`/`$` or any lookaround inside a `~(...)` complement
-  body fails to compile): unchanged from 0.6.0 through 0.6.3/HEAD.
-  Defense: `lookaround_in_complement`. The behavioural fix (supporting the
-  shape) stays un-prototyped (architectural); only the error-message
-  wording is prototyped (legibility nudge).
-- **Bug B** (intersection `&` with a lookbehind): still reproduces, but the
-  defect now surfaces earlier in the pipeline. The panic moved from the
-  matching engine (`resharp/src/engine.rs:1020` in 0.6.0) to a
-  `debug_assert!` in the new `strip_lb` lookbehind-stripping rewrite
-  (`resharp-algebra/src/lib.rs:2007` at HEAD, `:2006` in 0.6.3). In release
-  the assertion is compiled out and `find_all` silently returns corrupted
-  matches. Defense: `intersection_with_lookbehind`. Prototyped fix:
-  fail-closed `Err` in `strip_lb`.
-- **Bug C** (intersection `&` with `\w` and `$` end-anchor): still overflows
-  in `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2479` at HEAD,
-  `:2478` in 0.6.3; was `:2470` in 0.6.0). Release wraps silently without
-  `overflow-checks = true`. Defense: `intersection_with_word_end_alternation`
-  plus the `overflow-checks = true` + `panic = "unwind"` profile combo and
-  the `catch_unwind` net in `compile_rule_src`. Prototyped fix:
-  `saturating_add` (shared with Bug F).
-- **Bug D** (alternation containing a lookaround plus a sibling lookaround):
-  the documented symptom no longer reproduces in 0.6.3/HEAD. `find_all`
-  returns clean results in both debug and release; the shape no longer
-  reaches the `unexpected end` `debug_assert!`. Do not file (fixed
-  upstream). Defense `lookaround_in_alternation_with_sibling` is now
-  belt-and-suspenders rather than a live guard.
-- **Bug E** (complement `~` + intersection `&` + quantified group): still
-  hangs `Regex::new` in `prefix::calc_prefix_sets_inner`. Prototyped fix:
-  `visited`-set cycle break, re-validated against HEAD `e0b8aba` (diff
-  applies cleanly, trigger then compiles in milliseconds).
-- **Bug F** (nested lookahead inside a quantified group, outer min >= 2):
-  overflows in the same `attempt_rw_concat_2` add as Bug C. Defense:
-  `nested_lookahead_in_quantified_group`. Prototyped fix: the shared
-  `saturating_add`. Previously undocumented; the `engine.rs` pre-validator
-  wrongly claimed it was filed upstream.
-- **Bug G** (deeply nested complement or lookaround patterns abort
-  `Regex::new` with an uncatchable stack overflow): new in the 2026-05-25
-  pass against published 0.6.4. In the release profile, `~(...)` or
-  `(?=...)` nested past roughly 20,000 to 30,000 levels overflows the stack
-  and aborts (SIGABRT) below the `expanded_ast_limit` rejection point, so
-  the limit never fires; in the debug profile every nesting kind overflows
-  at about 1,500 levels. `catch_unwind` cannot intercept a stack-overflow
-  abort, and forbidden-strings has no nesting-depth pre-validator, so this
-  is undefended at our boundary. Prototyped 2026-05-25 (a 16-line parse-time
-  `max_depth` check, regression-clean, abort becomes a clean `Err`); all five
-  filing constraints now pass. Not filed: per the 2026-05-25 decision the
-  upstream fix and the consumer-side depth pre-validator both wait for the
-  next upstream release bump (see the follow-up section).
-
-Filing summary: filed 2026-05-23 as ieviev/resharp#5
-(`https://github.com/ieviev/resharp/issues/5`). Per the user's decision
-not to file separate issues, all still-live bugs were merged into that one
-upstream issue. Its body is the out-of-band local file
-`resharp-merged-issue.local.md` (gitignored, not committed), with the
-combined patch attached. Each merged bug has a minimal prototype fix
-verified against HEAD, so the five-constraint gate (constraint 5:
-prototype) now
-passes for Bugs B, C, E, F and for Bug A's wording sub-issue. Bug A's
-behavioural fix (actually supporting complement-of-lookaround) stays out
-of the issue: it is an architectural change with no prototype. Bug D is
-excluded (fixed upstream; filing it would report a resolved defect, which
-the policy treats as a publicity incident).
-
-Upstream tracker checked 2026-05-23 (`gh issue list -R ieviev/resharp
---state all`): the repository has four issues total and none cover Bugs A
-through F, so the merged issue (filed as #5) was not a duplicate. The closed issue #3
-("find_all / is_match false positives for fixed-length patterns with a
-literal prefix", 2026-04-02) sits in the same prefix-selection code as
-Bug E and shows the maintainer actively fixes bugs there, which
-strengthens the case. The `nested_lookahead_in_quantified_group`
-pre-validator in `engine.rs` previously claimed "Filed upstream: see
-TROUBLESHOOTING.resharp.md Bug F for the issue link"; that was false (no
-such issue, no such section). Bug F is now documented below and folded
-into the merged issue.
-
-Bugs B through F were originally surfaced by `fuzz_extract_gate_soundness`
-and companion fuzz and bisect probes. The `intersection_with_*` and other
-pre-validators in `packages/cli/forbidden-strings/src/rules/engine.rs` are
-the durable consumer-side fix and stay in place regardless of upstream
-status; over-rejection is fail-closed-safe.
-
-## Upstream response (2026-05-23): v0.6.4 fix reproduces our prototype patch
-
-The maintainer (`ieviev`) responded to the merged issue
-[ieviev/resharp#5](https://github.com/ieviev/resharp/issues/5) the same
-day it was filed, in two comments:
-
-- 15:18 UTC: "Will go over them soon, thanks!"
-- 15:27 UTC
-  ([`#issuecomment-4525801205`](https://github.com/ieviev/resharp/issues/5#issuecomment-4525801205)):
-  "This restricted a few edge case patterns which i will rewrite
-  properly to allow them again in the coming days. Bug itself is fixed
-  in v0.6.4 now. Thanks again!"
-
-Version facts (crates.io, checked 2026-05-23): resharp 0.6.4 was
-published at 2026-05-23T15:24:24Z, between the two comments and minutes
-before the "fixed in v0.6.4" reply. It is the latest version as of
-2026-05-23; the "coming days" follow-up release that re-allows the
-restricted edge-case patterns is not yet published. The repository
-publishes no git tags, so crates.io is the version of record (consistent
-with this doc otherwise tracking HEAD commits).
-
-### What this changes, and what it does not
-
-- Source-verified: 0.6.4 is our patch. The sole fix commit
-  (`bd780ef "edge case bugfix"`, the immediate parent of the
-  `3d48f1c "bump ver"` commit crates.io published as 0.6.4) reproduces
-  [resharp.patch](resharp.patch) with our
-  explanatory comments stripped. Read against a fresh clone: Bug B is the
-  fail-closed `Err(UnsupportedPattern)` in `strip_lb`
-  (`resharp-algebra/src/lib.rs:2011`), Bug C / Bug F is
-  `tail_rel.saturating_add(la_rel)` (`:2480`), Bug E is the `visited` set
-  plus clear-and-break (`resharp-engine/src/prefix.rs:33`), and Bug A is
-  the expanded `UnsupportedPattern` render string (Display arm at `:35`),
-  byte-for-byte identical to our patch's. All three filed
-  DFA-construction defects plus the Bug A wording nudge are addressed, by
-  our prototype: the patch attached to the filing is the patch the
-  maintainer shipped, which is the troubleshooting-doc auto-prototype rule
-  paying off.
-- Still pending: behavioural re-confirmation against the published build.
-  We read the 0.6.4 source but have not re-run the probe crates or fuzz
-  targets against 0.6.4, and have not bumped; the catalogues in each bug
-  section stay against 0.6.3 and `e0b8aba`. `git apply --check` of our
-  patch against 0.6.4 fails because the fix lines are already present,
-  confirming the patch is superseded by being upstreamed, not replaced by
-  a divergent approach.
-- The "restricted a few edge case patterns" is the Bug B fail-closed
-  `Err`. The same `strip_lb` change that stops the silent corruption also
-  rejects some patterns that previously compiled; the maintainer commented
-  out HTML-attribute, word-boundary, and user-agent tests with "TODO:
-  reallow once guaranteed 2 be correct". Our Bug B prototype makes the
-  identical restriction, and the `intersection_with_lookbehind`
-  pre-validator rejects the same shapes earlier with a clearer message.
-  The maintainer's "rewrite properly to allow them again" follow-up is
-  future work neither 0.6.4 nor our prototype does: correctly supporting a
-  lookbehind operand of an intersection in `strip_lb`.
-- Supporting more patterns. Bug C, F, and E carry their fix code in 0.6.4
-  (the `saturating_add` and `visited`-set patches, which compiled the
-  triggers correctly on `e0b8aba`), not a restriction, so their
-  pre-validators are candidates to loosen once a re-fuzz confirms the
-  published 0.6.4 build matches correctly.
-  Bug B's pre-validator stays until the follow-up re-allows
-  lookbehind-in-intersection; until then it agrees with upstream's own
-  rejection.
-
-### Plan (decided 2026-05-23)
-
-Hold the lockfile at resharp 0.6.3 (the current `Cargo.lock` pin; the
-`resharp = "0.6"` requirement in
-`packages/cli/forbidden-strings/Cargo.toml` would otherwise let
-`cargo update -p resharp` pull 0.6.4). 0.6.4 already carries the Bug C, F,
-and E fix code (source-verified above); waiting for the maintainer's
-"coming days" follow-up release (which re-allows the Bug B restricted
-patterns) folds the Bug B re-allow into a single bump and re-fuzz rather
-than bumping twice. When that release ships, in one pass:
-
-- Bump to that release (update `Cargo.lock`, raise the `resharp`
-  requirement floor if needed).
-- Re-run the fuzz targets (`fuzz_extract_gate_soundness` and companions)
-  and the per-bug probe crates against the new version.
-- Decide per-bug, from the re-fuzz results, whether each pre-validator can
-  be loosened to support more patterns or must stay a fail-closed guard.
-
-Until that re-fuzz lands, treat every bug below as live-and-defended at
-our boundary: the pre-validators and the `overflow-checks = true` +
-`panic = "unwind"` + `catch_unwind` profile combo remain the durable
-consumer-side fix regardless of upstream movement.
+Still-live items, each with its own section below: Bug A
+(complement-of-lookaround), Bug G (deep-nesting stack overflow),
+intersection over alternation (algebra-recursion stack overflow), the flaky
+`rev_bot_skip_terminates_fast` timing test, and the lower-severity flags H,
+I, J.
 
 ## Bump to resharp 0.6.8 (2026-06-03): plan executed
 
-The "Plan (decided 2026-05-23)" above held the lockfile at 0.6.3 until the
-maintainer's follow-up release. resharp 0.6.8 (published 2026-06-03, the
+The wait-then-bump-then-re-fuzz plan recorded for 0.6.3 (since removed as
+spent) held the lockfile at 0.6.3 until the maintainer's follow-up release. resharp 0.6.8 (published 2026-06-03, the
 crates.io `max_version`) is that release line. This pass bumped
 `packages/cli/forbidden-strings/Cargo.toml` from `resharp = "0.6"` to
 `resharp = "0.6.8"` and updated `Cargo.lock` (resharp, resharp-algebra, and
@@ -307,22 +127,13 @@ recommended next step.
   cleanly through 0.6.3), so the `\A`/`\z` workaround no longer holds. The
   literal-whitespace control `em&~(.* (npm|git) .*)` still compiles, which
   is the workaround the production rules already use.
-- Bug B (`(?:(?=a)&(?<=_))`): `Regex::new` now returns
-  `Algebra(UnsupportedPattern)` in debug and release, so `find_all` never
-  runs. The 0.6.3 release corruption (62 spurious matches on 64 bytes
-  ending in `_`, 127 on 128 bytes of `a`) and the debug `strip_lb` panic
-  are both gone, replaced by a clean compile-time rejection. Fail closed.
-- Bug C (`(?:\w|$)(?:(?![1g]\_X)& a)`): `COMPILE-OK` in debug and release,
-  no `attempt to add with overflow`. Fixed.
-- Bug D (`(a|(?![_]))(?!a)`): now `Algebra(UnsupportedPattern)` at compile
-  in release (it compiled and returned clean matches at 0.6.3); the
-  lookbehind variant `(a|(?<!_))(?<!a)` returns
-  `Parse(UnsupportedResharpRegex)`. Further tightened, still fail-closed.
-- Bug E (`abc~(\w)&(?:aaa)*`): `COMPILE-OK` in milliseconds, no hang.
-  Fixed.
-- Bug F (`(?:(?!\?){1,2}){3}`, `(?:(?:(?!\?)){1,5}){2,4}`,
-  `(?:(?!abc)){4,12}a`): all `Algebra(UnsupportedPattern)` at compile in
-  debug and release, no overflow panic. Fixed (fail-closed).
+- Bugs B, C, D, E, F (spent, full per-bug detail removed; git history has
+  it): all fixed or fail-closed at 0.6.8. Bug C (`(?:\w|$)(?:(?![1g]\_X)& a)`)
+  and Bug E (`abc~(\w)&(?:aaa)*`) compile cleanly and fast; Bug B
+  (`(?:(?=a)&(?<=_))`), Bug D (`(a|(?![_]))(?!a)`), and Bug F
+  (`(?:(?!\?){1,2}){3}`) are rejected at compile with
+  `Algebra(UnsupportedPattern)` (no release corruption, no overflow). Their
+  pre-validators are now belt-and-suspenders.
 - Bug G (nested `~(...)` / `(?=...)`): unchanged. In release the complement
   and lookahead nests still abort with a stack overflow (exit 134); the
   abort floor for `compl` dropped to at-or-below 20,000 levels (`compl
@@ -448,10 +259,11 @@ abort the scanner.
 
 1. Upstream's fault? Yes. A parser-reachable pattern that aborts the process
    via non-terminating algebra recursion is a defect.
-2. Can upstream fix it? Plausibly the same shape as Bug E: a visited-set /
-   fixpoint guard on the `attempt_rw_inter_2` / `attempt_rw_union_2`
+2. Can upstream fix it? Plausibly the same shape as the former Bug E fix (a
+   visited-set / fixpoint guard in `prefix.rs`, shipped in 0.6.4): a visited
+   or fixpoint guard on the `attempt_rw_inter_2` / `attempt_rw_union_2`
    distribution so it cannot re-enter the same rewrite indefinitely. Touches
-   the algebra core, so larger than Bug E's prefix loop.
+   the algebra core, so larger than that prefix-loop fix.
 3. Supporting this use case? Yes. Intersection and alternation are both
    headline features; combining them is natural.
 4. Likely to fix? Plausible; the maintainer is responsive and the recent
@@ -984,14 +796,16 @@ restriction:
 We fail constraints 1, 4, and 5 clearly; 2 and 3 are equivocal at best.
 The decision is to not file the behavioural fix upstream.
 
-One part is separable and is now prototyped: suggested fix 2 below
-(improve the error message to name the surface trigger) is a wording
-change, not an algebra change, so it cleared constraint 5 trivially (see
-"Prototype fixes") and is folded into the merged upstream issue. Only the
+One part was separable and shipped: suggested fix 2 below (improve the
+error message to name the surface trigger) is a wording change, not an
+algebra change, so it cleared constraint 5 trivially and was folded into
+the merged upstream issue
+[ieviev/resharp#5](https://github.com/ieviev/resharp/issues/5); the
+maintainer shipped the improved render string in 0.6.4. Only the
 behavioural fix (actually supporting complement-of-lookaround), which
-would touch the algebraic core, stays out of the issue. Bugs B, C, E, and
-F are likewise prototyped and merged; Bug A's behaviour is the single
-item held back.
+would touch the algebraic core, stays unaddressed; the behaviour is
+unchanged through 0.6.8 (the shape still rejects), and it is the single
+Bug A item still held back.
 
 The consumer-side workaround is implemented in `forbidden-strings` as a
 parse-time guard (`engine::lookaround_in_complement`) that rejects every
@@ -1108,578 +922,6 @@ complement when the rule's intent permits.
 
 ---
 
-## Bug B: intersection with lookbehind triggers a `debug_assert!` (silent corruption in release)
-
-### Symptom
-
-A rule whose source contains both intersection (`&`) and a lookbehind
-assertion (`(?<=...)` or `(?<!...)`) at the same scope (i.e. both outside
-character classes, in the same compiled regex) and which is then matched
-against an input of about 64 bytes or longer causes one of two
-divergent outcomes depending on the build profile.
-
-The trigger shape is unchanged from 0.5.3 through HEAD, but the defect now
-surfaces at a different point. In 0.5.3 and 0.6.0 it tripped a
-`debug_assert!` in the matching engine (`resharp/src/engine.rs:1020`,
-`unexpected end 0 > N`). From 0.6.2 onward a new lookbehind-stripping
-rewrite, `strip_lb`, runs during `find_all` and its own internal
-`debug_assert!` fires first:
-
-```text
-# Debug profile (debug-assertions ON):
-thread 'main' panicked at resharp-algebra/src/lib.rs:2007:   # :2006 in 0.6.3
-should not contain lookbehind: "(?=a_*){∅}❮(&(?<=_*_))❯"
-
-# Release profile (debug-assertions OFF, our forbidden-strings default):
-# (no panic; find_all silently returns wrong/spurious matches)
-```
-
-The minimum reproducer captured by the `fuzz_extract_gate_soundness`
-fuzz target is the pattern `(?:(?=a)&(?<=_))` driven through `find_all`.
-The 2026-05-23 re-verification (probe crates `rsverify` against 0.6.3 and
-`rsverify-head` against HEAD `e0b8aba`) reproduced it identically in both:
-the debug build panics in `strip_lb`, and the release build returns
-corrupted matches (62 spurious matches on a 64-byte input ending in `_`,
-and 127 spurious matches on 128 bytes of `a` which contain no `_` at all
-for the lookbehind to anchor on). The `engine.rs:1020` `debug_assert!`
-still exists at HEAD (drifted to `engine.rs:1000-1002`) but this shape no
-longer reaches it; `strip_lb` intercepts first.
-
-### Root cause
-
-In 0.5.3 and 0.6.0 the trigger reached a `debug_assert!` in the matching
-engine (`resharp/src/engine.rs:1020`, `unexpected end {} > {}`), which in
-release fell through to a `matches.push` recording a `Match` with
-`start > end`. From 0.6.2 onward the live site is the `strip_lb`
-lookbehind-stripping rewrite in `resharp-algebra/src/lib.rs`
-(`:2003-2012` at HEAD, assert at `:2007`):
-
-```rust
-pub fn strip_lb(&mut self, node_id: NodeId) -> Result<NodeId, ResharpError> {
-    if node_id.is_concat(self) && node_id.left(self) == NodeId::BEGIN {
-        return self.strip_lb(node_id.right(self));
-    }
-    let result = self.strip_lb_inner(true, node_id)?;
-    debug_assert!(
-        !self.contains_lookbehind(result),
-        "should not contain lookbehind: {:?}",
-        self.pp(result)
-    );
-    Ok(result)
-}
-```
-
-`strip_lb_inner` is meant to remove every lookbehind from the node, and
-the `debug_assert!` enforces that postcondition. For the intersection-
-with-lookbehind shape `(?:(?=a)&(?<=_))`, the strip fails to remove the
-`(?<=_)` operand of the `&` node, so `contains_lookbehind(result)` is
-still true and the assertion fires. In release the assertion is compiled
-out, the un-stripped node flows into matching, and `find_all` returns
-corrupted matches (the same fail-open class as before: 62 spurious
-matches on a 64-byte input, 127 on 128 bytes of `a`).
-
-Whether this is the same underlying invariant as the 0.6.0 engine bug
-surfaced one stage earlier, or a distinct defect introduced with the
-`strip_lb` machinery, is not determined here. What is verified: the same
-trigger shape still produces a debug-build panic and release-build
-silent corruption, now via `strip_lb`. The bug only fires when a
-lookbehind is one of the intersection operands; pure lookahead
-intersections do not trigger.
-
-### Defense
-
-The pre-validator `intersection_with_lookbehind` in
-`packages/cli/forbidden-strings/src/rules/engine.rs` walks the source
-byte-by-byte tracking character-class membership and rejects any rule
-where `&` and `(?<=` (or `(?<!`) co-occur outside any `[...]`. The
-rejection produces an actionable error pointing here.
-
-The pre-validator rejects on the source-text shape, so the relocation of
-the assertion from `engine.rs` to `strip_lb` does not affect it: the rule
-never reaches resharp either way.
-
-The `catch_unwind` net in `CompiledRegex::find_all` exists primarily
-for test/CI runs (debug-assertions on) and as a future-regression hedge;
-it does not help in release because `debug_assert!` is compiled out and
-no panic fires for the corruption path to catch.
-
-Enabling `debug-assertions = true` in `[profile.release]` is deliberately
-NOT done: `regex`, `ignore`, and `rayon` have hot-path debug_asserts and
-the perf cost was not measured. The pre-validator covers known shapes;
-the fuzz target covers unknown variants. New variants would be caught
-by fuzzing (which runs with debug-assertions on by default) before they
-reach a release run.
-
-### Verification
-
-A throwaway probe crate constructs `resharp::Regex::new("(?:(?=a)&(?<=_))")`
-directly (bypassing `compile_rule_src` and the pre-validator) then calls
-`find_all`. A plain `cargo run` (dev profile: debug-assertions and
-overflow-checks both on by default) is sufficient; no `RUSTFLAGS` override
-is needed. The 2026-05-23 re-verification used two such crates, one with
-`resharp = "=0.6.3"` and one with a path dependency on the HEAD `e0b8aba`
-checkout:
-
-```text
-# debug build (cargo run): panics in strip_lb
-thread 'main' panicked at .../resharp-algebra-0.6.3/src/lib.rs:2006:
-should not contain lookbehind: "(?=a_*){∅}❮(&(?<=_*_))❯"
-
-# release build (cargo run --release): silent corruption
-[B-64_]  FINDALL-OK  "(?:(?=a)&(?<=_))" inlen=64  matches=62
-[B-128a] FINDALL-OK  "(?:(?=a)&(?<=_))" inlen=128 matches=127
-```
-
-The in-tree regression test
-`find_all_catches_runtime_panic_via_catch_unwind` in
-`packages/cli/forbidden-strings/src/rules/engine_tests.rs` exercises the
-same shape through `CompiledRegex::find_all` and asserts no panic escapes.
-Note that the package's `mise run test` task is `cargo test --release`, so
-debug-assertions are off and no panic fires; the test passes because
-`find_all` returns (corrupted) `Ok` rather than panicking. The actual
-release-time protection for this shape is the `intersection_with_lookbehind`
-pre-validator, not this test. Run plain `cargo test` (debug-assertions on)
-to make the test exercise the panic path.
-
----
-
-## Bug C: intersection with `\w` and `$` end-anchor overflows in `attempt_rw_concat_2`
-
-### Symptom
-
-A rule whose source contains intersection (`&`), `\w` shorthand, and
-the `$` end-anchor at the same scope panics at compile time during
-`Regex::new` when the release profile has `overflow-checks = true`:
-
-```text
-thread 'main' panicked at resharp-algebra/src/lib.rs:2479:   # :2478 in 0.6.3, :2470 in 0.6.0
-attempt to add with overflow
-```
-
-When the release profile has `overflow-checks = false` (cargo's
-default), the add silently wraps and the constructed regex
-silently misbehaves at match time. Either outcome is a soundness
-problem for a CI gate. The minimum reproducer is the pattern
-`(?:\w|$)(?:(?![1g]\_X)& a)`. The 2026-05-23 re-verification reproduced
-it identically against published 0.6.3 and HEAD `e0b8aba`: the debug
-build panics with the message above; the release build returns `Ok`
-(silent wrap). Only the source line drifted (`:2470` -> `:2478` -> `:2479`).
-
-### Root cause
-
-The overflowing `+` lives inside `attempt_rw_concat_2`
-(`resharp-algebra/src/lib.rs`, `fn` at `:2405` at HEAD; the overflowing
-add at `:2479` at HEAD, `:2478` in 0.6.3, `:2470` in 0.6.0). It adds
-`usize` values derived from a node-tree traversal where one operand can
-be near `usize::MAX` for the algebra rewrites triggered by intersection-
-of-(word-shorthand-alternation, end-anchor-bearing-expression). The
-overflow is a true bug, not a sentinel; the wrap produces a DFA that
-fails to match content that should match (fail-open).
-
-### Defense
-
-The pre-validator `intersection_with_word_end_alternation` in
-`packages/cli/forbidden-strings/src/rules/engine.rs` walks the source
-byte-by-byte tracking character-class membership and rejects any rule
-where `&`, `\w`, and `$` co-occur outside any `[...]`. The rejection
-produces an actionable error pointing here.
-
-The `catch_unwind` net in `compile_rule_src` exists as belt-and-
-suspenders: if a new shape evades the pre-validator and `overflow-
-checks = true` is set (it is, in our `Cargo.toml`), the resulting
-panic gets converted to a fail-closed `Err(String)` instead of
-aborting the scanner process or returning wrong results.
-
-The release profile's `panic = "unwind"` and `overflow-checks = true`
-settings are both load-bearing: `panic = "abort"` would skip the
-unwind barrier and abort the process before `catch_unwind` runs;
-`overflow-checks = false` (cargo's default) would let the add wrap
-silently, producing the fail-open behaviour with no panic to catch.
-
-### Verification
-
-A throwaway probe crate calls
-`resharp::Regex::new("(?:\\w|$)(?:(?![1g]\\_X)& a)")` directly. A plain
-`cargo run` (dev profile: overflow-checks on) panics with the message
-above; `cargo run --release` (overflow-checks off) returns `Ok` but the
-constructed regex misbehaves. Confirmed against 0.6.3 and HEAD on
-2026-05-23.
-
-The in-tree regression test `compile_rule_src_does_not_panic_on_known_
-bad_shapes` exercises the same shape through `compile_rule_src` and
-asserts the pre-validator catches it before resharp sees it.
-
----
-
-## Bug D: alternation containing a lookaround + sibling lookaround (fixed upstream in 0.6.x)
-
-Status: the documented symptom no longer reproduces in 0.6.3 or HEAD
-`e0b8aba`. Re-verified 2026-05-23: `find_all` on `(a|(?![_]))(?!a)`
-returns clean results in both the debug build (debug-assertions on) and
-the release build, with no panic, for inputs of 1, 2, 64, and 128 bytes.
-The lookbehind-direction variant `(a|(?<!_))(?<!a)` is now rejected at
-compile time (`Algebra(UnsupportedPattern)`) and never reaches `find_all`.
-The `unexpected end` `debug_assert!` still exists (drifted to
-`engine.rs:1000-1002`), but this shape no longer reaches it. Do not file
-this upstream: it reports an already-resolved defect. The historical
-analysis below is retained for the record.
-
-Update (2026-06-03, resharp 0.6.8): 0.6.8 tightened this further. The
-forward shape `(a|(?![_]))(?!a)`, which compiled and returned clean matches
-at 0.6.3, now returns `Algebra(UnsupportedPattern)` at compile in release
-and never reaches `find_all`; the lookbehind variant still rejects. So at
-0.6.8 the shape is fail-closed at compile rather than compile-and-run-clean.
-The `lookaround_in_alternation_with_sibling` pre-validator now agrees with
-upstream's rejection and stays as belt-and-suspenders. See "Bump to resharp
-0.6.8".
-
-### Symptom (historical, no longer reproduces)
-
-In 0.5.3 through 0.6.0, a rule whose source had an alternation containing
-a lookaround AND another lookaround somewhere else in the source compiled
-cleanly via `Regex::new`, but `find_all` panicked during the forward DFA
-pass:
-
-```text
-thread 'main' panicked at resharp-0.6.0/src/engine.rs:1020:17:
-unexpected end 0 > N
-```
-
-The minimum reproducer bisected from the fuzzer's
-`crash-8cba104f0805ccb567513aff895398a4f652200c` artifact was:
-
-```
-(a|(?![_]))(?!a)
-```
-
-Confirmed-equivalent shapes:
-
-- `(a|(?![X]))(?!Y)` for X in `_`, `0`, `.`, `-`, `|`, `^a`
-- `(?:a|(?![_]))(?!a)` (non-capturing first group)
-- `((?![_])|a)(?!a)` (lookaround as first alt branch)
-- `(a|(?<!_))(?<!a)` (lookbehind direction; same root cause)
-
-Shapes that do NOT trigger:
-
-- `(a|(?!a))(?!a)` -- first lookaround has a bare atom, not a class
-- `(a|(?![ab]))(?!a)` -- class has two chars
-- `(?!a)(a|(?!a))` -- lookaround BEFORE alternation, not after
-- `(?!a)b(?!c)` -- atom between two lookaheads, no alternation
-
-### Root cause
-
-The same line as Bug B (`engine.rs:1020`'s `debug_assert!(...)`) fires
-for a different shape: the algebra simplification leaves a node whose
-forward DFA construction reaches an "unexpected end" state when one
-operand of an alternation is a lookaround whose body is a single-char
-class. The `debug_assert!` shape means release builds silently return
-wrong matches; under libFuzzer-sys's panic hook (which calls `abort()`
-before `catch_unwind`'s unwind barrier intercepts), the fuzz target
-aborts on every iteration that hits this shape.
-
-### Defense
-
-The pre-validator `lookaround_in_alternation_with_sibling` in
-`packages/cli/forbidden-strings/src/rules/engine.rs` walks per-paren
-depth `(has_alt, has_la)` flags, tracks total lookaround count, and
-fires at end-of-walk when any closed group had alt+la AND total
-lookarounds >= 2. The deferred check handles both "sibling appears
-before the alt+la group" and "sibling appears after" cases.
-
-The detector is direction-agnostic (covers both lookahead and
-lookbehind) and conservative (a few shapes that compile OK at scan
-time also fire). The trade-off is intentional: false positives here
-cost a skipped iteration; missed positives cost a fuzz-target abort.
-
-Now that the upstream symptom is fixed, this pre-validator is
-belt-and-suspenders rather than a live guard. It stays in place: it is
-cheap, the production rule corpus has no rules of this shape, and it
-keeps the fuzz target from re-aborting if a regression reintroduces the
-panic.
-
-### Verification
-
-In 0.5.3 through 0.6.0, the probe binaries at
-`/tmp/probe-slow-unit/src/bin/bisect2.rs` and `bisect3.rs` reproduced the
-panic across all confirmed-triggering shapes with
-`RUSTFLAGS="-C debug-assertions=on"`. The 2026-05-23 re-verification
-(probe crates against 0.6.3 and HEAD `e0b8aba`, plain `cargo run` so
-debug-assertions are on) found no panic: `find_all` on `(a|(?![_]))(?!a)`
-returns `Ok` for every probed input, and the lookbehind variant is
-rejected at compile time. The in-tree tests
-`lookaround_in_alternation_with_sibling_fires` and
-`compile_rule_src_rejects_alt_lookaround_sibling_shape` in
-`packages/cli/forbidden-strings/src/rules/engine_tests.rs` exercise the
-pre-validator and the end-to-end compile rejection path; they still pass
-because they test the pre-validator, which is independent of resharp's
-runtime behaviour.
-
----
-
-## Bug E: complement + intersection + quantified group hangs `prefix::calc_prefix_sets_inner`
-
-### Symptom
-
-A rule whose source contains a complement (`~(...)`), intersection
-(`&`), AND a quantified group (`(...)*`/`(...)+`/`(...)?`/`(...){N}`)
-hangs during `Regex::new`; the compile call does not return within
-libFuzzer's per-input timeout (10s in our fuzz run). The minimum
-reproducer bisected from
-`timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438` is:
-
-```
-abc~(\w)&(?:aaa)*
-```
-
-The hang scales with the surrounding shape: a 1-char prefix and a
-1-char-body quantified group compile in milliseconds; 3+ char prefix
-with 3+ char quantified group never terminate within minutes. Wrapping
-the entire source in a single non-capturing group (`(?:...)`) avoids
-the hang; the wrapping changes how the simplified AST enters the
-prefix-selection phase.
-
-Re-verified 2026-05-23: `Regex::new("abc~(\\w)&(?:aaa)*")` still hangs
-past a 10s thread timeout in both published 0.6.3 and HEAD `e0b8aba`,
-in debug and release builds. The control shapes `abc~(\w)&(?:a)*`
-(1-char body) and `~(\w)&(?:aaa)*` (no literal prefix) return in
-milliseconds, matching the scaling described above. This is the only one
-of the five bugs that is both still live and has a re-validated prototype
-fix; it was filed (with the others) in the merged issue ieviev/resharp#5.
-
-### Root cause
-
-Traced via `gdb -p $HUNG_PID -ex 'thread apply all bt'` plus reading
-the cloned resharp source. The hot loop is at
-`resharp-engine/src/prefix.rs:27` in `calc_prefix_sets_inner`:
-
-```rust
-let mut redundant = BTreeSet::new();
-redundant.insert(NodeId::BOT);
-redundant.insert(start);
-
-loop {
-    if !result.is_empty() && redundant.contains(&node) {
-        break;
-    }
-    // ... compute derivative, set node = target ...
-}
-```
-
-The `redundant` set is initialized with `BOT` and the original `start`
-node, then never updated inside the loop. The loop assigns `node =
-target` each iteration, but new targets are not added to `redundant`.
-For the trigger shape, the derivative chain produces a sequence of
-unique single-target nodes that never visits `BOT` or `start`, so the
-loop never terminates.
-
-0.6.x added a `targets.retain(|(t, _)| !redundant.contains(t))` line
-(at `prefix.rs:50` at HEAD) and an "empty targets" clear-and-break just
-below it. Neither breaks the cycle: `retain` filters the candidate
-targets against `redundant`, but `redundant` is still only the two seed
-nodes, so the freshly-visited cycle nodes are never filtered out and the
-single-target chain still runs forever. The loop header is unchanged at
-`prefix.rs:27`, and the trigger still hangs at HEAD (re-verified
-2026-05-23), which is what the prototype below addresses.
-
-Stack trace at hang point (3s after compile start):
-
-```
-#0 resharp_algebra::RegexBuilder::collect_der_targets
-#1 resharp_algebra::RegexBuilder::collect_der_targets   (recursion through TRegex ITE)
-#2 resharp_algebra::RegexBuilder::collect_der_targets
-#3 resharp::prefix::calc_prefix_sets_inner
-#4 resharp::prefix::select_prefix
-#5 resharp::Regex::from_node_inner
-#6 resharp::Regex::with_options
-#7 resharp::Regex::new
-```
-
-### Defense
-
-`catch_unwind` does not protect against non-termination, and resharp
-does not expose a compile timeout we could wrap from outside. The
-pre-validator `complement_intersection_quantified_group` in
-`packages/cli/forbidden-strings/src/rules/engine.rs` walks the source
-looking for the three co-occurring features and rejects the rule
-before `Regex::new` is called.
-
-The detector is conservative: shapes like `~(\w)&(?:a)*` (no literal
-prefix) compile in milliseconds but the detector still flags them.
-The trade-off is safe because the production rule corpus contains
-zero rules combining `&` and `~(` (the only `&` in the example
-betterleaks config is escaped HTML `&amp;` or inside character
-classes), so the false-positive risk is theoretical only.
-
-### Suggested upstream fix
-
-The initial proposal was a single line:
-
-```rust
-node = target;
-redundant.insert(node);   // ADD THIS LINE
-```
-
-Prototyped against a fresh clone at
-`https://github.com/ieviev/resharp.git` HEAD
-`6f445d71b194161adc0efe968d723312b6856a26` (2026-05-15, declared
-version 0.6.0 in `Cargo.toml`). The single-line variant DOES make
-`abc~(\w)&(?:aaa)*` compile in milliseconds, but it regresses
-9 of the 46 active cases in `resharp-engine/tests/prefix.toml`:
-
-```text
-unsat/prefix_rev:               expected="",          got="o"
-alt-neg-la/prefix_rev:          expected="N;F;D",     got="N"
-prefix_twain/prefix_rev:        expected="n;i;a;w;T", got="n"
-prefix_la1/prefix_rev:          expected="b;a",       got="b"
-prefix_huck/prefix_rev:         expected="k;c;u;H",   got="k"
-prefix_hello/prefix_rev:        expected="o;l;l;e;h", got="o"
-prefix_lookahead/prefix_rev:    expected="a;a;a",     got="a"
-prefix_bounded_repeat/prefix_rev: expected="c;b;b",   got="c"
-prefix_dotdot_g/prefix_rev:     expected="g;.;.",     got="g"
-```
-
-Root of the regression: pre-patch, `redundant` is a "boundary" set
-seeded with `BOT` and `start`; the outer check at line 28
-(`!result.is_empty() && redundant.contains(&node)`) fires only when
-the derivative chain wraps back to one of those boundary nodes and
-KEEPS the accumulated result. Inserting every visited node into the
-same set makes that check fire on the iteration after the very first
-push, so multi-character anchored prefixes are truncated to their
-first character. The proposed single-line patch conflates two
-different exit semantics (boundary-wrap-keeps-result vs.
-fresh-node-revisit-implies-cycle).
-
-The minimal compatible fix keeps the two semantics separate by
-tracking fresh visits in a second set and clearing the result on a
-fresh-node revisit, while leaving the original boundary-wrap path
-untouched:
-
-```diff
---- a/resharp-engine/src/prefix.rs
-+++ b/resharp-engine/src/prefix.rs
-@@ -23,12 +23,18 @@ pub(crate) fn calc_prefix_sets_inner(
-     let mut redundant = BTreeSet::new();
-     redundant.insert(NodeId::BOT);
-     redundant.insert(start);
-+    let mut visited: BTreeSet<NodeId> = BTreeSet::new();
-
-     loop {
-         if !result.is_empty() && redundant.contains(&node) {
-             break;
-         }
-
-+        if !result.is_empty() && !visited.insert(node) {
-+            result.clear();
-+            break;
-+        }
-+
-         if b.any_nonbegin_nullable(node) {
-             break;
-         }
-```
-
-`visited.insert(node)` is gated on `!result.is_empty()` so the very
-first iteration (where `node == start`) never enters `visited`; this
-preserves the wrap-to-start semantics (still caught by the existing
-`redundant.contains(&node)` check, which keeps `result`). Any later
-re-visit of a node already seen in the same `calc_prefix_sets_inner`
-call clears `result` and breaks, mirroring the pre-existing
-"self-loop" handling at `target == node`.
-
-Applied against the same upstream HEAD, the additive variant:
-
-- compiles `abc~(\w)&(?:aaa)*` in milliseconds and the resulting
-  regex returns `false` from `is_match` on every probe input in
-  `{"", "abc", "aaa", "abcaaa", "aaaaaa", "abc!", "abcaaab"}`,
-  consistent with the empty language `abc~(\w) & (?:aaa)*`
-  represents;
-- passes all 46 active prefix.toml cases (audited via a
-  catch_unwind-per-case harness, output:
-  `prefix audit: 46 active cases all OK (no failures, no hangs)`);
-- passes `cargo test --workspace --no-fail-fast` clean:
-  228 passed; 0 failed; 19 ignored across all crates
-  (`resharp-engine` per-binary totals: 1 + 2 + 1 + 95 + 0 + 72 + 3
-  - 1 + 36 + 1 + 5 + 11; `resharp-algebra`, `resharp-parser`,
-    `resharp-ffi`: empty/empty/empty).
-
-Re-validated 2026-05-23 against the current HEAD
-`e0b8aba96f0c1987f9802498e585b5e88966023b` (9 commits past the original
-`6f445d7` prototype base, which itself declared 0.6.0; HEAD declares
-0.6.3). On a fresh local clone the literal two-hunk diff below applies
-cleanly (`git apply --check` succeeds). With it applied,
-`abc~(\w)&(?:aaa)*` compiles in milliseconds and `is_match` returns
-`false` for every input in `{"", "abc", "aaa", "abcaaa", "aaaaaa",
-"abc!", "abcaaab"}`. `cargo test --workspace --no-fail-fast` reports
-`231 passed; 0 failed; 19 ignored` both with and without the patch (the
-unpatched baseline on HEAD is also `231/0/19`), so the fix remains purely
-additive and regresses nothing on current `main`. The `46 active
-prefix.toml cases` figure from the `6f445d7` audit predates later test
-additions; the current `231/0/19` workspace run subsumes it.
-
-### Verification
-
-The original hang was located with probe binaries at
-`/tmp/probe-slow-unit/src/bin/bisect5.rs` and `bisect6.rs` (a separate
-thread with a configurable timeout), plus `hangtrace.rs` and an
-instrumented resharp build. The in-tree tests
-`complement_intersection_quantified_group_fires` and the end-to-end
-pipeline verify the pre-validator skips the trigger.
-
-The 2026-05-23 re-validation repeated the worker-thread-with-timeout
-method against fresh clones of HEAD `e0b8aba`. Unpatched: the trigger
-hangs past 10s. Patched (literal diff below applied via `git apply`):
-the trigger compiles in milliseconds, `is_match` returns `false` on the
-seven-input probe set, and `cargo test --workspace --no-fail-fast` is
-`231 passed; 0 failed; 19 ignored`, identical to the unpatched baseline.
-
----
-
-## Bug F: nested lookahead inside a quantified group overflows `attempt_rw_concat_2`
-
-### Symptom
-
-A rule that nests a lookahead inside a quantified group whose outer quantifier
-has min >= 2 panics at compile time during `Regex::new` under `overflow-checks`
-(and silently wraps without it), at the same site as Bug C:
-
-```text
-thread 'main' panicked at resharp-algebra/src/lib.rs:2479:   # :2470 in 0.6.0
-attempt to add with overflow
-```
-
-Reproducers (all confirmed panicking on unpatched HEAD `e0b8aba`, 2026-05-23):
-
-```text
-(?:(?!\?){1,2}){3}
-(?:(?:(?!\?)){1,5}){2,4}
-(?:(?!abc)){4,12}a
-```
-
-### Root cause
-
-The same overflowing add as Bug C: `tail_rel + la_rel` (both `u32`) in
-`attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2479` at HEAD). The
-nested-lookahead-in-quantified-group shape drives the lookahead-chain `rel` to
-saturate, and the next add exceeds `u32::MAX`. Bug C and Bug F are two surface
-triggers reaching one defective add, so one fix resolves both.
-
-### Defense
-
-The pre-validator `nested_lookahead_in_quantified_group` in
-`packages/cli/forbidden-strings/src/rules/engine.rs` rejects the shape before
-`Regex::new`. Its doc comment previously claimed this was "Filed upstream: see
-TROUBLESHOOTING.resharp.md Bug F"; that was inaccurate (no upstream issue, no
-such section) until this section and the merged issue were written.
-
-### Prototype fix
-
-Shared with Bug C: `tail_rel.saturating_add(la_rel)`. See "Prototype fixes".
-
-### Verification
-
-Probe crate against the patched HEAD clone: all three reproducers move from
-`COMPILE-PANIC` (unpatched) to `COMPILE-OK` (patched), in debug and release.
-
 ## 2026-05-25 follow-up pass (resharp 0.6.4)
 
 This pass read the current published source (resharp 0.6.4, crates.io
@@ -1698,27 +940,9 @@ segfault).
 
 Scope: this pass surveys compile-time behaviour (`Regex::new`) and parser
 robustness against malformed patterns. Match-time soundness against
-adversarial input (the class Bug B belonged to) is not re-probed here; it is
-left to the next fuzz re-run on the published 0.6.4 build, already on the
-plan above.
-
-### Confirmed fixed at 0.6.4 (Bugs B, C, E, F)
-
-The 0.6.4 fix commit `bd780ef` is present at HEAD and matches the prototype
-patch (see "Upstream response" above). Re-reading the source confirms each
-fix is in place:
-
-- Bug E: the `visited` set plus clear-and-break is at
-  `resharp-engine/src/prefix.rs:26-35`.
-- Bug C / Bug F: `tail_rel.saturating_add(la_rel)` is at
-  `resharp-algebra/src/lib.rs:2480`.
-- Bug B: the fail-closed `Err(UnsupportedPattern)` replaces the
-  postcondition `debug_assert!` in `strip_lb`
-  (`resharp-algebra/src/lib.rs:2010-2011`).
-
-Behavioural re-fuzzing against the published 0.6.4 build is still the
-pending step recorded in the plan above; this pass read source and ran
-targeted probes, it did not re-run the fuzz targets.
+adversarial input (the class the former Bug B belonged to) is not re-probed
+here; it is left to a fuzz re-run on the published build, a recommended
+next step.
 
 ### Negative results (parser robustness)
 
@@ -2077,11 +1301,10 @@ container.
 All five constraints now pass, so the draft below is fileable. Per the
 2026-05-25 decision it is not filed yet: the upstream fix and the
 consumer-side depth pre-validator both wait for the next upstream release
-bump (the maintainer's "coming days" follow-up that re-allows the Bug B
-patterns), folding Bug G into the same single bump-and-re-fuzz pass the plan
-near the top of this doc describes. Re-run `git apply --check` of the
-prototype diff against that release before filing, since resharp's `main`
-moves fast.
+bump (the maintainer's "coming days" follow-up that re-allows the restricted
+lookbehind-in-intersection patterns), folding Bug G into a single
+bump-and-re-fuzz pass. Re-run `git apply --check` of the prototype diff
+against that release before filing, since resharp's `main` moves fast.
 
 Update (2026-06-03): that release bump happened (0.6.3 to 0.6.8), so the
 wait is over and the draft is unblocked. Bug G is still unfixed at 0.6.8
@@ -2176,8 +1399,9 @@ loop-termination question.
 ```
 
 The max-length add is saturating; the min-length add is a plain `+`. The
-asymmetry suggests the max was hardened (consistent with the Bug C and F
-overflow awareness) while the min was missed. It is not reachable under
+asymmetry suggests the max was hardened (consistent with the overflow
+awareness behind the former Bug C / Bug F `saturating_add` fix) while the
+min was missed. It is not reachable under
 default limits: min-length accumulates through concatenation and is bounded
 by the expanded node count, which `expanded_ast_limit` (50,000) caps far
 below `u32::MAX`, so `lmin + rmin` cannot overflow for any pattern the
@@ -2186,7 +1410,8 @@ parser accepts. Latent defensive-consistency issue; the one-line fix is
 
 ### Flag I: 0.6.4 `strip_lb` fail-closed rejects lookbehind shapes beyond the intersection case
 
-`resharp-algebra/src/lib.rs:2005-2014`. The Bug B fix made `strip_lb`
+`resharp-algebra/src/lib.rs:2005-2014`. The former Bug B fix (the
+`strip_lb` fail-closed change shipped in 0.6.4) made `strip_lb`
 return `Err(UnsupportedPattern)` (at `:2010-2011`, and `strip_lb_inner` at
 `:2021`) when it cannot remove a lookbehind. `strip_lb` runs during
 `find_all` for any lookbehind-bearing pattern, not only intersection
@@ -2225,282 +1450,6 @@ between two node ids for some input, the loop would not terminate. Low
 confidence: these strip operations are normally monotone and no probe
 triggered it. Flagged as a place to check if a future hang bisects into
 `prefix.rs`, not a confirmed defect.
-
-## Prototype fixes (verified 2026-05-23)
-
-Per the `troubleshooting-doc` skill's auto-prototype rule (when constraints 1-4
-hold or sorta-hold, prototype the minimal fix rather than stopping at
-"constraint 5: not yet"), each still-live bug has a minimal fix prototyped in a
-fresh `mktemp -d` clone of `https://github.com/ieviev/resharp` at HEAD
-`e0b8aba` (origin and commit verified before editing). The combined patch is
-[resharp.patch](resharp.patch); the merged
-upstream issue body is the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed).
-
-Each fix was verified with a targeted probe crate (its own program calling
-`resharp`, run in debug and release) showing the failure pre-patch and correct
-behaviour post-patch. The combined patch was then regression-checked:
-
-```text
-git apply --check resharp.patch   # applies cleanly to e0b8aba
-cargo test --workspace --no-fail-fast
-# 231 passed; 0 failed; 19 ignored  (identical to the unpatched baseline)
-```
-
-resharp has no `build.rs`, so the test run executed no upstream build scripts; it
-ran on the host (the skill's sandbox rule targets untrusted build scripts).
-
-- **Bug E** (`resharp-engine/src/prefix.rs`): add a `visited` set and
-  clear-and-break on a fresh revisit, keeping the boundary-wrap path separate.
-  Trigger `abc~(\w)&(?:aaa)*` goes from hang to compiling in milliseconds;
-  `is_match` returns `false` on all probe inputs (the empty language).
-- **Bug C + F** (`resharp-algebra/src/lib.rs:2479`): `tail_rel + la_rel` becomes
-  `tail_rel.saturating_add(la_rel)`. The `else` arm already uses `u32::MAX` as
-  the unbounded sentinel, so this is the existing semantics. Every Bug C and Bug
-  F reproducer goes from COMPILE-PANIC to COMPILE-OK.
-- **Bug B** (`resharp-algebra/src/lib.rs` `strip_lb`): replace the
-  post-condition `debug_assert!` with a real
-  `if self.contains_lookbehind(result) { return Err(UnsupportedPattern) }`. All
-  five callers already handle the `Err` path. `(?:(?=a)&(?<=_))` goes from
-  debug-panic / release-62-spurious-matches to a clean `Err(UnsupportedPattern)`
-  at `Regex::new` in both profiles: fail-closed, no corruption.
-- **Bug A wording** (`resharp-algebra/src/lib.rs:35`): improve the
-  `UnsupportedPattern` render string to name the common triggers. Honest scope:
-  the variant is constructed at six sites with one shared static string, so this
-  is a legibility nudge, not a per-site trigger-naming fix; the latter needs
-  splitting the variant or threading context (larger, still localized). The
-  behavioural Bug A fix (actually supporting complement-of-lookaround) is the
-  architectural change in Bug A's draft and is deliberately NOT prototyped.
-
-## Five-constraint audit for Bugs B and C (now prototyped, in the merged issue)
-
-Bug D was in this deferred set in the earlier write-up but is now fixed
-upstream (see Bug D's status note); it is dropped here and must not be
-filed. The same five-constraint policy applies (see Bug A's "Why we do
-not file this upstream" subsection) to the two that remain. For Bug B
-(`strip_lb` debug_assert with release silent-corruption) and Bug C
-(algebra arithmetic overflow), the constraints land:
-
-1. **Upstream's fault?** Yes for both. A `debug_assert!` whose absence
-   produces silently corrupted output is a defect; an algebra add that
-   overflows for a parser-reachable input shape is a defect.
-2. **Can upstream fix?** Yes. Bug B is fixing `strip_lb_inner` so it
-   actually removes the lookbehind from an intersection operand (or
-   promoting the `debug_assert!` to fire in release once the invariant
-   holds). Bug C is locating which add overflows in `attempt_rw_concat_2`
-   and either widening the type or adding a checked-add path.
-3. **Supporting this use case?** Mixed. Intersection (`&`) and
-   complement (`~`) are headline features of resharp; combining them
-   with lookarounds is the natural way to write the "match A but not
-   when X" exclusion pattern. No documented restriction.
-4. **Likely to fix?** Unknown. The 0.6.0 to 0.6.3 releases relocated
-   Bug B's assertion (into `strip_lb`) but did not resolve it, and did
-   not touch Bug C's overflowing add beyond line drift.
-   Resolved 2026-05-23: the maintainer shipped our prototype as the 0.6.4
-   fix the same day the issue was filed. Bug B is the fail-closed `Err` in
-   `strip_lb` (`resharp-algebra/src/lib.rs:2011`) and Bug C is
-   `saturating_add` (`:2480`); see "Upstream response (2026-05-23)" above.
-   Behavioural re-confirmation against the published build is the only
-   step left.
-5. **Have we prototyped a minimal fix?** Yes, as of 2026-05-23. Bug B:
-   fail-closed `Err` in `strip_lb`. Bug C: `saturating_add` in
-   `attempt_rw_concat_2` (shared with Bug F). Both verified against HEAD
-   `e0b8aba` and regression-clean; see the "Prototype fixes" section.
-
-All five constraints now pass for Bugs B and C, so they are folded into
-the merged upstream issue rather than deferred. The pre-validators and
-profile settings remain the durable consumer-side fix regardless of
-upstream movement.
-
-Bug E (the `calc_prefix_sets_inner` non-termination) was the first with a
-minimal-patch prototype satisfying constraint 5; Bugs B, C, and F now have
-prototypes too (see "Prototype fixes").
-Prototyped against `https://github.com/ieviev/resharp.git` HEAD
-`6f445d71b194161adc0efe968d723312b6856a26` (declared version 0.6.0
-in `Cargo.toml`, 2026-05-15) in a fresh `mktemp -d` clone. The
-initially-proposed single-line patch regressed 9 of 46 active cases
-in `resharp-engine/tests/prefix.toml`; the verified prototype is a
-two-hunk additive variant (`visited` set plus fresh-revisit clear)
-that passed `cargo test --workspace --no-fail-fast` with 228 passed,
-0 failed, 19 ignored on that base. Re-validated 2026-05-23 against the
-current HEAD `e0b8aba` (the literal diff applies cleanly and the suite
-is 231/0/19 both with and without it). See Bug E's "Suggested upstream
-fix" subsection above for the diff, the audit method, and the
-language-emptiness check on the Bug E trigger pattern. Draft upstream
-issue body is below.
-
-Re-evaluation of constraints 2 and 4 in light of the obstacle:
-
-- **Constraint 2 (can upstream fix?)** Downgrades from "single
-  line" to "two hunks adding four lines (one new `BTreeSet` plus
-  one bounded check); additive only, no behaviour change in any
-  existing exit path." Still small and contained to one function.
-- **Constraint 4 (will they likely fix?)** Unchanged at "plausible."
-  The fix sits inside a function the project already maintains
-  (the `redundant` set is the prior author's own cycle-detection
-  scaffolding), and the patch reuses the same vocabulary. No
-  algebraic-core changes. Borne out: 0.6.4 shipped this exact two-hunk
-  `visited`-set patch (`resharp-engine/src/prefix.rs:33`) the day the
-  issue was filed (see "Upstream response (2026-05-23)" above);
-  behavioural re-confirmation against the published build is the only step
-  left.
-
-### Draft upstream issue body for Bug E (filed in merged issue #5)
-
-This per-bug draft was folded into the merged upstream issue
-ieviev/resharp#5 (filed 2026-05-23 against HEAD `e0b8aba`); it is kept
-here as a standalone reference. If a maintainer re-tests against a later
-`main`, re-run `git apply --check` of the diff below first, since
-resharp's main branch moves fast.
-
-````md
-**Title:** non-termination in `prefix::calc_prefix_sets_inner` for `~(...)&(...)*` patterns
-
-**Labels:** `bug`, `engine`
-
-## Description
-
-`resharp::Regex::new` does not return for patterns combining a literal
-prefix, a complement (`~(...)`), an intersection (`&`), and a
-quantified group (`(...)*`, `(...)+`, `(...){N}`, etc.). The hot loop
-is at `resharp-engine/src/prefix.rs:27` inside
-`calc_prefix_sets_inner`:
-
-```rust
-let mut redundant = BTreeSet::new();
-redundant.insert(NodeId::BOT);
-redundant.insert(start);
-
-loop {
-    if !result.is_empty() && redundant.contains(&node) {
-        break;
-    }
-    // ... computes der, picks a single target ...
-    node = target;
-}
-```
-
-`redundant` is seeded with `BOT` and `start` and never updated. For
-the trigger shape, the derivative chain produces a sequence of unique
-fresh nodes that never wraps back to a seeded boundary node, never
-becomes nullable, never self-loops, and never narrows to multiple
-targets. The loop therefore runs without termination.
-
-Minimum reproducer (bisected from a libFuzzer timeout artefact):
-
-```rust
-use resharp::Regex;
-let _ = Regex::new(r"abc~(\w)&(?:aaa)*");  // never returns
-```
-
-Easiest way to reproduce as a regression test (worker thread with a
-hard timeout, since `Regex::new` does not return on the trigger
-pattern and no compile timeout is exposed):
-
-```rust
-use std::sync::mpsc;
-use std::thread;
-use std::time::Duration;
-
-#[test]
-fn bug_e_trigger_compiles_within_timeout() {
-    const TRIGGER: &str = r"abc~(\w)&(?:aaa)*";
-    let (tx, rx) = mpsc::channel();
-    thread::Builder::new()
-        .name("bug_e_compile".into())
-        .stack_size(8 * 1024 * 1024)
-        .spawn(move || {
-            let _ = resharp::Regex::new(TRIGGER);
-            let _ = tx.send(());
-        })
-        .unwrap();
-    assert!(
-        rx.recv_timeout(Duration::from_secs(10)).is_ok(),
-        "Regex::new({TRIGGER:?}) hung",
-    );
-}
-```
-
-On unmodified `main` the test fails the 10 s timeout; on the
-proposed patch it returns in milliseconds. A companion test that
-calls `is_match` against `{"", "abc", "aaa", "abcaaa", "aaaaaa",
-"abc!", "abcaaab"}` returns `false` for every input, consistent with
-the empty language `abc~(\w) & (?:aaa)*` represents.
-
-Stack trace at the hang point (captured 3 s into compile):
-
-```
-#0 resharp_algebra::RegexBuilder::collect_der_targets
-#1 resharp_algebra::RegexBuilder::collect_der_targets
-#2 resharp_algebra::RegexBuilder::collect_der_targets
-#3 resharp::prefix::calc_prefix_sets_inner
-#4 resharp::prefix::select_prefix
-#5 resharp::Regex::from_node_inner
-#6 resharp::Regex::with_options
-#7 resharp::Regex::new
-```
-
-## Suggested fix
-
-The intent of the existing outer check is to detect "the chain wrapped
-back to a boundary node," which keeps the accumulated `result`. A
-separate "fresh revisit" check is needed to detect "the chain entered
-a cycle through previously visited non-boundary nodes," which should
-clear `result` (matching the existing `target == node` self-loop
-clearing semantics). Keeping these two semantics separate is what
-makes the patch additive and non-regressive:
-
-```diff
---- a/resharp-engine/src/prefix.rs
-+++ b/resharp-engine/src/prefix.rs
-@@ -23,12 +23,18 @@ pub(crate) fn calc_prefix_sets_inner(
-     let mut redundant = BTreeSet::new();
-     redundant.insert(NodeId::BOT);
-     redundant.insert(start);
-+    let mut visited: BTreeSet<NodeId> = BTreeSet::new();
-
-     loop {
-         if !result.is_empty() && redundant.contains(&node) {
-             break;
-         }
-
-+        if !result.is_empty() && !visited.insert(node) {
-+            result.clear();
-+            break;
-+        }
-+
-         if b.any_nonbegin_nullable(node) {
-             break;
-         }
-```
-
-A simpler one-line variant (inserting every `target` into the
-existing `redundant` set after `node = target`) was prototyped first
-and rejected: it conflates the boundary-wrap and fresh-revisit
-semantics, breaks 9 of 46 active cases in
-`resharp-engine/tests/prefix.toml` (all anchored multi-character
-`prefix_rev` cases collapse to their first character, e.g.
-`prefix_twain` `"n;i;a;w;T"` -> `"n"`, and `unsat` flips from `""` to
-`"o"`).
-
-## Verification
-
-Tested against `main` at
-`e0b8aba96f0c1987f9802498e585b5e88966023b` (also validated earlier
-against `6f445d7`).
-
-```text
-cargo test --workspace --no-fail-fast
-# 231 passed; 0 failed; 19 ignored  (identical with and without the patch)
-```
-
-The two-hunk diff above applies cleanly to `main` via `git apply`; the
-trigger `abc~(\w)&(?:aaa)*` then compiles in milliseconds, and `is_match`
-returns `false` for `{"", "abc", "aaa", "abcaaa", "aaaaaa", "abc!",
-"abcaaab"}`, consistent with the empty language it represents. Prototype
-clone, reproducer, and audit harness are available on request.
-````
-
----
 
 ## Flaky upstream test: `rev_bot_skip_terminates_fast` (timing assertion)
 
