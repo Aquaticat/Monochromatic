@@ -54,6 +54,11 @@
         <option name="FONT_TYPE" value="1"/>
       </value>
     </option>
+    <option name="org.rust.CFG_DISABLED_CODE">
+      <value>
+        <option name="FOREGROUND" value="ffffff"/>
+      </value>
+    </option>
     <option name="BLOCK_TERMINAL_BLACK">
       <value>
         <option name="FOREGROUND" value="0"/>
