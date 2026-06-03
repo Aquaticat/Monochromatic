@@ -15,9 +15,10 @@ persistent backends, but **no filesystem backend was ever shipped**. The README 
 
 The trigger: `packages/dev-script/file-enforcer` hand-rolled a persisted staleness manifest
 (in-memory cache, dirty-set, `process.on('exit')` flush, JSON read/write) to survive cold one-shot
-`mise run` invocations, when the persistence half of that work is exactly what a kv-store filesystem
-backend abstracts. Filling the kv-store gap lets that plumbing, and memoize's persistence story, lean
-on one audited backend instead of ad-hoc code.
+`mise run` invocations, which is the kind of persistence a kv-store filesystem backend abstracts. The
+immediate goal is shipping the backend for memoize's persistence story. Whether file-enforcer adopts
+memoize or this backend is undecided and may stay that way; the backend is built to stand on its own
+regardless.
 
 ## Backend contracts
 
@@ -264,6 +265,33 @@ is not uniform across the two builds; state this in the public contract.
 without `clear()` makes `store.clear()` a silent no-op. The sync store reports `.size` from
 `backends[0].size` (`src/create-sync-store.ts:143`), so if the file backend exposes `size` via
 `readdir`, every `.size` read (for example memoize's) performs disk IO.
+
+### Hazard 6: file-per-key IO granularity versus bulk-load consumers
+
+A file-per-key backend turns a bulk read into one `stat`-plus-read per key. file-enforcer's manifest
+loads every entry from one JSON file once per process (`loadManifest`,
+`packages/dev-script/file-enforcer/src/io/staleness-manifest.ts:248`), and a no-op run reads all entries
+to check staleness. Backing that with a file-per-key kv-store backend makes the same check N reads
+instead of one. A no-op run writes nothing either way, so the cost is read fan-out, not writes. The fs
+backend suits key-by-key access; a consumer that loads its whole keyspace at once may keep a single-file
+store. Whether file-enforcer adopts memoize or this backend is undecided and may stay that way; if it
+ever does, this read fan-out is the property to weigh against its current single-manifest load.
+Shipping the backend for memoize does not depend on that decision.
+
+### Hazard 7: only node-family and browser-main-thread runtimes are served
+
+The export map resolves `node` to the node:fs build and everything else (`browser`, `default`) to the
+OPFS build. An edge runtime (for example Cloudflare Workers) resolves `default` to the OPFS build but
+has neither `node:fs` nor main-thread OPFS, so the backend fails there at runtime. The async backend
+needs a browser main thread for OPFS, and the sync browser backend needs localStorage. State the
+supported runtime matrix in the public contract.
+
+### Hazard 8: the sync store does not content-address empty keys
+
+The async store derives a key from the value hash when the key is empty (`src/create-store.ts:151`); the
+sync store writes the literal empty key (`src/create-sync-store.ts:153`), so every empty-key sync `set`
+collides on one file. memoize requires a `keyFn`, so keys are non-empty in that path; the hazard is for
+direct sync-store callers.
 
 ### Non-blockers confirmed
 
