@@ -62,11 +62,12 @@ slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762
 # Drop the ~8.5 MB .symtab/.strtab symbol table from the shipped binary; it is
 # never loaded at runtime (no .debug_* sections are emitted in release anyway).
 # "symbols" keeps unwind info intact, so panic backtraces and Drop-on-panic are
-# unchanged. The remaining ~15 MB .text is real code (static Slint + symphonia).
+# unchanged. strip alone takes the binary 30 MB -> ~21.5 MB; the remaining
+# ~21 MB is real code/rodata (static Slint + symphonia-all).
 strip = "symbols"
-# Thin LTO: per-unit cross-module inlining and dead-code elimination that
-# parallelises and links far faster than fat `lto = true`, for most of the .text
-# savings. codegen-units is left at the release default (16) so codegen stays
-# parallel; fat LTO + codegen-units = 1 saved a little more but the link cost ~2
-# min, which is not worth it here. panic stays "unwind" (default) deliberately.
-lto = "thin"
+# No `lto` on purpose. Measured on this crate: thin LTO (default 16 codegen
+# units) was strictly worse than strip alone, both bigger (~21.8 MB vs ~21.5 MB)
+# and slower (~1m29s vs ~1m15s build); only fat `lto = true` + `codegen-units =
+# 1` shrank it, to ~16.4 MB, at a ~2 min build. Build speed wins here, so LTO
+# stays off. Re-enable fat LTO only if shipped size starts to matter more than
+# build time. panic stays "unwind".
