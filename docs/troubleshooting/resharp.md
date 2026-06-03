@@ -33,8 +33,9 @@ stays a recommended next step):
   go-ahead. See "Intersection over alternation: unbounded algebra recursion".
 
 A flaky upstream timing test (`rev_bot_skip_terminates_fast`) surfaced while
-verifying the prototype; it fails identically on stock 0.6.8 and is documented
-under "Flaky upstream test" below.
+verifying the prototype; it fails identically on stock 0.6.8. Its absolute
+sub-millisecond bound is replaced by a verified self-calibrating linearity-test
+prototype; both are documented under "Flaky upstream test" below.
 
 Full per-bug method and probe output: see "Bump to resharp 0.6.8
 (2026-06-03)" below.
@@ -2522,10 +2523,29 @@ binary unless `--no-fail-fast` is passed).
 ### Cause: an absolute sub-millisecond wall-clock bound
 
 The test scans `\z` against a 4 MB input and asserts the elapsed time is under
-1 ms, as a proxy for "the BOT-skip fast path did not regress". That is an
-absolute wall-clock threshold with no machine calibration, so it fails on any
-host where a correct 4 MB scan legitimately takes a few milliseconds, with no
-algorithmic regression involved.
+500 us (`elapsed.as_micros() < 500`), as a proxy for "the BOT-skip fast path did
+not regress". That is an absolute wall-clock threshold with no machine
+calibration.
+
+Measuring on this host (warmed, best of many runs, release + lto) shows the
+threshold is simply wrong here, not that anything regressed:
+
+```text
+\z   (reverse BOT-skip) find_all on 4 MiB : ~7.0 ms
+\Ax  (one linear DFA pass) on 4 MiB       : ~6.8 ms   (ratio z/base ~= 1.0)
+[^q]*q (un-accelerated full scan) on 4MiB : ~7.0 ms
+q    (memchr literal, absent) on 4 MiB    : ~0.065 ms
+```
+
+Two facts fall out. First, a 4 MB scan CAN be sub-millisecond (the memchr
+literal does it in 65 us), so the author's sub-ms expectation was reasonable on
+a host where the skip yields a big speedup. Second, on this build the skip
+yields no measurable speedup at all: `\z` costs the same as one plain linear DFA
+pass (`\Ax`, `[^q]*q`), so it runs at full per-byte cost (~7 ms), far over the
+500 us cap. Whether the skip helps is therefore host- and build-dependent, and
+no fixed wall-clock budget is portable. `\z` does stay LINEAR in input size
+(time roughly quadruples for a 4x larger input, never 16x), which is the
+portable invariant the test should actually guard.
 
 ### Not caused by the intersection/alternation prototype
 
@@ -2552,11 +2572,34 @@ this one test and pass `--no-fail-fast` so the differential suites still run:
 cargo test --release --workspace --no-fail-fast -- --skip rev_bot_skip_terminates_fast
 ```
 
-Not filed upstream: per the Claude Code / out-of-scope exemptions this repo
+### Prototype (2026-06-03): self-calibrating linearity assertion
+
+Patch: `/tmp/agent/resharp-rev-bot-skip-test-calibration-0.6.8.patch`
+(`resharp-engine/tests/engine_test.rs` only).
+
+The fix replaces the absolute `< 500 us` budget with a self-calibrating
+linearity check. It times `\z` find_all at 1 MiB and at 4 MiB (best of 3 runs
+each, keeping the correctness asserts: exactly one match, at end of input), then
+requires the 4x-larger input to cost under 8x more time. Linear scaling gives
+~4x; a quadratic regression of the reverse BOT-skip would give ~16x, so the 8x
+ceiling separates O(n) from O(n^2) with 2x headroom on each side. A guard
+returns early when `\z` on 1 MiB is already under 100 us (the skip is fully
+effective and the measurement is timer-noise-dominated, so the ratio is
+meaningless), keeping the test trivially green on hosts where the skip works.
+
+Verification:
+
+- On this host the measured factor is ~4.0x (1 MiB ~= 1.84 ms, 4 MiB ~= 7.43 ms),
+  comfortably under the 8x ceiling.
+- Passes 10/10 runs on the guarded build and 6/6 runs on a clean, unmodified
+  0.6.8 checkout (the test fix is independent of the algebra re-entrancy guard:
+  the two patches touch different files and were applied separately).
+- The original absolute-bound test failed 100% of runs on both builds.
+
+This is file-ready alongside the intersection/alternation fix. Filing stays held
+for an explicit go-ahead. Per the Claude Code / out-of-scope exemptions this repo
 follows for non-actionable upstream churn, a flaky timing assertion in a
-dependency's own test suite is recorded here for future sessions rather than
-filed. If filing is later wanted, the fix upstream would be to calibrate the
-bound against a measured baseline scan (or assert a throughput ratio) instead
-of a fixed sub-millisecond wall-clock cap.
+dependency's own test suite would normally just be recorded here; the prototype
+exists so the fix can be offered upstream cheaply if wanted.
 
 [resharp]: https://github.com/ieviev/resharp
