@@ -293,6 +293,13 @@ sync store writes the literal empty key (`src/create-sync-store.ts:153`), so eve
 collides on one file. memoize requires a `keyFn`, so keys are non-empty in that path; the hazard is for
 direct sync-store callers.
 
+### Hazard 9: a flat per-key directory degrades at large keyspaces
+
+`clear` and `size` `readdir` the whole directory, and a single flat directory holding many thousands of
+key files slows those operations and stresses some filesystems. Shard by a hash prefix (for example the
+first two hex characters as a subdirectory) if large keyspaces are expected. memoize's default LRU bound
+(1024) caps this for memoize, but a directly-constructed unbounded store does not (see Hazard 3).
+
 ### Non-blockers confirmed
 
 -   Type libs are sufficient. `@monochromatic-dev/config-typescript/dom` sets
@@ -333,6 +340,14 @@ direct sync-store callers.
 -   `get` returns `undefined` on a missing entry (ENOENT), and rethrows other errors.
 -   `clear` and `size` operate over the backend's own directory; distinguish data files from temp files
     by a dot-free name predicate (sha256 hex has no dot; temp names do).
+-   Namespace each store. A file backend writes under a per-`storeId` subdirectory so `clear`, `size`,
+    and eviction never touch another store's files; the localStorage sync backend prefixes keys with the
+    `storeId` so it never collides with other origin data.
+-   `set` propagates storage-full errors. node `ENOSPC`, OPFS and localStorage `QuotaExceededError`
+    surface to the caller, since the store does not catch backend `set` failures
+    (`src/create-store.ts:154`).
+-   The localStorage sync backend must detect unavailability (private-browsing mode or disabled storage
+    throws on access) and fail construction clearly rather than at first use.
 -   Verification must run at the user boundary: exercise the real built artifact against a throwaway
     directory (`mktemp -d`), and drive the OPFS path through a real browser via `agent-browser`, since
     bun cannot evaluate OPFS.
