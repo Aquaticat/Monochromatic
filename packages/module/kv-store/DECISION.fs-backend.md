@@ -267,13 +267,20 @@ Ranking reasons: size cap over age cap because a hard disk ceiling is what the h
 over document-only because a default bound beats shipping a footgun; document-only over preload because
 preload adds fragility (async readdir, ordering) for a result the others reach more simply.
 
-### Hazard 4: write atomicity differs by runtime
+### Hazard 4: OPFS read-after-write visibility, and node write atomicity
 
-The node backend can write a temp sibling then `rename` for atomic replacement. OPFS has no atomic
-per-key rename (`FileSystemHandle.move` support is limited), so the async OPFS backend writes via
-`createWritable` then `close` (logger notes `getFile()` reads stale content while a writable is open,
-`packages/module/logger/src/sinks/opfs.ts:60`); a crash mid-write can leave a partial file. Durability
-is not uniform across the two builds; state this in the public contract.
+Verified empirically in headless Chrome 149 over an `http://127.0.0.1` origin (secure context, probe at
+`/tmp/agent/opfs-probe.html`): after seeding a file with `OLD`, opening a fresh `createWritable`, and
+writing `NEW`, `getFile().text()` returned `OLD` while the writable was open and `NEW` only after
+`close()` (`seeded: OLD`, `whileOpen: OLD`, `afterClose: NEW`). So OPFS commits a write atomically on
+`close()` via a swap file (matching the spec and logger's `packages/module/logger/src/sinks/opfs.ts:60`):
+a crash before `close()` loses the uncommitted write but leaves the prior committed content intact, with
+no partial or torn file. This refutes the earlier "partial file" wording. Two consequences for the async
+OPFS backend: `set` must `await writable.close()` before the value is readable (a backend that keeps the
+writable open for throughput returns stale reads), and it gets per-write atomicity for free. The node
+backend has no such default: a plain `writeFile` can leave a partial file on crash, so it must write a
+temp sibling then `rename` to match OPFS's commit-on-close atomicity. Same atomicity reachable on both,
+but node must opt in; document the close-before-read rule for OPFS in the public contract.
 
 ### Hazard 5: the backend must implement clear, and sync size hits disk
 
