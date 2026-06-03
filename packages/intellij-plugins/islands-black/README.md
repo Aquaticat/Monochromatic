@@ -10,7 +10,7 @@ Warnings retain their yellow underline but lose the olive background fill.
 
 ## Installation
 
-1. Build the JAR: `cd packages/intellij-plugins/islands-black && zip -r islands-black.jar META-INF/ theme/ scheme/`
+1. From this directory, build the JAR: `mise run build`
 2. In your IDE, open **Settings > Plugins > gear icon > Install Plugin from Disk...**
 3. Select the `islands-black.jar` file
 4. Restart the IDE

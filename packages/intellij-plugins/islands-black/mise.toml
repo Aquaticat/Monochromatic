@@ -1,3 +1,3 @@
 [tasks.build]
 description = "Build islands-black.jar for installing the plugin from disk."
-run = "rm --force islands-black.jar; zip --recurse-paths islands-black.jar META-INF/ theme/ scheme/"
+run = "bun mise.build.ts"
