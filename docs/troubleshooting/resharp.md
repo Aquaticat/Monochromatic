@@ -26,6 +26,15 @@ stays a recommended next step):
   consumer-side depth pre-validator and the upstream filing are now
   unblocked (the bump-trigger is met); both are held for a separate
   go-ahead.
+- Intersection over alternation (new, found during the 0.6.8 campaign): an
+  uncatchable algebra-recursion stack overflow distinct from Bug G, with no
+  safe consumer-side guard. A minimal fix (a re-entrancy guard on the
+  distribution rewrites) is now prototyped and verified; file-ready, held for
+  go-ahead. See "Intersection over alternation: unbounded algebra recursion".
+
+A flaky upstream timing test (`rev_bot_skip_terminates_fast`) surfaced while
+verifying the prototype; it fails identically on stock 0.6.8 and is documented
+under "Flaky upstream test" below.
 
 Full per-bug method and probe output: see "Bump to resharp 0.6.8
 (2026-06-03)" below.
@@ -446,11 +455,54 @@ abort the scanner.
    headline features; combining them is natural.
 4. Likely to fix? Plausible; the maintainer is responsive and the recent
    commits actively rework intersection distribution.
-5. Prototyped a minimal fix? No. A terminating distribution rewrite needs care
-   in the algebra core and is not yet prototyped.
+5. Prototyped a minimal fix? Yes (2026-06-03). See "Prototype" below.
 
-Constraint 5 fails, so this is NOT filed. Revisit with a prototype (a
-memoization / visited guard on the distribution rewrites) before filing.
+All five constraints now hold, so this is file-ready. It is NOT yet filed:
+filing is a shared-state action held pending explicit go-ahead, the same as
+the Bug G `max_depth` patch.
+
+### Prototype (2026-06-03): re-entrancy guard on the distribution rewrites
+
+A minimal fix breaks the cycle without touching the distribution rewrites'
+semantics. Patch: `/tmp/agent/resharp-interalt-reentrancy-guard-0.6.8.patch`
+(41 insertions, `resharp-algebra/src/lib.rs` only).
+
+Mechanism: add an in-progress set
+`rw_active: FxHashSet<(Kind, NodeId, NodeId)>` to `RegexBuilder`, and wrap
+`attempt_rw_inter_2` and `attempt_rw_union_2` so that re-entering either with a
+`(kind, left, right)` triple already on the stack returns `None` (decline the
+rewrite). `mk_inter` / `mk_union` then fall through to building the plain
+`Inter` / `Union` node, which has identical language semantics, so declining an
+optimization rewrite is sound. The hash-cons cache does not break the cycle on
+its own because the key is inserted only after the rewrite completes, which for
+this operand shape never happens.
+
+Why it terminates: the cycle is, by construction, the same canonical triple
+re-entering its own rewrite. Blocking exactly that re-entry costs nothing for
+non-cyclic rewrites (sequential same-triple calls insert, run, and remove
+before the next call) and cannot recurse, because the second nested visit of a
+triple is precisely the cycle.
+
+Verification (all on the capped probe, gnu target, 8 MB stack):
+
+- Minimal repro
+  `(?iu)(?:@2222&(?:(?:(?:(?:(?:i22|222)|(?:222|^))|café)|café)|café))`
+  now returns `COMPILE-OK` (was: stack overflow, SIGABRT) on the guarded build.
+- Previously-OK patterns still compile: `a&(b|c)`,
+  `a&(((((b|c)|d)|e)|f)|g)`, the line-105 AWS-key rule.
+- resharp's own suite on the guarded build: every test passes
+  (`engine_test` 123/0, `properties_test` 36/0, `neon_simd` 73/0, parser, seek,
+  stream, deriv, rev_nulls all green), with only the pre-existing flaky timing
+  test `rev_bot_skip_terminates_fast` excluded (it fails identically on stock
+  0.6.8; see its own section below).
+- Differential match check: a `find_all` comparison of guarded vs unmodified
+  0.6.8 over a corpus of intersection patterns (`abc&.*b.*`,
+  `[a-z]+&~(.*foo.*)`, `(a|b)+&.*ab.*`, the AWS-key rule, `(?i)foo&.*o.*`, etc.)
+  is byte-for-byte identical: the guard changes zero match results.
+
+A cleaner upstream fix would make the two distributions converge to a canonical
+form instead of declining on re-entry, but the guard is the minimal change that
+proves the defect is fixable and stops the abort with no semantic change.
 
 ---
 
@@ -2446,5 +2498,65 @@ returns `false` for `{"", "abc", "aaa", "abcaaa", "aaaaaa", "abc!",
 "abcaaab"}`, consistent with the empty language it represents. Prototype
 clone, reproducer, and audit harness are available on request.
 ````
+
+---
+
+## Flaky upstream test: `rev_bot_skip_terminates_fast` (timing assertion)
+
+### Symptom
+
+resharp's own test `rev_bot_skip_terminates_fast`
+(`resharp-engine/tests/engine_test.rs:1318` at the 0.6.8 tag) fails on this
+hardware:
+
+```text
+thread 'rev_bot_skip_terminates_fast' panicked at resharp-engine/tests/engine_test.rs:1318:5:
+`\z` on 4MB took 7.813198ms, expected sub-ms (BOT skip regressed?)
+```
+
+It is the reason a plain `cargo test --workspace` on a resharp checkout fails
+fast before reaching `properties_test` and `fuzz_compare` (those binaries sort
+after `engine_test`, and cargo stops the test phase on the first failing
+binary unless `--no-fail-fast` is passed).
+
+### Cause: an absolute sub-millisecond wall-clock bound
+
+The test scans `\z` against a 4 MB input and asserts the elapsed time is under
+1 ms, as a proxy for "the BOT-skip fast path did not regress". That is an
+absolute wall-clock threshold with no machine calibration, so it fails on any
+host where a correct 4 MB scan legitimately takes a few milliseconds, with no
+algorithmic regression involved.
+
+### Not caused by the intersection/alternation prototype
+
+`\z` is an end-of-text anchor; it never enters the intersection or union
+distribution rewrites the re-entrancy-guard prototype touches. Confirmed
+empirically: the test fails identically on a clean, unmodified 0.6.8 checkout,
+consistently across runs:
+
+```text
+# clean (unguarded) 0.6.8, 3 runs:
+`\z` on 4MB took 7.334028ms, expected sub-ms (BOT skip regressed?)
+`\z` on 4MB took 6.905390ms, expected sub-ms (BOT skip regressed?)
+`\z` on 4MB took 6.822778ms, expected sub-ms (BOT skip regressed?)
+```
+
+So it is a pre-existing, hardware-dependent flaky assertion, not a regression.
+
+### Handling
+
+When running resharp's suite to validate a prototype on this hardware, skip
+this one test and pass `--no-fail-fast` so the differential suites still run:
+
+```bash
+cargo test --release --workspace --no-fail-fast -- --skip rev_bot_skip_terminates_fast
+```
+
+Not filed upstream: per the Claude Code / out-of-scope exemptions this repo
+follows for non-actionable upstream churn, a flaky timing assertion in a
+dependency's own test suite is recorded here for future sessions rather than
+filed. If filing is later wanted, the fix upstream would be to calibrate the
+bound against a measured baseline scan (or assert a throughput ratio) instead
+of a fixed sub-millisecond wall-clock cap.
 
 [resharp]: https://github.com/ieviev/resharp
