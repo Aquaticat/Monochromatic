@@ -468,11 +468,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.on_scroll_changed({
         let engine = Rc::clone(&engine);
         move |pixel_scroll| {
-            if let Some(app) = weak_for_scroll.upgrade() {
-                if let Err(error) = refresh_from_scroll(&app, &engine, pixel_scroll) {
+            if let Some(app) = weak_for_scroll.upgrade()
+                && let Err(error) = refresh_from_scroll(&app, &engine, pixel_scroll) {
                     log_callback_error("scroll refresh failed", error);
                 }
-            }
         }
     });
 
@@ -481,8 +480,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let engine = Rc::clone(&engine);
         let pty = Rc::clone(&pty);
         move |width_px, height_px, cell_width_px, cell_height_px| {
-            if let Some(app) = weak_for_resize.upgrade() {
-                if let Err(error) = refresh_from_resize(
+            if let Some(app) = weak_for_resize.upgrade()
+                && let Err(error) = refresh_from_resize(
                     &app,
                     &engine,
                     &pty,
@@ -493,7 +492,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ) {
                     log_callback_error("resize refresh failed", error);
                 }
-            }
         }
     });
 
@@ -514,11 +512,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         {
             let engine = Rc::clone(&engine);
             move || {
-                if let Some(app) = weak_for_output.upgrade() {
-                    if let Err(error) = refresh_from_pty_events(&app, &engine, &pty_receiver) {
+                if let Some(app) = weak_for_output.upgrade()
+                    && let Err(error) = refresh_from_pty_events(&app, &engine, &pty_receiver) {
                         log_callback_error("PTY output refresh failed", error);
                     }
-                }
             }
         },
     );

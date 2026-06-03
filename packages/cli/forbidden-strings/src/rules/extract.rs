@@ -103,8 +103,8 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
     //   s = s.slice(flagMatch[0].length);
     // }
     // ```
-    if let Some(rest) = s.strip_prefix("(?") {
-        if let Some(end) = rest.find(')') {
+    if let Some(rest) = s.strip_prefix("(?")
+        && let Some(end) = rest.find(')') {
             let flags = &rest[..end];
             // Flag-group bodies are `[a-zA-Z-]*` only. If we see
             // anything else (`:`, `[`, etc.), this is not a flag-group
@@ -154,7 +154,6 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
                 s = &rest[end + 1..];
             }
         }
-    }
 
     // What:     Loop stripping leading anchors `^`, `\A`, `\b` -- they
     //           don't contribute literal bytes themselves but also don't

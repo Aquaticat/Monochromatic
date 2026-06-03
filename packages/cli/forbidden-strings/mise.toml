@@ -18,6 +18,10 @@ run = "cargo check"
 description = "Run clippy"
 run = "cargo clippy --release -- -D warnings"
 
+[tasks."format:clippy"]
+description = "Apply clippy's machine-applicable suggestions in place"
+run = "cargo clippy --fix --allow-dirty --allow-staged"
+
 [tasks."lint:max-lines"]
 description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust-linter)"
 # The linter is a separate host crate with no system deps; run it over this

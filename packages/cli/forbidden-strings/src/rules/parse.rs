@@ -109,8 +109,8 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
         // const last = trimmed.lastIndexOf("/");
         // if (last > 0) { ... }
         // ```
-        if let Some(last) = trimmed.rfind('/') {
-            if last > 0 {
+        if let Some(last) = trimmed.rfind('/')
+            && last > 0 {
                 // What:     `let pattern = &trimmed[1..last];`. Range
                 //           indexing `[start..end]` on `&str` returns a
                 //           BORROWED `&str` sub-slice (start inclusive,
@@ -204,7 +204,6 @@ pub fn parse_rule_source(line: &str) -> Option<ParsedRule> {
                     return Some(ParsedRule::Regex(out));
                 }
             }
-        }
     }
     // What:     `Some(ParsedRule::Literal(trimmed.to_string()))` --
     //           function tail expression (no `;`), so its value

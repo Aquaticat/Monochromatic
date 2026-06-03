@@ -2,7 +2,7 @@
 name = "forbidden-strings"
 version = "0.1.8"
 categories = ["command-line-utilities", "development-tools"]
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/packages/cli/forbidden-strings"
 include = [
   "src/**/*.rs",

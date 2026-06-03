@@ -489,11 +489,10 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     //           compares by path components.
     // Why:      Avoid auto-loading the entire home directory when MUSIC is unset.
     // TS map:   `if (trimmed === process.env.HOME) return null;`
-    if let Some(home) = std::env::var_os("HOME") {
-        if Path::new(&home) == Path::new(trimmed) {
+    if let Some(home) = std::env::var_os("HOME")
+        && Path::new(&home) == Path::new(trimmed) {
             return None;
         }
-    }
     // What:     `Some(PathBuf::from(trimmed))`. Wrap the path as present. Tail -> return.
     // Why:      Hand back the discovered music directory.
     // TS map:   `return trimmed;`

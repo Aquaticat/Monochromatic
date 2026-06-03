@@ -2,7 +2,7 @@
 name = "monochromatic-rust-linter"
 version = "0.1.0"
 categories = ["development-tools", "command-line-utilities"]
-edition = "2021"
+edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/packages/linter/rust"
 include = [
   "src/**/*.rs",

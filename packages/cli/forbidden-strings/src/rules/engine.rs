@@ -959,11 +959,10 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
             if popped.0 && popped.1 {
                 found_alt_la_group = true;
             }
-            if popped.1 {
-                if let Some(parent) = paren_stack.last_mut() {
+            if popped.1
+                && let Some(parent) = paren_stack.last_mut() {
                     parent.1 = true;
                 }
-            }
             i += 1;
             continue;
         }
@@ -1871,28 +1870,26 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
         }
         // What:     `\X`: escape. One atom at the current depth.
         if c == b'\\' {
-            if let Some(top) = stack.last_mut() {
-                if top.pending_trailing_count >= 0 {
+            if let Some(top) = stack.last_mut()
+                && top.pending_trailing_count >= 0 {
                     top.pending_trailing_count += 1;
                     if top.pending_trailing_count >= 3 {
                         top.pending_trailing_count = -1;
                     }
                 }
-            }
             i += 2;
             continue;
         }
         // What:     `[`: character class open. One atom; the class
         //           body is consumed in the `in_class` branch.
         if c == b'[' {
-            if let Some(top) = stack.last_mut() {
-                if top.pending_trailing_count >= 0 {
+            if let Some(top) = stack.last_mut()
+                && top.pending_trailing_count >= 0 {
                     top.pending_trailing_count += 1;
                     if top.pending_trailing_count >= 3 {
                         top.pending_trailing_count = -1;
                     }
                 }
-            }
             in_class = true;
             i += 1;
             continue;
@@ -1901,14 +1898,13 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
         //           depth (regardless of what's inside; the group is
         //           atomic from the trailing-count perspective).
         if c == b'(' {
-            if let Some(top) = stack.last_mut() {
-                if top.pending_trailing_count >= 0 {
+            if let Some(top) = stack.last_mut()
+                && top.pending_trailing_count >= 0 {
                     top.pending_trailing_count += 1;
                     if top.pending_trailing_count >= 3 {
                         top.pending_trailing_count = -1;
                     }
                 }
-            }
             let is_lookahead = i + 2 < bytes.len()
                 && bytes[i + 1] == b'?'
                 && (bytes[i + 2] == b'!' || bytes[i + 2] == b'=');
@@ -2059,14 +2055,13 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
         }
         // What:     Any other byte: literal, anchor, dot, etc. One
         //           atom at the current depth.
-        if let Some(top) = stack.last_mut() {
-            if top.pending_trailing_count >= 0 {
+        if let Some(top) = stack.last_mut()
+            && top.pending_trailing_count >= 0 {
                 top.pending_trailing_count += 1;
                 if top.pending_trailing_count >= 3 {
                     top.pending_trailing_count = -1;
                 }
             }
-        }
         i += 1;
     }
     // What:     End-of-regex boundary. Check the top-level (and any

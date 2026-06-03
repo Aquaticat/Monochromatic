@@ -195,8 +195,8 @@ pub fn skip_any_quantifier(s: &str) -> &str {
         }
         return &s[1..];
     }
-    if bytes[0] == b'{' {
-        if let Some(close) = s.find('}') {
+    if bytes[0] == b'{'
+        && let Some(close) = s.find('}') {
             // Tail `?` (lazy) after `}` is also part of the quantifier
             // syntax; skip if present.
             let after = close + 1;
@@ -205,7 +205,6 @@ pub fn skip_any_quantifier(s: &str) -> &str {
             }
             return &s[after..];
         }
-    }
     s
 }
 
