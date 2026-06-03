@@ -1,18 +1,7 @@
-[tools]
-# cargo-fuzz needs nightly: it injects `-Cllvm-args=-sanitizer-coverage-*`
-# RUSTFLAGS that only compile on nightly. Declaring rust here (a child config
-# root) overrides the repo's stable toolchain for this directory only, so the
-# published forbidden-strings CLI (packages/cli/forbidden-strings) keeps
-# building on stable. mise sets RUSTUP_TOOLCHAIN=nightly for tasks run here and
-# auto-installs the toolchain. Floating "nightly" tracks the latest; pin to a
-# dated channel (e.g. version = "nightly-2026-05-23") if reproducible fuzz
-# builds matter, at the cost of a periodic manual bump.
-# rust-src is requested so the toolchain carries std sources for IDE code
-# insight against this crate; cargo-fuzz's default ASAN path does not require it.
-# llvm-tools-preview supplies llvm-cov / llvm-profdata for `cargo fuzz coverage`;
-# ASAN backtrace symbolization uses the system llvm-symbolizer, installed
-# separately (not a rustup component).
-rust = { version = "nightly", components = "rust-src,llvm-tools-preview" }
+# No [tools] here: the Rust toolchain (nightly + rust-src + llvm-tools-preview)
+# is managed repo-wide in the root mise.no-env.toml [tools], so every crate
+# shares one channel. mise still applies that toolchain to tasks run in this
+# directory; cargo-fuzz needs the nightly it provides.
 
 [tasks.test]
 description = "cargo nextest run --lib (unit tests for the structured generator)"
@@ -20,8 +9,8 @@ description = "cargo nextest run --lib (unit tests for the structured generator)
 # (src/generators_tests.rs). The fuzz_targets/* bins are libFuzzer harnesses
 # that only link under cargo-fuzz's injected sanitizer-coverage RUSTFLAGS, so a
 # plain `cargo nextest run` over all targets would fail to build them. nextest
-# is inherited from the repo-root [tools]; the nightly toolchain pinned in this
-# config's [tools] applies, which nextest runs under without issue.
+# is inherited from the repo-root [tools]; the nightly toolchain declared there
+# applies, which nextest runs under without issue.
 run = "cargo nextest run --lib --release"
 
 [tasks.list]

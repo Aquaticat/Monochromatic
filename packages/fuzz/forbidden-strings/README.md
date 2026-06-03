@@ -11,13 +11,13 @@ alternatives are recorded in
 
 - Nightly Rust toolchain. `cargo-fuzz` injects
   `-Cllvm-args=-sanitizer-coverage-*` flags that only work on
-  nightly. This package is its own mise config root whose
-  [`mise.toml`](./mise.toml) declares
-  `rust = { version = "nightly", components = "rust-src" }`, so
-  `mise install` provisions nightly (with std sources) and sets
-  `RUSTUP_TOOLCHAIN=nightly` for every task here. The scope is this
-  directory only, so the published forbidden-strings CLI stays on
-  the repo's stable toolchain.
+  nightly. The toolchain is managed repo-wide in the root
+  [`mise.no-env.toml`](../../../mise.no-env.toml) `[tools]` entry
+  (`rust = { version = "nightly", components = "rust-src,llvm-tools-preview" }`),
+  so `mise install` provisions nightly (with std sources and the
+  llvm coverage tools) for every crate, and tasks run here inherit
+  it. `llvm-tools-preview` supplies `llvm-cov` / `llvm-profdata` for
+  `cargo fuzz coverage`.
 - `cargo-fuzz` 0.13.1. Installed automatically by `mise install`
   from the root [`mise.no-env.toml`](../../../mise.no-env.toml)
   `[tools]` entry.
@@ -67,8 +67,8 @@ in commit `099bfe84`).
 
 ## Local commands (via mise)
 
-All commands run on nightly automatically: this config root's
-`rust = nightly` tool sets `RUSTUP_TOOLCHAIN` for every task.
+All commands run on nightly automatically: the repo-root
+`rust = nightly` tool applies its toolchain to every task.
 
 ```bash
 # List every target name.
