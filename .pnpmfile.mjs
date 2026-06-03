@@ -1,13 +1,20 @@
 /**
- * Global dependency blocklist for substitution policies.
+ * Global dependency blocklist hook for substitution policies.
+ *
+ * This file owns the mechanism: a pnpm `readPackage` hook that rewrites every
+ * dependency entry pointing at a blocked package to a workspace stub. The policy
+ * table itself (the data) lives in `.pnpmfile.policies.json`, imported below, so
+ * the blocklist churns independently of this hook logic.
  *
  * Companion to the `overrides` block in `pnpm-workspace.yaml`, which owns the
- * removal cases (`"banned-pkg": "-"`). This file owns the cases where a stub
+ * removal cases (`"banned-pkg": "-"`). This hook owns the cases where a stub
  * should land in `node_modules` so consumers can still resolve the import.
  *
  * See `docs/dependency-blocklist.md` for the policy reference, the decision
  * rule between throw / silent / remove, and worked examples.
  */
+
+import policiesJson from './.pnpmfile.policies.json' with { type: 'json' };
 
 /**
  * @typedef {object} Policy
@@ -35,116 +42,21 @@
  */
 
 /**
+ * Policy table sourced from `.pnpmfile.policies.json`. Sentinel comment keys
+ * (those starting with `//`) carry rationale JSON cannot express as comments;
+ * they are dropped here so the frozen table is a clean `Record<string, Policy>`.
+ * The hook only ever indexes `POLICY[depName]` and never enumerates the table,
+ * so the filter is a forward-looking guard rather than a correctness fix.
+ *
  * @type {Readonly<Record<string, Policy>>}
  */
-const POLICY = Object.freeze({
-  'caniuse-lite': {
-    action: 'throw',
-    allowed: ['browserslist',],
-    reason:
-      '3MB+ browser support DB; only the real browserslist package may load it for resolved build targets',
-  },
-  'convert-source-map': {
-    action: 'throw',
-    reason:
-      'abandoned; modern bundlers (rolldown, oxc, esbuild) handle source maps natively',
-  },
-  'cookie-signature': {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; use node:crypto.createHmac for signed cookies',
-  },
-  destroy: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; stream.destroy() is native since Node 8',
-  },
-  etag: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; compute via node:crypto.createHash inline',
-  },
-  'exa-js': {
-    action: 'throw',
-    reason: 'Exa AI search SDK deprecated in favor of linkup.so',
-  },
-  extglob: {
-    action: 'throw',
-    reason: 'abandoned micromatch ancestor; use picomatch (already in graph)',
-  },
-  'fast-json-stable-stringify': {
-    action: 'throw',
-    reason: 'abandoned; use safe-stringify (catalog) or node:util.inspect',
-  },
-  'for-in': {
-    action: 'throw',
-    reason: 'trivial; use Object.entries / Object.keys with functional iteration',
-  },
-  forwarded: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; parse Forwarded header inline',
-  },
-  fresh: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; compare conditional-request headers inline',
-  },
-  'fs.realpath': {
-    action: 'throw',
-    reason:
-      'polyfill for Node<6 fs.realpath bugs; native realpath stable on every supported runtime',
-  },
-  methods: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; HTTP methods are RFC 7231 constants',
-  },
-  'proxy-addr': {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; use h3 request helpers',
-  },
-  'regenerator-runtime': {
-    action: 'throw',
-    reason:
-      'Babel async/generator polyfill; obsolete on Node 22+ and Bun, async/await is native',
-  },
-  'repeat-element': {
-    action: 'throw',
-    reason: 'trivial; use Array.from({ length: n }, () => x) or Array(n).fill(x)',
-  },
-  'repeat-string': {
-    action: 'throw',
-    reason: 'trivial; use String.prototype.repeat',
-  },
-  sax: {
-    action: 'throw',
-    reason:
-      'abandoned XML parser; use fast-xml-parser (catalog entry, used by feedsmith)',
-  },
-  'set-blocking': {
-    action: 'throw',
-    reason: 'abandoned yargs<16 internal; native process.stdout writes are sufficient',
-  },
-  'source-map-resolve': {
-    action: 'throw',
-    reason: 'abandoned; modern bundlers handle source map resolution natively',
-  },
-  statuses: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; HTTP statuses are RFC 7231 constants',
-  },
-  toidentifier: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; trivial identifier-case conversion inline',
-  },
-  unpipe: {
-    action: 'throw',
-    reason: 'Node stream polyfill; stream.unpipe() native on every supported runtime',
-  },
-  'utils-merge': {
-    action: 'throw',
-    reason: 'trivial; use Object.assign or { ...a, ...b }',
-  },
-  vary: {
-    action: 'throw',
-    reason: 'abandoned express 4.x util; set Vary header directly',
-  },
-},);
+const POLICY = Object.freeze(
+  Object.fromEntries(
+    Object.entries(policiesJson,).filter(function isPolicyEntry([name,],) {
+      return !name.startsWith('//',);
+    },),
+  ),
+);
 
 const STUB_SPECIFIER = Object.freeze({
   throw: 'workspace:@monochromatic-dev/stub-throwing@*',

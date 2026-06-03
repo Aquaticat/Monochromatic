@@ -6,8 +6,8 @@ They differ in what lands in `node_modules` after the install.
 
 ## Two homes, four outcomes
 
-1. **Generic substitution stub on disk**: edit `.pnpmfile.mjs` at the repo root.
-   The hook there replaces every dependency entry pointing at the blocked package with a workspace stub.
+1. **Generic substitution stub on disk**: edit the policy table in `.pnpmfile.policies.json` at the repo root.
+   The `readPackage` hook in `.pnpmfile.mjs` reads that table and replaces every dependency entry pointing at the blocked package with a workspace stub.
    Two stub kinds exist: throwing and silent.
 
 2. **Nothing on disk, or an API-compatible shim on disk**: edit the `overrides` block in `pnpm-workspace.yaml`.
@@ -61,33 +61,35 @@ The shim is the right call when the real API is trivial and the importer cannot 
 
 ## How to add a substitution
 
-Edit the `POLICY` table in `.pnpmfile.mjs`:
+Edit the policy table in `.pnpmfile.policies.json`.
+The hook in `.pnpmfile.mjs` imports this file and indexes it by package name; you do not touch the hook.
 
-```js
-const POLICY = Object.freeze({
-  moment: {
-    action: 'throw',
-    reason:
-      'use date-fns or native Intl.DateTimeFormat (see docs/decisions/2026-05-no-moment.md)',
+```json
+{
+  "//": "Companion to overrides in pnpm-workspace.yaml. See docs/dependency-blocklist.md.",
+  "moment": {
+    "action": "throw",
+    "reason": "use date-fns or native Intl.DateTimeFormat (see docs/decisions/2026-05-no-moment.md)"
   },
-  'is-array': {
-    action: 'silent',
-    reason:
-      'native Array.isArray; silent substitution while migrating consumers',
+  "is-array": {
+    "action": "silent",
+    "reason": "native Array.isArray; silent substitution while migrating consumers"
   },
-  lodash: {
-    action: 'throw',
-    reason: 'use native ES + es-toolkit',
-    allowed: ['@monochromatic-dev/webapp-legacy',],
-  },
-},);
+  "lodash": {
+    "action": "throw",
+    "reason": "use native ES + es-toolkit",
+    "allowed": ["@monochromatic-dev/webapp-legacy"]
+  }
+}
 ```
 
+Keys beginning with `//` are comments (an npm package name can never start with `/`); the hook drops them when building its lookup table, so use them for rationale JSON cannot express as real comments.
 `reason` is surfaced in the install-time warning to stderr.
 `allowed` is an optional array of consumer workspace-package names; matching consumers keep resolving to the real dependency.
 
 After editing, run a clean install (`mise run //:install` or the equivalent) and read stderr for the warnings.
 Each `(dependent, blocked, action)` tuple warns once per install.
+Because pnpm keys re-resolution off the `.pnpmfile.mjs` checksum and not the imported JSON, a data-only edit may not re-trigger resolution on its own; see "Verification after adding an entry" for the `--force` note.
 
 ## How to add a global removal
 
@@ -133,13 +135,13 @@ Document the rationale in `TROUBLESHOOTING.dependencies.md` so future readers un
 
 ### Throw on a package that ships unwanted polyfills
 
-```js
-const POLICY = Object.freeze({
-  'array.prototype.flat': {
-    action: 'throw',
-    reason: 'Node 17+ has Array.prototype.flat natively; replace the import',
-  },
-},);
+```json
+{
+  "array.prototype.flat": {
+    "action": "throw",
+    "reason": "Node 17+ has Array.prototype.flat natively; replace the import"
+  }
+}
 ```
 
 On the next install, every package whose manifest declares `array.prototype.flat` produces one stderr line:
@@ -154,13 +156,13 @@ If any consumer evaluates `require('array.prototype.flat')`, the stub's `index.c
 
 ### Silent for a soft migration
 
-```js
-const POLICY = Object.freeze({
-  'old-feature-flag-client': {
-    action: 'silent',
-    reason: 'feature-flag client v2 incoming; v1 stubbed during migration',
-  },
-},);
+```json
+{
+  "old-feature-flag-client": {
+    "action": "silent",
+    "reason": "feature-flag client v2 incoming; v1 stubbed during migration"
+  }
+}
 ```
 
 Code that does `flagClient.isEnabled('something')` runs without throwing.
@@ -169,14 +171,14 @@ Returns are not truthy/falsy in a useful way, so feature checks default to "miss
 
 ### Allowlist a single legacy consumer
 
-```js
-const POLICY = Object.freeze({
-  moment: {
-    action: 'throw',
-    reason: 'use date-fns',
-    allowed: ['@monochromatic-dev/webapp-edu-legacy',],
-  },
-},);
+```json
+{
+  "moment": {
+    "action": "throw",
+    "reason": "use date-fns",
+    "allowed": ["@monochromatic-dev/webapp-edu-legacy"]
+  }
+}
 ```
 
 The legacy webapp keeps the real `moment`; every other workspace package and every transitive dep resolves to the throwing stub.
@@ -263,8 +265,9 @@ The substitution unifies `instanceof` identity across the workspace (every consu
 ## Verification after adding an entry
 
 1. Run install (`mise run prepare:pnpm:install`).
-   pnpm v11 stores a `pnpmfileChecksum` line in `pnpm-lock.yaml`; editing `.pnpmfile.mjs` changes the checksum and pnpm re-runs resolution automatically.
-   No lockfile deletion or `--force` flag is needed.
+   pnpm v11 stores a `pnpmfileChecksum` line in `pnpm-lock.yaml` computed from the `.pnpmfile.mjs` source; editing the hook file changes the checksum and pnpm re-runs resolution automatically.
+   The checksum does not follow the imported `.pnpmfile.policies.json`, so a data-only edit (the common case now) may leave the checksum unchanged and pnpm may reuse the cached resolution.
+   After editing only the JSON, force re-resolution with `pnpm install --force` (or touch `.pnpmfile.mjs`).
 2. Read stderr for the `[blocked-dep]` lines.
    Confirm the dependent names you expected appear; one warning per `(dependent, blocked, action)` tuple.
 3. For a throwing stub, exercise the import in a probe script.
@@ -280,7 +283,8 @@ The substitution unifies `instanceof` identity across the workspace (every consu
 
 ## Cross-references
 
-- `.pnpmfile.mjs` at the repo root: the policy implementation.
+- `.pnpmfile.policies.json` at the repo root: the policy data table (sentinel `//` keys carry comments).
+- `.pnpmfile.mjs` at the repo root: the `readPackage` hook that reads the table and applies substitutions.
 - `pnpm-workspace.yaml`'s `overrides` block: global removals, parent-scoped removals, and `link:` substitutions to workspace shims.
 - `packages/stub/throwing/`: the workspace stub used by `action: 'throw'`.
 - `packages/stub/silent/`: the workspace stub used by `action: 'silent'`.

@@ -152,8 +152,12 @@ The `satisfies` check catches hook-signature drift if pnpm
 changes the `Hooks` shape upstream, with zero build pipeline.
 
 Tradeoff: types live in JSDoc rather than native TS syntax.
-The current `.pnpmfile.mjs` is 122 lines and rarely touched;
-the cost is small.
+The hook file is small (around 150 lines) and rarely touched;
+the cost is small. The policy data itself was moved out to
+`.pnpmfile.policies.json` (imported via a `with { type: 'json' }`
+attribute), so the churn-prone blocklist no longer lives in the
+JSDoc-typed hook at all; only the `Policy` typedef and the hook
+logic remain.
 
 ### Native type stripping (Node 23+; rejected)
 
@@ -188,9 +192,47 @@ ${tsBlankSpace(tsSource,)}`,
 Tradeoff: adds a new dev dependency, a new file-enforcer
 generator, a committed generated artifact, a CI drift check,
 and a two-file mental model on every edit, in exchange for
-cosmetic improvements (cleaner type syntax) on a 122-line file
-touched rarely. Revisit if the blocklist grows into multiple
-files or pulls in shared types from elsewhere.
+cosmetic improvements (cleaner type syntax) on a small file
+touched rarely.
+
+The blocklist data did outgrow a single inline table, but the
+chosen split was the lighter one: the policy entries moved to a
+plain `.pnpmfile.policies.json` the hook imports, not a TS
+source run through `ts-blank-space`. JSON data needs no
+transpiler, so it sidesteps every cost above. The TS-strip
+generator stays rejected; revisit only if the hook logic (not
+the data) needs shared TS types from elsewhere.
+
+## Checksum scope: the hash covers the pnpmfile only, not its imports
+
+pnpm stores a `pnpmfileChecksum` line in `pnpm-lock.yaml` and
+re-runs resolution when it changes. The checksum is the hash of
+the discovered pnpmfile's own bytes, not of any module the
+pnpmfile imports.
+
+Source trace against the installed pnpm (v11.5.1,
+`dist/pnpm.mjs`):
+
+- `calculatePnpmfileChecksum` builds `filesToIncludeInHash` from
+  the `entries` whose `includeInChecksum` is true, sorts them,
+  and calls `createHashFromMultipleFiles` (line 167983). Only the
+  auto-discovered `.pnpmfile.mjs` / `.pnpmfile.cjs` and explicit
+  `--pnpmfile` paths are pushed into `entries` with
+  `includeInChecksum: true`; nothing those files `import` is
+  added.
+- `createHashFromMultipleFiles` -> `createHashFromFile` ->
+  `readNormalizedFile` reads each listed file's text with
+  `fs.readFile(file, 'utf8')` and hashes the bytes (line 61622).
+
+Consequence for this repo's split: the policy data lives in
+`.pnpmfile.policies.json`, imported by `.pnpmfile.mjs`. Editing
+the JSON alone leaves `.pnpmfile.mjs`'s bytes unchanged, so the
+checksum does not move and pnpm may reuse the cached resolution.
+After a data-only blocklist edit, force re-resolution with
+`pnpm install --force` (or touch `.pnpmfile.mjs`). Editing
+`.pnpmfile.mjs` itself (as the data-to-JSON refactor did) does
+bump the checksum and re-resolves automatically; verified by the
+lockfile diff showing only the `pnpmfileChecksum` line changed.
 
 ## What does not work
 

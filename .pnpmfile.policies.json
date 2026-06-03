@@ -1,0 +1,108 @@
+{
+  "//": "Global dependency blocklist substitution policies. Data table for the readPackage hook in .pnpmfile.mjs. Companion to the overrides block in pnpm-workspace.yaml, which owns the removal cases. See docs/dependency-blocklist.md for the policy reference and the throw/silent/remove decision rule.",
+  "//keys": "Each non-comment key is an npm package name; keys beginning with // are comments (npm names cannot start with /) and are ignored by the hook. Each policy is { action, reason, allowed? }.",
+  "//action": "throw = substitute with @monochromatic-dev/stub-throwing (loud, informative error at the import site). silent = substitute with @monochromatic-dev/stub-silent (Proxy whose reads/calls/new return the stub; in checks return false). Removal is not an action here; add \"name\": \"-\" to the overrides block in pnpm-workspace.yaml instead.",
+  "//reason": "reason is surfaced one-line in the install-time warning; cite the replacement, migration ticket, or rationale.",
+  "//allowed": "allowed is an optional array of consumer package names that keep resolving to the real dependency.",
+  "caniuse-lite": {
+    "action": "throw",
+    "allowed": ["browserslist"],
+    "reason": "3MB+ browser support DB; only the real browserslist package may load it for resolved build targets"
+  },
+  "convert-source-map": {
+    "action": "throw",
+    "reason": "abandoned; modern bundlers (rolldown, oxc, esbuild) handle source maps natively"
+  },
+  "cookie-signature": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; use node:crypto.createHmac for signed cookies"
+  },
+  "destroy": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; stream.destroy() is native since Node 8"
+  },
+  "etag": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; compute via node:crypto.createHash inline"
+  },
+  "exa-js": {
+    "action": "throw",
+    "reason": "Exa AI search SDK deprecated in favor of linkup.so"
+  },
+  "extglob": {
+    "action": "throw",
+    "reason": "abandoned micromatch ancestor; use picomatch (already in graph)"
+  },
+  "fast-json-stable-stringify": {
+    "action": "throw",
+    "reason": "abandoned; use safe-stringify (catalog) or node:util.inspect"
+  },
+  "for-in": {
+    "action": "throw",
+    "reason": "trivial; use Object.entries / Object.keys with functional iteration"
+  },
+  "forwarded": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; parse Forwarded header inline"
+  },
+  "fresh": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; compare conditional-request headers inline"
+  },
+  "fs.realpath": {
+    "action": "throw",
+    "reason": "polyfill for Node<6 fs.realpath bugs; native realpath stable on every supported runtime"
+  },
+  "methods": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; HTTP methods are RFC 7231 constants"
+  },
+  "proxy-addr": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; use h3 request helpers"
+  },
+  "regenerator-runtime": {
+    "action": "throw",
+    "reason": "Babel async/generator polyfill; obsolete on Node 22+ and Bun, async/await is native"
+  },
+  "repeat-element": {
+    "action": "throw",
+    "reason": "trivial; use Array.from({ length: n }, () => x) or Array(n).fill(x)"
+  },
+  "repeat-string": {
+    "action": "throw",
+    "reason": "trivial; use String.prototype.repeat"
+  },
+  "sax": {
+    "action": "throw",
+    "reason": "abandoned XML parser; use fast-xml-parser (catalog entry, used by feedsmith)"
+  },
+  "set-blocking": {
+    "action": "throw",
+    "reason": "abandoned yargs<16 internal; native process.stdout writes are sufficient"
+  },
+  "source-map-resolve": {
+    "action": "throw",
+    "reason": "abandoned; modern bundlers handle source map resolution natively"
+  },
+  "statuses": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; HTTP statuses are RFC 7231 constants"
+  },
+  "toidentifier": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; trivial identifier-case conversion inline"
+  },
+  "unpipe": {
+    "action": "throw",
+    "reason": "Node stream polyfill; stream.unpipe() native on every supported runtime"
+  },
+  "utils-merge": {
+    "action": "throw",
+    "reason": "trivial; use Object.assign or { ...a, ...b }"
+  },
+  "vary": {
+    "action": "throw",
+    "reason": "abandoned express 4.x util; set Vary header directly"
+  }
+}
