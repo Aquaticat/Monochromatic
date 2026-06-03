@@ -287,6 +287,9 @@ backend has no such default: a plain `writeFile` can leave a partial file on cra
 temp sibling then `rename` to match OPFS's commit-on-close atomicity. Same atomicity reachable on both,
 but node must opt in; document the close-before-read rule for OPFS in the public contract.
 
+Verified on Linux: `renameSync` over an existing file atomically replaces it (`content: NEW`, only the
+destination remains), so node's temp-plus-rename gives the same per-write atomicity OPFS has by default.
+
 ### Hazard 5: the backend must implement clear, and sync size hits disk
 
 `store.clear()` only clears a backend that exposes `clear` (`src/create-store.ts:226`); a file backend
