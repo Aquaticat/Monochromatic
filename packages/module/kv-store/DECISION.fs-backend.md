@@ -319,18 +319,29 @@ has neither `node:fs` nor main-thread OPFS, so the backend fails there at runtim
 needs a browser main thread for OPFS, and the sync browser backend needs localStorage. State the
 supported runtime matrix in the public contract.
 
-### Hazard 8: the sync store does not content-address empty keys
+### Hazard 8: empty keys collide (sync) or leave an orphan (async)
 
 The async store derives a key from the value hash when the key is empty (`src/create-store.ts:151`); the
 sync store writes the literal empty key (`src/create-sync-store.ts:153`), so every empty-key sync `set`
-collides on one file. memoize requires a `keyFn`, so keys are non-empty in that path; the hazard is for
-direct sync-store callers.
+collides on one file. The async path is no better against a persistent backend: verified that
+`set('', { v: 1 })` writes one content-addressed file but `get('')` returns ABSENT, because the store
+hashes the empty key on `set` but not on `get`, so the write is unreadable and leaks an orphan file.
+memoize requires a `keyFn`, so keys are non-empty in that path; the hazard is for direct store callers.
 
-Remediation ranking: **mirror the async empty-key hash in the sync store > document the gap.** Mirroring
-(derive the key from a synchronous `node:crypto` hash of the value when the key is empty) closes the gap
-for all sync callers but changes core sync-store behavior; documenting is zero-change but leaves the
-collision live. Mirroring wins if empty keys are a supported pattern; documenting suffices while memoize,
-the only consumer, never passes empty keys.
+Remediation ranking: **reject empty keys on both stores > symmetric content-addressing > document the
+quirk.**
+
+-   Reject empty keys (throw on `set('')` and `get('')`): pros, eliminates both the sync collision and
+    the async write-only orphan in one rule; cons, removes the content-addressing convenience the async
+    store advertises.
+-   Symmetric content-addressing (hash the empty key on both `set` and `get`): pros, would make the
+    advertised feature round-trip; cons, `get('')` has no value to hash, so the feature is incoherent for
+    reads, which is exactly why it is write-only today.
+-   Document the quirk: pros, zero change; cons, leaves a silent orphan/collision footgun.
+
+Ranking reasons: reject-empty first because it removes both failure modes cleanly; symmetric
+content-addressing cannot work for `get` (no value to hash), so it ranks below rejection; documenting is
+the floor when no behavior change is wanted, acceptable only because memoize never passes empty keys.
 
 ### Hazard 9: a flat per-key directory degrades at large keyspaces
 
