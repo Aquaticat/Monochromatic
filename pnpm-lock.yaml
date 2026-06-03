@@ -308,7 +308,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-GnnAYW6z49xCaONoJyQ2EUSE9h8q5NiDP6AMKJiY1SE=
 
-pnpmfileChecksum: sha256-P8rkxWW0okOoGI9ov38Nhc4sUKvbU58Kj4q8X2DTCww=
+pnpmfileChecksum: sha256-Wl98vvC9oLni0WX96+21olh7fAywncjDJJtnaemsQyM=
 
 importers:
 
@@ -1309,6 +1309,16 @@ importers:
       '@types/node':
         specifier: 25.6.0
         version: 25.6.0
+
+  packages/intellij-plugins/islands-black:
+    dependencies:
+      '@monochromatic-dev/module-zip-writer':
+        specifier: workspace:*
+        version: link:../../module/zip-writer
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
 
   packages/markdownlint-plugins/no-pipe-tables:
     dependencies:

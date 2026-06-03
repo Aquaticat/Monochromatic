@@ -10,7 +10,7 @@ import {
   sep,
 } from 'node:path';
 
-import { ZipWriter, } from '../../module/zip-writer/src/index.ts';
+import { ZipWriter, } from '@monochromatic-dev/module-zip-writer/ts';
 
 /**
  * Output plugin archive path relative to package root.
@@ -37,21 +37,14 @@ const ARCHIVE_ROOTS = [
 ] as const;
 
 /**
- * Fixed modification time for byte-for-byte reproducible builds.
- *
- * @example
- * ```ts
- * const zipWriter = new ZipWriter({ modifiedAt: REPRODUCIBLE_MODIFIED_AT, },);
- * ```
- */
-const REPRODUCIBLE_MODIFIED_AT = new Date('2024-01-01T00:00:00Z',);
-
-/**
  * File queued for inclusion in plugin archive.
  *
  * @example
  * ```ts
- * const entry: ArchiveEntry = { archivePath: 'META-INF/plugin.xml', diskPath: 'META-INF/plugin.xml', };
+ * const entry: ArchiveEntry = {
+ *   archivePath: 'META-INF/plugin.xml',
+ *   diskPath: 'META-INF/plugin.xml',
+ * };
  * ```
  */
 type ArchiveEntry = Readonly<{
@@ -60,36 +53,66 @@ type ArchiveEntry = Readonly<{
 }>;
 
 /**
- * Sort directory entries by name for deterministic archive entry order.
- *
- * @param left - Left directory entry supplied by array sort comparison
- * @param right - Right directory entry supplied by array sort comparison
- * @returns Negative, zero, or positive comparison value
+ * File content ready to copy into plugin archive.
  *
  * @example
  * ```ts
- * directoryEntries.toSorted(compareDirentNames,);
+ * const entryContent: ArchiveEntryContent = {
+ *   archivePath: 'META-INF/plugin.xml',
+ *   content: await readFile('META-INF/plugin.xml',),
+ * };
+ * ```
+ */
+type ArchiveEntryContent = Readonly<{
+  archivePath: string;
+  content: Uint8Array;
+}>;
+
+/**
+ * Sort directory entries by name for deterministic archive entry order.
+ *
+ * @param left - Directory entry compared before right entry
+ *
+ * @param right - Directory entry compared after left entry
+ *
+ * @returns Sort order for left relative to right
+ *
+ * @example
+ * ```ts
+ * compareDirentNames({ left, right, });
  * ```
  */
 function compareDirentNames(
-  left: Dirent,
-  right: Dirent,
+  {
+    left,
+    right,
+  }: Readonly<{
+    left: Readonly<Dirent>;
+    right: Readonly<Dirent>;
+  }>,
 ): number {
-  return left.name.localeCompare(right.name,);
+  if (left.name < right.name)
+    return -1;
+  if (left.name > right.name)
+    return 1;
+  return 0;
 }
 
 /**
  * Convert platform-native package path to ZIP-standard forward-slash path.
  *
- * @param args.diskPath - Package-relative path on local filesystem
- * @returns Archive entry path with forward slash separators
+ * @param diskPath - Package-relative path needing archive normalization
+ *
+ * @returns Archive entry path using forward slash separators
  *
  * @example
  * ```ts
  * toArchivePath({ diskPath: join('META-INF', 'plugin.xml',), });
  * ```
  */
-function toArchivePath({ diskPath, }: Readonly<{ diskPath: string; }>,): string {
+function toArchivePath(
+  { diskPath, }: Readonly<{ diskPath: string; }>,
+): string {
   return relative(
     '.',
     diskPath,
@@ -101,7 +124,8 @@ function toArchivePath({ diskPath, }: Readonly<{ diskPath: string; }>,): string 
 /**
  * Recursively list regular files under root directory for archive inclusion.
  *
- * @param args.root - Directory path to scan
+ * @param root - Directory path whose regular files enter archive
+ *
  * @returns Archive entries sorted by package-relative path
  *
  * @throws When input tree contains unsupported special files
@@ -111,7 +135,9 @@ function toArchivePath({ diskPath, }: Readonly<{ diskPath: string; }>,): string 
  * const entries = await listArchiveEntries({ root: 'META-INF', },);
  * ```
  */
-async function listArchiveEntries({ root, }: Readonly<{ root: string; }>,): Promise<readonly ArchiveEntry[]> {
+async function listArchiveEntries(
+  { root, }: Readonly<{ root: string; }>,
+): Promise<readonly ArchiveEntry[]> {
   /**
    * Directory entries found immediately under current root.
    */
@@ -122,13 +148,21 @@ async function listArchiveEntries({ root, }: Readonly<{ root: string; }>,): Prom
   /**
    * Directory entries sorted before traversal to keep archive deterministic.
    */
-  const sortedDirectoryEntries = directoryEntries.toSorted(compareDirentNames,);
+  const sortedDirectoryEntries = directoryEntries.toSorted(function compareDirectoryEntries(
+    left: Readonly<Dirent>,
+    right: Readonly<Dirent>,
+  ): number {
+    return compareDirentNames({
+      left,
+      right,
+    },);
+  },);
   /**
    * Per-entry archive fragments, flattened before returning.
    */
   const archiveEntryGroups = await Promise.all(
-    sortedDirectoryEntries.map(async function archiveEntriesForDirent(
-      dirent: Dirent,
+    sortedDirectoryEntries.map(function archiveEntriesForDirent(
+      dirent: Readonly<Dirent>,
     ): Promise<readonly ArchiveEntry[]> {
       /**
        * Package-relative disk path for current directory entry.
@@ -140,12 +174,12 @@ async function listArchiveEntries({ root, }: Readonly<{ root: string; }>,): Prom
       if (dirent.isDirectory())
         return listArchiveEntries({ root: diskPath, },);
       if (dirent.isFile()) {
-        return [
+        return Promise.resolve([
           {
             archivePath: toArchivePath({ diskPath, },),
             diskPath,
           },
-        ];
+        ],);
       }
       throw new Error(`Unsupported plugin archive input: ${diskPath}`,);
     },),
@@ -157,7 +191,7 @@ async function listArchiveEntries({ root, }: Readonly<{ root: string; }>,): Prom
  * Archive entries for all plugin roots in deterministic root order.
  */
 const archiveEntries = (await Promise.all(
-  ARCHIVE_ROOTS.map(async function archiveEntriesForRoot(root: string,): Promise<readonly ArchiveEntry[]> {
+  ARCHIVE_ROOTS.map(function archiveEntriesForRoot(root: string,): Promise<readonly ArchiveEntry[]> {
     return listArchiveEntries({ root, },);
   },),
 )).flat();
@@ -165,16 +199,30 @@ const archiveEntries = (await Promise.all(
 /**
  * ZIP writer used to create installable JetBrains plugin JAR.
  */
-const zipWriter = new ZipWriter({ modifiedAt: REPRODUCIBLE_MODIFIED_AT, },);
+const zipWriter = new ZipWriter();
 
-for (const archiveEntry of archiveEntries) {
-  /**
-   * File bytes copied verbatim into archive entry.
-   */
-  const content = await readFile(archiveEntry.diskPath,);
+/**
+ * File contents read concurrently before insertion-order-preserving archive writes.
+ */
+const archiveEntryContents = await Promise.all(
+  archiveEntries.map(async function readArchiveEntryContent(
+    archiveEntry: ArchiveEntry,
+  ): Promise<ArchiveEntryContent> {
+    /**
+     * File bytes copied verbatim into archive entry.
+     */
+    const content = await readFile(archiveEntry.diskPath,);
+    return {
+      archivePath: archiveEntry.archivePath,
+      content,
+    };
+  },),
+);
+
+for (const archiveEntryContent of archiveEntryContents) {
   zipWriter.add(
-    archiveEntry.archivePath,
-    content,
+    archiveEntryContent.archivePath,
+    archiveEntryContent.content,
   );
 }
 
