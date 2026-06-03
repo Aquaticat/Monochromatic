@@ -57,3 +57,17 @@ zbus = "5"
 # Must match the `slint` git rev above (the compiler and runtime are versioned
 # together). See the comment on the `slint` dependency for why this is a git pin.
 slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
+
+[profile.release]
+# Drop the ~8.5 MB .symtab/.strtab symbol table from the shipped binary; it is
+# never loaded at runtime (no .debug_* sections are emitted in release anyway).
+# "symbols" keeps unwind info intact, so panic backtraces and Drop-on-panic are
+# unchanged. The remaining ~15 MB .text is real code (static Slint + symphonia).
+strip = "symbols"
+# Cross-crate inlining and dead-code elimination across the whole dependency
+# graph (Slint, symphonia-all, zbus). Trims .text on top of strip; trade-off is
+# a much slower release link. panic stays "unwind" (default) deliberately.
+lto = true
+# One codegen unit maximises LTO's cross-unit optimisation and shrinks .text
+# further, at the cost of no per-unit parallelism in the final crate's codegen.
+codegen-units = 1
