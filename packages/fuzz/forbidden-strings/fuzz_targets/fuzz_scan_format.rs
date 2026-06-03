@@ -139,10 +139,53 @@ fuzz_target!(|input: ScanFormatInput| {
         // Only check non-trivial matched ranges; a 0-byte slice
         // would trivially "appear" everywhere.
         if !matched.is_empty() {
+            // What:     `let scaffold: Vec<u8> = ...`. The exact set of
+            //           bytes `format_hit` can ever emit from its
+            //           NON-content inputs: the fixed path passed to
+            //           `emit_hit` above, the literal template chars
+            //           (`:`, `..`, ` `, `rule=`), and decimal digits for
+            //           the line/col/rule numbers. `Vec<u8>` is an owned,
+            //           growable byte buffer (sibling: a borrowed `&[u8]`).
+            // Why:      `format_hit` never receives the matched content,
+            //           so it cannot interpolate it; redaction is
+            //           structural. A short matched slice whose bytes all
+            //           fall in this scaffolding alphabet can still appear
+            //           in `formatted` by coincidence (a one-byte match of
+            //           `9` inside `rule=99`, or `1` inside `1:1..1`),
+            //           which is NOT a leak. Only a slice containing a
+            //           byte OUTSIDE this alphabet proves the formatter
+            //           interpolated content, so guard the window scan on
+            //           that. The path literal must match the one passed
+            //           to `emit_hit` above (`"fuzz.txt"`).
+            // TS map:   `const scaffold = new Set([..."fuzz.txt:.. rule=", ..."0123456789"].map(c => c.charCodeAt(0)));`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const scaffold = new Set([...]);
+            // const allScaffold = [...matched].every(b => scaffold.has(b));
+            // ```
+            let mut scaffold: Vec<u8> = b"fuzz.txt:.. rule=".to_vec();
+            scaffold.extend(b'0'..=b'9');
+            // What:     `matched.iter().all(|b| scaffold.contains(b))`.
+            //           `.iter()` borrows the slice; `.all(closure)`
+            //           returns `true` only if every byte satisfies the
+            //           closure. `|b| ...` is a closure taking a `&u8`.
+            // Why:      Decide whether a window hit could be coincidental
+            //           scaffolding overlap (skip) or a real content leak.
+            // TS map:   `const allScaffold = matched.every(b => scaffold.has(b));`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const allScaffold = matched.every(b => scaffold.has(b));
+            // ```
+            let matched_all_scaffold = matched.iter().all(|b| scaffold.contains(b));
             let formatted_bytes = formatted.as_bytes();
-            // Window scan for the matched slice in the formatted
-            // string. If it appears, the formatter leaked.
-            if matched.len() <= formatted_bytes.len() {
+            // Window scan for the matched slice in the formatted string.
+            // A hit is only a real leak when the matched slice is NOT
+            // entirely scaffolding-alphabet bytes (otherwise the overlap
+            // is coincidental, since format_hit cannot interpolate
+            // content).
+            if !matched_all_scaffold && matched.len() <= formatted_bytes.len() {
                 for window in formatted_bytes.windows(matched.len()) {
                     if window == matched {
                         panic!(
