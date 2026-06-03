@@ -84,7 +84,7 @@ watchexec = "latest"
 #   rust-src           -- std sources for IDE code insight (RustRover / IntelliJ Rust).
 #   llvm-tools-preview -- llvm-cov / llvm-profdata for `cargo fuzz coverage`.
 # ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
-rust = { version = "nightly", components = "rust-src,llvm-tools-preview" }
+rust = { version = "nightly", components = "clippy,rust-src,llvm-tools-preview" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
