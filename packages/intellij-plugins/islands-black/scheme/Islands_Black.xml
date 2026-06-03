@@ -7,6 +7,8 @@
     <option name="NOTIFICATION_BACKGROUND" value="000000"/>
     <option name="BLOCK_TERMINAL_BLOCK_BACKGROUND_START" value="000000"/>
     <option name="BLOCK_TERMINAL_BLOCK_BACKGROUND_END" value="000000"/>
+    <option name="DOCUMENTATION_COLOR" value="000000"/>
+    <option name="LOOKUP_COLOR" value="000000"/>
   </colors>
   <attributes>
     <option name="TEXT">
