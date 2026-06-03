@@ -249,7 +249,23 @@ The LRU key set is an in-memory `Set` created fresh per store construction (`src
 hold many files. Eviction is driven by in-session access count against `maxSize`, so pre-existing files
 are never pruned across sessions and the directory grows without bound; eviction can also drop a
 just-relevant key while ancient files persist. An LRU policy gives a persistent backend no cross-session
-capacity bound. The backend needs its own pruning, or this limit must be documented for consumers.
+capacity bound.
+
+Remediation ranking: **size cap > age cap > document-only > preload the store LRU.**
+
+-   Size cap (backend counts entries and evicts oldest by mtime over a bound): pros, a hard disk ceiling
+    independent of session; cons, eviction needs an order signal (mtime) and counting adds IO.
+-   Age cap (delete entries past a TTL): pros, simple, matches time-bucketed use; cons, no hard ceiling,
+    a burst within the TTL still grows unbounded.
+-   Document-only (leave pruning to the consumer): pros, zero backend complexity; cons, ships a footgun
+    to every consumer, against a batteries-included public package.
+-   Preload existing keys into the store LRU at construction: pros, reuses the store's eviction; cons,
+    needs an async `readdir` before construction, an unreliable access-order signal, and does not map to
+    OPFS cleanly, so it is the most fragile.
+
+Ranking reasons: size cap over age cap because a hard disk ceiling is what the hazard is about; age cap
+over document-only because a default bound beats shipping a footgun; document-only over preload because
+preload adds fragility (async readdir, ordering) for a result the others reach more simply.
 
 ### Hazard 4: write atomicity differs by runtime
 
@@ -265,6 +281,11 @@ is not uniform across the two builds; state this in the public contract.
 without `clear()` makes `store.clear()` a silent no-op. The sync store reports `.size` from
 `backends[0].size` (`src/create-sync-store.ts:143`), so if the file backend exposes `size` via
 `readdir`, every `.size` read (for example memoize's) performs disk IO.
+
+`clear()` is mandatory. For `size`, remediation ranking: **lazy `readdir` on access > eager cached
+counter.** Lazy pays the cost only when `.size` is read; an eager counter avoids the read but must stay
+consistent across external file changes and concurrent writers, reintroducing the staleness the backend
+exists to avoid.
 
 ### Hazard 6: file-per-key IO granularity versus bulk-load consumers
 
@@ -293,12 +314,22 @@ sync store writes the literal empty key (`src/create-sync-store.ts:153`), so eve
 collides on one file. memoize requires a `keyFn`, so keys are non-empty in that path; the hazard is for
 direct sync-store callers.
 
+Remediation ranking: **mirror the async empty-key hash in the sync store > document the gap.** Mirroring
+(derive the key from a synchronous `node:crypto` hash of the value when the key is empty) closes the gap
+for all sync callers but changes core sync-store behavior; documenting is zero-change but leaves the
+collision live. Mirroring wins if empty keys are a supported pattern; documenting suffices while memoize,
+the only consumer, never passes empty keys.
+
 ### Hazard 9: a flat per-key directory degrades at large keyspaces
 
 `clear` and `size` `readdir` the whole directory, and a single flat directory holding many thousands of
 key files slows those operations and stresses some filesystems. Shard by a hash prefix (for example the
 first two hex characters as a subdirectory) if large keyspaces are expected. memoize's default LRU bound
 (1024) caps this for memoize, but a directly-constructed unbounded store does not (see Hazard 3).
+
+Remediation ranking: **shard by hash prefix > accept flat and document.** Sharding bounds `readdir` cost
+per directory at any scale, at a little path complexity; a flat directory is simpler but degrades at
+large N, acceptable only when an eviction bound (Hazard 3) keeps the count small.
 
 ### Hazard 10: the built-export wiring is partly unprecedented
 
@@ -310,7 +341,12 @@ divergent built files; that part is new here, so validate the emitted filenames,
 and condition resolution under both Node and a bundler before relying on it. Two placements are
 possible: expose `./fs` as a new subpath (isolates the divergence, leaves the `.` entry untouched), or
 fold the backend into `.` (reuses the existing `node`/`default` conditions but requires splitting
-`index.ts` into per-runtime entry files). `./fs` is the smaller change.
+`index.ts` into per-runtime entry files).
+
+Remediation ranking: **`./fs` subpath > fold into `.`.** The subpath isolates the divergence and leaves
+the `.` entry and its single shared types untouched; folding into `.` reuses the existing `node`/`default`
+conditions but forces splitting `index.ts` into per-runtime entry files, a larger change to the main
+entry. The subpath wins as the smaller, lower-blast-radius change for the same result.
 
 ### Hazard 11: memoize salt rotation orphans persistent entries
 
@@ -322,11 +358,27 @@ entries evict under LRU. With a persistent file backend they do not (Hazard 3: a
 bound a persistent backend across sessions), so every salt rotation orphans a file that nothing removes.
 The salt feature's headline use case, time-bucketed expiry, becomes one new dead file per key per bucket,
 unbounded. memoize's `delete` takes the full `${argKey}:${salt}` key (`memoize-async.ts:235`), so there
-is no "delete all salts for an argKey" operation; pruning superseded salts is manual. A persistent
-memoize cache needs an eviction story the file backend enforces itself (size or age cap), or salt
-rotation paired with explicit deletion of superseded keys. memoize itself may be changed (for example a
-key model that supersedes prior salts for an `argKey`, or built-in salt pruning), so the fix is not
-confined to the backend.
+is no "delete all salts for an argKey" operation; pruning superseded salts is manual.
+
+Remediation ranking: **backend eviction (Hazard 3) > memoize supersede-on-salt-change > memoize built-in
+TTL > caller-managed deletion.**
+
+-   Backend eviction (the Hazard 3 size or age cap): pros, fixes every persistent consumer at once, not
+    just memoize, and is already needed; cons, drops an orphaned salt only when the bound is hit, not
+    when it is superseded, so intent is not expressed.
+-   memoize supersede-on-salt-change (delete prior `argKey:*` when a new salt arrives): pros, prompt
+    deletion at the semantic moment; cons, needs an argKey-to-keys index or a prefix scan the store does
+    not expose today.
+-   memoize built-in TTL: pros, matches the time-bucket use case directly; cons, duplicates the salt
+    mechanism with a second invalidation axis.
+-   Caller-managed deletion: pros, no library change; cons, every caller tracks and deletes superseded
+    full keys, the footgun this hazard names.
+
+Ranking reasons: backend eviction first because one change bounds disk for all consumers and is the
+Hazard 3 fix already required; supersede-on-salt-change next because prompt semantic deletion beats a
+mere bound, at the cost of a new index or scan; built-in TTL over caller-managed because a library
+default beats pushing the work onto every caller. memoize is changeable, so options two through four are
+on the table.
 
 ### Non-blockers confirmed
 
@@ -349,8 +401,8 @@ confined to the backend.
     file-per-key sync OPFS backend is not implementable.
 3.  Whether logger consistency should outweigh internal uniformity, which is the crux of Option 2
     versus Option 3.
-4.  Eviction: an LRU policy does not bound a persistent backend (Hazard 3). Decide between the backend
-    self-pruning by a size cap and documenting unbounded growth as accepted.
+4.  Eviction: an LRU policy does not bound a persistent backend (Hazard 3). Pick from its remediation
+    ranking (size cap recommended), and the memoize salt-orphan ranking under Hazard 11.
 5.  Usage shape: confirm the sole-backend recommendation (Hazard 1). Consumers wanting persistence pass
     `backends: [fileBackend]` rather than layering a Map in front.
 
