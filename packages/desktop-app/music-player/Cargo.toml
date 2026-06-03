@@ -34,7 +34,10 @@ slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa7
 i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
 symphonia = { version = "0.6", features = ["all"] }
 opus = "0.3"
-pipewire = "0.8"
+# 0.10 (pulls libspa/libspa-sys 0.10) so the bindgen step parses the host's
+# newer PipeWire/SPA headers. libspa-sys 0.8 emitted an opaque `spa_pod_builder`
+# against PipeWire 1.6.x, breaking the `libspa` wrapper's `.data`/`.size` access.
+pipewire = "0.10"
 # Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the
 # background true-peak measurement sweep at idle priority so it never competes
 # with the realtime audio thread or the UI. std exposes no scheduling-class API.

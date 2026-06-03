@@ -27,6 +27,17 @@ LIBCLANG_PATH = "/usr/lib64"
 # True when the host can build natively: cargo and zig on PATH and the Slint font
 # libraries resolvable through pkg-config (fontconfig also validates freetype2).
 host_ok = '((which cargo | is-not-empty) and (which zig | is-not-empty) and ((^pkg-config --exists fontconfig freetype2 | complete | get exit_code) == 0))'
+# Host-only env for the native cargo branch.
+# BINDGEN_EXTRA_CLANG_ARGS: clang resource headers (stdbool.h) live under
+# /usr/lib/clang/<v> but libclang.so sits in /usr/lib64 and looks beside itself,
+# so bindgen (libghostty-vt-sys) needs an explicit -resource-dir. Glob the
+# major-version dir so an LLVM bump needs no manual edit.
+# ZIG_GLOBAL_CACHE_DIR: HOME is /home/user, a symlink to /var/home/user, while
+# the build runs from the physical /var/home path, so zig's default
+# $HOME/.cache/zig cache computes a broken relative path to the spawned codegen
+# exe (FileNotFound on uucode_build_tables). Pin the cache to a physical path
+# under target/ (pwd resolves physically) to keep both sides in one path-space.
+host_env = 'let _rd = (glob "/usr/lib/clang/*" | sort | last); $env.BINDGEN_EXTRA_CLANG_ARGS = $"-resource-dir=($_rd)"; $env.ZIG_GLOBAL_CACHE_DIR = $"(pwd)/target/zig-global-cache"'
 # Forced-container cargo prefix: build the image when it is missing, then run the
 # cargo subcommand appended by the caller inside podman. Memory and cpu caps bound
 # the vendored Ghostty + Slint compile.
@@ -39,7 +50,7 @@ run = "podman build --tag localhost/monochromatic/terminal --file Containerfile 
 [tasks.build]
 description = "Release build (host if Zig + dev libs present, else container), then stage runtime shared libraries"
 run = '''
-if {{vars.host_ok}} { cargo build --release } else { {{vars.container_cargo}} build --release }
+if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }
 if $env.LAST_EXIT_CODE != 0 { error make { msg: "terminal release build failed" } }
 mise run //packages/desktop-app/terminal:stage:runtime-libs:release
 '''
@@ -47,7 +58,7 @@ mise run //packages/desktop-app/terminal:stage:runtime-libs:release
 [tasks."build:debug"]
 description = "Debug build (host if Zig + dev libs present, else container), then stage runtime shared libraries"
 run = '''
-if {{vars.host_ok}} { cargo build } else { {{vars.container_cargo}} build }
+if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }
 if $env.LAST_EXIT_CODE != 0 { error make { msg: "terminal debug build failed" } }
 mise run //packages/desktop-app/terminal:stage:runtime-libs:debug
 '''
@@ -84,18 +95,18 @@ for name in ["libghostty-vt.so" "libghostty-vt.so.0" "libghostty-vt.so.0.1.0"] {
 
 [tasks.lint]
 description = "cargo check (host if Zig + dev libs present, else container)"
-run = 'if {{vars.host_ok}} { cargo check } else { {{vars.container_cargo}} check }'
+run = 'if {{vars.host_ok}} { {{vars.host_env}}; cargo check } else { {{vars.container_cargo}} check }'
 
 [tasks."lint:clippy"]
 description = "Run clippy with warnings denied (host if Zig + dev libs present, else container)"
-run = 'if {{vars.host_ok}} { cargo clippy --release -- --deny warnings } else { {{vars.container_cargo}} clippy --release -- --deny warnings }'
+run = 'if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --release -- --deny warnings } else { {{vars.container_cargo}} clippy --release -- --deny warnings }'
 
 [tasks."format:clippy"]
 description = "Apply clippy's machine-applicable suggestions in place (host if Zig + dev libs present, else container)"
 # --allow-no-vcs is harmless on the host (the repo .git is visible) and required
 # in the container, where only the package dir is bind-mounted at /work so the
 # repo-root .git is not visible and cargo fix would otherwise refuse to run.
-run = 'if {{vars.host_ok}} { cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
+run = 'if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
 
 [tasks."lint:max-lines"]
 description = "Enforce the 300 code-line budget on .rs files"
@@ -103,7 +114,7 @@ run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
 description = "cargo nextest run (host if Zig + dev libs present, else container)"
-run = 'if {{vars.host_ok}} { cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
+run = 'if {{vars.host_ok}} { {{vars.host_env}}; cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
 
 [tasks."build:container"]
 description = "Release build forced inside the container, then stage runtime libraries (asserts the container path)"
@@ -139,7 +150,7 @@ if $env.LAST_EXIT_CODE != 0 { error make { msg: "container tests failed" } }
 description = "Build (host if Zig + dev libs present, else container), install desktop metadata and runtime libraries, then run the GUI on the host"
 run = '''
 let home = ($env.HOME? | default '')
-if {{vars.host_ok}} { cargo build --release } else { {{vars.container_cargo}} build --release }
+if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }
 if $env.LAST_EXIT_CODE != 0 { error make { msg: "terminal release build failed" } }
 mise run //packages/desktop-app/terminal:stage:runtime-libs:release
 let staged_lib_dir = "target/lib/monochromatic-terminal"

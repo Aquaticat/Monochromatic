@@ -97,31 +97,31 @@ use pipewire as pw;
 // TS map:   `import { properties, spa } from "pipewire";`
 use pw::{properties::properties, spa};
 
-// What:     `use pw::context::Context;`. The PipeWire "context" object: the root
+// What:     `use pw::context::ContextRc;`. The PipeWire "context" object: the root
 //           handle from which you connect to the server.
 // Why:      We create one context and keep it alive for the program.
 // TS map:   `import { Context } from "pipewire";`
-use pw::context::Context;
+use pw::context::ContextRc;
 
-// What:     `use pw::core::Core;`. The connected "core": your session with the
+// What:     `use pw::core::CoreRc;`. The connected "core": your session with the
 //           PipeWire server, created from a context.
 // Why:      Streams are created from a `Core`.
 // TS map:   `import { Core } from "pipewire";`
-use pw::core::Core;
+use pw::core::CoreRc;
 
-// What:     `use pw::stream::{Stream, StreamFlags, StreamListener};`. `Stream` is
+// What:     `use pw::stream::{StreamFlags, StreamListener, StreamRc};`. `Stream` is
 //           an audio stream; `StreamFlags` are connect-time options; a
 //           `StreamListener` is the live registration of our callbacks (dropping
 //           it unregisters them).
 // Why:      We create a stream, register a process callback, and connect it.
 // TS map:   `import { Stream, StreamFlags, StreamListener } from "pipewire";`
-use pw::stream::{Stream, StreamFlags, StreamListener};
+use pw::stream::{StreamFlags, StreamListener, StreamRc};
 
-// What:     `use pw::thread_loop::ThreadLoop;`. A loop that runs on its OWN OS
+// What:     `use pw::thread_loop::ThreadLoopRc;`. A loop that runs on its OWN OS
 //           thread, spawned and driven by PipeWire's C code.
 // Why:      Audio must run independently of our decode/command loop.
 // TS map:   closest is a Web Worker that owns its own event loop; here C owns it.
-use pw::thread_loop::ThreadLoop;
+use pw::thread_loop::ThreadLoopRc;
 
 // What:     `use spa::param::audio::{AudioFormat, AudioInfoRaw};`. `AudioFormat`
 //           names the sample encoding (we use `F32LE` = little-endian 32-bit
@@ -233,23 +233,23 @@ pub struct Output {
     // Why:      Must outlive nothing and be dropped first (it points into stream).
     // TS map:   `listener: StreamListener | null;`
     listener: Option<StreamListener<ProcessData>>,
-    // What:     `stream: Option<Stream>`. The current output stream, or `None`.
+    // What:     `stream: Option<StreamRc>`. The current output stream, or `None`.
     // Why:      Recreated per track at that track's native rate/channels.
     // TS map:   `stream: Stream | null;`
-    stream: Option<Stream>,
-    // What:     `core: Core`. The connected session. Held for the program's life.
+    stream: Option<StreamRc>,
+    // What:     `core: CoreRc`. The connected session. Held for the program's life.
     // Why:      Needed to create streams.
     // TS map:   `core: Core;`
-    core: Core,
-    // What:     `_context: Context`. The context the core came from. The leading
+    core: CoreRc,
+    // What:     `_context: ContextRc`. The context the core came from. The leading
     //           `_` says "kept only to stay alive, not otherwise used".
     // Why:      The core depends on the context outliving it.
     // TS map:   `private context: Context;`
-    _context: Context,
-    // What:     `thread_loop: ThreadLoop`. The background audio loop.
+    _context: ContextRc,
+    // What:     `thread_loop: ThreadLoopRc`. The background audio loop.
     // Why:      Drives the realtime callback; dropped last.
     // TS map:   `threadLoop: ThreadLoop;`
-    thread_loop: ThreadLoop,
+    thread_loop: ThreadLoopRc,
     // What:     `playing: Arc<AtomicBool>`. The MASTER copy of the play/pause
     //           flag. Created once here and cloned into each new `ProcessData` on
     //           `reconfigure`, so the flag survives track changes.
@@ -283,8 +283,8 @@ impl Output {
         // TS map:   `pw.init();`
         pw::init();
 
-        // What:     `let thread_loop = unsafe { ThreadLoop::new(Some("music-player-audio"), None) }
-        //           .map_err(...)?`. `ThreadLoop::new` is an `unsafe fn` (its
+        // What:     `let thread_loop = unsafe { ThreadLoopRc::new(Some("music-player-audio"), None) }
+        //           .map_err(...)?`. `ThreadLoopRc::new` is an `unsafe fn` (its
         //           safety contract is about keeping the loop alive correctly,
         //           which the `Output` struct guarantees). `Some("music-player-audio")`
         //           names the thread; `None` = no extra properties. `.map_err`
@@ -296,7 +296,7 @@ impl Output {
         // ```ts
         // const threadLoop = new ThreadLoop("music-player-audio");
         // ```
-        let thread_loop = unsafe { ThreadLoop::new(Some("music-player-audio"), None) }
+        let thread_loop = unsafe { ThreadLoopRc::new(Some("music-player-audio"), None) }
             // What:     `.map_err(|e| PlayerError::Audio(format!("thread loop: {e:?}")))`.
             //           `|e| ...` is a closure; `format!` builds an owned `String`;
             //           `{e:?}` uses the error's Debug formatting.
@@ -304,20 +304,21 @@ impl Output {
             // TS map:   `.catch(e => { throw new PlayerError.Audio(`thread loop: ${e}`); })`
             .map_err(|e| PlayerError::Audio(format!("thread loop: {e:?}")))?;
 
-        // What:     `let context = Context::new(&thread_loop).map_err(...)?`.
-        //           `Context::new` takes a reference to anything loop-like
-        //           (`&thread_loop` lends it). Builds the context.
+        // What:     `let context = ContextRc::new(&thread_loop, None).map_err(...)?`.
+        //           `ContextRc::new` takes a reference to anything loop-like
+        //           (`&thread_loop` lends it) plus optional properties (`None`).
+        //           Builds the refcounted context.
         // Why:      The root from which we connect to the server.
         // TS map:   `const context = new Context(threadLoop);`
-        let context = Context::new(&thread_loop)
+        let context = ContextRc::new(&thread_loop, None)
             .map_err(|e| PlayerError::Audio(format!("context: {e:?}")))?;
 
-        // What:     `let core = context.connect(None).map_err(...)?`. `connect`
+        // What:     `let core = context.connect_rc(None).map_err(...)?`. `connect_rc`
         //           opens the session; `None` = default connection properties.
         // Why:      We need a `Core` to make streams.
         // TS map:   `const core = context.connect();`
         let core = context
-            .connect(None)
+            .connect_rc(None)
             .map_err(|e| PlayerError::Audio(format!("core connect: {e:?}")))?;
 
         // What:     `thread_loop.start();`. Spawns the loop's OS thread and begins
@@ -462,7 +463,7 @@ impl Output {
         // TS map:   `this.stream = null;`
         self.stream = None;
 
-        // What:     `let stream = Stream::new(&self.core, "music-player", properties! { ... })
+        // What:     `let stream = StreamRc::new(self.core.clone(), "music-player", properties! { ... })
         //           .map_err(...)?`. Create a new stream on our core, named
         //           "music-player", with media metadata. `properties! { *KEY => "val" }`
         //           builds the dictionary; the `*` dereferences each key constant.
@@ -473,8 +474,8 @@ impl Output {
         // ```ts
         // const stream = new Stream(core, "music-player", { MEDIA_TYPE: "Audio", MEDIA_CATEGORY: "Playback", MEDIA_ROLE: "Music" });
         // ```
-        let stream = Stream::new(
-            &self.core,
+        let stream = StreamRc::new(
+            self.core.clone(),
             "music-player",
             properties! {
                 *pw::keys::MEDIA_TYPE => "Audio",
