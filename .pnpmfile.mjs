@@ -39,11 +39,27 @@ import policiesJson from './.pnpmfile.policies.json' with { type: 'json' };
  * @property {string} reason
  *   One-line explanation surfaced in the install-time warning. Cite the
  *   replacement, the migration ticket, or the rationale.
- * @property {readonly string[]} [allowed]
+ * @property {string[]} [allowed]
  *   Optional allowlist of consumer package names that should keep resolving
  *   to the real dependency. Useful for legacy packages mid-migration. For
  *   removal entries, use pnpm's parent-scoped `"consumer>banned": "<version>"`
  *   form in `overrides` instead.
+ */
+
+/**
+ * @typedef {'dependencies' | 'optionalDependencies'} DependencyField
+ */
+
+/**
+ * @typedef {Record<string, string>} DependencyMap
+ */
+
+/**
+ * @typedef {object} PnpmPackage
+ * @property {string} [name]
+ * @property {string} [version]
+ * @property {DependencyMap} [dependencies]
+ * @property {DependencyMap} [optionalDependencies]
  */
 
 /**
@@ -57,12 +73,18 @@ import policiesJson from './.pnpmfile.policies.json' with { type: 'json' };
  */
 const POLICY = Object.freeze(
   Object.fromEntries(
-    Object.entries(policiesJson,).filter(function isPolicyEntry([name,],) {
-      return !name.startsWith('//',);
-    },),
+    Object.entries(policiesJson,)
+      .filter(function isPolicyEntry([name,],) {
+        return !name.startsWith('//',);
+      },),
   ),
 );
 
+/**
+ * Workspace stub specifiers keyed by policy action.
+ *
+ * @type {Readonly<Record<Policy['action'], string>>}
+ */
 const STUB_SPECIFIER = Object.freeze({
   throw: 'workspace:@monochromatic-dev/stub-throwing@*',
   silent: 'workspace:@monochromatic-dev/stub-silent@*',
@@ -76,12 +98,19 @@ const STUB_SPECIFIER = Object.freeze({
  * happens to test against the blocked one. `peerDependencies` are not
  * auto-installed in this repo (`autoInstallPeers: false`) so substituting them
  * has no effect.
+ *
+ * @type {readonly DependencyField[]}
  */
 const DEP_FIELDS = Object.freeze([
   'dependencies',
   'optionalDependencies',
 ],);
 
+/**
+ * Warning keys already emitted during this install.
+ *
+ * @type {Set<string>}
+ */
 const warned = new Set();
 
 /**
@@ -90,13 +119,14 @@ const warned = new Set();
  * once per `(package, version)` resolution; the dedupe set keeps output from
  * exploding when a blocked dep is pulled in by many ancestors.
  *
- * @param {string} key
- * @param {string} message
+ * @param {{ readonly key: string, readonly message: string }} params
+ * @returns {void}
  */
-function warnOnce({
-  key,
-  message,
-},) {
+function warnOnce(params,) {
+  const {
+    key,
+    message,
+  } = params;
   if (warned.has(key,))
     return;
   warned.add(key,);
@@ -109,10 +139,12 @@ function warnOnce({
  * the version specifier to the matching workspace stub. Returns the mutated
  * manifest; the hook contract requires the same object pnpm passed in.
  *
- * @param {object} pkg
- * @returns {object}
+ * @param {{ readonly pkg: PnpmPackage }} params
+ * @returns {PnpmPackage}
  */
-function applyBlocklist({ pkg, },) {
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- pnpm passes a mutable manifest object, and dependency rewrites mutate nested dependency maps in place.
+function applyBlocklist(params,) {
+  const { pkg, } = params;
   const dependentName = (typeof pkg.name) === 'string' ? pkg.name : '<unknown>';
   const dependentVersion = (typeof pkg.version) === 'string' ? pkg.version : '0.0.0';
 
@@ -125,15 +157,15 @@ function applyBlocklist({ pkg, },) {
       const policy = POLICY[name];
       if (policy === undefined)
         continue;
-      if (policy.allowed
-        ?.includes(dependentName,)
-        === true)
+      const { allowed, } = policy;
+      if (Array.isArray(allowed,)
+        && allowed.includes(dependentName,))
         continue;
 
       const key = `${dependentName}@${dependentVersion} -> ${name} [${policy.action}]`;
       const message =
         `[blocked-dep] ${key}: substituting with stub-${policy.action}. ${policy.reason} (previous spec: ${
-          String(currentSpec,)
+          currentSpec
         })`;
       warnOnce({
         key,
@@ -148,6 +180,13 @@ function applyBlocklist({ pkg, },) {
 }
 
 export const hooks = {
+  /**
+   * Apply dependency substitution blocklist to a pnpm package manifest.
+   *
+   * @param {PnpmPackage} pkg
+   * @returns {PnpmPackage}
+   */
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- pnpm passes a mutable manifest object, and the hook must return that same object after in-place dependency rewrites.
   readPackage(pkg,) {
     return applyBlocklist({ pkg, },);
   },
