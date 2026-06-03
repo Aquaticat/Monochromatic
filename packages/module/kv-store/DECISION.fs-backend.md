@@ -312,6 +312,22 @@ possible: expose `./fs` as a new subpath (isolates the divergence, leaves the `.
 fold the backend into `.` (reuses the existing `node`/`default` conditions but requires splitting
 `index.ts` into per-runtime entry files). `./fs` is the smaller change.
 
+### Hazard 11: memoize salt rotation orphans persistent entries
+
+memoize composes the cache key as `${argKey}:${salt}` (`buildCacheKey`,
+`packages/module/memoize/src/cache-key.ts:24`) and never deletes the previous salt's entry; a salt
+change writes a new key and stops reading the old one (`packages/module/memoize/src/memoize-async.ts:218`,
+and the README's `String(time % 3600000)` hourly-expiry pattern). With an in-memory store, orphaned
+entries evict under LRU. With a persistent file backend they do not (Hazard 3: an in-memory LRU does not
+bound a persistent backend across sessions), so every salt rotation orphans a file that nothing removes.
+The salt feature's headline use case, time-bucketed expiry, becomes one new dead file per key per bucket,
+unbounded. memoize's `delete` takes the full `${argKey}:${salt}` key (`memoize-async.ts:235`), so there
+is no "delete all salts for an argKey" operation; pruning superseded salts is manual. A persistent
+memoize cache needs an eviction story the file backend enforces itself (size or age cap), or salt
+rotation paired with explicit deletion of superseded keys. memoize itself may be changed (for example a
+key model that supersedes prior salts for an `argKey`, or built-in salt pruning), so the fix is not
+confined to the backend.
+
 ### Non-blockers confirmed
 
 -   Type libs are sufficient. `@monochromatic-dev/config-typescript/dom` sets
