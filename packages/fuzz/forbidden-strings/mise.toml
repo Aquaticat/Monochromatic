@@ -26,7 +26,7 @@ description = "List all fuzz targets"
 run = "cargo fuzz list --fuzz-dir ."
 
 [tasks.build]
-description = "Build all fuzz targets"
+description = "Build all fuzz targets (AddressSanitizer instrumented)"
 # `--target x86_64-unknown-linux-gnu` is load-bearing: cargo-fuzz 0.13.1
 # defaults to `x86_64-unknown-linux-musl` on Linux, but the ASAN flags it
 # sets via RUSTFLAGS conflict with musl's static libc
@@ -34,16 +34,25 @@ description = "Build all fuzz targets"
 # using -C target-feature=-crt-static`). Forcing gnu picks a target where
 # dynamic libc satisfies the sanitizer. macOS / Windows hosts cannot use
 # this task as-written; would need a per-platform target switch.
-run = "cargo fuzz build --fuzz-dir . --target x86_64-unknown-linux-gnu"
+#
+# `--sanitizer address` is explicit even though `address` is cargo-fuzz's
+# default: it pins AddressSanitizer (memory-error detection: heap/stack
+# overflows, use-after-free) so a future cargo-fuzz default change cannot
+# silently drop it. Note the gnu target above exists precisely because ASAN
+# is on. A Rust panic / failed assertion is a logic abort, not a memory
+# error, so libFuzzer (not ASAN) reports it with its "rudimentary signal
+# handlers ... Combine libFuzzer with AddressSanitizer" note; that note is
+# normal for panic crashes and does NOT mean ASAN is off.
+run = "cargo fuzz build --fuzz-dir . --sanitizer address --target x86_64-unknown-linux-gnu"
 
 [tasks.smoke]
-description = "Run every fuzz target for 30s with the dictionary as a smoke test"
-# `--target x86_64-unknown-linux-gnu` rationale: see build.
+description = "Run every fuzz target for 30s with the dictionary as a smoke test (AddressSanitizer instrumented)"
+# `--target x86_64-unknown-linux-gnu` and `--sanitizer address` rationale: see build.
 run = """
 let targets = (cargo fuzz list --fuzz-dir . | lines | where {|t| ($t | str trim) != "" })
 for target in $targets {
   print $"--- ($target) ---"
-  cargo fuzz run --fuzz-dir . $target --target x86_64-unknown-linux-gnu -- -max_total_time=30 -rss_limit_mb=2048 -dict=dictionaries/forbidden-strings.dict
+  cargo fuzz run --fuzz-dir . $target --sanitizer address --target x86_64-unknown-linux-gnu -- -max_total_time=30 -rss_limit_mb=2048 -dict=dictionaries/forbidden-strings.dict
 }
 """
 
@@ -93,7 +102,7 @@ let extras = (
 )
 let flags = ($extras | where {|p| $p | str starts-with '-' })
 let inputs = ($extras | where {|p| not ($p | str starts-with '-') })
-cargo fuzz run --fuzz-dir . $target --target x86_64-unknown-linux-gnu ...$inputs -- -dict=dictionaries/forbidden-strings.dict ...$flags
+cargo fuzz run --fuzz-dir . $target --sanitizer address --target x86_64-unknown-linux-gnu ...$inputs -- -dict=dictionaries/forbidden-strings.dict ...$flags
 """
 
 [tasks.seed]
