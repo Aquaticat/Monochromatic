@@ -357,8 +357,11 @@ configs spread the base and add a second entry (the `deps-cube` precedent): node
     set/get against a real temp directory and a miss returned `undefined`. `tsgo --build` type-checks
     the two impls under the package's `/dom` config.
 
-So the wiring works; the one path not exercised in a real browser bundler is the `browser` condition
-resolving to the OPFS build, which a bundler selects by the same condition mechanism. Two placements are
+So the wiring works. The built browser entry was also run directly in Chrome 149 (module import of
+`backend-fs.browser.mjs` over `http://127.0.0.1`): the OPFS `createFileBackend` and the localStorage
+`createSyncFileBackend` both round-tripped set/get and returned `undefined` after delete. The only
+unexercised step is a bundler picking the `browser` condition to reach that build, which is the standard
+condition mechanism. Two placements are
 possible: expose `./fs` as a new subpath (isolates the divergence, leaves the `.` entry untouched), or
 fold the backend into `.` (reuses the existing `node`/`default` conditions but requires splitting
 `index.ts` into per-runtime entry files).
