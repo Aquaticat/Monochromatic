@@ -684,60 +684,24 @@ fn should_copy_cell(
     !text.is_empty() || background.is_some() || inverse
 }
 
-// What:     `#[cfg(test)] mod tests` compiles the module only for tests.
-// Why:      VT extraction tests live beside the engine they exercise.
-// TS map:   `describe("TerminalEngine", () => { ... })`.
+// What:     `#[cfg(test)] #[path = "engine_tests.rs"] mod tests;`
+//           declares a test-only submodule whose code lives in the sibling
+//           file `engine_tests.rs`. `#[cfg(test)]` gates it to test
+//           builds only; `#[path = "..."]` aims the module at a flat sibling
+//           file instead of the default `engine/tests.rs`
+//           subdirectory lookup. The file stays the `tests` CHILD of
+//           engine, so its `use super::*` reaches the module items
+//           (including private ones) unchanged.
+// Why:      Keep `engine.rs` to production code; the tests live
+//           beside it without inflating this file or its max-lines budget
+//           (sibling `*_tests.rs` files are exempt from the linter).
+// TS map:   the `engine.unit.test.ts` file beside
+//           `engine.ts`, excluded from the production bundle.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // engine.unit.test.ts, run only by the test runner
+// ```
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::scroll::{DEFAULT_CELL_HEIGHT_PX, DEFAULT_CELL_WIDTH_PX};
-
-    #[test]
-    fn extracts_vt_text_and_bold_style() -> Result<(), TerminalError> {
-        let geometry = ViewportGeometry {
-            cols: 20,
-            rows: 4,
-            cell_width_px: DEFAULT_CELL_WIDTH_PX,
-            cell_height_px: DEFAULT_CELL_HEIGHT_PX,
-        };
-        let mut engine = TerminalEngine::new(geometry, 100)?;
-        engine.feed(b"\x1b[1mBold\x1b[0m plain\r\n")?;
-        let mapping = engine.set_pixel_scroll(0.0)?;
-        let snapshot = engine.snapshot(mapping)?;
-        let bold_cell = snapshot
-            .cells
-            .iter()
-            .find(|cell| cell.text == "B")
-            .expect("rendered bold B cell");
-        assert!(bold_cell.bold);
-        let plain_cell = snapshot
-            .cells
-            .iter()
-            .find(|cell| cell.text == "p")
-            .expect("rendered plain p cell");
-        assert!(!plain_cell.bold);
-        Ok(())
-    }
-
-    #[test]
-    fn scrolls_to_scrollback_top() -> Result<(), TerminalError> {
-        let geometry = ViewportGeometry {
-            cols: 12,
-            rows: 2,
-            cell_width_px: DEFAULT_CELL_WIDTH_PX,
-            cell_height_px: DEFAULT_CELL_HEIGHT_PX,
-        };
-        let mut engine = TerminalEngine::new(geometry, 100)?;
-        engine.feed(b"one\r\ntwo\r\nthree\r\nfour\r\n")?;
-        let mapping = engine.set_pixel_scroll(0.0)?;
-        let snapshot = engine.snapshot(mapping)?;
-        let top_text: String = snapshot
-            .cells
-            .iter()
-            .filter(|cell| cell.row == 0)
-            .map(|cell| cell.text.as_str())
-            .collect();
-        assert!(top_text.contains("one"));
-        Ok(())
-    }
-}
+#[path = "engine_tests.rs"]
+mod tests;

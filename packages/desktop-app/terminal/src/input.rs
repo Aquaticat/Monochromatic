@@ -203,62 +203,24 @@ fn encode_printable_text(key_text: &str) -> Option<Vec<u8>> {
     Some(key_text.as_bytes().to_vec())
 }
 
-// What:     `#[cfg(test)] mod tests` compiles tests only when `cargo test` runs.
-// Why:      Input encoding is pure and should stay covered without launching a GUI.
-// TS map:   `describe("encode_terminal_key", () => { ... })`.
+// What:     `#[cfg(test)] #[path = "input_tests.rs"] mod tests;`
+//           declares a test-only submodule whose code lives in the sibling
+//           file `input_tests.rs`. `#[cfg(test)]` gates it to test
+//           builds only; `#[path = "..."]` aims the module at a flat sibling
+//           file instead of the default `input/tests.rs`
+//           subdirectory lookup. The file stays the `tests` CHILD of
+//           input, so its `use super::*` reaches the module items
+//           (including private ones) unchanged.
+// Why:      Keep `input.rs` to production code; the tests live
+//           beside it without inflating this file or its max-lines budget
+//           (sibling `*_tests.rs` files are exempt from the linter).
+// TS map:   the `input.unit.test.ts` file beside
+//           `input.ts`, excluded from the production bundle.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // input.unit.test.ts, run only by the test runner
+// ```
 #[cfg(test)]
-mod tests {
-    // What:     `use super::encode_terminal_key;` imports the function under test from
-    //           the parent module.
-    // Why:      Test code can call it without repeating the module path.
-    // TS map:   `import { encodeTerminalKey } from "./input"`.
-    use super::encode_terminal_key;
-
-    #[test]
-    fn encodes_printable_text() {
-        assert_eq!(encode_terminal_key("a", false, false), Some(vec![b'a']));
-    }
-
-    #[test]
-    fn encodes_control_letter() {
-        assert_eq!(encode_terminal_key("c", true, false), Some(vec![3]));
-    }
-
-    #[test]
-    fn encodes_alt_prefix() {
-        assert_eq!(encode_terminal_key("x", false, true), Some(vec![0x1b, b'x']));
-    }
-
-    #[test]
-    fn encodes_arrows() {
-        assert_eq!(
-            encode_terminal_key("UpArrow", false, false),
-            Some(b"\x1b[A".to_vec()),
-        );
-    }
-
-    #[test]
-    fn encodes_function_keys() {
-        assert_eq!(
-            encode_terminal_key("F5", false, false),
-            Some(b"\x1b[15~".to_vec()),
-        );
-    }
-
-    #[test]
-    fn encodes_insert_and_backtab() {
-        assert_eq!(
-            encode_terminal_key("Insert", false, false),
-            Some(b"\x1b[2~".to_vec()),
-        );
-        assert_eq!(
-            encode_terminal_key("Backtab", false, false),
-            Some(b"\x1b[Z".to_vec()),
-        );
-    }
-
-    #[test]
-    fn ignores_empty_text() {
-        assert_eq!(encode_terminal_key("", false, false), None);
-    }
-}
+#[path = "input_tests.rs"]
+mod tests;

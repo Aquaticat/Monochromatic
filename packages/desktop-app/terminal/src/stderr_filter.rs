@@ -282,33 +282,24 @@ fn should_suppress_stderr_line(line: &[u8]) -> bool {
         .any(|window| window == SUPPRESSED_GHOSTTY_OSC_LOG)
 }
 
-// What:     `#[cfg(test)] mod tests` compiles these tests only during `cargo test`.
-// Why:      The pure filter predicate should be verified without redirecting stderr.
-// TS map:   `describe("stderr_filter", () => { ... })`.
+// What:     `#[cfg(test)] #[path = "stderr_filter_tests.rs"] mod tests;`
+//           declares a test-only submodule whose code lives in the sibling
+//           file `stderr_filter_tests.rs`. `#[cfg(test)]` gates it to test
+//           builds only; `#[path = "..."]` aims the module at a flat sibling
+//           file instead of the default `stderr_filter/tests.rs`
+//           subdirectory lookup. The file stays the `tests` CHILD of
+//           stderr_filter, so its `use super::*` reaches the module items
+//           (including private ones) unchanged.
+// Why:      Keep `stderr_filter.rs` to production code; the tests live
+//           beside it without inflating this file or its max-lines budget
+//           (sibling `*_tests.rs` files are exempt from the linter).
+// TS map:   the `stderr_filter.unit.test.ts` file beside
+//           `stderr_filter.ts`, excluded from the production bundle.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // stderr_filter.unit.test.ts, run only by the test runner
+// ```
 #[cfg(test)]
-mod tests {
-    // What:     `use super::should_suppress_stderr_line;` imports the private predicate
-    //           from the parent module.
-    // Why:      Tests should check the rule directly.
-    // TS map:   `import { shouldSuppressStderrLine } from "./stderr_filter"`.
-    use super::should_suppress_stderr_line;
-
-    #[test]
-    fn suppresses_ghostty_unimplemented_osc_callback() {
-        assert!(should_suppress_stderr_line(
-            b"debug(stream): unimplemented OSC callback: .{ .context_signal = .{} }\n",
-        ));
-    }
-
-    #[test]
-    fn keeps_other_ghostty_debug_lines() {
-        assert!(!should_suppress_stderr_line(
-            b"debug(stream): some other Ghostty diagnostic\n",
-        ));
-    }
-
-    #[test]
-    fn keeps_non_utf8_lines_without_marker() {
-        assert!(!should_suppress_stderr_line(b"\xff\xfe\xfd\n"));
-    }
-}
+#[path = "stderr_filter_tests.rs"]
+mod tests;
