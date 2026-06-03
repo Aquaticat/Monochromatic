@@ -27,7 +27,7 @@ stays a recommended next step):
   consumer-side depth pre-validator and the upstream filing are now
   unblocked (the bump-trigger is met); both are held for a separate
   go-ahead.
-- Intersection over alternation (new, found during the 0.6.8 campaign): an
+- Intersection over alternation (new, found by forbidden-strings fuzzing on 0.6.8): an
   uncatchable algebra-recursion stack overflow distinct from Bug G, with no
   safe consumer-side guard. A minimal fix (a re-entrancy guard on the
   distribution rewrites) is now prototyped and verified; file-ready, held for
@@ -38,22 +38,29 @@ stays a recommended next step):
   on a single non-word byte). Prototyped and verified (differential-clean
   against published 0.6.8); file-ready. See "Hardened find_all drops zero-width
   matches".
-- Compile-time timeouts on small patterns (new, found 2026-06-03): a lookbehind
-  and a `\p{L}` pattern each exceed libFuzzer's 10s per-input timeout inside
-  `Regex::with_options`. Triage only: the exact fuzzer inputs were not captured
-  and the partial patterns do not reproduce in isolation. See "Compile-time
-  timeouts on small patterns (triage)".
+- Compile-time timeouts on small patterns (new, found 2026-06-03, now resolved):
+  the fork's add-fuzz `compile` target (libFuzzer `-timeout=10`) fired on a
+  lookbehind and two `\p{...}` inputs. Reproduced from the exact
+  `fuzz/artifacts/compile/`
+  bytes: not a resharp defect. The watchdog times one unit, which is the full
+  six-config `option_sweep()` run under ASAN; each compile is sub-second on a
+  normal build (the lookbehind sweep reaches ~12.5s only under ASAN). Not
+  fileable: the fault is the fork's harness, not the engine. See "Compile-time
+  timeouts on small patterns (fuzz-harness artifact, resolved)".
 
 Combined upstream PR (2026-06-03): the four file-ready fixes (Bug G `max_depth`,
 the intersection-over-alternation re-entrancy guard, the hardened zero-width
-`find_all` fix, and the flaky-test calibration) are bundled as one branch
+`find_all` fix, and the flaky-test calibration) are bundled on branch
 `fix/zerowidth-findall-and-stack-overflow-guards` in the user's fork
 (`~/resharp`, `https://github.com/Aquaticat/resharp`), based on `c6623fe`
-(0.6.8), four commits (one per fix). The full draft, per-fix root-cause traces,
-verification, and combined diff are in the out-of-band local file
-`docs/todo/resharp-bugs-202606031308-pr.local.md` (gitignored, not committed).
-The combined patch is `/tmp/agent/resharp-combined-202606031308.patch`. Pushing
-and opening the PR is held for the user.
+(0.6.8), and filed as
+[ieviev/resharp#13](https://github.com/ieviev/resharp/pull/13). A fifth commit
+adds a `max_depth` boundary test (depth-999 accepted, 1001 and complement-1001
+rejected, `unbounded_size` opt-out) in response to Copilot review. The full
+draft, per-fix root-cause traces, verification, and combined diff are in the
+out-of-band local file `docs/todo/resharp-bugs-202606031308-pr.local.md`
+(gitignored, not committed). The combined patch is
+`/tmp/agent/resharp-combined-202606031308.patch`.
 
 A flaky upstream timing test (`rev_bot_skip_terminates_fast`) surfaced while
 verifying the prototype; it fails identically on stock 0.6.8. Its absolute
@@ -82,8 +89,8 @@ Still-live items, each with its own section below: Bug A
 (complement-of-lookaround), Bug G (deep-nesting stack overflow),
 intersection over alternation (algebra-recursion stack overflow), hardened
 `find_all` dropping zero-width matches (soundness), compile-time timeouts on
-small patterns (triage), the flaky `rev_bot_skip_terminates_fast` timing
-test, and the lower-severity flags H, I, J.
+small patterns (fuzz-harness artifact, resolved), the flaky
+`rev_bot_skip_terminates_fast` timing test, and the lower-severity flags H, I, J.
 
 ## Bump to resharp 0.6.8 (2026-06-03): plan executed
 
@@ -137,7 +144,7 @@ overflow-checks ON) and release. Bug G's deliberately stack-overflowing
 deep-nesting runs were isolated in `podman run --memory=2g --cpus=2 --rm`
 (fedora:44), one input per `timeout`, so an abort is observable by exit
 code without risking the host. This is a targeted re-verification of the
-known shapes, not a fresh fuzz campaign; re-running the
+known shapes, not a fresh fuzz campaign; re-running the forbidden-strings
 `fuzz_extract_gate_soundness` and companion targets against 0.6.8 stays a
 recommended next step.
 
@@ -200,15 +207,32 @@ items waited on; both are now actioned:
   and bundled into the combined PR branch (see the "Combined upstream PR" note
   near the top). NOT pushed (a shared-state action; held for the user).
 
-The fuzz campaign that the "Probe method" note above deferred was also run
-against 0.6.8 (the `smoke` task over all seven targets, AddressSanitizer
-instrumented). `fuzz_extract_gate_soundness` (the Bug B to F soundness target)
-is clean. The campaign surfaced one new resharp defect, below.
+The forbidden-strings fuzz campaign that the "Probe method" note above deferred
+was also run against 0.6.8. Two distinct harnesses appear throughout this doc,
+so the target names are qualified by which one they belong to:
+
+- The forbidden-strings harness lives in this workspace at
+  `packages/fuzz/forbidden-strings`; its `smoke` task runs all seven targets
+  under AddressSanitizer: `fuzz_extract_gate_soundness`,
+  `fuzz_regex_engine_dispatch`, `fuzz_residual_shards`, `fuzz_literal_roundtrip`,
+  `fuzz_regex_syntax_walkers`, `fuzz_ruleset_scan_invariants`, and
+  `fuzz_scan_format`. It fuzzes forbidden-strings, which depends on resharp, so
+  it reaches resharp defects through the consumer.
+- The resharp fork's `add-fuzz` harness lives in the fork (`~/resharp`,
+  `https://github.com/Aquaticat/resharp`) under `fuzz/`, with three targets that
+  fuzz resharp directly: `compile`, `diff_regex`, and `match_invariants`. It
+  surfaced the compile-timeout artifacts and the hardened `find_all` zero-width
+  crash documented in their own sections below.
+
+`fuzz_extract_gate_soundness` (the forbidden-strings Bug B to F soundness
+target) is clean on 0.6.8. The forbidden-strings campaign surfaced one new
+resharp defect, below.
 
 ## Intersection over alternation: unbounded algebra recursion (found 2026-06-03)
 
-A defect distinct from Bug G, surfaced by `fuzz_regex_engine_dispatch` and
-`fuzz_residual_shards` during the 0.6.8 campaign.
+A defect distinct from Bug G, surfaced by the forbidden-strings targets
+`fuzz_regex_engine_dispatch` and `fuzz_residual_shards` during the 0.6.8
+campaign.
 
 ### Symptom
 
@@ -268,7 +292,7 @@ under intersection and compiles fine. `nesting_depth` does not catch it either
 (paren depth is about 7, far below the cap, because the blowup is algebraic,
 not paren-nesting), and `catch_unwind` cannot catch the abort.
 
-Two fuzz targets reach it and now skip the combo:
+Two forbidden-strings fuzz targets reach it and now skip the combo:
 
 - `fuzz_regex_engine_dispatch` skips the compile-dispatch comparison for any
   `&`+`|` rule (keeping the soundness-critical under-classification assert).
@@ -354,8 +378,9 @@ the top). Re-verification on the combined build: the full release suite passes
 `properties_test` 36/0, all binaries 0 failed), the minimal reproducer compiles,
 previously-OK patterns compile, and a guarded-vs-published-0.6.8 `find_all`
 differential over 10 intersection/union patterns x 7 inputs (70 checks) shows
-0 differences. The fuzz target `fuzz_regex_engine_dispatch` is the compile
-target this overflow class belongs to: it exercises `compile_rule_src` on every
+0 differences. The forbidden-strings fuzz target `fuzz_regex_engine_dispatch`
+is the compile target this overflow class belongs to: it exercises
+`compile_rule_src` on every
 generated rule and now skips the `&`+`|` compile-dispatch comparison to avoid the
 abort (keeping the soundness assert).
 
@@ -506,56 +531,139 @@ needed; the fix is purely upstream.
 
 ---
 
-## Compile-time timeouts on small patterns (triage)
+## Compile-time timeouts on small patterns (fuzz-harness artifact, resolved)
 
 ### Symptom
 
-The 0.6.8 fuzz campaign (`fuzz_regex_engine_dispatch` and companions, libFuzzer
-`-timeout=10`) reported two small patterns whose `Regex::with_options` compile
-(via `compile_rule_src`) exceeds the 10s per-input timeout: a lookbehind of the
-shape `(?<=b\b)_*...` and a `\p{L}`-bearing pattern. These are likely
-pathological compile-time slowdowns rather than non-termination, but that is not
-confirmed.
+The 0.6.8 fuzz campaign (`compile` target, libFuzzer `-timeout=10`) saved three
+small-pattern artifacts under `fuzz/artifacts/compile/` on the fork's `add-fuzz`
+branch: two `timeout-<hash>` files and one `slow-unit-<hash>`. The headline read
+as "`Regex::with_options` exceeds the 10s per-input timeout on a lookbehind
+`(?<=b\b)_*...` and a `\p{L}`-bearing pattern", which looked like a pathological
+compile-time slowdown or non-termination.
 
-### Status: triage only, not reproduced in isolation
+It is neither. Reproduced from the exact artifacts, every one of these patterns
+compiles in under one second on a normal build. The 10s the fuzzer measured is
+one libFuzzer unit, which is the full six-config `option_sweep()` run under an
+ASAN-instrumented build, not a single compile.
 
-The exact libFuzzer inputs were not captured (no `timeout-<hash>` artifact on
-hand; the harness prints a `pattern_sha256` but the full mutated string was not
-recorded), and the reported patterns are partial (`(?<=b\b)_*...` is truncated;
-"`\p{L}`-bearing" is unspecified). Reconstruction attempts on 0.6.8 (release,
-`podman --memory=2g --cpus=2`, 60s timeout per pattern) do not reproduce a >10s
-compile:
+### Root cause: harness measures six compiles per unit, under ASAN
 
-- Lookbehind family (`(?<=b\b)_*`, `+a`, `+.*`, `+x_*y`, `&~(a)`, `$`, `\b`,
-  `~(a)`, `&_*`, `(?=a)`, `\p{L}*`, and variants): all compile in under 1s; the
-  slowest is `(?<=b\b)_*a` at ~0.76s (and it returns `Err`).
-- `\p{L}` family (`\p{L}`, `+`, `*`, `{2,8}`, `&~(a)`, `*&~(.*x.*)`,
-  `(?<=\p{L})_*`, `\p{L}\p{L}*`, `~(\p{L})`, plus `(?i)`/`(?iu)` case-insensitive
-  variants): all under ~0.55s; the slowest is `\p{L}{2,8}` and `(?iu)\p{L}{2,8}`
-  at ~0.54s.
+The `compile` fuzz target compiles each input under every option in the sweep,
+discarding results (fork `add-fuzz`, `fuzz/fuzz_targets/compile.rs`):
 
-So the nearest small reconstructions are two orders of magnitude under the
-threshold. The amplifying structure must live in the parts the report omits (the
-`...` tail and the specific `\p{L}` combination), which a single fuzzer mutation
-can supply but which guesswork did not recover.
+```rust
+fuzz_target!(|pattern: &str| {
+    for opts in option_sweep() {
+        let _ = Regex::with_options(pattern, opts);
+    }
+});
+```
 
-### Recommended next step
+`option_sweep()` returns six configs (`fuzz/src/lib.rs`): `default`,
+`hardened(true)`, the three `UnicodeMode`s, and a flag bundle. So one libFuzzer
+"unit" the `-timeout=10` watchdog times is six calls into
+`Regex::with_options` (`resharp-engine/src/lib.rs:915`), not one. cargo-fuzz
+builds with ASAN plus SanitizerCoverage; ASAN alone multiplies the slowest of
+these compiles enough that six of them cross 10s.
 
-Capture the exact libFuzzer timeout artifact (or the `pattern_sha256` plus the
-corpus entry) and re-run `Regex::with_options` on it directly. If it reproduces
-a >10s compile, sample the stack under load (`gdb -p $PID -ex 'thread apply all
-bt'`, as was done for the former Bug E hang) to localize the hot pass, then
-decide whether it is a missing fixpoint/visited guard (like Bug E) or a genuine
-super-linear blowup. Until then there is no root cause and no fix to file.
+The artifact bytes decode to the pattern via `<&str as Arbitrary>::
+arbitrary_take_rest`, which is the longest valid-UTF-8 prefix of the whole
+input. The three decode to:
+
+- `slow-unit-1ae74b9...` -> `\P{L}` (input truncates at the first `0xff` byte).
+- `timeout-5022ded...` -> `<d\d` then six NULs, `d`, six NULs, `\p{L}d`
+  (truncates at the `0xa2` continuation byte).
+- `timeout-5cb5f42...` -> `(?<=b\b)_*\x12\x00](8=a)\\` (all ASCII).
+
+There is no super-linear blowup: per-compile cost is flat across all six options,
+and bounded. The earlier "could not reproduce" reading was wrong because it used
+reconstructed partial patterns and timed a single compile in a plain release
+build, not the six-config sweep under ASAN.
+
+### Verification
+
+Stock 0.6.8 (fork `add-fuzz` engine == upstream `c6623fe`), reproduced with an
+`examples/repro3.rs` that decodes each artifact exactly as the fuzz target does,
+then times `Regex::with_options` per option. Built and run in
+`podman run --memory=2g --cpus=2 --security-opt label=disable`. Per-compile wall
+times (the `ascii` config returns `Err` for `\p{...}` immediately, so it is ~0ms
+and omitted):
+
+- Plain release:
+  - `\P{L}`: ~155ms each, sweep ~0.77s, all `Ok`.
+  - `<d\d`...`\p{L}d`: ~75ms each, sweep ~0.37s, all `Ok`.
+  - `(?<=b\b)_*...`: ~760ms each, sweep ~4.6s, all `Err`.
+- Release with `-Cdebug-assertions=on -Coverflow-checks=on` (cargo-fuzz's
+  non-ASAN defaults): essentially unchanged (`\P{L}` ~170ms, NUL/`\p{L}` ~85ms,
+  lookbehind ~850ms). Debug assertions are not the amplifier.
+- Release under `-Zsanitizer=address` (nightly):
+  - `\P{L}`: ~355ms each, sweep ~1.8s.
+  - `<d\d`...`\p{L}d`: ~200ms each, sweep ~1.0s.
+  - `(?<=b\b)_*...`: ~2.5s each, sweep ~12.5s. This sweep crosses the 10s
+    watchdog, which is the `timeout-5cb5f42...` artifact.
+
+The two cheaper patterns sit at ~1 to 1.8s per sweep under ASAN; SanitizerCoverage
+overhead on top, plus campaign-time machine load, accounts for `\P{L}` and the
+NUL/`\p{L}` input also tripping the slow-unit / timeout save during the original
+run. None of this is resharp taking pathologically long; each compile is
+sub-second on a normal build.
+
+The repro harness (disposable clone under `/tmp/agent`):
+
+```rust
+// resharp-engine/examples/repro3.rs (excerpt)
+fn decode(bytes: &[u8]) -> &str {
+    match std::str::from_utf8(bytes) {
+        Ok(s) => s,
+        Err(e) => std::str::from_utf8(&bytes[..e.valid_up_to()]).unwrap(),
+    }
+}
+// for each artifact's bytes, for each of the six option_sweep() configs:
+//   let t = Instant::now(); let _ = Regex::with_options(decode(bytes), opts);
+//   eprintln!("{ms} ms");
+```
+
+### Why we do not file this upstream
+
+Constraint 1 (is it really upstream's fault?) fails outright. This is not a
+resharp compile-time defect: every affected pattern compiles in under a second
+on a normal release build, with cost flat across options and no growth in input
+size. The >10s is a property of the fork's own fuzz harness (six compiles per
+libFuzzer unit) measured under ASAN, a measurement artifact, not engine
+behaviour. With constraint 1 failing there is nothing to file and no minimal fix
+to prototype against resharp.
+
+One bounded inefficiency is worth recording but is not defect-grade: the
+`(?<=b\b)_*\x12\x00](8=a)\\` input spends ~0.76s (release) only to return `Err`,
+a slow rejection path for a malformed 20-character pattern. It is bounded and
+sub-second, so it stays a note, not a report.
+
+### Optional fork-harness tuning
+
+If the campaign should not flag this shape again, the change lives in the fork's
+`add-fuzz` `compile` target, not in resharp. Either raise `-timeout` for that
+target (one unit legitimately performs six compiles), or restructure so a unit
+compiles under a single option (derive the option index from a leading input
+byte), so the 10s watchdog reflects one compile. This is a harness-strategy
+choice for the fork owner, left unapplied here.
+
+### The `match_invariants` crash artifact is finding #1, not separate
+
+`fuzz/artifacts/match_invariants/crash-bcf205a...` decodes (pattern then
+haystack) to pattern `\B|,` against byte `0xAB`. That is the hardened `find_all`
+zero-width soundness bug documented above and fixed in
+[ieviev/resharp#13](https://github.com/ieviev/resharp/pull/13), not a distinct
+defect.
 
 ### Consumer-side note
 
 forbidden-strings rules are trusted config, not attacker input, and resharp
 exposes no compile timeout to wrap. The existing `complement_intersection_
 quantified_group` and `nested_lookahead_in_quantified_group` pre-validators
-cover the known compile-time blowup shapes; a lookbehind/`\p{L}` compile
-slowdown of this kind is not currently guarded, but no production rule has the
-shape. This is tracked as triage, not a defended bug.
+cover the known compile-time blowup shapes. A sub-second lookbehind or `\p{L}`
+compile of this kind needs no guard: no production rule has the shape, and the
+cost is bounded regardless.
 
 ---
 
@@ -1227,8 +1335,8 @@ in a way that matters for forbidden-strings:
   groups `(...)` and non-capturing groups `(?:...)` do NOT overflow in
   release: they survive to about 50,000 levels, where the size guard
   rejects them cleanly with `Parse(UnsupportedResharpRegex)`.
-- Debug profile (the package's `cargo test` and the fuzz targets, large
-  stack frames): every nesting kind, including plain `(...)`, overflows at
+- Debug profile (the forbidden-strings package's `cargo test` and fuzz targets,
+  large stack frames): every nesting kind, including plain `(...)`, overflows at
   about 1,500 levels, below every size guard.
 
 So in release the dangerous shapes are complement and lookaround nesting,
