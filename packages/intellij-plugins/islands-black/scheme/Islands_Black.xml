@@ -23,12 +23,12 @@
     </option>
     <option name="DEFAULT_BLOCK_COMMENT">
       <value>
-        <option name="FOREGROUND" value="000000"/>
+        <option name="FOREGROUND" value="ffffff"/>
       </value>
     </option>
     <option name="DEFAULT_LINE_COMMENT">
       <value>
-        <option name="FOREGROUND" value="000000"/>
+        <option name="FOREGROUND" value="ffffff"/>
       </value>
     </option>
     <option name="BLOCK_TERMINAL_BLACK">
