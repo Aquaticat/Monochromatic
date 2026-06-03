@@ -14,33 +14,33 @@ integration.
 
 ## Test framework
 
-- Unit tests use `@monochromatic-dev/module-test` -- a custom harness built on chai, sinon, and expect-type
+- Unit tests use `@monochromatic-dev/module-test/ts`, a custom harness built on chai, sinon, and expect-type
+- Unit tests import package behavior from built `dist`, never from sibling source files
 - Browser and e2e tests use Playwright, executed inside a podman container
-- All tests run through `mise run` -- never invoke `bun test` or `playwright` directly
-- Each test file is self-contained with top-level `await describe(...)` -- no external test runner needed
+- All tests run through `mise run`; never invoke `bun test` or `playwright` directly
+- Each test file is self-contained with top-level `await describe(...)`; no external test runner needed
 
 ## Running tests
 
 ```bash
-# Run all tests (unit + browser + e2e)
-mise run test          # alias: t
-
-# Run a specific unit test file
-mise run test -- packages/cli/fy/src/coerce.unit.test.ts
-
-# Build all packages then run all tests (required when tests import from dist)
+# Build all packages, then run all tests (unit + browser + e2e)
 mise run buildAndTest  # alias: bt
 
-# Build then run a single test file
-mise run buildAndTest -- packages/module/es/src/boolean.equal.unit.test.ts
+# Build, then run a specific unit test file
+mise run buildAndTest -- packages/module/async-time/src/wait.unit.test.ts
+
+# Run tests only when dist is already fresh
+mise run test          # alias: t
 
 # Watch mode
 mise run watch:test    # alias: tW
 ```
 
-**When to use `buildAndTest`**: packages that produce dist output (e.g. `module-es`) require a fresh build before tests.
-Tests import from the built dist, so a stale build causes false failures.
-Always use `mise run buildAndTest` instead of `mise run test` alone for these packages.
+**Required for unit tests**: unit tests import package code from built `dist`.
+Run `mise run buildAndTest` after source changes, including when narrowing to one file,
+because `mise run test` alone can exercise stale artifacts. Use `mise run test`
+only when the same verification sequence already rebuilt `dist`, or when the
+file tests the test harness itself instead of package output.
 
 ## Browser and e2e tests
 
@@ -77,17 +77,18 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
-import { coerceArg, } from './coerce.ts';
+import { wait, } from '../dist/final/neutral/index.mjs';
 
 await describe({
-  name: coerceArg.name,
+  name: wait.name,
   children: [
     it({
-      name: 'coerces integer string to number',
+      name: 'resolves to undefined',
       fn: async () => {
-        expect(coerceArg({ arg: '42', },),).toBe(42,);
+        const result = await wait(1,);
+        expect(result,).toBeUndefined();
       },
     },),
   ],
@@ -96,11 +97,22 @@ await describe({
 
 Key differences from bun:test / Jest:
 
-- Import `describe`, `it`, `expect` from `@monochromatic-dev/module-test` (not `bun:test`)
+- Import `describe`, `it`, `expect` from `@monochromatic-dev/module-test/ts` (not `bun:test`)
+- Import package code under test from built `dist`, not from sibling `src` files
 - Use `it` (not `test`)
 - `describe` and `it` take an options object `{ name, children/fn }`, not positional `(name, callback)` arguments
 - `describe` returns a promise -- use `await describe(...)` at the top level
 - Children are concurrent by default via `Promise.allSettled`
+
+## Importing code under test
+
+Treat direct imports from sibling source files as a test bug. Tests for exported
+package behavior must import from the built `dist` entry point, for example
+`../dist/final/neutral/index.mjs` from a `src/*.unit.test.ts` file. This verifies
+the artifact users consume and catches export-map, build, and bundling errors.
+
+Relative source imports are allowed only for fixtures, mock data, or test-only
+helpers that are not part of package behavior.
 
 ## Describe name conventions
 
@@ -109,7 +121,7 @@ This keeps names in sync with refactors.
 
 ```ts
 // Imported function -- use .name
-describe({ name: coerceArg.name, ... })
+describe({ name: wait.name, ... })
 
 // Constant or descriptive category -- use string literal
 describe({ name: 'SEVERITY_MAP', ... })
@@ -274,28 +286,36 @@ Use `//region` and `//endregion` markers to organize test groups within a `descr
 
 ```ts
 await describe({
-  name: coerceArg.name,
+  name: wait.name,
   children: [
-    //region Numeric coercion
+    //region Delay behavior
 
     it({
-      name: 'coerces integer string to number',
+      name: 'resolves after the specified delay',
       fn: async () => {
-        expect(coerceArg({ arg: '42', },),).toBe(42,);
+        const DELAY = 20;
+        const TOLERANCE = 5;
+
+        const start = performance.now();
+        await wait(DELAY,);
+        const elapsed = performance.now() - start;
+
+        expect(elapsed,).toBeGreaterThanOrEqual(DELAY - TOLERANCE,);
       },
     },),
 
-    //endregion Numeric coercion
+    //endregion Delay behavior
 
-    //region Boolean and null coercion
+    //region Return value
 
     it({
-      name: 'coerces "true" to boolean true',
+      name: 'returns undefined',
       fn: async () => {
-        expect(coerceArg({ arg: 'true', },),).toBe(true,);
+        const result = await wait(1,);
+        expect(result,).toBeUndefined();
       },
     },),
-    //endregion Boolean and null coercion
+    //endregion Return value
   ],
 },);
 ```
@@ -374,24 +394,24 @@ it({
 
 ## Type-level testing
 
-Use `expectTypeOf` from `expect-type` (re-exported by `@monochromatic-dev/module-test`):
+Use `expectTypeOf` from `expect-type`, re-exported by `@monochromatic-dev/module-test/ts`:
 
 ```ts
 import {
   describe,
   expectTypeOf,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
+
+import type { ChatRole, } from '../dist/final/neutral/index.mjs';
 
 await describe({
-  name: 'ArrayFixedLength',
+  name: 'ChatRole',
   children: [
     it({
-      name: 'IsArrayFixedLength',
+      name: 'is exactly the role union',
       fn: async () => {
-        expectTypeOf<IsArrayFixedLength<[number, string,]>>().toEqualTypeOf<
-          true
-        >();
+        expectTypeOf<ChatRole>().toEqualTypeOf<'system' | 'user' | 'assistant'>();
       },
     },),
   ],
