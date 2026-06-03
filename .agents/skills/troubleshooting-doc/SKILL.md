@@ -1,17 +1,22 @@
 ---
 name: troubleshooting-doc
-description: Use when writing or updating a docs/troubleshooting/<topic>.md file.
+description: Use proactively the moment you finish diagnosing or working around an external tool's bug, quirk, or surprising behaviour (clang/bindgen, zig, podman, a build tool, a library API, a config), even when the user did not ask, as well as when writing or updating a docs/troubleshooting/<topic>.md file. Treat the write-up as a required completion step, not an offer.
 ---
 
 # Writing a TROUBLESHOOTING file
 
-Fires when documenting an external tool's bug, quirk, surprising behaviour,
-or documentation gap. Walk this skill end-to-end whenever the task involves
-writing or updating a docs/troubleshooting/<topic>.md file.
+Fires automatically, no user request needed, the moment you finish diagnosing
+or land a workaround for an external tool's bug, quirk, surprising behaviour,
+or documentation gap. Writing the doc is a required completion step, not
+something to offer or defer: do not declare the work done, and do not say
+"I could document this" or "want me to write it up?", until
+docs/troubleshooting/<topic>.md exists. Walk this skill end-to-end whenever
+you write or update one.
 
 Other surface phrases that should trigger the skill:
-"document this", "write it up", "add a troubleshooting entry";
-or self-initiated after finishing an investigation.
+"document this", "write it up", "add a troubleshooting entry".
+But the primary trigger is self-initiated: you just fixed or explained an
+external tool behaving unexpectedly, so write it up now without being asked.
 
 The skill encodes the required sections, the source-trace rule,
 and the 5-constraint upstream-filing check that gates the draft GitHub
