@@ -1,4 +1,7 @@
-import { trackRead, } from '../tracker.ts';
+import {
+  trackGlob,
+  trackRead,
+} from '../tracker.ts';
 import { readCached, } from './cache.ts';
 import { expandGlob, } from './glob.ts';
 
@@ -106,6 +109,10 @@ export async function cat(
      * Paths matched by the glob pattern
      */
     const paths = await expandGlob(input,);
+    trackGlob({
+      pattern: input,
+      paths,
+    },);
     /**
      * Matched files with their contents
      */
@@ -129,12 +136,21 @@ export async function cat(
    */
   const expandedGroups = await Promise.all(
     input.map(
-      function expandOnePath(
+      async function expandOnePath(
         path: string,
       ): Promise<readonly string[]> {
-        if (hasGlobChars(path,))
-          return expandGlob(path,);
-        return Promise.resolve([path,],);
+        if (hasGlobChars(path,)) {
+          /**
+           * Paths matched by this array-mode glob.
+           */
+          const paths = await expandGlob(path,);
+          trackGlob({
+            pattern: path,
+            paths,
+          },);
+          return paths;
+        }
+        return [path,];
       },
     ),
   );

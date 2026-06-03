@@ -16,7 +16,19 @@ import {
   updateCache,
 } from './cache.ts';
 import type { GlobResults, } from './cat.ts';
-import { mirrorGlobPath, } from './glob.ts';
+import {
+  destinationsForFiles,
+  writeGlobDestinations,
+} from './write-each-destinations.ts';
+import {
+  isContentBuilder,
+  isGlobResultsBuilder,
+  type OverwriteContent,
+  type OverwriteEachFiles,
+  type WriteIfChanged,
+  writeLazyEach,
+  writeLazyIfChanged,
+} from './write-lazy.ts';
 
 /**
  * Ensures the parent directory of a file path exists before writing.
@@ -117,18 +129,29 @@ async function writeIfChanged(
 }
 
 /**
+ * Public write function passed into lazy helpers without exposing `writeIfChanged`.
+ */
+const writeIfChangedForLazy: WriteIfChanged = writeIfChanged;
+
+/**
  * Writes content to dest, skipping the write when existing content is identical.
  * Always registers the path as a managed destination for watch-mode protection.
+ * Lazy content builders are skipped entirely when the staleness manifest proves
+ * that previous sources and destination metadata are unchanged.
  *
  * @param dest - Destination file path
  *
- * @param content - Content string to write
+ * @param content - Content string to write, or lazy builder that returns it
+ *
+ * @param manifestPath - Optional staleness manifest path override
  *
  * @example
  * ```ts
  * await overwrite({
  *   dest: './dist/config.json',
- *   content: JSON.stringify(config, null, 2),
+ *   content: async function buildConfig(): Promise<string> {
+ *     return JSON.stringify(config, null, 2);
+ *   },
  * });
  * ```
  */
@@ -136,11 +159,29 @@ export async function overwrite(
   {
     dest,
     content,
+    manifestPath,
   }: {
     readonly dest: string;
-    readonly content: string;
+    readonly content: OverwriteContent;
+    readonly manifestPath?: string;
   },
 ): Promise<void> {
+  if (isContentBuilder(content,)) {
+    await writeLazyIfChanged(manifestPath === undefined
+      ? {
+        dest,
+        content,
+        writeIfChanged: writeIfChangedForLazy,
+      }
+      : {
+        manifestPath,
+        dest,
+        content,
+        writeIfChanged: writeIfChangedForLazy,
+      },);
+    return;
+  }
+
   await writeIfChanged({
     dest,
     content,
@@ -209,27 +250,35 @@ export async function overwriteEach(
   {
     destGlob,
     files,
+    manifestPath,
   }: {
     readonly destGlob: string;
-    readonly files: GlobResults;
+    readonly files: OverwriteEachFiles;
+    readonly manifestPath?: string;
   },
 ): Promise<void> {
+  if (isGlobResultsBuilder(files,)) {
+    await writeLazyEach(manifestPath === undefined
+      ? {
+        destGlob,
+        files,
+        writeIfChanged: writeIfChangedForLazy,
+      }
+      : {
+        manifestPath,
+        destGlob,
+        files,
+        writeIfChanged: writeIfChangedForLazy,
+      },);
+    return;
+  }
+
   l.info(`overwriteEach: ${String(files.length,)} files`,);
-  await Promise.all(
-    files.map(async function writeOneGlobMatch(file,): Promise<void> {
-      /**
-       * Concrete destination path from the mirror-glob mapping
-       */
-      const dest = mirrorGlobPath({
-        sourcePattern: files.sourceGlob,
-        destPattern: destGlob,
-        sourcePath: file.path,
-      },);
-      await writeIfChanged({
-        dest,
-        content: file.content,
-        sourcePath: file.path,
-      },);
+  await writeGlobDestinations({
+    destinations: destinationsForFiles({
+      destGlob,
+      files,
     },),
-  );
+    writeIfChanged: writeIfChangedForLazy,
+  },);
 }

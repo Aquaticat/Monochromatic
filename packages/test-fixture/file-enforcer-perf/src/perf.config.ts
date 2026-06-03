@@ -20,6 +20,8 @@ import {
   reset,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
+import type { GlobResults, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+
 // Reset tracker so each run starts clean (critical for watch mode and repeated benchmarks)
 reset();
 // Log cache stats for benchmark diagnostics
@@ -31,6 +33,8 @@ const BASE = join(tmpdir(), 'file-enforcer-perf',);
 const SRC = `${BASE}/src`;
 /** Absolute path to the destination directory within the fixture */
 const DEST = `${BASE}/dest`;
+/** Absolute path to the staleness manifest within the fixture */
+const MANIFEST_PATH = `${BASE}/staleness-manifest.json`;
 
 /**
  * Returns the fixture path for a package by index.
@@ -107,10 +111,24 @@ async function concatGroup(_unused: unknown, groupIndex: number,): Promise<void>
     { length: PACKAGES_PER_GROUP, },
     groupReadmePath,
   );
-  const content = await cat(sources,);
+  /**
+   * Builds the concatenated content for this group.
+   *
+   * @returns Combined readme content.
+   *
+   * @example
+   * ```ts
+   * const content = await buildConcatContent();
+   * ```
+   */
+  async function buildConcatContent(): Promise<string> {
+    return await cat(sources,);
+  }
+
   await overwrite({
     dest: `${DEST}/combined-${String(groupIndex,)}.md`,
-    content,
+    content: buildConcatContent,
+    manifestPath: MANIFEST_PATH,
   },);
 }
 
@@ -123,18 +141,50 @@ async function mirrorConfig(
   config: { readonly dir: string; readonly file: string; },
 ): Promise<void> {
   const destGlob = `${DEST}/mirror-${config.dir}/*/${config.file}`;
-  const files = await cat(`${SRC}/pkg-*/${config.dir}/${config.file}`,);
-  await overwriteEach({ destGlob, files, },);
+  /**
+   * Reads source files for this mirror rule.
+   *
+   * @returns Glob results for the mirror rule.
+   *
+   * @example
+   * ```ts
+   * const files = await readMirrorFiles();
+   * ```
+   */
+  async function readMirrorFiles(): Promise<GlobResults> {
+    return await cat(`${SRC}/pkg-*/${config.dir}/${config.file}`,);
+  }
+
+  await overwriteEach({
+    destGlob,
+    files: readMirrorFiles,
+    manifestPath: MANIFEST_PATH,
+  },);
 }
 
 /**
  * Extracts the `.name` property from pkg-00's settings.json and writes it.
  */
 async function extractName(): Promise<void> {
-  const content = await cat([`${pkgPath(0,)}/config/settings.json`,],);
+  /**
+   * Builds extracted package name content.
+   *
+   * @returns Extracted name.
+   *
+   * @example
+   * ```ts
+   * const name = await buildExtractedName();
+   * ```
+   */
+  async function buildExtractedName(): Promise<string> {
+    const content = await cat([`${pkgPath(0,)}/config/settings.json`,],);
+    return getJsonProperty({ path: ['name',], content, },);
+  }
+
   await overwrite({
     dest: `${DEST}/name-0.txt`,
-    content: getJsonProperty({ path: ['name',], content, },),
+    content: buildExtractedName,
+    manifestPath: MANIFEST_PATH,
   },);
 }
 
@@ -142,10 +192,25 @@ async function extractName(): Promise<void> {
  * Extracts the `.config.features` property from pkg-01's settings.json and writes it.
  */
 async function extractFeatures(): Promise<void> {
-  const content = await cat([`${pkgPath(1,)}/config/settings.json`,],);
+  /**
+   * Builds extracted feature-list content.
+   *
+   * @returns Extracted feature list.
+   *
+   * @example
+   * ```ts
+   * const features = await buildExtractedFeatures();
+   * ```
+   */
+  async function buildExtractedFeatures(): Promise<string> {
+    const content = await cat([`${pkgPath(1,)}/config/settings.json`,],);
+    return getJsonProperty({ path: ['config', 'features',], content, },);
+  }
+
   await overwrite({
     dest: `${DEST}/features-1.txt`,
-    content: getJsonProperty({ path: ['config', 'features',], content, },),
+    content: buildExtractedFeatures,
+    manifestPath: MANIFEST_PATH,
   },);
 }
 
@@ -153,10 +218,25 @@ async function extractFeatures(): Promise<void> {
  * Combines all 20 package readmes and removes duplicate lines.
  */
 async function dedupAllReadmes(): Promise<void> {
-  const allReadmes = await cat(allReadmeSources,);
+  /**
+   * Builds deduplicated readme content.
+   *
+   * @returns Deduplicated readme content.
+   *
+   * @example
+   * ```ts
+   * const content = await buildDedupedReadmes();
+   * ```
+   */
+  async function buildDedupedReadmes(): Promise<string> {
+    const allReadmes = await cat(allReadmeSources,);
+    return dedup(allReadmes,);
+  }
+
   await overwrite({
     dest: `${DEST}/all-readmes-deduped.md`,
-    content: dedup(allReadmes,),
+    content: buildDedupedReadmes,
+    manifestPath: MANIFEST_PATH,
   },);
 }
 
@@ -164,8 +244,25 @@ async function dedupAllReadmes(): Promise<void> {
  * Mirrors 6-level nested source files to destination paths.
  */
 async function mirrorDeepFiles(): Promise<void> {
-  const deepFiles = await cat(deepSourceGlob,);
-  await overwriteEach({ destGlob: deepDestGlob, files: deepFiles, },);
+  /**
+   * Reads deeply nested source files.
+   *
+   * @returns Deep source glob results.
+   *
+   * @example
+   * ```ts
+   * const files = await readDeepFiles();
+   * ```
+   */
+  async function readDeepFiles(): Promise<GlobResults> {
+    return await cat(deepSourceGlob,);
+  }
+
+  await overwriteEach({
+    destGlob: deepDestGlob,
+    files: readDeepFiles,
+    manifestPath: MANIFEST_PATH,
+  },);
 }
 
 await Promise.all([

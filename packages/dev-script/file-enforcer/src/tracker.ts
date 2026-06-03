@@ -1,4 +1,15 @@
 import { resolve, } from 'node:path';
+import {
+  recordGlobInActiveCapture,
+  recordReadInActiveCapture,
+} from './tracker-capture.ts';
+
+export {
+  captureTrackedSources,
+  type CapturedSources,
+  type SourceCaptureCallback,
+  type TrackedGlob,
+} from './tracker-capture.ts';
 
 //region Private mutable collections
 
@@ -93,7 +104,12 @@ export function resetWriteTimestamps(): void {
  * ```
  */
 export function trackRead(filePath: string,): void {
-  _reads.add(resolve(filePath,),);
+  /**
+   * Absolute read path used by the global tracker and any active capture.
+   */
+  const absolutePath = resolve(filePath,);
+  _reads.add(absolutePath,);
+  recordReadInActiveCapture(absolutePath,);
 }
 
 /**
@@ -161,6 +177,33 @@ export function setWriteTimestamp(
 }
 
 /**
+ * Records a glob expansion in the active source capture.
+ *
+ * @param pattern - Glob pattern passed to `cat()`.
+ *
+ * @param paths - Paths matched by the glob.
+ *
+ * @example
+ * ```ts
+ * trackGlob({ pattern: './src/*.ts', paths: ['./src/index.ts'] });
+ * ```
+ */
+export function trackGlob(
+  {
+    pattern,
+    paths,
+  }: {
+    readonly pattern: string;
+    readonly paths: readonly string[];
+  },
+): void {
+  recordGlobInActiveCapture({
+    pattern,
+    paths,
+  },);
+}
+
+/**
  * Escape hatch for manually registering additional paths that watch mode
  * should monitor. Useful for dependencies that `cat()` cannot track
  * automatically; for example, files consumed by `exec()` or external
@@ -175,7 +218,7 @@ export function setWriteTimestamp(
  */
 export function addWatchedPaths(paths: readonly string[],): void {
   paths.forEach(function addPath(filePath,): void {
-    _reads.add(resolve(filePath,),);
+    trackRead(filePath,);
   },);
 }
 

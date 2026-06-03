@@ -1,4 +1,5 @@
 import { findUp, } from 'find-up';
+import { setActiveConfigPath, } from './context.ts';
 import { l, } from './log.ts';
 import { startWatching, } from './watch/watch.ts';
 
@@ -37,6 +38,7 @@ if (configPath === undefined)
   throw new Error(`Could not find ${CONFIG_NAME} in any parent directory`,);
 
 l.info(`loading config: ${configPath}`,);
+setActiveConfigPath({ configPath, },);
 
 // Importing the config executes it: the config uses top-level await
 await import(configPath);

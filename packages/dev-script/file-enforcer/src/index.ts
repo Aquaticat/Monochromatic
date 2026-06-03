@@ -16,6 +16,12 @@ export {
   expandGlob,
   mirrorGlobPath,
 } from './io/glob.ts';
+export type {
+  ContentBuilder,
+  GlobResultsBuilder,
+  OverwriteContent,
+  OverwriteEachFiles,
+} from './io/write-lazy.ts';
 export { overwriteTomlKey, } from './io/write-toml.ts';
 export {
   MISSING,
@@ -70,15 +76,22 @@ export type {
 export { evaluatePredicate, } from './platform/evaluate-predicate.ts';
 export {
   addWatchedPaths,
+  captureTrackedSources,
   reads,
   reset,
   resetWriteTimestamps,
   setWriteTimestamp,
   trackDest,
+  trackGlob,
   trackRead,
   trackWriteTime,
   writes,
   writeTimestamps,
+} from './tracker.ts';
+export type {
+  CapturedSources,
+  SourceCaptureCallback,
+  TrackedGlob,
 } from './tracker.ts';
 export type { Path, } from './types.ts';
 export { notifyWriteProtection, } from './watch/notify.ts';

@@ -2,6 +2,7 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { setActiveConfigPath, } from '../context.ts';
 import { invalidatePaths, } from '../io/cache.ts';
 import {
   l,
@@ -43,6 +44,7 @@ export function startWatching(configPath: string,): Promise<never> {
    * Absolute config path for reliable comparisons
    */
   const absoluteConfig = resolve(configPath,);
+  setActiveConfigPath({ configPath: absoluteConfig, },);
   rl.info('watch mode started',);
 
   /**
