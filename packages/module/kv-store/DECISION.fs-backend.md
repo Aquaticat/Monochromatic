@@ -198,6 +198,86 @@ operations are sync) does not by itself rescue file-per-key OPFS, since a key fi
 construction still needs an async handle. The async-setup-then-sync-ops shape only works combined with
 the single pre-opened container.
 
+## Hidden hazards (verified against the running store)
+
+A probe ran the real `createStore` with stub backends to observe consensus, healing, and eviction.
+Setup, reproducible in the package directory:
+
+```ts
+// seed a "file" backend with a real serialized value, then read it back behind a cold Map
+const file = mapBackend([]);                 // get/set/delete over a Map, optional priority
+const s0 = await createStore({ backends: [file] });
+await s0.set('k', { v: 42 });                // file now holds '{"json":{"v":42}}'
+const cold = mapBackend([]);                 // empty, default priority 0
+const s1 = await createStore({ backends: [cold, file] });
+await s1.get('k');                           // observe
+```
+
+Observed results:
+
+-   `[Map(p0, empty), file(p0, value)]` **throws** `store.get consensus failure ... no majority in
+    highest tier`. Two equal-priority backends disagree (one ABSENT, one value); `pickMajority`
+    requires a bucket strictly larger than `floor(total / 2)`, and 1 is not greater than 1
+    (`src/consensus.ts:85`, `src/consensus.ts:127`).
+-   `[file]` alone returns the value, and ABSENT for a missing key. No throw, and healing writes nothing
+    because the sole value already equals canonical (`src/heal.ts:48`).
+-   `[Map(p0), file(p1)]` returns the value and heals the Map to match (read-through populate,
+    `src/heal.ts:48-53`).
+-   `[Map(p1, empty), file(p0, value)]` returns ABSENT **and deletes the value from the file**: a cold
+    higher-priority cache makes canonical ABSENT, and healing deletes every backend that held a value
+    (`src/heal.ts:42-45`). Silent data loss.
+
+### Hazard 1: safe only as the sole backend or the strictly-highest-priority one
+
+The natural "in-memory cache in front, file behind" layering (`[Map, file]`, equal priority) throws on
+the first cold read. Giving the cache higher priority is worse: a cold cache deletes the persisted
+value. For pure persistence, use the file backend as the **sole** backend (`backends: [fileBackend]`),
+which sidesteps consensus. Layer only with the file at strictly highest priority, and only for backend
+redundancy, not caching.
+
+### Hazard 2: layering buys no read acceleration
+
+`get` queries every backend on every call (`src/backends-async.ts:43-55`, `src/backends-sync.ts:40-51`);
+there is no try-fast-then-fallback short-circuit. A Map in front of the file does not avoid the disk
+read. "Map caches, file persists" is false for this store; every read hits the file.
+
+### Hazard 3: in-memory LRU does not bound a persistent backend
+
+The LRU key set is an in-memory `Set` created fresh per store construction (`src/create-store.ts:117`,
+`src/lru-key-set.ts`), so a one-shot process starts with an empty LRU while the file backend may already
+hold many files. Eviction is driven by in-session access count against `maxSize`, so pre-existing files
+are never pruned across sessions and the directory grows without bound; eviction can also drop a
+just-relevant key while ancient files persist. An LRU policy gives a persistent backend no cross-session
+capacity bound. The backend needs its own pruning, or this limit must be documented for consumers.
+
+### Hazard 4: write atomicity differs by runtime
+
+The node backend can write a temp sibling then `rename` for atomic replacement. OPFS has no atomic
+per-key rename (`FileSystemHandle.move` support is limited), so the async OPFS backend writes via
+`createWritable` then `close` (logger notes `getFile()` reads stale content while a writable is open,
+`packages/module/logger/src/sinks/opfs.ts:60`); a crash mid-write can leave a partial file. Durability
+is not uniform across the two builds; state this in the public contract.
+
+### Hazard 5: the backend must implement clear, and sync size hits disk
+
+`store.clear()` only clears a backend that exposes `clear` (`src/create-store.ts:226`); a file backend
+without `clear()` makes `store.clear()` a silent no-op. The sync store reports `.size` from
+`backends[0].size` (`src/create-sync-store.ts:143`), so if the file backend exposes `size` via
+`readdir`, every `.size` read (for example memoize's) performs disk IO.
+
+### Non-blockers confirmed
+
+-   Type libs are sufficient. `@monochromatic-dev/config-typescript/dom` sets
+    `lib: ['ESNext', 'DOM', 'WebWorker']` (`packages/config/typescript/README.md:12`), so both platform
+    files type-check under one tsconfig, including the WebWorker-only `FileSystemSyncAccessHandle`.
+-   Bun and Deno resolve the `node` export condition through their node-compat layers, so the node:fs
+    build serves the repo's Bun runtime (file-enforcer) as well as Node.
+-   Workspace consumers import TypeScript source via `./ts/*`, which bypasses export conditions, so they
+    import the per-runtime file directly (`backend-fs.node.ts`); conditions apply only to the built
+    `./fs` specifier.
+-   Under Option 2, `dts: true` emits one `.d.mts` per entry per build; the `./fs` `types` condition
+    points at one, so both impls should conform to a shared neutral types-only module to prevent drift.
+
 ## Open questions for the reviewer
 
 1.  Mechanism: Option 2 (recommended), Option 3, or Option 1 (which would reverse the async-plus-sync
@@ -206,6 +286,10 @@ the single pre-opened container.
     file-per-key sync OPFS backend is not implementable.
 3.  Whether logger consistency should outweigh internal uniformity, which is the crux of Option 2
     versus Option 3.
+4.  Eviction: an LRU policy does not bound a persistent backend (Hazard 3). Decide between the backend
+    self-pruning by a size cap and documenting unbounded growth as accepted.
+5.  Usage shape: confirm the sole-backend recommendation (Hazard 1). Consumers wanting persistence pass
+    `backends: [fileBackend]` rather than layering a Map in front.
 
 ## Cross-cutting design notes (apply to whichever option wins)
 
