@@ -184,46 +184,53 @@ correct answer for each distinct pattern (documented semantics: leftmost-longest
 rust is demonstrably wrong. The Lean formalization in `~/Downloads/extended-regexes`
 is the tie-breaker ground truth and is the next tool to stand up.
 
-## Resume point (2026-06-04 14:45, post-compaction)
+## Resume point (2026-06-04 15:05, post-compaction)
 
-Status: 12 root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14) and 25
+Status: 13 root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15) and 27
 numbered reproducers are committed under `docs/audit/resharp-fuzz-2026-06-04/`.
 Latest commits: `272e8415` (BUG-13 plus a BUG-3 lookbehind trigger), `a8fa9f64`
-(BUG-14), `c63077ac` (over-rejection analysis, no bug).
+(BUG-14), `c8fbd22b` (limits inventory), `94ef9d77` (BUG-15 anchor panic),
+`9d9fe19e` (unbounded_size config confirm).
 
 Done since the last resume point:
 
-- lean2 (non-anchor leftmost-longest position round, 54000 pairs) is complete and
-  harvested. The three-way adjudicator `/tmp/agent/adj_full.py` (rust vs dotnet vs
-  Lean) found 8 dotnet-and-Lean-corroborated rust bugs: 6 more BUG-12 triggers,
-  BUG-13 (lookahead width leak), and one BUG-3 lookbehind trigger. 18 were
-  translator-encoding artifacts (dotnet agreed with rust) and discarded. BUG-14
-  came from chasing one UNADJUDICATED candidate with a Lean control plus a rust
-  isolation argument.
-- The anchor encoding is validated: `leanval2.lean` 19/19 known-answer cases match
-  `/tmp/agent/val_expected.txt` (0 mismatches). The `\A \z ^ $ \b \B`
-  lookaround encoding in `/tmp/agent/re2lean.py` is faithful.
-- Over-rejection avenue closed (no bug): the 895 distinct rust compile-rejections
-  are deliberate parser limits (`ensure_lookbehind_at_start`,
-  resharp-parser/src/lib.rs:479; complementability; class-range validation). See
-  README "Over-rejection analysis".
+- lean2 round harvested (BUG-13, BUG-14, a BUG-3 lookbehind trigger).
+- Anchor round COMPLETE and harvested. Encoding validated 19/19; only 1
+  encoding-suspect case in the whole 54000-pair round, so the anchor encoding is
+  faithful. Headline: BUG-15, the `\z\A` reversed-anchor DFA panic
+  (`engine.rs:550` index out of bounds, all configs) plus the regex-crate-
+  corroborated missed empty match.
+- Limits inventory written: `limits-and-recommendations.md`. Every compile-time
+  limit classified fundamental (lazy quantifiers, backreferences, swap-greed) vs
+  implementable (trailing and mid-pattern lookbehind, lookaround as last factor in
+  complement or star, special word boundaries) vs tuning (size caps, class
+  ranges), with a recommendation each. Uses the Lean algebra
+  (`Regex/Definitions.lean`) as the arbiter; dotnet is only a secondary data
+  point, not a reference (user directive).
+- Config coverage extended. `repro` now sweeps seven `RegexOptions` configs (added
+  `unbounded_size(true)`, the one it missed). Full surface: `unicode` (4 modes),
+  `multiline`, `hardened`, `unbounded_size`, plus translator flags
+  `dot_matches_new_line`, `case_insensitive`, `ignore_whitespace`. BUG-15 panics
+  in all seven; no existing trigger produced an unbounded-only violation. Rebuilt
+  `repro` binary reflects this (`mk` in `/tmp/agent/repro/src/main.rs`, loop
+  `0..7`).
 
-In-flight background job (poll its `.done` file, do not restart):
+Methodology correction from the user, applied going forward: the Lean
+formalization is THE reference. dotnet is not a reference (it is also immature);
+use it only as another implementation to look at. The bugs filed this session
+(BUG-13, 14, 15) all rest on Lean plus a rust-internal inconsistency or the regex
+crate, never on dotnet.
 
-- Anchor round. Lean side streams to
-  `/var/home/user/Downloads/extended-regexes/leanA_out_*.txt` (16 chunks), done
-  marker `/tmp/agent/leanA.done`, about 32 percent done at 14:45. Rust side
-  `/tmp/agent/leanA_rust.txt` is COMPLETE (54000 lines, done marker
-  `/tmp/agent/leanA_rust.done`). Pairs `/tmp/agent/leanA_pairs.txt`. A waiter
-  background job (`b4pnqz7jo`) fires when `leanA.done` appears.
+Held back, not filed (translation-faithfulness unverified): the anchor round's
+`(?<=$)` cluster (lookbehind containing an anchor), e.g. `(_{0,1}&(?<=$))` on
+`\n` (rust 1:1, Lean 0:0) and `(?=(?<=$) *)[^a]*` on `\n` (rust 1:1, Lean 0:1).
+First-principles reasoning leans toward rust being wrong, but lookbehind-of-anchor
+is the same translator shape that was unfaithful in lean2, so these need RE#
+lookbehind-of-anchor semantics confirmed (paper or resharp source) before filing.
 
-When leanA.done appears, harvest with the same three-way adjudicator:
-`DOTNET_ROOT=/home/user/.local/share/mise/installs/dotnet/10.0.300 python3 /tmp/agent/adj_full.py leanA_out_ /tmp/agent/leanA_rust.txt /tmp/agent/leanA_pairs.txt`.
-For anchors, dotnet supports native `^ $ \b \A \z` so it adjudicates far more than
-it could for the nested-lookbehind lean2 cases; trust the RUST_WRONG bucket
-(dotnet and Lean agree against rust) and treat ENCODING_SUSPECT (dotnet agrees
-with rust) as translator artifacts. Then minimize each genuine bug with
-`/tmp/agent/adj2.py`-style probes and file under the audit dir.
+No in-flight background jobs. All Lean rounds complete. To run a new round, reuse
+the recipe below and harvest with `adj_full.py` (treat Lean as ground truth, dotnet
+as a hint).
 
 Adjudication tooling now in place (reusable for any future round):
 
