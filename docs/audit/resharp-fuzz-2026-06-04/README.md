@@ -224,6 +224,28 @@ flag, special word boundaries, size caps), each classified fundamental versus
 implementable with a recommendation, using the Lean algebra as the arbiter and the
 dotnet engine only as a secondary data point.
 
+## Code quality
+
+Two companion docs record source-level issues found while reading the engine,
+algebra, and parser, split by whether any reasonable Rust author would rewrite the
+code on sight. The bar is read in the context of a young, high-churn crate: an
+unenforced invariant or a host-aborting "cannot happen" guard does not get the
+benefit of the doubt, because the next feature breaks it.
+
+- [code-quality.md](code-quality.md): the definitely-rewrite tier. A library
+  aborting the host on user input (`engine.rs:960`, BUG-2) and the sibling
+  unproven-reachable aborts; the in-band `usize::MAX` sentinel (shown to be a
+  scalar-local-only value, so `Option<usize>` is free and the tradeoff is sour);
+  the `unsafe` unchecked pointer indexing in `fwd_update` and the narrowing `as u16`
+  / `as u8` casts (invariant-protected today, but the invariant is not in the type);
+  `.ok()` discarding a fallible result the next line depends on (`engine.rs:1249`,
+  BUG-15); the O(n^2) `find_all` path beside the O(n) one in the same file (BUG-18);
+  and one class with three representations spanning a 300x cost (BUG-17).
+- [code-quality.recommendations.md](code-quality.recommendations.md): the short
+  residue a maintainer could reasonably keep, chiefly the two `find_all`
+  implementations to converge (a fast-path-plus-fallback structure whose divergence
+  is the separately filed BUG-8).
+
 ## Caveats and relationship to known bugs
 
 - The `reentrant-assert` feature is a default feature and is the project's own

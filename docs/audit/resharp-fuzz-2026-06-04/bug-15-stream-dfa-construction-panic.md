@@ -98,6 +98,20 @@ The fix is to call `self.ensure_capacity(curr)` before the `create_state` at
 `engine.rs:1249` (and to audit the other `.ok()` reverse-scan `create_state`
 calls at `engine.rs:1098` and `:1185` for the same missing pairing).
 
+## Code quality
+
+The invariant "call `ensure_capacity(sid)` immediately before `create_state(b,
+sid)`" is enforced by hand at every call site (the forward `lazy_transition_slow`
+and both block matchers all pair them) and simply forgotten at the reverse-scan
+site `engine.rs:1249`. An invariant maintained by copy-paste discipline across
+several call sites will eventually be missed at one of them, which is exactly what
+happened. `create_state` should grow `state_nodes` itself (or a single helper
+should do both), so the bounds safety is not a convention a future edit can drop.
+Compounding it, the reverse-scan call is `self.create_state(b, curr as u16).ok()`,
+discarding the `Result`, so a failure here is silent rather than surfaced. A
+fallible state allocation whose error is `.ok()`-swallowed and whose precondition is
+unchecked is the shape of defect that turns into an out-of-bounds panic on input.
+
 ## Expected behaviour
 
 No panic. The streaming DFA builder must allocate the state it transitions into,

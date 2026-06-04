@@ -149,16 +149,30 @@ BUG-19.)
 
 ## Relationship to other findings
 
-This is very likely the real root cause of BUG-11. BUG-11's trigger,
-`[\w]{3,5}[\w]([^a]&a+)`, also writes the shorthand bracketed (`[\w]{3,5}`), and
-its measured ~4 seconds is in the same range as `[\w]{3,5}` plus a second `[\w]`
-factor here. BUG-11 attributed the cost to the intersection; this isolation shows
-the bracketed `[\w]{3,5}` alone is already 1.76 seconds and that bare `\w{3,5}` in
-the same position is free, so the intersection is incidental and the bracketed
-perl class is the driver. BUG-11 should be re-tested with bare `\w` to confirm.
+This is the confirmed root cause of BUG-11. BUG-11's exact trigger
+`[\w]{3,5}[\w]([^a]&a+)` compiles in 2.79 s; replacing only the brackets,
+`\w{3,5}\w([^a]&a+)`, drops it to 0.0068 s (400x faster), and the intersection
+alone `([^a]&a+)` is 0.0003 s. The bracketed prefix `[\w]{3,5}[\w]` is 2.14 s by
+itself with no intersection. So BUG-11's cost is entirely the bracketed `[\w]`, the
+intersection is incidental, and BUG-11 is the same defect as BUG-17 seen through a
+pattern that also happened to contain an intersection.
 
 Distinct from BUG-16, which is a match-time blowup in the lookbehind derivative;
 BUG-17 is entirely at compile time and never reaches the matcher.
+
+## Code quality
+
+One language, three internal representations. `\w`, `[\w]`, and `[A-Za-z0-9_]`
+denote the identical class, but each lowers to a different node and the three
+differ by orders of magnitude in compile and match cost (bare `\w` fast, explicit
+ranges fast, bracketed shorthand catastrophic). A class should be normalized to a
+single canonical predicate at parse time regardless of how it was spelled; that the
+fast path already exists for two of the three spellings shows the normalization is
+missing, not impossible. The cost surfacing only for `\w` (and `[\w\d]`) and not
+`[\d]`/`[\s]` confirms it is the multi-piece set that is left un-folded. A
+character-class set carrying several overlapping predicates into repetition, rather
+than one merged minterm, is the defect; the same un-folded set is what makes BUG-11
+and BUG-19 expensive too.
 
 ## Recommendation for ieviev
 

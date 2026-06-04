@@ -169,6 +169,19 @@ the limits-enabled configs.
   pattern hanging for 13 seconds on 512 bytes needs no semantic oracle, so it is
   filed on its own.
 
+## Code quality
+
+The Lookbehind derivative arm rebuilds a fresh `mk_lookbehind_internal` term every
+step from the derived inner and prev, with no interning or fixpoint check on the
+inner. A derivative engine relies on the state set reaching a fixpoint so the lazy
+DFA is finite; here a positive lookahead inside the lookbehind defeats that
+silently, because nothing canonicalizes the failing-lookahead term to a form equal
+across positions. The arm should detect that the inner assertion carries no
+per-offset information once its body has failed and collapse it, the same way the
+`is_nullable` shortcut at `:1403` already collapses a succeeding lookahead. A
+construction that assumes a fixpoint but has no guard against the one operator that
+breaks it is the underlying issue.
+
 ## Recommendation for ieviev
 
 Treat lookbehind-of-positive-lookahead as a fixpoint hazard in the derivative.

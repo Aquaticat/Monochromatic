@@ -150,6 +150,25 @@ is quadratic where a linear path exists.
   `(0{0,2}|(b{0,1}c+\d{0,1}|~(\w+)))`, whose `find_all` is 19 seconds on 128 KB,
   driven entirely by the `~(\w+)` factor.
 
+## Code quality
+
+The method name `find_all_nullable_slow` admits the problem: it is a knowingly slow
+fallback. Three things should have been written differently.
+
+- The per-position rescan. `scan_fwd_slow(pos, input)` is called once per `pos`
+  with no state carried between calls, so a run of empty matches re-scans the
+  suffix from scratch each time. The DFA driver (`find_all_dfa_inner`) already does
+  a single stateful sweep; the nullable path should reuse that sweep, not restart
+  it. A correctness-preserving fast path existing right next to a quadratic slow
+  path is a maintenance trap.
+- Two `find_all` implementations that disagree. The default path and the hardened
+  DFA path return different results on some complement patterns (BUG-8) and have
+  different complexity here. Two code paths intended to compute the same function,
+  diverging on both result and cost, is a design smell: one of them is wrong and
+  the other is slow.
+- No guard on the cost. There is no bound tying the per-position scan to the total
+  input, so the size limits (which cap pattern size) do not cap match cost.
+
 ## Recommendation for ieviev
 
 Replace the per-position rescan in `find_all_nullable_slow` with a forward-stateful
