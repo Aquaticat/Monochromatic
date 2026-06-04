@@ -6,7 +6,7 @@
 - Phase: match time, lazy DFA state construction.
 - Severity: crash. A panic is always a bug regardless of any oracle. It fires in
   every option configuration swept (default, ascii, full, javascript, hardened,
-  and the dot-all plus multiline-off flags combo).
+  the dot-all plus multiline-off flags combo, and unbounded_size).
 - Found by the anchor Lean round: `\z\A.*` surfaced as a missed match against the
   Lean reference, and exercising it across the haystack set tripped the panic.
 
@@ -98,10 +98,14 @@ Larger anchor patterns from the Lean round that hit the same missed-match family
 
 ## Affected configurations
 
-The panic reproduces in every configuration the oracle sweeps: `default`,
-`unicode(Ascii)`, `unicode(Full)`, `unicode(Javascript)`, `hardened(true)`, and
-`dot_matches_new_line(true)` with `multiline(false)`. The reversed-anchor missed
-match likewise affects all of them.
+The panic reproduces in every configuration the oracle sweeps, all seven:
+`default`, `unicode(Ascii)`, `unicode(Full)`, `unicode(Javascript)`,
+`hardened(true)`, `dot_matches_new_line(true)` with `multiline(false)`, and
+`unbounded_size(true)`. The reversed-anchor missed match likewise affects all of
+them. The full `RegexOptions` config surface is `unicode` (four modes),
+`multiline`, `hardened`, `unbounded_size`, plus the translator flags
+`dot_matches_new_line`, `case_insensitive`, and `ignore_whitespace`; the panic is
+independent of all of them.
 
 ## Notes
 
