@@ -184,53 +184,62 @@ correct answer for each distinct pattern (documented semantics: leftmost-longest
 rust is demonstrably wrong. The Lean formalization in `~/Downloads/extended-regexes`
 is the tie-breaker ground truth and is the next tool to stand up.
 
-## Resume point (2026-06-04 14:10, pre-compaction)
+## Resume point (2026-06-04 14:45, post-compaction)
 
-Status: 10 root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12) and 22 numbered
-reproducers are committed under `docs/audit/resharp-fuzz-2026-06-04/`. The Lean
-ground-truth oracle is built and found BUG-12. Two Lean rounds are mid-flight and
-running as background `nohup` processes that survive compaction.
+Status: 12 root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14) and 25
+numbered reproducers are committed under `docs/audit/resharp-fuzz-2026-06-04/`.
+Latest commits: `272e8415` (BUG-13 plus a BUG-3 lookbehind trigger), `a8fa9f64`
+(BUG-14), `c63077ac` (over-rejection analysis, no bug).
 
-In-flight background jobs (poll their `.done` files, do not restart):
+Done since the last resume point:
 
-- Non-anchor leftmost-longest position round (lean2). Lean results stream to
-  `/var/home/user/Downloads/extended-regexes/lean2_out_*.txt` (16 chunk files),
-  done marker `/tmp/agent/lean2.done`. Rust side `/tmp/agent/lean2_rust.txt`
-  (`repro --batch`, default mode), done marker `/tmp/agent/lean2_rust.done`.
-  Pairs `/tmp/agent/lean2_pairs.txt`. When both done, diff with:
-  `python3 /tmp/agent/diff_lean_span.py <leandir> lean2_out_ /tmp/agent/lean2_rust.txt /tmp/agent/lean2_pairs.txt`
-  (leandir = `/var/home/user/Downloads/extended-regexes`). It reports
-  POSITION_DIFF (self-consistent wrong match positions, rust bug) and EXIST_DIFF.
+- lean2 (non-anchor leftmost-longest position round, 54000 pairs) is complete and
+  harvested. The three-way adjudicator `/tmp/agent/adj_full.py` (rust vs dotnet vs
+  Lean) found 8 dotnet-and-Lean-corroborated rust bugs: 6 more BUG-12 triggers,
+  BUG-13 (lookahead width leak), and one BUG-3 lookbehind trigger. 18 were
+  translator-encoding artifacts (dotnet agreed with rust) and discarded. BUG-14
+  came from chasing one UNADJUDICATED candidate with a Lean control plus a rust
+  isolation argument.
+- The anchor encoding is validated: `leanval2.lean` 19/19 known-answer cases match
+  `/tmp/agent/val_expected.txt` (0 mismatches). The `\A \z ^ $ \b \B`
+  lookaround encoding in `/tmp/agent/re2lean.py` is faithful.
+- Over-rejection avenue closed (no bug): the 895 distinct rust compile-rejections
+  are deliberate parser limits (`ensure_lookbehind_at_start`,
+  resharp-parser/src/lib.rs:479; complementability; class-range validation). See
+  README "Over-rejection analysis".
 
-Ready to run next (highest value): the anchor round. The translator
-`/tmp/agent/re2lean.py` now encodes anchors as lookarounds: `\A` = `(?<!_)`,
-`\z` = `(?!_)`, `^`/`$` as line lookarounds, `\b`/`\B` as word-boundary
-lookarounds. Generated oracle `/tmp/agent/leanA.lean` (54000 evals over 6000
-anchor patterns) and `/tmp/agent/leanA_pairs.txt`.
+In-flight background job (poll its `.done` file, do not restart):
 
-Step 1, validate the encoding before trusting it: run
-`/var/home/user/Downloads/extended-regexes/leanval2.lean` (19 known-answer
-cases) and compare each `V<i>` line to `/tmp/agent/val_expected.txt`. Only
-proceed if they match.
+- Anchor round. Lean side streams to
+  `/var/home/user/Downloads/extended-regexes/leanA_out_*.txt` (16 chunks), done
+  marker `/tmp/agent/leanA.done`, about 32 percent done at 14:45. Rust side
+  `/tmp/agent/leanA_rust.txt` is COMPLETE (54000 lines, done marker
+  `/tmp/agent/leanA_rust.done`). Pairs `/tmp/agent/leanA_pairs.txt`. A waiter
+  background job (`b4pnqz7jo`) fires when `leanA.done` appears.
 
-Step 2, run the anchor round chunked and parallel (the only way that finishes in
-reasonable time). Recipe used for every Lean bulk run:
+When leanA.done appears, harvest with the same three-way adjudicator:
+`DOTNET_ROOT=/home/user/.local/share/mise/installs/dotnet/10.0.300 python3 /tmp/agent/adj_full.py leanA_out_ /tmp/agent/leanA_rust.txt /tmp/agent/leanA_pairs.txt`.
+For anchors, dotnet supports native `^ $ \b \A \z` so it adjudicates far more than
+it could for the nested-lookbehind lean2 cases; trust the RUST_WRONG bucket
+(dotnet and Lean agree against rust) and treat ENCODING_SUSPECT (dotnet agrees
+with rust) as translator artifacts. Then minimize each genuine bug with
+`/tmp/agent/adj2.py`-style probes and file under the audit dir.
 
-```sh
-cd /var/home/user/Downloads/extended-regexes
-export PATH="$HOME/.elan/bin:$PATH"
-head -3 /tmp/agent/leanA.lean > /tmp/agent/hdr.txt
-tail -n +4 /tmp/agent/leanA.lean > /tmp/agent/ev.txt
-split -n l/16 -d --additional-suffix=.e /tmp/agent/ev.txt /tmp/agent/Achunk_
-for f in /tmp/agent/Achunk_*.e; do n=$(basename "$f" .e|sed 's/Achunk_//'); cat /tmp/agent/hdr.txt "$f" > "leanA_chunk_$n.lean"; done
-for f in leanA_chunk_*.lean; do n=$(basename "$f" .lean|sed 's/leanA_chunk_//'); timeout 1200 lake env lean "$f" 2>/dev/null | grep '^R' > "leanA_out_$n.txt" & done; wait
-```
+Adjudication tooling now in place (reusable for any future round):
 
-Rust side for the anchor round: split `/tmp/agent/leanA_pairs.txt` and run
-`repro --batch` per chunk in parallel (single-process batch is slow; parallelise
-it). Then diff with `diff_lean_span.py` using prefix `leanA_out_` and the leanA
-pairs file. Note many anchor patterns also need rust ascii/flags/hardened modes,
-not just default, so consider extending `repro --batch` to take a mode.
+- `/tmp/agent/adj_full.py <out_prefix> <rust_file> <pairs_file>`: full three-way
+  bucket sort (RUST_WRONG, ENCODING_SUSPECT, UNADJUDICATED, 3WAY).
+- `/tmp/agent/adj.py`, `adj2.py`, `adj3.py`: focused minimal-case probes (edit the
+  CASES list). All set `DOTNET_ROOT` via the env (see below).
+- dotnet harness needs `DOTNET_ROOT=/home/user/.local/share/mise/installs/dotnet/10.0.300`
+  exported (fresh shells do not have it). Binary
+  `/tmp/agent/dnharness/bin/Release/net10.0/dnharness`, reads `<hexpat> <hexhay>`
+  per line, prints `im=..|fa=..|le=..` or `err=UnsupportedPatternException`.
+
+Rust side for any Lean round: parallelise `repro --batch` 16-way (single-process
+is the bottleneck). Split pairs with `split -n l/16 -d --additional-suffix=.p`,
+run `repro --batch < chunk > Arust_NN`, then `cat Arust_*.txt > rust.txt` (glob
+sorts numerically, preserving index alignment).
 
 Throughput gotchas learned:
 
@@ -239,15 +248,18 @@ Throughput gotchas learned:
   the stray by PID. `ffmpeg` in that list is the user's VideoDownloader, leave it.
 - `pkill -f '<pattern>'` matches its own shell. Kill via a script file that
   reads `/proc/*/cmdline` (see `/tmp/agent/killsweep.py`) or by explicit PID.
-- Lean elaboration is about 0.2s per `#eval`; 16-way chunking keeps a 54k-eval
-  round to roughly 20 to 40 minutes. Each `lake env lean` reloads mathlib oleans,
-  so do not run more than about 16 concurrently.
+- Lean elaboration is about 0.2s per `#eval` for non-anchor terms but slower for
+  anchor terms (big nested-lookaround `\b` encodings), so the anchor round is
+  roughly 60 minutes not 20. Each `lake env lean` reloads mathlib oleans, so do
+  not run more than about 16 concurrently.
+- `le` in `repro` output is `find_anchored(hay).end` (anchored at offset 0), not a
+  general longest-end. It is only comparable to `find_all`'s first span when that
+  span also starts at 0.
 
-Further avenues not yet done: full 41445-pattern non-anchor sweep (only 1200 and
-6000 sampled so far); longer haystacks for deeper position bugs; mining rust
-over-rejections (1014 of 7200 non-anchor patterns rust rejects that Lean
-accepts); per-mode Lean rounds (ascii, flags, hardened) since BUG-4/7/8 are
-mode-specific.
+Further avenues not yet done: harvest the anchor round (in flight); full
+41445-pattern non-anchor sweep (only 1200 and 6000 sampled so far); longer
+haystacks for deeper position bugs; per-mode Lean rounds (ascii, flags, hardened)
+since BUG-4/7/8 are mode-specific.
 
 ## Conventions for the writeups
 
