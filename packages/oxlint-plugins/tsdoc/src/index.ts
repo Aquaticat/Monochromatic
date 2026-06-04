@@ -40,7 +40,8 @@ import {
  *
  * Ports the eslint-plugin-jsdoc recommended-typescript ruleset to the oxlint
  * jsPlugin API, adapting all rules to conform to TSDoc (not JSDoc) specs.
- * Uses `\@microsoft/tsdoc` for authoritative comment parsing.
+ * Uses an in-house TSDoc comment scanner for parsing, with no external
+ * dependency on `\@microsoft/tsdoc`.
  *
  * @example
  * ```typescript

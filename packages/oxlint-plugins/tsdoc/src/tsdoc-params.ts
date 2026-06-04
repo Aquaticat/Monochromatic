@@ -7,11 +7,6 @@
  * @module
  */
 
-import type {
-  DocComment,
-  DocParamBlock,
-} from '@microsoft/tsdoc';
-
 import type { Span, } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
 
@@ -20,6 +15,10 @@ import {
   isRecord,
   type ReadonlyRecord,
 } from './ast-access.ts';
+import type {
+  ParsedDocComment,
+  ParsedParamBlock,
+} from './tsdoc-doc-model.ts';
 
 /**
  * Extracts parameter names from a function-like AST node.
@@ -106,11 +105,11 @@ function extractBindingName(pattern: ReadonlyRecord,): readonly string[] {
  * const docParamNames = extractDocParamNames(result.docComment);
  * ```
  */
-export function extractDocParamNames(docComment: ReadonlyDeep<DocComment>,): readonly string[] {
+export function extractDocParamNames(docComment: ReadonlyDeep<ParsedDocComment>,): readonly string[] {
   return docComment.params
     .blocks
     .map(
-      function getParamName(block: ReadonlyDeep<DocParamBlock>,): string {
+      function getParamName(block: ReadonlyDeep<ParsedParamBlock>,): string {
         return block.parameterName;
       },
     );

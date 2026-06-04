@@ -6,11 +6,6 @@
  * @module
  */
 
-import {
-  type DocSection,
-  PlainTextEmitter,
-} from '@microsoft/tsdoc';
-
 import type {
   Context,
   CreateOnceRule,
@@ -25,9 +20,8 @@ import {
 /**
  * Requires that returns tags have a description.
  *
- * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty returns
- * tags where the TSDoc parser creates a paragraph node containing only
- * whitespace or soft breaks.
+ * Relies on the scanner's precomputed `hasDescription`, which is true when the
+ * block has any non-whitespace text after the `\@returns` tag.
  *
  * @example
  * ```ts
@@ -64,8 +58,7 @@ export const requireReturnsDescription: CreateOnceRule = {
         const { returnsBlock, } = result.docComment;
         if (returnsBlock === undefined)
           return;
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- @microsoft/tsdoc PlainTextEmitter.hasAnyTextContent expects a mutable DocNode; content is only read
-        if (!PlainTextEmitter.hasAnyTextContent(returnsBlock.content as DocSection,)) {
+        if (!returnsBlock.hasDescription) {
           context.report({
             loc: commentReportLoc(result.comment,),
             messageId: 'missingDescription',

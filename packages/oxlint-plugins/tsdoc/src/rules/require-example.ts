@@ -36,16 +36,6 @@ import { extractNodeName, } from './node-extraction.ts';
 import { commentReportLoc, } from './tsdoc-visitors.ts';
 
 /**
- * TSDoc standard tag name for `\@example`.
- */
-const EXAMPLE_TAG_NAME = '@example';
-
-/**
- * TSDoc standard tag name for `\@internal`.
- */
-const INTERNAL_TAG_NAME = '@internal';
-
-/**
  * Checks whether a node is directly exported via inline `export` keyword.
  *
  * Detects `export function`, `export const`, and `export default`
@@ -76,23 +66,13 @@ function isDirectlyExported(node: Span,): boolean {
 /**
  * Checks whether a TSDoc comment contains an `\@example` block tag.
  *
- * `\@example` is stored in `docComment.customBlocks` by the
- * `\@microsoft/tsdoc` parser rather than as a dedicated property.
- *
  * @param result - parsed TSDoc result
  *
  * @returns true when at least one `\@example` block exists
  */
 function hasExampleTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
   return result.docComment
-    .customBlocks
-    .some(
-    function isExample(block,): boolean {
-      return block.blockTag
-        .tagName
-        === EXAMPLE_TAG_NAME;
-    },
-  );
+    .hasExampleTag;
 }
 
 /**
@@ -106,13 +86,11 @@ function hasExampleTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
  * @returns true when the comment should be skipped
  */
 function isExempt(result: ReadonlyDeep<TsdocParseResult>,): boolean {
-  if (result.docComment
-    .inheritDocTag
-    !== undefined)
-    return true;
-  return result.docComment
-    .modifierTagSet
-    .hasTagName(INTERNAL_TAG_NAME,);
+  /**
+   * Scanned doc model carrying the `@inheritDoc`/`@internal` exemption flags.
+   */
+  const { docComment, } = result;
+  return docComment.hasInheritDocTag || docComment.hasInternalModifier;
 }
 
 /**

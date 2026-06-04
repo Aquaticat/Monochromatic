@@ -6,11 +6,6 @@
  * @module
  */
 
-import {
-  type DocSection,
-  PlainTextEmitter,
-} from '@microsoft/tsdoc';
-
 import type {
   Context,
   CreateOnceRule,
@@ -67,9 +62,9 @@ export const requireParamName: CreateOnceRule = {
 /**
  * Requires that every `\@param` tag has a description after the parameter name.
  *
- * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty `\@param`
- * tags where the TSDoc parser creates a paragraph node containing only
- * whitespace or soft breaks.
+ * Relies on the scanner's precomputed `hasDescription`, which is true when the
+ * block has any non-whitespace text after the parameter name and optional
+ * hyphen separator.
  *
  * @example
  * ```ts
@@ -104,8 +99,7 @@ export const requireParamDescription: CreateOnceRule = {
           .params
           .blocks
           .forEach(function checkBlock(block,): void {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- @microsoft/tsdoc PlainTextEmitter.hasAnyTextContent expects a mutable DocNode; content is only read
-          if (!PlainTextEmitter.hasAnyTextContent(block.content as DocSection,)) {
+          if (!block.hasDescription) {
             context.report({
               loc: commentReportLoc(result.comment,),
               messageId: 'missingDescription',

@@ -8,7 +8,6 @@
     "monochromatic"
   ],
   "dependencies": {
-    "@microsoft/tsdoc": "catalog:",
     "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {

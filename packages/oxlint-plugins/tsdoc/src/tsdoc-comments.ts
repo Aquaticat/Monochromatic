@@ -6,20 +6,18 @@
  * @module
  */
 
-import {
-  type DocComment,
-  type ParserContext,
-  type ParserMessage,
-  TSDocConfiguration,
-  TSDocParser,
-} from '@microsoft/tsdoc';
-
 import type {
   Comment,
   Context,
   Span,
 } from '@oxlint/plugins';
 import type { ReadonlyDeep, } from 'type-fest';
+
+import { splitDocComment, } from './tsdoc-blocks.ts';
+import type { TsdocParseResult, } from './tsdoc-doc-model.ts';
+import { collectStructuralMessages, } from './tsdoc-structural-messages.ts';
+
+export type { TsdocParseResult, };
 
 /**
  * Absence marker meaning "node has no TSDoc comment"; never a real comment
@@ -39,46 +37,6 @@ import type { ReadonlyDeep, } from 'type-fest';
  * ```
  */
 export const NO_TSDOC: unique symbol = Symbol('tsdoc/no-tsdoc',);
-
-/**
- * Result of extracting and parsing a TSDoc comment for a node.
- *
- * @example
- * ```ts
- * const result = parseTsdocForNode(node, context);
- * if (result !== NO_TSDOC) {
- *   console.log(result.docComment.summarySection);
- * }
- * ```
- */
-export type TsdocParseResult = {
-  /**
-   * Raw block comment AST node from oxlint.
-   */
-  readonly comment: Comment;
-  /**
-   * Parsed TSDoc context containing docComment, messages, and tokens.
-   */
-  readonly parserContext: ParserContext;
-  /**
-   * Convenience alias for parserContext.docComment.
-   */
-  readonly docComment: DocComment;
-  /**
-   * Convenience alias for parserContext.log.messages.
-   */
-  readonly messages: readonly ParserMessage[];
-};
-
-/**
- * Shared TSDoc parser configuration with all standard tags.
- */
-const tsdocConfiguration: TSDocConfiguration = new TSDocConfiguration();
-
-/**
- * Shared TSDoc parser instance reused across all rule invocations.
- */
-const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
 
 /**
  * Checks whether a block comment is a TSDoc comment (starts with `*`).
@@ -253,21 +211,18 @@ export function parseTsdocForNode({
   if (comment === NO_TSDOC)
     return NO_TSDOC;
 
-  // Reconstruct full comment text as the parser expects `/** ... */`
   /**
-   * Reconstructed `/* ... *\/` form because `comment.value` strips the delimiters.
+   * Scanned doc model with param/returns facts and tag-presence flags.
    */
-  const commentText = `/*${comment.value}*/`;
+  const docComment = splitDocComment({ comment, },);
   /**
-   * Parser run state; holds the doc tree plus log messages forwarded to the rule.
+   * Structural diagnostics surfaced by the best-effort `valid-types` scan.
    */
-  const parserContext = tsdocParser.parseString(commentText,);
+  const messages = collectStructuralMessages({ comment, },);
 
   return {
     comment,
-    parserContext,
-    docComment: parserContext.docComment,
-    messages: parserContext.log
-      .messages,
+    docComment,
+    messages,
   };
 }

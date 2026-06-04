@@ -1,7 +1,7 @@
 # config-oxlint-tsdoc
 
 Oxlint JS plugin providing TSDoc validation rules adapted from eslint-plugin-jsdoc's recommended-typescript config.
-Uses `@microsoft/tsdoc` for authoritative comment parsing.
+Uses an in-house TSDoc comment scanner; no external dependency on `@microsoft/tsdoc`.
 
 ## Motivation
 
@@ -46,7 +46,8 @@ All rules are enabled by default at `"warn"` severity with `recommended: true`.
   reports JSDoc-only tags with migration suggestions;
   skips fenced code blocks and backtick-wrapped inline code
 - **check-access**: detects conflicting access modifier tags
-- **valid-types**: reports TSDoc parse errors from the `@microsoft/tsdoc` parser
+- **valid-types**: reports best-effort structural problems from the in-house scanner
+  (`@param` tag missing its hyphen separator, unclosed `{@link`, empty `{@link}`)
 - **no-types**: disallows JSDoc-style `{Type}` annotations in TSDoc
 
 ### Parameter documentation
@@ -77,7 +78,11 @@ Files matching these extensions are skipped by all rules:
 ## Source files
 
 - `index.ts`: plugin entry point; assembles all rules into the oxlint plugin object
-- `tsdoc-utils.ts`: shared TSDoc parsing, comment lookup, parameter extraction utilities
+- `tsdoc-utils.ts`: barrel for comment lookup, file filtering, parameter extraction utilities
+- `comment-text.ts`: leaf text-scanning primitives (line normalization, tag/code scanning)
+- `tsdoc-blocks.ts`: in-house scanner producing the parsed `@param`/`@returns` model
+- `tsdoc-structural-messages.ts`: best-effort structural diagnostics for `valid-types`
+- `tsdoc-doc-model.ts`: parsed doc-model and message types
 - `rules/require-tsdoc.ts`: require-tsdoc rule with scope-depth tracking
 - `rules/structural.ts`: structural formatting rules (alignment, multiline, asterisks, tag spacing, escaping)
 - `rules/tag-validation.ts`: tag name validation, access checks, parse error reporting, type annotation detection

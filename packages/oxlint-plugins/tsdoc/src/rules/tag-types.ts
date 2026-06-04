@@ -1,7 +1,8 @@
 /**
- * TSDoc parse error validation rule.
+ * TSDoc structural validation rule.
  *
- * `validTypes` reports TSDoc parser errors detected by the microsoft/tsdoc parser.
+ * `validTypes` reports structural problems found by the in-house comment
+ * scanner (missing `@param` hyphen, unclosed or empty inline tags).
  *
  * @module
  */
@@ -20,16 +21,16 @@ import {
 } from '../tsdoc-utils.ts';
 
 /**
- * Reports TSDoc parse errors from the microsoft/tsdoc parser.
+ * Reports structural TSDoc problems from the in-house comment scanner.
  *
- * Catches syntax errors, malformed inline tags, broken link references,
- * and other structural issues the parser detects.
+ * Catches a `\@param` tag missing its hyphen separator and malformed inline
+ * tags (unclosed `{\@link`, empty `{\@link}`).
  */
 export const validTypes: CreateOnceRule = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Report TSDoc syntax errors detected by the TSDoc parser.',
+      description: 'Report structural TSDoc problems found by the comment scanner.',
       recommended: true,
     },
     messages: {
@@ -44,7 +45,7 @@ export const validTypes: CreateOnceRule = {
      */
     function check(node: Span,): void {
       /**
-       * Parsed TSDoc result; only the `messages` field is consumed to surface parser errors.
+       * Parsed TSDoc result; only the `messages` field is consumed to surface structural problems.
        */
       const result = parseTsdocForNode({
         node,
