@@ -154,6 +154,32 @@ triggering patterns (counts from the 159k-pattern directed sweep):
 - `RUST_TIMEOUT` in the dotnet differential: dozens of distinct slow-compile
   patterns (BUG-11).
 
+## Over-rejection analysis (no bug)
+
+The Lean leftmost-longest round left 8055 of 54000 pairs where rust returned a
+compile error (895 distinct patterns). Mining these against the dotnet reference
+and the source resolved them to three deliberate parser restrictions, not
+soundness bugs:
+
+- Lookbehind not at the start of its concatenation. rust rejects `a(?<!b)`,
+  `.(?<!b)`, `ab(?<!c)`, `b(?<!b)`, while accepting a leading lookbehind
+  (`(?<!b)a`). This is an explicit check, `ensure_lookbehind_at_start` in
+  `resharp-parser/src/lib.rs:479` (`if !at_start { return Err(g.span) }`): a
+  lookbehind is allowed only when nothing consuming precedes it. The dotnet
+  reference supports trailing lookbehind and evaluates it correctly (`b(?<!b)`
+  no match, `ab(?<!c)` matches `0:2`), so this is a deliberate divergence from the
+  reference, not a defect in rust.
+- Complement of a sub-expression whose language resharp cannot complement. The
+  rejection is structure-dependent, not blanket: `~((?!a)b)` compiles but
+  `~((?!.))`, `~((?=a))`, `~(a(?=b))`, `~((?<=a)b)` do not. This tracks the
+  complementability of the inner language.
+- Class ranges with a class endpoint. `[\d-a]` is rejected (`ClassRangeLiteral`,
+  `resharp-parser/src/lib.rs:305`); the dotnet reference instead reads the `-`
+  literally and matches. A parse-strictness divergence, not a soundness issue.
+
+Reading the parser source before filing kept these intentional limits out of the
+bug count.
+
 ## Caveats and relationship to known bugs
 
 - The `reentrant-assert` feature is a default feature and is the project's own
