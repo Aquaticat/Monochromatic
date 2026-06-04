@@ -1,9 +1,10 @@
 /**
- * Shared oxlint configuration for Monochromatic repositories.
+ * Shared oxlint configuration for Monochromatic repositories (development entry).
  *
- * Composes rule modules (tsdoc, correctness, restriction, style) and
- * file-pattern overrides into a single typed `OxlintConfig` object.
- * The root `oxlint.config.ts` imports and re-exports this config.
+ * Spreads {@link base} and resolves `jsPlugins` to the in-repo plugin TypeScript
+ * source (`/ts` subpath), so development linting tracks live plugin source with no
+ * rebuild. The published default export is the prebuilt `index.node.ts`; this file
+ * is the `./ts` source export.
  *
  * @example
  * ```typescript
@@ -20,109 +21,31 @@ import {
   type OxlintConfig,
 } from 'oxlint';
 
-import { overrides, } from './overrides.ts';
-import { correctnessRules, } from './rules/correctness.ts';
-import { restrictionRules, } from './rules/restriction.ts';
-import { styleRules, } from './rules/style.ts';
-import { tsdocRules, } from './rules/tsdoc.ts';
+import { base, } from './config-base.ts';
 
 /**
- * Shared oxlint configuration.
+ * Shared oxlint configuration resolving plugins to TypeScript source.
+ *
+ * oxlint's Rust resolver does not understand pnpm workspace package names, so the
+ * plugin `/ts` source subpaths resolve to absolute paths via `import.meta.resolve()`
+ * at config evaluation time (Node.js handles workspace resolution).
  */
 const config: OxlintConfig = defineConfig({
-  categories: {
-    correctness: 'error',
-    suspicious: 'warn',
-    pedantic: 'warn',
-    style: 'warn',
-  },
-
-  options: {
-    denyWarnings: true,
-    reportUnusedDisableDirectives: 'warn',
-    typeAware: true,
-    typeCheck: true,
-  },
-
-  plugins: [
-    'unicorn',
-    'typescript',
-    'oxc',
-    'import',
-    'promise',
-    'node',
-  ],
-
-  env: {
-    browser: true,
-    node: true,
-    es2024: true,
-  },
-
-  settings: {},
-
-  // Root-only options like `typeAware` cannot live in any config file because
-  // oxlint treats configs found via upward directory walk as nested (not root).
-  // Pass `--type-aware` via the CLI instead (see mise task template `lint:oxlint`).
+  ...base,
 
   // Language server still doesn't support js plugins.
   // Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
-  //
-  // oxlint's Rust resolver doesn't understand pnpm workspace package names,
-  // so we resolve them to absolute paths via import.meta.resolve() at config
-  // evaluation time (Node.js handles workspace resolution).
   jsPlugins: [
     // TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-tsdoc',),).pathname,
+    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-tsdoc/ts',),).pathname,
 
     // Banned syntax patterns that oxlint's built-in rules can't express.
-    new URL(
-      import.meta.resolve('@monochromatic-dev/config-oxlint-no-restricted-syntax',),
-    )
+    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-no-restricted-syntax/ts',),)
       .pathname,
 
     // TypeScript layout enforcement for per-line constructs, semicolons, and expression structure.
-    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-stylistic',),).pathname,
+    new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-stylistic/ts',),).pathname,
   ],
-
-  ignorePatterns: [
-    '**/dist',
-    '**/node_modules',
-    '**/logs',
-    '**/coverage',
-    '**/bak',
-    '**/*.js',
-    '**/*.cjs',
-    '**/deprecated.*',
-    '**/deprecated/**',
-    // Paused and deprecated package trees are out of the lint/format scope; one
-    // file in packages-paused also has a two-rule autofix oscillation that
-    // stalls `task-oxlint --fix` (see docs/troubleshooting/oxlint-multi-fix-convergence.md).
-    '**/packages-paused/**',
-    '**/packages-deprecated/**',
-    '**/fixture/**',
-    '**/invalid/**',
-    '**/test-fixture/**',
-    '**/perf-test-data/**',
-    '**/teto-generated/**',
-    '**/sudoku-puzzles*',
-    '**/perf-expected-output*',
-    '**/*.astro',
-    '**/i18n/i18n-types.ts',
-    '**/i18n/i18n-util.ts',
-    '**/i18n/i18n-util.sync.ts',
-    '**/i18n/i18n-util.async.ts',
-    '**/*.generated.ts',
-  ],
-
-  rules: {
-    ...tsdocRules,
-    ...correctnessRules,
-    ...restrictionRules,
-    ...styleRules,
-  },
-
-  overrides,
 },);
 
 export default config;

@@ -12,6 +12,7 @@
     "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
@@ -19,7 +20,8 @@
   },
   "type": "module",
   "files": [
-    "src"
+    "src",
+    "dist/final"
   ],
   "author": {
     "name": "Aquaticat",
@@ -34,11 +36,11 @@
   },
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
     },
-    "./.ts": {
-      "default": "./src/index.ts"
-    }
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
   "description": "Oxlint JS plugin implementing no-restricted-syntax rules that oxlint does not support natively.",
   "publishConfig": {

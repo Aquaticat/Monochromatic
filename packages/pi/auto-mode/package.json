@@ -34,12 +34,12 @@
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@earendil-works/pi-ai": "^0.74.0",
+    "@earendil-works/pi-ai": "catalog:",
     "@earendil-works/pi-coding-agent": "catalog:",
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
-    "typebox": "^1.1.34"
+    "typebox": "catalog:"
   }
 }

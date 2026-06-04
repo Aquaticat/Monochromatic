@@ -18,7 +18,13 @@ catalogs:
     '@deck.gl/mesh-layers':
       specifier: '>=9.3.2'
       version: 9.3.2
+    '@earendil-works/pi-ai':
+      specifier: '>=0.78.1'
+      version: 0.78.1
     '@earendil-works/pi-coding-agent':
+      specifier: '>=0.78.1'
+      version: 0.78.1
+    '@earendil-works/pi-tui':
       specifier: '>=0.78.1'
       version: 0.78.1
     '@lezer/common':
@@ -255,6 +261,9 @@ catalogs:
     type-fest:
       specifier: '>=5.4.3'
       version: 5.5.0
+    typebox:
+      specifier: '>=1.1.34'
+      version: 1.1.38
     typesafe-i18n:
       specifier: '>=5.27.1'
       version: 5.27.1
@@ -852,6 +861,9 @@ importers:
         specifier: 'catalog:'
         version: 1.67.0(oxlint-tsgolint@0.23.0)
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../typescript
@@ -2041,6 +2053,9 @@ importers:
         specifier: 'catalog:'
         version: 1.67.0
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -2063,6 +2078,9 @@ importers:
         specifier: 'catalog:'
         version: 1.67.0
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -2079,6 +2097,9 @@ importers:
         specifier: 'catalog:'
         version: 1.67.0
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -2111,8 +2132,8 @@ importers:
         version: 2.1.0
     devDependencies:
       '@earendil-works/pi-ai':
-        specifier: ^0.74.0
-        version: 0.74.0
+        specifier: 'catalog:'
+        version: 0.78.1
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
         version: 0.78.1
@@ -2145,14 +2166,14 @@ importers:
         version: 1.4.0(typescript@6.0.3)
     devDependencies:
       '@earendil-works/pi-ai':
-        specifier: ^0.74.0
-        version: 0.74.0
+        specifier: 'catalog:'
+        version: 0.78.1
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
         version: 0.78.1
       '@earendil-works/pi-tui':
-        specifier: ^0.74.0
-        version: 0.74.1
+        specifier: 'catalog:'
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2166,7 +2187,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
       typebox:
-        specifier: ^1.1.34
+        specifier: 'catalog:'
         version: 1.1.38
 
   packages/pi/auto-mode:
@@ -2185,8 +2206,8 @@ importers:
         version: 1.4.0(typescript@6.0.3)
     devDependencies:
       '@earendil-works/pi-ai':
-        specifier: ^0.74.0
-        version: 0.74.0
+        specifier: 'catalog:'
+        version: 0.78.1
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
         version: 0.78.1
@@ -2203,8 +2224,8 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
       typebox:
-        specifier: ^1.1.34
-        version: 1.1.34
+        specifier: 'catalog:'
+        version: 1.1.38
 
   packages/pi/current-time-context:
     dependencies:
@@ -2234,8 +2255,8 @@ importers:
         specifier: 'catalog:'
         version: 0.78.1
       '@earendil-works/pi-tui':
-        specifier: ^0.74.0
-        version: 0.74.1
+        specifier: 'catalog:'
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2964,11 +2985,6 @@ packages:
     resolution: {integrity: sha512-oPwVRkkAvyKPWyM7E4k+EaTNmynbYn7ZLG/LBh9BUnMNb2gvpMp+VQ420R6JCJ20uogSqrHnWTyosSa/rU8lVw==}
     engines: {node: '>=22.19.0'}
 
-  '@earendil-works/pi-ai@0.74.0':
-    resolution: {integrity: sha512-7M7qcrZY/KEkH4wFkX3eqzvmKru4O88wezNKoN0KD2m4aAOmp9tdW2xCmUgSTSWlKB7b2Xw9QtAgrzHtg6t6iw==}
-    engines: {node: '>=20.0.0'}
-    hasBin: true
-
   '@earendil-works/pi-ai@0.78.1':
     resolution: {integrity: sha512-CM2pkTs1iupG/maw381lC9Q/Y/aQaMGK7GILc28ttImD0ci3LDwKroDsGkWbly5JIy3iqxdRxB9JlG7vvzCzTg==}
     engines: {node: '>=22.19.0'}
@@ -2978,10 +2994,6 @@ packages:
     resolution: {integrity: sha512-Syjf6Ib8UoY5t9ZdKjp0BRrQZuFkFBc8j2KEU9zG/ZnmYPcAxYeioofdv2Q3MEXnHEX2U8sKQptkSnJIdMsd0g==}
     engines: {node: '>=22.19.0'}
     hasBin: true
-
-  '@earendil-works/pi-tui@0.74.1':
-    resolution: {integrity: sha512-wQj2TRG43/BBNyd/lReQJWtTCOJVyIwI+7Ifp3hNITfTtQr4zQdMeF7uxqEMQ73LI6rQO7Ljx0P2w+oMx8uyIA==}
-    engines: {node: '>=20.0.0'}
 
   '@earendil-works/pi-tui@0.78.1':
     resolution: {integrity: sha512-07GVQo/38a0yvIPlWDr3RJn1B8gk3ZuIX9h2oIQ+Biyu3JN0KppWmgWHfaWRydQgse5JtC++KDw5MWaIRnV0mw==}
@@ -5519,9 +5531,6 @@ packages:
     resolution: {integrity: sha512-PlBfpQwiUvGViBNX84Yxwjsdhd1TUlXr6zjX7eoirtCPIr08NAmxwa+fcYBTeRQxHo9YC9wwF3m9i700sHma8g==}
     engines: {node: '>=20'}
 
-  typebox@1.1.34:
-    resolution: {integrity: sha512-V0fM5W5DTXlEMDxqtX1dQ25HR1RQ11DPUVrIup4sJi1yQtIyI30SHfxBy/HjXKL1CtUqc5or2igA/wa/v4hMKQ==}
-
   typebox@1.1.38:
     resolution: {integrity: sha512-pZ0aQPmMmXoUvSbeuWf/Hzsc+avNw/Zd6VeE8CFgkVGWyuHPJvqeJJDeJqLve+K70LvjYIoleGcoJHPT17cWoA==}
 
@@ -5874,16 +5883,6 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.74.0':
-    dependencies:
-      '@anthropic-ai/sdk': 0.92.0
-      openai: 6.26.0
-      partial-json: 0.1.7
-      typebox: 1.1.38
-    transitivePeerDependencies:
-      - ws
-      - zod
-
   '@earendil-works/pi-ai@0.78.1':
     dependencies:
       '@anthropic-ai/sdk': 0.92.0
@@ -5921,11 +5920,6 @@ snapshots:
       - supports-color
       - ws
       - zod
-
-  '@earendil-works/pi-tui@0.74.1':
-    dependencies:
-      get-east-asian-width: 1.6.0
-      marked: 15.0.12
 
   '@earendil-works/pi-tui@0.78.1':
     dependencies:
@@ -8677,8 +8671,6 @@ snapshots:
   type-fest@5.5.0:
     dependencies:
       tagged-tag: 1.0.0
-
-  typebox@1.1.34: {}
 
   typebox@1.1.38: {}
 

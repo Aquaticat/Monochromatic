@@ -23,6 +23,11 @@ export default defineConfig({
 
 All rules are enabled by default at `"warn"` severity with `recommended: true`.
 
+The package default export resolves to the prebuilt, self-contained
+`dist/final/node/index.mjs` (run `mise run //packages/oxlint-plugins/tsdoc:build` first).
+TypeScript source is available at the `/ts` subpath (`/ts/*` for individual files) for
+development.
+
 ## Rules
 
 ### Presence

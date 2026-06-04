@@ -143,3 +143,8 @@ export default defineConfig({
   jsPlugins: ['@monochromatic-dev/config-oxlint-no-restricted-syntax',],
 },);
 ```
+
+The package default export resolves to the prebuilt, self-contained
+`dist/final/node/index.mjs` (run `mise run //packages/oxlint-plugins/no-restricted-syntax:build`
+first). TypeScript source is available at the `/ts` subpath (`/ts/*` for individual files)
+for development.

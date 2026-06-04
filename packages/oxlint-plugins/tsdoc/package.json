@@ -1,6 +1,7 @@
 {
   "name": "@monochromatic-dev/config-oxlint-tsdoc",
-  "private": true,
+  "version": "0.0.1",
+  "private": false,
   "keywords": [
     "oxlint",
     "tsdoc",
@@ -11,6 +12,7 @@
     "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
@@ -20,7 +22,8 @@
   },
   "type": "module",
   "files": [
-    "src"
+    "src",
+    "dist/final"
   ],
   "author": {
     "name": "Aquaticat",
@@ -35,11 +38,15 @@
   },
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
     },
-    "./.ts": {
-      "default": "./src/index.ts"
-    }
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
-  "description": "Oxlint JS plugin providing TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config."
+  "description": "Oxlint JS plugin providing TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config.",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

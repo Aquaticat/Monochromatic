@@ -179,6 +179,11 @@ export default defineConfig({
 },);
 ```
 
+The package default export resolves to the prebuilt, self-contained
+`dist/final/node/index.mjs` (run `mise run //packages/oxlint-plugins/stylistic:build` first).
+TypeScript source is available at the `/ts` subpath (`/ts/*` for individual files) for
+development.
+
 ## Design decisions
 
 **Union/intersection types excluded**: a `union-per-line` rule was prototyped but dropped.
