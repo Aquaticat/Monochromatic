@@ -57,9 +57,6 @@ catalogs:
     '@mdx-js/mdx':
       specifier: '>=3.1.0'
       version: 3.1.1
-    '@microsoft/tsdoc':
-      specifier: '>=0.16.0'
-      version: 0.16.0
     '@mitata/counters':
       specifier: '>=0.0.8'
       version: 0.0.8
@@ -2078,9 +2075,6 @@ importers:
 
   packages/oxlint-plugins/tsdoc:
     dependencies:
-      '@microsoft/tsdoc':
-        specifier: 'catalog:'
-        version: 0.16.0
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.67.0
@@ -3307,9 +3301,6 @@ packages:
 
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
-
-  '@microsoft/tsdoc@0.16.0':
-    resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
 
   '@mitata/counters@0.0.8':
     resolution: {integrity: sha512-f11w0Y1ETFlarDP7CePj8Z+y8Gv5Ax4gMxWsEwrqh0kH/YIY030Ezx5SUJeQg0YPTZ2OHKGcLG1oGJbIqHzaJA==}
@@ -6314,8 +6305,6 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  '@microsoft/tsdoc@0.16.0': {}
 
   '@mitata/counters@0.0.8': {}
 

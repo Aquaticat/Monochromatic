@@ -2,15 +2,14 @@
 
 ## Status
 
-Rejected for new direct dependencies as of 2026-06-04.
+Removed as a direct dependency as of 2026-06-04.
 
-The existing direct use in `packages/oxlint-plugins/tsdoc` is a contained exception while the repo
-keeps `tsdoc/valid-types` or other authoritative parser-backed rules. Do not add
-`@microsoft/tsdoc` to any other workspace package without updating this decision.
+Do not add `@microsoft/tsdoc` back to any workspace package without updating this decision and redoing the
+replacement survey.
 
 ## Context
 
-`@microsoft/tsdoc` currently supports the custom oxlint TSDoc plugin:
+`@microsoft/tsdoc` previously supported the custom oxlint TSDoc plugin:
 
 - `packages/oxlint-plugins/tsdoc/src/tsdoc-comments.ts` imports `TSDocParser`,
   `TSDocConfiguration`, parser result types, and message types.
@@ -107,25 +106,20 @@ Reasons:
 ## Policy
 
 - Do not add `@microsoft/tsdoc` as a new `dependencies`, `devDependencies`,
-  `optionalDependencies`, or `peerDependencies` entry in any additional workspace package.
-- Keep imports contained behind `packages/oxlint-plugins/tsdoc/src/tsdoc-comments.ts` and rule-local
-  helpers while the existing exception remains.
+  `optionalDependencies`, or `peerDependencies` entry in any workspace package.
 - Do not deep-import `@microsoft/tsdoc/lib/**`, `@microsoft/tsdoc/lib-commonjs/**`, or
   `@microsoft/tsdoc/beta/**` from repo code.
 - If another package needs parser-backed TSDoc behavior, depend on the workspace oxlint plugin or a
   new local adapter package, not on `@microsoft/tsdoc` directly.
 
-## Exception exit criteria
+## Reconsideration criteria
 
-The existing exception in `packages/oxlint-plugins/tsdoc` should end when one of these becomes true:
+A future exception requires all of these conditions:
 
-- `tsdoc/valid-types` is removed, disabled, or replaced by local diagnostics.
-- A local `comment-parser` adapter covers the repo's required TSDoc semantics and has fixture tests
+- Parser-backed TSDoc diagnostics become required again after local diagnostics prove insufficient.
+- A local `comment-parser` adapter cannot cover the repo's required TSDoc semantics with fixture tests
   for malformed inline tags, `@link`, `@param`, `@returns`, fenced code, inline code, and escaped
   at signs.
 - Upstream materially improves direct-dependency fitness: source maps stop shipping in the npm
   artifact, the package adds an `exports` map with narrow subpaths, and recent issue responsiveness
   shows maintainer comments or actions on user-filed issues.
-
-Until then, keep the exception explicit, adapter-isolated, and covered by
-`mise run //packages/oxlint-plugins/tsdoc:test:unit`.
