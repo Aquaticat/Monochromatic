@@ -142,6 +142,31 @@ triggering patterns (counts from the 159k-pattern directed sweep):
   (`usize::MAX`, `engine.rs:12`) reaches a `Match`. One path asserts on it
   (`engine.rs:960`), another pushes it silently (`engine.rs:1009`, `:1022`).
 
+## The dotnet reference has its own bugs
+
+The dotnet differential is a candidate generator, not an oracle. The dotnet
+engine is older and was the basis for the rust rewrite, but it has systematic
+defects of its own, so its `is_match` / `find_all` disagreements with rust are
+often the dotnet side being wrong. Confirmed dotnet defects found while
+adjudicating:
+
+- lookahead followed by an empty-matching star: `(?=1)[a-c]*` on `1` and
+  `(?=[a-c])1*` on `a` both match (the lookahead holds and the star matches
+  empty), but dotnet reports no match. rust is correct here.
+- anchor intersection: `(\A&$)` on `a` and `(a&\A\S)` on `ba` have no match
+  (a single span cannot satisfy both anchor constraints at the required
+  position), but dotnet reports a match. rust is correct here.
+
+Because of this, the `IM_DIFF`, `FA_DIFF`, and `LE_DIFF` differential classes are
+heavily contaminated with dotnet bugs and were not used to file rust bugs except
+where the regex crate or plain semantic reasoning independently confirms rust is
+wrong (for example BUG-3's `\z\A(?:a){0,1}`, confirmed by the regex crate). The
+20 findings rest on the self-consistency oracles (a single engine contradicting
+itself, which is unambiguous) plus the two confirmed differential classes
+`RUST_PANIC` (BUG-2) and `RUST_TIMEOUT` (BUG-11). The Lean formalization in
+`~/Downloads/extended-regexes` is the tie-breaker for the contaminated classes,
+and is the next tool to stand up to mine more correctness bugs safely.
+
 ## Status
 
 Campaign in progress. This index and the per-bug files are updated as new

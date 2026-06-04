@@ -11,16 +11,21 @@
 ## Minimal reproducer
 
 ```rust
-use resharp::{Regex, RegexOptions, UnicodeMode};
-let re = Regex::with_options(r"\S+b", RegexOptions::default().unicode(UnicodeMode::Full)).unwrap();
-let _ = re.find_all(b"b'_"); // panics
+use resharp::Regex;
+// panics in the default option mode on a two byte input:
+let re = Regex::new(r".\W*b+").unwrap();
+let _ = re.find_all(b"ba"); // panics at engine.rs:960
 ```
 
 Command line:
 
 ```sh
-repro '\S+b' 62275f --hex
+repro '.\W*b+' 6261 --hex
+repro '\S+b'   62275f --hex   # also panics, in default/full/js/flags modes
 ```
+
+`.\W*b+` on `ba` is the cleanest trigger: default option mode, a two byte ascii
+input. The dotnet reference returns `no match` for it.
 
 A second independent trigger:
 
