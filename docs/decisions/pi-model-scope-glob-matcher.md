@@ -17,6 +17,7 @@ pi package manifests.
 `zeptomatch` fits because it is an in-memory glob matcher with TypeScript declarations, MIT licensing, and a catalogued
 transitive presence through `tiny-readdir-glob`. Source audit on 2026-06-04:
 
+- `/tmp/agent/zeptomatch-20260604/package.json` declares runtime dependencies on `grammex` and `graphmatch`.
 - `/tmp/agent/zeptomatch-20260604/src/index.ts` exposes `zeptomatch(glob, path, options)` and
   `zeptomatch.compile(glob, options)`.
 - `/tmp/agent/zeptomatch-20260604/src/types.ts` shows the options surface is only `{ partial?: boolean }`.
@@ -24,8 +25,7 @@ transitive presence through `tiny-readdir-glob`. Source audit on 2026-06-04:
   negation, separator normalization, and no special dot-file handling.
 
 Because `zeptomatch` has no `nocase` option, the shared model-selection code lowercases both the pattern and candidate
-before matching. Model providers and ids are ASCII slugs in this surface, so this preserves the previous
-case-insensitive behaviour.
+before matching. The scoped model surface is intentionally case-insensitive for provider/model slug matching.
 
 ## Alternatives
 
@@ -58,3 +58,6 @@ an in-repo matcher because existing glob implementations carry more edge-case co
 - `packages/pi-shared/model-selection/package.json` declares `zeptomatch` from the pnpm catalog.
 - `packages/pi/advisor/package.json` no longer declares a matcher dependency directly.
 - Scope-pattern tests cover case-insensitive canonical-slug and bare-id glob matching.
+- Scope-pattern tests cover brace, character-class, globstar, slash-boundary, and escaped-star glob syntax.
+- Pi extension builds that bundle `@monochromatic-dev/pi-shared-model-selection` also bundle `zeptomatch`, `grammex`,
+  and `graphmatch`. This matches the shared tsdown Node config's self-contained extension bundling policy.

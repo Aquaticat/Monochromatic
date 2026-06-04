@@ -27,6 +27,12 @@ const expensiveModel = fixtureModel({
   id: 'reviewer',
 },);
 
+/** Model fixture whose id contains a literal glob token. */
+const literalStarModel = fixtureModel({
+  provider: 'cheap',
+  id: 'review*',
+},);
+
 /** Model list used by pattern resolution tests. */
 const availableModels = [
   cheapModel,
@@ -100,6 +106,73 @@ await describe({
             'cheap/reviewer',
             'expensive/reviewer',
           ],);
+      },
+    },),
+    it({
+      name: 'keeps expected glob syntax for model scope patterns',
+      fn: async function testExpectedGlobSyntax() {
+        /**
+         * Result matched through brace alternation on provider segment.
+         */
+        const braceResult = resolveModelPatterns({
+          patterns: ['{cheap,expensive}/*',],
+          availableModels,
+        },);
+        expect(braceResult.map(function mapBraceEntry(entry,) {
+          return entry.canonicalSlug;
+        },),)
+          .toEqual([
+            'cheap/reviewer',
+            'expensive/reviewer',
+          ],);
+
+        /**
+         * Result matched through character class syntax.
+         */
+        const characterClassResult = resolveModelPatterns({
+          patterns: ['cheap/reviewe[!x]',],
+          availableModels,
+        },);
+        expect(characterClassResult.map(function mapCharacterClassEntry(entry,) {
+          return entry.canonicalSlug;
+        },),)
+          .toEqual(['cheap/reviewer',],);
+
+        /**
+         * Result matched through globstar across provider/id separator.
+         */
+        const globstarResult = resolveModelPatterns({
+          patterns: ['cheap/**',],
+          availableModels,
+        },);
+        expect(globstarResult.map(function mapGlobstarEntry(entry,) {
+          return entry.canonicalSlug;
+        },),)
+          .toEqual(['cheap/reviewer',],);
+
+        /**
+         * Result proving single-star globs do not cross provider/id separator.
+         */
+        const slashBoundaryResult = resolveModelPatterns({
+          patterns: ['cheap*',],
+          availableModels,
+        },);
+        expect(slashBoundaryResult,).toEqual([],);
+
+        /**
+         * Result proving escaped glob tokens are treated literally.
+         */
+        const escapedStarResult = resolveModelPatterns({
+          patterns: [String.raw`cheap/review\*`,],
+          availableModels: [
+            cheapModel,
+            literalStarModel,
+          ],
+        },);
+        expect(escapedStarResult.map(function mapEscapedStarEntry(entry,) {
+          return entry.canonicalSlug;
+        },),)
+          .toEqual(['cheap/review*',],);
       },
     },),
   ],

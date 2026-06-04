@@ -80,9 +80,8 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
  * Match model glob patterns with pi's case-insensitive scope semantics.
  *
  * Zeptomatch has no `nocase` option, so both sides are normalized to
- * lowercase before matching. Model providers and ids are ASCII slugs,
- * which keeps this equivalent to the previous case-insensitive behaviour
- * for the scoped-model surface.
+ * lowercase before matching. The scoped model surface is intentionally
+ * case-insensitive for provider/model slug matching.
  *
  * @param pattern - pi model scope glob pattern
  *
