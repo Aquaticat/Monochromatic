@@ -55,6 +55,8 @@ The following local tracking issues were closed as out-of-scope per this policy:
 
 - `#161` Track upstream JSR 502 on conditional GET (jsr-io/jsr#1323) for
   `bun install`
+- `#157` Track upstream JSR and vlt fixes for version-specific manifest
+  endpoint 404 (vlt aspect mooted by the vlt-to-pnpm migration)
 
 ## Exception
 
