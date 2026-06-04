@@ -118,6 +118,12 @@ search accelerator only.
   takes 10.5 s on 96 KB and 18 s on 128 KB; `is_match`/`find_anchored` are O(1).
   Quadratic under every limits-enabled config except `hardened`, which takes the
   linear DFA driver, so the quadratic is avoidable.
+- [BUG-19](bug-19-fullmode-anchor-word-class-construction-cost.md): an anchor in
+  front of a full-mode word class (`$?\w`, `$\w`, `$?\W`) costs 1 to 3 seconds to
+  match 16 KB of diverse bytes under `unicode(Full)`, a fixed match-time DFA
+  construction cost. Full mode only; `\w` alone, `\d`/`\s`, and ascii/js modes are
+  all sub-millisecond. The mode-independent bracketed analogue `$[\w]` (~1.15 s) is
+  documented as the match-time face of BUG-17.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -161,9 +167,10 @@ the dotnet reference and plain semantic reasoning.
 28. (?<=$) find_all 'a'*512  ~13s match-time blowup, lookbehind-of-lookahead  BUG-16
 29. ([\w]{3,5}){3,3}         ~15s compile blowup, bracketed perl-class repeat  BUG-17
 30. ~(a+) find_all 'a'*98304 ~10.5s O(n^2) find_all, nullable complement       BUG-18
+31. $?\w is_match cyc(16384) ~3s full-mode anchor+\w construction cost         BUG-19
 ```
 
-The campaign covers sixteen distinct root causes (BUG-1 through BUG-18, numbers 5
+The campaign covers seventeen distinct root causes (BUG-1 through BUG-19, numbers 5
 and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
 self-consistent at the span level and so invisible to every internal oracle). A
 panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA

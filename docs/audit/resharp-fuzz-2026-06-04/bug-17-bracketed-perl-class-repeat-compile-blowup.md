@@ -124,6 +124,29 @@ the same because it is the class lowering and the repeat unroll, neither of whic
 the configs change. The `unbounded_size` config is out of scope: it disables the
 size limits, and the 10-second invariant only governs the limits-enabled configs.
 
+## Match-time manifestation
+
+The same un-canonicalized `[\w]` class also costs seconds at match time, without
+any repetition, when an anchor sits in front of it and the input is diverse.
+`$[\w]` (end-anchor then bracketed word class) runs `is_match` over 16 KB of
+varied bytes in about 1.15 seconds, fixed in the input length, under the default
+config:
+
+```text
+$[\w]    is_match cyc(N):  N=4096 1.16   16384 1.15   32768 1.14
+$[\w\d]  is_match cyc(16384) 1.13
+$[a-z]   0.0000   $[\d] 0.004   $[\s] 0.0001   $[abc] 0.0000   $\w 0.0009
+```
+
+Only the bracketed perl word shorthand (`$[\w]`, `$[\w\d]`) is slow; the explicit
+ranges, the smaller shorthands, and the bare `$\w` are all fast, the same split as
+the compile case. So the bracketed-class representation is expensive to construct
+into a lazy DFA as well as to repeat, and the adjacent anchor's lookahead is what
+forces that construction over diverse input. Fixing the canonicalization removes
+both the compile blowup and this match-time cost. (The full-mode analogue, where
+bare `\w` is large enough to trigger the same anchor-adjacent construction cost, is
+BUG-19.)
+
 ## Relationship to other findings
 
 This is very likely the real root cause of BUG-11. BUG-11's trigger,
