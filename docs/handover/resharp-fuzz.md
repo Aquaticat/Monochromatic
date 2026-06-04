@@ -15,8 +15,8 @@ leftmost-longest (POSIX) semantics, multiline on by default.
 
 ## Current status (2026-06-04 15:55)
 
-16 distinct root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-18; 5 and 6 folded) and 30 numbered reproducers committed under
+17 distinct root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+18, 19; 5 and 6 folded) and 31 numbered reproducers committed under
 `docs/audit/resharp-fuzz-2026-06-04/`. Distinct triggering patterns run to the
 thousands (BUG-15: 28688 distinct patterns in the full 159k hunt). All work is
 committed. The user wants maximum yield ("poke resharp until it's a honeycomb").
@@ -37,12 +37,26 @@ the timing oracle (`--time1`) and three performance bugs:
 - BUG-18: `find_all` is O(n^2) on a nullable complement (`~(a+)`, `~(\w+)`) because
   `find_all_nullable_slow` restarts a forward scan per position. `~(a+)` is 10.5s
   on 96KB; hardened (different driver) is linear, so the quadratic is avoidable.
+  Generalizes to any nullable pattern with a far per-position scan (corroborated by
+  the non-complement `${0,2}([a-c]_+&((?:a)*))a{1,3}[^a]\w*`, same O(n^2)).
+- BUG-19: an anchor in front of a FULL-mode word class (`$?\w`=3s, `$\w`=1s,
+  `$?\W`=2s) is a fixed ~1-3s match-time DFA construction cost on diverse-byte
+  (cyc) input. Full mode only (`\w` alone, `\d`/`\s`, ascii/js all <1ms); the anchor
+  splits the huge unicode `\w` minterm set. The mode-independent bracketed analogue
+  `$[\w]` (~1.15s, diverse input) is filed as the match-time face of BUG-17.
 
-Caveat that shaped the method: timing flagged under CPU contention is INFLATED
-(the timing hunt ran -P4 alongside the panic hunt), so it over-flags. Re-measure
-every candidate SOLO before filing: contention can inflate a 0.3s op past 1s but
-cannot fake a >25s hang, and it cannot turn a linear op super-linear. The three
-filed bugs are all solo-confirmed with clean scaling curves.
+User bar (2026-06-04, explicit): the machine is an AMD 8700F; even WITH the user's
+ffmpeg video jobs running, every resharp op should take <= 1s. So do NOT dismiss
+1-6s flags as mere contention. Re-measure each SOLO (kill your own parallel hunts
+first; ffmpeg may keep running, that is the realistic condition), and treat any
+op still > 1s solo as a real finding. Contention can inflate a 0.3s op past 1s but
+cannot fake a >25s hang or turn a linear op super-linear, so solo re-measurement is
+the arbiter. All five performance findings (BUG-16/17/18/19 plus BUG-17's
+match-time face) are solo-confirmed with clean scaling or fixed-cost curves.
+
+Diverse-byte input matters: BUG-19 and BUG-17's match-time face appear ONLY on
+diverse bytes (`--benchcyc`), not on single-byte `--benchrep`, because the lazy DFA
+only builds the expensive states when the input exercises many byte classes.
 
 ### The reference is Lean, not dotnet (user directive, 2026-06-04)
 
@@ -142,6 +156,9 @@ plus translator flags `dot_matches_new_line`, `case_insensitive`,
   the scaling workhorse: vary N to read off O(n)/O(n^2)/O(n^3).
 - `repro --compile1 <hexpat> [cfgidx]`: prints `<secs>|ok=<bool>` for compile only.
   Used to isolate BUG-17 (compile-time blowup).
+- `repro --benchcyc <hexpat> <N> <op> [cfgidx]`: hay = bytes 0..256 cycling, length
+  N (DIVERSE input). This is what surfaces BUG-19 and BUG-17's match-time face;
+  many slownesses appear only on diverse bytes, not on single-byte `--benchrep`.
 
 ### dnharness (dotnet, secondary)
 
@@ -244,7 +261,7 @@ contradicting itself is unambiguous.
   caps `lib.rs:56`-`:59` (`DEFAULT_MAX_REPEAT=500`, `EXPANDED_AST_LIMIT=50_000`,
   `MAX_LIST_LEN=4_000`, `MAX_DEPTH=1_000`).
 
-## The 16 bugs (files in docs/audit/resharp-fuzz-2026-06-04/)
+## The 17 bugs (files in docs/audit/resharp-fuzz-2026-06-04/)
 
 - BUG-1 `bug-01-...`: re-entrancy guard panic in union/intersection rewrites,
   compile time. `.*(.+)*.+`.
@@ -346,15 +363,17 @@ the limits inventory pointer, and the Lean-round writeups. A separate
   of-lookahead, ~100+ distinct) plus BUG-17 (op=compile, bracketed perl class) and
   BUG-18 (op=find_all, `~(...)` complement). Distinct flagged hexpats extracted to
   `/tmp/agent/flagged_pats.hex`.
-- Clean SOLO re-measurement, output `/tmp/agent/timeclean_all.txt`, marker
-  `/tmp/agent/timeclean.done`. Waits for the timing hunt to quiesce, then runs
-  `--time1` SEQUENTIALLY (no contention) over `flagged_pats.hex`. THIS is the
-  authoritative source for which 1-6s flags are real vs contention artifacts. When
-  it finishes, scan for any solo op >= 10s NOT already covered by BUG-16/17/18
-  (that would be a new root cause); 1-6s solo flags are "suspicious" clusters worth
-  a note. Bare-`$`-in-intersection/alternation flags (e.g. `(${0,1}&(\s|\b))`) were
-  already spot-checked solo on all-`a` and are NOT superlinear (fixed ~0.1s cost or
-  instant); confirm whether any are genuinely slow on diverse-byte (cyc16k) input.
+- Clean SOLO re-measurement was killed mid-run after the first ~18 lines already
+  confirmed the residual cluster is REAL (e.g. `$[\w]` is_match 1s, `$?\w` full 3s);
+  finishing it would have spent ~20min re-confirming BUG-16 hangs (25s each). The
+  residual was then isolated directly with `--benchcyc` (diverse input): two new
+  faces emerged, both now FILED (`$[\w]`->BUG-17 match-time, `$?\w` full->BUG-19).
+  Remaining residuals checked and FOLDED: ` {0,2}.[^\w]` compile 1.2s is BUG-17
+  (bracketed negated `[^\w]`); `${0,2}([a-c]_+&((?:a)*))a{1,3}[^a]\w*` find_all is
+  BUG-18 (nullable, non-complement, O(n^2) 0.27/1.09/4.35). `flagged_pats.hex` (419
+  distinct) remains if a future session wants an exhaustive solo sweep; run
+  `--time1` over it with NO parallel hunts (ffmpeg ok) and scan for any solo op
+  outside BUG-16/17/18/19.
 
 ## Held back, NOT filed
 

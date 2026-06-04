@@ -75,6 +75,15 @@ so the complement matches empty at every position. `~(a*)` does not trigger it
 (the star body is already nullable, a different derivative shape), nor does a
 complement whose body cannot match the input (`~(b)`, `~(ab+)` on all-`a`).
 
+The quadratic is not complement-specific. Any nullable pattern that matches empty
+at many positions while its per-position forward scan reads far hits the same path.
+The non-complement pattern `${0,2}([a-c]_+&((?:a)*))a{1,3}[^a]\w*` (nullable via
+`${0,2}`, far-reaching via the trailing `\w*`) has `find_all` of 0.27 / 1.09 /
+4.35 s at N = 16384 / 32768 / 65536, the same O(n^2). A bare nullable like
+`(a?)\w*` stays linear because the greedy `\w*` produces one big match instead of a
+storm of empty ones; the blowup needs both empty-everywhere matching and a far
+per-position scan.
+
 ## Root cause localization
 
 `find_all` routes a nullable pattern to `find_all_nullable_slow`
