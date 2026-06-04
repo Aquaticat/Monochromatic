@@ -72,3 +72,15 @@ distinct from BUG-7:
   prior zero-width fix does not cover them.
 - `~(a+)`, `~(aa)`, `~(a)` do not trigger; the leading `_` (any byte) before the
   quantified run is required: `~(_a+)`.
+- The trigger generalizes from `_` to any leading atom concatenated with the
+  complement, confirmed by a later directed default-vs-hardened sweep
+  (`repro --hardbatch`): `a~(a+)`, `\w~(a+)`, `.~(a+)`, `[a-c]~(a+)`, and
+  `a{1,3}~(a+)` all reproduce, every one with the identical signature
+  `def=[(0,1),(1,2),...]` versus `hard=[(0,2),...]` (the hardened path over-extends
+  the first span by one). On `"aaa"`, the default is correct: leftmost-longest
+  `X~(a+)` matches a single leading char followed by the empty string (the only
+  substring of a trailing `a`-run that is not in `a+`), so single-byte spans are
+  right and the hardened `(0,2)` is the wrong side. So the required shape is
+  `<one-atom><complement-of-a-quantified-run>`, of which `~(_a+)` is the special
+  case where the leading atom is folded into the complement as `_`. Same root
+  cause (one optimised forward path versus `find_all_dfa`); not a separate bug.
