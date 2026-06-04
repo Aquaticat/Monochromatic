@@ -59,37 +59,76 @@ search accelerator only.
   - `repro '<pattern>' <haystack>` or `repro '<pattern>' <hex> --hex` runs a
     single explicit haystack.
 
-## Bug index
+## Root-cause bug index
 
 - [BUG-1](bug-01-reentrant-rewrite-panic.md): re-entrancy guard panic in the
   union and intersection derivative rewrites. Compile time. `.*(.+)*.+`.
 - [BUG-2](bug-02-correctness-issue-assert.md): `correctness issue found`
   assertion when the forward scan returns the `NO_MATCH` sentinel where the
   reverse pass expected an end. Match time. `\S+b`.
-- [BUG-3](bug-03-ismatch-findall-disagree.md): `is_match` returns false while
-  `find_all` returns one match. `(\z|(?=a)\w)`, `\BU`.
+- [BUG-3](bug-03-ismatch-findall-disagree.md): `is_match` disagrees with
+  `find_all`. `(\z|(?=a)\w)`, `((?=0)\S|\z)`, `\BU`, `\z\A(?:a){0,1}`.
 - [BUG-4](bug-04-nomatch-sentinel-leak.md): `find_all` emits a match with
-  `end = usize::MAX` (the `NO_MATCH` sentinel leaked into a result). `~(_*$)`.
+  `end = usize::MAX`. `~(_*$)`, `\Bb+`, `(?<=[^a])b+`.
 - [BUG-7](bug-07-negated-perl-class-nullable.md): the negated perl classes
-  `\D`, `\S`, `\W` match the empty string (wrongly nullable). `\D`.
-- [BUG-8](bug-08-default-vs-hardened-findall.md): the default engine and the
-  hardened engine return different `find_all` results. `~(_a+)`.
+  `\D`, `\S`, `\W` match the empty string. `\D`.
+- [BUG-8](bug-08-default-vs-hardened-findall.md): hardened `find_all` differs
+  from default; hardened is the wrong side. `~(_a+)`, `~(\D+)`.
+- [BUG-9](bug-09-stream-drops-matches.md): the `stream` path under-reports
+  matches that `is_match` and `find_all` see. `\A\z?`, `(^|b)`, `(?<!b)`.
+- [BUG-10](bug-10-default-findall-drops-trailing-zerowidth.md): default
+  `find_all` drops a trailing zero-width match that hardened and dotnet report.
+  `(?<=^)~(0+)`.
+- [BUG-11](bug-11-compile-time-blowup.md): super-linear compile time on small
+  intersection plus class-repeat patterns. `[\w]{3,5}[\w]([^a]&a+)`.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
 trigger for BUG-3.
 
+## Numbered findings (20 distinct minimal reproducers)
+
+Each line is a distinct, verified, minimal reproducer on the pristine engine,
+grouped by the root cause above. Self-consistency findings (a single engine
+contradicting itself) need no external oracle; the rest are adjudicated against
+the dotnet reference and plain semantic reasoning.
+
+```text
+ 1. .*(.+)*.+                 compile panic, reentrant union rewrite        BUG-1
+ 2. (?:(?:(?:(?:1)+){1,2})+){2,2}  compile panic, same site, nested quant   BUG-1
+ 3. \S+b on "b'_"             match-time assert engine.rs:960               BUG-2
+ 4. (\d|_)b(?:a)* full mode   match-time assert engine.rs:960               BUG-2
+ 5. (\z|(?=a)\w)              is_match false, find_all one match            BUG-3
+ 6. ((?=0)\S|\z) on "a"       is_match false, find_all one match            BUG-3
+ 7. \BU on "Uii\"             is_match true, find_all empty                 BUG-3
+ 8. \z\A(?:a){0,1} on ""      is_match false, empty match exists            BUG-3
+ 9. ~(_*$) flags mode         find_all end = usize::MAX                     BUG-4
+10. \Bb+ on "ba"             find_all end = usize::MAX, default mode        BUG-4
+11. (?<=[^a])b+ on "ba"      find_all end = usize::MAX, default mode        BUG-4
+12. \D on ""                 negated perl class nullable (ascii)            BUG-7
+13. \S on ""                 negated perl class nullable (ascii)            BUG-7
+14. ~(_a+) on "aaa"          hardened find_all wrong                        BUG-8
+15. ~(\D+)                   default vs hardened find_all differ            BUG-8
+16. \A\z? on "a"             stream returns empty, match exists             BUG-9
+17. (?<!b) on "b"            stream returns empty, match exists             BUG-9
+18. (^|b) on "a"             stream returns empty, is_match true            BUG-9
+19. (?<=^)~(0+) on "\n"      default find_all drops trailing (1,1)          BUG-10
+20. [\w]{3,5}[\w]([^a]&a+)   compile takes about 4 seconds                  BUG-11
+```
+
 ## Distinct-trigger counts
 
-The internal oracles cluster into a small number of root causes, but each root
-cause has many distinct triggering patterns:
+The oracles cluster into the root causes above, but each has many distinct
+triggering patterns (counts from the 159k-pattern directed sweep):
 
-- DIVERGE on pure-ascii haystacks (no anchors, no resharp-only operators): 108
-  distinct patterns in the first 80k-pattern sweep alone, almost all explained
-  by BUG-7 (`\D`, `\S`, `\W` nullability).
-- HARDDIFF: 14 distinct patterns in that sweep, several complement-only or
-  anchor-only and therefore distinct from BUG-7.
-- INCONSIST, BOUNDS, PANIC: smaller distinct counts, listed per bug file.
+- `STREAMINCONSIST`: 707 distinct patterns (BUG-9).
+- `HARDDIFF_FA`: 196 distinct patterns (BUG-8 and BUG-10).
+- `BOUNDS`: 10 distinct patterns (BUG-4).
+- `INCONSIST`: 9 distinct patterns (BUG-3).
+- `DIVERGE` on pure-ascii haystacks: about 108 distinct patterns, almost all
+  BUG-7.
+- `RUST_TIMEOUT` in the dotnet differential: dozens of distinct slow-compile
+  patterns (BUG-11).
 
 ## Caveats and relationship to known bugs
 

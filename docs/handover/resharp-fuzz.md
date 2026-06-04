@@ -101,23 +101,29 @@ Rebuild dnharness: `cd /tmp/agent/dnharness && DOTNET_CLI_TELEMETRY_OPTOUT=1 $DO
 
 ## Bugs found so far (see docs/audit/resharp-fuzz-2026-06-04/ for full writeups)
 
-1. BUG-1 re-entrancy guard panic in union and intersection rewrites (compile
-   time). Minimal `.*(.+)*.+`.
-2. BUG-2 `correctness issue found` assertion at `engine.rs:960` (NO_MATCH
-   sentinel reaches a Match). Minimal `\S+b` on `b'_`. Dotnet says no match.
-3. BUG-3 is_match false while find_all returns a match. `(\z|(?=a)\w)`, `\BU`.
-4. BUG-4 find_all emits `end = usize::MAX`. `~(_*$)` in flags mode. Dotnet
-   rejects the pattern (fail closed); rust mishandles it.
-5. BUG-7 negated perl classes `\D \S \W` nullable in ascii mode. `\D` is_match
-   on empty is true; dotnet and default mode both say false.
-6. BUG-8 default vs hardened find_all disagree; hardened is wrong (dotnet agrees
-   with default). `~(_a+)` on `aaa`.
-7. BUG-9 stream path under-reports (drops zero-width). `\A\z?` is_match true and
-   find_all correct, but stream returns empty. Dotnet confirms the match.
+Nine root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11), each with its own file, and
+20 numbered distinct minimal reproducers in that dir's `README.md`.
 
-Counting note: there are hundreds of distinct triggering patterns; the above are
-the distinct root causes confirmed so far. The dotnet differential (now working)
-is expected to surface more distinct default-mode find_all correctness bugs.
+1. BUG-1 re-entrancy guard panic in union and intersection rewrites (compile
+   time). `.*(.+)*.+`.
+2. BUG-2 `correctness issue found` assertion at `engine.rs:960` (NO_MATCH
+   sentinel reaches a Match). `\S+b` on `b'_`.
+3. BUG-3 is_match disagrees with find_all. `(\z|(?=a)\w)`, `((?=0)\S|\z)`, `\BU`,
+   `\z\A(?:a){0,1}` on empty.
+4. BUG-4 find_all emits `end = usize::MAX`. `~(_*$)` (flags), `\Bb+`,
+   `(?<=[^a])b+` (default mode).
+5. BUG-7 negated perl classes `\D \S \W` nullable in ascii mode. `\D`.
+6. BUG-8 hardened find_all wrong vs default. `~(_a+)`, `~(\D+)`.
+7. BUG-9 stream path under-reports. `\A\z?`, `(^|b)`, `(?<!b)`. 707 distinct
+   `STREAMINCONSIST` triggers.
+8. BUG-10 default find_all drops a trailing zero-width match (hardened and dotnet
+   include it). `(?<=^)~(0+)`. Opposite side from BUG-8.
+9. BUG-11 super-linear compile time on small patterns. `[\w]{3,5}[\w]([^a]&a+)`
+   compiles in about 4 seconds, dotnet is instant. Compile-time, not match-time.
+
+Counting note: hundreds of distinct triggering patterns cluster into these nine
+root causes. The dotnet differential is still running and may add more
+default-mode find_all correctness bugs after adjudication.
 
 ## Current state and next steps
 

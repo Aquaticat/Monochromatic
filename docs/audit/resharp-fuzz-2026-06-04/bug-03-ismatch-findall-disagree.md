@@ -56,10 +56,21 @@ or `\B` non-word-boundary), which is exactly where the two entry points choose
 different specialised scans. The minimal forms point at the anchor-or-lookahead
 branch of the `is_match` fast path returning the wrong answer.
 
+## Distinct triggers
+
+- `(\z|(?=a)\w)`: is_match false, find_all one match.
+- `((?=0)\S|\z)` on `a`: is_match false, find_all one match. The dotnet reference
+  confirms a match exists (`im=1 fa=1:1`), so is_match is the wrong side.
+- `\BU` on `Uii\`: is_match true, find_all empty (opposite direction).
+- `\z\A(?:a){0,1}` on the empty string: is_match false, but both `\z` and `\A`
+  hold at offset 0 and the optional group matches empty, so the empty match
+  exists. Both the regex crate (ascii) and dotnet report a match; rust is_match
+  is wrong. This is the anchor-concatenation ordering variant.
+
 ## Notes
 
 - `(\z|a)`, `(\z|\w)`, and `((?i:\z)|\w)` do not trigger; the lookahead plus the
   perl class is required: `(\z|(?=a)\w)`.
-- Distinct triggers in the sweeps cluster tightly, but the two directions
-  (false-but-present and true-but-absent) and the two distinct minimal shapes
-  suggest more than one underlying fast-path defect.
+- Both directions (false-but-present and true-but-absent) and the distinct
+  minimal shapes (lookahead-plus-class, end-then-start anchor) suggest more than
+  one underlying is_match fast-path defect.

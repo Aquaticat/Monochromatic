@@ -67,10 +67,22 @@ public result. The pattern shape is the complement of "any string ending at end
 of input", `~(_*$)` and `~(_*\z)`, which makes the forward language empty at the
 chosen start while the reverse pass still proposed that start.
 
+## Distinct triggers
+
+The `usize::MAX` end leaks from several prefix shapes, not just the
+end-anchor-complement one:
+
+- end-anchor complement, default-off-multiline: `~(_*$)`, `~(_*\z)` (flags mode).
+- non-word-boundary prefix: `\Bb+` on `ba` returns `1..usize::MAX` (default mode).
+- lookbehind prefix: `(?<=[^a])b+` on `ba` returns `1..usize::MAX` (default mode).
+- intersection: `\b\W{0}(b&\S{0,2})(c|1{0})`.
+
+The `\B` and lookbehind triggers fire in the default option mode, so this is not
+flags-only. dotnet rejects `\Bb+` (fail closed) and returns a normal result for
+`(?<=[^a])b+`; rust accepts both and leaks the sentinel.
+
 ## Notes
 
-- A third distinct trigger combines intersection with the same shape:
-  `\b\W{0}(b&\S{0,2})(c|1{0})` also produces a `usize::MAX` end.
 - Fixing BUG-2 and BUG-4 together likely means making the reverse-proposed start
   and the forward-verified end agree, or dropping the candidate when the forward
   end is `NO_MATCH`.
