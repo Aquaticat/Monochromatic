@@ -48,6 +48,9 @@ catalogs:
     '@lezer/yaml':
       specifier: '>=1.0.0'
       version: 1.0.4
+    '@lobehub/icons-static-svg':
+      specifier: '>=1.82.0'
+      version: 1.84.0
     '@luma.gl/engine':
       specifier: '>=9.3.2'
       version: 9.3.3
@@ -270,6 +273,9 @@ catalogs:
     wawoff2:
       specifier: '>=2.0.1'
       version: 2.0.1
+    why-is-node-running:
+      specifier: '>=3.2.2'
+      version: 3.2.2
     woff2-encode-wasm:
       specifier: '>=0.1.1'
       version: 0.1.1
@@ -1066,7 +1072,7 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
       why-is-node-running:
-        specifier: ^3.2.2
+        specifier: 'catalog:'
         version: 3.2.2
 
   packages/dev-script/inference-canary-viewer:
@@ -1081,7 +1087,7 @@ importers:
         specifier: 'catalog:'
         version: 1.5.4
       '@lobehub/icons-static-svg':
-        specifier: ^1.82.0
+        specifier: 'catalog:'
         version: 1.84.0
       '@monochromatic-dev/build-tool-css':
         specifier: workspace:*

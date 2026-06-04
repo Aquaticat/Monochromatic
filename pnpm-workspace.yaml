@@ -27,6 +27,7 @@ catalog:
   '@lezer/yaml': '>=1.0.0'
   '@libsql/client': '>=0.17.3'
   '@libsql/kysely-libsql': '>=0.4.1'
+  '@lobehub/icons-static-svg': '>=1.82.0'
   '@luma.gl/engine': '>=9.3.2'
   '@earendil-works/pi-coding-agent': '>=0.78.0'
   '@mdx-js/mdx': '>=3.1.0'
@@ -127,6 +128,7 @@ catalog:
   'unified': '>=11.0.5'
   'valibot': '>=1.4.0'
   'wawoff2': '>=2.0.1'
+  'why-is-node-running': '>=3.2.2'
   'woff2-encode-wasm': '>=0.1.1'
   'yaml': '>=3.0.0-0'
 childConcurrency: 16

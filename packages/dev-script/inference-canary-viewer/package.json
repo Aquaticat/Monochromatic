@@ -14,7 +14,7 @@
     "@lezer/common": "catalog:",
     "@lezer/highlight": "catalog:",
     "@lezer/javascript": "catalog:",
-    "@lobehub/icons-static-svg": "^1.82.0",
+    "@lobehub/icons-static-svg": "catalog:",
     "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
     "micromark": "catalog:",
