@@ -366,6 +366,15 @@ When unsure, propose a concrete edit and location.
 ### Linting
 
 - Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
+- Treat each lint finding as a design signal, not a checkbox. Name the rule's real intent,
+  then make the best code shape that satisfies that intent and the rest of the codebase.
+  A shortcut taken for one warning is evidence about the care taken everywhere else.
+- Before disabling, suppressing, weakening types, broadening annotations, or otherwise skirting a lint rule,
+  inspect the linter source and the source code of the value being linted.
+  Try the rule's config or allow-list mechanism first.
+  If a suppression remains necessary, write or update a `.md` document that cites both source paths,
+  proves why the allow-list or config path cannot work, and links the suppression to that document.
+  Do not land the suppression without that document.
 - Prefer `Object.entries` and functional methods over `for...in`.
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
 - Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration: it lands on the TSDoc, not the declaration, so the suppression is lost.

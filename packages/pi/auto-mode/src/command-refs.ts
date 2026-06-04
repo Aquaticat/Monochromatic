@@ -3,7 +3,7 @@
  *
  * Two helpers used at parse time and at flag time:
  * - `extractParamRefs`: pre-scan a raw command for `$VAR`/`${VAR}`
- *   references that shell-quote may otherwise drop.
+ *   references that may otherwise be hidden inside malformed or nested shell syntax.
  * - `looksLikePath`: cheap predicate for "is this token a path?",
  *   used by both `command-parser` (to associate operands with a
  *   command) and `signals` (to decide whether a path-signal applies).
@@ -16,8 +16,8 @@
 /**
  * Pre-scan a raw command string for `$VAR` and `${VAR}` references.
  *
- * Catches references that may be lost during shell-quote parsing
- * (e.g. inside command substitutions or malformed syntax).
+ * Catches references that may be lost during AST conversion
+ * (e.g. inside malformed syntax or shell expansions not represented as command words).
  *
  * @param cmd - the raw command string
  *

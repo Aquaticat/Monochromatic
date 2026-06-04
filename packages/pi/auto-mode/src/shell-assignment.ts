@@ -68,10 +68,10 @@ function parseShellAssignmentWord(
 /**
  * Extract shell assignment names embedded anywhere in token text.
  *
- * `shell-quote` keeps command-substitution fragments as ordinary words, so a
- * command such as `KEY=$(grep ...); API_KEY=$KEY bun script.ts` can surface as
- * one token containing `); API_KEY=`. This helper recovers assignment names
- * from that token without treating source text as regular expressions.
+ * Trusted-helper detection scans rendered command words and assignment words,
+ * including fragments that may contain multiple shell statements. This helper
+ * recovers assignment names from that text without treating source text as
+ * regular expressions.
  *
  * @param word - shell token or token fragment to scan
  *

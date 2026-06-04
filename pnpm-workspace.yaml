@@ -125,6 +125,7 @@ catalog:
   'type-fest': '>=5.4.3'
   'typesafe-i18n': '>=5.27.1'
   'typescript': '>=6.0.3'
+  'unbash': '>=3.0.0'
   'unified': '>=11.0.5'
   'valibot': '>=1.4.0'
   'wawoff2': '>=2.0.1'

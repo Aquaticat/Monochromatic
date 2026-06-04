@@ -11,6 +11,8 @@
  * ```
  */
 
+import { unbashPackageAllowSpecifiers, } from './prefer-readonly-parameter-types.allow-pkg-unbash.ts';
+
 /**
  * Specifier object shape for `from: 'package'`. Re-typed locally to avoid
  * pulling in tsgolint internals.
@@ -67,6 +69,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Tree"
     ],
   },
+  ...unbashPackageAllowSpecifiers,
 
   // TODO: Remove them when we get to fixing lint issues in module-logger.
   {

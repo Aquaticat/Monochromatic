@@ -109,7 +109,7 @@ gracefully rather than throwing.
 <tr>
 <td>Bash parser</td>
 <td>`@aliou/sh` (UNLICENSED, three gap bugs)</td>
-<td>`shell-quote` (MIT) plus targeted extraction</td>
+<td>`unbash` (ISC) plus targeted extraction</td>
 </tr>
 <tr>
 <td>`--` separator</td>

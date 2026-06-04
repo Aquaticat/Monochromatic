@@ -1,33 +1,25 @@
 /**
- * Bash command analysis using `shell-quote` + targeted extraction.
+ * Bash command analysis using `unbash` plus targeted extraction.
  *
- * Replaces `@aliou/sh` (UNLICENSED, 3 silent gap bugs) with
- * `shell-quote` (MIT, v1.8.3) for quote-aware token splitting.
+ * Uses `unbash` (ISC, v3.0.0) for quote-aware Bash AST parsing while
+ * preserving the existing `BashAnalysis` signal shape.
  *
  * @module
  */
 
 import {
   parse,
-  type ParseEntry,
-} from 'shell-quote';
+  type ParseError as UnbashParseError,
+  type Script as UnbashScript,
+} from 'unbash';
 import {
   extractParamRefs,
   looksLikePath,
 } from './command-refs.ts';
-import {
-  NO_SHELL_ASSIGNMENT,
-  parseShellAssignmentWord,
-} from './shell-assignment.ts';
+import { collectCommandInfoFromScript, } from './unbash-command-info.ts';
 import type {
   BashAnalysis,
-  CommandInfo,
 } from './types.ts';
-
-/**
- * `findIndex` result when no command word follows leading assignments.
- */
-const NO_COMMAND_WORD_INDEX = -1;
 
 //region Public API
 
@@ -51,7 +43,7 @@ function analyzeBashCommand(
   cmd: string,
 ): BashAnalysis {
   /**
-   * Fallback result spread into the early-return when `shell-quote` throws on malformed input.
+   * Fallback result spread into early returns when `unbash` reports malformed input.
    */
   const empty: BashAnalysis = {
     parsed: false,
@@ -67,140 +59,42 @@ function analyzeBashCommand(
   const preScanRefs = extractParamRefs(cmd,);
 
   /**
-   * Tokens emitted by `shell-quote` for the command; `ok` is false when the parse threw.
+   * Parsed `unbash` script; `ok` is false when syntax diagnostics or throws occur.
    */
-  const parsed = tryParseEntries(cmd,);
+  const parsed = tryParseScript(cmd,);
   if (!parsed.ok) {
     return {
       ...empty,
       allParamRefs: preScanRefs,
     };
   }
-  /**
-   * Successfully-parsed token stream from `shell-quote`, walked below.
-   */
-  const { entries, } = parsed;
 
   /**
-   * Accumulator for parsed `CommandInfo` entries; one push per `|`, `&&`, `||`, `;`, `&`, or `;;` boundary.
+   * Command records derived from the `unbash` AST.
    */
-  const commands: CommandInfo[] = [];
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- sequential parser state mutated across loop iterations (isPipeline latch, current-command accumulators, redirect-target latch) */
-  /**
-   * True once a `|` operator has been seen anywhere in the command; surfaced verbatim on the return.
-   */
-  let isPipeline = false;
-  /**
-   * Word tokens belonging to the command currently being assembled; reset at every command boundary.
-   */
-  let currentArgs: string[] = [];
-  /**
-   * Paths recorded after `>`, `>>`, `<`, `>&`, or `|&` for the current command; reset at every boundary.
-   */
-  let currentRedirectTargets: string[] = [];
-  /**
-   * True for one tick after a redirect operator so the very next string token is captured as the target path.
-   */
-  let nextIsRedirectTarget = false;
-  /* oxlint-enable no-restricted-syntax/no-function-root-let */
-
-  /**
-   * Flush the current-command accumulators into `commands`; no-op when nothing is pending.
-   */
-  function flushInto(): void {
-    /**
-     * Discriminated flush result for the tokens accumulated since the last boundary.
-     */
-    const result = flushCurrentCommand({
-      args: currentArgs,
-      redirectTargets: currentRedirectTargets,
-      paramRefs: preScanRefs,
-    },);
-    if (result.flushed)
-      commands.push(result.command,);
+  const collection = collectCommandInfoFromScript({
+    script: parsed.script,
+    paramRefs: preScanRefs,
+  },);
+  if (collection.hasParseErrors) {
+    return {
+      ...empty,
+      allParamRefs: preScanRefs,
+    };
   }
 
-  for (const entry of entries) {
-    if ((typeof entry) === 'string') {
-      if (nextIsRedirectTarget) {
-        currentRedirectTargets.push(entry,);
-        nextIsRedirectTarget = false;
-        continue;
-      }
-      currentArgs.push(entry,);
-      continue;
-    }
-
-    if (!('op' in entry))
-      continue;
-    /**
-     * Operator string from the non-word `shell-quote` entry; dispatched on by the branches below.
-     */
-    const { op, } = entry;
-
-    if (
-      (op === '>')
-      || (op === '>>')
-        || (op === '<')
-        || (op === '>&')
-        || (op === '|&')
-    ) {
-      nextIsRedirectTarget = true;
-      continue;
-    }
-
-    if (op === '|') {
-      isPipeline = true;
-      flushInto();
-      currentArgs = [];
-      currentRedirectTargets = [];
-      nextIsRedirectTarget = false;
-      continue;
-    }
-
-    if ((op === '&&') || (op === '||')
-      || (op === ';')
-      || (op === '&')) {
-      flushInto();
-      currentArgs = [];
-      currentRedirectTargets = [];
-      nextIsRedirectTarget = false;
-      continue;
-    }
-
-    if (op === '<(') {
-      /* Process substitution: shell-quote emits the inner command as
-         a separate `<(...)` op token. We intentionally skip pushing
-         it to `currentRedirectTargets` because that field is for file
-         path matching, and process substitution is not a file. The
-         operand is also dropped from the parent command's args; if a
-         future signal needs to flag process substitution as
-         suspicious, surface it via a separate field on CommandInfo
-         rather than encoding it as a literal filename string. */
-      continue;
-    }
-
-    if ((op === '(') || (op === ')')
-      || (op === ';;')) {
-      if (op === ';;') {
-        flushInto();
-        currentArgs = [];
-        currentRedirectTargets = [];
-        nextIsRedirectTarget = false;
-      }
-      continue;
-    }
-  }
-
-  flushInto();
+  /**
+   * Parsed command records in source order.
+   */
+  const { commands, } = collection;
 
   /**
    * Union of every path-shaped argument and every redirect target across all commands, in source order.
    */
   const allFiles = commands.flatMap(
-    function collectFiles(c,) {
+    function collectFiles(command,) {
       return [
-        ...c.envAssignments
+        ...command.envAssignments
           .map(
             function assignmentValue(assignment,) {
               return assignment.value;
@@ -211,13 +105,13 @@ function analyzeBashCommand(
               return looksLikePath(value,);
             },
           ),
-        ...c.args
+        ...command.args
           .filter(
             function argLooksLikePath(arg,) {
               return looksLikePath(arg,);
             },
           ),
-        ...c.redirectTargets,
+        ...command.redirectTargets,
       ];
     },
   );
@@ -226,8 +120,8 @@ function analyzeBashCommand(
    */
   const allParamRefs = [...new Set(
     commands.flatMap(
-      function collectRefs(c,) {
-        return c.paramRefs;
+      function collectRefs(command,) {
+        return command.paramRefs;
       },
     ),
   ),];
@@ -240,7 +134,7 @@ function analyzeBashCommand(
   return {
     parsed: true,
     commands,
-    isPipeline,
+    isPipeline: collection.isPipeline,
     allFiles,
     allParamRefs,
   };
@@ -251,154 +145,50 @@ function analyzeBashCommand(
 //region Internal
 
 /**
- * Build a `CommandInfo` from accumulated tokens.
- *
- * Returns a discriminated result rather than pushing into a passed array,
- * so callers own the accumulator and this stays free of param mutation.
- *
- * @returns `{ flushed: true, command }` for a non-empty command, or
- *   `{ flushed: false }` when there are no tokens to flush
- *
- * @example
- * ```typescript
- * flushCurrentCommand({
- *   args: ['curl', 'https://api.example.com'],
- *   redirectTargets: ['out.txt'],
- *   paramRefs: ['API_KEY'],
- * });
- * ```
+ * `unbash` parse result shape with tolerant parser diagnostics attached.
  */
-function flushCurrentCommand(
-  {
-    args,
-    redirectTargets,
-    paramRefs,
-  }: {
-    readonly args: readonly string[];
-    readonly redirectTargets: readonly string[];
-    readonly paramRefs: readonly string[];
-  },
-): {
-  flushed: true;
-  command: CommandInfo;
-} | { flushed: false } {
-  if ((args.length
-    === 0) && (redirectTargets.length
-      === 0))
-    return { flushed: false, };
-
+type ParsedUnbashScript = UnbashScript & {
   /**
-   * Environment-assignment prefixes and remaining command words.
+   * Recoverable parser diagnostics emitted for malformed shell syntax.
    */
-  const split = splitLeadingAssignments(args,);
-  /**
-   * Command name (first non-assignment word, empty string on assignment-only or redirect-only commands) plus remaining word arguments.
-   */
-  const [name = '', ...cmdArgs] = split.commandWords;
-
-  return {
-    flushed: true,
-    command: {
-      name,
-      envAssignments: split.envAssignments,
-      args: cmdArgs,
-      redirectTargets,
-      paramRefs: [...paramRefs,],
-    },
-  };
-}
+  readonly errors?: readonly UnbashParseError[];
+};
 
 /**
- * Split leading `NAME=value` shell assignment words from command words.
+ * Run `unbash.parse` and convert syntax diagnostics to a discriminated result.
  *
- * @param args - shell-quote word tokens for command segment
+ * `unbash` is tolerant and reports malformed input through `errors` instead
+ * of throwing. The guardrail treats either diagnostics or unexpected throws as
+ * parse failure so bash signals can conservatively block the command.
  *
- * @returns assignment prefixes and command words after those prefixes
+ * @param cmd - raw bash command string forwarded to `unbash.parse`
  *
- * @example
- * ```typescript
- * splitLeadingAssignments(['API_KEY=value', 'bun', 'script.ts']);
- * // { envAssignments: [{ name: 'API_KEY', value: 'value' }], commandWords: ['bun', 'script.ts'] }
- * ```
- */
-function splitLeadingAssignments(
-  args: readonly string[],
-): {
-  readonly envAssignments: readonly CommandInfo['envAssignments'][number][];
-  readonly commandWords: readonly string[];
-} {
-  /**
-   * First word that is not a shell environment assignment.
-   */
-  const commandIndex = args.findIndex(
-    function isCommandWord(word,) {
-      return parseShellAssignmentWord(word,)
-        === NO_SHELL_ASSIGNMENT;
-    },
-  );
-  /**
-   * Whether every word in segment is an assignment prefix.
-   */
-  const hasOnlyAssignments = commandIndex === NO_COMMAND_WORD_INDEX;
-  /**
-   * Words before command name; each must parse as assignment.
-   */
-  const assignmentWords = hasOnlyAssignments
-    ? args
-    : args.slice(
-      0,
-      commandIndex,
-    );
-  /**
-   * Remaining words after environment assignments.
-   */
-  const commandWords = hasOnlyAssignments
-    ? []
-    : args.slice(commandIndex,);
-
-  return {
-    envAssignments: assignmentWords.map(
-      function parseAssignmentWord(word,) {
-        /**
-         * Parsed assignment; sentinel would contradict commandIndex split above.
-         */
-        const assignment = parseShellAssignmentWord(word,);
-        if (assignment === NO_SHELL_ASSIGNMENT)
-          throw new Error(`Expected shell assignment word: ${word}`);
-        return assignment;
-      },
-    ),
-    commandWords,
-  };
-}
-
-/**
- * Run `shell-quote.parse` and convert throws to a discriminated result.
- *
- * Pulled out of {@link analyzeBashCommand} so the caller can branch on the
- * `ok` discriminant without holding an empty `let entries` at function root.
- *
- * @param cmd - raw bash command string forwarded to `shell-quote.parse`
- *
- * @returns `{ ok: true, entries }` on success, or `{ ok: false }` when the
- *   parser threw
+ * @returns `{ ok: true, script }` on success, or `{ ok: false }` on parse failure
  *
  * @example
  * ```typescript
- * const parsed = tryParseEntries('echo hi');
- * const entries = parsed.ok ? parsed.entries : [];
+ * const parsed = tryParseScript('echo hi');
+ * const script = parsed.ok ? parsed.script : undefined;
  * ```
  */
-function tryParseEntries(
+function tryParseScript(
   cmd: string,
 ): {
   ok: true;
-  entries: ParseEntry[];
+  script: ParsedUnbashScript;
 } | { ok: false } {
   try {
+    /**
+     * Parsed script with optional tolerant diagnostics.
+     */
+    const script = parse(cmd,) as ParsedUnbashScript;
+    if ((script.errors
+      ?.length
+      ?? 0) > 0)
+      return { ok: false, };
     return {
       ok: true,
-      entries: parse(cmd,),
+      script,
     };
   }
   catch {

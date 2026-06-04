@@ -552,6 +552,139 @@ await describe({
     },),
 
     it({
+      name: 'does not allow secret-looking trusted temp glob handoff',
+      fn: async function rejectsTrustedTempSecretGlobHandoff() {
+        const projectRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-project-'
+        ),);
+        const agentRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-agent-'
+        ),);
+        const scriptPath = join(
+          agentRoot,
+          'gemcheck.ts',
+        );
+        const secretGlob = join(
+          agentRoot,
+          '.env*',
+        );
+        const bracketSecretGlob = join(
+          agentRoot,
+          '[.]env*',
+        );
+        await writeFile(
+          scriptPath,
+          'export {};\n',
+        );
+        const ctx: SignalContext = {
+          cwd: projectRoot,
+          home: '/var/home/user',
+        };
+
+        expect(bashSignals({
+          analysis: analyzeBashCommand(
+            `GEMINI_API_KEY=value bun ${scriptPath} ${secretGlob}`,
+          ),
+          ctx,
+          trustedAgentTempDirs: [agentRoot,],
+        },),).toBe(true,);
+        expect(bashSignals({
+          analysis: analyzeBashCommand(
+            `GEMINI_API_KEY=value bun ${scriptPath} ${bracketSecretGlob}`,
+          ),
+          ctx,
+          trustedAgentTempDirs: [agentRoot,],
+        },),).toBe(true,);
+
+        await rm(
+          projectRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+        await rm(
+          agentRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
+      name: 'does not allow trusted temp glob through escaping symlink',
+      fn: async function rejectsTrustedTempEscapingGlobHandoff() {
+        const projectRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-project-'
+        ),);
+        const agentRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-agent-'
+        ),);
+        const outsideRoot = await mkdtemp(join(
+          tmpdir(),
+          'amode-outside-'
+        ),);
+        const scriptPath = join(
+          agentRoot,
+          'gemcheck.ts',
+        );
+        const linkRoot = join(
+          agentRoot,
+          'outside-link',
+        );
+        await symlink(
+          outsideRoot,
+          linkRoot,
+          'dir',
+        );
+        await writeFile(
+          scriptPath,
+          'export {};\n',
+        );
+        const ctx: SignalContext = {
+          cwd: projectRoot,
+          home: '/var/home/user',
+        };
+
+        expect(bashSignals({
+          analysis: analyzeBashCommand(
+            `GEMINI_API_KEY=value bun ${scriptPath} ${join(linkRoot, 'page-*.png',)}`,
+          ),
+          ctx,
+          trustedAgentTempDirs: [agentRoot,],
+        },),).toBe(true,);
+
+        await rm(
+          projectRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+        await rm(
+          agentRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+        await rm(
+          outsideRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+      },
+    },),
+
+    it({
       name: 'does not allow non-dotenv secret file handoff to trusted temp helper',
       fn: async function rejectsNonDotenvSecretHandoff() {
         const projectRoot = await mkdtemp(join(

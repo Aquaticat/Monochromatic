@@ -30,7 +30,7 @@
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
-    "shell-quote": "^1.8.3",
+    "unbash": "catalog:",
     "valibot": "catalog:"
   },
   "devDependencies": {
@@ -40,7 +40,6 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
-    "@types/shell-quote": "^1.7.5",
     "typebox": "^1.1.34"
   }
 }

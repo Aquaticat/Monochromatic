@@ -322,13 +322,13 @@ type EnvAssignment = {
    */
   readonly name: string;
   /**
-   * Value text after `=`, after shell-quote processing.
+   * Value text after `=`, after shell word parsing.
    */
   readonly value: string;
 };
 
 /**
- * Parsed command from shell-quote.
+ * Parsed shell command used by bash signal checks.
  */
 type CommandInfo = {
   /**

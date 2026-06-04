@@ -1,7 +1,7 @@
 /**
  * Tests for the command parser.
  *
- * Covers shell-quote parsing, pipeline detection, redirect targets,
+ * Covers unbash parsing, pipeline detection, redirect targets,
  * quoted arguments, `--` separator handling, command substitution
  * detection, and pre-scan variable references.
  */
@@ -13,8 +13,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { analyzeBashCommand, } from './command-parser.ts';
 import { looksLikePath, } from './command-refs.ts';
-
-const { default: shellQuote, } = await import('shell-quote');
 
 await describe({
   name: analyzeBashCommand.name,
@@ -168,13 +166,48 @@ await describe({
     //region Parse failure
 
     it({
-      name: 'returns parsed: false on parse error with partial pre-scan refs',
+      name: 'returns parsed: false on malformed syntax with partial pre-scan refs',
       fn: async () => {
-        // shell-quote can parse most things, but we test the
-        // fallback by checking the contract
-        const result = analyzeBashCommand('$SECRET_VAR',);
-        // Even if parsed, we should have the pre-scan refs
+        const result = analyzeBashCommand('echo "$SECRET_VAR',);
+        expect(result.parsed,).toBe(false,);
+        expect(result.commands,).toEqual([],);
         expect(result.allParamRefs,).toContain('SECRET_VAR',);
+      },
+    },),
+
+    it({
+      name: 'keeps pre-scanned refs when command is valid',
+      fn: async () => {
+        const result = analyzeBashCommand('$SECRET_VAR',);
+        expect(result.parsed,).toBe(true,);
+        expect(result.allParamRefs,).toContain('SECRET_VAR',);
+      },
+    },),
+
+    //endregion
+
+    //region Nested shell syntax
+
+    it({
+      name: 'collects commands inside command substitutions',
+      fn: async () => {
+        const result = analyzeBashCommand('echo $(sudo rm -rf /)',);
+        expect(result.commands.some(function commandIsSudo(command,) {
+          return command.name === 'sudo';
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'traverses process substitutions without treating them as parent args',
+      fn: async () => {
+        const result = analyzeBashCommand('cat <(grep secret /tmp/file)',);
+        expect(result.commands[0]?.name,).toBe('cat',);
+        expect(result.commands[0]?.args,).toEqual([],);
+        expect(result.commands.some(function commandIsGrep(command,) {
+          return command.name === 'grep';
+        },),).toBe(true,);
+        expect(result.allFiles,).toContain('/tmp/file',);
       },
     },),
 

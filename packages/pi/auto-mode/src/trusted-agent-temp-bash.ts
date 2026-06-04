@@ -12,8 +12,8 @@
 
 import { SECRET_VAR_PATTERN, } from './constants.ts';
 import { extractShellAssignmentNames, } from './shell-assignment.ts';
+import { isNonSecretTrustedAgentTempBashPath, } from './trusted-agent-temp-glob-paths.ts';
 import {
-  isExistingNonSecretTrustedAgentTempPath,
   isExistingPathUnderTrustedAgentTemp,
   isProjectDotenvCredentialExtractionPath,
 } from './trusted-agent-temp-paths.ts';
@@ -94,7 +94,7 @@ function isTrustedAgentTempBashPathAllowed(
     === 0)
     return false;
 
-  if (isExistingNonSecretTrustedAgentTempPath({
+  if (isNonSecretTrustedAgentTempBashPath({
     filePath,
     ctx,
     trustedAgentTempDirs,
