@@ -93,11 +93,12 @@ search accelerator only.
   span the lookbehind forbids. `(|(?<=[a-z])b)`. Same defect as the BUG-3
   lookbehind trigger seen from the other side; ground-truth-only at the span
   level.
-- [BUG-15](bug-15-za-star-dfa-state-panic.md): the reversed anchor order `\z\A`
-  followed by a consuming factor builds a DFA that walks into an unallocated
-  state and panics (`engine.rs:550` index out of bounds), in every config. The
-  same `\z\A` reversal also drops the empty match on its own (regex-crate
-  corroborated). Found by the anchor Lean round.
+- [BUG-15](bug-15-stream-dfa-construction-panic.md): the `stream` API's lazy DFA
+  construction panics (`engine.rs:550` index out of bounds) on a broad pattern
+  class, 2396 of 12000 corpus patterns in every config. Minimal `a&b` then
+  `stream(b"aaa")`. Triggers: intersection (1688), lookarounds (413), and anchors.
+  The reversed-anchor `\z\A` that first surfaced it also drops its empty match
+  (regex-crate corroborated), a separate BUG-3 correctness defect.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -136,15 +137,18 @@ the dotnet reference and plain semantic reasoning.
 23. (?=(?=c)c{1,3}) on "c"   find_all span 0:1, must be zero-width 0:0      BUG-13
 24. (?<=\D?[a-c]+0?)b on "ba" find_all 1:2 while is_match false             BUG-3
 25. (|(?<=[a-z])b) on "b"    find_all 0:1, lookbehind gate dropped          BUG-14
-26. \z\A.* (reused regex)    panic engine.rs:550, all configs               BUG-15
-27. \z\A.* on ""             missed empty match, regex crate confirms       BUG-15
+26. a&b then stream("aaa")   panic engine.rs:550, stream API, all configs    BUG-15
+27. \z\A.* on ""             missed empty match, regex crate confirms        BUG-3
 ```
 
 The campaign covers thirteen distinct root causes (BUG-1 through BUG-15, numbers 5
 and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
-self-consistent at the span level and so invisible to every internal oracle), and
-the anchor Lean round added BUG-15, a hard crash plus a regex-crate-corroborated
-missed match on the reversed anchor order `\z\A`.
+self-consistent at the span level and so invisible to every internal oracle). A
+panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA
+construction crash that hits 2396 of 12000 patterns (intersection, lookaround, and
+anchor families) in every config; the same hunt confirmed only one other crash
+site, BUG-2's assert. The reversed-anchor `\z\A` missed match it surfaced is a
+regex-crate-corroborated BUG-3 trigger.
 
 ## Distinct-trigger counts
 

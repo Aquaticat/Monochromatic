@@ -1,0 +1,100 @@
+# BUG-15 stream() DFA construction panics on a broad pattern class
+
+## Classification
+
+- Type: panic, index out of bounds, crash.
+- Phase: match time, lazy DFA state construction on the streaming match path.
+- Severity: crash, and wide. It fires on roughly a fifth of the directed corpus
+  (2396 of 12000 distinct patterns) and in every option configuration. Any pattern
+  using resharp's extended operators (intersection, complement, lookarounds,
+  anchors) can hit it once a long enough input is streamed.
+- A panic needs no oracle. Found while streaming the anchor and lean2 corpora
+  through the `stream` API in the panic hunt.
+
+## Minimal reproducer
+
+```rust
+use resharp::Regex;
+let re = Regex::new("a&b").unwrap();      // intersection of {"a"} and {"b"}: the empty language
+let _ = re.stream(b"aaa");
+// panics: engine.rs:550 index out of bounds: the len is 2 but the index is 2
+```
+
+A fresh `Regex` and a single `stream` call are enough. The input must be at least
+three bytes: `stream(b"aa")` is fine, `stream(b"aaa")` panics. The crash is
+specific to `stream`; `is_match`, `find_all`, and `find_anchored` on the same
+pattern and input do not reach it.
+
+Command line (deterministic, all seven configs):
+
+```sh
+repro 'a&b' --sweep
+# PANIC|engine.rs:550 index out of bounds: the len is 2 but the index is 2|mode=default|hay=616161|pat="a&b"
+# (same for ascii, full, js, hardened, flags, unbounded)
+
+repro --stream1 "$(printf '%s' 'a&b' | xxd -p)" "$(printf '%s' aaa | xxd -p)"
+# PANIC engine.rs:550 index out of bounds: the len is 2 but the index is 2
+```
+
+## Scope: which patterns trigger it
+
+A panic hunt streamed every distinct pattern in the lean2 and anchor corpora
+(12000 patterns) across all seven configs. 2396 distinct patterns panic at
+`engine.rs:550`, by trigger family:
+
+- Intersection `&`: 1688 patterns. Minimal `a&b`, `( &c)`, `(a*&b)`. Empty or
+  near-empty intersections trigger it; a trivial non-empty intersection like
+  `(.&a)`, `(a&a)`, or `(\d&\w)` does not, so it depends on the minterm or state
+  structure the intersection produces.
+- Reversed and combined anchors: `\z\A`, `\z\A.*`, and many `$`/`\A`/`\b`
+  combinations.
+- Lookarounds with no intersection or anchor: 413 patterns, for example
+  `((?<! )\D)`, `((?![\w])1)`, `((?!a) )+`.
+
+Plain regular patterns (literals, classes, alternation, star) do not trigger it;
+it is confined to the extended-operator surface that is resharp's whole point.
+
+## Observed behaviour
+
+`create_state` (`resharp-engine/src/engine.rs:545`) reads
+`self.state_nodes[state_id as usize]` at line 550 with `state_id == 2` when
+`state_nodes` has length 2 (valid indices 0 and 1), so the access is out of
+bounds and the engine panics. The streaming match path drives a DFA transition
+into a state id that was never allocated in `state_nodes`. Two consumed bytes
+build two states; the third byte's transition requests the unallocated third
+state.
+
+## Expected behaviour
+
+No panic. The streaming DFA builder must allocate the state it transitions into,
+or never request a `state_id` beyond `state_nodes`.
+
+## Related correctness defect: reversed anchors `\z\A`
+
+The pattern that first surfaced this, `\z\A.*`, also exposes a separate
+correctness bug in the end-anchor-then-start-anchor order, documented as a BUG-3
+trigger. On the empty string both `\z` and `\A` hold at offset 0, so `\z\A.*`
+matches there, but resharp reports no match (`im=0`, empty `find_all`). The
+`regex` crate confirms the match exists (`DIVERGE|ascii|rs=false|rx=true|hay=`),
+independent of the Lean reference. `\A\z` (start then end) is handled correctly;
+only the reversed order is wrong. That correctness bug and this stream crash are
+distinct defects that happen to coincide on `\z\A.*`.
+
+## Affected configurations
+
+Every configuration the oracle sweeps, all seven: `default`, `unicode(Ascii)`,
+`unicode(Full)`, `unicode(Javascript)`, `hardened(true)`,
+`dot_matches_new_line(true)` with `multiline(false)`, and `unbounded_size(true)`.
+
+## Notes
+
+- The panic site `create_state` at `engine.rs:550` is distinct from the BUG-1
+  re-entrancy panic (union and intersection rewrites) and the BUG-2 assert
+  (`engine.rs:960`). The same panic hunt found only these two crash sites across
+  the whole corpus: `engine.rs:550` (2396 patterns) and `engine.rs:960` (BUG-2,
+  16 patterns).
+- The `stream` path having a separate, more fragile DFA construction than the
+  block matchers is the core issue. Because `stream` is the API for incremental
+  and large-input matching, this is dangerous: a compiled pattern that works under
+  `is_match` and `find_all` crashes the moment it is fed to `stream` on real
+  input.

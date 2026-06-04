@@ -66,6 +66,14 @@ branch of the `is_match` fast path returning the wrong answer.
   hold at offset 0 and the optional group matches empty, so the empty match
   exists. Both the regex crate (ascii) and dotnet report a match; rust is_match
   is wrong. This is the anchor-concatenation ordering variant.
+- `\z\A.*` on the empty string: is_match false and find_all empty, but both `\z`
+  (end of input) and `\A` (start of input) hold at offset 0, so the pattern
+  matches the empty string there. The `regex` crate confirms it
+  (`DIVERGE|ascii|rs=false|rx=true|hay=`), independent of the Lean reference and
+  dotnet. `\A\z` (start then end) is correct; only the reversed `\z\A` order is
+  wrong, so this is an anchor-ordering defect in the same family as
+  `\z\A(?:a){0,1}`. Surfaced by the anchor Lean round (this pattern also crashes
+  the stream path, BUG-15, on non-empty input).
 - `(?<=\D?[a-c]+0?)b` on `ba`: is_match false, find_all returns one match `1:2`.
   Here is_match is the correct side: the only `b` is at offset 0 and its
   lookbehind `\D?[a-c]+0?` requires at least one `[a-c]` before offset 0, which
