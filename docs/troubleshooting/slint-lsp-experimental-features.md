@@ -35,6 +35,14 @@ set `SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"` in their `mise.toml [env]` for th
 build, so `FlexboxLayout` compiles there; the editor is a separate process that
 does not inherit that build env.
 
+The gate is compiler-level (`lib.rs:248` below), so it also affects the
+standalone `slint-viewer` previewer, not just the LSP. Verified at the pinned rev:
+`slint-viewer flex.slint` with the env unset prints `error: Unknown element
+'FlexboxLayout'`, while `mise exec -- slint-viewer flex.slint` (the repo root
+`mise.toml [env]` injects the var) compiles past it and fails only at window
+backend init under headless. Run the previewer via `mise exec -- slint-viewer ...`
+so it inherits the var.
+
 ## Root cause
 
 The element is defined and implemented; it is gated, not missing. Walking the
