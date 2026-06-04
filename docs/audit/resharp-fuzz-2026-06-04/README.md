@@ -402,9 +402,39 @@ round produced 10 Lean-disagreement rust bugs, the headline being BUG-15 (the
 direct check of RE# lookbehind-of-anchor semantics, since lookbehind-of-lookaround
 is exactly the translator shape that proved unfaithful in the lean2 round.
 
+## Re-run against the v0.6.9 cleanup commit (264e85b)
+
+After the campaign baseline (`a7ab016`), upstream landed `4ffe1cc` "cleaning up and
+simplifying edge cases" (on `main` as `264e85b` "bump version", tag `v0.6.9`). The
+full campaign was re-run against it.
+
+- None of the 23 filed bugs are fixed. Every reproducer (BUG-1 through BUG-27, no
+  BUG-24) returns byte-identical results on the parent and on v0.6.9, verified by
+  the full reproducer harness across all configs.
+- The commit's behavioural footprint is narrow: a before/after `find_all`
+  differential over the 6426-pattern hard corpus (96390 pairs, default config)
+  found zero differences. All change is confined to the zero-width
+  negative-lookahead-of-anchor and `\b\B`-anchor-composition family.
+- It introduces one regression, filed alongside the bugs as
+  [REG-1](regression-01-neg-lookahead-zerowidth-duplicate-findall-spans.md): a
+  zero-width negative lookahead such as `(?!\A)` makes `find_all` emit the same
+  zero-width span twice (`(?!\A)` on `"ab"` returns `1:1,1:1,2:2`, was `1:1,2:2`).
+  Root-caused by single-hunk bisection to the new `mk_neg_lookahead` zero-width
+  branch (`resharp-algebra/src/lib.rs:3554`), which lowers `(?!body)` to
+  `EPS & ~body` and double-registers interior nullable positions in the reverse
+  null collector. Config-independent; regresses patterns the parent compiled
+  correctly. The internal oracle does not catch equal-span duplicates, an oracle
+  gap recorded in the regression file.
+- The same commit also makes genuine improvements in that family: zero-width
+  negative lookaheads composed with other factors (`(?!\A)a`, `(?!\A)*`,
+  `(?!\A)(?=[A-Z])`, `(?!\A){2}`) now compile and match correctly where the parent
+  rejected them or wrongly returned no match, and the parent's compile-time panic
+  on `\A((?<=a)B+|x)` becomes a clean `UnsupportedPattern`.
+
 ## Status
 
 Campaign in progress. Twenty-three distinct root causes confirmed (BUG-1 through
-BUG-27; BUG-11 folds into BUG-17 and BUG-24 folds into BUG-7, so there is no BUG-24).
-This index and the per-bug files are updated as new distinct root causes are
-confirmed.
+BUG-27; BUG-11 folds into BUG-17 and BUG-24 folds into BUG-7, so there is no BUG-24),
+plus one regression (REG-1) introduced by the v0.6.9 cleanup commit. None of the 23
+bugs are fixed as of v0.6.9 (`264e85b`). This index and the per-bug files are updated
+as new distinct root causes are confirmed.

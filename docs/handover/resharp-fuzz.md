@@ -13,18 +13,54 @@ The user maintains a fork (`Aquaticat/resharp`). resharp is a derivative-based
 automaton regex engine with intersection `&`, complement `~`, lookarounds, and
 leftmost-longest (POSIX) semantics, multiline on by default.
 
-## Current status (2026-06-04 17:55)
+## Current status (2026-06-04 18:55)
 
 23 distinct root causes and 39 numbered reproducers committed under
 `docs/audit/resharp-fuzz-2026-06-04/`: BUG-1, 2, 3, 4, 7, 8, 9, 10, 12, 13, 14, 15,
 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27 (numbers 5 and 6 folded; BUG-11 CONFIRMED
 identical to BUG-17, the bracketed `[\w]`; BUG-24 CONFIRMED identical to BUG-7, the
 ascii negated-shorthand language complement, so each counts once; there is no
-BUG-24). A full source-level code-quality audit is in `code-quality.md`
-(definitely-rewrite tier) and `code-quality.recommendations.md`. Distinct triggering
-patterns run to the thousands (BUG-15: 28688 distinct patterns in the full 159k
-hunt). All work is committed. The user wants maximum yield ("poke resharp until it's
-a honeycomb"); 20 is a floor, not a stop.
+BUG-24). Plus one regression, REG-1, introduced by the v0.6.9 cleanup commit (see
+the v0.6.9 re-run section below). A full source-level code-quality audit is in
+`code-quality.md` (definitely-rewrite tier) and `code-quality.recommendations.md`.
+Distinct triggering patterns run to the thousands (BUG-15: 28688 distinct patterns
+in the full 159k hunt). All work is committed. The user wants maximum yield ("poke
+resharp until it's a honeycomb"); 20 is a floor, not a stop.
+
+## v0.6.9 re-run (commit 264e85b / 4ffe1cc, 2026-06-04 18:55)
+
+Upstream landed `4ffe1cc` "cleaning up and simplifying edge cases" (on `main` as
+`264e85b` "bump version", tag `v0.6.9`), a direct child of the campaign baseline
+`a7ab016`, so it isolates exactly one diff. Re-ran the whole campaign against it.
+
+- NONE of the 23 filed bugs are fixed. Every reproducer is byte-identical on the
+  parent and v0.6.9 (harness `/tmp/agent/recheck.ts`, all configs).
+- The commit's footprint is narrow: a before/after `find_all` differential over the
+  6426-pattern hard corpus (96390 pairs, default config) shows ZERO changes. All
+  change is in the zero-width negative-lookahead-of-anchor and `\b\B`-anchor family.
+- It introduces REG-1 (filed as
+  `regression-01-neg-lookahead-zerowidth-duplicate-findall-spans.md`): `(?!\A)`
+  makes `find_all` emit the same zero-width span twice (`(?!\A)` on `"ab"` ->
+  `1:1,1:1,2:2`, was `1:1,2:2`). Single-hunk bisection on a fork copy
+  (`/tmp/agent/resharp-bisect`) pins it to the new `mk_neg_lookahead` zero-width
+  branch (`resharp-algebra/src/lib.rs:3554`): `(?!body)` with a zero-width body is
+  now lowered to `EPS & ~body`, which double-registers interior nullable positions
+  in `collect_rev` (engine `debug` null dump: `[nulls] [3,2,2,1,1]` vs parent's
+  `[3,2,1]`). Reverting only `nulls.rs` (the `and_id` rewrite) does NOT fix it;
+  reverting only this branch does. Config-independent; regresses patterns the parent
+  compiled correctly (`(?!\A)`, `(?!\A)|a`, `a|(?!\A)`).
+- Same commit's improvements (all in the same family): `(?!\A)a`, `(?!\A)*`,
+  `(?!\A)(?=[A-Z])`, `(?!\A){2}`, `(?!\A)(?!\A)` now compile and/or match correctly
+  where the parent rejected or wrongly missed them, and the parent's compile PANIC
+  on `\A((?<=a)B+|x)` becomes a clean `UnsupportedPattern`.
+- Oracle gap: equal-span zero-width duplicates trip neither OVERLAP (`start<prev_end`
+  is `1<1`=false) nor INCONSIST nor BOUNDS. REG-1 was found by a direct find_all
+  before/after diff with an explicit duplicate-span check. Add a `DUPSPAN` oracle
+  (two emitted matches with equal start and equal end) before the next re-run.
+- After-engine harnesses: `/tmp/agent/repro-after` (oracle vs v0.6.9),
+  `/tmp/agent/resharp-after-20260604` (v0.6.9 clone), `dbg-after`/`dbg-before`/
+  `dbg-bisect` (engine `debug`-feature null dumps), `recheck.ts`/`recheck2.ts`/
+  `dup.ts`/`classify.ts`/`genpairs.ts`/`showdiff.ts` (differentials).
 
 Six root causes added in the 17:00 round (all committed):
 
