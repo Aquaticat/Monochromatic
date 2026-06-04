@@ -112,10 +112,22 @@ zig = "0.15.2"
 # (1.16) lags the pinned master rev. Installed from the slint workspace via mise's
 # cargo backend: `crate` selects the slint-lsp member (the repo root is a virtual
 # workspace, so a bare --git is ambiguous) and `bin` limits the install to the
-# slint-lsp binary (skips the slint-editor bin). Default features already give
+# slint-lsp binary (skips the slint-editor bin, which upstream marked TODO: Remove
+# and which the LSP's own preview supersedes). Default features already give
 # backend-default(=winit on Linux) + renderer-femtovg + renderer-software +
 # preview, matching the apps' slint feature set, so no `features` override.
 "cargo:https://github.com/slint-ui/slint" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-lsp", bin = "slint-lsp" }
+
+# Slint standalone live previewer (renders a .slint file in a window without an
+# editor), pinned to the SAME rev as slint-lsp and the apps' slint dependency so
+# the preview matches the runtime. mise keys a cargo-git tool by its URL (git_url()
+# in mise's src/backend/cargo.rs parses the tool name as the repo URL) and has no
+# per-crate key, while TOML forbids a duplicate [tools] key; so a second crate from
+# the same repo needs a distinct key. The trailing ".git" makes this key unique
+# while resolving to the same repository at the same rev (cargo accepts the .git
+# URL). `crate` selects the slint-viewer member; `bin` limits the install to the
+# slint-viewer binary. Default features match the apps, so no `features` override.
+"cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
 
 # Compression
 "github:facebook/zstd" = "latest"
