@@ -132,6 +132,35 @@ name at least two alternatives with concrete reasons
 (cite the specific incompatibility, not "doesn't fit")
 for not picking each.
 
+### Audit open-source maintenance before recommending
+
+For open-source packages, issue count alone is not a maintenance signal.
+Measure maintainer responsiveness and recent triage before recommending a new direct dependency
+or keeping an incumbent package under review.
+Report counts with interpretation, not as raw trailing caveats.
+
+Required checks:
+
+- Recent issue response: sample issues created or updated in the last 12 months;
+  count how many receive maintainer, member, owner, or collaborator comments,
+  and separately count maintainer actions such as labeling, closing, linking a PR, or assigning.
+- Pull-request activity: recent maintainer-authored PRs, maintainer reviews, merge latency,
+  and whether external fixes wait without review.
+- Release cadence: latest npm publish, changelog or release notes tied to fixes,
+  and whether the package publishes after merged maintenance work.
+- Backlog shape: stale unanswered bugs, compatibility breakages, security reports,
+  and user comments that mention abandonment or missing support.
+- Candidate parity: audit alternatives to the same depth as the incumbent;
+  zero issues on a tiny repo is low signal, not proof of health.
+
+Distinguish these states explicitly:
+
+- Active releases with weak public issue support.
+- Responsive maintainers with a large but triaged backlog.
+- Abandoned or effectively unmaintained packages.
+
+Never cite open issue count alone as evidence for or against a package.
+
 ### Maintain a decision document
 
 After the user picks, write the choice and rejected alternatives to
@@ -205,6 +234,8 @@ Decision doc: `docs/decisions/staging-database.md`."
 - All six vendor vetting layers reported inline for each SaaS candidate.
 - At least two alternatives named with concrete rejection reasons.
 - Open-source default applied; closed-source exceptions labelled with a reason.
+- Open-source maintenance signals checked for library, framework, and build-tool candidates:
+  issue responsiveness, maintainer actions, pull-request activity, release cadence, and stale backlog shape.
 - Decision doc updated at `docs/decisions/<project>.md`.
 
 If any item is unmet, do not name a candidate yet.
