@@ -70,11 +70,11 @@ boundary is concatenated with a nullable filler, so the empty-string nullability
 collapses to "both sides non-word -> boundary holds." `\B` (the negation) inherits the
 inverse flip.
 
-This is the same conceptual hazard as BUG-24 (a language complement `~` that matches
+This is the same conceptual hazard as BUG-7 (a language complement `~` that matches
 the empty string standing in for an element-level constraint) and is adjacent to
 BUG-26 (empty-string nullability mishandled in concat simplification), but in a
 distinct code path: the word-boundary lowering plus the concat nullability of that
-lowering, rather than the ascii `\W` class lowering (BUG-24) or the `End`-head concat
+lowering, rather than the ascii `\W` class lowering (BUG-7) or the `End`-head concat
 rule (BUG-26). Pinning the exact simplification that drops the "word char on one side"
 requirement needs a walk of the lowered lookaround derivative; the empirical flip and
 its config independence are certain.
@@ -86,8 +86,8 @@ so the limits-disabling config is irrelevant.
 
 ## Relationship to other findings
 
-- BUG-24: ascii `\W` matching the empty string via `mk_compl`; same "complement is
-  nullable" theme, different code path (class lowering vs boundary lowering).
+- BUG-7: ascii `\W` matching the empty string via `mk_compl`; same "complement is
+  nullable" theme, different code path (perl-class lowering vs boundary lowering).
 - BUG-26: `\z\A` reduced to the empty language; same "empty-string nullability of an
   anchor composition is wrong" theme, opposite direction (false negative there, both
   directions here), different rule.

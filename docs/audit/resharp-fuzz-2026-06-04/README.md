@@ -67,7 +67,9 @@ search accelerator only.
   assertion when the forward scan returns the `NO_MATCH` sentinel where the
   reverse pass expected an end. Match time. `\S+b`.
 - [BUG-3](bug-03-ismatch-findall-disagree.md): `is_match` disagrees with
-  `find_all`. `(\z|(?=a)\w)`, `((?=0)\S|\z)`, `\BU`, `\z\A(?:a){0,1}`.
+  `find_all`. `(\z|(?=a)\w)`, `((?=0)\S|\z)`, `\BU`. (The `\z\A` empty-match cases
+  once filed here are now BUG-26, a compile-time empty-language reduction where
+  `is_match` and `find_all` actually agree.)
 - [BUG-4](bug-04-nomatch-sentinel-leak.md): `find_all` emits a match with
   `end = usize::MAX`. `~(_*$)`, `\Bb+`, `(?<=[^a])b+`.
 - [BUG-7](bug-07-negated-perl-class-nullable.md): the negated perl classes
@@ -101,7 +103,7 @@ search accelerator only.
   class, 28688 of 159257 corpus patterns in every config. Minimal `a&b` then
   `stream(b"aaa")`. Triggers: intersection (1688), lookarounds (413), and anchors.
   The reversed-anchor `\z\A` that first surfaced it also drops its empty match
-  (regex-crate corroborated), a separate BUG-3 correctness defect.
+  (regex-crate corroborated), a separate compile-time defect now filed as BUG-26.
 - [BUG-16](bug-16-lookbehind-of-lookahead-superlinear-match.md): a lookbehind of
   a positive lookahead that fails at the tested position is super-linear
   (about O(n^3)) at match time. A six-character pattern matches 512 bytes in 13
@@ -135,11 +137,51 @@ search accelerator only.
   its scan needs (`engine/src/lib.rs:1847`). Found by the new find_anchored-versus-
   find_all consistency oracle (`FANDIFF`).
 
+- [BUG-21](bug-21-lazy-dfa-cache-contamination-across-queries.md): a reused `Regex`
+  returns history-dependent, wrong answers. Repeating an identical `is_match("ba")`
+  on `\Bb` flips `false` to `true`; a prior query makes `find_all` leak the
+  `NO_MATCH` `usize::MAX` sentinel into a returned `Match.end`. The reverse lazy-DFA
+  cache (`rev_ts`) shares states across queries without the begin-of-input boundary
+  context in their identity (`handle_rev_end`, `engine/src/engine.rs:1478`). Can also
+  escalate to the `engine.rs:960` abort (then BUG-25). Config-independent.
+- [BUG-22](bug-22-fwd-prefix-rescan-quadratic-is-match.md): `is_match`/`find_all`/
+  `stream` are O(n^2) on a repetitive single-byte prefix with a failing suffix
+  (`(a+)+b`, `(a|a)*b` over an all-`a` run: 4.4 s at 64 KiB, stream ascii > 25 s).
+  The DFA is bounded (5 states), so it is not state explosion: `is_match_fwd_prefix`/
+  `find_all_fwd_prefix` re-scan from every prefix occurrence, advancing `search_start`
+  by one byte after a failed scan (`fwd.rs:92`, `:51`). Not mitigated by hardened.
+- [BUG-23](bug-23-full-unicode-word-class-bounded-repeat-compile-blowup.md):
+  full-unicode `\w` bounded-repeated blows up compile time super-linearly
+  (`\w{16}` = 15.6 s, `\w{12}` = 9.6 s in full; ~0.03 s in default/ascii). Specific to
+  `\w`/`\W`; `\d`/`\s`/`.`/ASCII are instant. The parser unrolls `{n,m}` via
+  `mk_repeat` (`parser/lib.rs:2030`, `algebra/lib.rs:3710`) instead of the native
+  `Kind::Counted`, materializing one DFA state per count over the large `\w` set.
+- [BUG-25](bug-25-mutex-poison-bricks-regex.md): a panic inside the locked region
+  poisons the `inner` `std::sync::Mutex`, so every later `.lock().unwrap()` (16 sites)
+  panics with `PoisonError`. One bad input permanently bricks a shared compiled
+  `Regex` for all methods and threads even if the caller catches the first panic.
+  Minimal: `\w+b` default, `find_all(["ab","ba"])`.
+- [BUG-26](bug-26-end-then-begin-anchor-reduced-to-empty-language.md): `\z\A` is
+  compiled to the empty language (BOT) and fails to match the empty string it should
+  match (`\A\z` is correct). `mk_concat` reduces an `End` head before a non-END-
+  nullable tail to BOT (`algebra/lib.rs:3232`), ignoring that on the empty input the
+  end position is also the begin position, so a begin-nullable tail (`\A`) still
+  matches `""`. Reclassifies the prior `\z\A` findings (numbered 8 and 27) from BUG-3.
+- [BUG-27](bug-27-word-boundary-nullability-flipped-on-empty-under-composition.md):
+  a word boundary composed with a nullable filler flips on the empty string: `\b a{0}
+  \b` matches `""` (should not) and `\B a{0} \z` fails on `""` (should match), all
+  configs. `\b` lowers to boundary lookarounds over `~(\w)`, which is nullable, so on
+  the empty string both sides are satisfied and the "word char on one side" rule is
+  lost under composition. Bare `\b`/`\B` are correct.
+
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
-trigger for BUG-3.
+trigger for BUG-3. An earlier draft of this round filed the ascii `\W`/`\D`/`\S`
+language-complement defect as BUG-24 before noticing it is the same root cause as
+BUG-7; BUG-24 was merged into BUG-7 (where the exact line, `parser/lib.rs:1373`, is
+now pinned) and removed, so there is no BUG-24.
 
-## Numbered findings (32 distinct minimal reproducers)
+## Numbered findings (39 distinct minimal reproducers)
 
 Each line is a distinct, verified, minimal reproducer on the pristine engine,
 grouped by the root cause above. Self-consistency findings (a single engine
@@ -154,7 +196,7 @@ the dotnet reference and plain semantic reasoning.
  5. (\z|(?=a)\w)              is_match false, find_all one match            BUG-3
  6. ((?=0)\S|\z) on "a"       is_match false, find_all one match            BUG-3
  7. \BU on "Uii\"             is_match true, find_all empty                 BUG-3
- 8. \z\A(?:a){0,1} on ""      is_match false, empty match exists            BUG-3
+ 8. \z\A(?:a){0,1} on ""      is_match false, empty match exists            BUG-26
  9. ~(_*$) flags mode         find_all end = usize::MAX                     BUG-4
 10. \Bb+ on "ba"             find_all end = usize::MAX, default mode        BUG-4
 11. (?<=[^a])b+ on "ba"      find_all end = usize::MAX, default mode        BUG-4
@@ -173,23 +215,42 @@ the dotnet reference and plain semantic reasoning.
 24. (?<=\D?[a-c]+0?)b on "ba" find_all 1:2 while is_match false             BUG-3
 25. (|(?<=[a-z])b) on "b"    find_all 0:1, lookbehind gate dropped          BUG-14
 26. a&b then stream("aaa")   panic engine.rs:550, stream API, all configs    BUG-15
-27. \z\A.* on ""             missed empty match, regex crate confirms        BUG-3
+27. \z\A.* on ""             missed empty match, regex crate confirms        BUG-26
 28. (?<=$) find_all 'a'*512  ~13s match-time blowup, lookbehind-of-lookahead  BUG-16
 29. ([\w]{3,5}){3,3}         ~15s compile blowup, bracketed perl-class repeat  BUG-17
 30. ~(a+) find_all 'a'*98304 ~10.5s O(n^2) find_all, nullable complement       BUG-18
 31. $?\w is_match cyc(16384) ~3s full-mode anchor+\w construction cost         BUG-19
 32. \B0 on "00"              find_anchored 0:1 vs find_all 1:2 (correct)        BUG-20
+33. \Bb is_match("ba") x2    false then true: reused-Regex cache contamination  BUG-21
+34. (a+)+b is_match 'a'*65536 ~4.4s O(n^2) prefix re-scan, hardened no help     BUG-22
+35. \w{16} compile full mode ~15.6s full-unicode bounded-repeat unroll          BUG-23
+36. \W is_match("") ascii    spurious true: mk_compl not neg_class (was BUG-24)  BUG-7
+37. \w+b find_all ["ab","ba"] panic then PoisonError bricks the Regex           BUG-25
+38. \z\A is_match("")        false; compiled to empty language (BOT)             BUG-26
+39. \ba{0}\b is_match("")    true; word-boundary nullability flips on empty      BUG-27
 ```
 
-The campaign covers seventeen distinct root causes and 32 numbered reproducers
-(BUG-1 through BUG-20; numbers 5 and 6 folded, and BUG-11 confirmed to be the same
-root cause as BUG-17, the bracketed perl class, so they count once). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
+The campaign covers twenty-three distinct root causes and 39 numbered reproducers
+(BUG-1 through BUG-27; numbers 5 and 6 folded, BUG-11 confirmed to be the same root
+cause as BUG-17, the bracketed perl class, and BUG-24 confirmed to be the same root
+cause as BUG-7, the ascii negated-shorthand language complement, so each counts once;
+there is no BUG-24). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
 self-consistent at the span level and so invisible to every internal oracle). A
 panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA
 construction crash that hits 28688 of 159257 patterns (intersection, lookaround,
 and anchor families) in every config; the full-corpus hunt confirmed only one
-other crash site, BUG-2's assert. The reversed-anchor `\z\A` missed match it surfaced is a
-regex-crate-corroborated BUG-3 trigger.
+other crash site, BUG-2's assert.
+
+A later round added six more distinct root causes. Reusing one compiled `Regex`
+across queries exposed BUG-21 (lazy-DFA cache contamination: history-dependent,
+wrong answers, escalating to the `engine.rs:960` abort) and BUG-25 (that panic
+poisons the `inner` mutex and permanently bricks the instance). A timing sweep over
+structurally diverse patterns added BUG-22 (O(n^2) `is_match` from forward-prefix
+re-scan, not hardened-mitigated) and BUG-23 (full-unicode `\w` bounded-repeat compile
+blowup). A plain-pattern differential round and a focused anchor-composition round
+added BUG-26 (`\z\A` reduced to the empty language, reclassifying the prior `\z\A`
+findings from BUG-3) and BUG-27 (word-boundary nullability flipping on the empty
+string under nullable composition), and pinned BUG-7's exact line.
 
 ## Distinct-trigger counts
 
@@ -343,5 +404,7 @@ is exactly the translator shape that proved unfaithful in the lean2 round.
 
 ## Status
 
-Campaign in progress. This index and the per-bug files are updated as new
-distinct root causes are confirmed.
+Campaign in progress. Twenty-three distinct root causes confirmed (BUG-1 through
+BUG-27; BUG-11 folds into BUG-17 and BUG-24 folds into BUG-7, so there is no BUG-24).
+This index and the per-bug files are updated as new distinct root causes are
+confirmed.

@@ -13,15 +13,64 @@ The user maintains a fork (`Aquaticat/resharp`). resharp is a derivative-based
 automaton regex engine with intersection `&`, complement `~`, lookarounds, and
 leftmost-longest (POSIX) semantics, multiline on by default.
 
-## Current status (2026-06-04 15:55)
+## Current status (2026-06-04 17:55)
 
-17 distinct root causes and 32 numbered reproducers committed under
+23 distinct root causes and 39 numbered reproducers committed under
 `docs/audit/resharp-fuzz-2026-06-04/`: BUG-1, 2, 3, 4, 7, 8, 9, 10, 12, 13, 14, 15,
-16, 17, 18, 19, 20 (numbers 5 and 6 folded; BUG-11 CONFIRMED identical to BUG-17,
-the bracketed `[\w]`, so counted once). A full source-level code-quality audit is in
-`code-quality.md` (definitely-rewrite tier) and `code-quality.recommendations.md`. Distinct triggering patterns run to the
-thousands (BUG-15: 28688 distinct patterns in the full 159k hunt). All work is
-committed. The user wants maximum yield ("poke resharp until it's a honeycomb").
+16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27 (numbers 5 and 6 folded; BUG-11 CONFIRMED
+identical to BUG-17, the bracketed `[\w]`; BUG-24 CONFIRMED identical to BUG-7, the
+ascii negated-shorthand language complement, so each counts once; there is no
+BUG-24). A full source-level code-quality audit is in `code-quality.md`
+(definitely-rewrite tier) and `code-quality.recommendations.md`. Distinct triggering
+patterns run to the thousands (BUG-15: 28688 distinct patterns in the full 159k
+hunt). All work is committed. The user wants maximum yield ("poke resharp until it's
+a honeycomb"); 20 is a floor, not a stop.
+
+Six root causes added in the 17:00 round (all committed):
+
+- BUG-21: a reused `Regex` returns history-dependent wrong answers. Repeating an
+  identical `is_match("ba")` on `\Bb` flips false->true; a prior query leaks the
+  `usize::MAX` `NO_MATCH` sentinel into a `find_all` `Match.end`. Root cause: the
+  reverse lazy-DFA cache (`rev_ts`) at `handle_rev_end` (`engine.rs:1478`) returns a
+  different cached state for the same `(sid, minterm)` across calls; the
+  begin-of-input boundary context is not part of cached state identity. Found by
+  reusing one Regex across haystacks in `--checkbatch` (STREAMINCONSIST + BOUNDS).
+- BUG-22: O(n^2) `is_match`/`find_all`/`stream` on a repetitive single-byte prefix
+  with a failing suffix (`(a+)+b`, `(a|a)*b`; 4.4s at 64KiB, stream ascii >25s). DFA
+  is bounded (5 states) so not state explosion: `is_match_fwd_prefix`/
+  `find_all_fwd_prefix` re-scan from every prefix occurrence, advancing `search_start`
+  by one byte after a failed scan (`fwd.rs:92`, `:51`). NOT hardened-mitigated
+  (distinct from BUG-18). Found by `--time1`.
+- BUG-23: full-unicode `\w` bounded-repeated blows up compile super-linearly
+  (`\w{16}`=15.6s, `\w{12}`=9.6s in full; ~0.03s default/ascii). Specific to `\w`/`\W`
+  (the large multi-byte set); `\d`/`\s`/`.`/ASCII are instant. Parser unrolls `{n,m}`
+  via `mk_repeat` (`parser/lib.rs:2030`, `algebra/lib.rs:3710`) instead of the native
+  `Kind::Counted`. Distinct from BUG-17 (bracketed, slow in default too) and BUG-19
+  (match phase).
+- BUG-25: a panic inside the locked region poisons the `inner` `std::sync::Mutex`,
+  so every later `.lock().unwrap()` (16 sites) panics with `PoisonError`. One bad
+  input permanently bricks a shared compiled `Regex` (all methods, all threads) even
+  if the caller catches the first panic. Minimal `\w+b` default,
+  `find_all(["ab","ba"])`. Orthogonal amplifier of BUG-2/BUG-21 aborts.
+- BUG-26: `\z\A` is compiled to the empty language (BOT) and misses the empty match
+  it should make (`\A\z` is correct). `mk_concat` (`algebra/lib.rs:3232`) reduces an
+  `End` head before a non-END-nullable tail to BOT, ignoring that on the empty input
+  the end position is also begin, so a begin-nullable tail (`\A`) still matches "".
+  Reclassifies the prior `\z\A` findings from BUG-3 (is_match and find_all actually
+  AGREE = []). Found by `--divergebatch`.
+- BUG-27: a word boundary composed with a nullable filler flips on the empty string:
+  `\ba{0}\b` matches "" (should not) and `\Ba{0}\z` fails on "" (should match), all
+  configs. `\b` lowers to boundary lookarounds over `~(\w)` (nullable), so on "" both
+  sides are satisfied and the "word char on one side" rule is lost under composition.
+  Bare `\b`/`\B` are correct. Found by `--divergebatch` over an anchor-composition
+  corpus. Same complement-is-nullable theme as BUG-7.
+
+The bracketed perl-class issue (BUG-24/BUG-7) was nearly double-counted: BUG-7 already
+covered ascii `\W`/`\D`/`\S` matching the empty string. This round PINNED its exact
+line (`parser/lib.rs:1373` uses `mk_compl` instead of `neg_class`; the js branch at
+`:1309` is correct) and confirmed the scope (bracketed `[\W]` is correct; only the
+bare shorthand breaks; only ascii config). Folded into `bug-07`; the `bug-24` file was
+removed. LESSON: check the existing bug index before filing.
 
 A bug is not only a panic or a wrong answer. ieviev's invariant: with the size
 limits NOT disabled, nothing should take >= 10s. So under any limits-enabled config
@@ -270,18 +319,27 @@ contradicting itself is unambiguous.
   caps `lib.rs:56`-`:59` (`DEFAULT_MAX_REPEAT=500`, `EXPANDED_AST_LIMIT=50_000`,
   `MAX_LIST_LEN=4_000`, `MAX_DEPTH=1_000`).
 
-## The 17 bugs (files in docs/audit/resharp-fuzz-2026-06-04/)
+## The 23 bugs (files in docs/audit/resharp-fuzz-2026-06-04/)
+
+BUG-21 through BUG-27 are detailed in the Current status section above. BUG-1 through
+BUG-20 follow; BUG-19/20 are in the status section's timing list.
 
 - BUG-1 `bug-01-...`: re-entrancy guard panic in union/intersection rewrites,
   compile time. `.*(.+)*.+`.
 - BUG-2 `bug-02-...`: `correctness issue found` assert at engine.rs:960 (NO_MATCH
   reaches a Match). `\S+b` on `b'_`.
 - BUG-3 `bug-03-...`: is_match disagrees with find_all. Triggers `(\z|(?=a)\w)`,
-  `\BU`, `\z\A(?:a){0,1}`, `(?<=\D?[a-c]+0?)b` on `ba`, `\z\A.*` on `` (reversed
-  anchors; regex-crate corroborated).
+  `\BU`, `(?<=\D?[a-c]+0?)b` on `ba`. (The `\z\A` reversed-anchor cases once filed
+  here are now BUG-26: a compile-time empty-language reduction where is_match and
+  find_all AGREE = [], so not a BUG-3 divergence.)
 - BUG-4 `bug-04-...`: find_all emits `end=usize::MAX`. `~(_*$)`, `\Bb+`,
   `(?<=[^a])b+`.
-- BUG-7 `bug-07-...`: negated perl classes `\D \S \W` nullable (ascii). `\D`.
+- BUG-7 `bug-07-...`: negated perl classes `\D \S \W` nullable (ascii) -- they match
+  EVERYTHING including word chars and the empty string. `\D`. Root cause now PINNED:
+  `perl_class_node` ascii else-branch uses `tb.mk_compl(pos)` (language complement)
+  instead of `neg_class` (`parser/lib.rs:1373` vs the correct js branch at `:1309`).
+  Scope: bare shorthand only (bracketed `[\W]` is correct); ascii config only
+  (default/full/js correct). The duplicate `bug-24` was merged here and removed.
 - BUG-8 `bug-08-...`: hardened find_all differs from default; hardened wrong.
   `~(_a+)`, `~(\D+)`.
 - BUG-9 `bug-09-...`: stream path under-reports. `\A\z?`, `(^|b)`, `(?<!b)`. 707+
@@ -409,6 +467,35 @@ which needs no oracle; only the position-correctness question remains held back.
 - `--streambatch` (STREAMEXTRA: stream span not in find_all): DEAD END, see below.
 - `--ci1 <hexpat> <hexhay>`: resharp case_insensitive(ascii) is_match/find_all.
 - `--fa1 <hexpat> <hexhay> <cfgidx>`: im/fa under any config (for UTF-8 / mode probes).
+
+Added in the 17:00 round (all in /tmp/agent/repro):
+
+- `--checkbatch` (stdin hexpats): runs the full `check_one` internal-consistency
+  suite (INCONSIST, BOUNDS, OVERLAP, ANCHOR, FANDIFF, STREAM*) over configs 0/2/4,
+  REUSING one Regex across haystacks. The reuse is what exposed BUG-21 (cache
+  contamination): STREAMINCONSIST (24 `\B`+intersection patterns) and BOUNDS (the
+  `usize::MAX` leak).
+- `--checkfresh` (stdin hexpats): same suite but a FRESH Regex per (pattern, config,
+  haystack), so contamination cannot fire. Whatever still flags is a genuine
+  per-input bug. Used to confirm BOUNDS/STREAMINCONSIST were purely BUG-21.
+- `--hardbatch` (stdin hexpats): default vs hardened find_all/is_match over builtin +
+  larger haystacks (`diff_hardened`). HARDDIFF = guaranteed bug (BUG-8); the
+  HARDPANIC rows (default panics, hardened does not, then cascade) surfaced BUG-25.
+- `--divergebatch` (stdin hexpats): resharp ascii is_match vs the regex crate
+  (`unicode(false).multi_line(true)`), FRESH per haystack, existence-only (resharp is
+  POSIX-longest vs regex leftmost-first, so spans legitimately differ). Built BUG-26
+  and BUG-27, and re-found BUG-7. NOTE: regex crate is only a Lean-consistent proxy
+  for the SHARED standard-feature subset; the user rejects it as a case-insensitivity
+  oracle (Lean is the reference there).
+- `--contam <hexpat> <hexhays-comma> <cfg>`: build one Regex, run is_match/find_all
+  over a haystack sequence, then a fresh Regex on the last; prints REUSED vs FRESH.
+  The minimal-priming tool for BUG-21/BUG-25.
+- Corpora added: `/tmp/agent/corpus_hard.txt`, `corpus2.txt`, `corpus_plain.txt`,
+  `corpus_edge.txt`, `corpus_anchor.txt`, `time_corpus.txt`; generators
+  `gen.ts`/`gen2.ts`/`gen_plain.ts`/`gen_edge.ts`/`gen_anchor.ts` in `/tmp/agent/repro`.
+  Standalone repro crate `/tmp/agent/contam-test` (depends on the pristine engine;
+  has a panic-hook + `diff_hardened`-style harness; toggle `features=["debug"|"diag"]`
+  in its Cargo.toml for the node trace / `dfa_stats`).
 
 ## Spot-checked, no bug in samples (NOT confirmed robust)
 
