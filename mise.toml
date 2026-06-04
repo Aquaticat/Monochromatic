@@ -106,6 +106,18 @@ cargo-binstall = "latest"
 # same Ghostty core as the container build. Bump both together.
 zig = "0.15.2"
 
+# Slint language server (.slint completion, diagnostics, live preview) for the
+# two desktop-app packages. Pinned to the SAME git rev as their `slint` dependency
+# (packages/desktop-app/{terminal,music-player}/Cargo.toml) so the LSP's compiler
+# and live preview match the runtime the apps build against; a crates.io release
+# (1.16) lags the pinned master rev. Installed from the slint workspace via mise's
+# cargo backend: `crate` selects the slint-lsp member (the repo root is a virtual
+# workspace, so a bare --git is ambiguous) and `bin` limits the install to the
+# slint-lsp binary (skips the slint-editor bin). Default features already give
+# backend-default(=winit on Linux) + renderer-femtovg + renderer-software +
+# preview, matching the apps' slint feature set, so no `features` override.
+"cargo:https://github.com/slint-ui/slint" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-lsp", bin = "slint-lsp" }
+
 # Compression
 "github:facebook/zstd" = "latest"
 
