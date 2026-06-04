@@ -228,9 +228,27 @@ First-principles reasoning leans toward rust being wrong, but lookbehind-of-anch
 is the same translator shape that was unfaithful in lean2, so these need RE#
 lookbehind-of-anchor semantics confirmed (paper or resharp source) before filing.
 
+Panic hunt complete (big result). A new `repro --panicbatch` mode (reads hexpats
+on stdin, streams the builtin haystack set across all 7 configs under
+catch_unwind, prints only PANIC lines) swept the 12000-pattern corpus. BUG-15 is
+not `\z\A`-specific: 2396 distinct patterns panic at `engine.rs:550` via the
+`stream` API (intersection 1688, lookarounds 413, anchors the rest). Minimal:
+`Regex::new("a&b").unwrap().stream(b"aaa")` (fresh regex, one `stream` call,
+3+-byte input; `is_match`/`find_all`/`find_anchored` never reach it). The hunt
+found only two crash sites total: `engine.rs:550` (BUG-15) and `engine.rs:960`
+(BUG-2, 16 patterns). New debug mode `repro --stream1 <hexpat> <hexhay>` builds a
+fresh regex and streams one haystack, for isolating single-call panics.
+
 No in-flight background jobs. All Lean rounds complete. To run a new round, reuse
 the recipe below and harvest with `adj_full.py` (treat Lean as ground truth, dotnet
 as a hint).
+
+Remaining avenues (for more root causes): deepen the stream-panic root cause (read
+the `stream` DFA driver and `create_state` allocation in
+`resharp-engine/src/engine.rs`); the held-back `(?<=$)` lookbehind-of-anchor
+cluster (needs RE# semantics confirmed); per-mode Lean rounds (ascii, flags,
+hardened) since BUG-4/7/8 are mode-specific; the stream crash blocks stream-result
+checking on 2396 patterns, so more stream-correctness bugs may hide behind it.
 
 Adjudication tooling now in place (reusable for any future round):
 
