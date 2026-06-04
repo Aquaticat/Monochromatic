@@ -99,6 +99,13 @@ search accelerator only.
   `stream(b"aaa")`. Triggers: intersection (1688), lookarounds (413), and anchors.
   The reversed-anchor `\z\A` that first surfaced it also drops its empty match
   (regex-crate corroborated), a separate BUG-3 correctness defect.
+- [BUG-16](bug-16-lookbehind-of-lookahead-superlinear-match.md): a lookbehind of
+  a positive lookahead that fails at the tested position is super-linear
+  (about O(n^3)) at match time. A six-character pattern matches 512 bytes in 13
+  seconds and 1 KB in over two minutes, with the size limits enabled, violating
+  the project's own "nothing over 10 seconds with limits on" invariant. `(?<=$)`
+  `find_all` (`$` desugars to a positive lookahead under multiline). Match-time
+  analogue of BUG-11's compile-time blowup, found by the timing oracle.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -139,9 +146,10 @@ the dotnet reference and plain semantic reasoning.
 25. (|(?<=[a-z])b) on "b"    find_all 0:1, lookbehind gate dropped          BUG-14
 26. a&b then stream("aaa")   panic engine.rs:550, stream API, all configs    BUG-15
 27. \z\A.* on ""             missed empty match, regex crate confirms        BUG-3
+28. (?<=$) find_all 'a'*512  ~13s match-time blowup, lookbehind-of-lookahead  BUG-16
 ```
 
-The campaign covers thirteen distinct root causes (BUG-1 through BUG-15, numbers 5
+The campaign covers fourteen distinct root causes (BUG-1 through BUG-16, numbers 5
 and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
 self-consistent at the span level and so invisible to every internal oracle). A
 panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA
