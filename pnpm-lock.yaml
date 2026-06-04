@@ -19,8 +19,8 @@ catalogs:
       specifier: '>=9.3.2'
       version: 9.3.2
     '@earendil-works/pi-coding-agent':
-      specifier: '>=0.78.0'
-      version: 0.78.0
+      specifier: '>=0.78.1'
+      version: 0.78.1
     '@lezer/common':
       specifier: '>=1.2.0'
       version: 1.5.1
@@ -2115,7 +2115,7 @@ importers:
         version: 0.74.0
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2152,7 +2152,7 @@ importers:
         version: 0.74.0
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@earendil-works/pi-tui':
         specifier: ^0.74.0
         version: 0.74.1
@@ -2192,7 +2192,7 @@ importers:
         version: 0.74.0
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2220,7 +2220,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2238,7 +2238,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@earendil-works/pi-tui':
         specifier: ^0.74.0
         version: 0.74.1
@@ -2269,7 +2269,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2291,7 +2291,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2309,7 +2309,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2331,7 +2331,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.78.0
+        version: 0.78.1
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2966,8 +2966,8 @@ packages:
       '@luma.gl/core': ~9.3.3
       '@luma.gl/engine': ~9.3.3
 
-  '@earendil-works/pi-agent-core@0.78.0':
-    resolution: {integrity: sha512-xhWd59Qzd8yO88gYQw2S4dEQstJJEiUtxRP01//YzVJ61jCtUASMfcyAmYhgGYR4Onp7GmwEAbBBGOiV6Iwk9g==}
+  '@earendil-works/pi-agent-core@0.78.1':
+    resolution: {integrity: sha512-oPwVRkkAvyKPWyM7E4k+EaTNmynbYn7ZLG/LBh9BUnMNb2gvpMp+VQ420R6JCJ20uogSqrHnWTyosSa/rU8lVw==}
     engines: {node: '>=22.19.0'}
 
   '@earendil-works/pi-ai@0.74.0':
@@ -2975,13 +2975,13 @@ packages:
     engines: {node: '>=20.0.0'}
     hasBin: true
 
-  '@earendil-works/pi-ai@0.78.0':
-    resolution: {integrity: sha512-q0hUrvT6ngT6cgBX0oIbzfQfmzztgdkZobP8OTL+sCOOBlnG6+1YRt8g7zO9CC/4NdeYEqa7uGqWdQhH0fjCLA==}
+  '@earendil-works/pi-ai@0.78.1':
+    resolution: {integrity: sha512-CM2pkTs1iupG/maw381lC9Q/Y/aQaMGK7GILc28ttImD0ci3LDwKroDsGkWbly5JIy3iqxdRxB9JlG7vvzCzTg==}
     engines: {node: '>=22.19.0'}
     hasBin: true
 
-  '@earendil-works/pi-coding-agent@0.78.0':
-    resolution: {integrity: sha512-gXt6pD3BoSG0yLwfLqb6844vz6qAO87PvNrv+YSDYKP3QliTjcwIld9v4ihmDcmBjO13QwKswubq/lYCvn4bkg==}
+  '@earendil-works/pi-coding-agent@0.78.1':
+    resolution: {integrity: sha512-Syjf6Ib8UoY5t9ZdKjp0BRrQZuFkFBc8j2KEU9zG/ZnmYPcAxYeioofdv2Q3MEXnHEX2U8sKQptkSnJIdMsd0g==}
     engines: {node: '>=22.19.0'}
     hasBin: true
 
@@ -2989,8 +2989,8 @@ packages:
     resolution: {integrity: sha512-wQj2TRG43/BBNyd/lReQJWtTCOJVyIwI+7Ifp3hNITfTtQr4zQdMeF7uxqEMQ73LI6rQO7Ljx0P2w+oMx8uyIA==}
     engines: {node: '>=20.0.0'}
 
-  '@earendil-works/pi-tui@0.78.0':
-    resolution: {integrity: sha512-3a705FnsVVUhAyceShNB3kS2rpxcxLcx+hqB0u6MMMpHwQGbW+m++MqA6r7eOzq/8FLx5e3vDh38h/SVTk2qzw==}
+  '@earendil-works/pi-tui@0.78.1':
+    resolution: {integrity: sha512-07GVQo/38a0yvIPlWDr3RJn1B8gk3ZuIX9h2oIQ+Biyu3JN0KppWmgWHfaWRydQgse5JtC++KDw5MWaIRnV0mw==}
     engines: {node: '>=22.19.0'}
 
   '@emnapi/core@1.10.0':
@@ -5875,9 +5875,9 @@ snapshots:
       - '@75lb/nature'
       - '@loaders.gl/core'
 
-  '@earendil-works/pi-agent-core@0.78.0':
+  '@earendil-works/pi-agent-core@0.78.1':
     dependencies:
-      '@earendil-works/pi-ai': 0.78.0
+      '@earendil-works/pi-ai': 0.78.1
       ignore: 7.0.5
       typebox: 1.1.38
       yaml: 2.9.0
@@ -5896,7 +5896,7 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.78.0':
+  '@earendil-works/pi-ai@0.78.1':
     dependencies:
       '@anthropic-ai/sdk': 0.92.0
       '@smithy/node-http-handler': 4.7.3
@@ -5910,11 +5910,11 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@0.78.0':
+  '@earendil-works/pi-coding-agent@0.78.1':
     dependencies:
-      '@earendil-works/pi-agent-core': 0.78.0
-      '@earendil-works/pi-ai': 0.78.0
-      '@earendil-works/pi-tui': 0.78.0
+      '@earendil-works/pi-agent-core': 0.78.1
+      '@earendil-works/pi-ai': 0.78.1
+      '@earendil-works/pi-tui': 0.78.1
       '@silvia-odwyer/photon-node': 0.3.4
       chalk: 5.6.2
       cross-spawn: 7.0.6
@@ -5939,7 +5939,7 @@ snapshots:
       get-east-asian-width: 1.6.0
       marked: 15.0.12
 
-  '@earendil-works/pi-tui@0.78.0':
+  '@earendil-works/pi-tui@0.78.1':
     dependencies:
       get-east-asian-width: 1.6.0
       marked: 15.0.12

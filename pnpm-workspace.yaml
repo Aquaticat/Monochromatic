@@ -1,6 +1,6 @@
 packages:
-- 'packages/*/*'
-- 'packages-deprecated/*/*'
+  - 'packages/*/*'
+  - 'packages-deprecated/*/*'
 
 allowBuilds:
   '@vscode/ripgrep': false
@@ -29,7 +29,7 @@ catalog:
   '@libsql/kysely-libsql': '>=0.4.1'
   '@lobehub/icons-static-svg': '>=1.82.0'
   '@luma.gl/engine': '>=9.3.2'
-  '@earendil-works/pi-coding-agent': '>=0.78.0'
+  '@earendil-works/pi-coding-agent': '>=0.78.1'
   '@mdx-js/mdx': '>=3.1.0'
   '@microsoft/tsdoc': '>=0.16.0'
   '@mitata/counters': '>=0.0.8'
@@ -138,43 +138,47 @@ hoistWorkspacePackages: false
 linkWorkspacePackages: true
 managePackageManagerVersions: false
 minimumReleaseAgeExclude:
-- '@earendil-works/pi-agent-core@0.75.4'
-- '@earendil-works/pi-ai@0.75.4'
-- '@earendil-works/pi-coding-agent@0.75.4'
-- '@earendil-works/pi-tui@0.75.4'
-- '@oxlint/binding-android-arm-eabi@1.67.0'
-- '@oxlint/binding-android-arm64@1.67.0'
-- '@oxlint/binding-darwin-arm64@1.67.0'
-- '@oxlint/binding-darwin-x64@1.67.0'
-- '@oxlint/binding-freebsd-x64@1.67.0'
-- '@oxlint/binding-linux-arm-gnueabihf@1.67.0'
-- '@oxlint/binding-linux-arm-musleabihf@1.67.0'
-- '@oxlint/binding-linux-arm64-gnu@1.67.0'
-- '@oxlint/binding-linux-arm64-musl@1.67.0'
-- '@oxlint/binding-linux-ppc64-gnu@1.67.0'
-- '@oxlint/binding-linux-riscv64-gnu@1.67.0'
-- '@oxlint/binding-linux-riscv64-musl@1.67.0'
-- '@oxlint/binding-linux-s390x-gnu@1.67.0'
-- '@oxlint/binding-linux-x64-gnu@1.67.0'
-- '@oxlint/binding-linux-x64-musl@1.67.0'
-- '@oxlint/binding-openharmony-arm64@1.67.0'
-- '@oxlint/binding-win32-arm64-msvc@1.67.0'
-- '@oxlint/binding-win32-ia32-msvc@1.67.0'
-- '@oxlint/binding-win32-x64-msvc@1.67.0'
-- '@oxlint/plugins@1.67.0'
-- oxlint@1.67.0
-- '@earendil-works/pi-agent-core@0.76.0'
-- '@earendil-works/pi-ai@0.76.0'
-- '@earendil-works/pi-coding-agent@0.76.0'
-- '@earendil-works/pi-tui@0.76.0'
-- '@earendil-works/pi-agent-core@0.77.0'
-- '@earendil-works/pi-ai@0.77.0'
-- '@earendil-works/pi-coding-agent@0.77.0'
-- '@earendil-works/pi-tui@0.77.0'
-- '@earendil-works/pi-agent-core@0.78.0'
-- '@earendil-works/pi-ai@0.78.0'
-- '@earendil-works/pi-coding-agent@0.78.0'
-- '@earendil-works/pi-tui@0.78.0'
+  - '@earendil-works/pi-agent-core@0.75.4'
+  - '@earendil-works/pi-ai@0.75.4'
+  - '@earendil-works/pi-coding-agent@0.75.4'
+  - '@earendil-works/pi-tui@0.75.4'
+  - '@oxlint/binding-android-arm-eabi@1.67.0'
+  - '@oxlint/binding-android-arm64@1.67.0'
+  - '@oxlint/binding-darwin-arm64@1.67.0'
+  - '@oxlint/binding-darwin-x64@1.67.0'
+  - '@oxlint/binding-freebsd-x64@1.67.0'
+  - '@oxlint/binding-linux-arm-gnueabihf@1.67.0'
+  - '@oxlint/binding-linux-arm-musleabihf@1.67.0'
+  - '@oxlint/binding-linux-arm64-gnu@1.67.0'
+  - '@oxlint/binding-linux-arm64-musl@1.67.0'
+  - '@oxlint/binding-linux-ppc64-gnu@1.67.0'
+  - '@oxlint/binding-linux-riscv64-gnu@1.67.0'
+  - '@oxlint/binding-linux-riscv64-musl@1.67.0'
+  - '@oxlint/binding-linux-s390x-gnu@1.67.0'
+  - '@oxlint/binding-linux-x64-gnu@1.67.0'
+  - '@oxlint/binding-linux-x64-musl@1.67.0'
+  - '@oxlint/binding-openharmony-arm64@1.67.0'
+  - '@oxlint/binding-win32-arm64-msvc@1.67.0'
+  - '@oxlint/binding-win32-ia32-msvc@1.67.0'
+  - '@oxlint/binding-win32-x64-msvc@1.67.0'
+  - '@oxlint/plugins@1.67.0'
+  - oxlint@1.67.0
+  - '@earendil-works/pi-agent-core@0.76.0'
+  - '@earendil-works/pi-ai@0.76.0'
+  - '@earendil-works/pi-coding-agent@0.76.0'
+  - '@earendil-works/pi-tui@0.76.0'
+  - '@earendil-works/pi-agent-core@0.77.0'
+  - '@earendil-works/pi-ai@0.77.0'
+  - '@earendil-works/pi-coding-agent@0.77.0'
+  - '@earendil-works/pi-tui@0.77.0'
+  - '@earendil-works/pi-agent-core@0.78.0'
+  - '@earendil-works/pi-ai@0.78.0'
+  - '@earendil-works/pi-coding-agent@0.78.0'
+  - '@earendil-works/pi-tui@0.78.0'
+  - '@earendil-works/pi-agent-core@0.78.1'
+  - '@earendil-works/pi-ai@0.78.1'
+  - '@earendil-works/pi-coding-agent@0.78.1'
+  - '@earendil-works/pi-tui@0.78.1'
 nodeLinker: isolated
 
 packageExtensions:
@@ -360,14 +364,14 @@ strictPeerDependencies: true
 # See docs/decisions/pnpm-supported-architectures.md for full rationale.
 supportedArchitectures:
   cpu:
-  - x64
-  - arm64
-  - current
+    - x64
+    - arm64
+    - current
   libc:
-  - glibc
-  - musl
-  - current
+    - glibc
+    - musl
+    - current
   os:
-  - darwin
-  - linux
-  - current
+    - darwin
+    - linux
+    - current
