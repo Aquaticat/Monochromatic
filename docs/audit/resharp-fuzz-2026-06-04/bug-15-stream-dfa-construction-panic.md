@@ -4,10 +4,12 @@
 
 - Type: panic, index out of bounds, crash.
 - Phase: match time, lazy DFA state construction on the streaming match path.
-- Severity: crash, and wide. It fires on roughly a fifth of the directed corpus
-  (2396 of 12000 distinct patterns) and in every option configuration. Any pattern
-  using resharp's extended operators (intersection, complement, lookarounds,
-  anchors) can hit it once a long enough input is streamed.
+- Severity: crash, and wide. The full 159257-pattern directed corpus streamed
+  through every config produced 28688 distinct patterns that panic at this one
+  site (the 12000-pattern subset gave 2396; the proportion holds at roughly a
+  fifth). It fires in every option configuration. Any pattern using resharp's
+  extended operators (intersection, complement, lookarounds, anchors) can hit it
+  once a long enough input is streamed.
 - A panic needs no oracle. Found while streaming the anchor and lean2 corpora
   through the `stream` API in the panic hunt.
 
@@ -122,9 +124,10 @@ Every configuration the oracle sweeps, all seven: `default`, `unicode(Ascii)`,
 
 - The panic site `create_state` at `engine.rs:550` is distinct from the BUG-1
   re-entrancy panic (union and intersection rewrites) and the BUG-2 assert
-  (`engine.rs:960`). The same panic hunt found only these two crash sites across
-  the whole corpus: `engine.rs:550` (2396 patterns) and `engine.rs:960` (BUG-2,
-  16 patterns).
+  (`engine.rs:960`). The full-corpus panic hunt (159257 patterns x 7 configs)
+  confirmed only these two crash sites in the entire corpus: `engine.rs:550`
+  (28688 distinct patterns, 165515 panic lines) and `engine.rs:960` (BUG-2, 137
+  panic lines). No third crash site exists.
 - The `stream` path having a separate, more fragile DFA construction than the
   block matchers is the core issue. Because `stream` is the API for incremental
   and large-input matching, this is dangerous: a compiled pattern that works under

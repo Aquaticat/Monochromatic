@@ -95,7 +95,7 @@ search accelerator only.
   level.
 - [BUG-15](bug-15-stream-dfa-construction-panic.md): the `stream` API's lazy DFA
   construction panics (`engine.rs:550` index out of bounds) on a broad pattern
-  class, 2396 of 12000 corpus patterns in every config. Minimal `a&b` then
+  class, 28688 of 159257 corpus patterns in every config. Minimal `a&b` then
   `stream(b"aaa")`. Triggers: intersection (1688), lookarounds (413), and anchors.
   The reversed-anchor `\z\A` that first surfaced it also drops its empty match
   (regex-crate corroborated), a separate BUG-3 correctness defect.
@@ -106,6 +106,12 @@ search accelerator only.
   the project's own "nothing over 10 seconds with limits on" invariant. `(?<=$)`
   `find_all` (`$` desugars to a positive lookahead under multiline). Match-time
   analogue of BUG-11's compile-time blowup, found by the timing oracle.
+- [BUG-17](bug-17-bracketed-perl-class-repeat-compile-blowup.md): a perl shorthand
+  written inside a character class (`[\w]` instead of bare `\w`) misses the
+  single-predicate fast path, so bounded-repeat compilation is super-linear.
+  `[\w]{3,5}` compiles in 1.76 s and `([\w]{3,5}){3,3}` in 15.3 s, while the
+  identical bare `(\w{3,5}){3,3}` is 20 ms. Mode-independent; the size cap does
+  not bound it. Likely the real root cause of BUG-11.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -147,15 +153,16 @@ the dotnet reference and plain semantic reasoning.
 26. a&b then stream("aaa")   panic engine.rs:550, stream API, all configs    BUG-15
 27. \z\A.* on ""             missed empty match, regex crate confirms        BUG-3
 28. (?<=$) find_all 'a'*512  ~13s match-time blowup, lookbehind-of-lookahead  BUG-16
+29. ([\w]{3,5}){3,3}         ~15s compile blowup, bracketed perl-class repeat  BUG-17
 ```
 
-The campaign covers fourteen distinct root causes (BUG-1 through BUG-16, numbers 5
+The campaign covers fifteen distinct root causes (BUG-1 through BUG-17, numbers 5
 and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
 self-consistent at the span level and so invisible to every internal oracle). A
 panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA
-construction crash that hits 2396 of 12000 patterns (intersection, lookaround, and
-anchor families) in every config; the same hunt confirmed only one other crash
-site, BUG-2's assert. The reversed-anchor `\z\A` missed match it surfaced is a
+construction crash that hits 28688 of 159257 patterns (intersection, lookaround,
+and anchor families) in every config; the full-corpus hunt confirmed only one
+other crash site, BUG-2's assert. The reversed-anchor `\z\A` missed match it surfaced is a
 regex-crate-corroborated BUG-3 trigger.
 
 ## Distinct-trigger counts
