@@ -93,6 +93,11 @@ search accelerator only.
   span the lookbehind forbids. `(|(?<=[a-z])b)`. Same defect as the BUG-3
   lookbehind trigger seen from the other side; ground-truth-only at the span
   level.
+- [BUG-15](bug-15-za-star-dfa-state-panic.md): the reversed anchor order `\z\A`
+  followed by a consuming factor builds a DFA that walks into an unallocated
+  state and panics (`engine.rs:550` index out of bounds), in every config. The
+  same `\z\A` reversal also drops the empty match on its own (regex-crate
+  corroborated). Found by the anchor Lean round.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -131,14 +136,15 @@ the dotnet reference and plain semantic reasoning.
 23. (?=(?=c)c{1,3}) on "c"   find_all span 0:1, must be zero-width 0:0      BUG-13
 24. (?<=\D?[a-c]+0?)b on "ba" find_all 1:2 while is_match false             BUG-3
 25. (|(?<=[a-z])b) on "b"    find_all 0:1, lookbehind gate dropped          BUG-14
+26. \z\A.* (reused regex)    panic engine.rs:550, all configs               BUG-15
+27. \z\A.* on ""             missed empty match, regex crate confirms       BUG-15
 ```
 
-The campaign covers twelve distinct root causes (BUG-1 through BUG-14, numbers 5
-and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14, all
-self-consistent (is_match and find_all agree there is a match) and so invisible to
-every internal oracle; only the verified external semantics, plus an isolation
-argument for BUG-14, expose the wrong empty match (BUG-12) or the wrong span
-length (BUG-13, BUG-14).
+The campaign covers thirteen distinct root causes (BUG-1 through BUG-15, numbers 5
+and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
+self-consistent at the span level and so invisible to every internal oracle), and
+the anchor Lean round added BUG-15, a hard crash plus a regex-crate-corroborated
+missed match on the reversed anchor order `\z\A`.
 
 ## Distinct-trigger counts
 
@@ -256,6 +262,17 @@ Lean) sorted into:
 The adjudicator pattern (never trust a Lean-only disagreement on a construct
 where dotnet silently agrees with rust) is what keeps the translator's own
 encoding bugs out of the rust bug count.
+
+A third round encoded anchors as lookarounds (`\A`, `\z`, `^`, `$`, `\b`, `\B`)
+and ran 54000 anchor pairs. The encoding was validated first against 19
+known-answer cases (`leanval2.lean`, all 19 match), and the round bore that out:
+the three-way adjudicator put only 1 case in the encoding-suspect bucket (against
+18 for the nested-lookbehind lean2 round), so the anchor encoding is faithful. The
+round produced 10 Lean-disagreement rust bugs, the headline being BUG-15 (the
+`\z\A` reversed-anchor crash and missed match). A second anchor cluster,
+`(?<=$)`-style lookbehind-of-an-anchor position errors, is held back pending a
+direct check of RE# lookbehind-of-anchor semantics, since lookbehind-of-lookaround
+is exactly the translator shape that proved unfaithful in the lean2 round.
 
 ## Status
 
