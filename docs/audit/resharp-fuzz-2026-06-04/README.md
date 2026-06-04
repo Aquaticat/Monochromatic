@@ -88,6 +88,11 @@ search accelerator only.
   width into the (zero-width) match span, so `find_all` returns spans one unit too
   long. `(?=(?=c)c{1,3})`. Found by the Lean leftmost-longest position round;
   fires no internal oracle.
+- [BUG-14](bug-14-alternation-drops-lookbehind-gate.md): a nullable alternation
+  sibling drops the lookbehind gate on the longer branch, so `find_all` returns a
+  span the lookbehind forbids. `(|(?<=[a-z])b)`. Same defect as the BUG-3
+  lookbehind trigger seen from the other side; ground-truth-only at the span
+  level.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -125,13 +130,15 @@ the dotnet reference and plain semantic reasoning.
 22. (?!\D)\D{2,2} on ""      spurious empty match (Lean ground truth)       BUG-12
 23. (?=(?=c)c{1,3}) on "c"   find_all span 0:1, must be zero-width 0:0      BUG-13
 24. (?<=\D?[a-c]+0?)b on "ba" find_all 1:2 while is_match false             BUG-3
+25. (|(?<=[a-z])b) on "b"    find_all 0:1, lookbehind gate dropped          BUG-14
 ```
 
-The campaign covers eleven distinct root causes (BUG-1 through BUG-13, numbers 5
-and 6 folded). The Lean ground truth added BUG-12 and BUG-13, both classes of bug
-that are self-consistent (is_match and find_all agree there is a match) and so
-invisible to every internal oracle; only the verified external semantics expose
-the wrong empty match (BUG-12) or the wrong span length (BUG-13).
+The campaign covers twelve distinct root causes (BUG-1 through BUG-14, numbers 5
+and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14, all
+self-consistent (is_match and find_all agree there is a match) and so invisible to
+every internal oracle; only the verified external semantics, plus an isolation
+argument for BUG-14, expose the wrong empty match (BUG-12) or the wrong span
+length (BUG-13, BUG-14).
 
 ## Distinct-trigger counts
 
