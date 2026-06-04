@@ -80,7 +80,10 @@ search accelerator only.
   `find_all` drops a trailing zero-width match that hardened and dotnet report.
   `(?<=^)~(0+)`.
 - [BUG-11](bug-11-compile-time-blowup.md): super-linear compile time on small
-  intersection plus class-repeat patterns. `[\w]{3,5}[\w]([^a]&a+)`.
+  intersection plus class-repeat patterns. `[\w]{3,5}[\w]([^a]&a+)`. Confirmed to be
+  the same root cause as BUG-17: the cost is entirely the bracketed `[\w]` (replacing
+  it with bare `\w` drops the same pattern from 2.79 s to 0.0068 s), the intersection
+  is incidental. Counted once with BUG-17.
 - [BUG-12](bug-12-neg-lookahead-nullable.md): a negative lookahead of a class
   makes a non-nullable pattern wrongly nullable, so is_match and find_all both
   report a spurious empty match. `(?!\w)0+`. Found only by the Lean ground truth.
@@ -124,12 +127,19 @@ search accelerator only.
   construction cost. Full mode only; `\w` alone, `\d`/`\s`, and ascii/js modes are
   all sub-millisecond. The mode-independent bracketed analogue `$[\w]` (~1.15 s) is
   documented as the match-time face of BUG-17.
+- [BUG-20](bug-20-findanchored-ignores-leading-begin-assertion.md): `find_anchored`
+  reports a match at offset 0 that a leading zero-width assertion forbids there. On
+  `"00"`, `\B0` returns `0:1` (wrong; `\B` is false at the start) and `(?<=0)0`
+  returns `0:1` (wrong; nothing precedes offset 0), while `find_all` correctly
+  matches at `1:2` in both. `find_anchored` does not seed the begin-of-input context
+  its scan needs (`engine/src/lib.rs:1847`). Found by the new find_anchored-versus-
+  find_all consistency oracle (`FANDIFF`).
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
 trigger for BUG-3.
 
-## Numbered findings (20 distinct minimal reproducers)
+## Numbered findings (32 distinct minimal reproducers)
 
 Each line is a distinct, verified, minimal reproducer on the pristine engine,
 grouped by the root cause above. Self-consistency findings (a single engine
@@ -168,10 +178,12 @@ the dotnet reference and plain semantic reasoning.
 29. ([\w]{3,5}){3,3}         ~15s compile blowup, bracketed perl-class repeat  BUG-17
 30. ~(a+) find_all 'a'*98304 ~10.5s O(n^2) find_all, nullable complement       BUG-18
 31. $?\w is_match cyc(16384) ~3s full-mode anchor+\w construction cost         BUG-19
+32. \B0 on "00"              find_anchored 0:1 vs find_all 1:2 (correct)        BUG-20
 ```
 
-The campaign covers seventeen distinct root causes (BUG-1 through BUG-19, numbers 5
-and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
+The campaign covers seventeen distinct root causes and 32 numbered reproducers
+(BUG-1 through BUG-20; numbers 5 and 6 folded, and BUG-11 confirmed to be the same
+root cause as BUG-17, the bracketed perl class, so they count once). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
 self-consistent at the span level and so invisible to every internal oracle). A
 panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA
 construction crash that hits 28688 of 159257 patterns (intersection, lookaround,
