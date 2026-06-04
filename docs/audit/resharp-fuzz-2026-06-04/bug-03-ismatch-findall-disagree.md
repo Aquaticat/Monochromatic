@@ -66,6 +66,14 @@ branch of the `is_match` fast path returning the wrong answer.
   hold at offset 0 and the optional group matches empty, so the empty match
   exists. Both the regex crate (ascii) and dotnet report a match; rust is_match
   is wrong. This is the anchor-concatenation ordering variant.
+- `(?<=\D?[a-c]+0?)b` on `ba`: is_match false, find_all returns one match `1:2`.
+  Here is_match is the correct side: the only `b` is at offset 0 and its
+  lookbehind `\D?[a-c]+0?` requires at least one `[a-c]` before offset 0, which
+  is impossible, so there is no match. dotnet confirms (`im=0`, find_all empty),
+  and the Lean ground truth agrees (none). find_all is the wrong side, emitting a
+  span over `a` (offset 1) that no `b` can occupy. This is a lookbehind-driven
+  trigger (the others are anchor or lookahead driven) and the over-producing side
+  is find_all, not is_match. Found by the Lean leftmost-longest position round.
 
 ## Notes
 

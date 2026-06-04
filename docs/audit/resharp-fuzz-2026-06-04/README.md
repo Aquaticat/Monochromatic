@@ -84,6 +84,10 @@ search accelerator only.
 - [BUG-12](bug-12-neg-lookahead-nullable.md): a negative lookahead of a class
   makes a non-nullable pattern wrongly nullable, so is_match and find_all both
   report a spurious empty match. `(?!\w)0+`. Found only by the Lean ground truth.
+- [BUG-13](bug-13-lookahead-width-leak.md): a top-level lookahead leaks its body
+  width into the (zero-width) match span, so `find_all` returns spans one unit too
+  long. `(?=(?=c)c{1,3})`. Found by the Lean leftmost-longest position round;
+  fires no internal oracle.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -119,11 +123,15 @@ the dotnet reference and plain semantic reasoning.
 20. [\w]{3,5}[\w]([^a]&a+)   compile takes about 4 seconds                  BUG-11
 21. (?!\w)0+ on ""           spurious empty match (Lean ground truth)       BUG-12
 22. (?!\D)\D{2,2} on ""      spurious empty match (Lean ground truth)       BUG-12
+23. (?=(?=c)c{1,3}) on "c"   find_all span 0:1, must be zero-width 0:0      BUG-13
+24. (?<=\D?[a-c]+0?)b on "ba" find_all 1:2 while is_match false             BUG-3
 ```
 
-The campaign covers ten distinct root causes (BUG-1 through BUG-12, numbers 5
-and 6 folded). The Lean ground truth added BUG-12, a class of bug that is
-self-consistent and so invisible to every internal oracle.
+The campaign covers eleven distinct root causes (BUG-1 through BUG-13, numbers 5
+and 6 folded). The Lean ground truth added BUG-12 and BUG-13, both classes of bug
+that are self-consistent (is_match and find_all agree there is a match) and so
+invisible to every internal oracle; only the verified external semantics expose
+the wrong empty match (BUG-12) or the wrong span length (BUG-13).
 
 ## Distinct-trigger counts
 
@@ -188,8 +196,28 @@ formalization has no anchor primitives, so this covers the non-anchor space
 Result: over 6185 non-anchor pairs, rust disagreed with the ground truth on
 exactly one class, BUG-12 (11 distinct triggers). This both found a new bug and
 gave positive evidence that rust's non-anchor is_match is otherwise correct on
-the sampled space. The oracle is the right next tool to extend (more patterns,
-longer haystacks, and match-position comparison, not just existence).
+the sampled space.
+
+A second, larger round then compared match positions, not just existence: a
+54000-pair leftmost-longest span round (`lean2`, default-mode `find_all` first
+span versus Lean `llmatch` span). Of 45928 comparable pairs (8055 rust compile
+rejections excluded), 49 position and 100 existence disagreements survived, which
+a three-way adjudicator (`/tmp/agent/adj_full.py`, rust versus dotnet versus
+Lean) sorted into:
+
+- 8 where dotnet and Lean both contradict rust (genuine rust bugs): six more
+  BUG-12 triggers, one BUG-13 (the lookahead width leak), and one BUG-3 trigger
+  (`(?<=\D?[a-c]+0?)b`).
+- 18 where dotnet agrees with rust against Lean. These flag the translator's
+  encoding of a lookbehind whose body contains a lookahead (`(?<=(?=...)...)`) as
+  unfaithful, not a rust bug; they were discarded.
+- 123 where dotnet throws `UnsupportedPatternException` and cannot adjudicate.
+  These are Lean-versus-rust only; the clearly-BUG-12-shaped ones corroborate
+  BUG-12, and the `(?<=(?=...)...)` ones are the same suspect-encoding family.
+
+The adjudicator pattern (never trust a Lean-only disagreement on a construct
+where dotnet silently agrees with rust) is what keeps the translator's own
+encoding bugs out of the rust bug count.
 
 ## Status
 
