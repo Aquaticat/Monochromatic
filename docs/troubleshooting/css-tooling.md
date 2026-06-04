@@ -1,4 +1,4 @@
-# CSS tooling for `@mixin`/`@apply` in a pnpm monorepo: LightningCSS rejects `var()` inside `customAtRules`, has no node_modules resolver; pnpm isolated mode drops symlinks; Vite-era framework pipelines bypassed transforms
+# CSS `@mixin`/`@apply` in a pnpm monorepo: LightningCSS `customAtRules` + `var()` bug, no node_modules resolver
 
 This file documents the cascade of issues hit while trying to
 implement `@mixin` + `@apply` CSS syntax across the workspace.
@@ -54,9 +54,12 @@ None within LightningCSS itself; the only escape is to
 process custom at-rules outside LightningCSS (PostCSS plugin
 on the source, before LightningCSS bundles).
 
-Tradeoff: introduces a second tool in the pipeline. The
-final design uses LightningCSS for bundling and PostCSS for
-mixin processing, accepting the two-stage flow.
+Tradeoff: introduces a second tool in the pipeline. This
+two-tool stage (LightningCSS bundle + PostCSS mixins) was the
+design for a while, then dropped entirely: LightningCSS and
+oxc-resolver were removed in favour of a pure-JS PostCSS
+pipeline. See "Current state" below and
+[.out-of-scope/lightningcss.md](../../.out-of-scope/lightningcss.md).
 
 ### Why we do not file this upstream (again)
 
@@ -74,7 +77,7 @@ Decision: no new report; track existing.
 
 ---
 
-## Bug 2: LightningCSS `bundle()` has no `node_modules` resolution; imports concatenate the package name onto the source path
+## Bug 2: LightningCSS `bundle()` has no `node_modules` resolution
 
 ### Symptom
 
@@ -121,7 +124,7 @@ documented escape. No upstream report.
 
 ---
 
-## Bug 3: pnpm isolated mode + global virtual store occasionally drops `node_modules` symlinks for packages that should be there
+## Bug 3: pnpm isolated mode + global virtual store drops `node_modules` symlinks
 
 ### Symptom
 
@@ -217,9 +220,10 @@ blocks.
 ### Verified workaround (historical)
 
 The workspace abandoned Vite as a build candidate; the
-in-house `build-tool-css` package runs the LightningCSS +
+in-house `build-tool-css` package ran the LightningCSS +
 oxc-resolver + PostCSS pipeline directly without Vite's
-mediation.
+mediation, and later dropped LightningCSS and oxc-resolver
+for a pure-JS PostCSS pipeline (see "Current state").
 
 Tradeoff: cannot use Vite-specific features. Acceptable
 because the project does not need them.
@@ -230,16 +234,35 @@ Vite is not used here; no upstream report.
 
 ---
 
-## Current state (as of 2026-02-09)
+## Current state (as of 2026-06-04)
 
-- CSS build script lives at `packages/build/css/`.
-- Pipeline: LightningCSS for bundling + oxc-resolver for
-  import resolution + PostCSS for mixin processing.
-- The build pipeline works: bundling, mixin collection,
-  nested mixin expansion, and `@apply` inlining all pass
-  integration tests.
-- oxc-resolver is functioning correctly after the migration
-  from pnpm to Bun's package manager.
+LightningCSS has been removed entirely. The build no longer
+depends on LightningCSS or oxc-resolver; neither appears in
+any `package.json` or in the lockfile.
+
+- CSS build package lives at `packages/build-tool/css/`
+  (`@monochromatic-dev/build-tool-css`).
+- Pipeline is pure JS, PostCSS only, no native binary: a
+  custom PostCSS plugin (`src/import.ts`) inlines `@import`
+  with an in-house `node_modules` resolver
+  (`src/package-resolver.ts`), then `src/mixin.ts` collects
+  `@mixin` definitions, expands nested mixin bodies, and
+  inlines `@apply`.
+- `src/index.ts` states the design: "Uses only PostCSS (pure
+  JS): no native binary dependencies."
+- The build pipeline works: import resolution, mixin
+  collection, nested mixin expansion, and `@apply` inlining
+  all pass unit tests
+  (`mise run //packages/build-tool/css:buildAndTest`).
+- The two earlier blockers no longer apply: the LightningCSS
+  `customAtRules`/`var()` defect (#1081) is irrelevant
+  because LightningCSS is gone, and the pnpm-isolated-mode
+  symlink loss for oxc-resolver (Bug 3) is moot because the
+  CSS build no longer depends on oxc-resolver.
+
+Why LightningCSS is out of scope going forward, and the
+closed tracking issue (#147), are recorded in
+[.out-of-scope/lightningcss.md](../../.out-of-scope/lightningcss.md).
 
 ### Import resolution coverage in integration tests
 
@@ -282,7 +305,10 @@ fixture packages: one with `exports` and one without.
 
 ## Why we do not file these upstream (combined)
 
-- LightningCSS #1081 already exists; track it.
+- LightningCSS #1081 already exists; we no longer track it.
+  LightningCSS has been removed, so its bugs no longer affect
+  this workspace
+  ([.out-of-scope/lightningcss.md](../../.out-of-scope/lightningcss.md)).
 - LightningCSS `bundle()` lack of node-resolution is by
   scope; not a defect to file.
 - pnpm isolated-mode symlink loss needs a minimal repro
