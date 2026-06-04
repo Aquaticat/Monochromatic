@@ -132,6 +132,7 @@ catalog:
   'why-is-node-running': '>=3.2.2'
   'woff2-encode-wasm': '>=0.1.1'
   'yaml': '>=3.0.0-0'
+  'zeptomatch': '>=2.1.0'
 childConcurrency: 16
 dedupeDirectDeps: true
 hoist: false

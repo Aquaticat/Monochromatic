@@ -4,7 +4,7 @@
  * @module
  */
 
-import { minimatch, } from 'minimatch';
+import zeptomatch from 'zeptomatch';
 import { canonicalSlug, } from './model-id.ts';
 import {
   parseModelPattern,
@@ -77,6 +77,40 @@ export function resolveModelPatterns<TModel extends ModelIdentity,>(
 //region Pattern resolution
 
 /**
+ * Match model glob patterns with pi's case-insensitive scope semantics.
+ *
+ * Zeptomatch has no `nocase` option, so both sides are normalized to
+ * lowercase before matching. Model providers and ids are ASCII slugs,
+ * which keeps this equivalent to the previous case-insensitive behaviour
+ * for the scoped-model surface.
+ *
+ * @param pattern - pi model scope glob pattern
+ *
+ * @param candidate - canonical or bare model id candidate
+ *
+ * @returns whether candidate matches pattern ignoring case
+ *
+ * @example
+ * ```typescript
+ * modelGlobMatches({ pattern: 'OpenAI/*', candidate: 'openai/gpt-5' });
+ * ```
+ */
+function modelGlobMatches(
+  {
+    pattern,
+    candidate,
+  }: {
+    readonly pattern: string;
+    readonly candidate: string;
+  },
+): boolean {
+  return zeptomatch(
+    pattern.toLowerCase(),
+    candidate.toLowerCase(),
+  );
+}
+
+/**
  * Resolve a glob model pattern.
  *
  * @param pattern - pi glob pattern
@@ -104,16 +138,14 @@ function resolveGlobPattern<TModel extends ModelIdentity,>(
        * Canonical model reference.
        */
       const fullId = canonicalSlug(model,);
-      return minimatch(
-        fullId,
-        parsed.pattern,
-        { nocase: true, },
-      )
-        || minimatch(
-          model.id,
-          parsed.pattern,
-          { nocase: true, },
-        );
+      return modelGlobMatches({
+        pattern: parsed.pattern,
+        candidate: fullId,
+      },)
+        || modelGlobMatches({
+          pattern: parsed.pattern,
+          candidate: model.id,
+        },);
     },)
     .map(function mapMatch(model,) {
       return scopedModelFromModel({

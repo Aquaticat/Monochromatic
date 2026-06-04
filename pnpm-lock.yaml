@@ -285,6 +285,9 @@ catalogs:
     yaml:
       specifier: '>=3.0.0-0'
       version: 3.0.0-1
+    zeptomatch:
+      specifier: '>=2.1.0'
+      version: 2.1.0
 
 overrides:
   jspdf>canvg: '-'
@@ -2103,15 +2106,15 @@ importers:
 
   packages/pi-shared/model-selection:
     dependencies:
-      minimatch:
-        specifier: ^10.2.3
-        version: 10.2.5
       type-fest:
         specifier: 'catalog:'
         version: 5.5.0
       valibot:
         specifier: 'catalog:'
         version: 1.4.0(typescript@6.0.3)
+      zeptomatch:
+        specifier: 'catalog:'
+        version: 2.1.0
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: ^0.74.0
@@ -2140,9 +2143,6 @@ importers:
       '@monochromatic-dev/pi-shared-model-selection':
         specifier: workspace:*
         version: link:../../pi-shared/model-selection
-      minimatch:
-        specifier: ^10.2.3
-        version: 10.2.5
       type-fest:
         specifier: 'catalog:'
         version: 5.5.0

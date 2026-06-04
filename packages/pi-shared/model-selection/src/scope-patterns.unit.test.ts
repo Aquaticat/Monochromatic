@@ -71,5 +71,36 @@ await describe({
         expect(result,).toHaveLength(1,);
       },
     },),
+    it({
+      name: 'matches glob patterns case-insensitively against slugs and ids',
+      fn: async function testCaseInsensitiveGlobMatching() {
+        /**
+         * Result matched through canonical provider/model slug.
+         */
+        const canonicalResult = resolveModelPatterns({
+          patterns: ['EXPENSIVE/REVIEW*',],
+          availableModels,
+        },);
+        expect(canonicalResult.map(function mapCanonicalEntry(entry,) {
+          return entry.canonicalSlug;
+        },),)
+          .toEqual(['expensive/reviewer',],);
+
+        /**
+         * Result matched through bare model id fallback.
+         */
+        const bareIdResult = resolveModelPatterns({
+          patterns: ['REVIEW*',],
+          availableModels,
+        },);
+        expect(bareIdResult.map(function mapBareIdEntry(entry,) {
+          return entry.canonicalSlug;
+        },),)
+          .toEqual([
+            'cheap/reviewer',
+            'expensive/reviewer',
+          ],);
+      },
+    },),
   ],
 },);

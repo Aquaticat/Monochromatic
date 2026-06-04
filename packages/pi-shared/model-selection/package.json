@@ -22,9 +22,9 @@
   ],
   "sideEffects": false,
   "dependencies": {
-    "minimatch": "^10.2.3",
     "type-fest": "catalog:",
-    "valibot": "catalog:"
+    "valibot": "catalog:",
+    "zeptomatch": "catalog:"
   },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",

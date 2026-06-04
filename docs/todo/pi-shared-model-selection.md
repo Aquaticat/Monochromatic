@@ -27,7 +27,7 @@ Some files contain consumer-specific adapters that become thinner rather than di
   - `scope-exact.ts`, 135 lines: exact model reference matching by canonical slug, provider/model, and bare id.
   - `scope-match.ts`, 372 lines: exact plus fuzzy pattern matching, thinking-level suffix parsing,
     alias versus dated-version detection, and scoped model construction.
-  - `scope-patterns.ts`, 198 lines: glob pattern resolution through `minimatch`, literal pattern resolution,
+  - `scope-patterns.ts`, 198 lines: glob pattern resolution through `zeptomatch`, literal pattern resolution,
     and deduplication.
   - `scope-resolver.ts`, 277 lines: effective scope resolution from live scope, argv, settings, and available models.
   - `model-cost.ts`, 304 lines: request token estimation, expected-cost scoring, tie-breaking,
@@ -89,7 +89,7 @@ Platform peers are optional so pure consumers do not need to declare them merely
 
 Runtime dependencies:
 
-- `minimatch: ^10.2.3`, used by scope glob resolution.
+- `zeptomatch: catalog:`, used by scope glob resolution.
 - `type-fest: catalog:`, used for readonly helper types where needed.
 - `valibot: catalog:`, used at runtime by settings validation.
 
