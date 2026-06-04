@@ -28,10 +28,17 @@ and `docs/handover/resharp-panic-fix.md`.
   binary `/home/user/.local/share/mise/installs/dotnet/10.0.300/dotnet`).
 - Dotnet differential harness (F#):
   `/tmp/agent/dnharness`, dll `/tmp/agent/dnharness/bin/Release/net10.0/dnharness.dll`.
-- Lean ground-truth repos (Zhuchko et al., executable POSIX oracle), available
-  under `~/Downloads`: `extended-regexes` (most likely the ERE-with-lookarounds
-  formalization used as the paper's oracle), plus `ereq-derivatives`,
-  `finiteness-derivatives`, `RLTL-derivatives`, `re-sharp-smt`. Not built yet.
+- Lean ground-truth oracle, built and working: `~/Downloads/extended-regexes`
+  (Zhuchko, Veanes, Ebner). Toolchain via elan (`~/.elan/bin`), lean4
+  v4.24.0-rc1, mathlib via `lake exe cache get`. Build a module with
+  `lake build Regex.MatchingAlgorithm Regex.Examples` (the default `Regex` lib
+  target fails because there is no `Regex.lean` root, which is fine). Run evals
+  with `lake env lean <file>.lean` from the repo dir; `#eval IO.println (...)`
+  prints to stdout. Helper pipeline: `/tmp/agent/re2lean.py` (RE# to Lean term,
+  non-anchor subset), `/tmp/agent/gen_lean.py` (emit per-pair `#eval` file plus
+  aligned hex pairs), `/tmp/agent/diff_lean.py` (diff vs rust). Sibling repos
+  `ereq-derivatives`, `finiteness-derivatives`, `RLTL-derivatives`,
+  `re-sharp-smt` are also in `~/Downloads`.
 - Paper text: `/tmp/agent/paper.txt` (from
   `/var/home/user/Downloads/3704837.pdf`). Lean paper PDF also in `~/Downloads`.
 - Generators and helpers: `/tmp/agent/gen2.py`, `gen3.py`, `minimize.py`,
@@ -120,10 +127,13 @@ Nine root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11), each with its own file, and
    include it). `(?<=^)~(0+)`. Opposite side from BUG-8.
 9. BUG-11 super-linear compile time on small patterns. `[\w]{3,5}[\w]([^a]&a+)`
    compiles in about 4 seconds, dotnet is instant. Compile-time, not match-time.
+10. BUG-12 negative lookahead of a class makes a non-nullable pattern nullable,
+    so is_match and find_all both report a spurious empty match. `(?!\w)0+` on
+    the empty string. Found only by the Lean ground truth (self-consistent, so
+    invisible to the internal oracles); confirmed by dotnet.
 
-Counting note: hundreds of distinct triggering patterns cluster into these nine
-root causes. The dotnet differential is still running and may add more
-default-mode find_all correctness bugs after adjudication.
+Counting note: ten distinct root causes, 22 numbered minimal reproducers, and
+hundreds to thousands of distinct triggering patterns across the oracles.
 
 ## Current state and next steps
 

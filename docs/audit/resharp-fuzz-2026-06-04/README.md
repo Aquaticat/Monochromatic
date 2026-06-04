@@ -81,6 +81,9 @@ search accelerator only.
   `(?<=^)~(0+)`.
 - [BUG-11](bug-11-compile-time-blowup.md): super-linear compile time on small
   intersection plus class-repeat patterns. `[\w]{3,5}[\w]([^a]&a+)`.
+- [BUG-12](bug-12-neg-lookahead-nullable.md): a negative lookahead of a class
+  makes a non-nullable pattern wrongly nullable, so is_match and find_all both
+  report a spurious empty match. `(?!\w)0+`. Found only by the Lean ground truth.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -114,7 +117,13 @@ the dotnet reference and plain semantic reasoning.
 18. (^|b) on "a"             stream returns empty, is_match true            BUG-9
 19. (?<=^)~(0+) on "\n"      default find_all drops trailing (1,1)          BUG-10
 20. [\w]{3,5}[\w]([^a]&a+)   compile takes about 4 seconds                  BUG-11
+21. (?!\w)0+ on ""           spurious empty match (Lean ground truth)       BUG-12
+22. (?!\D)\D{2,2} on ""      spurious empty match (Lean ground truth)       BUG-12
 ```
+
+The campaign covers ten distinct root causes (BUG-1 through BUG-12, numbers 5
+and 6 folded). The Lean ground truth added BUG-12, a class of bug that is
+self-consistent and so invisible to every internal oracle.
 
 ## Distinct-trigger counts
 
@@ -163,9 +172,24 @@ where the regex crate or plain semantic reasoning independently confirms rust is
 wrong (for example BUG-3's `\z\A(?:a){0,1}`, confirmed by the regex crate). The
 20 findings rest on the self-consistency oracles (a single engine contradicting
 itself, which is unambiguous) plus the two confirmed differential classes
-`RUST_PANIC` (BUG-2) and `RUST_TIMEOUT` (BUG-11). The Lean formalization in
-`~/Downloads/extended-regexes` is the tie-breaker for the contaminated classes,
-and is the next tool to stand up to mine more correctness bugs safely.
+`RUST_PANIC` (BUG-2) and `RUST_TIMEOUT` (BUG-11).
+
+## Lean ground-truth oracle
+
+The Lean formalization in `~/Downloads/extended-regexes` (Zhuchko, Veanes,
+Ebner, the verified ERE semantics) is now built and wired up as a bulk oracle.
+A Python translator (`/tmp/agent/re2lean.py`) turns a non-anchor RE# pattern
+into a Lean `RE (BA Char)` term; `/tmp/agent/gen_lean.py` emits one
+`#eval (llmatch term input).isSome` per (pattern, input) pair; the results are
+diffed against rust default-mode is_match by `/tmp/agent/diff_lean.py`. The
+formalization has no anchor primitives, so this covers the non-anchor space
+(literals, classes, `.`/`_`, `&`, `~`, `|`, quantifiers, lookarounds).
+
+Result: over 6185 non-anchor pairs, rust disagreed with the ground truth on
+exactly one class, BUG-12 (11 distinct triggers). This both found a new bug and
+gave positive evidence that rust's non-anchor is_match is otherwise correct on
+the sampled space. The oracle is the right next tool to extend (more patterns,
+longer haystacks, and match-position comparison, not just existence).
 
 ## Status
 
