@@ -13,14 +13,36 @@ The user maintains a fork (`Aquaticat/resharp`). resharp is a derivative-based
 automaton regex engine with intersection `&`, complement `~`, lookarounds, and
 leftmost-longest (POSIX) semantics, multiline on by default.
 
-## Current status (2026-06-04 15:33)
+## Current status (2026-06-04 15:55)
 
-13 distinct root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15; 5 and 6
-folded) and 27 numbered reproducers committed under
+16 distinct root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+18; 5 and 6 folded) and 30 numbered reproducers committed under
 `docs/audit/resharp-fuzz-2026-06-04/`. Distinct triggering patterns run to the
-thousands (BUG-15 alone: 2396+ in the 12k corpus, 110k+ panic lines in the 159k
-hunt). All work is committed. The user wants maximum yield ("poke resharp until
-it's a honeycomb").
+thousands (BUG-15: 28688 distinct patterns in the full 159k hunt). All work is
+committed. The user wants maximum yield ("poke resharp until it's a honeycomb").
+
+A bug is not only a panic or a wrong answer. ieviev's invariant: with the size
+limits NOT disabled, nothing should take >= 10s. So under any limits-enabled config
+(0..5; the `unbounded` config 6 disables limits and is EXEMPT), a single
+compile/match op taking >= 10s is a bug, and >= 1s is suspicious and must be
+documented (a clearly-pathological >= 1s case counts as a full bug). This produced
+the timing oracle (`--time1`) and three performance bugs:
+
+- BUG-16: lookbehind of a positive lookahead is ~O(n^3) at match time. `(?<=$)`
+  find_all is 13s on 512 bytes (`$` desugars to a lookahead; the inner lookahead
+  never reaches a fixpoint so the lazy DFA mints a state per offset).
+- BUG-17: a perl shorthand inside a character class (`[\w]` vs bare `\w`) makes
+  bounded-repeat compile super-linear. `([\w]{3,5}){3,3}` compiles in 15s; bare
+  `(\w{3,5}){3,3}` is 20ms. Likely the real root cause of BUG-11.
+- BUG-18: `find_all` is O(n^2) on a nullable complement (`~(a+)`, `~(\w+)`) because
+  `find_all_nullable_slow` restarts a forward scan per position. `~(a+)` is 10.5s
+  on 96KB; hardened (different driver) is linear, so the quadratic is avoidable.
+
+Caveat that shaped the method: timing flagged under CPU contention is INFLATED
+(the timing hunt ran -P4 alongside the panic hunt), so it over-flags. Re-measure
+every candidate SOLO before filing: contention can inflate a 0.3s op past 1s but
+cannot fake a >25s hang, and it cannot turn a linear op super-linear. The three
+filed bugs are all solo-confirmed with clean scaling curves.
 
 ### The reference is Lean, not dotnet (user directive, 2026-06-04)
 
@@ -102,6 +124,24 @@ plus translator flags `dot_matches_new_line`, `case_insensitive`,
 - `repro --stream1 <hexpat> <hexhay>`: builds a fresh regex, calls `re.stream`
   once on the one haystack, prints `ok` or `PANIC <loc msg>`. Isolates
   single-call stream panics.
+- `repro --time1 <hexpat>`: the TIMING ORACLE. Times compile across configs 0..5
+  (limits-enabled; skips 6/unbounded) and is_match/find_all/find_anchored/stream
+  under default(0)+hardened(4) over a 3-haystack battery (`a1k`, `cyc16k`, `a64k`).
+  Prints `SLOW|<secs>|op=..|mode=..|hay=..|pat=<hexpat>` for any op >= 1.0s. A
+  watchdog thread fires at 25s, printing `TIMEOUT|>25|op=..|mode=..|hay=..|
+  pat=<hexpat>` then `process::exit` (so a hard hang is attributed to the op in
+  flight). NOTE: match-op timing currently runs all six configs 0..5 (the
+  `if midx != 0 && midx != 4` skip was removed per the all-config request). Run
+  the corpus with `xargs -P<n> -n1 -I{} timeout 35 repro --time1 {}`; lower `-P`
+  to avoid contention inflating times.
+- `repro --bench1 <hexpat> <hexhay> <op> [cfgidx]`: one config, one op
+  (is_match/find_all/find_anchored), prints seconds. For solo confirmation. Hay on
+  argv, so keep it small.
+- `repro --benchrep <hexpat> <bytehex> <N> <op> [cfgidx]`: builds hay = byte*N
+  INTERNALLY (argv cannot carry a 64KB+ hex hay; "Argument list too long"). This is
+  the scaling workhorse: vary N to read off O(n)/O(n^2)/O(n^3).
+- `repro --compile1 <hexpat> [cfgidx]`: prints `<secs>|ok=<bool>` for compile only.
+  Used to isolate BUG-17 (compile-time blowup).
 
 ### dnharness (dotnet, secondary)
 
@@ -204,7 +244,7 @@ contradicting itself is unambiguous.
   caps `lib.rs:56`-`:59` (`DEFAULT_MAX_REPEAT=500`, `EXPANDED_AST_LIMIT=50_000`,
   `MAX_LIST_LEN=4_000`, `MAX_DEPTH=1_000`).
 
-## The 13 bugs (files in docs/audit/resharp-fuzz-2026-06-04/)
+## The 16 bugs (files in docs/audit/resharp-fuzz-2026-06-04/)
 
 - BUG-1 `bug-01-...`: re-entrancy guard panic in union/intersection rewrites,
   compile time. `.*(.+)*.+`.
@@ -232,13 +272,38 @@ contradicting itself is unambiguous.
   sibling drops a lookbehind gate in find_all. `(|(?<=[a-z])b)` -> `0:1`. Lean
   (with a longest-pref control) + rust isolation argument.
 - BUG-15 `bug-15-stream-dfa-construction-panic.md`: broad `stream()` DFA crash at
-  engine.rs:550, 2396 of 12000 corpus patterns (intersection 1688, lookarounds
-  413, anchors), ALL 7 configs. Minimal `Regex::new("a&b").unwrap().stream(b"aaa")`
+  engine.rs:550. Full 159k panic hunt (DONE): 28688 distinct patterns, 165515 panic
+  lines, ALL 7 configs. Minimal `Regex::new("a&b").unwrap().stream(b"aaa")`
   (3+-byte input; not via is_match/find_all/find_anchored). Root cause
-  engine.rs:1249 (missing ensure_capacity). The 159k panic hunt confirms only two
-  crash sites total (engine.rs:550 and engine.rs:960/BUG-2).
+  engine.rs:1249 (missing ensure_capacity). The hunt confirms only two crash sites
+  total (engine.rs:550 = 165515 lines, engine.rs:960/BUG-2 = 137 lines).
+- BUG-16 `bug-16-lookbehind-of-lookahead-superlinear-match.md`: lookbehind of a
+  positive lookahead is ~O(n^3) at match time. `(?<=$)` find_all 13s on 512 bytes,
+  >2min on 1KB; `(?<=(?=z))` (inner lookahead that FAILS) is the general trigger.
+  is_match short-circuits when an early match exists, else it blows up too. Root
+  cause: Lookbehind derivative arm `resharp-algebra/src/lib.rs:1378` re-derives the
+  inner lookahead each step without fixpoint. Blows up under every limits-enabled
+  config except where a flag incidentally removes the trigger (flags: multiline-off
+  drops `$`'s newline-lookahead; ignore_whitespace eats `(?= )`'s space). Resolves
+  the PERFORMANCE angle of the held-back `(?<=$)` cluster.
+- BUG-17 `bug-17-bracketed-perl-class-repeat-compile-blowup.md`: a perl shorthand
+  inside a character class (`[\w]` vs bare `\w`) misses the single-predicate fast
+  path; bounded-repeat compile is super-linear. `[\w]{3,5}` = 1.76s,
+  `([\w]{3,5}){3,3}` = 15.3s, bare `(\w{3,5}){3,3}` = 20ms. NOT class size
+  (`[\x00-\xff]` and explicit `[A-Za-z0-9_]` are instant); the perl-to-union
+  lowering (`resharp-parser/src/lib.rs:186`) feeding `mk_repeat`'s unroll
+  (`resharp-algebra/src/lib.rs:3710`). Mode-independent; max_repeat cap does not
+  bound it. Likely the real root cause of BUG-11 (whose trigger also brackets
+  `[\w]{3,5}`).
+- BUG-18 `bug-18-findall-nullable-complement-quadratic.md`: `find_all` is O(n^2) on
+  a nullable complement (`~(a+)`, `~(\w+)`). `find_all_nullable_slow`
+  (`resharp-engine/src/lib.rs:1794`) restarts `scan_fwd_slow` from every position;
+  a complement that matches empty everywhere gives N positions x O(n) scan each.
+  `~(a+)` = 10.5s on 96KB, 18s on 128KB; is_match/find_anchored are O(1). Quadratic
+  under every limits-enabled config except hardened, which uses the linear
+  `find_all_dfa` driver (`:1713`), proving it avoidable.
 
-The README in the audit dir has the root-cause index, the 27 numbered findings,
+The README in the audit dir has the root-cause index, the 30 numbered findings,
 the limits inventory pointer, and the Lean-round writeups. A separate
 `limits-and-recommendations.md` documents every deliberate compile-time limit
 (fundamental vs implementable vs tuning) with recommendations for ieviev.
@@ -272,12 +337,24 @@ the limits inventory pointer, and the Lean-round writeups. A separate
 
 ## In-flight background jobs (poll .done, do not restart)
 
-- Full-corpus panic hunt, task id `bcscku23a`. Streams all 159257 patterns x 7
-  configs through `--panicbatch` (16 chunks `Fpat_*.fp` -> `Fpan_*.txt`), done
-  marker `/tmp/agent/fullpanhunt.done`, combined `/tmp/agent/fullpanhunt_all.txt`.
-  Interim: only two crash sites (engine.rs:550 ~110k lines, engine.rs:960 87),
-  confirming no third panic site. When done, tally distinct patterns per site for
-  the final BUG-15 / BUG-2 trigger counts and update BUG-15's scope if larger.
+- Full-corpus panic hunt: DONE (`/tmp/agent/fullpanhunt.done` exists). Final: two
+  crash sites only, engine.rs:550 (28688 distinct patterns, 165515 lines) and
+  engine.rs:960/BUG-2 (137 lines), across `Fpan_*.txt`. BUG-15 scope updated.
+- Timing hunt over the full corpus, output `/tmp/agent/timehunt2_all.txt` (no
+  `.done` marker written by the relaunch; it was `&`-detached inside a bash call).
+  Each line is `SLOW|<secs>|...` or `TIMEOUT|>25|...`. Heavily BUG-16 (lookbehind-
+  of-lookahead, ~100+ distinct) plus BUG-17 (op=compile, bracketed perl class) and
+  BUG-18 (op=find_all, `~(...)` complement). Distinct flagged hexpats extracted to
+  `/tmp/agent/flagged_pats.hex`.
+- Clean SOLO re-measurement, output `/tmp/agent/timeclean_all.txt`, marker
+  `/tmp/agent/timeclean.done`. Waits for the timing hunt to quiesce, then runs
+  `--time1` SEQUENTIALLY (no contention) over `flagged_pats.hex`. THIS is the
+  authoritative source for which 1-6s flags are real vs contention artifacts. When
+  it finishes, scan for any solo op >= 10s NOT already covered by BUG-16/17/18
+  (that would be a new root cause); 1-6s solo flags are "suspicious" clusters worth
+  a note. Bare-`$`-in-intersection/alternation flags (e.g. `(${0,1}&(\s|\b))`) were
+  already spot-checked solo on all-`a` and are NOT superlinear (fixed ~0.1s cost or
+  instant); confirm whether any are genuinely slow on diverse-byte (cyc16k) input.
 
 ## Held back, NOT filed
 
@@ -285,19 +362,28 @@ The anchor round's `(?<=$)` cluster (lookbehind containing an anchor), e.g.
 `(_{0,1}&(?<=$))` on `\n` (rust 1:1, Lean 0:0) and `(?=(?<=$) *)[^a]*` on `\n`
 (rust 1:1, Lean 0:1). First-principles reasoning leans toward rust being wrong,
 but lookbehind-of-anchor is the translator shape known to be unfaithful, and these
-show no internal-consistency violation (only `(?<=$)a` panics, which is BUG-15).
-Need RE# lookbehind-of-anchor semantics from the paper or source before filing.
+show no internal-consistency violation. Need RE# lookbehind-of-anchor semantics
+from the paper or source before filing the CORRECTNESS angle. NOTE: the PERFORMANCE
+angle of this exact shape is now filed as BUG-16 (the `(?<=$)` superlinear match),
+which needs no oracle; only the position-correctness question remains held back.
 
 ## Remaining avenues (for more root causes)
 
-- Finish/triage the full panic hunt (in flight); confirm two crash sites and final
-  counts.
-- Deepen any other stream-correctness mining: BUG-15 blocks stream RESULTS on 2396
+- Harvest the clean solo timing re-measurement (`/tmp/agent/timeclean_all.txt`,
+  marker `timeclean.done`): any solo op >= 10s outside BUG-16/17/18 is a new root
+  cause; document 1-6s solo clusters as suspicious.
+- Timing oracle has only sampled the directed corpus. Generate NEW adversarial
+  patterns aimed at the three known mechanisms (lookbehind-of-lookahead nesting,
+  bracketed-class repeats, nullable-complement find_all) to find sibling triggers,
+  and run `--time1` with a longer/diverse haystack to surface match-time blowups
+  that the a1k/cyc16k/a64k battery misses.
+- Deepen other stream-correctness mining: BUG-15 blocks stream RESULTS on 28688
   patterns, so more stream bugs may hide behind the crash once it is fixed; for
   now mine STREAMINCONSIST on the non-crashing remainder.
 - Per-mode Lean rounds (ascii, flags, hardened) since BUG-4/7/8 are config
   specific; the Lean encoding must match that config's class semantics.
-- Resolve the `(?<=$)` cluster by pinning RE# lookbehind-of-anchor semantics.
+- Resolve the `(?<=$)` CORRECTNESS cluster by pinning RE# lookbehind-of-anchor
+  semantics (the performance angle is now BUG-16).
 - find_anchored correctness vs Lean as a new oracle dimension (BUG-13 showed
   find_anchored can disagree with find_all).
 
