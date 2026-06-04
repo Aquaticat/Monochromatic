@@ -15,9 +15,11 @@ leftmost-longest (POSIX) semantics, multiline on by default.
 
 ## Current status (2026-06-04 15:55)
 
-17 distinct root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-18, 19; 5 and 6 folded) and 31 numbered reproducers committed under
-`docs/audit/resharp-fuzz-2026-06-04/`. Distinct triggering patterns run to the
+17 distinct root causes and 32 numbered reproducers committed under
+`docs/audit/resharp-fuzz-2026-06-04/`: BUG-1, 2, 3, 4, 7, 8, 9, 10, 12, 13, 14, 15,
+16, 17, 18, 19, 20 (numbers 5 and 6 folded; BUG-11 CONFIRMED identical to BUG-17,
+the bracketed `[\w]`, so counted once). A full source-level code-quality audit is in
+`code-quality.md` (definitely-rewrite tier) and `code-quality.recommendations.md`. Distinct triggering patterns run to the
 thousands (BUG-15: 28688 distinct patterns in the full 159k hunt). All work is
 committed. The user wants maximum yield ("poke resharp until it's a honeycomb").
 
@@ -34,6 +36,13 @@ the timing oracle (`--time1`) and three performance bugs:
 - BUG-17: a perl shorthand inside a character class (`[\w]` vs bare `\w`) makes
   bounded-repeat compile super-linear. `([\w]{3,5}){3,3}` compiles in 15s; bare
   `(\w{3,5}){3,3}` is 20ms. Likely the real root cause of BUG-11.
+- BUG-20: `find_anchored` reports a match at offset 0 that a leading zero-width
+  assertion forbids there. `\B0` on `"00"` returns 0:1 (wrong; `\B` is false at the
+  start) and `(?<=0)0` returns 0:1 (wrong; nothing precedes 0), while `find_all`
+  correctly matches at 1:2 in both (regex-crate-corroborated for `\B`). find_anchored
+  (`engine/src/lib.rs:1847`) calls `scan_fwd_slow(0,...)` without seeding the
+  begin-of-input context find_all keys on (`pos_begin==0` / `Nullability::BEGIN`,
+  `engine.rs:818`/`:921`). Found by the new FANDIFF oracle.
 - BUG-18: `find_all` is O(n^2) on a nullable complement (`~(a+)`, `~(\w+)`) because
   `find_all_nullable_slow` restarts a forward scan per position. `~(a+)` is 10.5s
   on 96KB; hardened (different driver) is linear, so the quadratic is avoidable.
@@ -280,6 +289,9 @@ contradicting itself is unambiguous.
 - BUG-10 `bug-10-...`: default find_all drops a trailing zero-width match.
   `(?<=^)~(0+)`.
 - BUG-11 `bug-11-...`: super-linear compile time. `[\w]{3,5}[\w]([^a]&a+)` ~4s.
+  CONFIRMED to be the same root cause as BUG-17: the bracketed `[\w]` is the whole
+  cost (bare `\w` version is 0.0068s vs 2.79s; the intersection is incidental).
+  Counted once with BUG-17.
 - BUG-12 `bug-12-...`: negative lookahead of a class makes a non-nullable pattern
   nullable; spurious empty match. `(?!\w)0+`. Lean-only find (self-consistent).
 - BUG-13 `bug-13-lookahead-width-leak.md`: a top-level lookahead leaks its body
@@ -385,6 +397,43 @@ show no internal-consistency violation. Need RE# lookbehind-of-anchor semantics
 from the paper or source before filing the CORRECTNESS angle. NOTE: the PERFORMANCE
 angle of this exact shape is now filed as BUG-16 (the `(?<=$)` superlinear match),
 which needs no oracle; only the position-correctness question remains held back.
+
+## New oracles and repro modes added this session (all in /tmp/agent/repro)
+
+- `--time1`, `--bench1`, `--benchrep`, `--benchcyc` (DIVERSE cyc input; surfaces
+  BUG-19 and BUG-17's match-time face), `--compile1`: the timing oracle family.
+- `--fandiffbatch` (stdin hexpats): find_anchored vs find_all consistency. Built
+  BUG-20. Output of the full-corpus run: `/tmp/agent/fandiff_all.txt` (~290k lines).
+  Classes: `fa=empty|fan=0:N` and `fafirst=0:1|fan=0:0` are dominated by `\b`/`\B`
+  (BUG-3) and leading-lookbehind (BUG-20); `fafirst|fan` span gaps are BUG-13/14.
+- `--streambatch` (STREAMEXTRA: stream span not in find_all): DEAD END, see below.
+- `--ci1 <hexpat> <hexhay>`: resharp case_insensitive(ascii) is_match/find_all.
+- `--fa1 <hexpat> <hexhay> <cfgidx>`: im/fa under any config (for UTF-8 / mode probes).
+
+## Confirmed robust this session (do NOT re-chase; evidence in hand)
+
+These veins were probed thoroughly and resharp is CORRECT; re-running them wastes
+time. Bulletproofing means knowing what is already solid.
+
+- `stream` is DOCUMENTED leftmost-SHORTEST ("Shortest matches, left-to-right. State
+  resets after each match.", `stream.rs:153`, via `scan_fwd_first_null_from`). So
+  stream spans differing from find_all's leftmost-LONGEST is BY DESIGN; the
+  STREAMEXTRA oracle's 60k hits (` *` stream 0:1 vs find_all 0:2 etc.) are NOT bugs.
+  BUG-9 (stream returns EMPTY when a match exists) remains valid because a shortest
+  match must still exist.
+- Case-insensitive (ascii) is correct: `a` on `A`, `[a-z]` on `A`, `[^a]` on `A`
+  (false), `~(a)` on `A` (matches via the empty string), `[A-Z]` on `a` all correct.
+- UTF-8 under full mode is correct: `.` spans a whole codepoint as bytes (é=0:2,
+  中=0:3, 😀=0:4), `.{2}` on `éé`=0:4, `..` on a 1-codepoint string fails. (Default
+  mode is byte-wise: `.` on é = 0:1,1:2, also correct.)
+- find_all emits zero-width word-boundary matches correctly: `\b` on `"a"` = [0:0,
+  1:1], `\b` on `"a b"` = [0:0,1:1,2:2,3:3]. (The FANDIFF `fa=empty|fan=0:0` cases
+  are BUG-20 find_anchored over-reporting, not find_all dropping matches.)
+- Compile-time stress (nested complement `~(~(~...)`, multi-intersection
+  `a&b&c&d&e`, counted `(a|b|c|d|e){200}`, `((a*)*)*`, etc.) is all instant; the
+  ONLY compile blowup is the bracketed `[\w]` (BUG-17). Nullable INTERSECTIONS in
+  find_all are linear (`(_+&a*)`, `(a+&a+)` are O(n)); only the nullable COMPLEMENT
+  `~(a+)` is O(n^2) (BUG-18).
 
 ## Remaining avenues (for more root causes)
 
