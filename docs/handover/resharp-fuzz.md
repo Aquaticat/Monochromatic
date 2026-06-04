@@ -410,30 +410,39 @@ which needs no oracle; only the position-correctness question remains held back.
 - `--ci1 <hexpat> <hexhay>`: resharp case_insensitive(ascii) is_match/find_all.
 - `--fa1 <hexpat> <hexhay> <cfgidx>`: im/fa under any config (for UTF-8 / mode probes).
 
-## Confirmed robust this session (do NOT re-chase; evidence in hand)
+## Spot-checked, no bug in samples (NOT confirmed robust)
 
-These veins were probed thoroughly and resharp is CORRECT; re-running them wastes
-time. Bulletproofing means knowing what is already solid.
+Standard (user directive): nothing is "confirmed robust" until that distinct portion
+has been READ through in source, REASONED about, and UNIT-TESTED to the max. The
+items below are only spot-checked: a handful of inputs passed, no bug surfaced. They
+are candidates for thorough verification, not closed. Do not present them as robust;
+each still needs source-read + reasoning + exhaustive adversarial unit tests before
+that claim. The ONE exception is the stream-semantics item, which rests on a doc
+fact, not a sample.
 
-- `stream` is DOCUMENTED leftmost-SHORTEST ("Shortest matches, left-to-right. State
-  resets after each match.", `stream.rs:153`, via `scan_fwd_first_null_from`). So
-  stream spans differing from find_all's leftmost-LONGEST is BY DESIGN; the
-  STREAMEXTRA oracle's 60k hits (` *` stream 0:1 vs find_all 0:2 etc.) are NOT bugs.
-  BUG-9 (stream returns EMPTY when a match exists) remains valid because a shortest
-  match must still exist.
-- Case-insensitive (ascii) is correct: `a` on `A`, `[a-z]` on `A`, `[^a]` on `A`
-  (false), `~(a)` on `A` (matches via the empty string), `[A-Z]` on `a` all correct.
-- UTF-8 under full mode is correct: `.` spans a whole codepoint as bytes (é=0:2,
-  中=0:3, 😀=0:4), `.{2}` on `éé`=0:4, `..` on a 1-codepoint string fails. (Default
-  mode is byte-wise: `.` on é = 0:1,1:2, also correct.)
-- find_all emits zero-width word-boundary matches correctly: `\b` on `"a"` = [0:0,
-  1:1], `\b` on `"a b"` = [0:0,1:1,2:2,3:3]. (The FANDIFF `fa=empty|fan=0:0` cases
-  are BUG-20 find_anchored over-reporting, not find_all dropping matches.)
-- Compile-time stress (nested complement `~(~(~...)`, multi-intersection
-  `a&b&c&d&e`, counted `(a|b|c|d|e){200}`, `((a*)*)*`, etc.) is all instant; the
-  ONLY compile blowup is the bracketed `[\w]` (BUG-17). Nullable INTERSECTIONS in
-  find_all are linear (`(_+&a*)`, `(a+&a+)` are O(n)); only the nullable COMPLEMENT
-  `~(a+)` is O(n^2) (BUG-18).
+- DOC FACT (solid): `stream` is leftmost-SHORTEST ("Shortest matches, left-to-right.
+  State resets after each match.", `stream.rs:153`, via `scan_fwd_first_null_from`).
+  So stream spans differing from find_all's leftmost-LONGEST is BY DESIGN; the
+  STREAMEXTRA oracle's 60k hits (` *` stream 0:1 vs find_all 0:2) are NOT bugs. BUG-9
+  (stream EMPTY when a match exists) stays valid: a shortest match must still exist.
+  Still untested: whether stream's shortest spans are themselves always correct, and
+  the `stream_first`/`stream_ends`/`stream_chunk`/`stream_with` variants.
+- Case-insensitive (ascii): 13 definitional inputs passed (`a` on `A`, `[a-z]` on
+  `A`, `[^a]` on `A` false, `~(a)` on `A` via empty, `[A-Z]` on `a`). NOT tested:
+  ci with `\b`/anchors, ranges crossing case (`[Z-a]`), `\w`/`\S` under ci, ci+full
+  unicode case folding (Turkish i, sharp s), find_all spans under ci. Read the
+  parser's ci lowering before claiming correctness.
+- UTF-8 under full mode: `.` spans one codepoint (é=0:2, 中=0:3, 😀=0:4), `.{2}` on
+  `éé`=0:4, `..` on 1 codepoint fails. NOT tested: invalid/truncated UTF-8 (lone
+  continuation byte, overlong), `\w`/`\b` at codepoint boundaries, find_all
+  splitting a codepoint, classes spanning the BMP, surrogate ranges.
+- find_all zero-width word boundaries: `\b` on `"a"`=[0:0,1:1], `"a b"`=[0:0,1:1,
+  2:2,3:3]. (FANDIFF `fa=empty|fan=0:0` are BUG-20, not find_all drops.) NOT
+  exhaustively tested across boundary/anchor/lookaround combinations.
+- Compile stress: nested complement, multi-intersection, counted `(a|b|c|d|e){200}`,
+  `((a*)*)*` all instant; only bracketed `[\w]` blows up (BUG-17). Nullable
+  INTERSECTIONS in find_all are linear (`(_+&a*)`), only nullable COMPLEMENT `~(a+)`
+  is O(n^2) (BUG-18). This is a sample, not a proof of no other blowup.
 
 ## Remaining avenues (for more root causes)
 
