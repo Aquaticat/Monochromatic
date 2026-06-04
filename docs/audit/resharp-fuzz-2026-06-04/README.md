@@ -154,31 +154,36 @@ triggering patterns (counts from the 159k-pattern directed sweep):
 - `RUST_TIMEOUT` in the dotnet differential: dozens of distinct slow-compile
   patterns (BUG-11).
 
-## Over-rejection analysis (no bug)
+## Deliberate compile-time limits
 
 The Lean leftmost-longest round left 8055 of 54000 pairs where rust returned a
-compile error (895 distinct patterns). Mining these against the dotnet reference
-and the source resolved them to three deliberate parser restrictions, not
-soundness bugs:
+compile error (895 distinct patterns). These are deliberate restrictions, not
+soundness bugs, but some are expressible in the reference algebra and so are
+implementation gaps rather than fundamental limits. The full inventory, with each
+limit classified as fundamental, implementable, or a tuning choice, plus a
+recommendation for each, is in
+[limits-and-recommendations.md](limits-and-recommendations.md). The three most
+common families seen in this round:
 
 - Lookbehind not at the start of its concatenation. rust rejects `a(?<!b)`,
-  `.(?<!b)`, `ab(?<!c)`, `b(?<!b)`, while accepting a leading lookbehind
-  (`(?<!b)a`). This is an explicit check, `ensure_lookbehind_at_start` in
-  `resharp-parser/src/lib.rs:479` (`if !at_start { return Err(g.span) }`): a
-  lookbehind is allowed only when nothing consuming precedes it. The dotnet
-  reference supports trailing lookbehind and evaluates it correctly (`b(?<!b)`
-  no match, `ab(?<!c)` matches `0:2`), so this is a deliberate divergence from the
-  reference, not a defect in rust.
-- Complement of a sub-expression whose language resharp cannot complement. The
-  rejection is structure-dependent, not blanket: `~((?!a)b)` compiles but
-  `~((?!.))`, `~((?=a))`, `~(a(?=b))`, `~((?<=a)b)` do not. This tracks the
-  complementability of the inner language.
-- Class ranges with a class endpoint. `[\d-a]` is rejected (`ClassRangeLiteral`,
-  `resharp-parser/src/lib.rs:305`); the dotnet reference instead reads the `-`
-  literally and matches. A parse-strictness divergence, not a soundness issue.
+  `.(?<!b)`, `ab(?<!c)`, `b(?<!b)`, and the mid-pattern `^` in `a^b`, while
+  accepting a leading lookbehind (`(?<!b)a`). Explicit check
+  `ensure_lookbehind_at_start`, `resharp-parser/src/lib.rs:479`. Lookbehind is
+  first-class in the reference algebra and usable in any position, so this is an
+  engine-architecture gap (forward derivative plus reverse scan from the match
+  start), not a fundamental limit. Highest-value limit to lift.
+- Lookaround or anchor as the last factor inside a complement or a star.
+  Structure-dependent: `~((?=a)b)` compiles but `~((?=a))`, `~(b(?=a))`,
+  `((?=x+))*` do not. Source `resharp-algebra/src/lib.rs:39`. Expressible in the
+  reference; `Regex/EliminationNegLookarounds.lean` gives a rewrite roadmap.
+- Class ranges with a class endpoint. `[\d-a]` rejected (`ClassRangeLiteral`,
+  `resharp-parser/src/lib.rs:305`). A parsing-strictness choice; PCRE and the Rust
+  `regex` crate read the `-` literally here.
 
-Reading the parser source before filing kept these intentional limits out of the
-bug count.
+See the limits doc for the full set (lazy quantifiers, backreferences, swap-greed
+flag, special word boundaries, size caps), each classified fundamental versus
+implementable with a recommendation, using the Lean algebra as the arbiter and the
+dotnet engine only as a secondary data point.
 
 ## Caveats and relationship to known bugs
 
