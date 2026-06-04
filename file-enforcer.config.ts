@@ -64,6 +64,16 @@ ${
       .join(',\n',)
   },
 ]
+
+# Enables Slint's experimental builtins (e.g. FlexboxLayout) in slint-lsp when it
+# is launched through mise (e.g. the JetBrains plugin's external LSP set to run
+# "mise exec -- slint-lsp"). slint-lsp exposes no CLI flag for this; the compiler
+# reads this env var at runtime (internal/compiler/lib.rs) and the LSP relies on
+# that path (tools/lsp/main.rs). The two desktop-app packages already set it for
+# their builds; setting it at the repo root also covers the editor LSP whose cwd
+# is the monorepo root. mise [env] is directory-activated, so it only reaches the
+# LSP process when mise launches it.
+SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 `;
   await overwrite({
     dest: './mise.toml',
