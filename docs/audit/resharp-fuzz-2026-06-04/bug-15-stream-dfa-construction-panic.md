@@ -64,6 +64,38 @@ into a state id that was never allocated in `state_nodes`. Two consumed bytes
 build two states; the third byte's transition requests the unallocated third
 state.
 
+## Root cause localization
+
+The crash is specific to `stream` because the streaming path finds each match
+start with an incremental reverse scan that the block matchers do not run.
+`try_emit_step` (`resharp-engine/src/stream.rs:247`) calls `scan_rev_from`, whose
+reverse-transition loop is:
+
+```rust
+// resharp-engine/src/engine.rs:1245
+let delta = (curr << self.mt_log | mt) as usize;
+let next = self.center_table[delta];
+if next == DFA_MISSING {
+    curr = self.lazy_transition(b, curr as u16, mt)? as u32;
+    self.create_state(b, curr as u16).ok();   // engine.rs:1249
+} else {
+    curr = next as u32;
+}
+```
+
+Every other path pairs `ensure_capacity(sid)` immediately before
+`create_state(b, sid)`: the forward `lazy_transition_slow` (`engine.rs:414` then
+`:415`) and the block matchers (`engine.rs:415` to `:416` and `:441` to `:442`).
+This reverse-scan site calls `create_state(b, curr)` with no preceding
+`ensure_capacity(curr)`, so when `curr` is a state whose `state_nodes` slot was
+not grown, the read of `self.state_nodes[curr]` at `engine.rs:550` is out of
+bounds. `is_match` needs no match start and `find_all` uses a different reverse
+pass, which is why only `stream` reaches this site.
+
+The fix is to call `self.ensure_capacity(curr)` before the `create_state` at
+`engine.rs:1249` (and to audit the other `.ok()` reverse-scan `create_state`
+calls at `engine.rs:1098` and `:1185` for the same missing pairing).
+
 ## Expected behaviour
 
 No panic. The streaming DFA builder must allocate the state it transitions into,
