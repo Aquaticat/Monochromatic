@@ -142,6 +142,12 @@ irrelevant since this is a correctness, not a size-limit, defect.
   concern recorded in `code-quality.md`: the sentinel is reachable in a public
   `Match.end`, so the "proven scalar-local-only" assumption behind keeping the
   sentinel does not hold once contamination is in play.
+- The contamination does not stop at wrong answers: it can drive the engine into a
+  state that trips the `engine.rs:960` assertion (BUG-2) and panics. `\w+b` in the
+  default config, `find_all` over the sequence `["ab", "ba"]`, returns a correct
+  result for `"ab"` then panics on `"ba"` (a fresh `\w+b` on `"ba"` does not panic).
+  That panic then poisons the shared `inner` mutex and permanently bricks the whole
+  `Regex` (BUG-25). So this defect chains contamination -> abort -> permanent brick.
 
 ## Code quality
 
