@@ -112,6 +112,12 @@ search accelerator only.
   `[\w]{3,5}` compiles in 1.76 s and `([\w]{3,5}){3,3}` in 15.3 s, while the
   identical bare `(\w{3,5}){3,3}` is 20 ms. Mode-independent; the size cap does
   not bound it. Likely the real root cause of BUG-11.
+- [BUG-18](bug-18-findall-nullable-complement-quadratic.md): `find_all` is O(n^2)
+  on a nullable complement (`~(a+)`, `~(\w+)`) because the nullable fallback
+  `find_all_nullable_slow` restarts a forward scan from every position. `~(a+)`
+  takes 10.5 s on 96 KB and 18 s on 128 KB; `is_match`/`find_anchored` are O(1).
+  Quadratic under every limits-enabled config except `hardened`, which takes the
+  linear DFA driver, so the quadratic is avoidable.
 
 BUG-5 and BUG-6 from the working notes are folded in: BUG-5 (`\S+b`) is the
 shared trigger for BUG-2 and a real ascii `DIVERGE`; BUG-6 (`\BU`) is a second
@@ -154,9 +160,10 @@ the dotnet reference and plain semantic reasoning.
 27. \z\A.* on ""             missed empty match, regex crate confirms        BUG-3
 28. (?<=$) find_all 'a'*512  ~13s match-time blowup, lookbehind-of-lookahead  BUG-16
 29. ([\w]{3,5}){3,3}         ~15s compile blowup, bracketed perl-class repeat  BUG-17
+30. ~(a+) find_all 'a'*98304 ~10.5s O(n^2) find_all, nullable complement       BUG-18
 ```
 
-The campaign covers fifteen distinct root causes (BUG-1 through BUG-17, numbers 5
+The campaign covers sixteen distinct root causes (BUG-1 through BUG-18, numbers 5
 and 6 folded). The Lean ground truth added BUG-12, BUG-13, and BUG-14 (all
 self-consistent at the span level and so invisible to every internal oracle). A
 panic hunt over the streamed corpus then found BUG-15, a single `stream()` DFA
