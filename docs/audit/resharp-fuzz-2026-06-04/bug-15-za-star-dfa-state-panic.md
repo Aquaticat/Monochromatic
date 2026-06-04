@@ -12,29 +12,33 @@
 
 ## Minimal reproducer
 
+The panic is in the streaming match API, `Regex::stream`. The non-streaming entry
+points (`is_match`, `find_all`, `find_anchored`) do not reach it, which is why a
+plain single-shot match never crashes.
+
 ```rust
 use resharp::{Regex, RegexOptions};
 let re = Regex::with_options(r"\z\A.*", RegexOptions::default()).unwrap();
-// build the DFA lazily across a sequence of haystacks (one Regex, many inputs)
+// stream over a sequence of haystacks (one Regex, many inputs)
 for hay in [b"".as_ref(), b"a", b"b", b"c", b"x", b"0", b"1",
             b" ", b"\t", b"\n", b"ab", b"ba", b"aa", b"aaa"] {
-    let _ = re.is_match(hay);
+    let _ = re.stream(hay);
 }
-// panics while matching "aaa":
+// panics while streaming "aaa":
 //   engine.rs:550 index out of bounds: the len is 2 but the index is 2
 ```
 
-Command line (deterministic, all six modes):
+Command line (deterministic, all seven configs):
 
 ```sh
 repro '\z\A.*' --sweep
 # PANIC|engine.rs:550 index out of bounds: the len is 2 but the index is 2|mode=default|hay=616161|pat="\z\A.*"
-# (same PANIC line for ascii, full, js, hardened, flags)
+# (same PANIC line for ascii, full, js, hardened, flags, unbounded)
 ```
 
-The reused-`Regex`-over-a-sequence shape is essential. A fresh `Regex` per
-haystack (as `repro --pair` does) never panics, because the DFA is rebuilt from
-scratch each time and the missing state is never reached.
+The crash is specific to the `stream` path: `repro --pair`, which calls
+`is_match`, `find_all`, and `find_anchored` but not `stream`, never panics on this
+pattern, while `repro --sweep` and `--panicbatch`, which add `re.stream(hay)`, do.
 
 ## Observed behaviour
 
