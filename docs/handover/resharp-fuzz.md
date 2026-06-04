@@ -184,6 +184,71 @@ correct answer for each distinct pattern (documented semantics: leftmost-longest
 rust is demonstrably wrong. The Lean formalization in `~/Downloads/extended-regexes`
 is the tie-breaker ground truth and is the next tool to stand up.
 
+## Resume point (2026-06-04 14:10, pre-compaction)
+
+Status: 10 root causes (BUG-1, 2, 3, 4, 7, 8, 9, 10, 11, 12) and 22 numbered
+reproducers are committed under `docs/audit/resharp-fuzz-2026-06-04/`. The Lean
+ground-truth oracle is built and found BUG-12. Two Lean rounds are mid-flight and
+running as background `nohup` processes that survive compaction.
+
+In-flight background jobs (poll their `.done` files, do not restart):
+
+- Non-anchor leftmost-longest position round (lean2). Lean results stream to
+  `/var/home/user/Downloads/extended-regexes/lean2_out_*.txt` (16 chunk files),
+  done marker `/tmp/agent/lean2.done`. Rust side `/tmp/agent/lean2_rust.txt`
+  (`repro --batch`, default mode), done marker `/tmp/agent/lean2_rust.done`.
+  Pairs `/tmp/agent/lean2_pairs.txt`. When both done, diff with:
+  `python3 /tmp/agent/diff_lean_span.py <leandir> lean2_out_ /tmp/agent/lean2_rust.txt /tmp/agent/lean2_pairs.txt`
+  (leandir = `/var/home/user/Downloads/extended-regexes`). It reports
+  POSITION_DIFF (self-consistent wrong match positions, rust bug) and EXIST_DIFF.
+
+Ready to run next (highest value): the anchor round. The translator
+`/tmp/agent/re2lean.py` now encodes anchors as lookarounds: `\A` = `(?<!_)`,
+`\z` = `(?!_)`, `^`/`$` as line lookarounds, `\b`/`\B` as word-boundary
+lookarounds. Generated oracle `/tmp/agent/leanA.lean` (54000 evals over 6000
+anchor patterns) and `/tmp/agent/leanA_pairs.txt`.
+
+Step 1, validate the encoding before trusting it: run
+`/var/home/user/Downloads/extended-regexes/leanval2.lean` (19 known-answer
+cases) and compare each `V<i>` line to `/tmp/agent/val_expected.txt`. Only
+proceed if they match.
+
+Step 2, run the anchor round chunked and parallel (the only way that finishes in
+reasonable time). Recipe used for every Lean bulk run:
+
+```sh
+cd /var/home/user/Downloads/extended-regexes
+export PATH="$HOME/.elan/bin:$PATH"
+head -3 /tmp/agent/leanA.lean > /tmp/agent/hdr.txt
+tail -n +4 /tmp/agent/leanA.lean > /tmp/agent/ev.txt
+split -n l/16 -d --additional-suffix=.e /tmp/agent/ev.txt /tmp/agent/Achunk_
+for f in /tmp/agent/Achunk_*.e; do n=$(basename "$f" .e|sed 's/Achunk_//'); cat /tmp/agent/hdr.txt "$f" > "leanA_chunk_$n.lean"; done
+for f in leanA_chunk_*.lean; do n=$(basename "$f" .lean|sed 's/leanA_chunk_//'); timeout 1200 lake env lean "$f" 2>/dev/null | grep '^R' > "leanA_out_$n.txt" & done; wait
+```
+
+Rust side for the anchor round: split `/tmp/agent/leanA_pairs.txt` and run
+`repro --batch` per chunk in parallel (single-process batch is slow; parallelise
+it). Then diff with `diff_lean_span.py` using prefix `leanA_out_` and the leanA
+pairs file. Note many anchor patterns also need rust ascii/flags/hardened modes,
+not just default, so consider extending `repro --batch` to take a mode.
+
+Throughput gotchas learned:
+
+- A stray `dnharness`/`lean` process can hang for an hour on one pathological
+  pattern and steal a core. Check `ps -eo pid,pcpu,comm --sort=-pcpu` and kill
+  the stray by PID. `ffmpeg` in that list is the user's VideoDownloader, leave it.
+- `pkill -f '<pattern>'` matches its own shell. Kill via a script file that
+  reads `/proc/*/cmdline` (see `/tmp/agent/killsweep.py`) or by explicit PID.
+- Lean elaboration is about 0.2s per `#eval`; 16-way chunking keeps a 54k-eval
+  round to roughly 20 to 40 minutes. Each `lake env lean` reloads mathlib oleans,
+  so do not run more than about 16 concurrently.
+
+Further avenues not yet done: full 41445-pattern non-anchor sweep (only 1200 and
+6000 sampled so far); longer haystacks for deeper position bugs; mining rust
+over-rejections (1014 of 7200 non-anchor patterns rust rejects that Lean
+accepts); per-mode Lean rounds (ascii, flags, hardened) since BUG-4/7/8 are
+mode-specific.
+
 ## Conventions for the writeups
 
 Follow repo prose rules: no em-dashes or en-dashes used as em-dashes, sentence
