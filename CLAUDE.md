@@ -411,7 +411,6 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
 - ST5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
 - ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
-- ST7: Use named function declarations exclusively: no arrow functions, no const-bound function expressions. Exception for callbacks whose signature is dictated by an external API or library: name the function and parenthesise all params.
 - ST8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
 - ST9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
 - TQ1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.

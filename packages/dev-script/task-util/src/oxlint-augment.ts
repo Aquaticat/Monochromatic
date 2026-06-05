@@ -277,7 +277,7 @@ export const RULE_GUIDANCE: Record<string, string> = {
   ]
     .join(' ',),
   'no-array-callback-reference': [
-    'oxlint suggests wrapping the callback in an arrow function, but ST7 bans arrow functions.',
+    'oxlint suggests wrapping the callback in an arrow function, but the local no-arrow-function lint rule rejects arrow functions.',
     'Fix: pass an inline named function expression, e.g. `items.map(function name(item,) { return f(item,); },)`; an inline expression is not a flagged reference, so the rule passes.',
     'For an existing reference such as `Number.parseInt`, wrap it with `unary` or `binary` from `@monochromatic-dev/module-function-arity` to cap the arity safely.',
   ]
