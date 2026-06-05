@@ -314,3 +314,9 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+### 2026-06-05
+
+Removed the `FBS` enforcement-mechanism entry from `AGENTS.md` because naming scanners in the always-loaded prompt invites agents to optimize against those gates instead of following the underlying behavioral constraints.
