@@ -327,7 +327,7 @@ code {
 
       <article class="card">
         <h2 class="card-title">Lowest total-error sweep results</h2>
-        <p class="notice">Sorted by total errors only; these are not automatically recommended because false-failing pass labels is costly.</p>
+        <p class="notice">Sorted by total errors, with ties broken by tighter thresholds. These are not automatically recommended because false-failing pass labels is costly.</p>
         <div class="table-wrap">
           <table aria-label="Lowest total-error threshold sweep results">
             <thead>
@@ -436,26 +436,36 @@ function evaluate(threshold) {
   const misses = entries.filter(function isMiss(entry) {
     return entry.expected === 'fail' && predictedPass(entry, threshold);
   });
+  const predictedPasses = entries.filter(function isPredictedPass(entry) {
+    return predictedPass(entry, threshold);
+  }).length;
   return {
     threshold,
     falseFails,
     misses,
+    predictedPasses,
     errors: falseFails.length + misses.length,
   };
+}
+
+function compareTightness(left, right) {
+  if (left.predictedPasses !== right.predictedPasses)
+    return left.predictedPasses - right.predictedPasses;
+  if (left.threshold.minLength !== right.threshold.minLength)
+    return right.threshold.minLength - left.threshold.minLength;
+  if (left.threshold.minDistinct !== right.threshold.minDistinct)
+    return right.threshold.minDistinct - left.threshold.minDistinct;
+  if (left.threshold.minTtr !== right.threshold.minTtr)
+    return right.threshold.minTtr - left.threshold.minTtr;
+  const leftDeflate = left.threshold.minDeflate ?? -1;
+  const rightDeflate = right.threshold.minDeflate ?? -1;
+  return rightDeflate - leftDeflate;
 }
 
 function compareTotalErrors(left, right) {
   if (left.errors !== right.errors)
     return left.errors - right.errors;
-  if (left.falseFails.length !== right.falseFails.length)
-    return left.falseFails.length - right.falseFails.length;
-  if (left.misses.length !== right.misses.length)
-    return left.misses.length - right.misses.length;
-  if (left.threshold.minDeflate !== right.threshold.minDeflate)
-    return left.threshold.minDeflate === null ? -1 : 1;
-  if (left.threshold.minDistinct !== right.threshold.minDistinct)
-    return left.threshold.minDistinct - right.threshold.minDistinct;
-  return left.threshold.minLength - right.threshold.minLength;
+  return compareTightness(left, right);
 }
 
 function compareZeroFalseFail(left, right) {
@@ -463,13 +473,7 @@ function compareZeroFalseFail(left, right) {
     return left.misses.length - right.misses.length;
   if (left.errors !== right.errors)
     return left.errors - right.errors;
-  if (left.threshold.minDeflate !== right.threshold.minDeflate)
-    return left.threshold.minDeflate === null ? -1 : 1;
-  if (left.threshold.minLength !== right.threshold.minLength)
-    return left.threshold.minLength - right.threshold.minLength;
-  if (left.threshold.minDistinct !== right.threshold.minDistinct)
-    return left.threshold.minDistinct - right.threshold.minDistinct;
-  return left.threshold.minTtr - right.threshold.minTtr;
+  return compareTightness(left, right);
 }
 
 function allSweepResults() {
