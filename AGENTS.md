@@ -61,7 +61,7 @@ Cue: about to attribute a rule to a source without verifying it contains it.
 External tool features, CLI options, conf syntax, API capabilities: fetch current docs or src before responding.
 "Does X support Y" and "how do I do Y in X" are research tasks, not recall.
 
-Explaining a warning or error: name the exact emitting tool (e.g. "Rolldown's resolver", not "some resolvers") and cite the diagnostic code or message.
+Explaining a warning or error: name the exact emitting tool, not a vague category, and cite the diagnostic code or message.
 Unsure? Investigate first: grep the codebase for the diagnostic, check tool docs, or run the tool.
 
 When the user says "I was expecting you to..." or you spot a failure mode future sessions should avoid, treat it as a documentation gap: propose a concrete AGENTS.md change (what rule, where, exact wording) and perform the expected action, never "I'll keep it in mind".
@@ -277,15 +277,7 @@ writes, bash commands, secret-looking paths, and symlink escapes still go throug
 Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
 Writing the long form forces knowing what it does, where short-flag muscle memory fails.
 
-`rg` is the canonical trap.
-ripgrep recurses by default, so its `-r` means `--replace`, not grep's recursive `-r`.
-A grep-reflex `rg -rl 'pat'` parses as `--replace=l`: silently rewrites every match to `l` in the output.
-The agent then reads back corrupted data that looks plausible (a `$1` bundler suffix shown as `l`).
-`-r` is dangerous anywhere in a single-dash bundle, not just the front:
-at a bundle tail (`rg -ir 'pat'`) it consumes the next argument as the replacement and swallows the pattern.
-Long form removes the trap.
-`--replace=...` is never typed meaning recursion;
-the recursive reflex `rg --recursive` fails loudly with `unrecognized flag` instead of corrupting output silently.
+`rg` is the canonical trap: ripgrep recurses by default, so `-r` means `--replace`, not grep's recursive `-r`; a grep-reflex `rg -rl`/`-ir` silently rewrites matches in the output instead of recursing. Long form removes the trap.
 
 Where a flag has no long-form spelling the short flag stays;
 `--` argument separators (`mise watch -- task`) are unaffected.
@@ -383,7 +375,7 @@ Exception: raw `console` when precise control over terminal output is needed (CL
 
 - Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
 - Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
-- Never embed tags manually in message strings (e.g. `l.info("[cycle] done")`). Use the `tagged` wrapper instead.
+- Never embed tags manually in message strings. Use the `tagged` wrapper instead.
 
 ### Security
 
@@ -439,7 +431,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
 - Union types over enums; `as const` for literals; branded types for domain primitives.
 - Narrow symbol unions by `typeof` first, then identity check.
-- `const` generic parameters; `readonly` array parameters; meaningful constraint names (e.g. `TData`).
+- `const` generic parameters; `readonly` array parameters; meaningful constraint names.
 - Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
 - Use assertion functions (`asserts value is T`) for runtime type narrowing.
 - `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
@@ -664,7 +656,7 @@ Cut it.
 - Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
 - No `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; the hook is roadmap, at least a month out.
 - `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
-- After modifying source in packages that produce dist output (e.g. `module-es`), verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
+- After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
 ### Workspace conventions
 
