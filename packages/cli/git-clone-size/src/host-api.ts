@@ -1,9 +1,9 @@
 import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
-
 import {
-  l,
+  logger,
   tagged,
-} from './log.ts';
+} from '@monochromatic-dev/module-logger/ts';
+
 import { spawnResult, } from './spawn.ts';
 import type { RemoteSource, } from './source.ts';
 
@@ -75,7 +75,7 @@ export async function lsRemote(
    */
   const rl = tagged({
     tag: lsRemote.name,
-    l,
+    l: logger,
   },);
 
   /**
@@ -179,7 +179,7 @@ export async function hostStorageBytes(
    */
   const rl = tagged({
     tag: hostStorageBytes.name,
-    l,
+    l: logger,
   },);
   if ((source.owner === undefined) || (source.repo === undefined))
     return NO_STORAGE;
@@ -311,7 +311,7 @@ export async function hostCommitCount(
    */
   const rl = tagged({
     tag: hostCommitCount.name,
-    l,
+    l: logger,
   },);
   if ((source.host !== 'github') || (source.owner === undefined)
     || (source.repo === undefined))

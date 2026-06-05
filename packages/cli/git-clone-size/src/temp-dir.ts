@@ -6,9 +6,9 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
-  l,
+  logger,
   tagged,
-} from './log.ts';
+} from '@monochromatic-dev/module-logger/ts';
 
 /**
  * A scratch directory that removes itself when the enclosing `await using`
@@ -48,7 +48,7 @@ export async function makeTempDir({ prefix, }: { readonly prefix: string; },): P
    */
   const rl = tagged({
     tag: makeTempDir.name,
-    l,
+    l: logger,
   },);
   rl.debug(`created ${path}`,);
 

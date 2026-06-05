@@ -1,9 +1,9 @@
 import nanoSpawn, { SubprocessError, } from 'nano-spawn';
 
 import {
-  l,
+  logger,
   tagged,
-} from './log.ts';
+} from '@monochromatic-dev/module-logger/ts';
 
 /**
  * Result of a process invocation that did not throw operationally.
@@ -69,7 +69,7 @@ export async function spawnResult(
    */
   const rl = tagged({
     tag: spawnResult.name,
-    l,
+    l: logger,
   },);
   rl.debug(`${command} ${args.join(' ',)}${cwd === undefined ? '' : ` (cwd=${cwd})`}`,);
 

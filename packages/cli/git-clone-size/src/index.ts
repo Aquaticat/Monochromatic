@@ -18,6 +18,11 @@ import {
 import { runSync, } from '@optique/run';
 
 import {
+  logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+
+import {
   shouldColor,
   type ColorMode,
 } from './color.ts';
@@ -26,10 +31,6 @@ import {
   DEFAULT_MAX_PACK_BYTES,
   DEFAULT_MAX_PROBE_SECONDS,
 } from './constants.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import { serializeSnapshot, } from './serialize.ts';
 import { detectSource, } from './source.ts';
 import {
@@ -112,7 +113,7 @@ const args = runSync(
  */
 const rl = tagged({
   tag: 'main',
-  l,
+  l: logger,
 },);
 
 /**

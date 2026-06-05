@@ -1,9 +1,10 @@
 import { join, } from 'node:path';
 
 import {
-  l,
+  logger,
   tagged,
-} from './log.ts';
+} from '@monochromatic-dev/module-logger/ts';
+
 import { spawnResult, } from './spawn.ts';
 
 /**
@@ -69,7 +70,7 @@ export async function partialCommitCount(
    */
   const rl = tagged({
     tag: partialCommitCount.name,
-    l,
+    l: logger,
   },);
 
   /**
@@ -200,7 +201,7 @@ export async function partialChurn(
    */
   const rl = tagged({
     tag: partialChurn.name,
-    l,
+    l: logger,
   },);
 
   /**

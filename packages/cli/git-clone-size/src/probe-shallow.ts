@@ -1,9 +1,10 @@
 import { join, } from 'node:path';
 
 import {
-  l,
+  logger,
   tagged,
-} from './log.ts';
+} from '@monochromatic-dev/module-logger/ts';
+
 import { objectsDirSize, } from './objects-size.ts';
 import { spawnResult, } from './spawn.ts';
 
@@ -51,7 +52,7 @@ export async function cloneShallow(
    */
   const rl = tagged({
     tag: cloneShallow.name,
-    l,
+    l: logger,
   },);
 
   /**

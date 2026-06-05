@@ -1,14 +1,15 @@
 import {
+  logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+
+import {
   DEEPEN_STEP_COMMITS,
   DEEPEN_STEPS,
   DEFAULT_MAX_DEEPEN_COMMITS,
   MIN_MARGINAL_BYTES,
 } from './constants.ts';
 import { clamp, } from './format.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 import { objectsDirSize, } from './objects-size.ts';
 import { spawnResult, } from './spawn.ts';
 
@@ -166,7 +167,7 @@ export async function probeDeepen(
    */
   const rl = tagged({
     tag: probeDeepen.name,
-    l,
+    l: logger,
   },);
 
   /**

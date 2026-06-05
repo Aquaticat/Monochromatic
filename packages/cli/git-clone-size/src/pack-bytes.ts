@@ -1,13 +1,13 @@
 import { spawn as spawnChild, } from 'node:child_process';
 import { once, } from 'node:events';
 
+import {
+  logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { CloneSizeError, } from './errors.ts';
-import {
-  l,
-  tagged,
-} from './log.ts';
 
 /**
  * Streams `git rev-list ... | git pack-objects --stdout` and counts the exact
@@ -54,7 +54,7 @@ export async function measurePackBytes(
    */
   const rl = tagged({
     tag: measurePackBytes.name,
-    l,
+    l: logger,
   },);
 
   /**

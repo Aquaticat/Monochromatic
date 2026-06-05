@@ -1,9 +1,10 @@
 import { stat, } from 'node:fs/promises';
 
 import {
-  l,
+  logger,
   tagged,
-} from './log.ts';
+} from '@monochromatic-dev/module-logger/ts';
+
 import { spawnResult, } from './spawn.ts';
 
 /**
@@ -404,7 +405,7 @@ export async function detectSource(
    */
   const rl = tagged({
     tag: detectSource.name,
-    l,
+    l: logger,
   },);
 
   if ((input !== undefined) && isRemoteInput({ input, },)) {
