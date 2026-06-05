@@ -2,6 +2,51 @@ absent because it was eaten by cat
 absent-because-it-was-eaten-by-cat
 file log.jsonl exists
 The man who lost his name
+File absent: eaten by cat
+zero things to average by
+github token expired
+editor IS IntelliJ Idea
+editor IS Zed
+not built by Vite
+prompt canceled by user
+fetch aborted by user
+socket closed by peer
+stdout pipe closed
+stdin pipe closed
+HTTP 304 not modified
+HTTP 401 from GitHub
+OAuth token expired
+rate limit reset soon
+port 5173 already used
+git HEAD is unborn
+git branch no upstream
+origin remote not set
+not inside Git worktree
+package.json parse failed
+tsconfig parse failed
+SVG width attr missing
+PNG header invalid
+CSS import cycle found
+HTML tag not closed
+MDX authored date missing
+SQLite row id 42 absent
+image diff API key absent
+Gemini key absent
+Chrome clipboard denied
+Wayland clipboard denied
+macOS pasteboard denied
+HOME env var unset
+PATH has no bun
+node_modules dir absent
+pnpm store absent
+bun.lockb absent
+URL is file scheme
+URL is not http scheme
+Zed is active editor
+IntelliJ is active editor
+Vite did not build file
+average divisor is zero
+cat ate expected file
 tsdoc/line-has-no-leading-tag
 tsdoc/node-has-no-tsdoc-comment
 penpot/no-counterpart-for-figma-input
