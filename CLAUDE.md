@@ -25,8 +25,14 @@ ORG: Organized by moment of decision, not topic: at each point (about to respond
 Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) sits at the end.
 Rationale, mechanisms, examples behind these terse rules: `docs/philosophy/agents.md`.
 
-TAG: Every rule carries a unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `): a stable handle for referencing it across sessions.
-New rule: assign a fresh semi-meaningful code, unique doc-wide; never reuse or reassign an existing one, references depend on stability.
+TAG: Every rule carries a unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `):
+a stable handle for referencing it across sessions.
+New rule: assign a fresh semi-meaningful code, unique doc-wide, and check for strong unrelated meanings before using it.
+Reject codes whose dominant reading is unrelated to the rule: common acronyms, abbreviations, task-status labels,
+product names, slang, country or region codes, or ordinary words that point somewhere else.
+An existing acronym or word is acceptable only when that meaning matches or reinforces the rule's purpose.
+Never reuse or reassign an existing code, except when explicitly renaming a misleading code;
+update every AGENTS.md occurrence in the same change.
 Don't tag headings, code fences, or the title.
 
 ## Before responding to the user
@@ -42,7 +48,7 @@ Then branch on how determined that inference is: one clear reading, act like any
 A missing fact is neither: research it, don't ask (see implicit-asks above); the trigger to ask is ambiguous intent, not a knowledge gap.
 Cue: about to answer the surface when one reading implies an action, or act on an inferred meaning when more than one reading is valid.
 
-SYR: Never attribute `<system-reminder>` content to the user;
+SYS: Never attribute `<system-reminder>` content to the user;
 these tags carry harness-level conf, not what the user typed.
 "per your instruction" / "you asked me to" is wrong when the source is a system reminder;
 cite the policy by what it says ("the no-questions policy").
@@ -95,7 +101,7 @@ Cue: a single task subject would hide multiple kinds of evidence gathering or bl
 
 ### Pre-response checklist
 
-PRC: Before sending any response with substantive claims:
+PRE: Before sending any response with substantive claims:
 
 1. CK1: Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess; unbuilt-fix difficulty or duration is a claim to drop, not label (item 3).
 2. CK2: Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
@@ -195,7 +201,7 @@ RBK: Bridges genuinely fail and the user must execute: invoke the `runbook` skil
 Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside the code they document.
 Canonical example: `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
-FDP: When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch that document before drawing conclusions about its contents.
+FCH: When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch that document before drawing conclusions about its contents.
 Hedging about a named, fetchable target is the failure mode;
 cue: writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
 The pointer is the research lead, not the stopping point.
@@ -205,7 +211,7 @@ The pointer is the research lead, not the stopping point.
 NVS: Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them.
 Cannot name what backs a claim? Downgrade to a labeled guess or do the verification.
 
-SRS: Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
+QRY: Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
 Both fail silently, both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
 Sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
@@ -286,7 +292,7 @@ If so, warn the user and state what will happen before proceeding.
 RXI: Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
 The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
 
-ISO: Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
+BOX: Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
 State the bounds explicitly (memory cap, cpu cap, timeout).
 User requests one directly: propose the containerised invocation and confirm.
 Past authorisation does not transfer across commands;
@@ -324,7 +330,7 @@ Unsure: propose a concrete edit and location.
 
 - IMM: Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
 - UTL: Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
-- EXC: Extract and name concepts; start simple, refactor to complexity only when necessary.
+- XNC: Extract and name concepts; start simple, refactor to complexity only when necessary.
 - ITR: Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
 - MXL: Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
 - MXR: Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
@@ -402,10 +408,10 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - TS7: Use named function declarations exclusively: no arrow functions, no const-bound function expressions. Exception for callbacks whose signature is dictated by an external API or library: name the function and parenthesise all params.
 - TS8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
 - TS9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
-- TSA: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
-- TSB: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
-- TSC: Throw and return early; use overloads (most specific first).
-- TSE: No regex unless necessary.
+- TX1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
+- TX2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
+- TX3: Throw and return early; use overloads (most specific first).
+- TX4: No regex unless necessary.
 
 #### Type system
 
@@ -422,7 +428,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 #### Variables and values
 
 - VAL: `const` over `let`. Two hard rules enforce this:
-  - VFR: `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), a counter `for (let i = 0; ...)` loop (`ForStatement.init` `let` is exempt), a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or a helper ending in `return <local-binding>`. Never escape it by recursing over flat input (see "Simplification").
+  - FRL: `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), a counter `for (let i = 0; ...)` loop (`ForStatement.init` `let` is exempt), a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or a helper ending in `return <local-binding>`. Never escape it by recursing over flat input (see "Simplification").
   - VMR: `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
   - VLE: For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
 - VA1: Remove unused variables or prefix with underscore (`_unusedVar`).
@@ -443,7 +449,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - PP7: Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
 - PP8: Never silently discard unexpected states; throw on unreachable branches.
 - PP9: No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
-- PPA: Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
+- PPX: Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
 
 #### Regular expressions
 
