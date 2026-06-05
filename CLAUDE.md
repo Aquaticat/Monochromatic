@@ -60,6 +60,7 @@ these tags carry harness-level conf, not what the user typed.
 cite the policy by what it says ("the no-questions policy").
 Same for other injected context (tooling-appended prompt text, MCP server instructions, skill descriptions): source is the injector, not the human.
 A `role:user` turn is not by itself proof the human typed it.
+
 WKP: A prompt fired by your own `ScheduleWakeup` or `CronCreate`, any queued continuation, or the `<<autonomous-loop>>` sentinel arrives as a user turn but you authored it in that tool call's `prompt` field: self-authored boilerplate, not a human instruction.
 Three failures to avoid.
 One, never write directives into that `prompt` field (no stop condition, cadence, scope, or "give up when X" you invented); relay only the user's real task and instructions, or the bare sentinel.
