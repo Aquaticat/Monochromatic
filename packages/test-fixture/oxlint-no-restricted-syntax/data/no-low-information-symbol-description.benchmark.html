@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Symbol description benchmark</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bench-bg: Canvas;
+  --bench-text: CanvasText;
+  --bench-muted: GrayText;
+  --bench-surface: Field;
+  --bench-border: ButtonBorder;
+  --bench-accent: Highlight;
+  --bench-accent-text: HighlightText;
+  --bench-mark: Mark;
+  --bench-mark-text: MarkText;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin-block: 0;
+  margin-inline: 0;
+  background-color: var(--bench-bg);
+  color: var(--bench-text);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  min-block-size: 3rem;
+  min-inline-size: 3rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline-color: var(--bench-accent);
+  outline-offset: 0.125rem;
+  outline-style: solid;
+  outline-width: 0.125rem;
+}
+
+.page {
+  margin-inline: auto;
+  max-inline-size: 96rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+}
+
+.page-header {
+  display: grid;
+  gap: 0.5rem;
+  margin-block-end: 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-block: 0;
+}
+
+.page-subtitle {
+  color: var(--bench-muted);
+  margin-block: 0;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid[data-columns='summary'] {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.grid[data-columns='main'] {
+  grid-template-columns: minmax(18rem, 24rem) 1fr;
+}
+
+.card {
+  background-color: var(--bench-surface);
+  outline-color: var(--bench-border);
+  outline-style: solid;
+  outline-width: 0.0625rem;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  margin-block: 0 0.75rem;
+}
+
+.metric-card {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.metric-label {
+  color: var(--bench-muted);
+}
+
+.controls {
+  display: grid;
+  gap: 1rem;
+}
+
+.control {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.control-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-weight: 650;
+}
+
+.control-value {
+  color: var(--bench-muted);
+}
+
+input[type='range'] {
+  inline-size: 100%;
+}
+
+.preset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+
+th,
+td {
+  border-block-end-color: var(--bench-border);
+  border-block-end-style: solid;
+  border-block-end-width: 0.0625rem;
+  padding-block: 0.45rem;
+  padding-inline: 0.5rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+th {
+  color: var(--bench-muted);
+  font-weight: 650;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.badge {
+  display: inline-block;
+  padding-block: 0.125rem;
+  padding-inline: 0.4rem;
+  outline-color: var(--bench-border);
+  outline-style: solid;
+  outline-width: 0.0625rem;
+}
+
+.badge[data-kind='fail'] {
+  background-color: var(--bench-mark);
+  color: var(--bench-mark-text);
+}
+
+.description-cell {
+  max-inline-size: 38rem;
+  overflow-wrap: anywhere;
+}
+
+.notice {
+  color: var(--bench-muted);
+  margin-block: 0.75rem 0;
+}
+
+@media (max-width: 54rem) {
+  .grid[data-columns='main'] {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="page-header">
+    <h1 class="page-title">Symbol description benchmark</h1>
+    <p class="page-subtitle">
+      Calibration data from <code>packages/test-fixture/oxlint-no-restricted-syntax/data/no-low-information-symbol-description.pass.txt</code> and <code>packages/test-fixture/oxlint-no-restricted-syntax/data/no-low-information-symbol-description.fail.txt</code>.
+      Deflate ratios are embedded from Node <code>deflateRawSync</code> at generation time.
+    </p>
+  </header>
+
+  <section aria-label="Dataset summary" class="grid" data-columns="summary">
+    <article class="card metric-card">
+      <span class="metric-value" id="pass-count">0</span>
+      <span class="metric-label">Known pass descriptions</span>
+    </article>
+    <article class="card metric-card">
+      <span class="metric-value" id="fail-count">0</span>
+      <span class="metric-label">Known fail descriptions</span>
+    </article>
+    <article class="card metric-card">
+      <span class="metric-value" id="error-count">0</span>
+      <span class="metric-label">Errors at selected threshold</span>
+    </article>
+    <article class="card metric-card">
+      <span class="metric-value" id="best-error-count">0</span>
+      <span class="metric-label">Best sweep error count</span>
+    </article>
+  </section>
+
+  <section class="grid" data-columns="main">
+    <aside class="card">
+      <h2 class="card-title">Threshold controls</h2>
+      <div class="controls">
+        <label class="control">
+          <span class="control-label">Minimum length</span>
+          <span class="control-value" id="min-length-value"></span>
+          <input id="min-length" max="31" min="1" type="range" value="13">
+        </label>
+        <label class="control">
+          <span class="control-label">Minimum distinct words</span>
+          <span class="control-value" id="min-distinct-value"></span>
+          <input id="min-distinct" max="8" min="1" type="range" value="4">
+        </label>
+        <label class="control">
+          <span class="control-label">Minimum type-token ratio</span>
+          <span class="control-value" id="min-ttr-value"></span>
+          <input id="min-ttr" max="1" min="0" step="0.05" type="range" value="0.7">
+        </label>
+        <label class="control-row">
+          <input id="use-deflate" type="checkbox">
+          <span class="control-label">Use deflate check</span>
+        </label>
+        <label class="control">
+          <span class="control-label">Minimum deflate ratio</span>
+          <span class="control-value" id="min-deflate-value"></span>
+          <input id="min-deflate" max="1" min="0.8" step="0.05" type="range" value="0.9">
+        </label>
+        <div class="preset-list" aria-label="Presets">
+          <button type="button" data-preset="d3">D3 baseline</button>
+          <button type="button" data-preset="d4">D4 structural</button>
+          <button type="button" data-preset="best">Best sweep</button>
+          <button type="button" data-preset="reset">Reset</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="grid">
+      <article class="card">
+        <h2 class="card-title">Selected threshold result</h2>
+        <p class="notice" id="selected-summary"></p>
+        <div class="table-wrap">
+          <table aria-label="Selected threshold mismatch table">
+            <thead>
+              <tr>
+                <th>Expected</th>
+                <th>Actual</th>
+                <th>Description</th>
+                <th>Length</th>
+                <th>Distinct</th>
+                <th>TTR</th>
+                <th>Deflate</th>
+              </tr>
+            </thead>
+            <tbody id="mismatch-body"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="card-title">Top threshold sweep results</h2>
+        <p class="notice">Sorted by total errors, then false-fails, then misses.</p>
+        <div class="table-wrap">
+          <table aria-label="Top threshold sweep results">
+            <thead>
+              <tr>
+                <th>Threshold</th>
+                <th>Errors</th>
+                <th>False-fail pass</th>
+                <th>Missed fail</th>
+              </tr>
+            </thead>
+            <tbody id="sweep-body"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="card-title">Dataset</h2>
+        <div class="table-wrap">
+          <table aria-label="Dataset metrics">
+            <thead>
+              <tr>
+                <th>Expected</th>
+                <th>Description</th>
+                <th>Length</th>
+                <th>Words</th>
+                <th>Distinct</th>
+                <th>TTR</th>
+                <th>Deflate</th>
+              </tr>
+            </thead>
+            <tbody id="dataset-body"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </section>
+</main>
+<script>
+const entries = [{"expected":"pass","description":"absent because it was eaten by cat","length":34,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.0588235294117647},{"expected":"pass","description":"absent-because-it-was-eaten-by-cat","length":34,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.0588235294117647},{"expected":"pass","description":"file log.jsonl exists","length":21,"wordCount":4,"distinct":4,"ttr":1,"deflate":1.0952380952380953},{"expected":"pass","description":"The man who lost his name","length":25,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.08},{"expected":"pass","description":"tsdoc/line-has-no-leading-tag","length":29,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0689655172413792},{"expected":"pass","description":"tsdoc/node-has-no-tsdoc-comment","length":31,"wordCount":6,"distinct":5,"ttr":0.8333333333333334,"deflate":1},{"expected":"pass","description":"penpot/no-counterpart-for-figma-input","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"penpot/figma-input-has-no-counterpart","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"image-diff/no-description-backend-configured","length":44,"wordCount":6,"distinct":6,"ttr":1,"deflate":1},{"expected":"pass","description":"watch-restart/gitignore-file-unreadable-so-path-filtering-is-disabled","length":69,"wordCount":10,"distinct":10,"ttr":1,"deflate":0.855072463768116},{"expected":"pass","description":"pnpm-lockfile-does-not-match-package-json-dependencies","length":54,"wordCount":8,"distinct":8,"ttr":1,"deflate":0.9074074074074074},{"expected":"pass","description":"javascript-sourcemap-missing-for-generated-stacktrace","length":53,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.9433962264150944},{"expected":"pass","description":"mdx-frontmatter-block-missing-for-page-metadata","length":47,"wordCount":7,"distinct":7,"ttr":1,"deflate":1},{"expected":"pass","description":"app-shell-stylesheet-link-missing-from-rendered-html","length":52,"wordCount":8,"distinct":8,"ttr":1,"deflate":0.9423076923076923},{"expected":"pass","description":"image-diff-thumbnail-unavailable-for-review-card-preview","length":56,"wordCount":8,"distinct":8,"ttr":1,"deflate":0.9285714285714286},{"expected":"pass","description":"browser-clipboard-write-denied-by-permissions-policy","length":52,"wordCount":7,"distinct":7,"ttr":1,"deflate":0.9423076923076923},{"expected":"pass","description":"package-json-manifest-unreadable-because-json-parse-failed","length":58,"wordCount":8,"distinct":7,"ttr":0.875,"deflate":0.8793103448275862},{"expected":"pass","description":"web-worker-terminated-before-image-diff-finished","length":48,"wordCount":7,"distinct":7,"ttr":1,"deflate":0.9375},{"expected":"pass","description":"github-api-repository-metadata-request-timed-out-after-10s","length":58,"wordCount":9,"distinct":9,"ttr":1,"deflate":0.9310344827586207},{"expected":"pass","description":"terminal-exec/no-desktop-entry-file","length":35,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0571428571428572},{"expected":"pass","description":"terminal-exec/executable-not-on-path","length":36,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.9722222222222222},{"expected":"pass","description":"terminal-exec/kdeglobals-file-unreadable","length":40,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.05},{"expected":"pass","description":"terminal-exec/terminal-emulator-not-found","length":41,"wordCount":6,"distinct":5,"ttr":0.8333333333333334,"deflate":0.8536585365853658},{"expected":"pass","description":"model-selection/no-configured-candidate","length":39,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0512820512820513},{"expected":"pass","description":"model-selection/auth-token-missing","length":34,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0588235294117647},{"expected":"pass","description":"model-selection/provider-budget-exhausted","length":41,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.048780487804878},{"expected":"pass","description":"model-selection/slug-has-invalid-shape","length":38,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0526315789473684},{"expected":"pass","description":"messages-demo/draft-finalize-rejected","length":37,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"messages-demo/indexeddb-open-failed","length":35,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0571428571428572},{"expected":"pass","description":"messages-demo/offline-outbox-unavailable","length":40,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.05},{"expected":"pass","description":"messages-demo/identity-record-missing","length":37,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"page-weight/css-file-unreadable","length":31,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.064516129032258},{"expected":"pass","description":"page-weight/html-asset-reference-unresolvable","length":45,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0222222222222221},{"expected":"pass","description":"page-weight/wire-size-header-unavailable","length":40,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.05},{"expected":"pass","description":"deps-cube/github-repository-url-unparseable","length":43,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0465116279069768},{"expected":"pass","description":"deps-cube/package-manifest-fetch-failed","length":39,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0512820512820513},{"expected":"pass","description":"deps-cube/transitive-version-unresolved","length":39,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0512820512820513},{"expected":"pass","description":"deps-cube/repository-language-unknown","length":37,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"catalog-tighten/no-installed-version-found","length":42,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0238095238095237},{"expected":"pass","description":"catalog-tighten/manifest-version-range-unparseable","length":50,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.98},{"expected":"pass","description":"watch-restart/child-process-not-running","length":39,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0512820512820513},{"expected":"pass","description":"watch-restart/debounce-timer-not-started","length":40,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.975},{"expected":"pass","description":"watch-restart/file-too-large-to-hash","length":36,"wordCount":7,"distinct":7,"ttr":1,"deflate":0.9722222222222222},{"expected":"pass","description":"file-enforcer/no-active-config-loaded","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"file-enforcer/staleness-stamp-file-missing","length":42,"wordCount":6,"distinct":5,"ttr":0.8333333333333334,"deflate":1},{"expected":"pass","description":"file-enforcer/package-manager-command-unavailable","length":49,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.9387755102040817},{"expected":"pass","description":"toml-edit/key-path-not-found","length":28,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0714285714285714},{"expected":"pass","description":"toml-edit/path-segment-has-numeric-key","length":38,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.0526315789473684},{"expected":"pass","description":"toml-edit/subtree-does-not-exist","length":32,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0625},{"expected":"pass","description":"jsonc/string-literal-token-not-found","length":36,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0555555555555556},{"expected":"pass","description":"jsonc/no-fast-path-for-node","length":27,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0740740740740742},{"expected":"pass","description":"logger/file-sink-node-modules-not-found","length":39,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.0256410256410255},{"expected":"pass","description":"logger/verbose-state-not-yet-computed","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"logger/sync-verification-already-done","length":37,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"advisor/no-user-prompt-in-context","length":33,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"advisor/config-file-not-found","length":29,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0689655172413792},{"expected":"pass","description":"advisor/message-excluded-from-context","length":37,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"spawn-pi/session-file-not-found","length":31,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.064516129032258},{"expected":"pass","description":"spawn-pi/cli-setup-warning-not-needed","length":37,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"spawn-pi/nothing-to-report","length":26,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0769230769230769},{"expected":"pass","description":"import-attributes/non-string-attribute-node","length":43,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.8604651162790697},{"expected":"pass","description":"import-attributes/query-attribute-not-found","length":43,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.8604651162790697},{"expected":"pass","description":"import-attributes/import-attribute-transform-not-needed","length":55,"wordCount":7,"distinct":6,"ttr":0.8571428571428571,"deflate":0.8},{"expected":"pass","description":"oxlint-stylistic/comma-dangle-token-not-found","length":45,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.0444444444444445},{"expected":"pass","description":"oxlint-stylistic/invocation-spine-stop-node","length":43,"wordCount":6,"distinct":6,"ttr":1,"deflate":1},{"expected":"pass","description":"oxlint-stylistic/chain-flatten-leaf-node","length":40,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.05},{"expected":"pass","description":"rate-limit/invalid-snapshot-value","length":33,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"rate-limit/snapshot-has-invalid-shape","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"image-diff/api-key-not-configured","length":33,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"image-diff/description-provider-unavailable","length":43,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0232558139534884},{"expected":"pass","description":"rss/opml-outline-discarded","length":26,"wordCount":4,"distinct":4,"ttr":1,"deflate":1.0769230769230769},{"expected":"pass","description":"rss/feed-entry-discarded-by-filter","length":34,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0588235294117647},{"expected":"pass","description":"ssg-test/no-authored-date-in-frontmatter","length":40,"wordCount":7,"distinct":7,"ttr":1,"deflate":1.025},{"expected":"pass","description":"ssg-test/git-authored-date-absent","length":33,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"doodle-widget/svg-overlay-not-mounted","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"doodle-widget/undo-snapshot-missing","length":35,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0571428571428572},{"expected":"pass","description":"doodle-widget/no-drawn-segment-selected","length":39,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0512820512820513},{"expected":"pass","description":"aquaticat/svg-attribute-absent","length":30,"wordCount":4,"distinct":4,"ttr":1,"deflate":1.0666666666666667},{"expected":"pass","description":"figma/paint-has-no-penpot-counterpart","length":37,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"figma/component-node-not-convertible-to-penpot","length":46,"wordCount":7,"distinct":7,"ttr":1,"deflate":0.9782608695652174},{"expected":"pass","description":"kv-store/value-absent-for-key","length":29,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0689655172413792},{"expected":"pass","description":"fs-path/project-root-not-discovered","length":35,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0571428571428572},{"expected":"pass","description":"fs-path/node-path-module-unavailable","length":36,"wordCount":6,"distinct":5,"ttr":0.8333333333333334,"deflate":0.9444444444444444},{"expected":"pass","description":"cli-git/outside-linked-worktree","length":31,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.064516129032258},{"expected":"pass","description":"cli-git/realpath-stat-unavailable","length":33,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"cli-git/wrapper-command-succeeded","length":33,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"html-parser/closing-tag-not-found","length":33,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0606060606060606},{"expected":"pass","description":"html-parser/attribute-value-unquoted","length":36,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0555555555555556},{"expected":"pass","description":"css-parser/declaration-block-not-closed","length":39,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0512820512820513},{"expected":"pass","description":"markdown/frontmatter-fence-not-closed","length":37,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.054054054054054},{"expected":"pass","description":"markdown/heading-anchor-already-used","length":36,"wordCount":5,"distinct":5,"ttr":1,"deflate":1.0555555555555556},{"expected":"pass","description":"shell-parser/no-assignment-before-command","length":41,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.048780487804878},{"expected":"pass","description":"shell-parser/command-substitution-not-supported","length":47,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.9787234042553191},{"expected":"pass","description":"test-harness/expected-diagnostic-not-emitted","length":44,"wordCount":6,"distinct":6,"ttr":1,"deflate":1},{"expected":"pass","description":"test-harness/fixture-file-not-found","length":35,"wordCount":6,"distinct":6,"ttr":1,"deflate":1.0571428571428572},{"expected":"pass","description":"cache-layer/cache-record-expired","length":32,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.9375},{"expected":"pass","description":"cache-layer/cache-entry-not-found","length":33,"wordCount":6,"distinct":5,"ttr":0.8333333333333334,"deflate":0.9393939393939394},{"expected":"pass","description":"user-settings/preference-key-not-registered","length":43,"wordCount":6,"distinct":6,"ttr":1,"deflate":0.9767441860465116},{"expected":"pass","description":"user-settings/settings-file-unreadable","length":38,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.868421052631579},{"expected":"fail","description":"meow","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"not-found","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"not found","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"absent","length":6,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"exists","length":6,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"file exists","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"unnamed man","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"What a day! Oh, a day. It is a good day!","length":40,"wordCount":11,"distinct":7,"ttr":0.6363636363636364,"deflate":0.85},{"expected":"fail","description":"tsdoc/no-tag","length":12,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"tsdoc/no-tsdoc","length":14,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.9285714285714286},{"expected":"fail","description":"penpot:skip","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"descriptionAbsent","length":17,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"missing","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"unknown","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"invalid","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"failure","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"error","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"success","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"unset","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"none","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"skip","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"done","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"test","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"secret","length":6,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"discard","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"noop","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"empty","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"default","length":7,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"sentinel","length":8,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.25},{"expected":"fail","description":"value","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"result","length":6,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"state","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"status","length":6,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"thing","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"stuff","length":5,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.4},{"expected":"fail","description":"data","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"not ok","length":6,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"ok","length":2,"wordCount":1,"distinct":1,"ttr":1,"deflate":2},{"expected":"fail","description":"nope","length":4,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.5},{"expected":"fail","description":"yes","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"tmp","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"foo","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"bar","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"baz","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"qux","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"x","length":1,"wordCount":1,"distinct":1,"ttr":1,"deflate":3},{"expected":"fail","description":"s","length":1,"wordCount":1,"distinct":1,"ttr":1,"deflate":3},{"expected":"fail","description":"sym","length":3,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.6666666666666667},{"expected":"fail","description":"symbol","length":6,"wordCount":1,"distinct":1,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"no-value","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no value","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-result","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"no result","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"no-match","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no match","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-node","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"no token","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-file","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"no file","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"not-ready","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"not ready","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"not-valid","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"not valid","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"cache-miss","length":10,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2},{"expected":"fail","description":"cache miss","length":10,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2},{"expected":"fail","description":"argument-absent","length":15,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"argument absent","length":15,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"setting-absent","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"metadata-unset","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"description-absent","length":18,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1111111111111112},{"expected":"fail","description":"description absent","length":18,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1111111111111112},{"expected":"fail","description":"node-absent","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"field-missing","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"field missing","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"item-missing","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"entry-missing","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"value-missing","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"result-missing","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"state-unknown","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"status-unknown","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"invalid-value","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"invalid input","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"unparseable-value","length":17,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"failed-parse","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"parse-error","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"parse error","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"missing-file","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"missing file","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"file-missing","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"file missing","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"file-absent","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"file absent","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"task-not-found","length":14,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"task not found","length":14,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"package-not-found","length":17,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"package not found","length":17,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"config-missing","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"config missing","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"no-config","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"no config","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"no-timer","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no timer","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-abort","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no abort","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-child","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no child","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-parent","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"no parent","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"no-row","length":6,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"no row","length":6,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.3333333333333333},{"expected":"fail","description":"no-text","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"no text","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"no-auth","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"no auth","length":7,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2857142857142858},{"expected":"fail","description":"no-language","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"no language","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"no-cache","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no cache","length":8,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.25},{"expected":"fail","description":"no-manager","length":10,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2},{"expected":"fail","description":"no manager","length":10,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2},{"expected":"fail","description":"skip-node","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"skip node","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"discard-entry","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"discard entry","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"ignore-value","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"ignore value","length":12,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"not-a-data-row","length":14,"wordCount":4,"distinct":4,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"no-static-method-name","length":21,"wordCount":4,"distinct":4,"ttr":1,"deflate":1.0952380952380953},{"expected":"fail","description":"no-optional-escape-no-match","length":27,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":1.0740740740740742},{"expected":"fail","description":"module/not-found","length":16,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.125},{"expected":"fail","description":"module/no-value","length":15,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"module/cache-miss","length":17,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"module/invalid-input","length":20,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1},{"expected":"fail","description":"module/argument-absent","length":22,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.0909090909090908},{"expected":"fail","description":"plugin/no-node","length":14,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"plugin/no-token","length":15,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"plugin/skip","length":11,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1818181818181819},{"expected":"fail","description":"service/unavailable","length":19,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.105263157894737},{"expected":"fail","description":"service/error","length":13,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"app/no-config","length":13,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"app/no-result","length":13,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"app/not-ready","length":13,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1538461538461537},{"expected":"fail","description":"parser/no-match","length":15,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"parser/parse-error","length":18,"wordCount":3,"distinct":3,"ttr":1,"deflate":0.9444444444444444},{"expected":"fail","description":"parser/invalid-token","length":20,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1},{"expected":"fail","description":"loader/missing-file","length":19,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.105263157894737},{"expected":"fail","description":"loader/file-absent","length":18,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1111111111111112},{"expected":"fail","description":"store/cache-miss","length":16,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.125},{"expected":"fail","description":"db/no-row","length":9,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"api/no-response","length":15,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"api/error","length":9,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.2222222222222223},{"expected":"fail","description":"ui/no-selection","length":15,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1333333333333333},{"expected":"fail","description":"ui/no-parent","length":12,"wordCount":3,"distinct":3,"ttr":1,"deflate":1.1666666666666667},{"expected":"fail","description":"file file exists","length":16,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.9375},{"expected":"fail","description":"file exists exists","length":18,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.7777777777777778},{"expected":"fail","description":"missing missing value","length":21,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.8095238095238095},{"expected":"fail","description":"value value missing","length":19,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.8947368421052632},{"expected":"fail","description":"unknown unknown state","length":21,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.8095238095238095},{"expected":"fail","description":"state state unknown","length":19,"wordCount":3,"distinct":2,"ttr":0.6666666666666666,"deflate":0.8947368421052632},{"expected":"fail","description":"day day night moon sun","length":22,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":1.0909090909090908},{"expected":"fail","description":"alpha alpha beta gamma delta","length":28,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.9285714285714286},{"expected":"fail","description":"token token value status result","length":31,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.9354838709677419},{"expected":"fail","description":"missing missing package file entry","length":34,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.8823529411764706},{"expected":"fail","description":"reused prefix reused suffix marker","length":34,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.8529411764705882},{"expected":"fail","description":"this is a good good good description","length":36,"wordCount":7,"distinct":5,"ttr":0.7142857142857143,"deflate":0.7777777777777778},{"expected":"fail","description":"status status status is unknown","length":31,"wordCount":5,"distinct":3,"ttr":0.6,"deflate":0.6774193548387096},{"expected":"fail","description":"a value that is a value","length":23,"wordCount":6,"distinct":4,"ttr":0.6666666666666666,"deflate":0.8695652173913043},{"expected":"fail","description":"what what what happened here","length":28,"wordCount":5,"distinct":3,"ttr":0.6,"deflate":0.7857142857142857},{"expected":"fail","description":"thing that does the thing","length":25,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":1},{"expected":"fail","description":"name of the unnamed name","length":24,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":0.9583333333333334},{"expected":"fail","description":"no no yes maybe later","length":21,"wordCount":5,"distinct":4,"ttr":0.8,"deflate":1.0952380952380953},{"expected":"fail","description":"alpha beta gamma alpha beta","length":27,"wordCount":5,"distinct":3,"ttr":0.6,"deflate":0.8148148148148148},{"expected":"fail","description":"one two one two three","length":21,"wordCount":5,"distinct":3,"ttr":0.6,"deflate":0.8095238095238095},{"expected":"fail","description":"gitignore-absent","length":16,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.125},{"expected":"fail","description":"lockfile-stale","length":14,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1428571428571428},{"expected":"fail","description":"sourcemap-missing","length":17,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"frontmatter-missing","length":19,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.105263157894737},{"expected":"fail","description":"stylesheet-missing","length":18,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1111111111111112},{"expected":"fail","description":"thumbnail-unavailable","length":21,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.0952380952380953},{"expected":"fail","description":"clipboard-denied","length":16,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.125},{"expected":"fail","description":"manifest-unreadable","length":19,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.105263157894737},{"expected":"fail","description":"worker-terminated","length":17,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1176470588235294},{"expected":"fail","description":"network-timeout","length":15,"wordCount":2,"distinct":2,"ttr":1,"deflate":1.1333333333333333}];
+
+const controls = {
+  minLength: document.querySelector('#min-length'),
+  minDistinct: document.querySelector('#min-distinct'),
+  minTtr: document.querySelector('#min-ttr'),
+  useDeflate: document.querySelector('#use-deflate'),
+  minDeflate: document.querySelector('#min-deflate'),
+};
+
+const output = {
+  passCount: document.querySelector('#pass-count'),
+  failCount: document.querySelector('#fail-count'),
+  errorCount: document.querySelector('#error-count'),
+  bestErrorCount: document.querySelector('#best-error-count'),
+  minLengthValue: document.querySelector('#min-length-value'),
+  minDistinctValue: document.querySelector('#min-distinct-value'),
+  minTtrValue: document.querySelector('#min-ttr-value'),
+  minDeflateValue: document.querySelector('#min-deflate-value'),
+  selectedSummary: document.querySelector('#selected-summary'),
+  mismatchBody: document.querySelector('#mismatch-body'),
+  sweepBody: document.querySelector('#sweep-body'),
+  datasetBody: document.querySelector('#dataset-body'),
+};
+
+function numberText(value) {
+  return Number(value).toFixed(2);
+}
+
+function currentThreshold() {
+  return {
+    minLength: Number(controls.minLength.value),
+    minDistinct: Number(controls.minDistinct.value),
+    minTtr: Number(controls.minTtr.value),
+    minDeflate: controls.useDeflate.checked ? Number(controls.minDeflate.value) : null,
+  };
+}
+
+function thresholdLabel(threshold) {
+  const base = [
+    'L' + String(threshold.minLength),
+    'D' + String(threshold.minDistinct),
+    'T' + numberText(threshold.minTtr),
+  ].join('/');
+  if (threshold.minDeflate === null)
+    return base;
+  return base + '/Z' + numberText(threshold.minDeflate);
+}
+
+function predictedPass(entry, threshold) {
+  if (entry.length < threshold.minLength)
+    return false;
+  if (entry.distinct < threshold.minDistinct)
+    return false;
+  if (entry.ttr < threshold.minTtr)
+    return false;
+  if (threshold.minDeflate !== null && entry.deflate < threshold.minDeflate)
+    return false;
+  return true;
+}
+
+function evaluate(threshold) {
+  const falseFails = entries.filter(function isFalseFail(entry) {
+    return entry.expected === 'pass' && !predictedPass(entry, threshold);
+  });
+  const misses = entries.filter(function isMiss(entry) {
+    return entry.expected === 'fail' && predictedPass(entry, threshold);
+  });
+  return {
+    threshold,
+    falseFails,
+    misses,
+    errors: falseFails.length + misses.length,
+  };
+}
+
+function compareResults(left, right) {
+  if (left.errors !== right.errors)
+    return left.errors - right.errors;
+  if (left.falseFails.length !== right.falseFails.length)
+    return left.falseFails.length - right.falseFails.length;
+  if (left.misses.length !== right.misses.length)
+    return left.misses.length - right.misses.length;
+  if (left.threshold.minDistinct !== right.threshold.minDistinct)
+    return left.threshold.minDistinct - right.threshold.minDistinct;
+  return left.threshold.minLength - right.threshold.minLength;
+}
+
+function sweepResults() {
+  const ttrValues = [0, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1];
+  const deflateValues = [null, 0.8, 0.85, 0.9, 0.95, 1];
+  const rows = [];
+  for (let minLength = 1; minLength <= 31; minLength += 1) {
+    for (let minDistinct = 1; minDistinct <= 8; minDistinct += 1) {
+      for (const minTtr of ttrValues) {
+        for (const minDeflate of deflateValues) {
+          rows.push(evaluate({ minLength, minDistinct, minTtr, minDeflate }));
+        }
+      }
+    }
+  }
+  return rows.toSorted(compareResults);
+}
+
+function cell(text) {
+  const element = document.createElement('td');
+  element.textContent = text;
+  return element;
+}
+
+function codeCell(text) {
+  const element = document.createElement('td');
+  const code = document.createElement('code');
+  element.className = 'description-cell';
+  code.textContent = text;
+  element.append(code);
+  return element;
+}
+
+function badgeCell(text) {
+  const element = document.createElement('td');
+  const span = document.createElement('span');
+  span.className = 'badge';
+  span.dataset.kind = text;
+  span.textContent = text;
+  element.append(span);
+  return element;
+}
+
+function replaceRows(body, rows) {
+  body.replaceChildren(...rows);
+}
+
+function mismatchRow(entry, actual) {
+  const row = document.createElement('tr');
+  row.append(
+    badgeCell(entry.expected),
+    badgeCell(actual),
+    codeCell(entry.description),
+    cell(String(entry.length)),
+    cell(String(entry.distinct)),
+    cell(numberText(entry.ttr)),
+    cell(numberText(entry.deflate)),
+  );
+  return row;
+}
+
+function sweepRow(result) {
+  const row = document.createElement('tr');
+  row.append(
+    codeCell(thresholdLabel(result.threshold)),
+    cell(String(result.errors)),
+    cell(String(result.falseFails.length)),
+    cell(String(result.misses.length)),
+  );
+  return row;
+}
+
+function datasetRow(entry) {
+  const row = document.createElement('tr');
+  row.append(
+    badgeCell(entry.expected),
+    codeCell(entry.description),
+    cell(String(entry.length)),
+    cell(String(entry.wordCount)),
+    cell(String(entry.distinct)),
+    cell(numberText(entry.ttr)),
+    cell(numberText(entry.deflate)),
+  );
+  return row;
+}
+
+function setPreset(name, bestResult) {
+  if (name === 'd3') {
+    controls.minLength.value = '13';
+    controls.minDistinct.value = '3';
+    controls.minTtr.value = '0.7';
+    controls.useDeflate.checked = false;
+    controls.minDeflate.value = '0.9';
+  }
+  else if (name === 'd4') {
+    controls.minLength.value = '13';
+    controls.minDistinct.value = '4';
+    controls.minTtr.value = '0.7';
+    controls.useDeflate.checked = false;
+    controls.minDeflate.value = '0.9';
+  }
+  else if (name === 'best') {
+    controls.minLength.value = String(bestResult.threshold.minLength);
+    controls.minDistinct.value = String(bestResult.threshold.minDistinct);
+    controls.minTtr.value = String(bestResult.threshold.minTtr);
+    controls.useDeflate.checked = bestResult.threshold.minDeflate !== null;
+    controls.minDeflate.value = String(bestResult.threshold.minDeflate ?? 0.9);
+  }
+  else {
+    controls.minLength.value = '13';
+    controls.minDistinct.value = '4';
+    controls.minTtr.value = '0.7';
+    controls.useDeflate.checked = false;
+    controls.minDeflate.value = '0.9';
+  }
+}
+
+function render() {
+  const threshold = currentThreshold();
+  const selected = evaluate(threshold);
+  const sweep = sweepResults();
+  const best = sweep[0];
+  const mismatchRows = [
+    ...selected.falseFails.map(function falseFailRow(entry) {
+      return mismatchRow(entry, 'fail');
+    }),
+    ...selected.misses.map(function missRow(entry) {
+      return mismatchRow(entry, 'pass');
+    }),
+  ];
+  output.passCount.textContent = String(entries.filter(function isPass(entry) {
+    return entry.expected === 'pass';
+  }).length);
+  output.failCount.textContent = String(entries.filter(function isFail(entry) {
+    return entry.expected === 'fail';
+  }).length);
+  output.errorCount.textContent = String(selected.errors);
+  output.bestErrorCount.textContent = String(best.errors);
+  output.minLengthValue.textContent = String(threshold.minLength);
+  output.minDistinctValue.textContent = String(threshold.minDistinct);
+  output.minTtrValue.textContent = numberText(threshold.minTtr);
+  output.minDeflateValue.textContent = numberText(Number(controls.minDeflate.value));
+  output.selectedSummary.textContent = thresholdLabel(threshold)
+    + ' gives ' + String(selected.errors) + ' total errors, '
+    + String(selected.falseFails.length) + ' false-failed pass descriptions, and '
+    + String(selected.misses.length) + ' missed fail descriptions.';
+  replaceRows(output.mismatchBody, mismatchRows.length === 0 ? [emptyRow(7, 'No mismatches at this threshold.')] : mismatchRows);
+  replaceRows(output.sweepBody, sweep.slice(0, 24).map(sweepRow));
+  replaceRows(output.datasetBody, entries.map(datasetRow));
+  return best;
+}
+
+function emptyRow(colspan, text) {
+  const row = document.createElement('tr');
+  const element = document.createElement('td');
+  element.colSpan = colspan;
+  element.textContent = text;
+  row.append(element);
+  return row;
+}
+
+function attachEvents() {
+  const best = render();
+  for (const control of Object.values(controls)) {
+    control.addEventListener('input', function rerender() {
+      render();
+    });
+  }
+  for (const button of document.querySelectorAll('[data-preset]')) {
+    button.addEventListener('click', function usePreset(event) {
+      const target = event.currentTarget;
+      setPreset(target.dataset.preset, best);
+      render();
+    });
+  }
+}
+
+attachEvents();
+</script>
+</body>
+</html>
