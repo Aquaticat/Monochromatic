@@ -431,14 +431,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 #### Variables and values
 
-- VAL: `const` over `let`. Two hard rules enforce this:
-  - FRL: `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), a counter `for (let i = 0; ...)` loop (`ForStatement.init` `let` is exempt), a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or a helper ending in `return <local-binding>`. Never escape it by recursing over flat input (see "Simplification").
-  - VMR: `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
-  - VLE: For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
-- VA1: Remove unused variables or prefix with underscore (`_unusedVar`).
-- VA2: No single-letter variables (exceptions: math formulas, and loop counters like `i` in a `for` statement).
 - VA3: Functional approaches over loops; `for...of` when iteration is unavoidable.
-- VA4: Avoid deprecated features (`substring()`/`slice()` over `substr()`).
 - VA5: `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
 - VA6: Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`.
 
