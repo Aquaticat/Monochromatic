@@ -17,12 +17,6 @@ browser-clipboard-write-denied-by-permissions-policy
 package-json-manifest-unreadable-because-json-parse-failed
 web-worker-terminated-before-image-diff-finished
 github-api-repository-metadata-request-timed-out-after-10s
-schema-cache-miss
-package-json-absent
-package-export-missing
-server-port-unavailable
-sqlite-row-missing
-http-response-aborted
 terminal-exec/no-desktop-entry-file
 terminal-exec/executable-not-on-path
 terminal-exec/kdeglobals-file-unreadable
