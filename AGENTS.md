@@ -384,7 +384,6 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 #### Standards
 
-- ST1: Adhere to Oxlint, dprint confs.
 - ST2: Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
 - ST3: Cross-package workspace imports must resolve to TypeScript source, not built output.
 - ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
