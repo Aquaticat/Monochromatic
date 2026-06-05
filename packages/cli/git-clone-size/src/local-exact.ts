@@ -5,20 +5,29 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import { DEFAULT_MAX_PACK_BYTES, } from './constants.ts';
+import {
+  isMeasured,
+  UNMEASURED,
+  type Measured,
+} from './measure.ts';
 import { objectsDirSize, } from './objects-size.ts';
 import { measurePackBytes, } from './pack-bytes.ts';
 import { spawnResult, } from './spawn.ts';
 import type { Confidence, } from './types.ts';
 
 /**
- * Exact (or size-pack proxy) measurement of a complete local repository.
+ * Exact (or size-pack proxy) measurement of a complete local repository. Byte
+ * fields are absent when their measurement could not be obtained: the caller
+ * omits the corresponding signal rather than recording a fabricated zero. A
+ * missing `fullBytes` means no full-clone size could be measured at all, so no
+ * local estimator is contributed and the stream degrades to its prior.
  */
 export type LocalExactResult = {
-  readonly fullBytes: number;
-  readonly shallowBytes: number;
+  readonly fullBytes?: number;
+  readonly shallowBytes?: number;
   readonly confidence: Confidence;
   readonly basis: string;
-  readonly footprintBytes: number;
+  readonly footprintBytes?: number;
 };
 
 /**
@@ -59,14 +68,15 @@ const PACK_ARGS: readonly string[] = [
  *
  * @param path - repository directory
  *
- * @returns packed object-store bytes, or 0 when unavailable
+ * @returns packed object-store bytes (zero is a valid packed size), or
+ *   {@link UNMEASURED} when `count-objects` could not report it
  *
  * @example
  * ```ts
  * const bytes = await countObjectsSizePack({ path: '/repo' });
  * ```
  */
-export async function countObjectsSizePack({ path, }: { readonly path: string; },): Promise<number> {
+export async function countObjectsSizePack({ path, }: { readonly path: string; },): Promise<Measured> {
   /**
    * Captured `count-objects -v` report and exit code.
    */
@@ -83,7 +93,7 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
     ],
   },);
   if (exitCode !== 0)
-    return 0;
+    return UNMEASURED;
   /**
    * `size-pack: <KiB>` line value, parsed by splitting on the colon.
    */
@@ -93,7 +103,7 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
       return text.startsWith('size-pack:',);
     },);
   if (line === undefined)
-    return 0;
+    return UNMEASURED;
   /**
    * KiB figure after the colon.
    */
@@ -103,23 +113,39 @@ export async function countObjectsSizePack({ path, }: { readonly path: string; }
       ?? '').trim(),
     10,
   );
-  return Number.isFinite(kib,) ? kib * BYTES_PER_KIB : 0;
+  return Number.isFinite(kib,) ? kib * BYTES_PER_KIB : UNMEASURED;
 }
 
 /**
- * Measures the exact shallow tip pack for a local repo. Cheap even on huge
- * repos, so it runs on both the exact and size-pack-fallback paths.
+ * Best-effort measure of the shallow tip pack for a local repo. Cheap even on
+ * huge repos, so it runs on every path. Degrades to {@link UNMEASURED} rather
+ * than throwing: an empty, unborn, or timing-stalled tip can fail the pack, and
+ * the never-refuse contract needs a result the caller can fold into a snapshot,
+ * not a rejection that would crash the whole stream.
  *
  * @param path - repository directory
  *
- * @returns tip pack bytes
+ * @returns tip pack bytes, or {@link UNMEASURED} when the tip cannot be packed
  */
-async function measureTip({ path, }: { readonly path: string; },): Promise<number> {
-  return await measurePackBytes({
-    cwd: path,
-    revListArgs: TIP_REV_LIST,
-    packArgs: PACK_ARGS,
+async function measureTip({ path, }: { readonly path: string; },): Promise<Measured> {
+  /**
+   * Tagged logger naming the best-effort tip measurement.
+   */
+  const rl = tagged({
+    tag: measureTip.name,
+    l: logger,
   },);
+  try {
+    return await measurePackBytes({
+      cwd: path,
+      revListArgs: TIP_REV_LIST,
+      packArgs: PACK_ARGS,
+    },);
+  }
+  catch (error: unknown) {
+    rl.debug(`tip pack measurement failed (${String(error,)}); shallow tip unmeasured`,);
+    return UNMEASURED;
+  }
 }
 
 /**
@@ -161,46 +187,57 @@ export async function localExact(
 
   /**
    * Raw on-disk store footprint, a separate explicitly-labeled secondary metric
-   * (NOT the full-clone size: it can include unreachable or alternate objects).
+   * (NOT the full-clone size: it can include unreachable or alternate objects);
+   * {@link UNMEASURED} when the store cannot be sized.
    */
-  const footprintBytes = await objectsDirSize({ repoPath: path, },);
+  const footprint = await objectsDirSize({ repoPath: path, },);
 
   /**
-   * Packed size proxy, used to gate the heavy exact pack.
+   * Packed size proxy, used to gate the heavy exact pack; {@link UNMEASURED}
+   * when `count-objects` could not report it.
    */
-  const sizePackBytes = await countObjectsSizePack({ path, },);
+  const sizePack = await countObjectsSizePack({ path, },);
 
-  if (sizePackBytes > maxPackBytes) {
-    rl.debug(`repo size-pack ${String(sizePackBytes,)}B exceeds cap ${String(maxPackBytes,)}B; size-pack proxy`,);
+  /**
+   * Shallow tip pack, measured once up front (best-effort, never throws) and
+   * reused by every return path so no fallback re-invokes a call that can fail.
+   */
+  const tip = await measureTip({ path, },);
+
+  /**
+   * Secondary sizes carried only when measured, so an absent measurement is
+   * omitted from the result rather than recorded as a fabricated zero.
+   */
+  const optionalSizes = {
+    ...isMeasured(footprint,) ? { footprintBytes: footprint, } : {},
+    ...isMeasured(tip,) ? { shallowBytes: tip, } : {},
+  };
+
+  if (isMeasured(sizePack,) && (sizePack > maxPackBytes)) {
+    rl.debug(`repo size-pack ${String(sizePack,)}B exceeds cap ${String(maxPackBytes,)}B; size-pack proxy`,);
     return {
       basis: 'local count-objects size-pack (huge-repo fallback)',
       confidence: 'high',
-      footprintBytes,
-      fullBytes: sizePackBytes,
-      shallowBytes: await measureTip({ path, },),
+      fullBytes: sizePack,
+      ...optionalSizes,
     };
   }
 
   try {
     /**
-     * Tip pack first (cheap), then the full pack (the heavy step).
-     */
-    const shallowBytes = await measureTip({ path, },);
-    /**
-     * Full clone-reachable pack, near-exact for a fresh clone.
+     * Full clone-reachable pack, near-exact for a fresh clone (the heavy step).
      */
     const fullBytes = await measurePackBytes({
       cwd: path,
       revListArgs: FULL_REV_LIST,
       packArgs: PACK_ARGS,
     },);
-    rl.debug(`local exact: full=${String(fullBytes,)}B shallow=${String(shallowBytes,)}B`,);
+    rl.debug(`local exact: full=${String(fullBytes,)}B shallow=${isMeasured(tip,) ? String(tip,) : 'n/a'}B`,);
     return {
       basis: 'local pack-objects (exact)',
       confidence: 'very high',
-      footprintBytes,
       fullBytes,
-      shallowBytes,
+      ...optionalSizes,
     };
   }
   catch (error: unknown) {
@@ -208,9 +245,8 @@ export async function localExact(
     return {
       basis: 'local count-objects size-pack (pack-objects failed)',
       confidence: 'high',
-      footprintBytes,
-      fullBytes: sizePackBytes,
-      shallowBytes: await measureTip({ path, },),
+      ...isMeasured(sizePack,) ? { fullBytes: sizePack, } : {},
+      ...optionalSizes,
     };
   }
 }

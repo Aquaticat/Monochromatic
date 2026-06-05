@@ -10,6 +10,7 @@ import {
   MIN_MARGINAL_BYTES,
 } from './constants.ts';
 import { clamp, } from './format.ts';
+import { isMeasured, } from './measure.ts';
 import { objectsDirSize, } from './objects-size.ts';
 import { spawnResult, } from './spawn.ts';
 
@@ -171,11 +172,21 @@ export async function probeDeepen(
   },);
 
   /**
+   * Baseline object-store size before any deepening; unmeasurable here means no
+   * marginal can be derived, so the probe yields nothing rather than anchoring
+   * on a fabricated zero.
+   */
+  const baseBytes = await objectsDirSize({ repoPath: clonePath, },);
+  if (!isMeasured(baseBytes,)) {
+    rl.debug('deepen base object store unmeasured',);
+    return NO_DEEPEN;
+  }
+  /**
    * Side-effecting cursor over the deepen walk: latest commit count and bytes.
    */
   const state = {
     commits: await countCommits({ clonePath, },),
-    bytes: await objectsDirSize({ repoPath: clonePath, },),
+    bytes: baseBytes,
   };
   /**
    * Per-step marginal bytes-per-commit samples.
@@ -211,6 +222,8 @@ export async function probeDeepen(
      * Object-store bytes after this deepen step.
      */
     const bytes = await objectsDirSize({ repoPath: clonePath, },);
+    if (!isMeasured(bytes,))
+      break;
     /**
      * New commits gained this step; non-positive means history root reached.
      */
@@ -247,9 +260,10 @@ export async function probeDeepen(
    */
   const repackedBytes = await objectsDirSize({ repoPath: clonePath, },);
   /**
-   * Repacked/raw ratio, the incremental-pack bias term, clamped sanely.
+   * Repacked/raw ratio, the incremental-pack bias term, clamped sanely; an
+   * unmeasurable repacked size disables the correction (factor 1).
    */
-  const biasFactor = rawBytes > 0
+  const biasFactor = (isMeasured(repackedBytes,) && (rawBytes > 0))
     ? clamp({
       value: repackedBytes / rawBytes,
       min: MIN_BIAS_FACTOR,

@@ -5,14 +5,17 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { isMeasured, } from './measure.ts';
 import { objectsDirSize, } from './objects-size.ts';
 import { spawnResult, } from './spawn.ts';
 
 /**
- * Outcome of the depth-1 shallow clone probe.
+ * Outcome of the depth-1 shallow clone probe. `shallowBytes` is present only
+ * when `ok`; a failed clone or an unreadable object store leaves it absent
+ * rather than recording a fabricated zero.
  */
 export type ShallowResult = {
-  readonly shallowBytes: number;
+  readonly shallowBytes?: number;
   readonly clonePath: string;
   readonly ok: boolean;
 };
@@ -84,7 +87,6 @@ export async function cloneShallow(
   if (exitCode !== 0) {
     rl.debug(`shallow clone failed: ${stderr}`,);
     return {
-      shallowBytes: 0,
       clonePath,
       ok: false,
     };
@@ -94,6 +96,13 @@ export async function cloneShallow(
    * Compressed tip object-store size after the depth-1 clone.
    */
   const shallowBytes = await objectsDirSize({ repoPath: clonePath, },);
+  if (!isMeasured(shallowBytes,)) {
+    rl.debug('shallow tip object store unmeasured',);
+    return {
+      clonePath,
+      ok: false,
+    };
+  }
   rl.debug(`shallow tip object store: ${String(shallowBytes,)} bytes`,);
   return {
     shallowBytes,

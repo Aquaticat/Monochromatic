@@ -153,7 +153,9 @@ async function* estimateLocal(
   },);
 
   /**
-   * Exact (or size-pack proxy) local measurement.
+   * Exact (or size-pack proxy) local measurement. Byte fields are omitted when
+   * unmeasurable, so a degenerate repo degrades to the prior instead of
+   * recording a fabricated zero or crashing the stream.
    */
   const result = await localExact({
     path: source.path,
@@ -161,12 +163,14 @@ async function* estimateLocal(
   },);
   state.signals = {
     ...state.signals,
-    local: {
-      basis: result.basis,
-      confidence: result.confidence,
-      fullBytes: result.fullBytes,
+    ...result.fullBytes === undefined ? {} : {
+      local: {
+        basis: result.basis,
+        confidence: result.confidence,
+        fullBytes: result.fullBytes,
+      },
     },
-    shallowBytes: result.shallowBytes,
+    ...result.shallowBytes === undefined ? {} : { shallowBytes: result.shallowBytes, },
   };
   yield snapshotOf({
     signals: state.signals,

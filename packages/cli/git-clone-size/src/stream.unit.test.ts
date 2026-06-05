@@ -71,6 +71,22 @@ function makeRepo(commits: number): DisposableDir {
   };
 }
 
+/**
+ * Creates a self-cleaning throwaway repo with an unborn HEAD (no commits).
+ *
+ * @returns disposable repository handle
+ */
+function makeUnbornRepo(): DisposableDir {
+  const path = mkdtempSync(join(tmpdir(), 'gcs-stream-unborn-'));
+  execFileSync('git', ['init', '-q', path,]);
+  return {
+    path,
+    [Symbol.dispose]() {
+      rmSync(path, { recursive: true, force: true, });
+    },
+  };
+}
+
 await describe({
   name: estimate.name,
   children: [
@@ -91,6 +107,22 @@ await describe({
         expect(last?.full.confidence).toBe('very high');
         expect(last?.ratio?.point).toBeGreaterThan(0);
         expect(last?.pending).toEqual([]);
+      },
+    }),
+
+    it({
+      name: 'streams snapshots for an unborn-HEAD repo without rejecting',
+      fn: async ({ expect, }) => {
+        using repo = makeUnbornRepo();
+        const snapshots: EstimateSnapshot[] = [];
+        for await (const snapshot of estimate({ source: { kind: 'local', path: repo.path, }, options: OPTIONS, })) {
+          snapshots.push(snapshot);
+        }
+        expect(snapshots.length).toBe(2);
+        const last = snapshots.at(-1,);
+        expect(last?.done).toBe(true);
+        expect(last?.shallow).toBeUndefined();
+        expect(last?.ratio).toBeUndefined();
       },
     }),
   ],

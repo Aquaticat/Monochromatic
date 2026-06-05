@@ -16,6 +16,7 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   it,
@@ -25,6 +26,7 @@ import {
   countObjectsSizePack,
   localExact,
 } from './local-exact.ts';
+import { isMeasured, } from './measure.ts';
 
 /**
  * Sums the byte size of every `*.pack` file under a repo's pack directory,
@@ -93,10 +95,12 @@ await describe({
       fn: async ({ expect, }) => {
         using repo = makeRepo(6);
         const result = await localExact({ path: repo.path, });
+        const fullBytes = nonNullishOrThrow(result.fullBytes,);
+        const shallowBytes = nonNullishOrThrow(result.shallowBytes,);
         expect(result.confidence).toBe('very high');
-        expect(result.fullBytes).toBeGreaterThan(0);
-        expect(result.shallowBytes).toBeGreaterThan(0);
-        expect(result.fullBytes).toBeGreaterThanOrEqual(result.shallowBytes);
+        expect(fullBytes).toBeGreaterThan(0);
+        expect(shallowBytes).toBeGreaterThan(0);
+        expect(fullBytes).toBeGreaterThanOrEqual(shallowBytes);
       },
     }),
 
@@ -107,11 +111,25 @@ await describe({
         using refParent = disposableDir('gcs-ref-');
         const reference = join(refParent.path, 'ref.git');
         const result = await localExact({ path: repo.path, });
+        const fullBytes = nonNullishOrThrow(result.fullBytes,);
         execFileSync('git', ['clone', '--bare', '-q', `file://${repo.path}`, reference,]);
         execFileSync('git', ['-C', reference, 'repack', '-adq',]);
-        const ratio = result.fullBytes / packBytes(reference);
+        const ratio = fullBytes / packBytes(reference);
         expect(ratio).toBeGreaterThan(0.8);
         expect(ratio).toBeLessThan(1.25);
+      },
+    }),
+
+    it({
+      name: 'never rejects on an unborn HEAD, omitting the unmeasurable shallow tip',
+      fn: async ({ expect, }) => {
+        using repo = disposableDir('gcs-unborn-');
+        execFileSync('git', ['init', '-q', repo.path,]);
+        const result = await localExact({ path: repo.path, });
+        const fullBytes = nonNullishOrThrow(result.fullBytes,);
+        expect(result.shallowBytes).toBeUndefined();
+        expect(fullBytes).toBeGreaterThanOrEqual(0);
+        expect(fullBytes).toBeLessThan(1_024);
       },
     }),
   ],
@@ -126,7 +144,7 @@ await describe({
         using repo = makeRepo(3);
         execFileSync('git', ['-C', repo.path, 'repack', '-adq',]);
         const bytes = await countObjectsSizePack({ path: repo.path, });
-        expect(bytes).toBeGreaterThanOrEqual(0);
+        expect(isMeasured(bytes,) && (bytes >= 0)).toBe(true);
       },
     }),
   ],

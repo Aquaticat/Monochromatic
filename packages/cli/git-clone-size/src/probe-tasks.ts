@@ -83,7 +83,8 @@ export async function shallowSignal(
    * Resolved shallow clone result.
    */
   const shallow = await shallowPromise;
-  if ((!shallow.ok) || (shallow.shallowBytes <= 0))
+  if ((!shallow.ok) || (shallow.shallowBytes === undefined)
+    || (shallow.shallowBytes <= 0))
     return {
       kind: 'none',
       which: 'shallow',
