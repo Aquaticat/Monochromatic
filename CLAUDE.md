@@ -262,7 +262,7 @@ DNF: Discover something not immediately obvious to a future reader: document it 
 
 ### Visible terminal spawning
 
-Spawn something in another terminal, window, or session: use a real terminal launcher.
+VTS: Spawn something in another terminal, window, or session: use a real terminal launcher.
 Arbitrary commands, including Codex: `terminal-exec -- <command> ...`.
 `spawn-claude` only for Claude Code child sessions.
 `spawn_agent` is not an OS terminal;
@@ -270,14 +270,14 @@ a PTY/TTY is not a visible terminal emulator window.
 Never probe `terminal-exec` with `--help`;
 read its README or src, since unknown options are ignored and it opens a terminal.
 
-Never wrap routine verification commands in an external `timeout` binary.
+TMO: Never wrap routine verification commands in an external `timeout` binary.
 Use the command tool's session/polling first;
 a process truly remaining after producing useful output: inspect the PID, stop that stale process.
 Reserve external timeout wrappers for commands whose behavior is being tested, or with a known unbounded runtime and no narrower kill mechanism.
 
-Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
+RGP: Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 
-Clone a package's git repo under `/tmp/agent/` whenever investigating src code.
+CLN: Clone a package's git repo under `/tmp/agent/` whenever investigating src code.
 Before first use, ensure the root exists with private permissions:
 `mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
 Use `gh repo clone <repo> /tmp/agent/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
@@ -288,32 +288,32 @@ writes, bash commands, secret-looking paths, and symlink escapes still go throug
 
 ### Long-form flags
 
-Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
+LFF: Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
 Writing the long form forces knowing what it does, where short-flag muscle memory fails.
 
-`rg` is the canonical trap: ripgrep recurses by default, so `-r` means `--replace`, not grep's recursive `-r`; a grep-reflex `rg -rl`/`-ir` silently rewrites matches in the output instead of recursing. Long form removes the trap.
+RGT: `rg` is the canonical trap: ripgrep recurses by default, so `-r` means `--replace`, not grep's recursive `-r`; a grep-reflex `rg -rl`/`-ir` silently rewrites matches in the output instead of recursing. Long form removes the trap.
 
-Where a flag has no long-form spelling the short flag stays;
+LF2: Where a flag has no long-form spelling the short flag stays;
 `--` argument separators (`mise watch -- task`) are unaffected.
 
 ### Bash output path collapse
 
-Never treat `~` in Bash tool output as a literal tilde;
+BOP: Never treat `~` in Bash tool output as a literal tilde;
 it is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook (display-only, filesystem values unchanged).
 Account for it when debugging path issues, before concluding the path is wrong.
 Skip the filter for one command: include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 
 ### Physical-harm consideration
 
-Before any action, consider whether it could physically harm a human (blasting audio volume, flashing content, unexpected hardware activation).
+HRM: Before any action, consider whether it could physically harm a human (blasting audio volume, flashing content, unexpected hardware activation).
 If so, warn the user and state what will happen before proceeding.
 
 ### Resource-exhaustion isolation
 
-Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
+RXI: Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
 The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
 
-Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
+ISO: Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
 State the bounds explicitly (memory cap, cpu cap, timeout).
 User requests one directly: propose the containerised invocation and confirm.
 Past authorisation does not transfer across commands;
@@ -321,7 +321,7 @@ each heavy run needs an isolated environment.
 
 ### Destructive command ban
 
-Never execute or instruct another agent to execute extremely destructive commands, even as guardrail tests, e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
+DCB: Never execute or instruct another agent to execute extremely destructive commands, even as guardrail tests, e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
 Guardrails can fail;
 a catastrophic command must not appear in instructions to other agents, subshells, or generated scripts, whatever the intent.
 Verifying a guardrail: use moderately dangerous commands (e.g. `sudo apt-get install`).
@@ -330,158 +330,158 @@ Verifying a guardrail: use moderately dangerous commands (e.g. `sudo apt-get ins
 
 ### Match action scope to the request verb
 
-Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "look at", "analyze", "investigate") request a deliberation.
+VRB: Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "look at", "analyze", "investigate") request a deliberation.
 The deliverable is the answer; don't also apply the fixes the answer implies.
 Action verbs ("fix", "implement", "apply", "do", "change", "add", "remove", "update", "refactor") authorize the action.
 
-This holds in Auto Mode: its "prefer action over planning" applies to executing the requested action, not expanding scope;
+AUT: This holds in Auto Mode: its "prefer action over planning" applies to executing the requested action, not expanding scope;
 not authorization to act on adjacent decisions the user has not made.
 
-Verb ambiguous: default to the narrower interpretation, propose the broader action explicitly.
+VR2: Verb ambiguous: default to the narrower interpretation, propose the broader action explicitly.
 
 ### Act, don't annotate
 
-Move changes where they belong immediately: different file, new file, gitignore entry.
+ANN: Move changes where they belong immediately: different file, new file, gitignore entry.
 Unsure: propose a concrete edit and location.
 
 ### Cross-runtime and scripts
 
-- Prefer cross-runtime patterns instead of Bun-specific implementations.
-- Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
-- Pin tool versions only with clear justification and a comment explaining why.
-- Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions, to prevent recursive token burn.
+- XRT: Prefer cross-runtime patterns instead of Bun-specific implementations.
+- SCR: Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
+- PIN: Pin tool versions only with clear justification and a comment explaining why.
+- SPG: Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions, to prevent recursive token burn.
 
 ### Simplification
 
-- Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
-- Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
-- Extract and name concepts; start simple, refactor to complexity only when necessary.
-- Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
-- Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
-- Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
+- IMM: Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
+- UTL: Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
+- EXC: Extract and name concepts; start simple, refactor to complexity only when necessary.
+- ITR: Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
+- MXL: Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
+- MXR: Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
 
 ### Linting
 
-- Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
-- Treat each lint finding as a design signal, not a checkbox. Name the rule's real intent,
+- LN1: Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
+- LN2: Treat each lint finding as a design signal, not a checkbox. Name the rule's real intent,
   then make the best code shape that satisfies that intent and the rest of the codebase.
   A shortcut taken for one warning is evidence about the care taken everywhere else.
-- Before disabling, suppressing, weakening types, broadening annotations, or otherwise skirting a lint rule,
+- LN3: Before disabling, suppressing, weakening types, broadening annotations, or otherwise skirting a lint rule,
   inspect the linter source and the source code of the value being linted.
   Try the rule's config or allow-list mechanism first.
   If a suppression remains necessary, write or update a `.md` document that cites both source paths,
   proves why the allow-list or config path cannot work, and links the suppression to that document.
   Do not land the suppression without that document.
-- Prefer `Object.entries` and functional methods over `for...in`.
-- Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
-- Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration.
-- Never loosen lint rules without prior approval.
-- Address all lint issues, including but not limited to warnings.
+- LN4: Prefer `Object.entries` and functional methods over `for...in`.
+- LN5: Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
+- LN6: Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration.
+- LN7: Never loosen lint rules without prior approval.
+- LN8: Address all lint issues, including but not limited to warnings.
 
 ### Logging
 
-Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events.
+LOG: Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events.
 Never remove logging to "clean up"; treat it as permanent infrastructure.
 
-Always use tagged loggers from `@monochromatic-dev/module-logger`.
+TLG: Always use tagged loggers from `@monochromatic-dev/module-logger`.
 Never raw `console.log`/`console.error` or untagged logger instances in production code.
 Exception: raw `console` when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
 
-- Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
-- Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
-- Never embed tags manually in message strings. Use the `tagged` wrapper instead.
+- LG1: Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
+- LG2: Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
+- LG3: Never embed tags manually in message strings. Use the `tagged` wrapper instead.
 
 ### Security
 
-No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.
+SEC: No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.
 
-Any code that transforms or embeds text across a syntax boundary must treat the destination grammar as the authority.
+SYB: Any code that transforms or embeds text across a syntax boundary must treat the destination grammar as the authority.
 Source escapes are not portable: Markdown `\<`, shell quotes, JSON escaping, URL encoding, or regex escaping do not make
 text safe in another language. Normalize source semantics only as needed, then encode for the exact destination subcontext
 at the final interpolation boundary. Account for nested contexts: HTML text vs attribute vs URL, JS string inside
 `<script>`, CSS string, SQL literal, shell token, Markdown/MDX, JSON, regex, glob, terminal escape, and config syntax.
 
-Tests for any transformer that emits another syntax must include adversarial boundary cases for that destination:
+STB: Tests for any transformer that emits another syntax must include adversarial boundary cases for that destination:
 active delimiters, terminators, escapes, quotes, newlines, traversal tokens, command separators, and source-escaped
 variants.
 
 ### TSDoc comments
 
-Write comprehensive TSDoc for **all** declarations (exported or not, including locals).
+TSD: Write comprehensive TSDoc for **all** declarations (exported or not, including locals).
 Adhere to the TSDoc rules enforced by `@monochromatic-dev/config-oxlint-tsdoc`.
 Use `{@inheritDoc originalFn}` for non-async wrappers.
 
-- Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template.
-- TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns.
-- TSDoc must directly precede a declaration, not a statement.
-- Comments on their own line above code, never inline after code.
-- Escape `*/` as `*\\/` inside TSDoc blocks.
-- Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**.
-- Do not mention Promise wrapping for async functions.
-- Include `@example` tags with usage examples.
+- TD1: Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template.
+- TD2: TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns.
+- TD3: TSDoc must directly precede a declaration, not a statement.
+- TD4: Comments on their own line above code, never inline after code.
+- TD5: Escape `*/` as `*\\/` inside TSDoc blocks.
+- TD6: Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**.
+- TD7: Do not mention Promise wrapping for async functions.
+- TD8: Include `@example` tags with usage examples.
 
 ### TypeScript
 
 #### Standards
 
-- Adhere to Oxlint, dprint confs.
-- Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
-- Cross-package workspace imports must resolve to TypeScript source, not built output.
-- Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
-- Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
-- Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
-- Use named function declarations exclusively: no arrow functions, no const-bound function expressions. Exception for callbacks whose signature is dictated by an external API or library: name the function and parenthesise all params.
-- No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
-- Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
-- No rest parameters (`...args`) in functions we control; accept an array parameter instead.
-- Export immediately at declaration; avoid `Object.assign` for extending typed objects.
-- Throw and return early; use overloads (most specific first).
-- No regex unless necessary.
+- TS1: Adhere to Oxlint, dprint confs.
+- TS2: Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
+- TS3: Cross-package workspace imports must resolve to TypeScript source, not built output.
+- TS4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
+- TS5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
+- TS6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
+- TS7: Use named function declarations exclusively: no arrow functions, no const-bound function expressions. Exception for callbacks whose signature is dictated by an external API or library: name the function and parenthesise all params.
+- TS8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
+- TS9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
+- TSA: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
+- TSB: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
+- TSC: Throw and return early; use overloads (most specific first).
+- TSE: No regex unless necessary.
 
 #### Type system
 
-- Explicit parameter and return types; `type` over `interface`; `Record` for maps.
-- Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
-- Union types over enums; `as const` for literals; branded types for domain primitives.
-- Narrow symbol unions by `typeof` first, then identity check.
-- `const` generic parameters; `readonly` array parameters; meaningful constraint names.
-- Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
-- Use assertion functions (`asserts value is T`) for runtime type narrowing.
-- `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
-- Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
+- TY1: Explicit parameter and return types; `type` over `interface`; `Record` for maps.
+- TY2: Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
+- TY3: Union types over enums; `as const` for literals; branded types for domain primitives.
+- TY4: Narrow symbol unions by `typeof` first, then identity check.
+- TY5: `const` generic parameters; `readonly` array parameters; meaningful constraint names.
+- TY6: Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
+- TY7: Use assertion functions (`asserts value is T`) for runtime type narrowing.
+- TY8: `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
+- TY9: Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
 #### Variables and values
 
-- `const` over `let`. Two hard rules enforce this:
-  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), a counter `for (let i = 0; ...)` loop (`ForStatement.init` `let` is exempt), a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or a helper ending in `return <local-binding>`. Never escape it by recursing over flat input (see "Simplification").
-  - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
-  - For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
-- Remove unused variables or prefix with underscore (`_unusedVar`).
-- No single-letter variables (exceptions: math formulas, and loop counters like `i` in a `for` statement).
-- Functional approaches over loops; `for...of` when iteration is unavoidable.
-- Avoid deprecated features (`substring()`/`slice()` over `substr()`).
-- `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
-- Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`.
+- VAL: `const` over `let`. Two hard rules enforce this:
+  - VFR: `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), a counter `for (let i = 0; ...)` loop (`ForStatement.init` `let` is exempt), a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or a helper ending in `return <local-binding>`. Never escape it by recursing over flat input (see "Simplification").
+  - VMR: `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
+  - VLE: For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
+- VA1: Remove unused variables or prefix with underscore (`_unusedVar`).
+- VA2: No single-letter variables (exceptions: math formulas, and loop counters like `i` in a `for` statement).
+- VA3: Functional approaches over loops; `for...of` when iteration is unavoidable.
+- VA4: Avoid deprecated features (`substring()`/`slice()` over `substr()`).
+- VA5: `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
+- VA6: Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`.
 
 #### Programming patterns
 
-- `async`/`await` only; no `.then()`/`.catch()`/`.finally()`; no explicit `new Promise`.
-- `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
-- `using`/`await using` for cleanup; no `try...finally`.
-- Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
-- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `dedent` from `string-dedent` for multi-line error messages.
-- Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
-- Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
-- Never silently discard unexpected states; throw on unreachable branches.
-- No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
-- Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
+- PP1: `async`/`await` only; no `.then()`/`.catch()`/`.finally()`; no explicit `new Promise`.
+- PP2: `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
+- PP3: `using`/`await using` for cleanup; no `try...finally`.
+- PP4: Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
+- PP5: `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `dedent` from `string-dedent` for multi-line error messages.
+- PP6: Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
+- PP7: Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
+- PP8: Never silently discard unexpected states; throw on unreachable branches.
+- PP9: No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
+- PPA: Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
 
 #### Regular expressions
 
-- Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
-- A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
-- Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
-- For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
+- RE1: Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
+- RE2: A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
+- RE3: Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
+- RE4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
 
 ## Before declaring work complete
 
