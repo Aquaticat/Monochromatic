@@ -394,7 +394,6 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - TQ1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
 - TQ2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
 - TQ3: Throw and return early; use overloads (most specific first).
-- TQ4: No regex unless necessary.
 
 #### Type system
 
