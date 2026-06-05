@@ -3,8 +3,23 @@ description = "Run git wrapper CLI"
 usage = 'arg "[args]" var=#true help="Git subcommand and arguments"'
 run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
+[tasks.build]
+extends = "build"
+
+[tasks.'build:js']
+extends = "build:js"
+
 [tasks.'build:js:node']
 extends = "build:js:node"
+
+[tasks.'watch:build']
+extends = "watch:build"
+
+[tasks.'watch:build:js']
+extends = "watch:build:js"
+
+[tasks.'watch:build:js:node']
+extends = "watch:build:js:node"
 
 [tasks.lint]
 extends = "lint"
