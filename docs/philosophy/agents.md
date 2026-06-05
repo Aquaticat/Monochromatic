@@ -314,3 +314,12 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+### 2026-06-05
+
+Tagged every rule in AGENTS.md with a unique semi-meaningful `[A-Z0-9]{3}` shortcode as a `CODE: ` prefix (260 codes), so individual rules can be referenced for compression in later sessions.
+Per-rule mnemonics where they gesture clearly (`HON`, `INF`, `SYR`, `WKP`); topic-plus-index for enumerated lists (`CK1`..`CKB` checklist, `HG1`..`HGD` hedges, `TS1`..`TSE` TypeScript standards, and similar).
+Headings, code fences, and the document title stay untagged.
+Landed across three commits (preamble and before-responding; before-running and before-editing; the remaining sections).

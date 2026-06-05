@@ -466,46 +466,46 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 ### Package completeness
 
-A package is not finished until it has a `README.md`, passes linting with zero errors, and has passing tests covering every exported code path.
+PKG: A package is not finished until it has a `README.md`, passes linting with zero errors, and has passing tests covering every exported code path.
 Never declare work complete while any condition is unmet.
 
 ### Test coverage matches the public API surface
 
-Enumerate every distinct code path the module exposes, not just the obvious happy path.
+TCV: Enumerate every distinct code path the module exposes, not just the obvious happy path.
 Implementation has separate branches (sync vs async, string vs object, direct vs delegated)? Each branch needs its own test.
 
-"Tests exist and pass" is not evidence of completeness.
+TC2: "Tests exist and pass" is not evidence of completeness.
 Compare test names against the implementation's branches; confirm no untested path.
 
 ### Verify at the user boundary
 
-After building, deploying, or installing an artifact, run verification steps that exercise it the way an end user would.
+VUB: After building, deploying, or installing an artifact, run verification steps that exercise it the way an end user would.
 
-- Server: confirm it serves correct responses, not just that it starts.
-- CLI tool: run a real command and check the output.
-- Hook/plugin: trigger it through the host application, not just by piping test input directly.
-- Library: import and call it from a consuming project, not just compile it.
-- Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
+- VB1: Server: confirm it serves correct responses, not just that it starts.
+- VB2: CLI tool: run a real command and check the output.
+- VB3: Hook/plugin: trigger it through the host application, not just by piping test input directly.
+- VB4: Library: import and call it from a consuming project, not just compile it.
+- VB5: Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
 
-The verification must cross the integration boundary between artifact and consumer.
+VB6: The verification must cross the integration boundary between artifact and consumer.
 "It compiled" / "It installed" alone is not verification.
 
 ### Verify on a throwaway, not against real state
 
-Verification means a state-mutating or destructive operation: run it against a disposable fixture you create, never the user's real or shared state (working tree, real tool caches, a populated database, live conf).
+THR: Verification means a state-mutating or destructive operation: run it against a disposable fixture you create, never the user's real or shared state (working tree, real tool caches, a populated database, live conf).
 Reproduce the real scenario: `mktemp -d` plus `git init` for a repo, a scratch dir, a throwaway branch/worktree, a container, a fresh sqlite file;
 exercise the real artifact against it, delete it afterward.
 Pairs with "Verify at the user boundary": real artifact, throwaway state.
 
-The rule holds even when the command looks idempotent or you have committed first;
+TH2: The rule holds even when the command looks idempotent or you have committed first;
 testing whether a guard blocks a destructive operation, build both the allowed case and the rejected case as fixtures.
 
-Cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
+TH3: Cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
 Create the throwaway target first.
 
 ### Test assumptions before encoding them
 
-Writing instructions, conf, or documentation that prescribes how a tool or API behaves: test the claim first with a real invocation.
+TAE: Writing instructions, conf, or documentation that prescribes how a tool or API behaves: test the claim first with a real invocation.
 Never write "use X for Y" based on how X **should** work;
 run X against a real target and confirm the output.
 Applies to agent prompts, README guidance, CI scripts, and any artifact future sessions will follow.
@@ -514,14 +514,14 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 ### Third-party libraries
 
-- Undefined method error: retrieve docs immediately.
-- Check actual type definitions before using APIs.
-- Note CLI command patterns across examples; test the simplest case first.
-- Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, modify it freely (e.g. to prepare a pull request). The rule binds only clones of repos we do not own. A skill may carve a narrow documented exception; today only the `troubleshooting-doc` skill's disposable prototype clone (mechanics in the philosophy doc).
-- When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
-- When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
-- Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
-- Check `.out-of-scope/` before filing an upstream tracking issue; listed exemptions still get the `docs/troubleshooting/<topic>.md` writeup but skip the GitHub issue.
+- TP1: Undefined method error: retrieve docs immediately.
+- TP2: Check actual type definitions before using APIs.
+- TP3: Note CLI command patterns across examples; test the simplest case first.
+- TP4: Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, modify it freely (e.g. to prepare a pull request). The rule binds only clones of repos we do not own. A skill may carve a narrow documented exception; today only the `troubleshooting-doc` skill's disposable prototype clone (mechanics in the philosophy doc).
+- TP5: When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
+- TP6: When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
+- TP7: Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
+- TP8: Check `.out-of-scope/` before filing an upstream tracking issue; listed exemptions still get the `docs/troubleshooting/<topic>.md` writeup but skip the GitHub issue.
 
 ## When committing or documenting
 
@@ -529,49 +529,49 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 #### Prose style
 
-- No emojis in human-readable content.
-- No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
-- Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
-- Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
-- Present tense for current state, future tense only for planned features.
-- Eliminate unnecessary connecting phrases.
+- PS1: No emojis in human-readable content.
+- PS2: No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
+- PS3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
+- PS4: Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
+- PS5: Present tense for current state, future tense only for planned features.
+- PS6: Eliminate unnecessary connecting phrases.
 
 #### Markdown syntax
 
-- Break lines at semantic boundaries so text reads naturally without editor wrapping; no italics.
-- `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`).
-- Fenced code blocks with language tags; include file paths as comments.
-- Reference-style links for repeated URLs; relative links for internal docs.
-- No tables; use headings or lists instead.
-- ATX headers, max 4 levels, blank line before headers, lines under 120 chars.
+- MD1: Break lines at semantic boundaries so text reads naturally without editor wrapping; no italics.
+- MD2: `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`).
+- MD3: Fenced code blocks with language tags; include file paths as comments.
+- MD4: Reference-style links for repeated URLs; relative links for internal docs.
+- MD5: No tables; use headings or lists instead.
+- MD6: ATX headers, max 4 levels, blank line before headers, lines under 120 chars.
 
 ### Doc placement
 
-Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix family (`docs/troubleshooting/`, `docs/philosophy/`, `docs/todo/`, `docs/handover/`, etc.).
+DPL: Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix family (`docs/troubleshooting/`, `docs/philosophy/`, `docs/todo/`, `docs/handover/`, etc.).
 The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families move under `docs/`.
 Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
 
-1. Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
-2. Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
-3. Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
-4. Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
-5. Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
+1. DP1: Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
+2. DP2: Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
+3. DP3: Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
+4. DP4: Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
+5. DP5: Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
 
-No automated check guards root regression; this rule is the cure.
+DP6: No automated check guards root regression; this rule is the cure.
 
 ### Handling external changes
 
-- External worktree changes are normal and often expected in this repo. Treat `git status` entries you did not modify as concurrent work, not an emergency.
-- Never run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes. Only touch files in your task scope; an unrelated external change blocks a necessary edit, ask before changing it.
-- Acknowledge externally modified files; ask before reverting.
-- Never proceed with implementing features that will not achieve their intended effect.
-- Explain when a tool/command does not support requested functionality instead of creating non-functional code.
+- EC1: External worktree changes are normal and often expected in this repo. Treat `git status` entries you did not modify as concurrent work, not an emergency.
+- EC2: Never run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes. Only touch files in your task scope; an unrelated external change blocks a necessary edit, ask before changing it.
+- EC3: Acknowledge externally modified files; ask before reverting.
+- EC4: Never proceed with implementing features that will not achieve their intended effect.
+- EC5: Explain when a tool/command does not support requested functionality instead of creating non-functional code.
 
 ### Git commit guidelines
 
-Conventional Commits format: `<type>(<scope>): <subject>`.
+GIT: Conventional Commits format: `<type>(<scope>): <subject>`.
 
-Commit at the earliest opportunity that records coherent progress, before the next work step.
+GCE: Commit at the earliest opportunity that records coherent progress, before the next work step.
 Never wait for full verification when a feature or fix has just been implemented;
 commit the checkpoint, then keep testing and fixing in follow-up commits.
 The cue:
@@ -586,10 +586,10 @@ never subdivide a logical unit across commits, and never sweep in unrelated or c
 This supersedes the harness default to ask before committing;
 on this project, commit eagerly without asking.
 
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+GCT: Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
 Scope: package name or `*` for multi-package changes.
 
-Group related changes by type; be specific about what changed. Two lines per group. Example:
+GCG: Group related changes by type; be specific about what changed. Two lines per group. Example:
 
 ```txt
 fix(package1): <what>
@@ -601,7 +601,7 @@ fix(package2): <what>
 <why>
 ```
 
-If a commit message is inaccurate after committing, do not amend (harness rule).
+GCA: If a commit message is inaccurate after committing, do not amend (harness rule).
 Surface it, ask the user to push, then post a commit comment: it renders alongside the commit on GitHub and survives history rewrites.
 Do not silently let it stand;
 future readers see only the message.
@@ -609,7 +609,7 @@ The cue: about to write "the commit message overstates scope" or similar in chat
 
 ### Respect cli-git enforcement guards
 
-Never preemptively bypass `cli-git` enforcement.
+CLG: Never preemptively bypass `cli-git` enforcement.
 The `git add` and `git commit` guards reject bulk staging (`-A`, `.`) and pathspec-less commits on purpose: with a dirty tree or concurrent sessions they sweep unintended files into a commit.
 Not obstacles to route around; the compliant path satisfies them.
 Stage and commit an explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit and cannot capture another session's files.
@@ -618,7 +618,7 @@ Cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a 
 
 ### External communications
 
-Never append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, anything a maintainer or third party reads.
+XCM: Never append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, anything a maintainer or third party reads.
 Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push a decision or a follow-up task onto the reader, usually the user.
 Decide the matter yourself, state what you did; the message reports a result, not a menu.
 A genuine choice only the user can make: raise it with the user directly (AskUserQuestion) before sending the external message, don't punt it into the external text where it silently obliges them to respond.
@@ -628,48 +628,48 @@ Cut it.
 
 ### Dependency management
 
-- Use `workspace:*` for internal dependencies.
-- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
+- DM1: Use `workspace:*` for internal dependencies.
+- DM2: Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
 
 ### Adding new packages
 
-1. Create directory under the appropriate category in `packages/`.
-2. Add `mise.toml` with task definitions mirroring sibling packages.
-3. Configure `package.json` with workspace dependencies.
-4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
-5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
+1. AP1: Create directory under the appropriate category in `packages/`.
+2. AP2: Add `mise.toml` with task definitions mirroring sibling packages.
+3. AP3: Configure `package.json` with workspace dependencies.
+4. AP4: For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
+5. AP5: For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
 
 ### Essential commands
 
-- Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
-- Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
-- All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
-- Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists.
-- Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
-- Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
-- `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
-- After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
+- CM1: Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
+- CM2: Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
+- CM3: All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
+- CM4: Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists.
+- CM5: Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
+- CM6: Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
+- CM7: `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
+- CM8: After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
 ### Workspace conventions
 
-- Use the current date from the system prompt environment.
-- Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
-- Spec mode (a.k.a. plan/pause mode): keep researching and gathering context until the user explicitly asks to draft or exit.
+- WC1: Use the current date from the system prompt environment.
+- WC2: Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
+- WC3: Spec mode (a.k.a. plan/pause mode): keep researching and gathering context until the user explicitly asks to draft or exit.
 
 ## Architecture decisions
 
-- Root `package.json` may depend on workspace packages; root configs import by package name.
-- Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`, `await`).
-- Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
-- Nested calls (`b(a())`) over method chaining to keep functions self-contained;
+- AD1: Root `package.json` may depend on workspace packages; root configs import by package name.
+- AD2: Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`, `await`).
+- AD3: Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
+- AD4: Nested calls (`b(a())`) over method chaining to keep functions self-contained;
   split a chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
 
 ## Enforcement mechanisms
 
-- **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
+- FBS: **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
 
 ## Agent skills
 
-- **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
-- **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
-- **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
+- AS1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
+- AS2: **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
+- AS3: **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
