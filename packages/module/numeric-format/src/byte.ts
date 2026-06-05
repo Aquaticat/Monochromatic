@@ -24,7 +24,8 @@ import {
  *
  * - GiB scale: one decimal, e.g. `1.5 GiB`
  * - MiB scale: one decimal, e.g. `123.4 MiB`
- * - KiB scale and below: whole KiB, e.g. `512 KiB`, `0 KiB`
+ * - KiB scale: whole KiB, e.g. `512 KiB`, `1 KiB`
+ * - sub-KiB: raw bytes, e.g. `422 B`, `0 B`
  *
  * @param bytes - raw byte count
  *
@@ -34,11 +35,14 @@ import {
  * formatBytes(1_048_576); // "1.0 MiB"
  * formatBytes(1_073_741_824); // "1.0 GiB"
  * formatBytes(2_048); // "2 KiB"
+ * formatBytes(422); // "422 B"
  */
 export function formatBytes(bytes: number,): string {
   if (bytes >= BYTES_PER_GIB)
     return `${(bytes / BYTES_PER_GIB).toFixed(1,)} GiB`;
   if (bytes >= BYTES_PER_MIB)
     return `${(bytes / BYTES_PER_MIB).toFixed(1,)} MiB`;
-  return `${(bytes / BYTES_PER_KIB).toFixed(0,)} KiB`;
+  if (bytes >= BYTES_PER_KIB)
+    return `${(bytes / BYTES_PER_KIB).toFixed(0,)} KiB`;
+  return `${bytes} B`;
 }

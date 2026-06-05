@@ -14,21 +14,27 @@ import { formatBytes, } from '@monochromatic-dev/module-numeric-format';
 await describe({
   name: formatBytes.name,
   children: [
+    //region B branch: sub-KiB raw bytes
+
+    it({
+      name: 'renders 0 bytes as 0 B',
+      fn: async ({ expect, },) => {
+        expect(formatBytes(0,),).toBe('0 B',);
+      },
+    },),
+
+    it({
+      name: 'renders sub-KiB byte counts as raw bytes',
+      fn: async ({ expect, },) => {
+        expect(formatBytes(422,),).toBe('422 B',);
+        expect(formatBytes(511,),).toBe('511 B',);
+        expect(formatBytes(1_023,),).toBe('1023 B',);
+      },
+    },),
+
+    //endregion B branch: sub-KiB raw bytes
+
     //region KiB branch: whole KiB
-
-    it({
-      name: 'renders 0 bytes as 0 KiB',
-      fn: async ({ expect, },) => {
-        expect(formatBytes(0,),).toBe('0 KiB',);
-      },
-    },),
-
-    it({
-      name: 'renders sub-KiB byte counts rounded to 0 KiB',
-      fn: async ({ expect, },) => {
-        expect(formatBytes(511,),).toBe('0 KiB',);
-      },
-    },),
 
     it({
       name: 'renders KiB-scale counts as whole KiB',

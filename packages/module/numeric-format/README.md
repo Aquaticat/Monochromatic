@@ -25,7 +25,7 @@ Anything `Intl` already handles should be called directly at the consumer.
 <tr>
 <td>`formatBytes`</td>
 <td>`src/byte.ts`</td>
-<td>IEC binary byte formatter (`KiB` / `MiB` / `GiB`).</td>
+<td>IEC binary byte formatter (`B` / `KiB` / `MiB` / `GiB`); sub-KiB values render as raw bytes (`422 B`).</td>
 </tr>
 <tr>
 <td>`formatDuration`</td>
