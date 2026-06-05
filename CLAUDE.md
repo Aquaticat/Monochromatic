@@ -668,10 +668,6 @@ Cut it.
 - AD4: Nested calls (`b(a())`) over method chaining to keep functions self-contained;
   split a chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
 
-## Enforcement mechanisms
-
-- FBS: **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
-
 ## Agent skills
 
 - AS1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
