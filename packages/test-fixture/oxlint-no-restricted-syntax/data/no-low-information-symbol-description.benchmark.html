@@ -238,8 +238,12 @@ code {
       <span class="metric-label">Errors at selected threshold</span>
     </article>
     <article class="card metric-card">
-      <span class="metric-value" id="best-error-count">0</span>
-      <span class="metric-label">Best sweep error count</span>
+      <span class="metric-value" id="lowest-total-error-count">0</span>
+      <span class="metric-label">Lowest total-error sweep</span>
+    </article>
+    <article class="card metric-card">
+      <span class="metric-value" id="zero-false-fail-error-count">0</span>
+      <span class="metric-label">Best zero-false-fail sweep</span>
     </article>
   </section>
 
@@ -274,7 +278,8 @@ code {
         <div class="preset-list" aria-label="Presets">
           <button type="button" data-preset="d3">D3 baseline</button>
           <button type="button" data-preset="d4">D4 structural</button>
-          <button type="button" data-preset="best">Best sweep</button>
+          <button type="button" data-preset="zero-false-fail">Best zero false-fail</button>
+          <button type="button" data-preset="lowest-total">Lowest total error</button>
           <button type="button" data-preset="reset">Reset</button>
         </div>
       </div>
@@ -303,10 +308,10 @@ code {
       </article>
 
       <article class="card">
-        <h2 class="card-title">Top threshold sweep results</h2>
-        <p class="notice">Sorted by total errors, then false-fails, then misses.</p>
+        <h2 class="card-title">Best zero-false-fail sweep results</h2>
+        <p class="notice">Sorted by missed fail descriptions, with false-failed pass descriptions fixed at zero.</p>
         <div class="table-wrap">
-          <table aria-label="Top threshold sweep results">
+          <table aria-label="Best zero-false-fail threshold sweep results">
             <thead>
               <tr>
                 <th>Threshold</th>
@@ -315,7 +320,25 @@ code {
                 <th>Missed fail</th>
               </tr>
             </thead>
-            <tbody id="sweep-body"></tbody>
+            <tbody id="zero-false-fail-body"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2 class="card-title">Lowest total-error sweep results</h2>
+        <p class="notice">Sorted by total errors only; these are not automatically recommended because false-failing pass labels is costly.</p>
+        <div class="table-wrap">
+          <table aria-label="Lowest total-error threshold sweep results">
+            <thead>
+              <tr>
+                <th>Threshold</th>
+                <th>Errors</th>
+                <th>False-fail pass</th>
+                <th>Missed fail</th>
+              </tr>
+            </thead>
+            <tbody id="total-error-body"></tbody>
           </table>
         </div>
       </article>
@@ -357,14 +380,16 @@ const output = {
   passCount: document.querySelector('#pass-count'),
   failCount: document.querySelector('#fail-count'),
   errorCount: document.querySelector('#error-count'),
-  bestErrorCount: document.querySelector('#best-error-count'),
+  lowestTotalErrorCount: document.querySelector('#lowest-total-error-count'),
+  zeroFalseFailErrorCount: document.querySelector('#zero-false-fail-error-count'),
   minLengthValue: document.querySelector('#min-length-value'),
   minDistinctValue: document.querySelector('#min-distinct-value'),
   minTtrValue: document.querySelector('#min-ttr-value'),
   minDeflateValue: document.querySelector('#min-deflate-value'),
   selectedSummary: document.querySelector('#selected-summary'),
   mismatchBody: document.querySelector('#mismatch-body'),
-  sweepBody: document.querySelector('#sweep-body'),
+  zeroFalseFailBody: document.querySelector('#zero-false-fail-body'),
+  totalErrorBody: document.querySelector('#total-error-body'),
   datasetBody: document.querySelector('#dataset-body'),
 };
 
@@ -419,19 +444,35 @@ function evaluate(threshold) {
   };
 }
 
-function compareResults(left, right) {
+function compareTotalErrors(left, right) {
   if (left.errors !== right.errors)
     return left.errors - right.errors;
   if (left.falseFails.length !== right.falseFails.length)
     return left.falseFails.length - right.falseFails.length;
   if (left.misses.length !== right.misses.length)
     return left.misses.length - right.misses.length;
+  if (left.threshold.minDeflate !== right.threshold.minDeflate)
+    return left.threshold.minDeflate === null ? -1 : 1;
   if (left.threshold.minDistinct !== right.threshold.minDistinct)
     return left.threshold.minDistinct - right.threshold.minDistinct;
   return left.threshold.minLength - right.threshold.minLength;
 }
 
-function sweepResults() {
+function compareZeroFalseFail(left, right) {
+  if (left.misses.length !== right.misses.length)
+    return left.misses.length - right.misses.length;
+  if (left.errors !== right.errors)
+    return left.errors - right.errors;
+  if (left.threshold.minDeflate !== right.threshold.minDeflate)
+    return left.threshold.minDeflate === null ? -1 : 1;
+  if (left.threshold.minLength !== right.threshold.minLength)
+    return left.threshold.minLength - right.threshold.minLength;
+  if (left.threshold.minDistinct !== right.threshold.minDistinct)
+    return left.threshold.minDistinct - right.threshold.minDistinct;
+  return left.threshold.minTtr - right.threshold.minTtr;
+}
+
+function allSweepResults() {
   const ttrValues = [0, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1];
   const deflateValues = [null, 0.8, 0.85, 0.9, 0.95, 1];
   const rows = [];
@@ -444,7 +485,19 @@ function sweepResults() {
       }
     }
   }
-  return rows.toSorted(compareResults);
+  return rows;
+}
+
+function totalErrorSweepResults(sweep) {
+  return sweep.toSorted(compareTotalErrors);
+}
+
+function zeroFalseFailSweepResults(sweep) {
+  return sweep
+    .filter(function hasNoFalseFails(result) {
+      return result.falseFails.length === 0;
+    })
+    .toSorted(compareZeroFalseFail);
 }
 
 function cell(text) {
@@ -515,42 +568,42 @@ function datasetRow(entry) {
   return row;
 }
 
-function setPreset(name, bestResult) {
+function applyThreshold(threshold) {
+  controls.minLength.value = String(threshold.minLength);
+  controls.minDistinct.value = String(threshold.minDistinct);
+  controls.minTtr.value = String(threshold.minTtr);
+  controls.useDeflate.checked = threshold.minDeflate !== null;
+  controls.minDeflate.value = String(threshold.minDeflate ?? 0.9);
+}
+
+function setPreset(name, sweep) {
   if (name === 'd3') {
-    controls.minLength.value = '13';
-    controls.minDistinct.value = '3';
-    controls.minTtr.value = '0.7';
-    controls.useDeflate.checked = false;
-    controls.minDeflate.value = '0.9';
+    applyThreshold({ minLength: 13, minDistinct: 3, minTtr: 0.7, minDeflate: null });
+    return;
   }
-  else if (name === 'd4') {
-    controls.minLength.value = '13';
-    controls.minDistinct.value = '4';
-    controls.minTtr.value = '0.7';
-    controls.useDeflate.checked = false;
-    controls.minDeflate.value = '0.9';
+  if (name === 'd4') {
+    applyThreshold({ minLength: 13, minDistinct: 4, minTtr: 0.7, minDeflate: null });
+    return;
   }
-  else if (name === 'best') {
-    controls.minLength.value = String(bestResult.threshold.minLength);
-    controls.minDistinct.value = String(bestResult.threshold.minDistinct);
-    controls.minTtr.value = String(bestResult.threshold.minTtr);
-    controls.useDeflate.checked = bestResult.threshold.minDeflate !== null;
-    controls.minDeflate.value = String(bestResult.threshold.minDeflate ?? 0.9);
+  if (name === 'zero-false-fail') {
+    applyThreshold(zeroFalseFailSweepResults(sweep)[0].threshold);
+    return;
   }
-  else {
-    controls.minLength.value = '13';
-    controls.minDistinct.value = '4';
-    controls.minTtr.value = '0.7';
-    controls.useDeflate.checked = false;
-    controls.minDeflate.value = '0.9';
+  if (name === 'lowest-total') {
+    applyThreshold(totalErrorSweepResults(sweep)[0].threshold);
+    return;
   }
+  applyThreshold({ minLength: 13, minDistinct: 4, minTtr: 0.7, minDeflate: null });
 }
 
 function render() {
   const threshold = currentThreshold();
   const selected = evaluate(threshold);
-  const sweep = sweepResults();
-  const best = sweep[0];
+  const sweep = allSweepResults();
+  const totalErrorSweep = totalErrorSweepResults(sweep);
+  const zeroFalseFailSweep = zeroFalseFailSweepResults(sweep);
+  const lowestTotalError = totalErrorSweep[0];
+  const bestZeroFalseFail = zeroFalseFailSweep[0];
   const mismatchRows = [
     ...selected.falseFails.map(function falseFailRow(entry) {
       return mismatchRow(entry, 'fail');
@@ -566,7 +619,8 @@ function render() {
     return entry.expected === 'fail';
   }).length);
   output.errorCount.textContent = String(selected.errors);
-  output.bestErrorCount.textContent = String(best.errors);
+  output.lowestTotalErrorCount.textContent = String(lowestTotalError.errors);
+  output.zeroFalseFailErrorCount.textContent = String(bestZeroFalseFail.errors);
   output.minLengthValue.textContent = String(threshold.minLength);
   output.minDistinctValue.textContent = String(threshold.minDistinct);
   output.minTtrValue.textContent = numberText(threshold.minTtr);
@@ -576,9 +630,10 @@ function render() {
     + String(selected.falseFails.length) + ' false-failed pass descriptions, and '
     + String(selected.misses.length) + ' missed fail descriptions.';
   replaceRows(output.mismatchBody, mismatchRows.length === 0 ? [emptyRow(7, 'No mismatches at this threshold.')] : mismatchRows);
-  replaceRows(output.sweepBody, sweep.slice(0, 24).map(sweepRow));
+  replaceRows(output.zeroFalseFailBody, zeroFalseFailSweep.slice(0, 24).map(sweepRow));
+  replaceRows(output.totalErrorBody, totalErrorSweep.slice(0, 24).map(sweepRow));
   replaceRows(output.datasetBody, entries.map(datasetRow));
-  return best;
+  return sweep;
 }
 
 function emptyRow(colspan, text) {
@@ -591,17 +646,17 @@ function emptyRow(colspan, text) {
 }
 
 function attachEvents() {
-  const best = render();
+  let sweep = render();
   for (const control of Object.values(controls)) {
     control.addEventListener('input', function rerender() {
-      render();
+      sweep = render();
     });
   }
   for (const button of document.querySelectorAll('[data-preset]')) {
     button.addEventListener('click', function usePreset(event) {
       const target = event.currentTarget;
-      setPreset(target.dataset.preset, best);
-      render();
+      setPreset(target.dataset.preset, sweep);
+      sweep = render();
     });
   }
 }
