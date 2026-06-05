@@ -1,13 +1,13 @@
 ---
 name: troubleshooting-doc
-description: Use proactively the moment you finish diagnosing or working around an external tool's bug, quirk, or surprising behaviour (clang/bindgen, zig, podman, a build tool, a library API, a config), even when the user did not ask, as well as when writing or updating a docs/troubleshooting/<topic>.md file. Treat the write-up as a required completion step, not an offer.
+description: Use proactively the moment you finish diagnosing or working around an external tool's bug, quirk, surprising behavior, or capability gap, even when the user did not ask; also when writing or updating a docs/troubleshooting/<topic>.md file. The write-up is a required completion step, not an offer.
 ---
 
-# Writing a TROUBLESHOOTING file
+# Writing a troubleshooting file
 
 Fires automatically, no user request needed, the moment you finish diagnosing
-or land a workaround for an external tool's bug, quirk, surprising behaviour,
-or documentation gap. Writing the doc is a required completion step, not
+or land a workaround for an external tool's bug, quirk, surprising behavior,
+or capability gap. Writing the doc is a required completion step, not
 something to offer or defer: do not declare the work done, and do not say
 "I could document this" or "want me to write it up?", until
 docs/troubleshooting/<topic>.md exists. Walk this skill end-to-end whenever
@@ -22,7 +22,7 @@ The skill encodes the required sections, the source-trace rule,
 and the 6-constraint upstream-filing check that gates the draft GitHub
 issue at the end.
 
-A TROUBLESHOOTING file is the durable artefact of investigating an
+A troubleshooting file is the durable artifact of investigating an
 external tool. Future sessions and external readers must be able to
 reproduce, verify, and act on every claim. The canonical worked example
 is [docs/troubleshooting/resharp.md](../../../docs/troubleshooting/resharp.md);
@@ -46,7 +46,7 @@ not `bun`). One bug or one cluster of related bugs per file.
    step by step. Every claim about source code cites
    `path/to/file.ext:LINE` and quotes the relevant code excerpt in a
    fenced block. Asserting "the parser rewrites X" without showing the
-   rewrite is not allowed; this is the doc-writing specialisation of
+   rewrite is not allowed; this is the doc-writing specialization of
    AGENTS.md's broader source-citation rule. If a previous reading or
    hypothesis was wrong, name it explicitly and quote the evidence
    that disproved it, so the next investigator does not re-derive the
@@ -56,9 +56,9 @@ not `bun`). One bug or one cluster of related bugs per file.
    commit hash, or release tag), a runnable harness (shell invocation
    of the affected binary, a minimal source-level program in the
    target tool's language, or both when each surfaces different
-   information), and at least two catalogues: patterns that work
+   information), and at least two catalogs: patterns that work
    cleanly and patterns that fail. When multiple error variants exist,
-   split the failing catalogue by variant so each failure mode is
+   split the failing catalog by variant so each failure mode is
    enumerated.
 5. **Verified workarounds**: each workaround is a runnable patch with
    its tradeoffs named (what semantics shift, what edge cases slip
@@ -67,17 +67,20 @@ not `bun`). One bug or one cluster of related bugs per file.
 6. **What does not work**: approaches you tried and rejected, with the
    reason each failed. Saves the next investigator from re-discovering
    dead ends.
-7. **Draft upstream issue**: gated by the 6-constraint check below.
+7. **Upstream filing artifact**: a new-issue draft, an additive-comment
+   draft, or an explicit "nothing to add" note, gated by the 6-constraint
+   check below and the duplicate search.
 
 ## The 6-constraint upstream-filing check
 
-Before filing upstream, all six must hold. Write a "Why we do not file
-this upstream" subsection that walks each constraint explicitly, even
-when the answer is yes; the audit trail is the point. Default policy:
-do not file. Every reported issue that does not satisfy all six is
-treated as a publicity incident.
+Before filing upstream, all six must hold. Write an "Upstream filing
+decision" subsection that walks each constraint explicitly, whatever the
+outcome; the audit trail is the point. The neutral heading is deliberate:
+it holds whether the decision is to file, not file, comment on a
+duplicate, or post nothing. Default policy: do not file. Every reported
+issue that does not satisfy all six is treated as a publicity incident.
 
-1. **Is it really upstream's fault?** Distinguish behaviour from
+1. **Is it really upstream's fault?** Distinguish behavior from
    wording from architectural restriction.
 2. **Can upstream fix it?** This fails only when upstream genuinely
    cannot: an architectural or algebraic-core limitation that makes the
@@ -118,7 +121,10 @@ treated as a publicity incident.
 When constraints 1-5 are all "yes" or "yes-with-a-soft-yes" (e.g. #5
 reads "plausible" or "likely" rather than a definitive yes), do not
 stop at "constraint 6: not yet" and report the gate failed. Prototype
-the minimal fix yourself before declaring the audit done:
+the minimal fix yourself before declaring the audit done, working either
+in a fork under our own account (our code, not a third-party clone;
+prefer this when the prototype is headed for a pull request) or in a
+disposable upstream clone. The disposable-clone path:
 
 1. Clone the upstream source into a fresh, private, unpredictable
    directory under `/tmp/agent/`, created with `mktemp --directory`
@@ -171,8 +177,12 @@ probe is useful data, not a wasted step.
 
 AGENTS.md's "never modify files in cloned third-party repositories"
 rule still applies to local workarounds (where editing source bypasses
-the intended boundary). The only allowed exception here is a disposable
-prototype clone created fresh for the upstream patch diff, after origin
+the intended boundary). Two paths are open for the prototype. A fork
+under our own account is our code, not a third-party repository, so
+editing it is unrestricted; prefer the fork when the prototype is headed
+for a pull request. Otherwise AGENTS.md grants one narrow exception for
+an unforked upstream clone, the disposable prototype clone described
+here: created fresh for the upstream patch diff, after origin
 verification, and verified without exposing credentials or this
 repository to third-party scripts.
 
@@ -183,7 +193,7 @@ regardless of upstream movement.
 ## Check for an existing issue before filing
 
 A duplicate report is itself a publicity incident, so before opening
-anything new, search the upstream tracker for the same behaviour:
+anything new, search the upstream tracker for the same behavior:
 `gh search issues` and `gh search prs` across open and closed state,
 with terms drawn from the symptom and the root cause, not just the tool
 name. Constraint 5 already runs this search to gauge movement; this step
@@ -209,17 +219,19 @@ issue is kept (in a `~~~md` fence, ready to post). When there is nothing
 to add, say so explicitly so a future session does not re-derive the
 same empty comment.
 
-## Draft format (kept as reference, do not file as-is)
+## Upstream filing artifact format
 
-Even when you decide not to file, keep the draft so the rationale is
-auditable and a future session can re-evaluate the six constraints if
-upstream signal changes. Wrap the draft body in a `~~~md` fence so the
-future filer can copy it cleanly. The draft contains: title, labels,
+Keep the draft whatever the decision: when all six constraints hold it
+is fileable as-is, and when they do not it stays as an auditable record
+a future session can re-evaluate if upstream signal changes. Mark it
+"do not file as-is" only in that second case. Wrap the draft body in a
+`~~~md` fence so the future filer can copy it cleanly. The new-issue
+draft contains: title, labels,
 description with the same source trace as the "Root cause" section,
 reproduction code from "Verification", and a "Suggested fix" naming
 concrete code locations.
 
-When "Check for an existing issue" found a duplicate, the kept artefact
+When "Check for an existing issue" found a duplicate, the kept artifact
 is the additive comment draft (or an explicit note that there was
 nothing to add), not a new-issue draft presented as fileable.
 

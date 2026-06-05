@@ -470,18 +470,18 @@ out of a reverse-over-lookaround position.
   the `^`/`$` rewrite happens at AST translation, before the group's flag
   scope is applied to its children's positional semantics.
 
-## Draft upstream issue (DO NOT FILE without an architectural prototype)
+## Upstream filing artifact (do not file without an architectural prototype)
 
-### Why we do not file this upstream
+### Upstream filing decision
 
-This repo's policy is to report an issue upstream only when ALL of the
+This repo's policy is to report an issue upstream only when all of the
 following hold: we are absolutely sure it is the upstream's fault, they
-can fix it, they are supporting the use case, they are likely to fix it,
-and we have already prototyped a minimal fix compatible with their
-architecture. Every reported issue that does not satisfy all five is
-treated as a publicity incident.
+can fix it, they are supporting the use case, the repo would welcome the
+contribution, they are likely to fix it, and we have already prototyped a
+minimal fix compatible with their architecture. Every reported issue that
+does not satisfy all six is treated as a publicity incident.
 
-Walking the five constraints against the resharp complement-of-lookaround
+Walking the six constraints against the resharp complement-of-lookaround
 restriction:
 
 1. **Is it really upstream's fault?** Mostly no. The restriction is
@@ -508,21 +508,37 @@ restriction:
    poorly; no upstream doc, example, or test shows the combination as
    expected to work.
 
-4. **Will they likely fix it?** Upstream signal points the other way.
+4. **Would the repo welcome our contribution?** Yes. The repo carries no
+   CONTRIBUTING.md, issue template, pull-request template, or
+   AI-assistance policy (checked the repository contents and the absent
+   `.github/` directory), so no rule bars an external or AI-assisted
+   filing; absence of a policy is not a fail. The positive signal is
+   direct: issue
+   [ieviev/resharp#5](https://github.com/ieviev/resharp/issues/5), a
+   comparable detailed multi-bug report with proposed fixes from this
+   project, was accepted and closed as completed, and the maintainer
+   shipped the error-message fix in 0.6.4.
+
+5. **Will they likely fix it?** Upstream signal points the other way.
    Commit `e9676b4 2026-04-19 rejecting unsupported patterns, more
-   tests` shows the project scoping DOWN what is supported; commit
+   tests` shows the project scoping down what is supported; commit
    `b256ea8 2026-04-24 rewrite negative lookaheads on construction`
    moved lookaround handling in a different direction (construction-
    time rewrites). The 0.5.1 to 0.5.2 delta was orthogonal (streaming/
    seeking, platform builds, prefix-engine bugfix). No movement on
    complement-of-lookaround in the visible history.
 
-5. **Have we prototyped a minimal fix?** No. The "Suggested fix"
-   section below is speculative design with no code, no correctness
-   argument, no test against any nontrivial rule set.
+6. **Have we prototyped a minimal fix compatible with their
+   architecture?** No, and the auto-prototype step is not triggered: it
+   fires only when constraints 1-5 hold or sorta-hold, and here
+   constraints 1 and 5 fail outright (architectural fault, upstream
+   leaning the other way). The "Suggested fix" section below is
+   speculative design with no code, no correctness argument, no test
+   against any nontrivial rule set.
 
-We fail constraints 1, 4, and 5 clearly; 2 and 3 are equivocal at best.
-The decision is to not file the behavioural fix upstream.
+We fail constraints 1, 5, and 6 clearly; 2 and 3 are equivocal at best,
+while 4 is a clear yes. The decision is to not file the behavioural fix
+upstream.
 
 One part was separable and shipped: suggested fix 2 below (improve the
 error message to name the surface trigger) is a wording change, not an
@@ -542,7 +558,7 @@ solves the user-facing problem at our boundary, where it actually
 matters for us. The draft below is kept as a reference in case the
 underlying situation changes (e.g., upstream announces complement-of-
 lookaround as supported, or someone in the project lands a prototype
-fix and asks for community testing). Re-evaluating the five constraints
+fix and asks for community testing). Re-evaluating the six constraints
 must precede any filing.
 
 ### Draft (do not file as-is)
