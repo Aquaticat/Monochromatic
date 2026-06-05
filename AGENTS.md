@@ -235,7 +235,7 @@ Do not rely on `git status`, `git ls-files --others --exclude-standard`, or `rg 
 those hide ignored files.
 If any root sentinel exists, cleanup or an exact safe cleanup path is part of the design under review.
 
-When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): repos whose git-dir resolves under an allowed dir bypass the guard, so destructive git is not blocked there.
+When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): git-dirs under an allowed dir bypass the guard.
 
 ### Document non-obvious findings
 
@@ -377,7 +377,7 @@ When unsure, propose a concrete edit and location.
   Do not land the suppression without that document.
 - Prefer `Object.entries` and functional methods over `for...in`.
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
-- Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration: it lands on the TSDoc, not the declaration, so the suppression is lost.
+- Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration.
 - Never loosen lint rules without prior approval.
 - Address all lint issues, including but not limited to warnings.
 
@@ -457,7 +457,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - `const` generic parameters; `readonly` array parameters; meaningful constraint names (e.g. `TData`).
 - Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
 - Use assertion functions (`asserts value is T`) for runtime type narrowing.
-- `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check.
+- `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
 - Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
 #### Variables and values
@@ -681,7 +681,7 @@ Cut it.
 - Identify the target package and task before running tests; do not reflexively use repo-root `mise run test` for narrow package work.
 - Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
 - All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
-- Never substitute `bun test` for a missing mise task; it misreports (`PASS` lines then `0 pass / 0 fail`) under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern) if no task exists. A `PreToolUse` hook (`ccgr`, `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
+- Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists. A `PreToolUse` hook (`ccgr`, `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
 - Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
 - There is no `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript. The hook is on the roadmap but at least a month out.
 - `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
