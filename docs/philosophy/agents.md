@@ -314,11 +314,3 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
-
-## Changelog
-
-### 2026-06-05
-
-Six heavy AGENTS.md bullets cut to operative rule plus pointer, deep rationale relocated here under "Relocated rule rationale": the Simplification progression (1163 to 459 chars), the Regular-expressions linear-pass requirement, the `.rs` max-lines budget detail, the no-function-root-let remediation menu's justifications, the Security cross-syntax-boundary why, and the third-party fork-ownership exception mechanics.
-AGENTS.md dropped roughly 1.7k chars to 55759; the relocated why landed in five new philosophy subsections.
-Residual-terseness style chosen for this round: rule plus pointer (aggressive), the deep why lives only here and in `docs/audit/chain-flatten-skewed-tree.md`.
