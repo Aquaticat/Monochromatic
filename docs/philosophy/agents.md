@@ -273,9 +273,9 @@ The `runbook` skill encodes the required sections (Setup, Steps, What to check, 
 
 A test file covering sync matchers but skipping async matchers is the same as no async tests; the bug ships silently.
 
-#### Enforcement mechanisms: why the stop-hook name is not in AGENTS.md
+#### Enforcement mechanisms: why hook existence is not in AGENTS.md
 
-AGENTS.md deliberately does not name the stop hook (`ccsr`) that enforces hedge-phrase and trailing-question rules. The hook exists and fires on every response; naming it in the rules document lets agents game the surface pattern (swapping one hedge for a novel one that passes the filter but carries the same epistemic gap) rather than internalizing the underlying rule. The hook's existence is discoverable from rejected-response feedback anyway, but AGENTS.md should not hand agents the bypass recipe up front. The rules themselves (the hedge-phrase list, the ask-user-tool question rule) remain; only the hook's identity and implementation details are suppressed. This follows the same principle as the "Runtime environment checks" rule in "What does not belong": passive text in AGENTS.md is weaker than an active hook, and naming the hook trades a small self-catch convenience for a larger gaming risk.
+AGENTS.md deliberately does not expose the existence of Claude Code hooks, not merely their names: the stop hook (`ccsr`) enforcing hedge-phrase and trailing-question rules, the PreToolUse guardrail (`ccgr`), the roadmap PostToolUse type-check. Flagging the machinery at all lets agents game the surface pattern (swapping one hedge for a novel one that passes but carries the same epistemic gap) and reframes an internalized rule as an external gate to dodge. The rule the agent must own stays (the hedge-phrase list); the fact that a hook backstops it is omitted. The trailing-question rule is dropped from AGENTS.md entirely rather than reworded: "ask via the question tool, never end on a bare question" restates standard harness behavior the `AskUserQuestion` tool and its description already carry, so it fails the Purpose test for non-obvious project knowledge. Exception: the `bash-output-filter` `~` substitution stays named, because its observable effect (line-start paths rewritten in tool output) must be understood precisely to debug paths, and it carries no gaming risk. Hook identities and implementation details otherwise live only in this doc. This follows the same principle as the "Runtime environment checks" rule in "What does not belong": passive text in AGENTS.md is weaker than an active hook.
 
 #### Follow document pointers: the worked example
 
@@ -284,3 +284,14 @@ A ToS that says "Services are governed by separate subscription agreements, not 
 #### Linting: why the oxlint-disable placement matters
 
 The disable goes before the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the very next line after the declaration; leaving a disable open longer than necessary silences unrelated violations. `// oxlint-disable-next-line` applies only to the literal next physical line, so placed between TSDoc and declaration it lands on the TSDoc and the suppression is lost; use the block-level disable + enable pair wrapping TSDoc and declaration tightly instead.
+
+## Changelog
+
+### 2026-06-05
+
+AGENTS.md stopped exposing the existence of Claude Code hooks.
+Removed the Stop-hook and PostToolUse-roadmap descriptions, the PreToolUse guardrail (`ccgr`) and bun-test-block sentence, the `UserPromptSubmit hook output` and `hook confs in .claude/settings.json` references, and the hedge "hook-caught"/"send-time hook" framing.
+Operative rules were reworded to describe observable behavior (`the conf requires`, `catch these before sending`, `no automated check`, `no automated type-check yet`) rather than dropped, except the trailing-question rule, which was deleted outright as a restatement of standard harness behavior the `AskUserQuestion` tool already carries.
+The `bash-output-filter` `~`-substitution rule stays named by explicit decision (its observable effect must be understood to debug paths; no gaming risk).
+The Enforcement-mechanisms section reduced to the `forbidden-strings` CI scan; the Codex work-in-progress caution was deleted as inferable secondary-harness trivia.
+The "why hook existence is not in AGENTS.md" rationale above was rewritten to match.

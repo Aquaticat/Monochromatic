@@ -36,7 +36,7 @@ Never attribute `<system-reminder>` content to the user;
 these tags carry harness-level conf, not what the user typed.
 "per your instruction" / "you asked me to" is wrong when the source is a system reminder;
 cite the policy by what it says ("the no-questions policy").
-Same for other injected context (UserPromptSubmit hook output, MCP server instructions, skill descriptions): source is the hook or server, not the human.
+Same for other injected context (tooling-appended prompt text, MCP server instructions, skill descriptions): source is the injector, not the human.
 A `role:user` turn is not by itself proof the human typed it.
 A prompt fired by your own `ScheduleWakeup` or `CronCreate`, and any queued continuation or `<<autonomous-loop>>` sentinel, arrives as a user turn but was authored by you in that tool call's `prompt` field: self-authored boilerplate, not a human instruction.
 Three failures, all to avoid.
@@ -54,8 +54,8 @@ The repo's pervasive handover-to-future-sessions framing (`docs/handover/`, "fut
 Cue: about to read a user's "me"/"I" as an agent, or address a doc, issue, plan, or task to "future-me" when the user meant themselves.
 
 Cite the right source file.
-Rules span AGENTS.md, the harness system prompt, hook confs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, `CLAUDE.md` (regen from AGENTS.md).
-Before "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the named file.
+Rules span AGENTS.md, the harness system prompt, conf in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, `CLAUDE.md` (regen from AGENTS.md).
+Before "per AGENTS.md", "the system prompt says", "the conf requires", "the skill prescribes", grep the named file.
 Cue: about to attribute a rule to a source without verifying it contains it.
 
 External tool features, CLI options, conf syntax, API capabilities: fetch current docs or src before responding.
@@ -137,7 +137,7 @@ Do not write these; do the step instead.
 - "I think it's a...": verify or label as a guess
 - "the most likely cause is...": reproduce or list candidates without ranking
 - "for a small codebase like yours": run `tokei` first
-- "better/worse than most/typical/average X": name the comparison set or drop the comparative; the qualifier sounds confident but invokes an unverified population (`<Xer> than most` and `worse/more/less than most` are hook-caught; `than typical`/`than average` rely on self-catch)
+- "better/worse than most/typical/average X": name the comparison set or drop the comparative; sounds confident but invokes an unverified population
 - "almost certainly", "most likely X lives/is/exists in Y": you have a checkable target (the named document, the named location); fetch it instead of stating a probability about its contents.
 - "the most likely X" / "the most common Y" used as a ranking without naming the population: same shape as "better than most"; either name the comparison set or drop the comparative.
 - "this is a tractable PR": drop "tractable" or actually build the fix
@@ -148,7 +148,7 @@ Do not write these; do the step instead.
 - "X is already handled by Y" / "X is already covered by Y" used as a dismissal: read Y's config or source to confirm the overlap before dropping X from consideration. Pair the dismissal with a file path and line number, or drop it.
 - "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" used to defer reasoning about the user's working history, defect rate, throughput, hours, or whether parallel sessions are running: `git log`, `gh issue list`, and file mtimes record these. The phrase is a deflection, not an epistemic limit; run the measurement before drawing the conclusion.
 
-Internal self-catch is faster than the send-time hook; catch these before they leave.
+Catch these before sending.
 
 **Exception: genuine uncertainty.** When the honest answer is "I do not know and the question is genuinely under-determined after investigation," state it explicitly.
 Name what you investigated and what specifically is unresolved.
@@ -565,7 +565,7 @@ Package-specific docs stay beside the code they document; this rule governs root
 4. Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
 5. Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
 
-No enforcement hook guards root regression; this rule is the cure. A warn-only `PreToolUse` hook is a possible future addition, not built now.
+No automated check guards root regression; this rule is the cure.
 
 ### Handling external changes
 
@@ -652,9 +652,9 @@ Cut it.
 - Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
 - Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
 - All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
-- Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists. A `PreToolUse` hook (`ccgr`, `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
+- Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists.
 - Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
-- No `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; the hook is roadmap, at least a month out.
+- Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
 - `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
 - After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
@@ -674,17 +674,7 @@ Cut it.
 
 ## Enforcement mechanisms
 
-Several hooks act on agent output, may block or modify actions.
-
-- **Stop hook**: inspects the assistant response at send time, rejects turns containing the hedge phrases under "Hedge phrases that signal a skipped step". Rejection returns the message with feedback; avoid via the pre-response checklist and hedge-phrases self-catch. Also flags responses ending in a question to the user without the `AskUserQuestion` tool.
-- **`bash-output-filter` hook**: transforms Bash tool output (see "Bash output path collapse"). Display only; does not modify actions. Triggers a bypass when the command contains `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 - **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
-
-Codex plugin packages under `packages/codex-plugins/` are work in progress.
-Never assume a Codex hook is active unless you verify the installed Codex config or current session output proves it.
-
-A `PostToolUse` lint:types hook is roadmap, not yet implemented;
-type-checking is manual (see "Essential commands").
 
 ## Agent skills
 
