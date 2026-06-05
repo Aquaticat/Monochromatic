@@ -242,8 +242,8 @@ DNF: Discover something not immediately obvious to a future reader: document it 
 - RT2: `agent-browser`: headless browser CLI; rendered web pages, screenshots, web UI interaction, deployed-app verification
 - RT3: `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs are incomplete
 - RT4: `gh`: GitHub issues, PRs, release notes, repository metadata
-- RT5: Web search cannot inspect package internals (sizes, dependency trees, source); clone repos or install packages
-  (see "Before running a command" for the clone-to-`/tmp/agent` operational rule)
+- RT6: Never remove cloned repos or other audit artifacts from `/tmp/agent`;
+  the user will clean up when ready
 
 ## Before running a command
 
