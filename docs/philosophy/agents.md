@@ -128,7 +128,7 @@ What belongs instead: the name of the tool, what it covers in this project's con
 ### Negative prompts
 
 Avoid "Never assume X" when the positive instruction already makes the intent clear.
-"Use the current date from the system prompt" is sufficient; "Never assume or guess" is redundant noise.
+The positive rule carries the action; the negative restatement is redundant noise.
 
 ### Code examples for rules that are self-explanatory
 
