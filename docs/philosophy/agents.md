@@ -19,6 +19,13 @@ This philosophy doc and every other doc under `docs/` stay normal prose: referen
 Never compress away the load-bearing strings: tokens, paths, commands, identifiers; code blocks; section headings (external and internal cross-references resolve by name); the verbatim "Hedge phrases that signal a skipped step" list (a hook matches it literally).
 Caveman compresses prose, never the strings the rules act on.
 
+## Changelog policy
+
+Changelogs are transient here, not permanent.
+After an AGENTS.md change lands, add a `## Changelog` entry at the end of this doc describing what changed and why, commit the doc so git preserves the entry, then remove the entry and commit again.
+This keeps the doc short while git history retains every changelog for future readers (`git log -p docs/philosophy/agents.md`).
+Never let `## What was compressed`-style narratives accumulate here; the four prior ones were removed when this policy took effect and remain recoverable from history.
+
 ## What does not belong
 
 ### Skill invocation pointers
@@ -160,153 +167,7 @@ Restating that in AGENTS.md spends tokens every session to describe what the cod
 Keep AGENTS.md to rules that change what an agent decides at a fork it would otherwise get wrong; leave runner choice and test-file mechanics to the tasks and the code.
 This is the test-tooling instance of the general rule above ("Code examples for rules that are self-explanatory" and "Detailed sub-rules for generic workflows"): a convention an agent will copy from its surroundings does not need a written rule.
 
-## What was compressed (2025-02-25)
-
-AGENTS.md was reduced from 5839 words to ~1500 words at the time. (As of 2026-05-09, the post-2025 monotonic regrowth had brought it back to 6672 words / 684 lines before the second compression pass; see "What was compressed (2026-05-09)" below.)
-The following categories of content were handled:
-
-### Moved to code-review skill
-
-The harness should auto pick up skills in skills dirs and therefore even pointers to skills are not documented.
-
-All bad/good code examples were relocated to `.factory/skills/code-review/SKILL.md` where they serve as patterns for the reviewing agent to flag:
-
-- Functional vs imperative loop examples
-- Object iteration (`for...in` vs `Object.entries`) examples
-- Named condition extraction examples
-- Single-letter variable examples
-- Manual promise creation (`new Promise` vs `wait()`) examples
-- TSDoc WHY-vs-WHAT comment examples
-- TSDoc block comment terminator escaping examples
-- Symbol union narrowing anti-pattern examples
-- Generics `const`/`readonly` good/bad examples
-- Custom error class examples
-- Assertion function examples
-- Type guard examples
-- `notNullishOrThrow` vs `!` operator examples
-- Silent error handling examples
-- CSS shorthand, color token, and state styling examples
-- Region marker examples
-- Commit message format and multi-scope examples
-
-### Dropped as inferable
-
-- "Check web sources, session history, or codebase as appropriate"; implied by "search for evidence"
-- Detailed CLI tool execution patterns (`uv run script.py` not `uv run python script.py`): generic agent knowledge
-- Third-party repo rationale bullets ("breaks git pull", "creates merge conflicts"): obvious consequences of the rule
-- "Convert callback-based APIs to promises"; implied by "async/await only"
-- "Implement interfaces explicitly when a class should conform to a contract"; standard TypeScript knowledge
-- "Use abstract classes sparingly, prefer interfaces and composition"; standard OOP knowledge
-- "Document version requirements in both the pinning file and README"; generic practice
-- "Regularly review pinned versions to check if constraints still apply"; generic practice
-- TSDoc rationale about "obvious from context" and "dead code" caveats; the rule to document all declarations is sufficient
-- Individual type descriptions for commit types (`style: Changes that do not affect...`): Conventional Commits is a well-known spec
-- `dprint` enforcement notes: the tool config speaks for itself
-- "For arrow functions, make sure the JavaScript engine can infer a name"; inferable from "always name functions"
-
-### Kept in compressed form
-
-Rules that are non-obvious or project-specific were retained as terse single-line bullets:
-
-- Progressive simplification pattern (imperative -> while -> for -> recursive -> HOF)
-- File-splitting justification comment clause
-- "Never remove logging" philosophy
-- "Avoid meta-references" documentation standard
-- "Avoid deprecated features" with `substr()` example
-- Assertion functions (`asserts value is T`)
-- Type guard pattern
-- `as` over angle bracket syntax; conditional type nesting warning
-- Unused variable underscore-prefix convention
-- `process.exitCode` only for non-standard codes
-- "Combine console.log/error messages into thrown errors"
-- `dedent` import path (`string-dedent`)
-- Generic `Function` type ban; unused Generator params
-
-### Skill file structure change
-
-Skills were moved from `.factory/skills/<name>.md` to `.factory/skills/<name>/SKILL.md` to match the expected Droid skill format.
-
-## What was compressed (2026-05-09)
-
-AGENTS.md was compressed from 6672 words / 684 lines to 5894 words / 449 lines (-12% words, -34% lines). The smaller word reduction relative to 2025-02-25 reflects a deliberately less aggressive policy: the user opted for "Moderate merge" (preserve all rules, examples, and concrete references; drop only duplicated framing prose), not the full philosophy-doc rubric.
-
-### Sub-section merges
-
-- **Pre-response checklist item 4 + "Hedge phrases that signal a skipped step"**: single hedge-phrase list now lives in the dedicated section; checklist item 4 cross-references it. Full hedge list, the stop-hook reference, and the genuine-uncertainty exception clause all preserved.
-- **"Measure before you characterize" + "Ask only for non-measurable facts"**: collapsed to "Measure-vs-ask" with two bolded sub-rules. Both example lists (measurement commands; non-measurable cases) and the three-failure-direction summary preserved. Dropped: prose framing, employee-vs-boss analogy retained inside.
-- **Pre-response checklist item 9 + "Before claiming inability"**: checklist item 9 cross-references the dedicated section; the bridging-tools list (`ffmpeg`, `pandoc`, etc.) and "state the bridges you tried" rule kept in the dedicated section.
-- **TypeScript standards / Type system / Variables and values / Programming patterns**: merged into one "TypeScript" section with four bolded sub-headings (Standards / Type system / Variables and values / Programming patterns). Every bullet kept; only the four `H3` headers became four `**bold**` paragraph leads.
-- **Cross-runtime / Script preferences / Tool version management / Hooks and automation**: four single-bullet H3 sections collapsed to one "Cross-runtime and scripts" sub-section with four bullets. All rules preserved verbatim.
-- **Agent skills** trailing meta section; three single-line H3 sub-sections (Issue tracker / Triage labels / Domain docs) flattened to a three-bullet list.
-
-### Prose tightening (highest-yield)
-
-- **Communication style**: six paragraphs collapsed to five tighter paragraphs. Dropped: connective restatements between rule and example, "Why? Because..." scaffolding.
-- **Vet vendor recommendations**: 43 lines to ~26 lines. Dropped: closing two paragraphs that restated the same lesson; bullet sub-explanations folded into single-line phrasing.
-- **Constraint-fit**: 35 lines to ~22 lines. The "Signal you are about to violate this rule" elaboration kept; the "verbalized vs silent form" prose moved inline to the third bullet.
-- **Resource-exhaustion isolation**: 24 lines to ~16 lines via paragraph compression; full six-example bullet list kept.
-- **Test coverage** and **Verify at user boundary**: light prose tightening; all five user-boundary examples kept verbatim.
-
-### Structure note
-
-The moment-of-decision top-level structure (eight sections from "Before responding" through "Agent skills") was retained even though the user authorized "Free reorganization." That ordering encodes **when** each rule loads; a feature called out in the document's preamble. Reorganizing into topical sections would lose load-timing information without compensating compression gain. Sub-section reorganization within each top-level section was applied freely, per the merge list above.
-
-### What was deliberately not done
-
-The PHILOSOPHY.AGENTS.md "What does not belong" rules above (drop standard-tool examples, generic rationales, code examples for self-evident rules, multi-bullet expansions of single rules, repetitive "why this matters" paragraphs) were **not applied** in this pass. The user explicitly chose "Moderate merge" over "Apply philosophy doc," meaning the philosophy-doc deletions are not precedent for this compression. Future sessions considering a third compression pass should treat the philosophy-doc deletions as a separate decision the user must opt into, not as standing authorization.
-
-The plan's proposed consolidation of `Architecture decisions` / `Enforcement mechanisms` / `Agent skills` into a single trailing section was **not applied**. The three address distinct concerns (code-organization rules; enforcement tooling that acts on agent output; skill-file pointers), and the consolidation gain (~4 lines of header overhead) does not justify topical conflation. They remain as three separate top-level sections.
-
-The line-number references in `PLANNING.extract-refactor-guardrail.md:36` (cited as `AGENTS.md:78-79`) were already stale before this rewrite, so no special accommodation was made for line-number stability. Cross-references to AGENTS.md from `docs/decisions/vector-design.md`, `TODO.forbidden-strings.md`, and `TROUBLESHOOTING.pi-compaction-empty-summary.md` are by topic, not by line, and remain valid.
-
-## What was compressed (2026-05-11)
-
-AGENTS.md was compressed from 6693 words / 480 lines to 6672 words / 477 lines (-0.3% words, -0.6% lines). The much smaller reduction relative to 2026-05-09 reflects the document already being near a Moderate-merge fixed point; this third pass targeted residual redundancy that accumulated post-2026-05-09 rather than addressing previously-untouched areas. The user explicitly chose the same Moderate-merge rubric (preserve all rules, examples, and concrete references; drop only duplicated framing prose), confirmed the merge of `Documentation standards` + `Markdown conventions`, and confirmed consolidation of the clone-source cluster around its canonical home.
-
-### Sub-section merges
-
-- **Documentation standards + Markdown conventions**: merged into one `Documentation standards` section with two `####` sub-headers (`#### Prose style`, `#### Markdown syntax`). The "Documentation standards" header was retained (not "Documentation and Markdown" as initially proposed) to preserve an external reference at `PLANNING.forbidden-strings-em-dash.md:281`. Duplicate "**bold** for emphasis" mention in the Markdown-conventions opener removed; the rule remains under `#### Prose style`.
-- **TypeScript function-declaration bullets**: three bullets ("No arrow functions", "No const x = function() {}", "Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable") merged into one bullet preserving all four rationales (anonymous stack traces, hide intent, no TSDoc, no overloads, harder to scan, external-API exception with paren rule). The separate "No calling functions before their declaration" bullet kept distinct.
-- **Pre-response checklist items 7 and 8**: merged into one item covering both verify-existing-citation and add-missing-citation cases. Old item 9 renumbered to new item 8.
-- **Communication style paragraphs 4-5**: merged into one paragraph covering documentation-gap recognition, propose-edit, no-promise-to-future-self, monotonic-growth counter, and the cue.
-
-### Prose tightening
-
-- **Stop hook entry** in `Enforcement mechanisms`: the inline 6-phrase hedge list ("probably", "maybe", etc.) replaced by a back-reference to the canonical "Hedge phrases that signal a skipped step" section.
-- **Hedge phrases section**: the reciprocal back-pointer "(Item 4 of the pre-response checklist applies to the same phrases.)" dropped; the checklist already points here.
-- **Proactivity calibration**: three "(see X)" parenthetical cross-references dropped from paragraph 2; the rules stand on their own. The recognition-cue paragraph at line 23 retained as distinct from the action rule at line 19.
-- **Clone-source-and-read cluster**: six mentions (pre-response checklist item 2, hedge-phrase entry "no public diagnosis exists", research-tools web-search rationale, before-running-command clone rule, Third-party-libraries canonical, "Name the verification step" example) consolidated. Line 387 (Third-party libraries) kept as canonical home with the full rule and the "quote file path, line number, code excerpt" caveat. Other mentions reference back via "(see ...)" pointers. Distinct sub-rules preserved separately: the `gh repo clone` vs `git clone` operational preference (`Before running a command`); the "do not remove cloned repos from `/tmp`" lifecycle rule (`Research tools`); the verification-step example value (`Name the verification step`).
-
-### Heading convention fix
-
-The 2026-05-09 pass introduced a pattern of using `**Title.**` bolded paragraphs as section sub-headings (e.g. `**Standards.**`, `**Type system.**` under `### TypeScript`). The user flagged this in the 2026-05-11 pass as misusing bold for titles. Convention now: bold is for inline emphasis only; section sub-headings use proper ATX headers (`####`) one level deeper than the parent `###`.
-
-Converted in this pass:
-
-- `**Zero-match silent failures:**` -> `#### Zero-match silent failures`
-- `**Non-zero-match silent failures (same shape, opposite direction):**` -> `#### Non-zero-match silent failures (same shape, opposite direction)`
-- TypeScript: `**Standards.**`, `**Type system.**`, `**Variables and values.**`, `**Programming patterns.**` -> `#### Standards`, `#### Type system`, `#### Variables and values`, `#### Programming patterns`
-- Documentation standards: `**Prose style.**`, `**Markdown syntax.**` (newly introduced earlier in this same pass) -> `#### Prose style`, `#### Markdown syntax`
-
-Retained as inline lead-ins (not titles, not converted): `**Measurable facts: measure.**`, `**Non-measurable facts: ask.**`, `**Exception: genuine uncertainty.**`. Each is followed immediately by a non-bolded sentence continuation on the same line, which is correct bold-for-emphasis usage rather than bold-as-title.
-
-The Prose-style rule was sharpened to capture the convention: "Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead."
-
-### Structure note
-
-The `Documentation standards` and `Markdown conventions` section headers were planned to merge into `Documentation and Markdown`, but a grep across the repository found `PLANNING.forbidden-strings-em-dash.md:281` referencing "Documentation standards" by name. Section names should remain stable (`PHILOSOPHY.AGENTS.md:221`); the merge proceeded under the original `Documentation standards` header with the prose-and-markdown content reorganized into two `####` sub-headers. This preserves the external reference.
-
-### What was deliberately not done
-
-The PHILOSOPHY.AGENTS.md "What does not belong" rules were again not opted into; the user chose the Moderate-merge rubric (matching the 2026-05-09 pass). The `Pre-response checklist` item 4 rephrase ("(see X)" -> "(full list: X)") was considered but skipped: the rephrase did not shorten the back-reference and offered no DRY benefit. The proactivity recognition-cue paragraph (post-edit line 23) was retained alongside the action rule (line 19) despite their surface similarity; the cue framing aids recognition.
-
-The `Pre-response checklist` items 3, 5, 6 were not consolidated: tightening these to back-references would strip the remediation verb, which is the checklist's whole value as a quick-scan tool. The verification-step example at `Name the verification step` line 137 ("verified by reading the package's README at the cloned repo") was retained verbatim despite mentioning a cloned repo; it is one of three illustrative examples, not a duplicate rule.
-
-## What was compressed (2026-05-23)
-
-The user opted into the full "What does not belong" rubric above (deferred by the 2026-05-09 and 2026-05-11 moderate-merge passes, which required an explicit opt-in). Goal: AGENTS.md under 50000 chars. Levers applied: telegraphic prose; prose-only abbreviations (config to conf, source to src, documentation to docs, directory to dir, never inside backtick tokens, filenames, code blocks, or the verbatim hedge section); merge "Handing off manual actions" into "Before claiming inability"; cut generic rationale, illustrative example lists, model-obvious syntax, and harness-redundant content; and, per the user's "why belongs to PHILOSOPHY.AGENTS.md" directive, relocate the longer project-specific explanatory passages out of AGENTS.md into the "Relocated rule rationale" section below. PHILOSOPHY.AGENTS.md is treated as a dump doc: anything a future human or agent might need to understand a terse AGENTS.md rule lives here.
-
-### Relocated rule rationale (2026-05-23)
+## Relocated rule rationale
 
 The explanatory "why/how" for each rule below was moved here so AGENTS.md keeps only the terse enforceable rule, cue, and tokens. Headings match the AGENTS.md section they came from.
 
@@ -424,23 +285,12 @@ A ToS that says "Services are governed by separate subscription agreements, not 
 
 The disable goes before the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the very next line after the declaration; leaving a disable open longer than necessary silences unrelated violations. `// oxlint-disable-next-line` applies only to the literal next physical line, so placed between TSDoc and declaration it lands on the TSDoc and the suppression is lost; use the block-level disable + enable pair wrapping TSDoc and declaration tightly instead.
 
-### Stats and decisions (2026-05-23)
+## Changelog
 
-AGENTS.md went from 59244 chars (684-equivalent rich form) to 47696 chars, under the user's hard 50000 target and the ~48000 stretch goal. The split rule: AGENTS.md keeps the terse enforceable rule, its cue, and the tokens/paths/commands needed to act; PHILOSOPHY.AGENTS.md holds the rationale, mechanism, and examples behind each rule. No information was lost across the two files: every original AGENTS.md backtick token survives in the union of the two files except four user-authorized cuts.
+### 2026-06-05
 
-Deliberately dropped (not relocated), with the user pointing at each as model-obvious or redundant:
-
-- The generic shell-utility example list (`jq`, `magick`, `pdftotext`, and the others) under "Before claiming inability"; `agent-browser` stays because it is named in the actual bridge guidance.
-- The `gh api repos/.../comments` commit-comment invocation; models already know `gh`. The rule (post a commit comment instead of amending) stays.
-- The "logical unit" definition under git commit guidelines; the model knows what a logical commit is.
-- The push-authorization restatement; it duplicates the harness Git Safety Protocol.
-
-Kept verbatim in AGENTS.md: the "Hedge phrases that signal a skipped step" list (it mirrors the hardcoded stop-hook trigger set in `packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-phrases.ts`, so it cannot be inferred or thinned) and all fenced code blocks (git-cleanup commands, commit-message example).
-
-Prose abbreviations applied in AGENTS.md text only, never in backtick tokens, filenames, code blocks, or the hedge section: config to conf, source to src, documentation to docs, directory to dir.
-
-AGENTS.md prose paragraphs were then broken at sentence and clause boundaries to satisfy the doc's own "break lines at semantic boundaries" markdown rule (the prior single-long-line prose violated it). Numbered checklist items and rule bullets were left single-line: one line per item serves the checklist's quick-scan purpose, and breaking list items into continuation lines is structurally fragile.
-
-The 12 quoted `See "<section>"` cross-reference targets and the moment-of-decision top-level structure were preserved; only "Handing off manual actions" was merged (into "Before claiming inability"), with its one `Apply "..."` reference in pre-response checklist item 10 rewired.
-
-A continuation pass (same date) reached the ~48000 stretch goal by relocating more rationale and illustrative examples into the "Relocated rule rationale" subsections above: the choosing-technology layer enumeration, the manual-action bridge mechanics, the guard-test throwaway rationale, the pre-response item 5 dismissal examples, the runbook section list, the match-action security-alerts example, the test-coverage sync/async example, the follow-document worked example, the oxlint-disable placement rationale, and the exhaust-layers per-layer examples. The user then directed that normal operation must not depend on this doc: every inline "(... in PHILOSOPHY.AGENTS.md)" pointer was removed from AGENTS.md (the newly-added ones plus four pre-existing vague pointers at the measurement-recipes, name-verification, resource-exhaustion, and max-lines rules), leaving each AGENTS.md rule self-sufficient. The relocated content stays here as reference, discoverable through the single global note at the top of AGENTS.md and the section-name correspondence. The rule against re-introducing such pointers is the new "Inline pointers to this philosophy doc" entry under "What does not belong".
+- Fixed 11 internal and cross-file contradictions in AGENTS.md and this doc (broken `see "Simplification"` cross-ref, `console.error` catch-block conflict, commit-all vs scoped-pathspec, single-letter ban vs loop counters, long-form-flags self-violation, add-task vs bun-direct, difficulty/duration guess vs drop, the `PHILOSOPHY.AGENTS.md` self-name, the Factory/Droid hook example, em-dash/italics style breaks). Commit `47921439`.
+- Trimmed five rationale passages duplicated from this doc back out of AGENTS.md to the terse rule plus tokens. Commit `9560efbf`.
+- Rewrote AGENTS.md prose in caveman style and added the Writing-style principle here. Deleted skill-pointer sections (CSS whole, Choosing technology and vendors) now that the harness auto-loads skill descriptions; added the Skill-invocation-pointers entry under What does not belong. Collapsed the `.out-of-scope/` exemptions to one line and moved the Claude Code / JSR / `bun install` examples here. Commit `f655c932`.
+- Cut the Long-form-flags rg-trap walkthrough (preserved in the search-results failure-modes subsection) and purely illustrative `e.g.` examples (`module-es`, Rolldown, `l.info`, `TData`) from AGENTS.md. Commit `cb9cf511`.
+- Made changelogs transient: added the Changelog policy, removed the four accumulated `What was compressed` narratives and the `Stats and decisions` section (recoverable via git history).
