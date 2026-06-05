@@ -19,7 +19,7 @@ But the primary trigger is self-initiated: you just fixed or explained an
 external tool behaving unexpectedly, so write it up now without being asked.
 
 The skill encodes the required sections, the source-trace rule,
-and the 5-constraint upstream-filing check that gates the draft GitHub
+and the 6-constraint upstream-filing check that gates the draft GitHub
 issue at the end.
 
 A TROUBLESHOOTING file is the durable artefact of investigating an
@@ -67,14 +67,14 @@ not `bun`). One bug or one cluster of related bugs per file.
 6. **What does not work**: approaches you tried and rejected, with the
    reason each failed. Saves the next investigator from re-discovering
    dead ends.
-7. **Draft upstream issue**: gated by the 5-constraint check below.
+7. **Draft upstream issue**: gated by the 6-constraint check below.
 
-## The 5-constraint upstream-filing check
+## The 6-constraint upstream-filing check
 
-Before filing upstream, all five must hold. Write a "Why we do not file
+Before filing upstream, all six must hold. Write a "Why we do not file
 this upstream" subsection that walks each constraint explicitly, even
 when the answer is yes; the audit trail is the point. Default policy:
-do not file. Every reported issue that does not satisfy all five is
+do not file. Every reported issue that does not satisfy all six is
 treated as a publicity incident.
 
 1. **Is it really upstream's fault?** Distinguish behaviour from
@@ -86,25 +86,38 @@ treated as a publicity incident.
    the prototype, not to decide pass/fail.
 3. **Are they supporting this use case?** Look for docs, examples,
    tests, or stated value propositions covering the combination.
-4. **Will they likely fix it?** This fails only when upstream is
+4. **Would the repo welcome our contribution?** Check CONTRIBUTING.md,
+   issue templates, pull request templates, README, maintainer docs,
+   repository policies, and recent maintainer responses for signals
+   about external contributions and AI-assisted reports. This fails
+   when the repo says not to file issues or patches from outside
+   contributors, requires a fully human-authored filing we cannot
+   truthfully provide, bans AI-assisted or heavily-AI-assisted issue
+   filings, or maintainers have rejected comparable AI-assisted
+   contributions. Absence of a policy is not a fail: cite the files and
+   tracker searches checked, and say no ban was found. When the policy
+   allows AI assistance only with disclosure, the draft must disclose
+   assistance and name the reproduction, source trace, prototype, and
+   workaround checks a human verified.
+5. **Will they likely fix it?** This fails only when upstream is
    actively leaning no, shown by their docs (a documented won't-fix or
    stated non-goal) or direct communication (a maintainer declining a
    comparable request). Absence of signal is not a fail: no existing
    issue, no recent commits in the path, or silence all still meet this
-   constraint. Check commit history and release deltas to inform the
-   draft, not to gate it; cite what you find.
-5. **Have we prototyped a minimal fix compatible with their
+   constraint. Check the upstream tracker, commit history, and release
+   deltas to inform the draft, not to gate it; cite what you find.
+6. **Have we prototyped a minimal fix compatible with their
    architecture?** "Minimal" means the smallest set of changes that
    actually solves the issue; it does not constrain the fix's
    complexity. The minimal set may span several files or be intricate.
    Speculative "suggested fix" prose without code, a correctness
    argument, or tests against a nontrivial set does not count.
 
-### Auto-prototype when constraints 1-4 hold or sorta-hold
+### Auto-prototype when constraints 1-5 hold or sorta-hold
 
-When constraints 1-4 are all "yes" or "yes-with-a-soft-yes" (e.g. #4
+When constraints 1-5 are all "yes" or "yes-with-a-soft-yes" (e.g. #5
 reads "plausible" or "likely" rather than a definitive yes), do not
-stop at "constraint 5: not yet" and report the gate failed. Prototype
+stop at "constraint 6: not yet" and report the gate failed. Prototype
 the minimal fix yourself before declaring the audit done:
 
 1. Clone the upstream source into a fresh, private, unpredictable
@@ -138,11 +151,11 @@ the minimal fix yourself before declaring the audit done:
    prefix dropped since the directory names the family) and link to it
    from the doc with a relative path (the bare filename, same directory). The inline-vs-file
    threshold is about readability, not significance; either form
-   satisfies constraint 5 as long as the patch is reproducible from
+   satisfies constraint 6 as long as the patch is reproducible from
    what is recorded. With this recording in place, the audit ends
-   with all five constraints "yes" and the draft becomes fileable.
+   with all six constraints "yes" and the draft becomes fileable.
 
-The trigger is "constraints 1-4 hold or sorta-hold"; not "the fix is
+The trigger is "constraints 1-5 hold or sorta-hold"; not "the fix is
 already known to be small" and not "we are sure upstream will accept
 this." A large or multi-file minimal set is still in scope: prototype
 it. Sometimes the minimal fix is a one-line terminfo or config-table
@@ -151,7 +164,7 @@ gate, neither to skip the prototype nor to require it.
 
 If prototyping reveals the change breaks the architectural core or
 fails the tool's existing tests in unrelated places, re-evaluate
-constraints 2 and 4 with the new evidence and revise the audit. A fix
+constraints 2 and 5 with the new evidence and revise the audit. A fix
 that is merely large or intricate is not grounds to re-evaluate; only
 an architectural blocker is. The prototype is also a probe; a failed
 probe is useful data, not a wasted step.
@@ -173,7 +186,7 @@ A duplicate report is itself a publicity incident, so before opening
 anything new, search the upstream tracker for the same behaviour:
 `gh search issues` and `gh search prs` across open and closed state,
 with terms drawn from the symptom and the root cause, not just the tool
-name. Constraint 4 already runs this search to gauge movement; this step
+name. Constraint 5 already runs this search to gauge movement; this step
 acts on a hit. Read the matching thread and its comments in full, not
 just the title.
 
@@ -199,7 +212,7 @@ same empty comment.
 ## Draft format (kept as reference, do not file as-is)
 
 Even when you decide not to file, keep the draft so the rationale is
-auditable and a future session can re-evaluate the five constraints if
+auditable and a future session can re-evaluate the six constraints if
 upstream signal changes. Wrap the draft body in a `~~~md` fence so the
 future filer can copy it cleanly. The draft contains: title, labels,
 description with the same source trace as the "Root cause" section,
@@ -216,15 +229,15 @@ nothing to add), not a new-issue draft presented as fileable.
   code excerpt next to it.
 - The harness reproduces the failure when run as written.
 - Every workaround names a tradeoff.
-- The 5-constraint subsection is present even when you decide to file,
+- The 6-constraint subsection is present even when you decide to file,
   so the rationale is auditable.
 - The draft issue is wrapped in a fenced block and marked "do not file
-  as-is" unless all five constraints hold.
+  as-is" unless all six constraints hold.
 - The upstream tracker was searched for a duplicate. If one exists, the
   doc links it and either keeps a fenced, additive-only comment draft or
   states explicitly there is nothing to add; it does not also present a
   new-issue draft as fileable.
-- If constraints 1-4 held or sorta-held but constraint 5 read "not
+- If constraints 1-5 held or sorta-held but constraint 6 read "not
   yet," the audit is incomplete; either run the auto-prototype step
   and record the result, or document why prototyping was attempted and
   abandoned. "Not yet" without that follow-up is the failure mode this
