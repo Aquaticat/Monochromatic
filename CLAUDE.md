@@ -673,7 +673,16 @@ Stage and commit an explicit, package-scoped pathspec (`git add <path>`; `git co
 Reach for `--no-enforce-bulk-add` or `--no-enforce-only` only when no scoped pathspec can express the change (a genuine whole-tree single-session operation), never as the default form, and never baked into instructions to child sessions.
 The cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a scoped pathspec, or about to hand a child a commit recipe carrying a bypass flag.
 
-## When working with the workspace
+### External communications
+
+Do not append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, and anything else a maintainer or third party reads.
+Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push a decision or a follow-up task onto the reader, who is usually the user.
+Decide the matter yourself and state what you did;
+the message reports a result, not a menu.
+If a genuine choice remains that only the user can make, raise it with the user directly (AskUserQuestion) before sending the external message, not by punting it into the external text where it silently obliges them to respond.
+This does not forbid a single necessary question the external thread actually requires (a real blocker the recipient alone can unblock); it forbids the reflexive optional offer tacked on at the end.
+The cue: about to end an external message with "happy to", "want me to", "if you'd prefer", "say the word", or a question to the reader that you appended rather than were asked for.
+Cut it.
 
 ### Dependency management
 
