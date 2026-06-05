@@ -107,19 +107,29 @@ Cue: a single task subject would hide multiple kinds of evidence gathering or bl
 
 ### Pre-response checklist
 
-PRE: Before sending any response with substantive claims:
+PRE: Before sending any response with substantive claims, run this checklist.
 
-1. CK1: Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess; unbuilt-fix difficulty or duration is a claim to drop, not label (item 3).
-2. CK2: Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
-3. CK3: Estimated difficulty of a fix you have not built? Drop the estimate.
-4. CK4: Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
-5. CK5: Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/feature is used, whether a conf or AGENTS.md already covers it) or working pattern (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"); categorical dismissals are one `rg`/`find`/conf-read away (AGENTS.md counts). Cite the result inline; if wrong, fold the option back in.
-6. CK6: Assumed a non-measurable preference (which approach, what they value)? Ask.
-7. CK7: Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
-8. CK8: Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
-9. CK9: Quoted a clause or doc passage and drawn a conclusion? Restate subject and object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
-10. CKA: About to ask the user to perform a manual action? Try the bridging path first; must hand off, invoke the `runbook` skill (see "Before claiming inability").
-11. CKB: Revising a substantive claim the user just corrected? Treat the correction as evidence your previous verification path was insufficient: re-read primary sources, run concrete commands, or use a genuinely separate reviewer when independent review is asked. Never run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
+CK1: Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess; unbuilt-fix difficulty or duration is a claim to drop, not label (CK3).
+
+CK2: Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
+
+CK3: Estimated difficulty of a fix you have not built? Drop the estimate.
+
+CK4: Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
+
+CK5: Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/feature is used, whether a conf or AGENTS.md already covers it) or working pattern (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"); categorical dismissals are one `rg`/`find`/conf-read away (AGENTS.md counts). Cite the result inline; if wrong, fold the option back in.
+
+CK6: Assumed a non-measurable preference (which approach, what they value)? Ask.
+
+CK7: Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
+
+CK8: Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
+
+CK9: Quoted a clause or doc passage and drawn a conclusion? Restate subject and object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
+
+CKA: About to ask the user to perform a manual action? Try the bridging path first; must hand off, invoke the `runbook` skill (see "Before claiming inability").
+
+CKB: Revising a substantive claim the user just corrected? Treat the correction as evidence your previous verification path was insufficient: re-read primary sources, run concrete commands, or use a genuinely separate reviewer when independent review is asked. Never run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
 ### Measure-vs-ask
 
@@ -141,8 +151,9 @@ Trigger phrases for the assumption form: "for a project like this...", "in a typ
 
 OPT: Proposing a choice between distinct options ("A, B, or C?"): give each option its own pros and cons plus a fully sorted personal ranking covering every option, with the reason deciding each adjacent pair.
 
-- OPA: `AskUserQuestion`: each option's `description` holds its pros and cons; order options by preference (best first) and append "(Recommended)" to the top label; in the prose around the tool call, state the full ranking (e.g. "ranking: B > A > C") with the reason for each adjacent comparison.
-- OPI: Inline prose: one short paragraph or bullet block per option with pros and cons, then a "Ranking: B > A > C, because ..." line explaining each step of the order, not just the top pick.
+OPA: `AskUserQuestion`: each option's `description` holds its pros and cons; order options by preference (best first) and append "(Recommended)" to the top label; in the prose around the tool call, state the full ranking (e.g. "ranking: B > A > C") with the reason for each adjacent comparison.
+
+OPI: Inline prose: one short paragraph or bullet block per option with pros and cons, then a "Ranking: B > A > C, because ..." line explaining each step of the order, not just the top pick.
 
 OP2: Skip when the user asked yes/no on a single proposal, or already narrowed criteria enough that one option is determined.
 
@@ -150,19 +161,31 @@ OP2: Skip when the user asked yes/no on a single proposal, or already narrowed c
 
 HDG: Do not write these; do the step instead. Catch them before sending.
 
-- HG1: "probably small/large/fast/slow", "the fix is probably small": run the measurement, or read the source path and drop the estimate
-- HG2: "I think it's a...": verify or label a guess
-- HG3: "the most likely cause is...": reproduce, or list candidates without ranking
-- HG4: "for a small codebase like yours": run `tokei` first
-- HG5: "better/worse than most/typical/average X", "the most likely X" / "the most common Y" as an unnamed-population ranking: name the comparison set or drop the comparative
-- HG6: "almost certainly", "most likely X lives/is/exists in Y": fetch the named target instead of stating a probability about its contents
-- HG7: "this is a tractable PR": drop "tractable" or build the fix
-- HG8: "should be straightforward": drop "straightforward" or test the path
-- HG9: "no public diagnosis exists" as a stopping point: drop, or clone the source (see "Third-party libraries")
-- HGA: "an afternoon" or any duration estimate: drop unless you built a similar fix in this codebase before
-- HGB: "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" cutting off a candidate: cite an `rg`/`find`/config read (AGENTS.md and tsconfig count) or drop the dismissal
-- HGC: "X is already handled by Y" / "X is already covered by Y": pair with Y's config/source path and line confirming the overlap, or drop it
-- HGD: "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" deferring on working history, defect rate, throughput, hours, or parallel sessions: `git log`, `gh issue list`, and file mtimes record these; measure before concluding
+HG1: "probably small/large/fast/slow", "the fix is probably small": run the measurement, or read the source path and drop the estimate.
+
+HG2: "I think it's a...": verify or label a guess.
+
+HG3: "the most likely cause is...": reproduce, or list candidates without ranking.
+
+HG4: "for a small codebase like yours": run `tokei` first.
+
+HG5: "better/worse than most/typical/average X", "the most likely X" / "the most common Y" as an unnamed-population ranking: name the comparison set or drop the comparative.
+
+HG6: "almost certainly", "most likely X lives/is/exists in Y": fetch the named target instead of stating a probability about its contents.
+
+HG7: "this is a tractable PR": drop "tractable" or build the fix.
+
+HG8: "should be straightforward": drop "straightforward" or test the path.
+
+HG9: "no public diagnosis exists" as a stopping point: drop, or clone the source (see "Third-party libraries").
+
+HGA: "an afternoon" or any duration estimate: drop unless you built a similar fix in this codebase before.
+
+HGB: "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" cutting off a candidate: cite an `rg`/`find`/config read (AGENTS.md and tsconfig count) or drop the dismissal.
+
+HGC: "X is already handled by Y" / "X is already covered by Y": pair with Y's config/source path and line confirming the overlap, or drop it.
+
+HGD: "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" deferring on working history, defect rate, throughput, hours, or parallel sessions: `git log`, `gh issue list`, and file mtimes record these; measure before concluding.
 
 HUC: **Exception: genuine uncertainty.** When the honest answer is "I do not know, genuinely under-determined after investigation," state it: name what you investigated and what stays unresolved.
 The target is hedging as a substitute for research, not honest reporting after it.
@@ -172,12 +195,17 @@ The target is hedging as a substitute for research, not honest reporting after i
 
 EVL: For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending; each can flip the conclusion.
 
-1. EL1: **The tool itself**: usage volume, conf.
-2. EL2: **Parallel systems**: where the same need is met outside the tool.
-3. EL3: **Content of those parallel systems**: not just file count but what is inside.
-4. EL4: **Inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify the search ran; see null-search rule); thousands signal debt.
-5. EL5: **Suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
-6. EL6: **Stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
+EL1: First layer, **the tool itself**: usage volume, conf.
+
+EL2: Second layer, **parallel systems**: where the same need is met outside the tool.
+
+EL3: Third layer, **content of those parallel systems**: not just file count but what is inside.
+
+EL4: Fourth layer, **inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify the search ran; see null-search rule); thousands signal debt.
+
+EL5: Fifth layer, **suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
+
+EL6: Sixth layer, **stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
 
 ELR: Report findings at each layer before the conclusion.
 A recommendation after only checking layer 1 is a guess shaped by the surface you happened to look at.
@@ -240,12 +268,16 @@ GCW: When the review touches `cli-git`'s linked-worktree guard, account for the 
 
 ### Research tools
 
-- RT1: `rg`: fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob
-- RT2: `agent-browser`: headless browser CLI; rendered web pages, screenshots, web UI interaction, deployed-app verification
-- RT3: `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs are incomplete
-- RT4: `gh`: GitHub issues, PRs, release notes, repository metadata
-- RT6: Never remove cloned repos or other audit artifacts from `/tmp/agent`;
-  the user will clean up when ready
+RT1: `rg`: fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob.
+
+RT2: `agent-browser`: headless browser CLI; rendered web pages, screenshots, web UI interaction, deployed-app verification.
+
+RT3: `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs are incomplete.
+
+RT4: `gh`: GitHub issues, PRs, release notes, repository metadata.
+
+RT6: Never remove cloned repos or other audit artifacts from `/tmp/agent`;
+the user will clean up when ready.
 
 ## Before running a command
 
@@ -327,37 +359,52 @@ Unsure: propose a concrete edit and location.
 
 ### Cross-runtime and scripts
 
-- XRT: Prefer cross-runtime patterns instead of Bun-specific implementations.
-- SCR: Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
-- PIN: Pin tool versions only with clear justification and a comment explaining why.
-- SPG: Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions, to prevent recursive token burn.
+XRT: Prefer cross-runtime patterns instead of Bun-specific implementations.
+
+SCR: Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
+
+PIN: Pin tool versions only with clear justification and a comment explaining why.
+
+SPG: Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions, to prevent recursive token burn.
 
 ### Simplification
 
-- IMM: Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
-- UTL: Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
-- XNC: Extract and name concepts; start simple, refactor to complexity only when necessary.
-- ITR: Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
-- MXL: Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
-- MXR: Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
+IMM: Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
+
+UTL: Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
+
+XNC: Extract and name concepts; start simple, refactor to complexity only when necessary.
+
+ITR: Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
+
+MXL: Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
+
+MXR: Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
 
 ### Linting
 
-- LN1: Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
-- LN2: Treat each lint finding as a design signal, not a checkbox. Name the rule's real intent,
-  then make the best code shape that satisfies that intent and the rest of the codebase.
-  A shortcut taken for one warning is evidence about the care taken everywhere else.
-- LN3: Before disabling, suppressing, weakening types, broadening annotations, or otherwise skirting a lint rule,
-  inspect the linter source and the source code of the value being linted.
-  Try the rule's config or allow-list mechanism first.
-  If a suppression remains necessary, write or update a `.md` document that cites both source paths,
-  proves why the allow-list or config path cannot work, and links the suppression to that document.
-  Do not land the suppression without that document.
-- LN4: Prefer `Object.entries` and functional methods over `for...in`.
-- LN5: Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
-- LN6: Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration.
-- LN7: Never loosen lint rules without prior approval.
-- LN8: Address all lint issues, including but not limited to warnings.
+LN1: Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
+
+LN2: Treat each lint finding as a design signal, not a checkbox. Name the rule's real intent,
+then make the best code shape that satisfies that intent and the rest of the codebase.
+A shortcut taken for one warning is evidence about the care taken everywhere else.
+
+LN3: Before disabling, suppressing, weakening types, broadening annotations, or otherwise skirting a lint rule,
+inspect the linter source and the source code of the value being linted.
+Try the rule's config or allow-list mechanism first.
+If a suppression remains necessary, write or update a `.md` document that cites both source paths,
+proves why the allow-list or config path cannot work, and links the suppression to that document.
+Do not land the suppression without that document.
+
+LN4: Prefer `Object.entries` and functional methods over `for...in`.
+
+LN5: Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
+
+LN6: Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration.
+
+LN7: Never loosen lint rules without prior approval.
+
+LN8: Address all lint issues, including but not limited to warnings.
 
 ### Logging
 
@@ -368,9 +415,11 @@ TLG: Always use tagged loggers from `@monochromatic-dev/module-logger`.
 Never raw `console.log`/`console.error` or untagged logger instances in production code.
 Exception: raw `console` when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
 
-- LG1: Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
-- LG2: Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
-- LG3: Never embed tags manually in message strings. Use the `tagged` wrapper instead.
+LG1: Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
+
+LG2: Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
+
+LG3: Never embed tags manually in message strings. Use the `tagged` wrapper instead.
 
 ### Security
 
@@ -392,67 +441,105 @@ TSD: Write comprehensive TSDoc for **all** declarations (exported or not, includ
 Adhere to the TSDoc rules enforced by `@monochromatic-dev/config-oxlint-tsdoc`.
 Use `{@inheritDoc originalFn}` for non-async wrappers.
 
-- TD1: Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template.
-- TD2: TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns.
-- TD3: TSDoc must directly precede a declaration, not a statement.
-- TD4: Comments on their own line above code, never inline after code.
-- TD5: Escape `*/` as `*\\/` inside TSDoc blocks.
-- TD6: Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**.
-- TD7: Do not mention Promise wrapping for async functions.
-- TD8: Include `@example` tags with usage examples.
+TD1: Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template.
+
+TD2: TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns.
+
+TD3: TSDoc must directly precede a declaration, not a statement.
+
+TD4: Comments on their own line above code, never inline after code.
+
+TD5: Escape `*/` as `*\\/` inside TSDoc blocks.
+
+TD6: Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**.
+
+TD7: Do not mention Promise wrapping for async functions.
+
+TD8: Include `@example` tags with usage examples.
 
 ### TypeScript
 
 #### Standards
 
-- ST2: Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
-- ST3: Cross-package workspace imports must resolve to TypeScript source, not built output.
-- ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
-- ST5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
-- ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
-- ST8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
-- ST9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
-- TQ1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
-- TQ2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
-- TQ3: Throw and return early; use overloads (most specific first).
+ST2: Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
+
+ST3: Cross-package workspace imports must resolve to TypeScript source, not built output.
+
+ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
+
+ST5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
+
+ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
+
+ST8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
+
+ST9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
+
+TQ1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
+
+TQ2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
+
+TQ3: Throw and return early; use overloads (most specific first).
 
 #### Type system
 
-- TY1: Explicit parameter and return types; `type` over `interface`; `Record` for maps.
-- TY2: Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
-- TY3: Union types over enums; `as const` for literals; branded types for domain primitives.
-- TY4: Narrow symbol unions by `typeof` first, then identity check.
-- TY5: `const` generic parameters; `readonly` array parameters; meaningful constraint names.
-- TY6: Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
-- TY7: Use assertion functions (`asserts value is T`) for runtime type narrowing.
-- TY8: `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
-- TY9: Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
+TY1: Explicit parameter and return types; `type` over `interface`; `Record` for maps.
+
+TY2: Avoid generic `Function` type; avoid unused/optional params in `Generator<T>`/`AsyncGenerator<T>`.
+
+TY3: Union types over enums; `as const` for literals; branded types for domain primitives.
+
+TY4: Narrow symbol unions by `typeof` first, then identity check.
+
+TY5: `const` generic parameters; `readonly` array parameters; meaningful constraint names.
+
+TY6: Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
+
+TY7: Use assertion functions (`asserts value is T`) for runtime type narrowing.
+
+TY8: `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
+
+TY9: Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
 #### Variables and values
 
-- VA3: Functional approaches over loops; `for...of` when iteration is unavoidable.
-- VA5: `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
-- VA6: Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`.
+VA3: Functional approaches over loops; `for...of` when iteration is unavoidable.
+
+VA5: `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
+
+VA6: Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`.
 
 #### Programming patterns
 
-- PP1: `async`/`await` only; no `.then()`/`.catch()`/`.finally()`; no explicit `new Promise`.
-- PP2: `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
-- PP3: `using`/`await using` for cleanup; no `try...finally`.
-- PP4: Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
-- PP5: `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `dedent` from `string-dedent` for multi-line error messages.
-- PP6: Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
-- PP7: Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
-- PP8: Never silently discard unexpected states; throw on unreachable branches.
-- PP9: No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
-- PPX: Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
+PP1: `async`/`await` only; no `.then()`/`.catch()`/`.finally()`; no explicit `new Promise`.
+
+PP2: `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
+
+PP3: `using`/`await using` for cleanup; no `try...finally`.
+
+PP4: Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
+
+PP5: `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `dedent` from `string-dedent` for multi-line error messages.
+
+PP6: Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
+
+PP7: Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
+
+PP8: Never silently discard unexpected states; throw on unreachable branches.
+
+PP9: No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
+
+PPX: Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
 
 #### Regular expressions
 
-- RG1: Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
-- RG2: A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
-- RG3: Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
-- RG4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
+RG1: Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
+
+RG2: A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
+
+RG3: Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
+
+RG4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
 
 ## Before declaring work complete
 
@@ -471,11 +558,15 @@ Compare test names against the implementation's branches; confirm no untested pa
 
 VUB: After building, deploying, or installing an artifact, run verification steps that exercise it the way an end user would.
 
-- VB1: Server: confirm it serves correct responses, not just that it starts.
-- VB2: CLI tool: run a real command and check the output.
-- VB3: Hook/plugin: trigger it through the host application, not just by piping test input directly.
-- VB4: Library: import and call it from a consuming project, not just compile it.
-- VB5: Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
+VB1: Server: confirm it serves correct responses, not just that it starts.
+
+VB2: CLI tool: run a real command and check the output.
+
+VB3: Hook/plugin: trigger it through the host application, not just by piping test input directly.
+
+VB4: Library: import and call it from a consuming project, not just compile it.
+
+VB5: Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
 
 VB6: The verification must cross the integration boundary between artifact and consumer.
 "It compiled" / "It installed" alone is not verification.
@@ -502,14 +593,21 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 ### Third-party libraries
 
-- TP1: Undefined method error: retrieve docs immediately.
-- TP2: Check actual type definitions before using APIs.
-- TP3: Note CLI command patterns across examples; test the simplest case first.
-- TP4: Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, modify it freely (e.g. to prepare a pull request). The rule binds only clones of repos we do not own. A skill may carve a narrow documented exception; today only the `troubleshooting-doc` skill's disposable prototype clone (mechanics in the philosophy doc).
-- TP5: When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
-- TP6: When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
-- TP7: Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
-- TP8: Check `.out-of-scope/` before filing an upstream tracking issue; listed exemptions still get the `docs/troubleshooting/<topic>.md` writeup but skip the GitHub issue.
+TP1: Undefined method error: retrieve docs immediately.
+
+TP2: Check actual type definitions before using APIs.
+
+TP3: Note CLI command patterns across examples; test the simplest case first.
+
+TP4: Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, modify it freely (e.g. to prepare a pull request). The rule binds only clones of repos we do not own. A skill may carve a narrow documented exception; today only the `troubleshooting-doc` skill's disposable prototype clone (mechanics in the philosophy doc).
+
+TP5: When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
+
+TP6: When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
+
+TP7: Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
+
+TP8: Check `.out-of-scope/` before filing an upstream tracking issue; listed exemptions still get the `docs/troubleshooting/<topic>.md` writeup but skip the GitHub issue.
 
 ## When committing or documenting
 
@@ -517,21 +615,31 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 #### Prose style
 
-- WR1: No emojis in human-readable content.
-- WR2: No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
-- WR3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
-- WR4: Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
-- WR5: Present tense for current state, future tense only for planned features.
-- WR6: Eliminate unnecessary connecting phrases.
+WR1: No emojis in human-readable content.
+
+WR2: No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
+
+WR3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
+
+WR4: Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
+
+WR5: Present tense for current state, future tense only for planned features.
+
+WR6: Eliminate unnecessary connecting phrases.
 
 #### Markdown syntax
 
-- MD1: Break lines at semantic boundaries so text reads naturally without editor wrapping; no italics.
-- MD2: `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`).
-- MD3: Fenced code blocks with language tags; include file paths as comments.
-- MD4: Reference-style links for repeated URLs; relative links for internal docs.
-- MD5: No tables; use headings or lists instead.
-- MD6: ATX headers, max 4 levels, blank line before headers, lines under 120 chars.
+MD1: Break lines at semantic boundaries so text reads naturally without editor wrapping; no italics.
+
+MD2: `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`).
+
+MD3: Fenced code blocks with language tags; include file paths as comments.
+
+MD4: Reference-style links for repeated URLs; relative links for internal docs.
+
+MD5: No tables; use headings or lists instead.
+
+MD6: ATX headers, max 4 levels, blank line before headers, lines under 120 chars.
 
 ### Doc placement
 
@@ -539,21 +647,29 @@ DPL: Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix
 The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families move under `docs/`.
 Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
 
-1. DL1: Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
-2. DL2: Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
-3. DL3: Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
-4. DL4: Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
-5. DL5: Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
+DL1: Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
+
+DL2: Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
+
+DL3: Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
+
+DL4: Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
+
+DL5: Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
 
 DL6: No automated check guards root regression; this rule is the cure.
 
 ### Handling external changes
 
-- EC1: External worktree changes are normal and often expected in this repo. Treat `git status` entries you did not modify as concurrent work, not an emergency.
-- EC2: Never run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes. Only touch files in your task scope; an unrelated external change blocks a necessary edit, ask before changing it.
-- EC3: Acknowledge externally modified files; ask before reverting.
-- EC4: Never proceed with implementing features that will not achieve their intended effect.
-- EC5: Explain when a tool/command does not support requested functionality instead of creating non-functional code.
+EC1: External worktree changes are normal and often expected in this repo. Treat `git status` entries you did not modify as concurrent work, not an emergency.
+
+EC2: Never run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes. Only touch files in your task scope; an unrelated external change blocks a necessary edit, ask before changing it.
+
+EC3: Acknowledge externally modified files; ask before reverting.
+
+EC4: Never proceed with implementing features that will not achieve their intended effect.
+
+EC5: Explain when a tool/command does not support requested functionality instead of creating non-functional code.
 
 ### Git commit guidelines
 
@@ -612,39 +728,57 @@ Cut it.
 
 ### Dependency management
 
-- DM1: Use `workspace:*` for internal dependencies.
-- DM2: Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
+DM1: Use `workspace:*` for internal dependencies.
+
+DM2: Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`.
 
 ### Adding new packages
 
-1. AP1: Create directory under the appropriate category in `packages/`.
-2. AP2: Add `mise.toml` with task definitions mirroring sibling packages.
-3. AP3: Configure `package.json` with workspace dependencies.
-4. AP4: For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
-5. AP5: For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
+AP1: Create directory under the appropriate category in `packages/`.
+
+AP2: Add `mise.toml` with task definitions mirroring sibling packages.
+
+AP3: Configure `package.json` with workspace dependencies.
+
+AP4: For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
+
+AP5: For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
 
 ### Essential commands
 
-- CM1: Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
-- CM2: Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
-- CM3: All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
-- CM4: Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists.
-- CM5: Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
-- CM6: Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
-- CM7: `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
-- CM8: After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
-- WC2: Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
+CM1: Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
+
+CM2: Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
+
+CM3: All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
+
+CM4: Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists.
+
+CM5: Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
+
+CM6: Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
+
+CM7: `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
+
+CM8: After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
+
+WC2: Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
 
 ## Architecture decisions
 
-- AD1: Root `package.json` may depend on workspace packages; root configs import by package name.
-- AD2: Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`, `await`).
-- AD3: Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
-- AD4: Nested calls (`b(a())`) over method chaining to keep functions self-contained;
-  split a chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
+AD1: Root `package.json` may depend on workspace packages; root configs import by package name.
+
+AD2: Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`, `await`).
+
+AD3: Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
+
+AD4: Nested calls (`b(a())`) over method chaining to keep functions self-contained;
+split a chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
 
 ## Agent skills
 
-- SK1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
-- SK2: **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
-- SK3: **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
+SK1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
+
+SK2: **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
+
+SK3: **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
