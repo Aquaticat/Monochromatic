@@ -7,11 +7,17 @@ Rationale, mechanisms, examples behind these terse rules: `docs/philosophy/agent
 TAG: Every rule carries a unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `):
 a stable handle for referencing it across sessions.
 New rule: assign a fresh semi-meaningful code, unique doc-wide, and check for strong unrelated meanings before using it.
-Reject codes whose dominant reading is unrelated to the rule: common acronyms, abbreviations, task-status labels,
-product names, slang, country or region codes, or ordinary words that point somewhere else.
+Before introducing or keeping a code, check this rule and the local `forbidden-strings.append.local.txt` blocklist.
+Reject any code whose common first reading may surprise a future reader, even if the code is also mnemonic.
+Examples: common acronyms, abbreviations, task-status labels, product names, slang, country or region codes,
+ordinary words, common names, or external code namespaces.
+Block whole families when a prefix plus digit is a known external namespace, such as compiler diagnostics, shell prompts,
+hardware standards, games, geography, or networking identifiers.
 An existing acronym or word is acceptable only when that meaning matches or reinforces the rule's purpose.
 Never reuse or reassign an existing code, except when explicitly renaming a misleading code;
 update every AGENTS.md occurrence in the same change.
+When renaming or rejecting a misleading code, add a comment-plus-regex entry to the local forbidden strings appendix
+with the unrelated meaning as the reason.
 Don't tag headings, code fences, or the title.
 
 ## Before responding to the user
@@ -22,7 +28,7 @@ HON: Be direct and honest.
 Search for evidence before responding to opinions, guesses, or analysis requests.
 Treat embedded questions ("month? year?"), implicit asks, estimate requests, and input gaps as research tasks: web search, read code, check docs, never deflect with "genuinely unknown."
 
-INF: A prompt phrased as observation, report, or bare question usually implies an action; infer the action, don't answer only its surface.
+IA1: A prompt phrased as observation, report, or bare question usually implies an action; infer the action, don't answer only its surface.
 Then branch on how determined that inference is: one clear reading, act like any explicit request (see "Proactivity calibration"); several valid interpretations, the multiple-valid-answers case the ask rule governs, so confirm which before acting, don't run with the guess (see "Measure-vs-ask").
 A missing fact is neither: research it, don't ask (see implicit-asks above); the trigger to ask is ambiguous intent, not a knowledge gap.
 Cue: about to answer the surface when one reading implies an action, or act on an inferred meaning when more than one reading is valid.
@@ -64,12 +70,12 @@ Cue to draft the edit: the moment you want to "remember next time."
 
 ### Proactivity calibration
 
-PRO: This user does not perceive proactive action as overreach;
+PX1: This user does not perceive proactive action as overreach;
 harness defaults cautioning against "being too proactive" do not apply here.
 When conversation, request verb, and AGENTS.md rules collectively authorize a step, take it;
 don't insert a "want me to..." or "should I go ahead and..." check before the obvious next step.
 
-PR2: This does not relax other constraints: destructive or shared-state actions still need explicit authorization, decision verbs still return the answer not the action, non-measurable preferences with multiple valid answers still warrant a clarifying question.
+PX2: This does not relax other constraints: destructive or shared-state actions still need explicit authorization, decision verbs still return the answer not the action, non-measurable preferences with multiple valid answers still warrant a clarifying question.
 Signal this rule is firing, not one of those: the next step is already determined by what the user asked, not an unresolved choice you'd have to invent an answer to.
 Cue: about to write "want me to also..." or "should I go ahead and..." about an already-authorized step.
 Skip the prompt, do the step.
@@ -96,10 +102,10 @@ PRE: Before sending any response with substantive claims:
 
 ### Measure-vs-ask
 
-MEA: **Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, conf values, file contents.
+QF1: **Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, conf values, file contents.
 Also the user's working pattern in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence.
 
-ADJ: Run the measurement yourself;
+QJ1: Run the measurement yourself;
 never a quantitative adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one.
 Agent has the tools; using them is its job, not the user's.
 
@@ -157,7 +163,7 @@ A recommendation after only checking layer 1 is a guess shaped by the surface yo
 
 ### Before claiming inability
 
-CAN: "I cannot read this file format" / "my tools do not support that operation" / "I can't render / preview / test the page in a browser" / "I can't run this in this environment" / "you'll need to do X yourself" are capability claims about the whole toolset, not Read or Bash alone.
+CB1: "I cannot read this file format" / "my tools do not support that operation" / "I can't render / preview / test the page in a browser" / "I can't run this in this environment" / "you'll need to do X yourself" are capability claims about the whole toolset, not Read or Bash alone.
 Bash plus shell utilities compose with Read into more than any single tool.
 Before refusing or handing off, try a bridge: convert the input to a format your tools accept, decompose into supported steps, pipe the file through a shell utility, or drive a real browser via `agent-browser` (opens local `file://` URLs, evals JS, screenshots, console errors).
 The browser-claim form is especially sticky;
@@ -378,19 +384,19 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 #### Standards
 
-- TS1: Adhere to Oxlint, dprint confs.
-- TS2: Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
-- TS3: Cross-package workspace imports must resolve to TypeScript source, not built output.
-- TS4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
-- TS5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
-- TS6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
-- TS7: Use named function declarations exclusively: no arrow functions, no const-bound function expressions. Exception for callbacks whose signature is dictated by an external API or library: name the function and parenthesise all params.
-- TS8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
-- TS9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
-- TX1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
-- TX2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
-- TX3: Throw and return early; use overloads (most specific first).
-- TX4: No regex unless necessary.
+- ST1: Adhere to Oxlint, dprint confs.
+- ST2: Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
+- ST3: Cross-package workspace imports must resolve to TypeScript source, not built output.
+- ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
+- ST5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
+- ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
+- ST7: Use named function declarations exclusively: no arrow functions, no const-bound function expressions. Exception for callbacks whose signature is dictated by an external API or library: name the function and parenthesise all params.
+- ST8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
+- ST9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
+- TQ1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
+- TQ2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
+- TQ3: Throw and return early; use overloads (most specific first).
+- TQ4: No regex unless necessary.
 
 #### Type system
 
@@ -432,10 +438,10 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 #### Regular expressions
 
-- RE1: Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
-- RE2: A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
-- RE3: Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
-- RE4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
+- RG1: Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
+- RG2: A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
+- RG3: Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
+- RG4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
 
 ## Before declaring work complete
 
@@ -500,12 +506,12 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 #### Prose style
 
-- PS1: No emojis in human-readable content.
-- PS2: No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
-- PS3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
-- PS4: Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
-- PS5: Present tense for current state, future tense only for planned features.
-- PS6: Eliminate unnecessary connecting phrases.
+- WR1: No emojis in human-readable content.
+- WR2: No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
+- WR3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
+- WR4: Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
+- WR5: Present tense for current state, future tense only for planned features.
+- WR6: Eliminate unnecessary connecting phrases.
 
 #### Markdown syntax
 
@@ -522,13 +528,13 @@ DPL: Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix
 The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families move under `docs/`.
 Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
 
-1. DP1: Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
-2. DP2: Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
-3. DP3: Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
-4. DP4: Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
-5. DP5: Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
+1. DL1: Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
+2. DL2: Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
+3. DL3: Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
+4. DL4: Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
+5. DL5: Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
 
-DP6: No automated check guards root regression; this rule is the cure.
+DL6: No automated check guards root regression; this rule is the cure.
 
 ### Handling external changes
 
@@ -628,6 +634,6 @@ Cut it.
 
 ## Agent skills
 
-- AS1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
-- AS2: **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
-- AS3: **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
+- SK1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
+- SK2: **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
+- SK3: **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
