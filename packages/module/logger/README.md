@@ -1,8 +1,9 @@
 # module-logger
 
 Zero-config multi-sink logger with tagged composition.
-Works immediately at import: auto-discovers available backends for the current runtime
-without a configuration step.
+Works immediately at import: auto-discovers available backends for the current runtime,
+and records emitted while async backend verification is still pending replay to those
+backends as soon as they verify. Consumers do not await `initPromise` before logging.
 
 ## Usage
 
@@ -66,7 +67,8 @@ already provides its own log-level filtering.
 ## Sinks
 
 The default logger writes to **all** available sinks simultaneously.
-Availability is verified once at module load; sinks that fail verification are skipped.
+Availability is verified at module load; records emitted while an async sink is
+still being verified are replayed to that sink when it becomes available.
 
 - **console**: formats as `[level] [ISO timestamp] message`;
   maps levels to corresponding `console.*` methods
@@ -85,6 +87,8 @@ Availability is verified once at module load; sinks that fail verification are s
 
 Sinks can be sync or async.
 Async sinks are fire-and-forget; the log call never blocks the caller.
+Call `logger.flush()` before assertions or process shutdown to wait for startup
+verification, pending sink writes, and sink-owned flush hooks.
 If a sink throws or its promise rejects, it is marked unavailable and excluded from future calls.
 
 ## Log record format
@@ -103,7 +107,8 @@ File, OPFS, and sessionStorage sinks write records as one JSON object per line (
 
 ## Error handling
 
-- `initPromise` rejects during eager initialization if **no** backends pass verification
+- `initPromise` resolves after eager verification and startup replay; consumers do not await it before logging
+- `logger.flush()` awaits startup verification, pending sink writes, and sink-owned flush hooks
 - Throws at log time once initialization has completed with no available backend
 - Individual sink failures are silent; the sink is disabled and remaining sinks continue
 

@@ -45,10 +45,10 @@ export type Sink = {
 export type Verify = () => Promise<boolean> | boolean;
 
 /**
- * Logger interface with 6 log levels plus `flush` for sinks that buffer.
- * `flush()` resolves once every available sink's own `flush` hook has
- * settled; sinks without a hook are skipped. Safe to call even when no
- * sink buffers; resolves immediately.
+ * Logger interface with 6 log levels plus `flush` for startup and sink drains.
+ * `flush()` resolves once startup verification has completed, tracked sink
+ * writes have settled, and every available sink's own `flush` hook has
+ * settled. Safe to call even when no sink buffers.
  */
 export type Logger = {
   readonly debug: (message: string,) => void;

@@ -1,0 +1,195 @@
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+/** Built package entry used by the subprocess probe. */
+const BUILT_INDEX_PATH = join(
+  import.meta.dirname,
+  '..',
+  'dist',
+  'final',
+  'node',
+  'index.mjs',
+);
+
+/** Message logged before the probe awaits anything from the logger package. */
+const STARTUP_MESSAGE = 'startup before consumer init await';
+
+/** JSONL fragment proving the startup message reached the file sink. */
+const STARTUP_MESSAGE_FRAGMENT = `"message":${JSON.stringify(STARTUP_MESSAGE,)}`;
+
+/** Async-disposable temporary project for file-sink startup probes. */
+type TempProject = {
+  readonly path: string;
+  readonly scriptPath: string;
+  [Symbol.asyncDispose](): Promise<void>;
+};
+
+/** Result captured from the probe subprocess. */
+type ProbeResult = {
+  readonly exitCode: number;
+  readonly stderr: string;
+  readonly stdout: string;
+};
+
+/**
+ * Builds a throwaway project root with `node_modules` so the file sink chooses
+ * an isolated `node_modules/.monochromatic` log directory.
+ *
+ * @returns Temporary project handle removed by `await using`.
+ */
+async function createTempProject(): Promise<TempProject> {
+  const path = await mkdtemp(join(tmpdir(), 'logger-startup-',),);
+  await mkdir(
+    join(
+      path,
+      'node_modules',
+    ),
+    { recursive: true, },
+  );
+
+  /** Probe script that never imports or awaits `initPromise`. */
+  const scriptPath = join(
+    path,
+    'probe.ts',
+  );
+  /** Probe source assembled as separate lines so generated syntax stays readable. */
+  const script = [
+    `import { logger, } from ${JSON.stringify(BUILT_INDEX_PATH,)};`,
+    '',
+    `logger.info(${JSON.stringify(STARTUP_MESSAGE,)},);`,
+    'await logger.flush();',
+    '',
+  ].join('\n',);
+  await writeFile(
+    scriptPath,
+    script,
+  );
+
+  return {
+    path,
+    scriptPath,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(path, { recursive: true, force: true, },);
+    },
+  };
+}
+
+/**
+ * Runs a probe script in its temporary project root.
+ *
+ * @param cwd - Project root used as `process.cwd()` by the file sink.
+ * @param scriptPath - Absolute path to the probe script.
+ *
+ * @returns Captured stdout, stderr, and exit code.
+ */
+async function runProbe(
+  {
+    cwd,
+    scriptPath,
+  }: {
+    readonly cwd: string;
+    readonly scriptPath: string;
+  },
+): Promise<ProbeResult> {
+  const subprocess = Bun.spawn(
+    [
+      'bun',
+      scriptPath,
+    ],
+    {
+      cwd,
+      stderr: 'pipe',
+      stdout: 'pipe',
+    },
+  );
+
+  const [
+    exitCode,
+    stdout,
+    stderr,
+  ] = await Promise.all([
+    subprocess.exited,
+    new Response(subprocess.stdout,)
+      .text(),
+    new Response(subprocess.stderr,)
+      .text(),
+  ],);
+
+  return {
+    exitCode,
+    stderr,
+    stdout,
+  };
+}
+
+/**
+ * Reads the single JSONL file created by the probe's file sink.
+ *
+ * @param projectPath - Temporary project root containing `node_modules`.
+ *
+ * @returns Log file contents.
+ */
+async function readOnlyLogContent({ projectPath, }: { readonly projectPath: string; },): Promise<string> {
+  const logDir = join(
+    projectPath,
+    'node_modules',
+    '.monochromatic',
+  );
+  const logFiles = await readdir(logDir,);
+  expect(logFiles.length,)
+    .toBe(1,);
+
+  /** Single log file emitted by one probe process. */
+  const [logFile,] = logFiles;
+  if (logFile === undefined)
+    throw new Error('Expected logger to create a log file.',);
+
+  return await readFile(
+    join(
+      logDir,
+      logFile,
+    ),
+    'utf8',
+  );
+}
+
+await describe({
+  name: 'logger startup initialization',
+  children: [
+    it({
+      name: 'delivers startup records to file sink without awaiting initPromise',
+      fn: async () => {
+        await using project = await createTempProject();
+
+        const result = await runProbe({
+          cwd: project.path,
+          scriptPath: project.scriptPath,
+        },);
+        expect(result.exitCode,)
+          .toBe(0,);
+        expect(result.stderr,)
+          .toBe('',);
+        expect(result.stdout,)
+          .toContain(STARTUP_MESSAGE,);
+
+        const content = await readOnlyLogContent({ projectPath: project.path, },);
+        expect(content,)
+          .toContain(STARTUP_MESSAGE_FRAGMENT,);
+      },
+    },),
+  ],
+},);
