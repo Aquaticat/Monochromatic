@@ -411,12 +411,13 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           ...` is Rust's one-arm pattern match that binds
         //           `reason` only in the present (`Some`) case.
         // Why:      Deeply nested complement (`~(...)`) or lookaround
-        //           (`(?=...)`) groups abort the scanner with an
+        //           (`(?=...)`) groups aborted the scanner with an
         //           uncatchable stack overflow inside resharp's
-        //           `Regex::new` (Bug G, unfixed upstream at 0.6.8).
-        //           Reject on the source shape before any other check or
-        //           `Regex::new`: catch_unwind cannot intercept a
-        //           stack-overflow SIGABRT, so this is the only defense.
+        //           `Regex::new` through 0.6.8 (Bug G). resharp 0.6.9 caps
+        //           parser recursion at the same depth upstream, but this
+        //           pre-validator still rejects on the source shape before
+        //           any other check or `Regex::new` as belt-and-suspenders:
+        //           catch_unwind cannot intercept a stack-overflow SIGABRT.
         // TS map:   `const reason = nestingDepth(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
         //
         // In TS you'd write (pseudocode):

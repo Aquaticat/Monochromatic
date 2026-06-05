@@ -819,13 +819,14 @@ fn find_all_catches_runtime_panic_via_catch_unwind() {
     //           Through resharp 0.6.3 this shape compiled and then
     //           corrupted (release) or panicked (debug) inside
     //           find_all at `engine.rs:1020` / `strip_lb`, which the
-    //           wrapper guarded. resharp 0.6.8 fixed it the other
+    //           wrapper guarded. resharp 0.6.4 fixed it the other
     //           way: `Regex::new` now fails closed with
-    //           `Algebra(UnsupportedPattern)`, so the shape never
-    //           reaches find_all. Both outcomes satisfy the
-    //           invariant; the wrapper stays in find_all as a hedge
-    //           for unknown future shapes (see
-    //           docs/troubleshooting/resharp.md, 0.6.8 bump section).
+    //           `Algebra(UnsupportedPattern)` (re-verified at 0.6.9),
+    //           so the shape never reaches find_all. Both outcomes
+    //           satisfy the invariant; the wrapper stays in find_all
+    //           as a hedge for unknown future shapes (see
+    //           docs/troubleshooting/resharp.md, "Fixed upstream, now
+    //           spent").
     // TS map:   `new Regex(shape).findAll(longContent);` then
     //           assert no throw.
     if let Ok(re) = resharp::Regex::new("(?:(?=a)&(?<=_))") {

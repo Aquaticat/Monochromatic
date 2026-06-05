@@ -50,15 +50,18 @@ const MAX_NESTING_DEPTH: usize = 1_000;
 //           parsed tree afterwards (`expanded_ast_size`, the AST-to-node
 //           translation, the algebra walks `get_bounded_length` /
 //           `reverse` / `der` / `contains_look`, and the recursive `Drop`)
-//           are not depth-bounded. Deeply nested complement (`~(...)`) or
-//           lookaround (`(?=...)`) patterns overflow the stack and abort
-//           the process with a stack-overflow SIGABRT during `Regex::new`,
-//           below resharp's own size guard. `catch_unwind` cannot
-//           intercept that abort, and resharp exposes no depth limit (Bug
-//           G in docs/troubleshooting/resharp.md, unfixed upstream at
-//           0.6.8). This cheap source-text scan rejects the rule before
-//           resharp ever sees it; over-rejection is fail-closed-safe
-//           because the production corpus has no deeply nested rules.
+//           are not depth-bounded. Through 0.6.8, deeply nested complement
+//           (`~(...)`) or lookaround (`(?=...)`) patterns overflowed the
+//           stack and aborted the process with a stack-overflow SIGABRT
+//           during `Regex::new`, below resharp's own size guard, which
+//           `catch_unwind` cannot intercept. resharp 0.6.9 fixed this
+//           upstream: the parser now caps recursion at
+//           `DEFAULT_MAX_DEPTH = 1_000`, rejecting over-deep rules with a
+//           clean `Parse` error (Bug G in docs/troubleshooting/resharp.md).
+//           This cheap source-text scan keeps the same 1_000 cap as
+//           belt-and-suspenders, rejecting the rule before resharp ever
+//           sees it; over-rejection is fail-closed-safe because the
+//           production corpus has no deeply nested rules.
 // TS map:   `function nestingDepth(src: string): string | null` -- the
 //           `Option<String>` return maps to `string | null`, with
 //           `Some(x)` being `x` and `None` being `null`.
@@ -191,7 +194,7 @@ pub fn nesting_depth(src: &str) -> Option<String> {
         // return `rule nests groups ${maxDepth} levels deep, over the ${MAX_NESTING_DEPTH} cap. ... ${TROUBLESHOOT_REF}`;
         // ```
         return Some(format!(
-            "rule nests groups {} levels deep, over the {} cap. Deeply nested complement (`~(...)`) or lookaround (`(?=...)`) groups overflow resharp's stack and abort the scanner during `Regex::new`, below resharp's own size guard, and `catch_unwind` cannot intercept the stack-overflow SIGABRT (Bug G, unfixed upstream at 0.6.8). Flatten the rule or split it into separate rules. {}",
+            "rule nests groups {} levels deep, over the {} cap. Deeply nested complement (`~(...)`) or lookaround (`(?=...)`) groups overflowed resharp's stack and aborted the scanner during `Regex::new` through 0.6.8, a SIGABRT `catch_unwind` cannot intercept (Bug G). resharp 0.6.9 caps parser recursion at the same depth upstream; this pre-validator rejects on the source shape first as belt-and-suspenders. Flatten the rule or split it into separate rules. {}",
             max_depth, MAX_NESTING_DEPTH, TROUBLESHOOT_REF
         ));
     }
