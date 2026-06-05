@@ -211,10 +211,6 @@ Any root sentinel exists: cleanup or an exact safe cleanup path is part of the d
 
 GCW: When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): git-dirs under an allowed dir bypass the guard.
 
-### Document non-obvious findings
-
-DNF: Discover something not immediately obvious to a future reader: document it in the relevant readme or doc file right away: implementation details, behavioral quirks, implicit constraints, anything that required investigation or experimentation to uncover.
-
 ### Research tools
 
 - RT1: `rg`: fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob
