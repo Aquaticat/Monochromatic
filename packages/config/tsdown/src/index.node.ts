@@ -99,15 +99,10 @@ export default _default_1;
  * ```
  */
 export function perEntryNodeConfig(entries: readonly string[],): UserConfig[] {
-  /**
-   * Per-entry single-input build configs accumulated from {@link entries}.
-   */
-  const configs: UserConfig[] = [];
-  for (const entry of entries) {
-    configs.push({
+  return defineConfig(entries.map(function toSingleEntryConfig(entry: string,): UserConfig {
+    return {
       ...baseOptions,
       entry: [entry,],
-    },);
-  }
-  return defineConfig(configs,);
+    };
+  },),);
 }
