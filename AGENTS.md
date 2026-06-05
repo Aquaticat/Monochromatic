@@ -68,8 +68,6 @@ Signal this rule is firing, not one of those: the next step is already determine
 Cue: about to write "want me to also..." or "should I go ahead and..." about an already-authorized step.
 Skip the prompt, do the step.
 
-### Task tracking granularity
-
 TSK: Broad requests spanning multiple evidence areas: split into separate task-list items per major area, not one umbrella item.
 Each task needs independently verifiable completion criteria: inventory, tooling, architecture, tests, security, documentation, synthesis, whatever the request demands.
 Cue: a single task subject would hide multiple kinds of evidence gathering or blur what "done" means.
@@ -151,13 +149,6 @@ EVL: For "should we use X better?" / "are we taking advantage of X?", walk every
 ELR: Report findings at each layer before the conclusion.
 A recommendation after only checking layer 1 is a guess shaped by the surface you happened to look at.
 
-### Follow document pointers
-
-FDP: When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch that document before drawing conclusions about its contents.
-Hedging about a named, fetchable target is the failure mode;
-cue: writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
-The pointer is the research lead, not the stopping point.
-
 ### Before claiming inability
 
 CAN: "I cannot read this file format" / "my tools do not support that operation" / "I can't render / preview / test the page in a browser" / "I can't run this in this environment" / "you'll need to do X yourself" are capability claims about the whole toolset, not Read or Bash alone.
@@ -183,12 +174,15 @@ RBK: Bridges genuinely fail and the user must execute: invoke the `runbook` skil
 Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside the code they document.
 Canonical example: `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
+FDP: When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch that document before drawing conclusions about its contents.
+Hedging about a named, fetchable target is the failure mode;
+cue: writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
+The pointer is the research lead, not the stopping point.
+
 ### Name the verification step
 
 NVS: Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them.
 Cannot name what backs a claim? Downgrade to a labeled guess or do the verification.
-
-### Treat search results as suspicious until you've verified the shape
 
 SRS: Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
 Both fail silently, both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
@@ -222,7 +216,7 @@ GCW: When the review touches `cli-git`'s linked-worktree guard, account for the 
 
 ## Before running a command
 
-### Visible terminal spawning
+### Command execution conventions
 
 VTS: Spawn something in another terminal, window, or session: use a real terminal launcher.
 Arbitrary commands, including Codex: `terminal-exec -- <command> ...`.
@@ -248,6 +242,11 @@ unless commit history is part of the investigation;
 Auto-mode allows structured `read` tool access to existing non-secret files under `/tmp/agent`;
 writes, bash commands, secret-looking paths, and symlink escapes still go through the guardrail.
 
+BOP: Never treat `~` in Bash tool output as a literal tilde;
+it is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook (display-only, filesystem values unchanged).
+Account for it when debugging path issues, before concluding the path is wrong.
+Skip the filter for one command: include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
+
 ### Long-form flags
 
 LFF: Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
@@ -258,19 +257,10 @@ RGT: `rg` is the canonical trap: ripgrep recurses by default, so `-r` means `--r
 LF2: Where a flag has no long-form spelling the short flag stays;
 `--` argument separators (`mise watch -- task`) are unaffected.
 
-### Bash output path collapse
-
-BOP: Never treat `~` in Bash tool output as a literal tilde;
-it is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook (display-only, filesystem values unchanged).
-Account for it when debugging path issues, before concluding the path is wrong.
-Skip the filter for one command: include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
-
-### Physical-harm consideration
+### Hazardous commands
 
 HRM: Before any action, consider whether it could physically harm a human (blasting audio volume, flashing content, unexpected hardware activation).
 If so, warn the user and state what will happen before proceeding.
-
-### Resource-exhaustion isolation
 
 RXI: Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
 The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
@@ -280,8 +270,6 @@ State the bounds explicitly (memory cap, cpu cap, timeout).
 User requests one directly: propose the containerised invocation and confirm.
 Past authorisation does not transfer across commands;
 each heavy run needs an isolated environment.
-
-### Destructive command ban
 
 DCB: Never execute or instruct another agent to execute extremely destructive commands, even as guardrail tests, e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
 Guardrails can fail;
@@ -300,8 +288,6 @@ AUT: This holds in Auto Mode: its "prefer action over planning" applies to execu
 not authorization to act on adjacent decisions the user has not made.
 
 VR2: Verb ambiguous: default to the narrower interpretation, propose the broader action explicitly.
-
-### Act, don't annotate
 
 ANN: Move changes where they belong immediately: different file, new file, gitignore entry.
 Unsure: propose a concrete edit and location.
@@ -452,8 +438,6 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 PKG: A package is not finished until it has a `README.md`, passes linting with zero errors, and has passing tests covering every exported code path.
 Never declare work complete while any condition is unmet.
 
-### Test coverage matches the public API surface
-
 TCV: Enumerate every distinct code path the module exposes, not just the obvious happy path.
 Implementation has separate branches (sync vs async, string vs object, direct vs delegated)? Each branch needs its own test.
 
@@ -485,8 +469,6 @@ testing whether a guard blocks a destructive operation, build both the allowed c
 
 TH3: Cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
 Create the throwaway target first.
-
-### Test assumptions before encoding them
 
 TAE: Writing instructions, conf, or documentation that prescribes how a tool or API behaves: test the claim first with a real invocation.
 Never write "use X for Y" based on how X **should** work;
@@ -565,7 +547,7 @@ it forces a sprawling mixed-concern commit or an error-prone split.
 The trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
 "I am done with the whole task."
 When committing, include all changes belonging to the same logical unit together unless instructed otherwise;
-never subdivide a logical unit across commits, and never sweep in unrelated or concurrent external changes (stage an explicit, scoped pathspec; see "Respect cli-git enforcement guards").
+never subdivide a logical unit across commits, and never sweep in unrelated or concurrent external changes (stage an explicit, scoped pathspec; see CLG).
 This supersedes the harness default to ask before committing;
 on this project, commit eagerly without asking.
 
@@ -590,16 +572,12 @@ Do not silently let it stand;
 future readers see only the message.
 The cue: about to write "the commit message overstates scope" or similar in chat as a one-off note instead of recording it where the commit lives.
 
-### Respect cli-git enforcement guards
-
 CLG: Never preemptively bypass `cli-git` enforcement.
 The `git add` and `git commit` guards reject bulk staging (`-A`, `.`) and pathspec-less commits on purpose: with a dirty tree or concurrent sessions they sweep unintended files into a commit.
 Not obstacles to route around; the compliant path satisfies them.
 Stage and commit an explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit and cannot capture another session's files.
 Reach for `--no-enforce-bulk-add` or `--no-enforce-only` only when no scoped pathspec can express the change (a genuine whole-tree single-session operation), never as the default, never baked into instructions to child sessions.
 Cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a scoped pathspec, or hand a child a commit recipe carrying a bypass flag.
-
-### External communications
 
 XCM: Never append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, anything a maintainer or third party reads.
 Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push a decision or a follow-up task onto the reader, usually the user.
@@ -632,9 +610,6 @@ Cut it.
 - CM6: Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
 - CM7: `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
 - CM8: After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
-
-### Workspace conventions
-
 - WC2: Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
 
 ## Architecture decisions

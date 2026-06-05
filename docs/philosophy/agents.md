@@ -183,11 +183,11 @@ TypeScript does not propagate `const` narrowing into function declarations (both
 
 When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`, currently uv's git cache): repositories whose git-dir resolves under an allowed dir bypass that guard, so destructive git is not actually blocked there.
 
-#### Bash output path collapse: how the substitution works
+#### Command execution conventions: the bash-output path substitution
 
 `~` in Bash tool output is a display substitution for `/var/home/user` or `/home/user` applied by the `bash-output-filter` hook, plus stripping of the current cwd prefix. It applies only at the start of a line, so paths inside JSON or error messages are unaffected. Filesystem values are unchanged; this is display-only. To skip the filter for one command, include any blocklist trigger: `eval 'your command here'` is simplest; others are `export`, `source`, `$(...)`, backticks, `> file` redirect.
 
-#### Resource-exhaustion isolation: the example set
+#### Hazardous commands: the resource-exhaustion example set
 
 The "may exhaust the host" set is broader than the destructive-command set: anything that allocates much memory, spawns many processes, opens many file descriptors, runs unbounded loops, or consumes resources without a tight upper bound. Examples: stress harnesses and load generators (`mise run //:forge:stress`, `mise run //:test` with thousands of cases, k6/wrk runs); builds that fan out across many packages without concurrency caps; benchmarks that allocate large blobs or fork many workers (`bun bench`, `mitata` runs); scenarios that loop over `git.packObjects` / `git.indexPack` or other heavy isomorphic-git ops; subprocess fan-outs with no `--writers=` / `--concurrency=` ceiling; anything that imports a server runtime that opens libSQL, warms caches, or schedules timers in a tight loop.
 
@@ -223,7 +223,7 @@ The git-commit guardrail typifies the harness "too proactive" defaults this proj
 - Defect-recovery rate: count of `revert`/`regression`/`fix.*broken` commits over total commits in the window
 - Concurrent-session evidence: compare `git log --since=<conversation-start>` timestamps against this conversation's UserPromptSubmit hook times
 
-#### Treat search results as suspicious: failure modes
+#### Name the verification step: search-result failure modes
 
 Every search result carries two claims: (a) the search ran correctly, (b) the lines you're seeing are the matches. Both can fail silently.
 
@@ -269,7 +269,7 @@ The `runbook` skill encodes the required sections (Setup, Steps, What to check, 
 
 "Decide which security alerts we can fix immediately" is triage; the deliverable is the categorized list. Applying the fixes is a separate decision the user has not yet made; surface a concrete proposal and wait for green-light.
 
-#### Test coverage matches the public API surface: the sync/async example
+#### Package completeness: the sync/async test example
 
 A test file covering sync matchers but skipping async matchers is the same as no async tests; the bug ships silently.
 
@@ -277,7 +277,7 @@ A test file covering sync matchers but skipping async matchers is the same as no
 
 AGENTS.md deliberately does not expose the existence of Claude Code hooks, not merely their names: the stop hook (`ccsr`) enforcing hedge-phrase and trailing-question rules, the PreToolUse guardrail (`ccgr`), the roadmap PostToolUse type-check. Flagging the machinery at all lets agents game the surface pattern (swapping one hedge for a novel one that passes but carries the same epistemic gap) and reframes an internalized rule as an external gate to dodge. The rule the agent must own stays (the hedge-phrase list); the fact that a hook backstops it is omitted. The trailing-question rule is dropped from AGENTS.md entirely rather than reworded: "ask via the question tool, never end on a bare question" restates standard harness behavior the `AskUserQuestion` tool and its description already carry, so it fails the Purpose test for non-obvious project knowledge. Exception: the `bash-output-filter` `~` substitution stays named, because its observable effect (line-start paths rewritten in tool output) must be understood precisely to debug paths, and it carries no gaming risk. Hook identities and implementation details otherwise live only in this doc. This follows the same principle as the "Runtime environment checks" rule in "What does not belong": passive text in AGENTS.md is weaker than an active hook.
 
-#### Follow document pointers: the worked example
+#### Before claiming inability: the document-pointer worked example
 
 A ToS that says "Services are governed by separate subscription agreements, not these Website Terms" points at a separate document where the substantive provisions live; fetch it before drawing conclusions about its contents.
 
