@@ -284,13 +284,3 @@ A ToS that says "Services are governed by separate subscription agreements, not 
 #### Linting: why the oxlint-disable placement matters
 
 The disable goes before the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the very next line after the declaration; leaving a disable open longer than necessary silences unrelated violations. `// oxlint-disable-next-line` applies only to the literal next physical line, so placed between TSDoc and declaration it lands on the TSDoc and the suppression is lost; use the block-level disable + enable pair wrapping TSDoc and declaration tightly instead.
-
-## Changelog
-
-### 2026-06-05
-
-- Fixed 11 internal and cross-file contradictions in AGENTS.md and this doc (broken `see "Simplification"` cross-ref, `console.error` catch-block conflict, commit-all vs scoped-pathspec, single-letter ban vs loop counters, long-form-flags self-violation, add-task vs bun-direct, difficulty/duration guess vs drop, the `PHILOSOPHY.AGENTS.md` self-name, the Factory/Droid hook example, em-dash/italics style breaks). Commit `47921439`.
-- Trimmed five rationale passages duplicated from this doc back out of AGENTS.md to the terse rule plus tokens. Commit `9560efbf`.
-- Rewrote AGENTS.md prose in caveman style and added the Writing-style principle here. Deleted skill-pointer sections (CSS whole, Choosing technology and vendors) now that the harness auto-loads skill descriptions; added the Skill-invocation-pointers entry under What does not belong. Collapsed the `.out-of-scope/` exemptions to one line and moved the Claude Code / JSR / `bun install` examples here. Commit `f655c932`.
-- Cut the Long-form-flags rg-trap walkthrough (preserved in the search-results failure-modes subsection) and purely illustrative `e.g.` examples (`module-es`, Rolldown, `l.info`, `TData`) from AGENTS.md. Commit `cb9cf511`.
-- Made changelogs transient: added the Changelog policy, removed the four accumulated `What was compressed` narratives and the `Stats and decisions` section (recoverable via git history).
