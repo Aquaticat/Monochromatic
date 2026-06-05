@@ -314,3 +314,7 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+2026-06-05: Removed the AGENTS.md DNF rule because the troubleshooting-doc skill already requires durable documentation for external tool bugs and quirks, and keeping both duplicated documentation pressure in every session.
