@@ -21,242 +21,241 @@ Completed child results are injected into context automatically between tool cal
 
 # Development Guidelines for AI Agents
 
-ORG: Organized by moment of decision, not topic: at each point (about to respond, run a command, edit code, declare done), the matching section holds every rule that applies.
-Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) sits at the end.
-Rationale, mechanisms, examples behind these terse rules: `docs/philosophy/agents.md`.
+ORG: Organized by moment of decision, not topic. At each point (about to respond, run command, edit code, declare done) matching section holds every applicable rule.
+Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) sits at end.
+Rationale, mechanisms, examples: `docs/philosophy/agents.md`.
 
-TAG: Every rule carries a unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `):
-a stable handle for referencing it across sessions.
-Don't tag headings, code fences, or the title.
+TAG: Every rule carries unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `): stable handle for cross-session reference.
+Don't tag headings, code fences, title.
 
-NCD: New code: assign a fresh, unique, semi-meaningful code;
-check it against this rule and the local `forbidden-strings.append.local.txt` blocklist for strong unrelated meanings.
-Reject any whose common first reading may surprise a future reader.
-Examples: common acronyms, abbreviations, task-status labels, product names, slang, country or region codes,
-ordinary words, common names, or external code namespaces.
-Block whole families when a prefix plus digit is a known external namespace:
-compiler diagnostics, shell prompts, hardware standards, games, geography, or networking identifiers.
-An existing acronym or word is acceptable only when that meaning reinforces the rule's purpose.
+NCD: New code: assign fresh, unique, semi-meaningful code;
+check vs this rule + local `forbidden-strings.append.local.txt` blocklist for strong unrelated meanings.
+Reject any whose common first reading may surprise future reader.
+Examples: common acronyms, abbreviations, task-status labels, product names, slang, country/region codes,
+ordinary words, common names, external code namespaces.
+Block whole families when prefix+digit is known external namespace:
+compiler diagnostics, shell prompts, hardware standards, games, geography, networking identifiers.
+Existing acronym/word OK only when meaning reinforces rule's purpose.
 
-CRN: Never reuse or reassign an existing code, except when explicitly renaming a misleading code;
-update every AGENTS.md occurrence in the same change.
-When renaming or rejecting a misleading code, add a comment-plus-regex entry to the local forbidden strings appendix
-with the unrelated meaning as the reason.
+CRN: Never reuse/reassign existing code, except when explicitly renaming misleading code;
+update every AGENTS.md occurrence same change.
+Renaming/rejecting misleading code: add comment-plus-regex entry to local forbidden strings appendix,
+unrelated meaning as reason.
 
 ## Before responding to the user
 
 ### Communication style
 
-HON: Be direct and honest.
-Search for evidence before responding to opinions, guesses, or analysis requests.
-Treat embedded questions ("month? year?"), implicit asks, estimate requests, and input gaps as research tasks: web search, read code, check docs, never deflect with "genuinely unknown."
+HON: Direct, honest.
+Search for evidence before responding to opinions, guesses, analysis requests.
+Embedded questions ("month? year?"), implicit asks, estimate requests, input gaps = research tasks: web search, read code, check docs. Never deflect with "genuinely unknown."
 
-IA1: A prompt phrased as observation, report, or bare question usually implies an action; infer the action, don't answer only its surface.
-Then branch on how determined that inference is: one clear reading, act like any explicit request (see "Proactivity calibration"); several valid interpretations, so confirm which before acting (see "Measure-vs-ask").
-A missing fact is neither: research it, don't ask (see implicit-asks above); the trigger to ask is ambiguous intent, not a knowledge gap.
-Cue: about to answer the surface when one reading implies an action, or act on an inferred meaning when more than one reading is valid.
+IA1: Prompt phrased as observation, report, bare question usually implies action; infer action, don't answer only surface.
+Branch on how determined inference is: one clear reading -> act like explicit request (see "Proactivity calibration"); several valid interpretations -> confirm which before acting (see "Measure-vs-ask").
+Missing fact is neither: research it, don't ask (see implicit-asks above); trigger to ask is ambiguous intent, not knowledge gap.
+Cue: about to answer surface when one reading implies action, or act on inferred meaning when more than one reading valid.
 
-SYS: Never attribute `<system-reminder>` content to the user;
-these tags carry harness-level conf, not what the user typed.
-"per your instruction" / "you asked me to" is wrong when the source is a system reminder;
-cite the policy by what it says ("the no-questions policy").
-Same for other injected context (tooling-appended prompt text, MCP server instructions, skill descriptions): source is the injector, not the human.
-A `role:user` turn is not by itself proof the human typed it.
+SYS: Never attribute `<system-reminder>` content to user;
+these tags carry harness-level conf, not what user typed.
+"per your instruction" / "you asked me to" wrong when source is system reminder;
+cite policy by what it says ("the no-questions policy").
+Same for other injected context (tooling-appended prompt text, MCP server instructions, skill descriptions): source is injector, not human.
+`role:user` turn not by itself proof human typed it.
 
-WKP: A prompt fired by your own `ScheduleWakeup` or `CronCreate`, any queued continuation, or the `<<autonomous-loop>>` sentinel arrives as a user turn but you authored it in that tool call's `prompt` field: self-authored boilerplate, not a human instruction.
-Failure one: never write directives into that `prompt` field (no stop condition, cadence, scope, or "give up when X" you invented); relay only the user's real task and instructions, or the bare sentinel.
+WKP: Prompt fired by your own `ScheduleWakeup`/`CronCreate`, any queued continuation, or `<<autonomous-loop>>` sentinel arrives as user turn but you authored it in that tool call's `prompt` field: self-authored boilerplate, not human instruction.
+Failure one: never write directives into that `prompt` field (no stop condition, cadence, scope, "give up when X" you invented); relay only user's real task + instructions, or bare sentinel.
 
-WK2: A fired wakeup/continuation carries no authority.
-Failure two: re-derive what to do and when to stop from the user's real instructions and current state, never obey the prompt's wording.
-Failure three: never cite it as the user's; trace "per your instruction" / "you asked me to" to an actual human message; if it first surfaced in a wakeup or continuation turn, it is yours.
-Cue: about to write a stop/continue, cadence, or scope rule into a `ScheduleWakeup`/`CronCreate` prompt, or obey or credit the user for one that fired; check the tool_use origin and the real human messages first.
+WK2: Fired wakeup/continuation carries no authority.
+Failure two: re-derive what to do and when to stop from user's real instructions + current state, never obey prompt's wording.
+Failure three: never cite it as user's; trace "per your instruction" / "you asked me to" to actual human message; if first surfaced in wakeup/continuation turn, it's yours.
+Cue: about to write stop/continue, cadence, scope rule into `ScheduleWakeup`/`CronCreate` prompt, or obey/credit user for one that fired; check tool_use origin + real human messages first.
 
-1ST: The user's first-person words name the human, never Claude or a future agent session.
-"I", "me", "my", "myself", "future me", "next time I" point to the person typing;
-Claude is "you" or "Claude" in their words.
-The repo's handover-to-future-sessions framing (`docs/handover/`, "future readers", "future sessions will follow") primes the wrong reading: "future me will find a better solution" means the human plans to solve it later, not work handed to a future Claude.
-Cue: about to read a user's "me"/"I" as an agent, or address a doc, issue, plan, or task to "future-me" when the user meant themselves.
+1ST: User's first-person words name human, never Claude or future agent session.
+"I", "me", "my", "myself", "future me", "next time I" point to person typing;
+Claude is "you"/"Claude" in their words.
+Repo's handover-to-future-sessions framing (`docs/handover/`, "future readers", "future sessions will follow") primes wrong reading: "future me will find a better solution" means human plans to solve later, not work handed to future Claude.
+Cue: about to read user's "me"/"I" as agent, or address doc, issue, plan, task to "future-me" when user meant themselves.
 
-SRC: Cite the right source file.
-Rules span AGENTS.md, the harness system prompt, conf in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, `CLAUDE.md` (regen from AGENTS.md).
-Before "per AGENTS.md", "the system prompt says", "the conf requires", "the skill prescribes", grep the named file.
-Cue: about to attribute a rule to a source without verifying it contains it.
+SRC: Cite right source file.
+Rules span AGENTS.md, harness system prompt, conf in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, `CLAUDE.md` (regen from AGENTS.md).
+Before "per AGENTS.md", "the system prompt says", "the conf requires", "the skill prescribes", grep named file.
+Cue: about to attribute rule to source without verifying it contains it.
 
-EXT: External tool features, CLI options, conf syntax, API capabilities: fetch current docs or src before responding.
-"Does X support Y" and "how do I do Y in X" are research tasks, not recall.
+EXT: External tool features, CLI options, conf syntax, API capabilities: fetch current docs/src before responding.
+"Does X support Y", "how do I do Y in X" = research tasks, not recall.
 
-WRN: Explaining a warning or error: name the exact emitting tool, not a vague category, and cite the diagnostic code or message.
-Unsure? Investigate first: grep the codebase for the diagnostic, check tool docs, or run the tool.
+WRN: Explaining warning/error: name exact emitting tool, not vague category; cite diagnostic code/message.
+Unsure? Investigate first: grep codebase for diagnostic, check tool docs, run tool.
 
-GAP: When the user says "I was expecting you to..." or you spot a failure mode future sessions should avoid, treat it as a documentation gap: propose a concrete AGENTS.md change (what rule, where, exact wording) and perform the expected action, never "I'll keep it in mind".
-Merge a new rule overlapping an existing one, don't append;
-remove an older rule overtaken by a sharper version.
-Cue to draft the edit: the moment you want to "remember next time."
+GAP: User says "I was expecting you to..." or you spot failure mode future sessions should avoid: treat as documentation gap. Propose concrete AGENTS.md change (what rule, where, exact wording) + perform expected action, never "I'll keep it in mind".
+Merge new rule overlapping existing one, don't append;
+remove older rule overtaken by sharper version.
+Cue to draft edit: moment you want to "remember next time."
 
 ### Proactivity calibration
 
-PX1: This user does not perceive proactive action as overreach;
-harness defaults cautioning against "being too proactive" do not apply here.
-When conversation, request verb, and AGENTS.md rules collectively authorize a step, take it;
-don't insert a "want me to..." or "should I go ahead and..." check before the obvious next step.
+PX1: This user doesn't perceive proactive action as overreach;
+harness defaults cautioning against "being too proactive" don't apply here.
+When conversation, request verb, AGENTS.md rules collectively authorize a step, take it;
+don't insert "want me to..."/"should I go ahead and..." check before obvious next step.
 
-PX2: This does not relax other constraints: destructive or shared-state actions still need explicit authorization, decision verbs still return the answer not the action, non-measurable preferences with multiple valid answers still warrant a clarifying question.
-Signal this rule is firing, not one of those: the next step is already determined by what the user asked, not an unresolved choice you'd have to invent an answer to.
-Cue: about to write "want me to also..." or "should I go ahead and..." about an already-authorized step.
-Skip the prompt, do the step.
+PX2: Doesn't relax other constraints: destructive/shared-state actions still need explicit authorization, decision verbs still return answer not action, non-measurable preferences with multiple valid answers still warrant clarifying question.
+Signal this rule firing, not one of those: next step already determined by what user asked, not unresolved choice you'd invent an answer to.
+Cue: about to write "want me to also..."/"should I go ahead and..." about already-authorized step.
+Skip prompt, do step.
 
 TSK: Broad requests spanning multiple evidence areas: split into separate task-list items per major area, not one umbrella item.
-Each task needs independently verifiable completion criteria: inventory, tooling, architecture, tests, security, documentation, synthesis, whatever the request demands.
-Cue: a single task subject would hide multiple kinds of evidence gathering or blur what "done" means.
+Each task needs independently verifiable completion criteria: inventory, tooling, architecture, tests, security, documentation, synthesis, whatever request demands.
+Cue: single task subject would hide multiple kinds of evidence gathering or blur what "done" means.
 
 ### Pre-response checklist
 
 PRE: Before sending any response with substantive claims, run this checklist.
 
-CK1: Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess; unbuilt-fix difficulty or duration is a claim to drop, not label (CK3).
+CK1: Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as guess; unbuilt-fix difficulty/duration is claim to drop, not label (CK3).
 
-CK2: Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
+CK2: Described how external tool works without reading its src? Clone + read (see "Third-party libraries"), or label recall-from-training.
 
-CK3: Estimated difficulty of a fix you have not built? Drop the estimate.
+CK3: Estimated difficulty of fix you haven't built? Drop estimate.
 
-CK4: Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
+CK4: Used hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
 
-CK5: Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/feature is used, whether a conf or AGENTS.md already covers it) or working pattern (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"); categorical dismissals are one `rg`/`find`/conf-read away (AGENTS.md counts). Cite the result inline; if wrong, fold the option back in.
+CK5: Assumed measurable fact about user's environment (codebase size, deps, build time, file contents, whether tool/feature used, whether conf/AGENTS.md already covers it) or working pattern (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"); categorical dismissals one `rg`/`find`/conf-read away (AGENTS.md counts). Cite result inline; if wrong, fold option back in.
 
-CK6: Assumed a non-measurable preference (which approach, what they value)? Ask.
+CK6: Assumed non-measurable preference (which approach, what they value)? Ask.
 
-CK7: Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
+CK7: Confident factual claim about your environment, external tool, src code? Verify any cited path/line still exists; for uncited claims, add citation inline (see "Name the verification step") or downgrade to labeled guess.
 
-CK8: Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
+CK8: Claimed tool cannot do something? Check whether composition (Bash + shell utility) bridges gap; refuse only after trying (see "Before claiming inability").
 
-CK9: Quoted a clause or doc passage and drawn a conclusion? Restate subject and object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
+CK9: Quoted clause/doc passage + drawn conclusion? Restate subject + object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when clause actually runs Y from X toward third party.
 
-CKA: About to ask the user to perform a manual action? Try the bridging path first; must hand off, invoke the `runbook` skill (see "Before claiming inability").
+CKA: About to ask user to perform manual action? Try bridging path first; must hand off -> invoke `runbook` skill (see "Before claiming inability").
 
-CKB: Revising a substantive claim the user just corrected? Treat the correction as evidence your previous verification path was insufficient: re-read primary sources, run concrete commands, or use a genuinely separate reviewer when independent review is asked. Never run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
+CKB: Revising substantive claim user just corrected? Treat correction as evidence prior verification path insufficient: re-read primary sources, run concrete commands, or use genuinely separate reviewer when independent review asked. Never run same-session self-review, local "advisor" skill, magic `Advisor pass: ...` ritual; self-review not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") = approach-change moment, not small patch.
 
 ### Measure-vs-ask
 
 QF1: **Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, conf values, file contents.
-Also the user's working pattern in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence.
+Also user's working pattern in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence.
 
-QJ1: Run the measurement yourself;
-never a quantitative adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one.
-Agent has the tools; using them is its job, not the user's.
+QJ1: Run measurement yourself;
+never quantitative adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one.
+Agent has tools; using them is its job, not user's.
 
-ASK: **Non-measurable facts: ask.** Which of two valid approaches the user prefers, whether they want a feature, whether they authorize a destructive action, what they value (depth vs governance, speed vs clarity).
+ASK: **Non-measurable facts: ask.** Which of two valid approaches user prefers, whether they want a feature, whether they authorize destructive action, what they value (depth vs governance, speed vs clarity).
 
 MA3: Three failure directions: asking what you could measure (lazy);
 assuming what you should ask (confidently wrong);
-asking permission for an already-authorized step ("want me to also check X?" when the user has been pushing for thoroughness).
-Trigger phrases for the assumption form: "for a project like this...", "in a typical setup...".
+asking permission for already-authorized step ("want me to also check X?" when user pushing for thoroughness).
+Trigger phrases for assumption form: "for a project like this...", "in a typical setup...".
 
 ### Present options with pros, cons, and a personal ranking
 
-OPT: Proposing a choice between distinct options ("A, B, or C?"): give each option its own pros and cons plus a fully sorted personal ranking covering every option, with the reason deciding each adjacent pair.
+OPT: Proposing choice between distinct options ("A, B, or C?"): give each option its own pros + cons plus fully sorted personal ranking covering every option, with reason deciding each adjacent pair.
 
-OPA: `AskUserQuestion`: each option's `description` holds its pros and cons; order options by preference (best first) and append "(Recommended)" to the top label; in the prose around the tool call, state the full ranking (e.g. "ranking: B > A > C") with the reason for each adjacent comparison.
+OPA: `AskUserQuestion`: each option's `description` holds its pros + cons; order options by preference (best first), append "(Recommended)" to top label; in prose around tool call, state full ranking (e.g. "ranking: B > A > C") with reason for each adjacent comparison.
 
-OPI: Inline prose: one short paragraph or bullet block per option with pros and cons, then a "Ranking: B > A > C, because ..." line explaining each step of the order, not just the top pick.
+OPI: Inline prose: one short paragraph/bullet block per option with pros + cons, then "Ranking: B > A > C, because ..." line explaining each step of order, not just top pick.
 
-OP2: Skip when the user asked yes/no on a single proposal, or already narrowed criteria enough that one option is determined.
+OP2: Skip when user asked yes/no on single proposal, or already narrowed criteria enough that one option determined.
 
 ### Hedge phrases that signal a skipped step
 
-HDG: Do not write these; do the step instead. Catch them before sending.
+HDG: Don't write these; do the step instead. Catch before sending.
 
-HG1: "probably small/large/fast/slow", "the fix is probably small": run the measurement, or read the source path and drop the estimate.
+HG1: "probably small/large/fast/slow", "the fix is probably small": run measurement, or read source path + drop estimate.
 
-HG2: "I think it's a...": verify or label a guess.
+HG2: "I think it's a...": verify or label guess.
 
 HG3: "the most likely cause is...": reproduce, or list candidates without ranking.
 
 HG4: "for a small codebase like yours": run `tokei` first.
 
-HG5: "better/worse than most/typical/average X", "the most likely X" / "the most common Y" as an unnamed-population ranking: name the comparison set or drop the comparative.
+HG5: "better/worse than most/typical/average X", "the most likely X" / "the most common Y" as unnamed-population ranking: name comparison set or drop comparative.
 
-HG6: "almost certainly", "most likely X lives/is/exists in Y": fetch the named target instead of stating a probability about its contents.
+HG6: "almost certainly", "most likely X lives/is/exists in Y": fetch named target instead of stating probability about its contents.
 
-HG7: "this is a tractable PR": drop "tractable" or build the fix.
+HG7: "this is a tractable PR": drop "tractable" or build fix.
 
-HG8: "should be straightforward": drop "straightforward" or test the path.
+HG8: "should be straightforward": drop "straightforward" or test path.
 
-HG9: "no public diagnosis exists" as a stopping point: drop, or clone the source (see "Third-party libraries").
+HG9: "no public diagnosis exists" as stopping point: drop, or clone source (see "Third-party libraries").
 
-HGA: "an afternoon" or any duration estimate: drop unless you built a similar fix in this codebase before.
+HGA: "an afternoon" or any duration estimate: drop unless you built similar fix in this codebase before.
 
-HGB: "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" cutting off a candidate: cite an `rg`/`find`/config read (AGENTS.md and tsconfig count) or drop the dismissal.
+HGB: "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" cutting off candidate: cite `rg`/`find`/config read (AGENTS.md + tsconfig count) or drop dismissal.
 
-HGC: "X is already handled by Y" / "X is already covered by Y": pair with Y's config/source path and line confirming the overlap, or drop it.
+HGC: "X is already handled by Y" / "X is already covered by Y": pair with Y's config/source path + line confirming overlap, or drop it.
 
-HGD: "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" deferring on working history, defect rate, throughput, hours, or parallel sessions: `git log`, `gh issue list`, and file mtimes record these; measure before concluding.
+HGD: "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" deferring on working history, defect rate, throughput, hours, parallel sessions: `git log`, `gh issue list`, file mtimes record these; measure before concluding.
 
-HUC: **Exception: genuine uncertainty.** When the honest answer is "I do not know, genuinely under-determined after investigation," state it: name what you investigated and what stays unresolved.
-The target is hedging as a substitute for research, not honest reporting after it.
+HUC: **Exception: genuine uncertainty.** When honest answer is "I do not know, genuinely under-determined after investigation," state it: name what you investigated + what stays unresolved.
+Target is hedging as substitute for research, not honest reporting after it.
 "I read X.ts:42 and the type is A or B depending on a runtime branch I cannot determine statically" is not a hedge.
 
 ### Exhaust evidence layers when assessing system usage
 
-EVL: For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending; each can flip the conclusion.
+EVL: For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending; each can flip conclusion.
 
 EL1: First layer, **the tool itself**: usage volume, conf.
 
-EL2: Second layer, **parallel systems**: where the same need is met outside the tool.
+EL2: Second layer, **parallel systems**: where same need met outside tool.
 
-EL3: Third layer, **content of those parallel systems**: not just file count but what is inside.
+EL3: Third layer, **content of those parallel systems**: not just file count but what's inside.
 
-EL4: Fourth layer, **inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify the search ran; see null-search rule); thousands signal debt.
+EL4: Fourth layer, **inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify search ran; see null-search rule); thousands signal debt.
 
-EL5: Fifth layer, **suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
+EL5: Fifth layer, **suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale healthy; bare suppressions debt.
 
-EL6: Sixth layer, **stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
+EL6: Sixth layer, **stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may/may not be followed in practice.
 
-ELR: Report findings at each layer before the conclusion.
-A recommendation after only checking layer 1 is a guess shaped by the surface you happened to look at.
+ELR: Report findings at each layer before conclusion.
+Recommendation after only checking layer 1 is guess shaped by surface you happened to look at.
 
 ### Before claiming inability
 
-CB1: "I cannot read this file format" / "I can't render / preview / test the page in a browser" / "you'll need to do X yourself" are capability claims about the whole toolset, not Read or Bash alone.
-Bash plus shell utilities compose with Read into more than any single tool.
-Before refusing or handing off, try a bridge: convert the input to a format your tools accept, decompose into supported steps, pipe the file through a shell utility, or drive a real browser via `agent-browser` (opens local `file://` URLs, evals JS, screenshots, console errors).
+CB1: "I cannot read this file format" / "I can't render / preview / test the page in a browser" / "you'll need to do X yourself" are capability claims about whole toolset, not Read/Bash alone.
+Bash + shell utilities compose with Read into more than any single tool.
+Before refusing/handing off, try a bridge: convert input to format your tools accept, decompose into supported steps, pipe file through shell utility, or drive real browser via `agent-browser` (opens local `file://` URLs, evals JS, screenshots, console errors).
 
-CB2: The browser-claim form is especially sticky;
+CB2: Browser-claim form especially sticky;
 about to write any phrasing meaning "can't see / render / interact with a web page," reach for `agent-browser` first.
 
-BRG: Manual actions usually have a bridge too: GUI clicks (`agent-browser` for web UIs, `xdotool`/`wtype`/`ydotool` for native UIs, a synthesised keyboard shortcut, or a backing HTTP/IPC endpoint), interactive auth (`expect`, or API tokens), hardware activation (almost always a CLI).
+BRG: Manual actions usually have a bridge too: GUI clicks (`agent-browser` for web UIs, `xdotool`/`wtype`/`ydotool` for native UIs, synthesised keyboard shortcut, backing HTTP/IPC endpoint), interactive auth (`expect`, API tokens), hardware activation (almost always a CLI).
 
-BR2: Refuse or hand off only after attempting a bridge and confirming no path exists.
-State the bridges you tried;
-an unconsidered refusal or handoff looks identical to a real obstacle.
-The cue: about to write "you'll need to", "please open", or any phrasing meaning "can't see / render / interact with a web page", without naming the bridges you tried.
+BR2: Refuse/hand off only after attempting bridge + confirming no path exists.
+State bridges you tried;
+unconsidered refusal/handoff looks identical to real obstacle.
+Cue: about to write "you'll need to", "please open", or any phrasing meaning "can't see / render / interact with a web page", without naming bridges you tried.
 
 RXH: Same for research-exhaustion claims.
-When a narrow search returns "no direct evidence for X" and X is a specific entity in a broader class, widen to the nearest comparable entities (sibling tools, peer platforms, projects solving the same problem) first.
-Failure shape: "no precedent for Netlify" while LocalStack, MinIO, Dokku, and Coolify each give one-search-away evidence on the same question.
-State what you searched and what comparable evidence you found;
-an empty result on the narrowest query is not "no precedent."
+Narrow search returns "no direct evidence for X" and X is specific entity in broader class: widen to nearest comparable entities (sibling tools, peer platforms, projects solving same problem) first.
+Failure shape: "no precedent for Netlify" while LocalStack, MinIO, Dokku, Coolify each give one-search-away evidence on same question.
+State what you searched + what comparable evidence you found;
+empty result on narrowest query is not "no precedent."
 
-RBK: Bridges genuinely fail and the user must execute: invoke the `runbook` skill when writing any manual-action document (it encodes the required sections and formatting rules).
-Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside the code they document.
+RBK: Bridges genuinely fail + user must execute: invoke `runbook` skill when writing any manual-action document (it encodes required sections + formatting rules).
+Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside code they document.
 Canonical example: `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
-FCH: When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch that document before drawing conclusions about its contents.
-Hedging about a named, fetchable target is the failure mode;
-cue: writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
-The pointer is the research lead, not the stopping point.
+FCH: ToS, README, spec, other source document references another where substantive provisions live: fetch that document before drawing conclusions about its contents.
+Hedging about named, fetchable target is failure mode;
+cue: writing "likely contains," "almost certainly addresses," or "probably covers" about document one tool call away.
+Pointer is research lead, not stopping point.
 
 ### Name the verification step
 
-NVS: Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them.
-Cannot name what backs a claim? Downgrade to a labeled guess or do the verification.
+NVS: Confident factual claims about user's environment, external tool, src code must be paired inline with what backs them.
+Cannot name what backs a claim? Downgrade to labeled guess or do verification.
 
-QRY: Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
-Both fail silently, both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
+QRY: Every search result carries two claims: search ran correctly, and lines shown are matches.
+Both fail silently, both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
 Sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
 ### Git cleanup and worktree safety reviews
 
-GCL: Reviewing a plan or change touching `git clean`, destructive git guards, worktree safety, or ignored-file cleanup: inspect ignored root artifacts before final findings.
+GCL: Reviewing plan/change touching `git clean`, destructive git guards, worktree safety, ignored-file cleanup: inspect ignored root artifacts before final findings.
 Run:
 
 ```bash
@@ -265,11 +264,11 @@ git check-ignore --verbose HEAD config hooks objects refs
 git clean --dry-run -d -X HEAD config hooks objects refs
 ```
 
-GC2: Never rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`;
+GC2: Never rely on `git status`, `git ls-files --others --exclude-standard`, `rg --files`;
 those hide ignored files.
-Any root sentinel exists: cleanup or an exact safe cleanup path is part of the design under review.
+Any root sentinel exists: cleanup or exact safe cleanup path is part of design under review.
 
-GCW: When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): git-dirs under an allowed dir bypass the guard.
+GCW: Review touches `cli-git`'s linked-worktree guard: account for baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): git-dirs under allowed dir bypass guard.
 
 ### Research tools
 
@@ -277,135 +276,135 @@ RT1: `rg`: fast text search; use directly rather than navigating directory trees
 
 RT2: `agent-browser`: headless browser CLI; rendered web pages, screenshots, web UI interaction, deployed-app verification.
 
-RT3: `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs are incomplete.
+RT3: `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs incomplete.
 
 RT4: `gh`: GitHub issues, PRs, release notes, repository metadata.
 
 RT6: Never remove cloned repos or other audit artifacts from `/tmp/agent`;
-the user will clean up when ready.
+user will clean up when ready.
 
 ## Before running a command
 
 ### Command execution conventions
 
-VTS: Spawn something in another terminal, window, or session: use a real terminal launcher.
+VTS: Spawn something in another terminal, window, session: use real terminal launcher.
 Arbitrary commands, including Codex: `terminal-exec -- <command> ...`.
 `spawn-claude` only for Claude Code child sessions.
-`spawn_agent` is not an OS terminal;
-a PTY/TTY is not a visible terminal emulator window.
+`spawn_agent` not an OS terminal;
+PTY/TTY not visible terminal emulator window.
 Never probe `terminal-exec` with `--help`;
-read its README or src, since unknown options are ignored and it opens a terminal.
+read its README/src, since unknown options ignored + it opens a terminal.
 
-TMO: Never wrap routine verification commands in an external `timeout` binary.
-Use the command tool's session/polling first;
-a process truly remaining after producing useful output: inspect the PID, stop that stale process.
-Reserve external timeout wrappers for commands whose behavior is being tested, or with a known unbounded runtime and no narrower kill mechanism.
+TMO: Never wrap routine verification commands in external `timeout` binary.
+Use command tool's session/polling first;
+process truly remaining after producing useful output: inspect PID, stop that stale process.
+Reserve external timeout wrappers for commands whose behavior is being tested, or with known unbounded runtime + no narrower kill mechanism.
 
-RGP: Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
+RGP: Always pass explicit path (`.` or absolute) to `rg` in Bash tool.
 
-CLN: Clone a package's git repo under `/tmp/agent/` whenever investigating src code.
-Before first use, ensure the root exists with private permissions:
+CLN: Clone package's git repo under `/tmp/agent/` whenever investigating src code.
+Before first use, ensure root exists with private permissions:
 `mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
 Use `gh repo clone <repo> /tmp/agent/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
-unless commit history is part of the investigation;
-`gh` handles authentication and fork remotes automatically.
+unless commit history part of investigation;
+`gh` handles authentication + fork remotes automatically.
 Auto-mode allows structured `read` tool access to existing non-secret files under `/tmp/agent`;
-writes, bash commands, secret-looking paths, and symlink escapes still go through the guardrail.
+writes, bash commands, secret-looking paths, symlink escapes still go through guardrail.
 
-BOP: Never treat `~` in Bash tool output as a literal tilde;
-it is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook (display-only, filesystem values unchanged).
-Account for it when debugging path issues, before concluding the path is wrong.
-Skip the filter for one command: include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
+BOP: Never treat `~` in Bash tool output as literal tilde;
+it's display substitution for `/var/home/user` or `/home/user` by `bash-output-filter` hook (display-only, filesystem values unchanged).
+Account for it when debugging path issues, before concluding path is wrong.
+Skip filter for one command: include blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, `> file`.
 
 ### Long-form flags
 
-LFF: Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
-Writing the long form forces knowing what it does, where short-flag muscle memory fails.
+LFF: Use long-form (`--flag`) options for CLI commands, not bundled/single-letter short flags.
+Writing long form forces knowing what it does, where short-flag muscle memory fails.
 
-RGT: `rg` is the canonical trap: ripgrep recurses by default, so `-r` means `--replace`, not grep's recursive `-r`; a grep-reflex `rg -rl`/`-ir` silently rewrites matches in the output instead of recursing. Long form removes the trap.
+RGT: `rg` is canonical trap: ripgrep recurses by default, so `-r` means `--replace`, not grep's recursive `-r`; grep-reflex `rg -rl`/`-ir` silently rewrites matches in output instead of recursing. Long form removes trap.
 
-LF2: Where a flag has no long-form spelling the short flag stays;
-`--` argument separators (`mise watch -- task`) are unaffected.
+LF2: Where flag has no long-form spelling, short flag stays;
+`--` argument separators (`mise watch -- task`) unaffected.
 
 ### Hazardous commands
 
 HRM: Before any action, consider whether it could physically harm a human (blasting audio volume, flashing content, unexpected hardware activation).
-If so, warn the user and state what will happen before proceeding.
+If so, warn user + state what will happen before proceeding.
 
-RXI: Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
-The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
+RXI: Always run commands that might crash/exhaust host in performance-limited container/VM, never directly on host.
+"May exhaust host" set broader than destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
 
-BOX: Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
-State the bounds explicitly (memory cap, cpu cap, timeout).
-User requests one directly: propose the containerised invocation and confirm.
-Past authorisation does not transfer across commands;
-each heavy run needs an isolated environment.
+BOX: Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or `mvm` CLI for VM isolation.
+State bounds explicitly (memory cap, cpu cap, timeout).
+User requests one directly: propose containerised invocation + confirm.
+Past authorisation doesn't transfer across commands;
+each heavy run needs isolated environment.
 
 DCB: Never execute or instruct another agent to execute extremely destructive commands, even as guardrail tests, e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
 Guardrails can fail;
-a catastrophic command must not appear in instructions to other agents, subshells, or generated scripts, whatever the intent.
+catastrophic command must not appear in instructions to other agents, subshells, generated scripts, whatever the intent.
 Verifying a guardrail: use moderately dangerous commands (e.g. `sudo apt-get install`).
 
 ## Before editing code
 
 ### Match action scope to the request verb
 
-VRB: Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "look at", "analyze", "investigate") request a deliberation.
-The deliverable is the answer; don't also apply the fixes the answer implies.
-Action verbs ("fix", "implement", "apply", "do", "change", "add", "remove", "update", "refactor") authorize the action.
+VRB: Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "look at", "analyze", "investigate") request deliberation.
+Deliverable is answer; don't also apply fixes answer implies.
+Action verbs ("fix", "implement", "apply", "do", "change", "add", "remove", "update", "refactor") authorize action.
 
-AUT: This holds in Auto Mode: its "prefer action over planning" applies to executing the requested action, not expanding scope;
-not authorization to act on adjacent decisions the user has not made.
+AUT: Holds in Auto Mode: its "prefer action over planning" applies to executing requested action, not expanding scope;
+not authorization to act on adjacent decisions user hasn't made.
 
-VR2: Verb ambiguous: default to the narrower interpretation, propose the broader action explicitly.
+VR2: Verb ambiguous: default to narrower interpretation, propose broader action explicitly.
 
 ANN: Move changes where they belong immediately: different file, new file, gitignore entry.
-Unsure: propose a concrete edit and location.
+Unsure: propose concrete edit + location.
 
 ### Cross-runtime and scripts
 
 XRT: Prefer cross-runtime patterns instead of Bun-specific implementations.
 
-SCR: Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
+SCR: Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code + top-level await (no `main()` wrapper).
 
-PIN: Pin tool versions only with clear justification and a comment explaining why.
+PIN: Pin tool versions only with clear justification + comment explaining why.
 
-SPG: Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions, to prevent recursive token burn.
+SPG: Add explicit guards (transcript size check, env var flag, session type filter) to any automation spawning agent sessions, to prevent recursive token burn.
 
 ### Simplification
 
-IMM: Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
+IMM: Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state + imperative loops.
 
 UTL: Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 
-XNC: Extract and name concepts; start simple, refactor to complexity only when necessary.
+XNC: Extract + name concepts; start simple, refactor to complexity only when necessary.
 
-ITR: Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
+ITR: Iterate linear input with `map`/`filter`/`reduce` or `for...of`; counter `for (let i = 0; ...)` loop for index/lookahead; `while` for side-effecting cursor. Never recurse over string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with work-stack. Why + spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
 
-MXL: Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
+MXL: Never disable, raise, bypass, work around max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; fix lives in another file.
 
 MXR: Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
 
 ### Linting
 
-LN1: Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
+LN1: Never violate one rule to satisfy another. Lint rules form single shape: code satisfying all of them. When two rules appear to conflict, remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you're violating-to-satisfy: about to undo something autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
 
-LN2: Treat each lint finding as a design signal, not a checkbox. Name the rule's real intent,
-then make the best code shape that satisfies that intent and the rest of the codebase.
-A shortcut taken for one warning is evidence about the care taken everywhere else.
+LN2: Treat each lint finding as design signal, not checkbox. Name rule's real intent,
+then make best code shape satisfying that intent + rest of codebase.
+Shortcut taken for one warning is evidence about care taken everywhere else.
 
-LN3: Before disabling, suppressing, weakening types, broadening annotations, or otherwise skirting a lint rule,
-inspect the linter source and the source code of the value being linted.
-Try the rule's config or allow-list mechanism first.
-If a suppression remains necessary, write or update a `.md` document that cites both source paths,
-proves why the allow-list or config path cannot work, and links the suppression to that document.
-Do not land the suppression without that document.
+LN3: Before disabling, suppressing, weakening types, broadening annotations, otherwise skirting lint rule,
+inspect linter source + source code of value being linted.
+Try rule's config/allow-list mechanism first.
+If suppression remains necessary, write/update `.md` document citing both source paths,
+proving why allow-list/config path can't work, linking suppression to that document.
+Don't land suppression without that document.
 
-LN4: Prefer `Object.entries` and functional methods over `for...in`.
+LN4: Prefer `Object.entries` + functional methods over `for...in`.
 
-LN5: Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
+LN5: Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering rules.
 
-LN6: Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration.
+LN6: Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** TSDoc; enable on **very next line** after declaration or closing `);`/`}`, never at end-of-file). Don't use `// oxlint-disable-next-line` between TSDoc + declaration.
 
 LN7: Never loosen lint rules without prior approval.
 
@@ -414,43 +413,43 @@ LN8: Address all lint issues, including but not limited to warnings.
 ### Logging
 
 LOG: Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events.
-Never remove logging to "clean up"; treat it as permanent infrastructure.
+Never remove logging to "clean up"; treat as permanent infrastructure.
 
 TLG: Always use tagged loggers from `@monochromatic-dev/module-logger`.
 Never raw `console.log`/`console.error` or untagged logger instances in production code.
-Exception: raw `console` when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
+Exception: raw `console` when precise control over terminal output needed (CLI user-facing messages, progress indicators, interactive prompts).
 
-LG1: Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
+LG1: Tag at every module + function boundary; use `myFn.name` as tag to stay in sync with refactors.
 
-LG2: Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
+LG2: Compose tags deeply: calling sub-function that accepts a logger, wrap current logger with additional tag before passing it.
 
-LG3: Never embed tags manually in message strings. Use the `tagged` wrapper instead.
+LG3: Never embed tags manually in message strings. Use `tagged` wrapper instead.
 
 ### Security
 
 SEC: No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.
 
-SYB: Any code that transforms or embeds text across a syntax boundary must treat the destination grammar as the authority.
-Source escapes are not portable: Markdown `\<`, shell quotes, JSON escaping, URL encoding, or regex escaping do not make
-text safe in another language. Normalize source semantics only as needed, then encode for the exact destination subcontext
-at the final interpolation boundary. Account for nested contexts: HTML text vs attribute vs URL, JS string inside
-`<script>`, CSS string, SQL literal, shell token, Markdown/MDX, JSON, regex, glob, terminal escape, and config syntax.
+SYB: Any code transforming/embedding text across syntax boundary must treat destination grammar as authority.
+Source escapes not portable: Markdown `\<`, shell quotes, JSON escaping, URL encoding, regex escaping don't make
+text safe in another language. Normalize source semantics only as needed, then encode for exact destination subcontext
+at final interpolation boundary. Account for nested contexts: HTML text vs attribute vs URL, JS string inside
+`<script>`, CSS string, SQL literal, shell token, Markdown/MDX, JSON, regex, glob, terminal escape, config syntax.
 
-STB: Tests for any transformer that emits another syntax must include adversarial boundary cases for that destination:
-active delimiters, terminators, escapes, quotes, newlines, traversal tokens, command separators, and source-escaped
+STB: Tests for any transformer emitting another syntax must include adversarial boundary cases for that destination:
+active delimiters, terminators, escapes, quotes, newlines, traversal tokens, command separators, source-escaped
 variants.
 
 ### TSDoc comments
 
 TSD: Write comprehensive TSDoc for **all** declarations (exported or not, including locals).
-Adhere to the TSDoc rules enforced by `@monochromatic-dev/config-oxlint-tsdoc`.
+Adhere to TSDoc rules enforced by `@monochromatic-dev/config-oxlint-tsdoc`.
 Use `{@inheritDoc originalFn}` for non-async wrappers.
 
-TD1: Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template.
+TD1: Use `${ // comment \n '' }` to embed comments inside template literals; don't use target-language comments or move comment outside template.
 
 TD2: TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns.
 
-TD3: TSDoc must directly precede a declaration, not a statement.
+TD3: TSDoc must directly precede declaration, not statement.
 
 TD4: Comments on their own line above code, never inline after code.
 
@@ -458,7 +457,7 @@ TD5: Escape `*/` as `*\\/` inside TSDoc blocks.
 
 TD6: Avoid `the`/`a`/`an` in `@param`/`@returns`; explain **why**, not **what**.
 
-TD7: Do not mention Promise wrapping for async functions.
+TD7: Don't mention Promise wrapping for async functions.
 
 TD8: Include `@example` tags with usage examples.
 
@@ -474,17 +473,17 @@ ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace,
 
 ST5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
 
-ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
+ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time, no async preload step needed.
 
 ST8: No calling functions before their declaration in source order; hoisting makes it legal but reading top-down becomes unreliable.
 
-ST9: Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library.
+ST9: Functions with 2+ parameters must use single destructured object parameter (named params); exempt: callbacks whose signature dictated by external API/library.
 
-TQ1: No rest parameters (`...args`) in functions we control; accept an array parameter instead.
+TQ1: No rest parameters (`...args`) in functions we control; accept array parameter instead.
 
 TQ2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
 
-TQ3: Throw and return early; use overloads (most specific first).
+TQ3: Throw + return early; use overloads (most specific first).
 
 #### Type system
 
@@ -502,7 +501,7 @@ TY6: Prefer `as` over angle bracket syntax; use type guards for runtime checking
 
 TY7: Use assertion functions (`asserts value is T`) for runtime type narrowing.
 
-TY8: `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null, or reassign to a new `const` with an explicit type annotation after the null check.
+TY8: `const` narrowing doesn't reach **function declarations** (tsc + tsgo). Fix: helper returning non-null, or reassign to new `const` with explicit type annotation after null check.
 
 TY9: Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
@@ -528,71 +527,71 @@ PP5: `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!
 
 PP6: Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
 
-PP7: Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
+PP7: Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log error).
 
 PP8: Never silently discard unexpected states; throw on unreachable branches.
 
-PP9: No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
+PP9: No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate + fallthrough bugs; `Record` preferred when mapping discriminant to value.
 
 PPX: Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
 
 #### Regular expressions
 
-RG1: Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
+RG1: Don't introduce regular expression when index scan, parser, string API expresses same rule clearly.
 
-RG2: A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
+RG2: Regex you remove must become single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over text nor accumulator rebuilding string/array each step (`acc + c`, `[...acc, x]`). Don't assume original regex was linear: backtracking pattern can be superlinear, so prove O(n) for attacker-controlled/unbounded input. Why: philosophy doc.
 
-RG3: Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
+RG3: Regex literals, `RegExp` constructor calls, string methods using regex must be guarded by scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. Justification must explain why regex is right tool, what input shape bounds it, why it can't backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, don't use regex.
 
-RG4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
+RG4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap input or prove linear behaviour in disable justification + regression tests.
 
 ## Before declaring work complete
 
 ### Package completeness
 
-PKG: A package is not finished until it has a `README.md`, passes linting with zero errors, and has passing tests covering every exported code path.
-Never declare work complete while any condition is unmet.
+PKG: Package not finished until it has `README.md`, passes linting with zero errors, has passing tests covering every exported code path.
+Never declare work complete while any condition unmet.
 
-TCV: Enumerate every distinct code path the module exposes, not just the obvious happy path.
+TCV: Enumerate every distinct code path module exposes, not just obvious happy path.
 Implementation has separate branches (sync vs async, string vs object, direct vs delegated)? Each branch needs its own test.
 
-TC2: "Tests exist and pass" is not evidence of completeness.
-Compare test names against the implementation's branches; confirm no untested path.
+TC2: "Tests exist and pass" not evidence of completeness.
+Compare test names against implementation's branches; confirm no untested path.
 
 ### Verify at the user boundary
 
-VUB: After building, deploying, or installing an artifact, run verification steps that exercise it the way an end user would.
+VUB: After building, deploying, installing artifact, run verification steps exercising it the way an end user would.
 
 VB1: Server: confirm it serves correct responses, not just that it starts.
 
-VB2: CLI tool: run a real command and check the output.
+VB2: CLI tool: run real command + check output.
 
-VB3: Hook/plugin: trigger it through the host application, not just by piping test input directly.
+VB3: Hook/plugin: trigger through host application, not just by piping test input directly.
 
-VB4: Library: import and call it from a consuming project, not just compile it.
+VB4: Library: import + call from consuming project, not just compile it.
 
-VB5: Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
+VB5: Web page or standalone HTML artifact (including local `file://` docs + demos in `docs/`): load with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) + read back rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
 
-VB6: The verification must cross the integration boundary between artifact and consumer.
-"It compiled" / "It installed" alone is not verification.
+VB6: Verification must cross integration boundary between artifact + consumer.
+"It compiled" / "It installed" alone not verification.
 
 ### Verify on a throwaway, not against real state
 
-THR: Verification means a state-mutating or destructive operation: run it against a disposable fixture you create, never the user's real or shared state (working tree, real tool caches, a populated database, live conf).
-Reproduce the real scenario: `mktemp -d` plus `git init` for a repo, a scratch dir, a throwaway branch/worktree, a container, a fresh sqlite file;
-exercise the real artifact against it, delete it afterward.
+THR: Verification means state-mutating/destructive operation: run against disposable fixture you create, never user's real/shared state (working tree, real tool caches, populated database, live conf).
+Reproduce real scenario: `mktemp -d` plus `git init` for repo, scratch dir, throwaway branch/worktree, container, fresh sqlite file;
+exercise real artifact against it, delete afterward.
 Pairs with "Verify at the user boundary": real artifact, throwaway state.
 
-TH2: The rule holds even when the command looks idempotent or you have committed first;
-testing whether a guard blocks a destructive operation, build both the allowed case and the rejected case as fixtures.
+TH2: Rule holds even when command looks idempotent or you committed first;
+testing whether guard blocks destructive operation, build both allowed case + rejected case as fixtures.
 
-TH3: Cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
-Create the throwaway target first.
+TH3: Cue: about to run `reset --hard`, `clean -fd`, migration, bulk delete, overwrite, any other state-mutating command against user's actual repo, cache, data solely to observe how it behaves.
+Create throwaway target first.
 
-TAE: Writing instructions, conf, or documentation that prescribes how a tool or API behaves: test the claim first with a real invocation.
+TAE: Writing instructions, conf, documentation prescribing how a tool/API behaves: test claim first with real invocation.
 Never write "use X for Y" based on how X **should** work;
-run X against a real target and confirm the output.
-Applies to agent prompts, README guidance, CI scripts, and any artifact future sessions will follow.
+run X against real target + confirm output.
+Applies to agent prompts, README guidance, CI scripts, any artifact future sessions will follow.
 
 ## When investigating problems
 
@@ -602,17 +601,17 @@ TP1: Undefined method error: retrieve docs immediately.
 
 TP2: Check actual type definitions before using APIs.
 
-TP3: Note CLI command patterns across examples; test the simplest case first.
+TP3: Note CLI command patterns across examples; test simplest case first.
 
-TP4: Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, modify it freely (e.g. to prepare a pull request). The rule binds only clones of repos we do not own. A skill may carve a narrow documented exception; today only the `troubleshooting-doc` skill's disposable prototype clone (mechanics in the philosophy doc).
+TP4: Never modify files in cloned third-party repositories; use conf, env vars, wrapper scripts. "Third-party" decided by ownership, not origin: fork under our own account (git user's GitHub namespace) is our code, modify freely (e.g. to prepare pull request). Rule binds only clones of repos we don't own. Skill may carve narrow documented exception; today only `troubleshooting-doc` skill's disposable prototype clone (mechanics in philosophy doc).
 
-TP5: When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
+TP5: Investigating external tool's behavior, bug, capability, fix difficulty: clone its src + read relevant code path. "No public diagnosis exists" never valid stopping point when source open; quote file path, line number, code excerpt when citing finding.
 
-TP6: When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
+TP6: Proposing package to replace dependency: audit candidate to incumbent's depth: transitive deps, src paths handling cases incumbent mishandles, build provenance for native/wasm modules, maintenance signals. Report findings inline with recommendation, not as trailing caveats.
 
-TP7: Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
+TP7: Finished diagnosing/working around external tool's bug, quirk, capability gap: write `docs/troubleshooting/<topic>.md` via `troubleshooting-doc` skill before declaring done; it gates draft upstream issue on 6-constraint check.
 
-TP8: Check `.out-of-scope/` before filing an upstream tracking issue; listed exemptions still get the `docs/troubleshooting/<topic>.md` writeup but skip the GitHub issue.
+TP8: Check `.out-of-scope/` before filing upstream tracking issue; listed exemptions still get `docs/troubleshooting/<topic>.md` writeup but skip GitHub issue.
 
 ## When committing or documenting
 
@@ -622,11 +621,11 @@ TP8: Check `.out-of-scope/` before filing an upstream tracking issue; listed exe
 
 WR1: No emojis in human-readable content.
 
-WR2: No em-dashes (`—`), en-dashes (`–`), or their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses are informal. Use paired commas or parentheses for asides, colon for elaboration or lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens remain fine in compound words ("user-facing"), and `--` remains fine in CLI flags (`--watch`); the ban applies only to em-dash use.
+WR2: No em-dashes (`—`), en-dashes (`–`), their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses informal. Use paired commas/parentheses for asides, colon for elaboration/lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens fine in compound words ("user-facing"), `--` fine in CLI flags (`--watch`); ban applies only to em-dash use.
 
-WR3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as a standalone title; use the appropriate ATX header level instead.
+WR3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as standalone title; use appropriate ATX header level instead.
 
-WR4: Active voice without collective pronouns; state facts directly; avoid meta-references to the project's own philosophy.
+WR4: Active voice without collective pronouns; state facts directly; avoid meta-references to project's own philosophy.
 
 WR5: Present tense for current state, future tense only for planned features.
 
@@ -649,51 +648,51 @@ MD6: ATX headers, max 4 levels, blank line before headers, lines under 120 chars
 ### Doc placement
 
 DPL: Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix family (`docs/troubleshooting/`, `docs/philosophy/`, `docs/todo/`, `docs/handover/`, etc.).
-The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families move under `docs/`.
-Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
+Repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, already-tidy doc subdirectories like `.out-of-scope/`; flat dotted-prefix families move under `docs/`.
+Package-specific docs stay beside code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, `HANDOVER.*.md`.
 
-DL1: Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
+DL1: Naming: `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping now-redundant prefix; second dotted segment stays flat in filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not deeper directory. Use kebab-case for multi-word topics.
 
-DL2: Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
+DL2: Hubs: bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
 
-DL3: Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
+DL3: Bug reports fold into most relevant `docs/troubleshooting/<topic>.md` as section rather than getting their own family.
 
-DL4: Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
+DL4: Delete verifiably-finished docs once their work lands; git history is backstop, so removal not destructive. Read each before deleting.
 
-DL5: Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
+DL5: Reference source files by repo-relative path, not pinned GitHub blob URL; blob URL also breaks when target moves.
 
 DL6: No automated check guards root regression; this rule is the cure.
 
 ### Handling external changes
 
-EC1: External worktree changes are normal and often expected in this repo. Treat `git status` entries you did not modify as concurrent work, not an emergency.
+EC1: External worktree changes normal + often expected in this repo. Treat `git status` entries you didn't modify as concurrent work, not emergency.
 
-EC2: Never run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes. Only touch files in your task scope; an unrelated external change blocks a necessary edit, ask before changing it.
+EC2: Never run `git restore`, `git stash`, cleanup, other move-aside commands on unrelated external changes. Only touch files in your task scope; unrelated external change blocks necessary edit -> ask before changing it.
 
 EC3: Acknowledge externally modified files; ask before reverting.
 
-EC4: Never proceed with implementing features that will not achieve their intended effect.
+EC4: Never proceed with implementing features that won't achieve their intended effect.
 
-EC5: Explain when a tool/command does not support requested functionality instead of creating non-functional code.
+EC5: Explain when tool/command doesn't support requested functionality instead of creating non-functional code.
 
 ### Git commit guidelines
 
 GIT: Conventional Commits format: `<type>(<scope>): <subject>`.
 
-GCE: Commit at the earliest opportunity that records coherent progress, before the next work step.
-Never wait for full verification when a feature or fix has just been implemented;
-commit the checkpoint, then keep testing and fixing in follow-up commits.
-The cue:
+GCE: Commit at earliest opportunity recording coherent progress, before next work step.
+Never wait for full verification when feature/fix just implemented;
+commit checkpoint, then keep testing + fixing in follow-up commits.
+Cue:
 "I just finished implementing a feature or fix.
 Not sure it works yet, but committing now records progress."
 
-GCU: Never accumulate independent units in the working tree;
-it forces a sprawling mixed-concern commit or an error-prone split.
-The trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
+GCU: Never accumulate independent units in working tree;
+it forces sprawling mixed-concern commit or error-prone split.
+Trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
 "I am done with the whole task."
-When committing, include all changes belonging to the same logical unit together unless instructed otherwise;
-never subdivide a logical unit across commits, and never sweep in unrelated or concurrent external changes (stage an explicit, scoped pathspec; see CLG).
-This supersedes the harness ask-before-committing default; commit eagerly without asking.
+When committing, include all changes belonging to same logical unit together unless instructed otherwise;
+never subdivide logical unit across commits, never sweep in unrelated/concurrent external changes (stage explicit, scoped pathspec; see CLG).
+Supersedes harness ask-before-committing default; commit eagerly without asking.
 
 GCT: Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
 Scope: package name or `*` for multi-package changes.
@@ -710,27 +709,27 @@ fix(package2): <what>
 <why>
 ```
 
-GCA: If a commit message is inaccurate after committing, do not amend (harness rule).
-Surface it, ask the user to push, then post a commit comment: it renders alongside the commit on GitHub and survives history rewrites.
-Do not silently let it stand;
-future readers see only the message.
-The cue: about to write "the commit message overstates scope" or similar in chat as a one-off note instead of recording it where the commit lives.
+GCA: Commit message inaccurate after committing: don't amend (harness rule).
+Surface it, ask user to push, then post commit comment: renders alongside commit on GitHub + survives history rewrites.
+Don't silently let it stand;
+future readers see only message.
+Cue: about to write "the commit message overstates scope" or similar in chat as one-off note instead of recording it where commit lives.
 
 CLG: Never preemptively bypass `cli-git` enforcement.
-The `git add` and `git commit` guards reject bulk staging (`-A`, `.`) and pathspec-less commits on purpose: with a dirty tree or concurrent sessions they sweep unintended files into a commit.
-Not obstacles to route around; the compliant path satisfies them.
-Stage and commit an explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit and cannot capture another session's files.
+`git add` + `git commit` guards reject bulk staging (`-A`, `.`) + pathspec-less commits on purpose: with dirty tree or concurrent sessions they sweep unintended files into commit.
+Not obstacles to route around; compliant path satisfies them.
+Stage + commit explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit + can't capture another session's files.
 
-CL2: Reach for `--no-enforce-bulk-add` or `--no-enforce-only` only when no scoped pathspec can express the change (a genuine whole-tree single-session operation), never as the default, never baked into instructions to child sessions.
-Cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a scoped pathspec, or hand a child a commit recipe carrying a bypass flag.
+CL2: Reach for `--no-enforce-bulk-add`/`--no-enforce-only` only when no scoped pathspec can express change (genuine whole-tree single-session operation), never as default, never baked into instructions to child sessions.
+Cue: about to type `--no-enforce`, `git add -A`, `git add .` before trying scoped pathspec, or hand child commit recipe carrying bypass flag.
 
-XCM: Never append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, anything a maintainer or third party reads.
-Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push a decision or a follow-up task onto the reader, usually the user.
-Decide the matter yourself, state what you did; the message reports a result, not a menu.
+XCM: Never append work-inviting offers to external communications: PR descriptions + review replies, issue + commit comments, emails, anything maintainer/third party reads.
+Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push decision/follow-up task onto reader, usually user.
+Decide matter yourself, state what you did; message reports result, not menu.
 
-XC2: A genuine choice only the user can make: raise it with the user (AskUserQuestion) before sending the external message, don't punt it into the external text where it silently obliges them to respond.
-This does not forbid a necessary question the external thread requires (a real blocker the recipient alone can unblock); it forbids the reflexive optional offer tacked on.
-Cue: about to end an external message with "happy to", "want me to", "if you'd prefer", "say the word", or a question to the reader you appended rather than were asked for.
+XC2: Genuine choice only user can make: raise with user (AskUserQuestion) before sending external message, don't punt into external text where it silently obliges them to respond.
+Doesn't forbid necessary question external thread requires (real blocker recipient alone can unblock); forbids reflexive optional offer tacked on.
+Cue: about to end external message with "happy to", "want me to", "if you'd prefer", "say the word", or question to reader you appended rather than were asked for.
 Cut it.
 
 ### Dependency management
@@ -747,29 +746,29 @@ AP2: Add `mise.toml` with task definitions mirroring sibling packages.
 
 AP3: Configure `package.json` with workspace dependencies.
 
-AP4: For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
+AP4: CLI packages with `bin` entry: add `#!/usr/bin/env bun` shebang as first line of entry point; without it, Unix falls back to `/bin/sh` + script hangs/errors.
 
-AP5: For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
+AP5: Packages with client-side bundling: add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, `build:js:client` mise task, `@monochromatic-dev/config-tsdown` as devDependency.
 
 ### Essential commands
 
-CM1: Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
+CM1: Identify target package + task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
 
 CM2: Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
 
-CM3: All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
+CM3: All builds + tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use corresponding mise task. When no suitable task exists, add one to target package's `mise.toml` first, unless a rule below carves out direct call (e.g. running test file with `bun <file>`).
 
-CM4: Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists.
+CM4: Never substitute `bun test` for missing mise task; it misreports under `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run file directly with `bun <file>` if no task exists.
 
-CM5: Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
+CM5: Read `mise.toml` files in root + package directories for available commands. Run task in specific package with `mise run //packages/path:task` (not `mise run --cd`).
 
 CM6: Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; no automated type-check yet.
 
-CM7: `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
+CM7: `mise watch --restart` takes bare task name, not `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When dev task needs watch-restart, split inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
 
-CM8: After modifying source in packages that produce dist output, verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
+CM8: After modifying source in packages producing dist output, verify with `mise run buildAndTest`, not tests alone: tests import from built dist, so stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
-WC2: Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
+WC2: Some root-level files (e.g. `CLAUDE.md`) generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit source + run file-enforcer.
 
 ## Architecture decisions
 
@@ -780,11 +779,11 @@ AD2: Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`
 AD3: Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
 
 AD4: Nested calls (`b(a())`) over method chaining to keep functions self-contained;
-split a chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
+split chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
 
 ## Agent skills
 
-SK1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
+SK1: **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after fix commits; commit-body `Closes #N` auto-close not sufficient. See `docs/agents/issue-tracker.md`.
 
 SK2: **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
 
