@@ -1,0 +1,183 @@
+meow
+not-found
+not found
+absent
+exists
+file exists
+unnamed man
+What a day! Oh, a day. It is a good day!
+tsdoc/no-tag
+tsdoc/no-tsdoc
+penpot:skip
+descriptionAbsent
+missing
+unknown
+invalid
+failure
+error
+success
+unset
+none
+skip
+done
+test
+secret
+discard
+noop
+empty
+default
+sentinel
+value
+result
+state
+status
+thing
+stuff
+data
+not ok
+ok
+nope
+yes
+tmp
+foo
+bar
+baz
+qux
+x
+s
+sym
+symbol
+no-value
+no value
+no-result
+no result
+no-match
+no match
+no-node
+no token
+no-file
+no file
+not-ready
+not ready
+not-valid
+not valid
+cache-miss
+cache miss
+argument-absent
+argument absent
+setting-absent
+metadata-unset
+description-absent
+description absent
+node-absent
+field-missing
+field missing
+item-missing
+entry-missing
+value-missing
+result-missing
+state-unknown
+status-unknown
+invalid-value
+invalid input
+unparseable-value
+failed-parse
+parse-error
+parse error
+missing-file
+missing file
+file-missing
+file missing
+file-absent
+file absent
+task-not-found
+task not found
+package-not-found
+package not found
+config-missing
+config missing
+no-config
+no config
+no-timer
+no timer
+no-abort
+no abort
+no-child
+no child
+no-parent
+no parent
+no-row
+no row
+no-text
+no text
+no-auth
+no auth
+no-language
+no language
+no-cache
+no cache
+no-manager
+no manager
+skip-node
+skip node
+discard-entry
+discard entry
+ignore-value
+ignore value
+not-a-data-row
+no-static-method-name
+no-optional-escape-no-match
+module/not-found
+module/no-value
+module/cache-miss
+module/invalid-input
+module/argument-absent
+plugin/no-node
+plugin/no-token
+plugin/skip
+service/unavailable
+service/error
+app/no-config
+app/no-result
+app/not-ready
+parser/no-match
+parser/parse-error
+parser/invalid-token
+loader/missing-file
+loader/file-absent
+store/cache-miss
+db/no-row
+api/no-response
+api/error
+ui/no-selection
+ui/no-parent
+file file exists
+file exists exists
+missing missing value
+value value missing
+unknown unknown state
+state state unknown
+day day night moon sun
+alpha alpha beta gamma delta
+token token value status result
+missing missing package file entry
+reused prefix reused suffix marker
+this is a good good good description
+status status status is unknown
+a value that is a value
+what what what happened here
+thing that does the thing
+name of the unnamed name
+no no yes maybe later
+alpha beta gamma alpha beta
+one two one two three
+gitignore-absent
+lockfile-stale
+sourcemap-missing
+frontmatter-missing
+stylesheet-missing
+thumbnail-unavailable
+clipboard-denied
+manifest-unreadable
+worker-terminated
+network-timeout
