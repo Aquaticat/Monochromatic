@@ -81,7 +81,7 @@ export async function cloneShallow(
     ],
   },);
   if (exitCode !== 0) {
-    rl.warn(`shallow clone failed: ${stderr}`,);
+    rl.debug(`shallow clone failed: ${stderr}`,);
     return {
       shallowBytes: 0,
       clonePath,
@@ -93,7 +93,7 @@ export async function cloneShallow(
    * Compressed tip object-store size after the depth-1 clone.
    */
   const shallowBytes = await objectsDirSize({ repoPath: clonePath, },);
-  rl.info(`shallow tip object store: ${String(shallowBytes,)} bytes`,);
+  rl.debug(`shallow tip object store: ${String(shallowBytes,)} bytes`,);
   return {
     shallowBytes,
     clonePath,

@@ -223,7 +223,7 @@ export async function probeDeepen(
   /* oxlint-enable eslint/no-await-in-loop */
 
   if (marginals.length === 0) {
-    rl.info('deepen observed no usable commit delta',);
+    rl.debug('deepen observed no usable commit delta',);
     return NO_DEEPEN;
   }
 
@@ -255,7 +255,7 @@ export async function probeDeepen(
       max: 1,
     },)
     : 1;
-  rl.info(`deepen marginal bias factor ${biasFactor.toFixed(2,)} over ${String(state.commits,)} commits`,);
+  rl.debug(`deepen marginal bias factor ${biasFactor.toFixed(2,)} over ${String(state.commits,)} commits`,);
 
   /**
    * Corrected marginal summary.

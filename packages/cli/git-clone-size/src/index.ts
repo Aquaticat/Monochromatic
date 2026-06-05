@@ -144,7 +144,7 @@ const abortController = new AbortController();
 process.once(
   'SIGINT',
   function onSigint(): void {
-  rl.info('SIGINT received; aborting probes and finalizing',);
+  rl.debug('SIGINT received; aborting probes and finalizing',);
   abortController.abort();
 },
 );
@@ -160,7 +160,7 @@ const options: EstimateOptions = {
   signal: abortController.signal,
 };
 
-rl.info(`estimating ${source.kind === 'local' ? source.path : source.url}`,);
+rl.debug(`estimating ${source.kind === 'local' ? source.path : source.url}`,);
 
 for await (const snapshot of estimate({
   source,

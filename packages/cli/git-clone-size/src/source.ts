@@ -408,7 +408,7 @@ export async function detectSource(
   },);
 
   if ((input !== undefined) && isRemoteInput({ input, },)) {
-    rl.info(`remote URL input: ${input}`,);
+    rl.debug(`remote URL input: ${input}`,);
     return parseRemoteUrl({ url: input, },);
   }
 
@@ -423,7 +423,7 @@ export async function detectSource(
   const candidateExists = await pathExists({ path: candidate, },);
 
   if ((!candidateExists) || (!(await isGitRepo({ path: candidate, },)))) {
-    rl.info(`non-repo input treated as remote URL: ${candidate}`,);
+    rl.debug(`non-repo input treated as remote URL: ${candidate}`,);
     return parseRemoteUrl({ url: candidate, },);
   }
 
@@ -433,13 +433,13 @@ export async function detectSource(
      */
     const origin = await originUrl({ path: candidate, },);
     if (origin !== NO_ORIGIN) {
-      rl.info(`local repo is shallow/partial; using origin ${origin}`,);
+      rl.debug(`local repo is shallow/partial; using origin ${origin}`,);
       return parseRemoteUrl({ url: origin, },);
     }
-    rl.warn('local repo is shallow/partial with no origin; measuring incomplete store',);
+    rl.debug('local repo is shallow/partial with no origin; measuring incomplete store',);
   }
 
-  rl.info(`complete local repo: ${candidate}`,);
+  rl.debug(`complete local repo: ${candidate}`,);
   return {
     kind: 'local',
     path: candidate,

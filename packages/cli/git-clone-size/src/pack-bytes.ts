@@ -106,13 +106,13 @@ export async function measurePackBytes(
   producerOut.on(
     'error',
     function onProducerStreamError(): void {
-    rl.trace('producer stdout closed early (consumer likely exited)',);
+    rl.debug('producer stdout closed early (consumer likely exited)',);
   },
   );
   consumerIn.on(
     'error',
     function onConsumerStdinError(): void {
-    rl.trace('consumer stdin closed early',);
+    rl.debug('consumer stdin closed early',);
   },
   );
   producerOut.pipe(consumerIn,);

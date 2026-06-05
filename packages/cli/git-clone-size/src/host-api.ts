@@ -91,7 +91,7 @@ export async function lsRemote(
     ],
   },);
   if (refs.exitCode !== 0) {
-    rl.info(`ls-remote failed: ${refs.stderr}`,);
+    rl.debug(`ls-remote failed: ${refs.stderr}`,);
     return NO_REFS;
   }
   /**
@@ -148,7 +148,7 @@ export async function lsRemote(
       .at(0,)
       ?.trim();
 
-  rl.info(`ls-remote: ${String(branches,)} branches, ${String(tags,)} tags, default=${defaultBranch ?? '?'}`,);
+  rl.debug(`ls-remote: ${String(branches,)} branches, ${String(tags,)} tags, default=${defaultBranch ?? '?'}`,);
   return {
     branches,
     tags,
@@ -205,7 +205,7 @@ export async function hostStorageBytes(
       10,
     );
     if ((result.exitCode === 0) && Number.isFinite(kib,)) {
-      rl.info(`github storage proxy: ${String(kib,)} KiB`,);
+      rl.debug(`github storage proxy: ${String(kib,)} KiB`,);
       return { bytes: kib * BYTES_PER_KIB, };
     }
     return NO_STORAGE;
@@ -236,7 +236,7 @@ export async function hostStorageBytes(
       10,
     );
     if ((result.exitCode === 0) && Number.isFinite(bytes,)) {
-      rl.info(`gitlab storage proxy: ${String(bytes,)} bytes`,);
+      rl.debug(`gitlab storage proxy: ${String(bytes,)} bytes`,);
       return { bytes, };
     }
     return NO_STORAGE;
@@ -340,7 +340,7 @@ export async function hostCommitCount(
       .startsWith('link:',);
   },);
   if (linkLine === undefined) {
-    rl.info('no Link header; commit count is a lower bound',);
+    rl.debug('no Link header; commit count is a lower bound',);
     return {
       count: 1,
       lowerBound: true,
@@ -355,7 +355,7 @@ export async function hostCommitCount(
       count: 1,
       lowerBound: true,
     };
-  rl.info(`github commit count: ${String(lastPage,)}`,);
+  rl.debug(`github commit count: ${String(lastPage,)}`,);
   return {
     count: lastPage,
     lowerBound: false,

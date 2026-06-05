@@ -94,7 +94,7 @@ export async function partialCommitCount(
     ],
   },);
   if (clone.exitCode !== 0) {
-    rl.info(`tree:0 partial clone unsupported or failed: ${clone.stderr}`,);
+    rl.debug(`tree:0 partial clone unsupported or failed: ${clone.stderr}`,);
     return NO_TREE0;
   }
 
@@ -123,7 +123,7 @@ export async function partialCommitCount(
   );
   if ((exitCode !== 0) || (!Number.isFinite(count,)))
     return NO_TREE0;
-  rl.info(`tree:0 commit count: ${String(count,)}`,);
+  rl.debug(`tree:0 commit count: ${String(count,)}`,);
   return {
     count,
     lowerBound: false,
@@ -225,7 +225,7 @@ export async function partialChurn(
     ],
   },);
   if (clone.exitCode !== 0) {
-    rl.info(`blob:none partial clone unsupported or failed: ${clone.stderr}`,);
+    rl.debug(`blob:none partial clone unsupported or failed: ${clone.stderr}`,);
     return NO_CHURN;
   }
 
@@ -255,7 +255,7 @@ export async function partialChurn(
     .split('\n',)
     .length : 1;
 
-  rl.info(`churn: ${String(distinctPathObjects,)} path objects over ${String(tipFiles,)} tip files`,);
+  rl.debug(`churn: ${String(distinctPathObjects,)} path objects over ${String(tipFiles,)} tip files`,);
   return {
     distinctPathObjects,
     tipFiles,

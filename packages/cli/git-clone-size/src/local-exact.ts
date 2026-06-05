@@ -171,7 +171,7 @@ export async function localExact(
   const sizePackBytes = await countObjectsSizePack({ path, },);
 
   if (sizePackBytes > maxPackBytes) {
-    rl.warn(`repo size-pack ${String(sizePackBytes,)}B exceeds cap ${String(maxPackBytes,)}B; size-pack proxy`,);
+    rl.debug(`repo size-pack ${String(sizePackBytes,)}B exceeds cap ${String(maxPackBytes,)}B; size-pack proxy`,);
     return {
       basis: 'local count-objects size-pack (huge-repo fallback)',
       confidence: 'high',
@@ -194,7 +194,7 @@ export async function localExact(
       revListArgs: FULL_REV_LIST,
       packArgs: PACK_ARGS,
     },);
-    rl.info(`local exact: full=${String(fullBytes,)}B shallow=${String(shallowBytes,)}B`,);
+    rl.debug(`local exact: full=${String(fullBytes,)}B shallow=${String(shallowBytes,)}B`,);
     return {
       basis: 'local pack-objects (exact)',
       confidence: 'very high',
@@ -204,7 +204,7 @@ export async function localExact(
     };
   }
   catch (error: unknown) {
-    rl.warn(`pack-objects failed (${String(error,)}); falling back to size-pack proxy`,);
+    rl.debug(`pack-objects failed (${String(error,)}); falling back to size-pack proxy`,);
     return {
       basis: 'local count-objects size-pack (pack-objects failed)',
       confidence: 'high',
