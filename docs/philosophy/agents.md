@@ -314,3 +314,9 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+### 2026-06-05
+
+Added the `TAG` rule to the AGENTS.md preamble documenting the shortcode convention itself: every rule carries a unique `[A-Z0-9]{3}` `CODE: ` prefix as a stable cross-session handle, new rules get a fresh unique code, existing codes are never reused or reassigned, and headings/code-fences/title stay untagged.

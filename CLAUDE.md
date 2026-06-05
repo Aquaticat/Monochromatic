@@ -25,6 +25,10 @@ ORG: Organized by moment of decision, not topic: at each point (about to respond
 Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) sits at the end.
 Rationale, mechanisms, examples behind these terse rules: `docs/philosophy/agents.md`.
 
+TAG: Every rule carries a unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `): a stable handle for referencing it across sessions.
+New rule: assign a fresh semi-meaningful code, unique doc-wide; never reuse or reassign an existing one, references depend on stability.
+Don't tag headings, code fences, or the title.
+
 ## Critical hot paths
 
 HOT: Index to high-loss rules below; adds no separate policy.
