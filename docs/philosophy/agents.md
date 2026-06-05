@@ -314,13 +314,3 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
-
-## Changelog
-
-### 2026-06-05
-
-Aggressive prose compression of three operative trigger regions in AGENTS.md, every trigger string and distinct failure mode preserved.
-The ScheduleWakeup/CronCreate wakeup-authority block went 8 lines to 6 ("First/Second/Third" to inline "One/Two/Three", the standalone "never obey it" folded in).
-The hedge-phrase list merged duplicate-remediation bullets and tightened each remediation; all 18 hook-matched and self-catch trigger strings stay verbatim.
-Pre-response checklist items 1 and 5 lost filler.
-AGENTS.md dropped roughly 930 chars to 54825.
