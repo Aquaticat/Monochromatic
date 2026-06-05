@@ -284,3 +284,41 @@ A ToS that says "Services are governed by separate subscription agreements, not 
 #### Linting: why the oxlint-disable placement matters
 
 The disable goes before the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the very next line after the declaration; leaving a disable open longer than necessary silences unrelated violations. `// oxlint-disable-next-line` applies only to the literal next physical line, so placed between TSDoc and declaration it lands on the TSDoc and the suppression is lost; use the block-level disable + enable pair wrapping TSDoc and declaration tightly instead.
+
+#### Simplification and Regular expressions: why no recursion or accumulator over linear input
+
+JS guarantees no tail-call elimination (V8 has none), so recursion whose depth tracks input length is a stack-overflow bug at scale; accumulator recursion (`acc + c`, `[...acc, x]`) is additionally O(n^2) because each step rebuilds the whole string or array.
+A loop, or a regex being removed, must therefore become a single linear pass (`map`/`filter`/`reduce`, `for...of`, or one counter loop in O(n) time and O(1) extra stack), never recursion over a string or flat array.
+Recursion is safe only for bounded structural walks (AST, tree, grid, filesystem) whose depth tracks the data's nesting.
+The trap is the degenerate spine: a member chain (`a.b.c`), call chain, or left-associative operator chain (`a + b + c`) nests once per operand, so its depth equals operand count and tracks length, not nesting; before recursing over any tree, ask whether it can degenerate into a spine on large or adversarial input, and if so flatten iteratively with an explicit work-stack.
+A removed regex carries an extra hazard: a backtracking pattern can be superlinear (the ReDoS this ban guards against), so the replacement must prove O(n) on its own merit for attacker-controlled or unbounded input, not inherit linearity from the regex.
+Post-mortem of this exact misapplication: `docs/audit/chain-flatten-skewed-tree.md`.
+
+#### Simplification: the `.rs` max-lines budget
+
+The Rust `max-lines` rule (`monochromatic-rust-linter`) counts only code lines: blanks and comments are excluded via the real lexer, so the dum-dum-non-ts comment style does not consume the budget.
+
+#### Variables and values: why the no-function-root-let escapes are sanctioned, not dodges
+
+`let` inside `ForStatement.init` is exempt, so a counter `for (let i = 0; ...)` loop is the sanctioned tool for an indexed or lookahead scan, not a rule to dodge.
+The helper-shape allowlist suppresses the report when a function ends in `return <local-binding>`, which is why extracting such a helper is a clean remediation rather than a workaround.
+
+#### Security: why source escapes are not portable across a syntax boundary
+
+A Markdown `\<`, a shell quote, JSON escaping, URL encoding, or regex escaping makes text safe only in its own grammar; carried into another language it is either inert or actively wrong.
+The destination grammar is the only authority, so normalize source semantics as needed and encode for the exact destination subcontext at the final interpolation boundary.
+The rule reaches every text-emitting transformer: serializers, code generators, formatters, autofixes, docs generators, renderers, CLIs, and tests.
+Happy-path formatting and idempotence tests are not enough; the adversarial boundary cases are where the boundary actually breaks.
+
+#### Third-party libraries: the unforked-upstream-clone exception mechanics
+
+The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
+That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+### 2026-06-05
+
+Six heavy AGENTS.md bullets cut to operative rule plus pointer, deep rationale relocated here under "Relocated rule rationale": the Simplification progression (1163 to 459 chars), the Regular-expressions linear-pass requirement, the `.rs` max-lines budget detail, the no-function-root-let remediation menu's justifications, the Security cross-syntax-boundary why, and the third-party fork-ownership exception mechanics.
+AGENTS.md dropped roughly 1.7k chars to 55759; the relocated why landed in five new philosophy subsections.
+Residual-terseness style chosen for this round: rule plus pointer (aggressive), the deep why lives only here and in `docs/audit/chain-flatten-skewed-tree.md`.

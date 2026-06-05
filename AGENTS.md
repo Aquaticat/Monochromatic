@@ -342,9 +342,9 @@ Unsure: propose a concrete edit and location.
 - Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 - Extract and name concepts; start simple, refactor to complexity only when necessary.
-- Simplification progression (iterating over linear input): `map`/`filter`/`reduce` or `for...of` first; a counter `for (let i = 0; ...)` loop when you need an index or lookahead; `while` for a cursor with side-effecting branches. Recursion is **not** a rung on this ladder for flat input: never turn a loop, or a regex you are removing, into recursion over a string or flat array. JS guarantees no tail-call elimination (V8 has none), so recursion over linear input is a stack-overflow bug at scale, and accumulator recursion (`acc + c`, `[...acc, x]`) is additionally O(n^2). Reserve recursion for bounded **structural** walks (AST, tree, grid, filesystem) whose depth tracks the data's nesting, not its length. The AST example is the trap: a member chain (`a.b.c`), call chain, or left-associative operator chain (`a + b + c`) is a degenerate spine whose depth equals operand count, so depth tracks length, not nesting. Test before recursing over any tree: can it degenerate into a spine on large or adversarial input? If yes, flatten iteratively with an explicit work-stack. Post-mortem of this exact misapplication: `docs/audit/chain-flatten-skewed-tree.md`.
+- Iterate linear input with `map`/`filter`/`reduce` or `for...of`; a counter `for (let i = 0; ...)` loop for an index or lookahead; `while` for a side-effecting cursor. Never recurse over a string or flat array (including a regex you remove). Recurse only for bounded **structural** walks (AST, tree, grid, filesystem); flatten degenerate spines iteratively with a work-stack. Why and the spine trap: philosophy doc; `docs/audit/chain-flatten-skewed-tree.md`.
 - Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
-- The same max-lines budget applies to `.rs` files, enforced by `monochromatic-rust-linter` (`packages/linter/rust`, rule `max-lines`, 300 code lines with blanks and comments excluded via the real lexer). Run it via each Rust package's `lint:max-lines` task or the root `lint:rust`. Remediate the same way: split into sibling modules, re-export from the parent `mod`, move helpers, types, and constants into their own files. `tests/`, `*_tests.rs`, `fuzz/`, and `build.rs` are exempt; never disable or raise the limit. The dum-dum-non-ts comment style does not consume the budget because only code lines count.
+- Same max-lines budget on `.rs` files (`monochromatic-rust-linter`, `packages/linter/rust`, rule `max-lines`, 300 code lines, blanks/comments excluded). Run via each Rust package's `lint:max-lines` or root `lint:rust`. Remediate by splitting: sibling modules, re-export from parent `mod`, move helpers/types/constants. `tests/`, `*_tests.rs`, `fuzz/`, `build.rs` exempt; never disable or raise.
 
 ### Linting
 
@@ -386,11 +386,10 @@ Source escapes are not portable: Markdown `\<`, shell quotes, JSON escaping, URL
 text safe in another language. Normalize source semantics only as needed, then encode for the exact destination subcontext
 at the final interpolation boundary. Account for nested contexts: HTML text vs attribute vs URL, JS string inside
 `<script>`, CSS string, SQL literal, shell token, Markdown/MDX, JSON, regex, glob, terminal escape, and config syntax.
-This applies to serializers, code generators, formatters, autofixes, docs generators, renderers, CLIs, and tests.
 
 Tests for any transformer that emits another syntax must include adversarial boundary cases for that destination:
 active delimiters, terminators, escapes, quotes, newlines, traversal tokens, command separators, and source-escaped
-variants. Happy-path formatting and idempotence tests are not enough.
+variants.
 
 ### TSDoc comments
 
@@ -440,7 +439,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 #### Variables and values
 
 - `const` over `let`. Two hard rules enforce this:
-  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), use a counter `for (let i = 0; ...)` loop (`let` inside `ForStatement.init` is exempt, so this is the right tool for an indexed or lookahead scan, not a rule to dodge), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report). Do **not** escape this rule by recursing over flat input (see "Simplification").
+  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), a counter `for (let i = 0; ...)` loop (`ForStatement.init` `let` is exempt), a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or a helper ending in `return <local-binding>`. Never escape it by recursing over flat input (see "Simplification").
   - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
   - For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
 - Remove unused variables or prefix with underscore (`_unusedVar`).
@@ -466,7 +465,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 #### Regular expressions
 
 - Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
-- A regex you remove must be replaced by a single linear pass: one `for...of` or `for (let i...)` scan, or one `reduce`, in O(n) time and O(1) extra stack. Do **not** replace it with recursion over the text, nor with an accumulator that rebuilds a string or array each step (`acc + c`, `[...acc, x]`); both are O(n^2) time and a stack-overflow risk at scale. Do not assume the original regex was linear either: a backtracking pattern can be superlinear (the ReDoS hazard this ban guards against), so linear is the bar the replacement must hit on its own merit, proven for attacker-controlled or unbounded input, not inherited from the regex.
+- A regex you remove must become a single linear pass (`for...of`/`for`/`reduce`, O(n) time, O(1) extra stack), never recursion over the text nor an accumulator rebuilding a string or array each step (`acc + c`, `[...acc, x]`). Do not assume the original regex was linear: a backtracking pattern can be superlinear, so prove O(n) for attacker-controlled or unbounded input. Why: philosophy doc.
 - Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
 - For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
 
@@ -525,7 +524,7 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 - Undefined method error: retrieve docs immediately.
 - Check actual type definitions before using APIs.
 - Note CLI command patterns across examples; test the simplest case first.
-- Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, not a third-party repository, so this rule does not bind it; modify a fork freely, such as to prepare a pull request from it. The rule binds only clones of repos we do not own. A skill that owns a specific workflow may also carve a narrow, documented exception for such an unforked upstream clone; the only one today is the `troubleshooting-doc` skill's disposable prototype clone, created fresh under `/tmp/agent` for an upstream-fix patch diff after origin verification and run without exposing credentials or this repo to third-party scripts.
+- Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, modify it freely (e.g. to prepare a pull request). The rule binds only clones of repos we do not own. A skill may carve a narrow documented exception; today only the `troubleshooting-doc` skill's disposable prototype clone (mechanics in the philosophy doc).
 - When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
 - When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
 - Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
