@@ -38,7 +38,7 @@ When a cue matches, follow the target rule immediately rather than rediscovering
 - User correction of a substantive claim: see "Pre-response checklist".
 - User's "I"/"me"/"future me" referring to the human, not a future agent: see "Communication style".
 - Verification touching destructive or stateful behavior: see "Verify on a throwaway, not against real state".
-- Removing a regex, or refactoring a loop, over text or a flat array: see "Simplification progression" (no recursion over linear input; JS has no guaranteed tail-call elimination).
+- Removing a regex, or refactoring a loop, over text or a flat array: see "Simplification" (no recursion over linear input; JS has no guaranteed tail-call elimination).
 - About to type a bundled or single-letter CLI flag (e.g. `rg -rl`, `-rn`): see "Long-form flags".
 
 ## Before responding to the user
@@ -113,7 +113,7 @@ The cue: a single task subject would hide multiple kinds of evidence gathering o
 
 Before sending any response with substantive claims:
 
-1. Quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
+1. Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess. Difficulty or duration of an unbuilt fix is not a guess to label but a claim to drop (item 3).
 2. Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
 3. Estimated difficulty of a fix you have not built? Drop the estimate.
 4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
@@ -248,8 +248,8 @@ Run:
 
 ```bash
 find . -maxdepth 1 \( -name HEAD -o -name config -o -name hooks -o -name objects -o -name refs \) -print
-git check-ignore -v HEAD config hooks objects refs
-git clean -ndX HEAD config hooks objects refs
+git check-ignore --verbose HEAD config hooks objects refs
+git clean --dry-run -d -X HEAD config hooks objects refs
 ```
 
 Do not rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`;
@@ -336,7 +336,7 @@ If so, warn the user and state what will happen before proceeding.
 Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
 The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
 
-Use `podman run --memory=2g --cpus=2 --rm -v $PWD:/work -w /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
+Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
 State the bounds explicitly (memory cap, cpu cap, timeout).
 If the user requests one directly, propose the containerised invocation and confirm.
 Past authorisation does not transfer across commands;
@@ -484,11 +484,11 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 #### Variables and values
 
 - `const` over `let`. Two hard rules enforce this:
-  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), use a counter `for (let i = 0; ...)` loop (`let` inside `ForStatement.init` is exempt, so this is the right tool for an indexed or lookahead scan, not a rule to dodge), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report). Do **not** escape this rule by recursing over flat input (see "Simplification progression").
+  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), use a counter `for (let i = 0; ...)` loop (`let` inside `ForStatement.init` is exempt, so this is the right tool for an indexed or lookahead scan, not a rule to dodge), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report). Do **not** escape this rule by recursing over flat input (see "Simplification").
   - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
   - For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
 - Remove unused variables or prefix with underscore (`_unusedVar`).
-- No single-letter variables (exception: math formulas).
+- No single-letter variables (exceptions: math formulas, and loop counters like `i` in a `for` statement).
 - Functional approaches over loops; `for...of` when iteration is unavoidable.
 - Avoid deprecated features (`substring()`/`slice()` over `substr()`).
 - `satisfies` for type checking without widening; separate destructuring blocks for dependent values.
@@ -502,7 +502,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 - Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
 - `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `dedent` from `string-dedent` for multi-line error messages.
 - Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
-- Never `process.exit()`: throw errors instead; always `console.error()` in catch blocks.
+- Never `process.exit()`: throw errors instead; never silently swallow in catch blocks (rethrow or log the error).
 - Never silently discard unexpected states; throw on unreachable branches.
 - No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
 - Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
@@ -592,7 +592,7 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 #### Markdown syntax
 
-- Break lines at semantic boundaries so text reads naturally without editor wrapping; no *italics*.
+- Break lines at semantic boundaries so text reads naturally without editor wrapping; no italics.
 - `-` for unordered lists; pad numbered markers to 4 chars (`1.`, `10.`).
 - Fenced code blocks with language tags; include file paths as comments.
 - Reference-style links for repeated URLs; relative links for internal docs.
@@ -637,8 +637,8 @@ Do not accumulate independent units in the working tree;
 it forces a sprawling mixed-concern commit or an error-prone split.
 The trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
 "I am done with the whole task."
-When committing, include all current working-tree changes together unless instructed otherwise;
-do not subdivide a logical unit across commits.
+When committing, include all changes belonging to the same logical unit together unless instructed otherwise;
+do not subdivide a logical unit across commits, and do not sweep in unrelated or concurrent external changes (stage an explicit, scoped pathspec; see "Respect cli-git enforcement guards").
 This supersedes the harness default to ask before committing;
 on this project, commit eagerly without asking.
 
@@ -701,11 +701,11 @@ Cut it.
 
 - Identify the target package and task before running tests; do not reflexively use repo-root `mise run test` for narrow package work.
 - Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
-- All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first.
+- All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
 - Never substitute `bun test` for a missing mise task; it misreports (`PASS` lines then `0 pass / 0 fail`) under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern) if no task exists. A `PreToolUse` hook (`ccgr`, `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
-- Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run -C`).
+- Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
 - There is no `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript. The hook is on the roadmap but at least a month out.
-- `mise watch -r` takes a bare task name, not a `mise run` invocation. Write `mise watch -w src -r -- start:server`, not `mise watch -w src -r -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch -r` can reference it by name.
+- `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
 - After modifying source in packages that produce dist output (e.g. `module-es`), always verify with `mise run buildAndTest` instead of running tests alone. Tests import from the built dist, so a stale build causes false failures. To run a specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
 ### Workspace conventions

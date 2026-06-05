@@ -41,15 +41,15 @@ This was removed because:
 
 ### Hook setup
 
-The replacement is `~/.factory/hooks/check-shell.ts`, registered in `~/.factory/settings.json` as a global personal hook.
+The replacement is a `check-shell.ts` SessionStart hook registered in your agent's global personal settings.
 It runs on every session start, reads `SHELL`, and injects a warning into the session context when the shell is not in `{bash, zsh, sh, dash, ksh}`.
 On a compatible shell it exits silently.
 
-`~/.factory/hooks/check-shell.ts`:
+`check-shell.ts`:
 
 ```ts
 /**
- * SessionStart hook: warns Droid if the current shell is not bash-compatible.
+ * SessionStart hook: warns the agent if the current shell is not bash-compatible.
  * AI tooling assumes bash syntax; non-compatible shells cause silent command failures.
  */
 const shell = process.env.SHELL ?? '';
@@ -69,7 +69,7 @@ if (shellName && !bashCompatibleShells.has(shellName,)) {
 }
 ```
 
-`~/.factory/settings.json` (relevant excerpt):
+Global personal settings (relevant excerpt):
 
 ```json
 "SessionStart": [
@@ -77,7 +77,7 @@ if (shellName && !bashCompatibleShells.has(shellName,)) {
     "hooks": [
       {
         "type": "command",
-        "command": "bun run ~/.factory/hooks/check-shell.ts"
+        "command": "bun run <global-hooks-dir>/check-shell.ts"
       }
     ]
   }
@@ -92,7 +92,7 @@ Explaining these things wastes tokens on every context load and signals distrust
 
 Removed:
 
-- `rg` examples (`-t ts`, `--type ts`, `-A 5 -B 5`) -- standard ripgrep flags, universally known
+- `rg` examples (`-t ts`, `--type ts`, `-A 5 -B 5`): standard ripgrep flags, universally known
 - "Reach for this first when working with a third-party library: the official docs are usually faster..."; states the obvious
 
 What belongs instead: the name of the tool, what it covers in this project's context, and any non-obvious constraint (e.g. "raw source is still useful when docs are incomplete").
@@ -123,7 +123,7 @@ Example: "Never modify files in cloned third-party repositories; use configurati
 
 ### Inline pointers to this philosophy doc
 
-Do not add per-rule "(see PHILOSOPHY.AGENTS.md)" / "(rationale in PHILOSOPHY.AGENTS.md)" pointers to AGENTS.md.
+Do not add per-rule "(see docs/philosophy/agents.md)" / "(rationale in docs/philosophy/agents.md)" pointers to AGENTS.md.
 Normal operation needs the rule, its cue, and the tokens to act, not the rationale; an inline pointer implies the agent must read this doc to operate, which it must not.
 Rationale, mechanism, and examples relocated here stay discoverable through the single global note at the top of AGENTS.md plus the section-name correspondence (each subsection under "Relocated rule rationale" is named for the AGENTS.md section it came from).
 If a rule is genuinely crippled without relocated detail, move the detail back into AGENTS.md rather than pointing here.
@@ -180,7 +180,7 @@ All bad/good code examples were relocated to `.factory/skills/code-review/SKILL.
 - "Regularly review pinned versions to check if constraints still apply"; generic practice
 - TSDoc rationale about "obvious from context" and "dead code" caveats; the rule to document all declarations is sufficient
 - Individual type descriptions for commit types (`style: Changes that do not affect...`): Conventional Commits is a well-known spec
-- `dprint` enforcement notes -- the tool config speaks for itself
+- `dprint` enforcement notes: the tool config speaks for itself
 - "For arrow functions, make sure the JavaScript engine can infer a name"; inferable from "always name functions"
 
 ### Kept in compressed form
@@ -228,7 +228,7 @@ AGENTS.md was compressed from 6672 words / 684 lines to 5894 words / 449 lines (
 
 ### Structure note
 
-The moment-of-decision top-level structure (eight sections from "Before responding" through "Agent skills") was retained even though the user authorized "Free reorganization." That ordering encodes *when* each rule loads; a feature called out in the document's preamble. Reorganizing into topical sections would lose load-timing information without compensating compression gain. Sub-section reorganization within each top-level section was applied freely, per the merge list above.
+The moment-of-decision top-level structure (eight sections from "Before responding" through "Agent skills") was retained even though the user authorized "Free reorganization." That ordering encodes **when** each rule loads; a feature called out in the document's preamble. Reorganizing into topical sections would lose load-timing information without compensating compression gain. Sub-section reorganization within each top-level section was applied freely, per the merge list above.
 
 ### What was deliberately not done
 
