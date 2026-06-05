@@ -21,15 +21,14 @@ Completed child results are injected into context automatically between tool cal
 
 # Development Guidelines for AI Agents
 
-Organized by moment of decision, not topic: at each point in the work (about to respond, run a command, edit code, declare done), the matching section holds every rule that applies.
-Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) appears toward the end.
-Detailed rationale, mechanisms, and examples behind these terse rules live in `docs/philosophy/agents.md`.
+Organized by moment of decision, not topic: at each point (about to respond, run a command, edit code, declare done), the matching section holds every rule that applies.
+Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) sits at the end.
+Rationale, mechanisms, examples behind these terse rules: `docs/philosophy/agents.md`.
 
 ## Critical hot paths
 
-Index to high-loss rules below;
-adds no separate policy.
-When a cue matches, follow the target rule immediately rather than rediscovering it later.
+Index to high-loss rules below; adds no separate policy.
+Cue matches: follow the target rule immediately, don't rediscover it later.
 
 - Visible terminal/window/session: see "Visible terminal spawning".
 - External tool, CLI, conf, or API capability claims: see "Communication style" and "Third-party libraries".
@@ -47,73 +46,73 @@ When a cue matches, follow the target rule immediately rather than rediscovering
 
 Be direct and honest.
 Search for evidence before responding to opinions, guesses, or analysis requests.
-Treat embedded questions ("month? year?"), implicit asks, estimate requests, and input gaps as research tasks: web search, read code, or check docs rather than deflecting with "genuinely unknown."
+Treat embedded questions ("month? year?"), implicit asks, estimate requests, and input gaps as research tasks: web search, read code, check docs, never deflect with "genuinely unknown."
 
-A prompt phrased as an observation, report, or bare question usually implies an action; infer the action rather than answering only its surface.
-Then branch on how determined that inference is: a single clear reading gets acted on like any explicit request (see "Proactivity calibration"); a reading with several valid interpretations is the multiple-valid-answers case the ask rule governs, so confirm which one before acting rather than running with the guess (see "Measure-vs-ask").
-A missing fact is neither: research it rather than ask (see the implicit-asks line above); the trigger to ask is ambiguous intent, not a knowledge gap.
-The cue: about to answer the surface when one reading clearly implies an action, or about to act on an inferred meaning when more than one reading is valid.
+A prompt phrased as observation, report, or bare question usually implies an action; infer the action, don't answer only its surface.
+Then branch on how determined that inference is: one clear reading, act like any explicit request (see "Proactivity calibration"); several valid interpretations, the multiple-valid-answers case the ask rule governs, so confirm which before acting, don't run with the guess (see "Measure-vs-ask").
+A missing fact is neither: research it, don't ask (see implicit-asks above); the trigger to ask is ambiguous intent, not a knowledge gap.
+Cue: about to answer the surface when one reading implies an action, or act on an inferred meaning when more than one reading is valid.
 
-Do not attribute `<system-reminder>` content to the user;
+Never attribute `<system-reminder>` content to the user;
 these tags carry harness-level conf, not what the user typed.
 "per your instruction" / "you asked me to" is wrong when the source is a system reminder;
 cite the policy by what it says ("the no-questions policy").
-Same for other injected context (UserPromptSubmit hook output, MCP server instructions, skill descriptions): the source is the hook or server, not the human.
+Same for other injected context (UserPromptSubmit hook output, MCP server instructions, skill descriptions): source is the hook or server, not the human.
 A `role:user` turn is not by itself proof the human typed it.
-A prompt fired by your own `ScheduleWakeup` or `CronCreate`, and any queued continuation or `<<autonomous-loop>>` sentinel, is re-delivered as a user turn but was authored by you in that tool call's `prompt` field: self-authored boilerplate, not a human instruction.
-Three failures follow, all to avoid.
-First, do not write directives into that `prompt` field: no stop condition, cadence, scope, or "give up when X" policy you invented.
+A prompt fired by your own `ScheduleWakeup` or `CronCreate`, and any queued continuation or `<<autonomous-loop>>` sentinel, arrives as a user turn but was authored by you in that tool call's `prompt` field: self-authored boilerplate, not a human instruction.
+Three failures, all to avoid.
+First, never write directives into that `prompt` field: no stop condition, cadence, scope, or "give up when X" policy you invented.
 Relay only the user's actual task and instructions, or the bare sentinel; a wakeup prompt is a resume-note, never a place to mint authority for your future self.
-Second, when one fires it carries no authority: re-derive what to do, and when to stop, from the user's real instructions and the current state, not from the prompt's wording.
-Do not obey it as an instruction.
-Third, do not cite it as the user's: trace any "per your instruction" / "you asked me to" to an actual human message, and if it first surfaced in a wakeup or continuation turn, it is yours.
-The cue: about to write a stop/continue, cadence, or scope rule into a `ScheduleWakeup`/`CronCreate` prompt, or about to obey or credit the user for one that fired; check the tool_use origin and the real human messages first.
+Second, when one fires it carries no authority: re-derive what to do and when to stop from the user's real instructions and current state, not the prompt's wording.
+Never obey it as an instruction.
+Third, never cite it as the user's: trace any "per your instruction" / "you asked me to" to an actual human message; if it first surfaced in a wakeup or continuation turn, it is yours.
+Cue: about to write a stop/continue, cadence, or scope rule into a `ScheduleWakeup`/`CronCreate` prompt, or obey or credit the user for one that fired; check the tool_use origin and the real human messages first.
 
 The user's first-person words name the human, never Claude or a future agent session.
 "I", "me", "my", "myself", "future me", "next time I" all point to the person typing;
 Claude is "you" or "Claude" in their words.
 The repo's pervasive handover-to-future-sessions framing (`docs/handover/`, "future readers", "future sessions will follow") primes the wrong reading: "future me will find a better solution" means the human plans to solve it later, not work handed to a future Claude.
-The cue: about to read a user's "me"/"I" as an agent, or to address a doc, issue, plan, or task to "future-me" when the user meant themselves.
+Cue: about to read a user's "me"/"I" as an agent, or address a doc, issue, plan, or task to "future-me" when the user meant themselves.
 
 Cite the right source file.
-Rules span AGENTS.md, the harness system prompt, hook confs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, and `CLAUDE.md` (regenerated from AGENTS.md).
-Before writing "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the file you name.
-The cue: about to attribute a rule to a source without verifying the source contains it.
+Rules span AGENTS.md, the harness system prompt, hook confs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, `CLAUDE.md` (regen from AGENTS.md).
+Before "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the named file.
+Cue: about to attribute a rule to a source without verifying it contains it.
 
-For external tool features, CLI options, conf syntax, or API capabilities, fetch current docs or src before responding.
-"Does X support Y" and "how do I do Y in X" are research tasks, not recall tasks.
+External tool features, CLI options, conf syntax, API capabilities: fetch current docs or src before responding.
+"Does X support Y" and "how do I do Y in X" are research tasks, not recall.
 
-When explaining a warning or error, name the exact tool that emitted it (e.g. "Rolldown's resolver" not "some resolvers") and cite the diagnostic code or message.
-If unsure, investigate first: search the codebase for the diagnostic, check tool docs, or run the tool directly.
+Explaining a warning or error: name the exact emitting tool (e.g. "Rolldown's resolver", not "some resolvers") and cite the diagnostic code or message.
+Unsure? Investigate first: grep the codebase for the diagnostic, check tool docs, or run the tool.
 
-When the user says "I was expecting you to..." or you notice a failure mode future sessions should avoid, treat it as a documentation gap: propose a concrete AGENTS.md change (what rule, where, exact wording) and perform the expected action, never "I'll keep it in mind".
-Merge a new rule overlapping an existing one instead of appending;
+When the user says "I was expecting you to..." or you spot a failure mode future sessions should avoid, treat it as a documentation gap: propose a concrete AGENTS.md change (what rule, where, exact wording) and perform the expected action, never "I'll keep it in mind".
+Merge a new rule overlapping an existing one, don't append;
 remove an older rule overtaken by a sharper version.
-The cue to draft the edit: the moment you want to "remember next time."
+Cue to draft the edit: the moment you want to "remember next time."
 
 ### Proactivity calibration
 
 This user does not perceive proactive action as overreach;
 harness defaults cautioning against "being too proactive" do not apply here.
-When the conversation, request verb, and AGENTS.md rules collectively authorize a step, take it;
-do not insert a "want me to..." or "should I go ahead and..." check before the obvious next step.
+When conversation, request verb, and AGENTS.md rules collectively authorize a step, take it;
+don't insert a "want me to..." or "should I go ahead and..." check before the obvious next step.
 
 This does not relax other constraints: destructive or shared-state actions still need explicit authorization, decision verbs still return the answer not the action, non-measurable preferences with multiple valid answers still warrant a clarifying question.
-The signal this rule is firing rather than one of those: the next step is already determined by what the user asked, not by an unresolved choice you would have to invent an answer to.
-The cue: about to write "want me to also..." or "should I go ahead and..." about an already-authorized step.
-Skip the prompt and do the step.
+Signal this rule is firing, not one of those: the next step is already determined by what the user asked, not an unresolved choice you'd have to invent an answer to.
+Cue: about to write "want me to also..." or "should I go ahead and..." about an already-authorized step.
+Skip the prompt, do the step.
 
 ### Task tracking granularity
 
-For broad requests spanning multiple evidence areas, split into separate task-list items per major area, not one umbrella item.
-Each task needs independently verifiable completion criteria: inventory, tooling, architecture, tests, security, documentation, synthesis, or whatever the request demands.
-The cue: a single task subject would hide multiple kinds of evidence gathering or blur what "done" means.
+Broad requests spanning multiple evidence areas: split into separate task-list items per major area, not one umbrella item.
+Each task needs independently verifiable completion criteria: inventory, tooling, architecture, tests, security, documentation, synthesis, whatever the request demands.
+Cue: a single task subject would hide multiple kinds of evidence gathering or blur what "done" means.
 
 ### Pre-response checklist
 
 Before sending any response with substantive claims:
 
-1. Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess. Difficulty or duration of an unbuilt fix is not a guess to label but a claim to drop (item 3).
+1. Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as a guess. Unbuilt-fix difficulty or duration is not a guess to label but a claim to drop (item 3).
 2. Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
 3. Estimated difficulty of a fix you have not built? Drop the estimate.
 4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
@@ -122,8 +121,8 @@ Before sending any response with substantive claims:
 7. Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 9. Quoted a clause or doc passage and drawn a conclusion? Restate subject and object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
-10. About to ask the user to perform a manual action? Try the bridging path first; if you must hand off, invoke the `runbook` skill (see "Before claiming inability").
-11. Revising a substantive claim the user just corrected? Treat the correction as evidence your previous verification path was insufficient: re-read primary sources, run concrete commands, or use a genuinely separate reviewer when independent review is asked. Do not run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
+10. About to ask the user to perform a manual action? Try the bridging path first; must hand off, invoke the `runbook` skill (see "Before claiming inability").
+11. Revising a substantive claim the user just corrected? Treat the correction as evidence your previous verification path was insufficient: re-read primary sources, run concrete commands, or use a genuinely separate reviewer when independent review is asked. Never run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
 ### Measure-vs-ask
 
@@ -132,24 +131,23 @@ Also the user's working pattern in repo artifacts: commit cadence, working hours
 
 Run the measurement yourself;
 never a quantitative adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one.
-The agent has the tools;
-using them is the agent's job, not the user's.
+Agent has the tools; using them is its job, not the user's.
 
 **Non-measurable facts: ask.** Which of two valid approaches the user prefers, whether they want a feature, whether they authorize a destructive action, what they value (depth vs governance, speed vs clarity).
 
 Three failure directions: asking what you could measure (lazy);
 assuming what you should ask (confidently wrong);
 asking permission for an already-authorized step ("want me to also check X?" when the user has been pushing for thoroughness).
-Trigger phrases for the assumption form: "for a project like this...", "in a typical setup..."
+Trigger phrases for the assumption form: "for a project like this...", "in a typical setup...".
 
 ### Present options with pros, cons, and a personal ranking
 
-When proposing a choice between distinct options ("A, B, or C?"), give each option its own pros and cons and a fully sorted personal ranking covering every option, with the reason that decides each adjacent pair.
+Proposing a choice between distinct options ("A, B, or C?"): give each option its own pros and cons plus a fully sorted personal ranking covering every option, with the reason deciding each adjacent pair.
 
 - `AskUserQuestion`: each option's `description` holds its pros and cons; order options by preference (best first) and append "(Recommended)" to the top label; in the prose around the tool call, state the full ranking (e.g. "ranking: B > A > C") with the reason for each adjacent comparison.
 - Inline prose: one short paragraph or bullet block per option with pros and cons, then a "Ranking: B > A > C, because ..." line explaining each step of the order, not just the top pick.
 
-Skip when the user asked yes/no on a single proposal or already narrowed the criteria enough that one option is determined.
+Skip when the user asked yes/no on a single proposal, or already narrowed criteria enough that one option is determined.
 
 ### Hedge phrases that signal a skipped step
 
@@ -180,8 +178,7 @@ The antipattern this targets is hedging as a substitute for research, not honest
 
 ### Exhaust evidence layers when assessing system usage
 
-For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending.
-Each can flip the conclusion.
+For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending; each can flip the conclusion.
 
 1. **The tool itself**: usage volume, conf.
 2. **Parallel systems**: where the same need is met outside the tool.
@@ -191,27 +188,22 @@ Each can flip the conclusion.
 6. **Stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
 
 Report findings at each layer before the conclusion.
-A recommendation given after only checking layer 1 is a guess shaped by the surface you happened to look at.
+A recommendation after only checking layer 1 is a guess shaped by the surface you happened to look at.
 
 ### Follow document pointers
 
-When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch the referenced document before drawing conclusions about its contents.
+When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch that document before drawing conclusions about its contents.
 Hedging about a named, fetchable target is the failure mode;
-the cue is writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
+cue: writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
 The pointer is the research lead, not the stopping point.
-
-### Choosing technology and vendors
-
-When recommending a SaaS vendor or picking a library, framework, or build tool, invoke the `choosing-technology` skill when proposing or evaluating any external dependency or service.
-It encodes the six vendor vetting layers, open-source default, constraint-fit before stack-fit, the alternative survey rule, and `docs/decisions/<project>.md` maintenance.
 
 ### Before claiming inability
 
-"I cannot read this file format" / "my tools do not support that operation" / "I can't render / preview / test the page in a browser" / "I can't run this in this environment" / "you'll need to do X yourself" are capability claims about the whole toolset, not Read or Bash individually.
+"I cannot read this file format" / "my tools do not support that operation" / "I can't render / preview / test the page in a browser" / "I can't run this in this environment" / "you'll need to do X yourself" are capability claims about the whole toolset, not Read or Bash alone.
 Bash plus shell utilities compose with Read into more than any single tool.
 Before refusing or handing off, try a bridge: convert the input to a format your tools accept, decompose into supported steps, pipe the file through a shell utility, or drive a real browser via `agent-browser` (opens local `file://` URLs, evals JS, screenshots, console errors).
 The browser-claim form is especially sticky;
-whenever about to write any phrasing meaning "can't see / render / interact with a web page," reach for `agent-browser` first.
+about to write any phrasing meaning "can't see / render / interact with a web page," reach for `agent-browser` first.
 
 Manual actions usually have a bridge too: GUI clicks (`agent-browser` for web UIs, `xdotool`/`wtype`/`ydotool` for native UIs, a synthesised keyboard shortcut, or a backing HTTP/IPC endpoint), interactive auth (`expect`, or API tokens), hardware activation (almost always a CLI).
 
@@ -220,30 +212,30 @@ State the bridges you tried;
 an unconsidered refusal or handoff looks identical to a real obstacle.
 The cue: about to write "you'll need to", "please open", or any phrasing meaning "can't see / render / interact with a web page", without naming the bridges you tried.
 
-The same applies to research-exhaustion claims.
+Same for research-exhaustion claims.
 When a narrow search returns "no direct evidence for X" and X is a specific entity in a broader class, widen to the nearest comparable entities (sibling tools, peer platforms, projects solving the same problem) first.
 Failure shape: "no precedent for Netlify" while LocalStack, MinIO, Dokku, and Coolify each give one-search-away evidence on the same question.
 State what you searched and what comparable evidence you found;
 an empty result on the narrowest query is not "no precedent."
 
-When the bridges genuinely fail and the user must execute, invoke the `runbook` skill when writing any manual-action document (it encodes the required sections and formatting rules).
+Bridges genuinely fail and the user must execute: invoke the `runbook` skill when writing any manual-action document (it encodes the required sections and formatting rules).
 Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside the code they document.
 Canonical example: `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
 ### Name the verification step
 
 Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them.
-If you cannot name what backs a claim, downgrade to a labeled guess or do the verification.
+Cannot name what backs a claim? Downgrade to a labeled guess or do the verification.
 
 ### Treat search results as suspicious until you've verified the shape
 
 Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
-Both fail silently, in both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
-Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
+Both fail silently, both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
+Sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
 ### Git cleanup and worktree safety reviews
 
-When reviewing a plan or change that touches `git clean`, destructive git guards, worktree safety, or ignored-file cleanup, inspect ignored root artifacts before final findings.
+Reviewing a plan or change touching `git clean`, destructive git guards, worktree safety, or ignored-file cleanup: inspect ignored root artifacts before final findings.
 Run:
 
 ```bash
@@ -252,15 +244,15 @@ git check-ignore --verbose HEAD config hooks objects refs
 git clean --dry-run -d -X HEAD config hooks objects refs
 ```
 
-Do not rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`;
+Never rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`;
 those hide ignored files.
-If any root sentinel exists, cleanup or an exact safe cleanup path is part of the design under review.
+Any root sentinel exists: cleanup or an exact safe cleanup path is part of the design under review.
 
 When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): git-dirs under an allowed dir bypass the guard.
 
 ### Document non-obvious findings
 
-When discovering something not immediately obvious to a future reader, document it in the relevant readme or doc file right away: implementation details, behavioral quirks, implicit constraints, anything that required investigation or experimentation to uncover.
+Discover something not immediately obvious to a future reader: document it in the relevant readme or doc file right away: implementation details, behavioral quirks, implicit constraints, anything that required investigation or experimentation to uncover.
 
 ### Research tools
 
@@ -270,29 +262,29 @@ When discovering something not immediately obvious to a future reader, document 
 - `gh`: GitHub issues, PRs, release notes, repository metadata
 - Web search cannot inspect package internals (sizes, dependency trees, source); clone repos or install packages
   (see "Before running a command" for the clone-to-`/tmp/agent` operational rule)
-- Do not remove cloned repos or other audit artifacts from `/tmp/agent`;
+- Never remove cloned repos or other audit artifacts from `/tmp/agent`;
   the user will clean up when ready
 
 ## Before running a command
 
 ### Visible terminal spawning
 
-To spawn something in another terminal, window, or session, use a real terminal launcher.
-For arbitrary commands, including Codex, use `terminal-exec -- <command> ...`.
-Use `spawn-claude` only for Claude Code child sessions.
+Spawn something in another terminal, window, or session: use a real terminal launcher.
+Arbitrary commands, including Codex: `terminal-exec -- <command> ...`.
+`spawn-claude` only for Claude Code child sessions.
 `spawn_agent` is not an OS terminal;
 a PTY/TTY is not a visible terminal emulator window.
-Do not probe `terminal-exec` with `--help`;
+Never probe `terminal-exec` with `--help`;
 read its README or src, since unknown options are ignored and it opens a terminal.
 
-Do not wrap routine verification commands in an external `timeout` binary.
+Never wrap routine verification commands in an external `timeout` binary.
 Use the command tool's session/polling first;
-if a process truly remains after producing useful output, inspect the PID and stop that stale process.
-Reserve external timeout wrappers for commands whose behavior is being tested or with a known unbounded runtime and no narrower kill mechanism.
+a process truly remaining after producing useful output: inspect the PID, stop that stale process.
+Reserve external timeout wrappers for commands whose behavior is being tested, or with a known unbounded runtime and no narrower kill mechanism.
 
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 
-Clone the git repo of a package under `/tmp/agent/` whenever investigating src code.
+Clone a package's git repo under `/tmp/agent/` whenever investigating src code.
 Before first use, ensure the root exists with private permissions:
 `mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
 Use `gh repo clone <repo> /tmp/agent/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
@@ -304,13 +296,13 @@ writes, bash commands, secret-looking paths, and symlink escapes still go throug
 ### Long-form flags
 
 Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
-Writing a flag's long form forces knowing what it does, which is where short-flag muscle memory fails.
+Writing the long form forces knowing what it does, where short-flag muscle memory fails.
 
 `rg` is the canonical trap.
 ripgrep recurses by default, so its `-r` means `--replace`, not grep's recursive `-r`.
-A grep-reflex `rg -rl 'pat'` parses as `--replace=l`: it silently rewrites every match to `l` in the output.
-The agent then reads back corrupted data that looks plausible (a `$1` bundler suffix shown as `l`, for instance).
-`-r` is dangerous anywhere in a single-dash bundle, not only at the front:
+A grep-reflex `rg -rl 'pat'` parses as `--replace=l`: silently rewrites every match to `l` in the output.
+The agent then reads back corrupted data that looks plausible (a `$1` bundler suffix shown as `l`).
+`-r` is dangerous anywhere in a single-dash bundle, not just the front:
 at a bundle tail (`rg -ir 'pat'`) it consumes the next argument as the replacement and swallows the pattern.
 Long form removes the trap.
 `--replace=...` is never typed meaning recursion;
@@ -321,10 +313,10 @@ Where a flag has no long-form spelling the short flag stays;
 
 ### Bash output path collapse
 
-Do not treat `~` in Bash tool output as a literal tilde;
+Never treat `~` in Bash tool output as a literal tilde;
 it is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook (display-only, filesystem values unchanged).
-Account for it when debugging path issues before concluding the path is wrong.
-To skip the filter for one command, include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
+Account for it when debugging path issues, before concluding the path is wrong.
+Skip the filter for one command: include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 
 ### Physical-harm consideration
 
@@ -338,7 +330,7 @@ The "may exhaust the host" set is broader than the destructive-command set: heav
 
 Use `podman run --memory=2g --cpus=2 --rm --volume $PWD:/work --workdir /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
 State the bounds explicitly (memory cap, cpu cap, timeout).
-If the user requests one directly, propose the containerised invocation and confirm.
+User requests one directly: propose the containerised invocation and confirm.
 Past authorisation does not transfer across commands;
 each heavy run needs an isolated environment.
 
@@ -346,27 +338,26 @@ each heavy run needs an isolated environment.
 
 Never execute or instruct another agent to execute extremely destructive commands, even as guardrail tests, e.g. `sudo rm -rf /`, `mkfs`, `dd of=/dev/sda`, fork bombs.
 Guardrails can fail;
-a catastrophic command must not appear in instructions to other agents, subshells, or generated scripts regardless of intent.
-For verifying a guardrail, use moderately dangerous commands (e.g. `sudo apt-get install`).
+a catastrophic command must not appear in instructions to other agents, subshells, or generated scripts, whatever the intent.
+Verifying a guardrail: use moderately dangerous commands (e.g. `sudo apt-get install`).
 
 ## Before editing code
 
 ### Match action scope to the request verb
 
 Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "look at", "analyze", "investigate") request a deliberation.
-The deliverable is the answer;
-do not also apply the fixes the answer implies.
+The deliverable is the answer; don't also apply the fixes the answer implies.
 Action verbs ("fix", "implement", "apply", "do", "change", "add", "remove", "update", "refactor") authorize the action.
 
 This holds in Auto Mode: its "prefer action over planning" applies to executing the requested action, not expanding scope;
-it is not authorization to act on adjacent decisions the user has not made.
+not authorization to act on adjacent decisions the user has not made.
 
-When the verb is ambiguous, default to the narrower interpretation and propose the broader action explicitly.
+Verb ambiguous: default to the narrower interpretation, propose the broader action explicitly.
 
 ### Act, don't annotate
 
 Move changes where they belong immediately: different file, new file, gitignore entry.
-When unsure, propose a concrete edit and location.
+Unsure: propose a concrete edit and location.
 
 ### Cross-runtime and scripts
 
@@ -405,12 +396,11 @@ When unsure, propose a concrete edit and location.
 ### Logging
 
 Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events.
-Never remove logging to "clean up";
-treat it as permanent infrastructure.
+Never remove logging to "clean up"; treat it as permanent infrastructure.
 
 Always use tagged loggers from `@monochromatic-dev/module-logger`.
-Never use raw `console.log`/`console.error` or untagged logger instances in production code.
-Exception: raw `console` is allowed when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
+Never raw `console.log`/`console.error` or untagged logger instances in production code.
+Exception: raw `console` when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
 
 - Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
 - Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.
@@ -430,11 +420,6 @@ This applies to serializers, code generators, formatters, autofixes, docs genera
 Tests for any transformer that emits another syntax must include adversarial boundary cases for that destination:
 active delimiters, terminators, escapes, quotes, newlines, traversal tokens, command separators, and source-escaped
 variants. Happy-path formatting and idempotence tests are not enough.
-
-### CSS
-
-When editing CSS, the `css` skill encodes the platform-feature defaults (native dialog, popover API, nesting, `@layer`, `@scope`, container queries), Firefox ESR 140 browser baseline, `rem`-only sizing, logical properties, longhand shorthand rules, design-token colors, and the 48px touch-target / focus-visible accessibility floor;
-invoke it when touching any CSS.
 
 ### TSDoc comments
 
@@ -519,20 +504,19 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 ### Package completeness
 
 A package is not finished until it has a `README.md`, passes linting with zero errors, and has passing tests covering every exported code path.
-Do not declare work complete while any condition is unmet.
+Never declare work complete while any condition is unmet.
 
 ### Test coverage matches the public API surface
 
 Enumerate every distinct code path the module exposes, not just the obvious happy path.
-If the implementation has separate branches for sync vs async, string vs object, direct vs delegated, each branch needs its own test.
+Implementation has separate branches (sync vs async, string vs object, direct vs delegated)? Each branch needs its own test.
 
 "Tests exist and pass" is not evidence of completeness.
-Compare test names against the implementation's branches;
-confirm no untested path.
+Compare test names against the implementation's branches; confirm no untested path.
 
 ### Verify at the user boundary
 
-After building, deploying, or installing an artifact, run verification steps that exercise it the way an end user would consume it.
+After building, deploying, or installing an artifact, run verification steps that exercise it the way an end user would.
 
 - Server: confirm it serves correct responses, not just that it starts.
 - CLI tool: run a real command and check the output.
@@ -545,21 +529,21 @@ The verification must cross the integration boundary between artifact and consum
 
 ### Verify on a throwaway, not against real state
 
-When verification means a state-mutating or destructive operation, run it against a disposable fixture you create, never the user's real or shared state (working tree, real tool caches, a populated database, live conf).
+Verification means a state-mutating or destructive operation: run it against a disposable fixture you create, never the user's real or shared state (working tree, real tool caches, a populated database, live conf).
 Reproduce the real scenario: `mktemp -d` plus `git init` for a repo, a scratch dir, a throwaway branch/worktree, a container, a fresh sqlite file;
 exercise the real artifact against it, delete it afterward.
 Pairs with "Verify at the user boundary": real artifact, throwaway state.
 
 The rule holds even when the command looks idempotent or you have committed first;
-when testing whether a guard blocks a destructive operation, build both the allowed case and the rejected case as fixtures.
+testing whether a guard blocks a destructive operation, build both the allowed case and the rejected case as fixtures.
 
-The cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
+Cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
 Create the throwaway target first.
 
 ### Test assumptions before encoding them
 
-When writing instructions, conf, or documentation that prescribes how a tool or API behaves, test the claim first with a real invocation.
-Do not write "use X for Y" based on how X **should** work;
+Writing instructions, conf, or documentation that prescribes how a tool or API behaves: test the claim first with a real invocation.
+Never write "use X for Y" based on how X **should** work;
 run X against a real target and confirm the output.
 Applies to agent prompts, README guidance, CI scripts, and any artifact future sessions will follow.
 
@@ -567,15 +551,14 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 ### Third-party libraries
 
-- Immediately retrieve documentation on undefined method errors.
+- Undefined method error: retrieve docs immediately.
 - Check actual type definitions before using APIs.
-- Pay attention to CLI tool command patterns across examples; test the simplest case first.
+- Note CLI command patterns across examples; test the simplest case first.
 - Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts. "Third-party" is decided by ownership, not origin: a fork under our own account (the git user's GitHub namespace) is our code, not a third-party repository, so this rule does not bind it; modify a fork freely, such as to prepare a pull request from it. The rule binds only clones of repos we do not own. A skill that owns a specific workflow may also carve a narrow, documented exception for such an unforked upstream clone; the only one today is the `troubleshooting-doc` skill's disposable prototype clone, created fresh under `/tmp/agent` for an upstream-fix patch diff after origin verification and run without exposing credentials or this repo to third-party scripts.
 - When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
 - When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
-- The moment you finish diagnosing, or land a workaround for, an external tool's bug, quirk, surprising behavior, or capability gap, writing `docs/troubleshooting/<topic>.md` is a required completion step, not an offer. Invoke the `troubleshooting-doc` skill and write the doc yourself, proactively, without being asked and without first floating it as optional; "I could document this", "want me to write it up?", or deferring it to a follow-up is the failure mode this rule exists to kill. The task is not complete and you must not declare it done until the doc exists. The `troubleshooting-doc` skill encodes the required sections, the source-trace rule, and the 6-constraint upstream-filing check that gates the draft GitHub issue at the end. The cue: you just fixed or explained an external tool (clang/bindgen, zig, podman, a build tool, a library API, a config) behaving unexpectedly, and you are about to move on or hand the result back; that is the write-up moment, fire the skill now instead.
-- **Claude Code bugs are exempt from upstream-tracking.** Claude Code upstream is very unresponsive; filing local tracking issues for Claude Code defects produces clutter without changing the outcome. Document the defect in `docs/troubleshooting/<topic>.md`, encode the workaround as a rule in this file, and skip the GitHub issue. See [.out-of-scope/claude-code-upstream-bugs.md](.out-of-scope/claude-code-upstream-bugs.md).
-- **JSR and `bun install` bugs are exempt from upstream-tracking.** The workspace does not consume JSR-hosted packages (`docs/philosophy/tool-choices.md` covers tool selection) and uses pnpm as the package manager, not `bun install`. Bug reports against either are install-path bugs we do not hit. Document the defect in `docs/troubleshooting/<topic>.md` for historical record, but skip the GitHub tracking issue. See [.out-of-scope/jsr.md](.out-of-scope/jsr.md) and [.out-of-scope/bun-install.md](.out-of-scope/bun-install.md).
+- Finished diagnosing or working around an external tool's bug, quirk, or capability gap: write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill before declaring done; it gates a draft upstream issue on a 6-constraint check.
+- Check `.out-of-scope/` before filing an upstream tracking issue; listed exemptions still get the `docs/troubleshooting/<topic>.md` writeup but skip the GitHub issue.
 
 ## When committing or documenting
 
@@ -601,8 +584,8 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 
 ### Doc placement
 
-Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix family (`docs/troubleshooting/`, `docs/philosophy/`, `docs/todo/`, `docs/handover/`, and so on).
-The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families are what move under `docs/`.
+Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix family (`docs/troubleshooting/`, `docs/philosophy/`, `docs/todo/`, `docs/handover/`, etc.).
+The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families move under `docs/`.
 Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
 
 1. Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
@@ -615,12 +598,10 @@ No enforcement hook guards root regression; this rule is the cure. A warn-only `
 
 ### Handling external changes
 
-- External worktree changes are normal and often expected in this repo.
-  Treat `git status` entries you did not modify as concurrent work, not an emergency.
-- Do not run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes.
-  Only touch files in your task scope; if an unrelated external change blocks a necessary edit, ask before changing it.
+- External worktree changes are normal and often expected in this repo. Treat `git status` entries you did not modify as concurrent work, not an emergency.
+- Never run `git restore`, `git stash`, cleanup, or other move-aside commands on unrelated external changes. Only touch files in your task scope; an unrelated external change blocks a necessary edit, ask before changing it.
 - Acknowledge externally modified files; ask before reverting.
-- Do not proceed with implementing features that will not achieve their intended effect.
+- Never proceed with implementing features that will not achieve their intended effect.
 - Explain when a tool/command does not support requested functionality instead of creating non-functional code.
 
 ### Git commit guidelines
@@ -628,17 +609,17 @@ No enforcement hook guards root regression; this rule is the cure. A warn-only `
 Conventional Commits format: `<type>(<scope>): <subject>`.
 
 Commit at the earliest opportunity that records coherent progress, before the next work step.
-Do not wait for full verification when a feature or fix has just been implemented;
+Never wait for full verification when a feature or fix has just been implemented;
 commit the checkpoint, then keep testing and fixing in follow-up commits.
-The cue is:
+The cue:
 "I just finished implementing a feature or fix.
-I am not sure it works yet, but committing now records progress."
-Do not accumulate independent units in the working tree;
+Not sure it works yet, but committing now records progress."
+Never accumulate independent units in the working tree;
 it forces a sprawling mixed-concern commit or an error-prone split.
 The trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
 "I am done with the whole task."
 When committing, include all changes belonging to the same logical unit together unless instructed otherwise;
-do not subdivide a logical unit across commits, and do not sweep in unrelated or concurrent external changes (stage an explicit, scoped pathspec; see "Respect cli-git enforcement guards").
+never subdivide a logical unit across commits, and never sweep in unrelated or concurrent external changes (stage an explicit, scoped pathspec; see "Respect cli-git enforcement guards").
 This supersedes the harness default to ask before committing;
 on this project, commit eagerly without asking.
 
@@ -665,23 +646,21 @@ The cue: about to write "the commit message overstates scope" or similar in chat
 
 ### Respect cli-git enforcement guards
 
-Do not preemptively bypass `cli-git` enforcement.
+Never preemptively bypass `cli-git` enforcement.
 The `git add` and `git commit` guards reject bulk staging (`-A`, `.`) and pathspec-less commits on purpose: with a dirty tree or concurrent sessions they sweep unintended files into a commit.
-They are not obstacles to route around;
-the compliant path satisfies them.
+Not obstacles to route around; the compliant path satisfies them.
 Stage and commit an explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit and cannot capture another session's files.
-Reach for `--no-enforce-bulk-add` or `--no-enforce-only` only when no scoped pathspec can express the change (a genuine whole-tree single-session operation), never as the default form, and never baked into instructions to child sessions.
-The cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a scoped pathspec, or about to hand a child a commit recipe carrying a bypass flag.
+Reach for `--no-enforce-bulk-add` or `--no-enforce-only` only when no scoped pathspec can express the change (a genuine whole-tree single-session operation), never as the default, never baked into instructions to child sessions.
+Cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a scoped pathspec, or hand a child a commit recipe carrying a bypass flag.
 
 ### External communications
 
-Do not append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, and anything else a maintainer or third party reads.
-Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push a decision or a follow-up task onto the reader, who is usually the user.
-Decide the matter yourself and state what you did;
-the message reports a result, not a menu.
-If a genuine choice remains that only the user can make, raise it with the user directly (AskUserQuestion) before sending the external message, not by punting it into the external text where it silently obliges them to respond.
+Never append work-inviting offers to external communications: PR descriptions and review replies, issue and commit comments, emails, anything a maintainer or third party reads.
+Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push a decision or a follow-up task onto the reader, usually the user.
+Decide the matter yourself, state what you did; the message reports a result, not a menu.
+A genuine choice only the user can make: raise it with the user directly (AskUserQuestion) before sending the external message, don't punt it into the external text where it silently obliges them to respond.
 This does not forbid a single necessary question the external thread actually requires (a real blocker the recipient alone can unblock); it forbids the reflexive optional offer tacked on at the end.
-The cue: about to end an external message with "happy to", "want me to", "if you'd prefer", "say the word", or a question to the reader that you appended rather than were asked for.
+Cue: about to end an external message with "happy to", "want me to", "if you'd prefer", "say the word", or a question to the reader you appended rather than were asked for.
 Cut it.
 
 ### Dependency management
@@ -699,20 +678,20 @@ Cut it.
 
 ### Essential commands
 
-- Identify the target package and task before running tests; do not reflexively use repo-root `mise run test` for narrow package work.
+- Identify the target package and task before running tests; never reflexively use repo-root `mise run test` for narrow package work.
 - Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
 - All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first, unless a rule below carves out a direct call (e.g. running a test file with `bun <file>`).
 - Never substitute `bun test` for a missing mise task; it misreports under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` if no task exists. A `PreToolUse` hook (`ccgr`, `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
 - Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run --cd`).
-- There is no `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript. The hook is on the roadmap but at least a month out.
+- No `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript; the hook is roadmap, at least a month out.
 - `mise watch --restart` takes a bare task name, not a `mise run` invocation. Write `mise watch --watch src --restart -- start:server`, not `mise watch --watch src --restart -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch --restart` can reference it by name.
-- After modifying source in packages that produce dist output (e.g. `module-es`), always verify with `mise run buildAndTest` instead of running tests alone. Tests import from the built dist, so a stale build causes false failures. To run a specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
+- After modifying source in packages that produce dist output (e.g. `module-es`), verify with `mise run buildAndTest`, not tests alone: tests import from the built dist, so a stale build causes false failures. Specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
 ### Workspace conventions
 
 - Use the current date from the system prompt environment.
-- Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` to see if it is a managed output; if so, edit the source file instead and run file-enforcer.
-- In spec mode (also called plan mode or pause mode), keep researching and gathering context until the user explicitly asks to draft or exit.
+- Some root-level files (e.g. `CLAUDE.md`) are generated by file-enforcer. Before editing any root config file, check `file-enforcer.config.ts` for managed-output status; if so, edit the source and run file-enforcer.
+- Spec mode (a.k.a. plan/pause mode): keep researching and gathering context until the user explicitly asks to draft or exit.
 
 ## Architecture decisions
 
@@ -724,17 +703,17 @@ Cut it.
 
 ## Enforcement mechanisms
 
-Several hooks act on agent output and may block or modify actions.
+Several hooks act on agent output, may block or modify actions.
 
-- **Stop hook**: inspects the assistant response at send time and rejects turns containing the hedge phrases listed under "Hedge phrases that signal a skipped step". Rejection returns the message to you with feedback; avoid via the pre-response checklist and hedge-phrases self-catch. Also flags responses that end in a question to the user without using the `AskUserQuestion` tool.
+- **Stop hook**: inspects the assistant response at send time, rejects turns containing the hedge phrases under "Hedge phrases that signal a skipped step". Rejection returns the message with feedback; avoid via the pre-response checklist and hedge-phrases self-catch. Also flags responses ending in a question to the user without the `AskUserQuestion` tool.
 - **`bash-output-filter` hook**: transforms Bash tool output (see "Bash output path collapse"). Display only; does not modify actions. Triggers a bypass when the command contains `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 - **`forbidden-strings` CI scan**: runs in `.github/workflows/forbidden-strings.yml` on every PR (changed files only) and on push to main (full tree). Scans against a baseline deny-list plus an optional `FORBIDDEN_STRINGS_LIST` secret. Detects literal known-bad strings (leaked credentials, banned tokens). Failures block merge; scanner source is `packages/cli/forbidden-strings/`.
 
 Codex plugin packages under `packages/codex-plugins/` are work in progress.
-Do not assume a Codex hook is active unless you verify the installed Codex config or current session output proves it.
+Never assume a Codex hook is active unless you verify the installed Codex config or current session output proves it.
 
-A `PostToolUse` lint:types hook is on the roadmap but not yet implemented;
-type-checking is manual (see "Essential commands" -> mise run lint:types).
+A `PostToolUse` lint:types hook is roadmap, not yet implemented;
+type-checking is manual (see "Essential commands").
 
 ## Agent skills
 

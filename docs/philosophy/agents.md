@@ -5,7 +5,28 @@
 AGENTS.md is for non-obvious, actionable guidance that neither an AI agent nor a human developer can infer from context or general knowledge alone.
 It supplements, not replaces, common sense.
 
+## Writing style
+
+AGENTS.md is written caveman style: telegraphic, shortest expression for every rule.
+It loads on every session, so each token there is paid again every time; brevity is a hard requirement, not a preference.
+Drop articles ("the", "a", "an"), copulas, and connective filler wherever meaning survives; cut "in order to", "make sure to", "you should", and any clause that merely restates the rule.
+Use the shortest accurate synonym (conf, src, docs, dir).
+Fragments beat sentences.
+
+This style binds AGENTS.md alone.
+This philosophy doc and every other doc under `docs/` stay normal prose: reference loaded rarely, where clarity outranks token thrift.
+
+Never compress away the load-bearing strings: tokens, paths, commands, identifiers; code blocks; section headings (external and internal cross-references resolve by name); the verbatim "Hedge phrases that signal a skipped step" list (a hook matches it literally).
+Caveman compresses prose, never the strings the rules act on.
+
 ## What does not belong
+
+### Skill invocation pointers
+
+The harness auto-loads every skill's description, which already states when to use it.
+A section that only says "invoke skill X when doing Y" duplicates that description and earns nothing; drop it.
+Keep only the residue a skill description does not carry: project-specific tokens, exemptions, paths, or a behavioral mandate the description omits.
+The `css` section was removed whole for this reason; `choosing-technology` likewise; the `troubleshooting-doc` and `runbook` mentions were cut to the project-specific bits (exemptions, handover paths) their descriptions do not state.
 
 ### Repository identity and high-level structure
 
@@ -354,6 +375,14 @@ Non-zero-match silent failures (same shape, opposite direction): `head -N` trunc
 Clone an external tool's source whether you hit the bug yourself, are summarizing an undiagnosed tracker issue, or are estimating fix difficulty: a linked issue without diagnosis means nobody has diagnosed it yet, not that it is undiagnosable, and the next investigator can be you.
 
 Replacement-audit depth: transitive deps; the src paths that handle the same cases the incumbent mishandles; build provenance for native or wasm modules (compiler flags, wasm import surface, whether upstream sources are checksum-verified); maintenance signals (downloads, stars, last commit, single-maintainer concentration). Without this depth the recommendation swaps a known-flaw dependency for an unknown-flaw one.
+
+#### Third-party libraries: the `.out-of-scope/` upstream-tracking exemptions
+
+`.out-of-scope/` lists external-tool bug classes that still get a `docs/troubleshooting/<topic>.md` writeup but no upstream GitHub issue, because filing one is wasted effort here. AGENTS.md keeps only "check `.out-of-scope/` before filing"; the enumerated examples live here. Current exemptions:
+
+- Claude Code (`.out-of-scope/claude-code-upstream-bugs.md`): upstream very unresponsive, so tracking issues produce clutter without changing the outcome; encode the workaround as a rule in AGENTS.md instead.
+- JSR (`.out-of-scope/jsr.md`): the workspace consumes no JSR-hosted packages (`docs/philosophy/tool-choices.md` covers tool selection), so install-path bugs there do not affect it.
+- `bun install` (`.out-of-scope/bun-install.md`): the workspace uses pnpm as the package manager, not `bun install`, so those install-path bugs are never hit.
 
 #### Choosing technology and vendors: the encoded checklist
 
