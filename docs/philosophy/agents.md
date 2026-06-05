@@ -284,14 +284,3 @@ A ToS that says "Services are governed by separate subscription agreements, not 
 #### Linting: why the oxlint-disable placement matters
 
 The disable goes before the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the very next line after the declaration; leaving a disable open longer than necessary silences unrelated violations. `// oxlint-disable-next-line` applies only to the literal next physical line, so placed between TSDoc and declaration it lands on the TSDoc and the suppression is lost; use the block-level disable + enable pair wrapping TSDoc and declaration tightly instead.
-
-## Changelog
-
-### 2026-06-05
-
-AGENTS.md stopped exposing the existence of Claude Code hooks.
-Removed the Stop-hook and PostToolUse-roadmap descriptions, the PreToolUse guardrail (`ccgr`) and bun-test-block sentence, the `UserPromptSubmit hook output` and `hook confs in .claude/settings.json` references, and the hedge "hook-caught"/"send-time hook" framing.
-Operative rules were reworded to describe observable behavior (`the conf requires`, `catch these before sending`, `no automated check`, `no automated type-check yet`) rather than dropped, except the trailing-question rule, which was deleted outright as a restatement of standard harness behavior the `AskUserQuestion` tool already carries.
-The `bash-output-filter` `~`-substitution rule stays named by explicit decision (its observable effect must be understood to debug paths; no gaming risk).
-The Enforcement-mechanisms section reduced to the `forbidden-strings` CI scan; the Codex work-in-progress caution was deleted as inferable secondary-harness trivia.
-The "why hook existence is not in AGENTS.md" rationale above was rewritten to match.
