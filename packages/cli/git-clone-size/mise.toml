@@ -1,0 +1,46 @@
+[tasks.run]
+description = "Run git-clone-size"
+usage = 'arg "[args]" var=#true help="Remote URL or local path plus flags"'
+run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+
+[tasks.build]
+extends = "build"
+
+[tasks.'build:js']
+extends = "build:js"
+
+[tasks.'build:js:node']
+extends = "build:js:node"
+
+[tasks.'watch:build']
+extends = "watch:build"
+
+[tasks.'watch:build:js']
+extends = "watch:build:js"
+
+[tasks.'watch:build:js:node']
+extends = "watch:build:js:node"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks.'lint:oxlint']
+extends = "lint:oxlint"
+
+[tasks.'format:oxlint']
+description = "Auto-fix this package with Oxlint (non-type-aware)"
+run = "task-oxlint --fix"
+
+[tasks.'format:dprint']
+description = "Format this package's files with dprint"
+run = "dprint fmt src"
+
+[tasks.'test:unit']
+extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build the node bin, then run unit tests; cli.unit.test.ts spawns the built bin"
+run = "mise run build; mise run test:unit"
