@@ -314,3 +314,8 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+- 2026-06-05: Removed AGENTS.md Critical hot paths index (`HOT`, `CP1` to `CP9`).
+  It only duplicated section pointers and added no separate policy.
