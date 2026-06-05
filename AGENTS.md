@@ -8,21 +8,6 @@ TAG: Every rule carries a unique `[A-Z0-9]{3}` shortcode prefix (`CODE: `): a st
 New rule: assign a fresh semi-meaningful code, unique doc-wide; never reuse or reassign an existing one, references depend on stability.
 Don't tag headings, code fences, or the title.
 
-## Critical hot paths
-
-HOT: Index to high-loss rules below; adds no separate policy.
-Cue matches: follow the target rule immediately, don't rediscover it later.
-
-- CP1: Visible terminal/window/session: see "Visible terminal spawning".
-- CP2: External tool, CLI, conf, or API capability claims: see "Communication style" and "Third-party libraries".
-- CP3: Git cleanup, destructive git guards, or worktree safety reviews: see "Git cleanup and worktree safety reviews".
-- CP4: Tests: see "Essential commands".
-- CP5: User correction of a substantive claim: see "Pre-response checklist".
-- CP6: User's "I"/"me"/"future me" referring to the human, not a future agent: see "Communication style".
-- CP7: Verification touching destructive or stateful behavior: see "Verify on a throwaway, not against real state".
-- CP8: Removing a regex, or refactoring a loop, over text or a flat array: see "Simplification" (no recursion over linear input; JS has no guaranteed tail-call elimination).
-- CP9: About to type a bundled or single-letter CLI flag (e.g. `rg -rl`, `-rn`): see "Long-form flags".
-
 ## Before responding to the user
 
 ### Communication style
