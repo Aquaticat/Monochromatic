@@ -365,6 +365,9 @@ importers:
       '@monochromatic-dev/cli-git':
         specifier: workspace:*
         version: link:packages/cli/git
+      '@monochromatic-dev/cli-git-clone-size':
+        specifier: workspace:*
+        version: link:packages/cli/git-clone-size
       '@monochromatic-dev/cli-mvm':
         specifier: workspace:*
         version: link:packages/cli/mvm
