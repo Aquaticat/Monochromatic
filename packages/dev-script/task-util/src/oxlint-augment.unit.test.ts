@@ -401,6 +401,32 @@ await describe({
           },
         },),
         it({
+          name: 'injects guidance for no-array-callback-reference after help line',
+          fn: async () => {
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-array-callback-reference',
+                plugin: 'unicorn',
+                message: 'Avoid passing a function reference directly to iterator methods.',
+                file: 'src/index.node.ts',
+                helpText:
+                  'Wrap the function in an arrow function to explicitly pass only the element argument.',
+              },),
+              '',
+            ]
+              .join('\n',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-array-callback-reference']}`,);
+
+            // Note should appear after help
+            const helpIdx = result.indexOf('help:',);
+            const noteIdx = result.indexOf('note:',);
+            expect(noteIdx,).toBeGreaterThan(helpIdx,);
+          },
+        },),
+        it({
           name: 'injects guidance before blank line when no help line exists',
           fn: async () => {
             const input = [
