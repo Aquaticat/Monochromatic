@@ -5,6 +5,7 @@ import {
   join,
 } from 'node:path';
 
+import { caughtErrorHasCode, } from '../io/error.ts';
 import { trackGlob, } from '../tracker.ts';
 
 //region Shapes and sentinels: product directories and absence markers
@@ -238,6 +239,8 @@ function optionsCandidate(
  *
  * @returns Product directory paths found directly under the config root.
  *
+ * @throws When the JetBrains config root exists but cannot be listed.
+ *
  * @example
  * ```ts
  * await trackedProductDirectories({ jetBrainsConfigDirectory });
@@ -280,7 +283,13 @@ async function trackedProductDirectories(
     },);
     return paths;
   }
-  catch {
+  catch (directoryReadError: unknown) {
+    if (!caughtErrorHasCode({
+      error: directoryReadError,
+      code: 'ENOENT',
+    },))
+      throw directoryReadError;
+
     trackGlob({
       pattern,
       paths: [],
