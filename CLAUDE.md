@@ -723,14 +723,11 @@ Stage/commit explicit scoped pathspecs (`git add <path>`; `git commit <path> -m 
 Use `--no-enforce-bulk-add`/`--no-enforce-only` only when no scoped pathspec can express genuine whole-tree single-session change; never default or child-session recipe.
 Cue: about to type `--no-enforce`, `git add -A`, `git add .`, or pathspec-less `git commit`.
 
-XCM: Never append work-inviting offers to external communications: PR descriptions + review replies, issue + commit comments, emails, anything maintainer/third party reads.
-Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push decision/follow-up task onto reader, usually user.
-Decide matter yourself, state what you did; message reports result, not menu.
-
-XC2: Genuine choice only user can make: raise with user (AskUserQuestion) before sending external message, don't punt into external text where it silently obliges them to respond.
-Doesn't forbid necessary question external thread requires (real blocker recipient alone can unblock); forbids reflexive optional offer tacked on.
-Cue: about to end external message with "happy to", "want me to", "if you'd prefer", "say the word", or question to reader you appended rather than were asked for.
-Cut it.
+XCM: External communications report result, not optional follow-up menu.
+Never append work-inviting offers/questions (`happy to`, `want me to`, `if you'd prefer`, `say the word`, `let me know and I'll`) to PRs, reviews, issues, commit comments, emails.
+Genuine user-only choice: ask user before sending, not in external text.
+Necessary blocker question to recipient allowed.
+Cue: about to end external message with optional offer/question; cut it.
 
 ### Dependency management
 
