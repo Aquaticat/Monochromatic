@@ -31,7 +31,8 @@ await describe({
             expect(checker('ready',),).toBe('ready',);
 
             const nanChecker = satisfiesOrThrow({ value: Number.NaN, },);
-            expect(Number.isNaN(nanChecker(Number.NaN,),),).toBe(true,);
+            const nanResult = nanChecker(Number.NaN,);
+            expect(Number.isNaN(nanResult,),).toBe(true,);
           },
         },),
 
@@ -52,7 +53,8 @@ await describe({
             const checker = satisfiesOrThrow({
               value: 'ready',
               predicate: ({ candidate, value, }) =>
-                (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+                ((typeof candidate) === 'string')
+                && (candidate.toLowerCase() === value),
             },);
 
             expect(checker('READY',),).toBe('READY',);
@@ -76,8 +78,9 @@ await describe({
           fn: async () => {
             const checker = satisfiesOrThrow({
               value: 'ready',
-              // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- deliberately violates predicate contract to exercise runtime validation
-              predicate: (() => 'yes') as unknown as SatisfiesOrThrowPredicate<string>,
+              predicate: (() => 'yes') as unknown as SatisfiesOrThrowPredicate<
+                string
+              >,
             },);
 
             expect(() => checker('ready',),).toThrow('boolean',);
@@ -108,7 +111,8 @@ await describe({
             const output = satisfiesOrThrow({
               value: 'ready',
               predicate: ({ candidate, value, }) =>
-                (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+                ((typeof candidate) === 'string')
+                && (candidate.toLowerCase() === value),
             },)(unionInput,);
 
             expectTypeOf(output,).toEqualTypeOf<string | number>();
@@ -152,7 +156,8 @@ await describe({
             const checker = satisfiesOrThrowAsync({
               value: 'ready',
               predicate: async ({ candidate, value, }) =>
-                (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+                ((typeof candidate) === 'string')
+                && (candidate.toLowerCase() === value),
             },);
 
             const result = await checker('READY',);
@@ -186,8 +191,9 @@ await describe({
           fn: async () => {
             const checker = satisfiesOrThrowAsync({
               value: 'ready',
-              // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- deliberately violates predicate contract to exercise runtime validation
-              predicate: (async () => 'yes') as unknown as SatisfiesOrThrowAsyncPredicate<string>,
+              predicate: (async () => 'yes') as unknown as SatisfiesOrThrowAsyncPredicate<
+                string
+              >,
             },);
 
             let caught: unknown;
@@ -227,7 +233,8 @@ await describe({
             const output = await satisfiesOrThrowAsync({
               value: 'ready',
               predicate: async ({ candidate, value, }) =>
-                (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+                ((typeof candidate) === 'string')
+                && (candidate.toLowerCase() === value),
             },)(unionInput,);
 
             expectTypeOf(output,).toEqualTypeOf<string | number>();

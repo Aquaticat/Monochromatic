@@ -8,6 +8,7 @@
  * Parameters passed to custom `satisfiesOrThrow` predicates.
  *
  * @typeParam Candidate - Candidate value being judged
+ *
  * @typeParam Value - Expected value configured on assertion factory
  *
  * @example
@@ -35,8 +36,8 @@ export type SatisfiesOrThrowPredicateParameters<Candidate, Value,> = {
  * @example
  * ```ts
  * const predicate: SatisfiesOrThrowPredicate<string> = ({ candidate, value, }) =>
- *   (typeof candidate) === 'string'
- *   && candidate.toLowerCase() === value;
+ *   ((typeof candidate) === 'string')
+ *   && (candidate.toLowerCase() === value);
  * ```
  */
 export type SatisfiesOrThrowPredicate<Value,> = (
@@ -53,7 +54,8 @@ export type SatisfiesOrThrowPredicate<Value,> = (
  * const predicate: SatisfiesOrThrowAsyncPredicate<string> = async ({
  *   candidate,
  *   value,
- * }) => (typeof candidate) === 'string' && candidate.toLowerCase() === value;
+ * }) =>
+ *   ((typeof candidate) === 'string') && (candidate.toLowerCase() === value);
  * ```
  */
 export type SatisfiesOrThrowAsyncPredicate<Value,> = (
@@ -87,7 +89,7 @@ export type SatisfiesOrThrowEqualityOptions<Value,> = {
  * const options: SatisfiesOrThrowPredicateOptions<string> = {
  *   value: 'ready',
  *   predicate: ({ candidate, value, }) =>
- *     (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+ *     ((typeof candidate) === 'string') && (candidate.toLowerCase() === value),
  * };
  * ```
  */
@@ -176,7 +178,7 @@ export type SatisfiesOrThrowAsyncOptions<Value,> =
  * const readyish = satisfiesOrThrow({
  *   value: 'ready',
  *   predicate: ({ candidate, value, }) =>
- *     (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+ *     ((typeof candidate) === 'string') && (candidate.toLowerCase() === value),
  * })('READY',);
  * // readyish is the original candidate, 'READY'.
  * ```
@@ -187,39 +189,63 @@ export function satisfiesOrThrow<const Value,>(
 export function satisfiesOrThrow<const Value,>(
   options: SatisfiesOrThrowPredicateOptions<Value>,
 ): <const Candidate,>(candidate: Candidate) => Candidate;
+/**
+ * Implements `satisfiesOrThrow` overloads.
+ *
+ * @param options - Expected value and optional synchronous predicate
+ *
+ * @returns Checker returning candidate when satisfaction check passes
+ *
+ * @example
+ * ```ts
+ * satisfiesOrThrow({ value: 'ready', })('ready',);
+ * ```
+ */
 export function satisfiesOrThrow<const Value,>(
   options: SatisfiesOrThrowOptions<Value>,
 ):
   | (<const Candidate,>(candidate: Candidate) => Candidate & Value)
   | (<const Candidate,>(candidate: Candidate) => Candidate) {
-  const { value, } = options;
-
   if (options.predicate === undefined) {
     return function judgeSatisfiesEquality<const Candidate,>(
       candidate: Candidate,
     ): Candidate & Value {
-      if (!Object.is(candidate, value,))
+      if (!Object.is(
+        candidate,
+        options.value,
+      ))
         throw new Error(
-          `Expected candidate to satisfy ${String(value,)}, got ${String(candidate,)}`,
+          `Expected candidate to satisfy ${String(options.value,)}, got ${String(
+            candidate,
+          )}`,
         );
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.is proves candidate and configured value are the same runtime value
       return candidate as Candidate & Value;
     };
   }
 
-  const { predicate, } = options;
-
   return function judgeSatisfiesPredicate<const Candidate,>(
     candidate: Candidate,
   ): Candidate {
-    const result = predicate({ candidate, value, },);
+    /**
+     * Raw predicate result, checked at runtime to protect JavaScript callers
+     * and unsafe casts.
+     */
+    const result = options.predicate({
+      candidate,
+      value: options.value,
+    },);
     if ((typeof result) !== 'boolean')
       throw new Error(
-        `Expected ${satisfiesOrThrow.name} predicate to return boolean, got ${typeof result}; use ${satisfiesOrThrowAsync.name} for async predicates`,
+        `Expected ${satisfiesOrThrow.name} predicate to return boolean, got ${
+          typeof result
+        }; use ${satisfiesOrThrowAsync.name} for async predicates`,
       );
     if (!result)
       throw new Error(
-        `Expected candidate to satisfy ${String(value,)}, got ${String(candidate,)}`,
+        `Expected candidate to satisfy ${String(options.value,)}, got ${String(
+          candidate,
+        )}`,
       );
     return candidate;
   };
@@ -253,7 +279,7 @@ export function satisfiesOrThrow<const Value,>(
  * const readyish = await satisfiesOrThrowAsync({
  *   value: 'ready',
  *   predicate: async ({ candidate, value, }) =>
- *     (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+ *     ((typeof candidate) === 'string') && (candidate.toLowerCase() === value),
  * })('READY',);
  * // readyish is the original candidate, 'READY'.
  * ```
@@ -264,39 +290,69 @@ export function satisfiesOrThrowAsync<const Value,>(
 export function satisfiesOrThrowAsync<const Value,>(
   options: SatisfiesOrThrowAsyncPredicateOptions<Value>,
 ): <const Candidate,>(candidate: Candidate) => Promise<Candidate>;
+/**
+ * Implements `satisfiesOrThrowAsync` overloads.
+ *
+ * @param options - Expected value and optional async-capable predicate
+ *
+ * @returns Checker returning candidate when satisfaction check passes
+ *
+ * @example
+ * ```ts
+ * await satisfiesOrThrowAsync({ value: 'ready', })('ready',);
+ * ```
+ */
 export function satisfiesOrThrowAsync<const Value,>(
   options: SatisfiesOrThrowAsyncOptions<Value>,
 ):
   | (<const Candidate,>(candidate: Candidate) => Promise<Candidate & Value>)
   | (<const Candidate,>(candidate: Candidate) => Promise<Candidate>) {
-  const { value, } = options;
-
   if (options.predicate === undefined) {
     return async function judgeSatisfiesEqualityAsync<const Candidate,>(
       candidate: Candidate,
     ): Promise<Candidate & Value> {
-      if (!Object.is(candidate, value,))
+      /**
+       * Whether candidate equals configured value under default equality.
+       */
+      const result = await Promise.resolve(
+        Object.is(
+          candidate,
+          options.value,
+        ),
+      );
+      if (!result)
         throw new Error(
-          `Expected candidate to satisfy ${String(value,)}, got ${String(candidate,)}`,
+          `Expected candidate to satisfy ${String(options.value,)}, got ${String(
+            candidate,
+          )}`,
         );
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.is proves candidate and configured value are the same runtime value
       return candidate as Candidate & Value;
     };
   }
 
-  const { predicate, } = options;
-
   return async function judgeSatisfiesPredicateAsync<const Candidate,>(
     candidate: Candidate,
   ): Promise<Candidate> {
-    const result = await predicate({ candidate, value, },);
+    /**
+     * Awaited predicate result, checked at runtime to protect JavaScript callers
+     * and unsafe casts.
+     */
+    const result = await options.predicate({
+      candidate,
+      value: options.value,
+    },);
     if ((typeof result) !== 'boolean')
       throw new Error(
-        `Expected ${satisfiesOrThrowAsync.name} predicate to return boolean, got ${typeof result}`,
+        `Expected ${satisfiesOrThrowAsync.name} predicate to return boolean, got ${
+          typeof result
+        }`,
       );
     if (!result)
       throw new Error(
-        `Expected candidate to satisfy ${String(value,)}, got ${String(candidate,)}`,
+        `Expected candidate to satisfy ${String(options.value,)}, got ${String(
+          candidate,
+        )}`,
       );
     return candidate;
   };
