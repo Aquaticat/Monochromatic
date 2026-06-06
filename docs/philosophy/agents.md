@@ -336,8 +336,3 @@ The `troubleshooting-doc` skill's exception is a disposable prototype clone crea
 upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
 third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
-
-## Changelog
-
-- 2026-06-06: Removed RG4 from AGENTS.md because RG1 through RG3 already cover parser preference,
-  bounded-input or linearity justification, and regression-test expectations for regex use.
