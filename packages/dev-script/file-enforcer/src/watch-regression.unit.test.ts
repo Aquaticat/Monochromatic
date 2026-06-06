@@ -19,8 +19,10 @@ import {
 import {
   cat,
   classifyEvent,
+  l,
   reset,
   resetWriteTimestamps,
+  watchDirectory,
   watchDirs,
 } from '../dist/final/node/index.mjs';
 
@@ -250,6 +252,45 @@ await describe({
           watchedDir: sourceDirectory,
           configPath,
         },),).toBe('source',);
+      },
+    },),
+
+    it({
+      name: 'watch directory setup failures reject instead of resolving',
+      fn: async function watchDirectorySetupFailureRejects({ sinon, },): Promise<void> {
+        const errorStub = sinon.stub(l, 'error',);
+        const tempDir = await setup();
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return teardown(tempDir,);
+          },
+        };
+        const missingDirectory = join(
+          tempDir,
+          'missing-watch-root',
+        );
+        const configPath = join(
+          tempDir,
+          'file-enforcer.config.ts',
+        );
+        await writeFile(
+          configPath,
+          '',
+        );
+
+        await expect(watchDirectory({
+          dir: missingDirectory,
+          signal: new AbortController().signal,
+          configPath,
+          onEvent: function unexpectedWatchEvent(): void {
+            throw new Error('Missing-directory watcher unexpectedly emitted an event',);
+          },
+        },),)
+          .rejects
+          .toMatchObject({ code: 'ENOENT', },);
+        expect(errorStub,).toHaveBeenCalledWith(
+          expect.stringContaining('watcher error in',),
+        );
       },
     },),
   ],

@@ -18,7 +18,8 @@ export const DEBOUNCE_MS = 100;
  * calling the appropriate callback.
  *
  * Runs until the abort signal fires. AbortError is silently caught since
- * it is the expected teardown mechanism.
+ * it is the expected teardown mechanism. Other watcher failures are logged
+ * and rethrown so failed setup or broken watch loops do not look healthy.
  *
  * @param dir - Absolute directory path to watch
  *
@@ -100,5 +101,6 @@ export async function watchDirectory(
       === 'AbortError'))
       return;
     rl.error(`watcher error in ${dir}: ${String(watchError,)}`,);
+    throw watchError;
   }
 }
