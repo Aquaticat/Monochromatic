@@ -20,26 +20,26 @@ type NotificationTool = 'notify-send' | 'osascript' | 'pwsh' | 'powershell';
  * A unique `Symbol` keeps the absent case out of a banned `T | null` union
  * while staying distinguishable from every real {@link NotificationTool} value.
  */
-const NO_TOOL = Symbol('no-notification-tool',);
+const NO_NOTIFICATION_TOOL = Symbol('file-enforcer/watch: detection found no desktop notification tool',);
 
 /**
  * Single-key holder for the lazily-detected notification backend.
- * {@link NO_TOOL} value means detection ran but no tool was found; missing key
+ * {@link NO_NOTIFICATION_TOOL} value means detection ran but no tool was found; missing key
  * means detection has not run yet.
  */
-const toolCache = new Map<'tool', NotificationTool | typeof NO_TOOL>();
+const toolCache = new Map<'tool', NotificationTool | typeof NO_NOTIFICATION_TOOL>();
 
 /**
  * Detects the first available desktop notification tool.
  * Result is cached for the lifetime of the process:
  * available tools don't change between events.
  *
- * @returns Detected tool name, or {@link NO_TOOL} if none found
+ * @returns Detected tool name, or {@link NO_NOTIFICATION_TOOL} if none found
  */
-async function detectNotificationTool(): Promise<NotificationTool | typeof NO_TOOL> {
+async function detectNotificationTool(): Promise<NotificationTool | typeof NO_NOTIFICATION_TOOL> {
   if (toolCache.has('tool',))
     return toolCache.get('tool',)
-      ?? NO_TOOL;
+      ?? NO_NOTIFICATION_TOOL;
 
   if (await evaluatePredicate([
     'notify-send',
@@ -86,9 +86,9 @@ async function detectNotificationTool(): Promise<NotificationTool | typeof NO_TO
 
   toolCache.set(
     'tool',
-    NO_TOOL,
+    NO_NOTIFICATION_TOOL,
   );
-  return NO_TOOL;
+  return NO_NOTIFICATION_TOOL;
 }
 
 //endregion Notification tool detection
@@ -128,10 +128,10 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
     l,
   },);
   /**
-   * Detected notification backend, or NO_TOOL when no compatible tool is installed.
+   * Detected notification backend, or NO_NOTIFICATION_TOOL when no compatible tool is installed.
    */
   const tool = await detectNotificationTool();
-  if (tool === NO_TOOL)
+  if (tool === NO_NOTIFICATION_TOOL)
     return;
 
   /**

@@ -2,7 +2,7 @@ import { resolve, } from 'node:path';
 import { hashContent, } from './staleness-hash.ts';
 import { readFileStamps, } from './staleness-stamps.ts';
 import {
-  MISSING_STAMPS,
+  ABSENT_FILE_STAMPS,
   type DestinationStamp,
   type StalenessDestination,
 } from './staleness-types.ts';
@@ -21,7 +21,7 @@ import {
  */
 export function destinationStamps(
   destinations: readonly StalenessDestination[],
-): readonly DestinationStamp[] | typeof MISSING_STAMPS {
+): readonly DestinationStamp[] | typeof ABSENT_FILE_STAMPS {
   /**
    * Metadata for each destination path.
    */
@@ -32,8 +32,8 @@ export function destinationStamps(
    * Filesystem metadata for destination paths.
    */
   const stamps = readFileStamps(destinationPaths,);
-  if (stamps === MISSING_STAMPS)
-    return MISSING_STAMPS;
+  if (stamps === ABSENT_FILE_STAMPS)
+    return ABSENT_FILE_STAMPS;
 
   /**
    * Content hashes keyed by absolute destination path.

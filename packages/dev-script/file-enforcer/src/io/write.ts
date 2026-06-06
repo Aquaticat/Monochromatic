@@ -52,30 +52,30 @@ async function ensureDir(filePath: string,): Promise<void> {
  * union and stays distinguishable from real file content, including the empty
  * string (a present but empty file is content, not absence).
  */
-export const MISSING: unique symbol = Symbol('missing-file',);
+export const ABSENT_FILE_CONTENT: unique symbol = Symbol('file-enforcer/io/write: absent file content, returned by readExisting when a file does not exist',);
 
 /**
  * Reads the current content of a file via the read cache, returning
- * {@link MISSING} if the file does not exist. Used for content-based write skipping.
+ * {@link ABSENT_FILE_CONTENT} if the file does not exist. Used for content-based write skipping.
  *
  * @param filePath - Path to check
  *
- * @returns File content as string, or {@link MISSING} if absent
+ * @returns File content as string, or {@link ABSENT_FILE_CONTENT} if absent
  *
  * @example
  * ```ts
  * const existing = await readExisting('./dist/config.json');
- * if (existing === MISSING) {
+ * if (existing === ABSENT_FILE_CONTENT) {
  *   // file did not exist; safe to create
  * }
  * ```
  */
-export async function readExisting(filePath: string,): Promise<string | typeof MISSING> {
+export async function readExisting(filePath: string,): Promise<string | typeof ABSENT_FILE_CONTENT> {
   try {
     return await readCached(filePath,);
   }
   catch {
-    return MISSING;
+    return ABSENT_FILE_CONTENT;
   }
 }
 
@@ -118,7 +118,7 @@ async function writeIfChanged(
   },);
   trackDest(dest,);
   /**
-   * Current file content, or MISSING if file doesn't exist yet
+   * Current file content, or ABSENT_FILE_CONTENT if file doesn't exist yet
    */
   const existing = await readExisting(dest,);
   if (existing === content) {
@@ -257,10 +257,10 @@ export async function overwriteIfNotExists(
   },
 ): Promise<void> {
   /**
-   * Existing content, or MISSING if file doesn't exist
+   * Existing content, or ABSENT_FILE_CONTENT if file doesn't exist
    */
   const existing = await readExisting(dest,);
-  if (existing !== MISSING) {
+  if (existing !== ABSENT_FILE_CONTENT) {
     trackDest(dest,);
     l.debug(`skip (exists): ${dest}`,);
     return;

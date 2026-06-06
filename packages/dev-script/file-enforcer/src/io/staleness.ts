@@ -21,7 +21,7 @@ import {
   readFileStamps,
 } from './staleness-stamps.ts';
 import {
-  MISSING_STAMPS,
+  ABSENT_FILE_STAMPS,
   type StalenessDestination,
   type StalenessEntry,
   type StalenessEntryKind,
@@ -71,7 +71,7 @@ async function entryMetadataMatches(entry: StalenessEntry,): Promise<boolean> {
    * Current metadata for source files.
    */
   const currentSources = readFileStamps(sourcePaths,);
-  if (currentSources === MISSING_STAMPS)
+  if (currentSources === ABSENT_FILE_STAMPS)
     return false;
   if (!fileStampListsMatch({
     currentStamps: currentSources,
@@ -91,7 +91,7 @@ async function entryMetadataMatches(entry: StalenessEntry,): Promise<boolean> {
    * Current metadata for destination files.
    */
   const currentDestinations = readFileStamps(destinationPaths,);
-  if (currentDestinations === MISSING_STAMPS)
+  if (currentDestinations === ABSENT_FILE_STAMPS)
     return false;
 
   return fileStampListsMatch({
@@ -197,7 +197,7 @@ export async function freshStalenessEntryExists(
  */
 function sourceStampsForReads(
   trackedReads: readonly string[],
-): StalenessEntry['sourceFiles'] | typeof MISSING_STAMPS {
+): StalenessEntry['sourceFiles'] | typeof ABSENT_FILE_STAMPS {
   return readFileStamps([
     ...configDependencyPaths(),
     ...trackedReads,
@@ -244,14 +244,14 @@ export function rememberFreshStalenessEntry(
    * Source file metadata, including the config file as an implicit dependency.
    */
   const sourceFiles = sourceStampsForReads(trackedReads,);
-  if (sourceFiles === MISSING_STAMPS)
+  if (sourceFiles === ABSENT_FILE_STAMPS)
     return;
 
   /**
    * Destination metadata after reconciliation.
    */
   const destinationFiles = destinationStamps(destinations,);
-  if (destinationFiles === MISSING_STAMPS)
+  if (destinationFiles === ABSENT_FILE_STAMPS)
     return;
 
   /**

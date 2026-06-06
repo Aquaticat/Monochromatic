@@ -3,7 +3,7 @@ import { resolve, } from 'node:path';
 /**
  * Sentinel returned when no CLI or watch entry point recorded a config path.
  */
-export const NO_ACTIVE_CONFIG: unique symbol = Symbol('no-active-config');
+export const UNKNOWN_ACTIVE_CONFIG_PATH: unique symbol = Symbol('file-enforcer/context: no active config path recorded by the CLI or watch entry point',);
 
 /**
  * Holder for the config path currently being executed through the CLI.
@@ -45,13 +45,13 @@ export function setActiveConfigPath(
  * const configPath = activeConfigPath();
  * ```
  */
-export function activeConfigPath(): string | typeof NO_ACTIVE_CONFIG {
+export function activeConfigPath(): string | typeof UNKNOWN_ACTIVE_CONFIG_PATH {
   /**
    * Config path recorded by CLI or watch mode.
    */
   const activePath = activeConfigPathByKey.get('path',);
   if (activePath === undefined)
-    return NO_ACTIVE_CONFIG;
+    return UNKNOWN_ACTIVE_CONFIG_PATH;
 
   return activePath;
 }
@@ -73,7 +73,7 @@ export function configDependencyPaths(): readonly string[] {
    * Config path explicitly set by the CLI or watch entry point.
    */
   const activePath = activeConfigPath();
-  if (activePath !== NO_ACTIVE_CONFIG)
+  if (activePath !== UNKNOWN_ACTIVE_CONFIG_PATH)
     return [activePath,];
 
   /**

@@ -1061,6 +1061,12 @@ importers:
 
   packages/dev-script/file-enforcer:
     dependencies:
+      '@lezer/common':
+        specifier: 'catalog:'
+        version: 1.5.1
+      '@lezer/xml':
+        specifier: 'catalog:'
+        version: 1.0.6
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger

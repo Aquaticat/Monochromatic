@@ -24,7 +24,7 @@ import {
 import {
   binaryExists,
   detectManager,
-  NO_MANAGER,
+  NO_PACKAGE_MANAGER,
   resetManagerCache,
 } from './manager.ts';
 import { p, } from './p.ts';
@@ -63,7 +63,7 @@ registerPackages([...TEST_PACKAGES,],);
 
 const manager = await detectManager();
 console.log(
-  `[container-test] detected manager: ${manager === NO_MANAGER ? 'none' : manager}`,
+  `[container-test] detected manager: ${manager === NO_PACKAGE_MANAGER ? 'none' : manager}`,
 );
 console.log(`[container-test] uid: ${String(process.getuid?.() ?? 'unavailable',)}`,);
 

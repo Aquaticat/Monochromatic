@@ -24,7 +24,7 @@ import {
   uniqueStampsByPath,
 } from './staleness-aggregate.ts';
 import {
-  MISSING_STAMPS,
+  ABSENT_FILE_STAMPS,
   type DestinationStamp,
   type FileStamp,
   type StalenessEntry,
@@ -217,7 +217,7 @@ export async function freshStalenessManifest(
   const currentSources = readFileStamps(sourceFiles.map(function sourcePath(sourceFile,): string {
     return sourceFile.path;
   },),);
-  if (currentSources === MISSING_STAMPS)
+  if (currentSources === ABSENT_FILE_STAMPS)
     return false;
   if (!fileStampListsMatch({
     currentStamps: currentSources,
@@ -231,7 +231,7 @@ export async function freshStalenessManifest(
   const currentDestinations = readFileStamps(destinationFiles.map(function destinationPath(destinationFile,): string {
     return destinationFile.path;
   },),);
-  if (currentDestinations === MISSING_STAMPS)
+  if (currentDestinations === ABSENT_FILE_STAMPS)
     return false;
   if (!fileStampListsMatch({
     currentStamps: currentDestinations,

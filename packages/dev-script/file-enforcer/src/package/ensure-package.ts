@@ -7,7 +7,7 @@ import {
   canProvide,
   detectManager,
   installPackage,
-  NO_MANAGER,
+  NO_PACKAGE_MANAGER,
 } from './manager.ts';
 import type {
   PackageEntry,
@@ -79,11 +79,11 @@ function buildIndex(): ReadonlyMap<string, PackageEntry> {
  * the absent case out of a banned `string | undefined` union while staying
  * distinguishable from any real package name (including the empty string).
  */
-const PACKAGE_UNAVAILABLE = Symbol('package-unavailable',);
+const UNPROVIDABLE_PACKAGE = Symbol('file-enforcer/package: package unavailable on the detected manager per Repology data',);
 
 /**
  * Resolves the package name for a given entry and manager.
- * Returns {@link PACKAGE_UNAVAILABLE} when Repology data confirms the package is
+ * Returns {@link UNPROVIDABLE_PACKAGE} when Repology data confirms the package is
  * unavailable (manager not in `available` set), avoiding the expensive live
  * `canProvide` check. Uses the per-manager override if present, otherwise falls
  * back to effname.
@@ -92,7 +92,7 @@ const PACKAGE_UNAVAILABLE = Symbol('package-unavailable',);
  *
  * @param manager - Detected package manager
  *
- * @returns Package name to pass to the install command, or {@link PACKAGE_UNAVAILABLE} when unavailable
+ * @returns Package name to pass to the install command, or {@link UNPROVIDABLE_PACKAGE} when unavailable
  */
 function resolvePackageName(
   {
@@ -102,11 +102,11 @@ function resolvePackageName(
     readonly entry: PackageEntry;
     readonly manager: PackageManager;
   },
-): string | typeof PACKAGE_UNAVAILABLE {
+): string | typeof UNPROVIDABLE_PACKAGE {
   if ((entry.available
     !== undefined) && (!entry.available
       .has(manager,)))
-    return PACKAGE_UNAVAILABLE;
+    return UNPROVIDABLE_PACKAGE;
   return entry.overrides[manager]
     ?? entry
     .effname;
@@ -197,21 +197,21 @@ export async function ensurePackage(binary: string,): Promise<void> {
     return;
 
   /**
-   * Detected manager on this host, or NO_MANAGER when nothing supported is installed.
+   * Detected manager on this host, or NO_PACKAGE_MANAGER when nothing supported is installed.
    */
   const manager = await detectManager();
-  if (manager === NO_MANAGER)
+  if (manager === NO_PACKAGE_MANAGER)
     throw new NoManagerError(binary,);
 
   /**
-   * Manager-specific package name; PACKAGE_UNAVAILABLE when Repology says this manager cannot supply it.
+   * Manager-specific package name; UNPROVIDABLE_PACKAGE when Repology says this manager cannot supply it.
    */
   const packageName = resolvePackageName({
     entry: effectiveEntry,
     manager,
   },);
 
-  if (packageName === PACKAGE_UNAVAILABLE) {
+  if (packageName === UNPROVIDABLE_PACKAGE) {
     throw new PackageNotFoundError(
       binary,
       manager,

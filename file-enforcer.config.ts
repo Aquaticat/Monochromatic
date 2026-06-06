@@ -1,22 +1,15 @@
 import { glob, } from 'node:fs/promises';
+import { join, } from 'node:path';
 
 import {
-  addWatchedPaths,
   cat,
+  manageLsp4ijServerSettings,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
-import { manageHarperLsp4ijSettings, } from './file-enforcer.harper-lsp4ij.ts';
-
 import type browserslist from 'browserslist';
-
-addWatchedPaths([
-  './file-enforcer.harper-lsp4ij.ts',
-  './file-enforcer.harper-lsp4ij-idea.ts',
-  './file-enforcer.harper-lsp4ij-xml.ts',
-],);
 
 /**
  * Resolver function exported by the `browserslist` package.
@@ -188,6 +181,83 @@ async function mirrorSkills(): Promise<void> {
   ],);
 }
 
+/**
+ * Builds a flat patch disabling the given Harper linter rules.
+ *
+ * @param rules - Harper rule names to disable.
+ *
+ * @returns Patch mapping each `harper-ls.linters.<rule>` key to false.
+ *
+ * @example
+ * ```ts
+ * harperLintersDisabled(['SplitWords']);
+ * ```
+ */
+function harperLintersDisabled(rules: readonly string[],): Record<string, false> {
+  return Object.fromEntries(rules.map(function toDisabledEntry(rule,): readonly [string, false,] {
+    return [`harper-ls.linters.${rule}`, false,];
+  },),);
+}
+
+/**
+ * Syncs this repo's Harper LSP4IJ writing-style policy into the latest IntelliJ
+ * IDEA config: disables prose rules globally, excludes the caveman-style agent
+ * docs from the main server, and registers a second Harper server scoped to
+ * AGENTS.md and CLAUDE.md with extra rules disabled.
+ *
+ * @example
+ * ```ts
+ * await manageHarperLsp4ij();
+ * ```
+ */
+async function manageHarperLsp4ij(): Promise<void> {
+  await manageLsp4ijServerSettings({
+    productPrefixes: ['IntelliJIdea', 'IdeaIC',],
+    baseServerMatch: {
+      commandLineIncludes: 'harper-ls',
+      serverNameEquals: 'Harper Language Server',
+      templateId: 'harper-ls',
+    },
+    baseConfig: {
+      set: harperLintersDisabled(['UseTitleCase', 'SplitWords', 'PhrasalVerbAsCompoundNoun',],),
+      arrayUnion: {
+        'harper-ls.excludePatterns': [
+          '**/AGENTS.md',
+          '**/CLAUDE.md',
+          join(process.cwd(), 'AGENTS.md',),
+          join(process.cwd(), 'CLAUDE.md',),
+        ],
+      },
+    },
+    schemaDefaults: {
+      'harper-ls.linters.UseTitleCase': {
+        type: 'boolean',
+        default: true,
+        description: 'Prompts you to use title case in relevant headings.',
+      },
+    },
+    scopedServers: [
+      {
+        id: 'harper-ls-agents-claude-md',
+        name: 'Harper Language Server (AGENTS.md and CLAUDE.md)',
+        fileNames: ['AGENTS.md', 'CLAUDE.md',],
+        languageId: 'markdown',
+        copyOptions: [
+          'commandLine',
+          'installAlreadyDone',
+          'installerConfigurationContent',
+          'serverUrl',
+          'templateId',
+          'workingDir',
+          'workspaceFolderStrategyConfiguration',
+        ],
+        configOmitKeys: ['harper-ls.excludePatterns',],
+        config: { set: harperLintersDisabled(['MissingTo', 'LongSentences', 'OxfordComma',],), },
+      },
+    ],
+  },);
+}
+
 await Promise.all([
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
   overwrite({
@@ -222,7 +292,7 @@ ${await cat(['./AGENTS.md',],)}`,
 
   generateResolvedBrowserslistTargets(),
 
-  manageHarperLsp4ijSettings(),
+  manageHarperLsp4ij(),
 
   mirrorSkills(),
   // Oxlint config: root oxlint.config.ts imports @monochromatic-dev/config-oxlint and adds jsPlugins.

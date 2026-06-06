@@ -24,9 +24,10 @@ export const CACHE_DIRECTORY_NAME = 'file-enforcer';
 export const MANIFEST_FILE_NAME = 'staleness-manifest.json';
 
 /**
- * Sentinel for missing filesystem metadata during staleness validation.
+ * Sentinel returned during staleness validation when a tracked path has no
+ * filesystem metadata (the file disappeared since it was recorded).
  */
-export const MISSING_STAMPS: unique symbol = Symbol('missing-staleness-stamps');
+export const ABSENT_FILE_STAMPS: unique symbol = Symbol('file-enforcer/io/staleness: absent filesystem metadata for a tracked path',);
 
 /**
  * Supported manifest entry categories.

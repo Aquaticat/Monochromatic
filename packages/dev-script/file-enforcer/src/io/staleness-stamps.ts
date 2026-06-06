@@ -3,7 +3,7 @@ import { resolve, } from 'node:path';
 import type { TrackedGlob, } from '../tracker.ts';
 import { expandGlob, } from './glob.ts';
 import {
-  MISSING_STAMPS,
+  ABSENT_FILE_STAMPS,
   type FileStamp,
   type GlobStamp,
 } from './staleness-types.ts';
@@ -69,7 +69,7 @@ export function normalizeGlobStamps(globs: readonly TrackedGlob[],): readonly Gl
  * const stamp = await readFileStamp('./AGENTS.md');
  * ```
  */
-function readFileStamp(path: string,): FileStamp | typeof MISSING_STAMPS {
+function readFileStamp(path: string,): FileStamp | typeof ABSENT_FILE_STAMPS {
   try {
     /**
      * Filesystem metadata for the path.
@@ -82,7 +82,7 @@ function readFileStamp(path: string,): FileStamp | typeof MISSING_STAMPS {
     };
   }
   catch {
-    return MISSING_STAMPS;
+    return ABSENT_FILE_STAMPS;
   }
 }
 
@@ -98,8 +98,8 @@ function readFileStamp(path: string,): FileStamp | typeof MISSING_STAMPS {
  * const present = stamps.filter(isPresentFileStamp);
  * ```
  */
-function isPresentFileStamp(value: FileStamp | typeof MISSING_STAMPS,): value is FileStamp {
-  return value !== MISSING_STAMPS;
+function isPresentFileStamp(value: FileStamp | typeof ABSENT_FILE_STAMPS,): value is FileStamp {
+  return value !== ABSENT_FILE_STAMPS;
 }
 
 /**
@@ -116,12 +116,12 @@ function isPresentFileStamp(value: FileStamp | typeof MISSING_STAMPS,): value is
  */
 export function readFileStamps(
   paths: readonly string[],
-): readonly FileStamp[] | typeof MISSING_STAMPS {
+): readonly FileStamp[] | typeof ABSENT_FILE_STAMPS {
   /**
    * Metadata results in input order.
    */
   const stamps = normalizePaths(paths,)
-    .map(function readPathStamp(path,): FileStamp | typeof MISSING_STAMPS {
+    .map(function readPathStamp(path,): FileStamp | typeof ABSENT_FILE_STAMPS {
       return readFileStamp(path,);
     },);
   /**
@@ -133,7 +133,7 @@ export function readFileStamps(
     return isPresentFileStamp(stamp,);
   },);
   if (presentStamps.length !== stamps.length)
-    return MISSING_STAMPS;
+    return ABSENT_FILE_STAMPS;
 
   return presentStamps.toSorted(function compareStampPaths(
     leftStamp,

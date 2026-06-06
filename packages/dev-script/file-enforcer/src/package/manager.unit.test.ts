@@ -7,7 +7,7 @@ import {
   binaryExists,
   detectManager,
   isRoot,
-  NO_MANAGER,
+  NO_PACKAGE_MANAGER,
   resetManagerCache,
   resetRootCache,
 } from './manager.ts';
@@ -26,7 +26,7 @@ await describe({
             resetManagerCache();
             const manager = await detectManager();
             /** Every CI and dev machine has at least one package manager */
-            expect(manager,).not.toBe(NO_MANAGER,);
+            expect(manager,).not.toBe(NO_PACKAGE_MANAGER,);
           },
         },),
         it({

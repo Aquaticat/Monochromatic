@@ -6,7 +6,7 @@ import {
 } from '@monochromatic-dev/module-toml-edit/ts';
 import type { Path, } from '../types.ts';
 import {
-  MISSING,
+  ABSENT_FILE_CONTENT,
   overwrite,
   readExisting,
 } from './write.ts';
@@ -55,10 +55,10 @@ export async function overwriteTomlKey(
   },
 ): Promise<void> {
   /**
-   * Current file content; MISSING when absent
+   * Current file content; ABSENT_FILE_CONTENT when the file does not exist
    */
   const existing = await readExisting(dest,);
-  if (existing === MISSING)
+  if (existing === ABSENT_FILE_CONTENT)
     throw new Error(`overwriteTomlKey: ${dest} does not exist`,);
   /**
    * Parsed TOML state for the existing content

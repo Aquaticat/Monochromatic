@@ -28,12 +28,29 @@ export type {
 } from './io/write-lazy.ts';
 export { overwriteTomlKey, } from './io/write-toml.ts';
 export {
-  MISSING,
+  ABSENT_FILE_CONTENT,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
   readExisting,
 } from './io/write.ts';
+export {
+  buildLanguageSettingsEntry,
+  buildUserDefinedEntry,
+} from './jetbrains/lsp4ij-entries.ts';
+export { manageLsp4ijServerSettings, } from './jetbrains/lsp4ij.ts';
+export type {
+  Lsp4ijBaseServerMatch,
+  Lsp4ijConfigPatch,
+  Lsp4ijOptionsFiles,
+  Lsp4ijScopedServer,
+  Lsp4ijServerSettings,
+} from './jetbrains/lsp4ij-types.ts';
+export {
+  latestJetbrainsOptionsDirectory,
+  NO_JETBRAINS_OPTIONS_DIRECTORY,
+} from './jetbrains/options-dir.ts';
+export type { JetbrainsOptionsDirectory, } from './jetbrains/options-dir.ts';
 export {
   l,
   tagged,
@@ -48,7 +65,7 @@ export {
   canProvide,
   detectManager,
   installPackage,
-  NO_MANAGER,
+  NO_PACKAGE_MANAGER,
 } from './package/manager.ts';
 export { mergeOverrides, } from './package/merge.ts';
 export {
@@ -64,6 +81,18 @@ export type {
 export { exec, } from './pipeline/exec.ts';
 export { inspect, } from './pipeline/inspect.ts';
 export {
+  formatJsonObject,
+  isJsonObject,
+  mergeFlatJson,
+  mergeObjectDefaults,
+  omitJsonKey,
+  parseJsonObject,
+} from './pipeline/json.ts';
+export type {
+  JsonObject,
+  JsonValue,
+} from './pipeline/json.ts';
+export {
   editTomlKey,
   getTomlProperty,
 } from './pipeline/toml.ts';
@@ -71,6 +100,21 @@ export {
   dedup,
   getJsonProperty,
 } from './pipeline/transform.ts';
+export {
+  escapeXmlAttribute,
+  isDigitCodePoint,
+  unescapeXmlAttribute,
+  xmlOptionLine,
+} from './pipeline/xml-coding.ts';
+export {
+  ABSENT_XML_ENTRY,
+  ABSENT_XML_VALUE,
+  findXmlEntryByKey,
+  getXmlOptionValue,
+  listXmlEntries,
+  replaceOrInsertXmlEntry,
+} from './pipeline/xml.ts';
+export type { XmlEntry, } from './pipeline/xml.ts';
 export type {
   Command,
   PlatformCommands,
