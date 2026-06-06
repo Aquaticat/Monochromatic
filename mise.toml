@@ -609,8 +609,9 @@ description = "Prepare environment (install Playwright browsers, etc.)"
 run = """
 mise run prepare:pnpm
 let p = $env.MISE_TASK_NAME + ":"
+let pnpm_task = $p + "pnpm"
 let d = ($p | split row ":" | length)
-let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) and ($n != "prepare:pnpm") })
+let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) and ($n != $pnpm_task) })
 if ($c | is-not-empty) { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
 """
 
