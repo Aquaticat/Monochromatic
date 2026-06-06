@@ -232,6 +232,10 @@ When `predicate` is present, it receives one object parameter:
 `{ candidate, value }`.
 A `true` result returns `candidate` unchanged.
 A `false` result throws an `Error`.
+Predicates must return literal booleans.
+The synchronous helper rejects Promise-returning predicates at runtime and points callers to
+`satisfiesOrThrowAsync`.
+The async helper accepts `boolean` or `Promise<boolean>`, then rejects resolved non-boolean values.
 Custom predicates deliberately return the candidate type as-is because predicates can be fuzzy:
 for example, a case-insensitive predicate can accept `'READY'` for configured value `'ready'`,
 so typing the result as literal `'ready'` would lie about the runtime value.
@@ -263,20 +267,33 @@ import {
   satisfiesOrThrowAsync,
 } from '@monochromatic-dev/module-or-throw';
 
+declare const rawStatus: unknown;
+declare const expectedChecksum: string;
+declare const filePath: string;
+declare function checksumMatches(parameters: {
+  readonly candidate: unknown;
+  readonly value: string;
+}): Promise<boolean>;
+
 const exactReady = satisfiesOrThrow({ value: 'ready' as const, })(rawStatus,);
 // exactReady is typed as 'ready' when rawStatus was unknown.
 
 const readyish = satisfiesOrThrow({
   value: 'ready',
   predicate: ({ candidate, value, }) =>
-    (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+    ((typeof candidate) === 'string')
+    && (candidate.toLowerCase() === value),
 })('READY',);
 // readyish is the original candidate, 'READY'.
 
 const stored = await satisfiesOrThrowAsync({
   value: expectedChecksum,
-  predicate: async ({ candidate, value, }) => await checksumMatches({ candidate, value, }),
+  predicate: async ({ candidate, value, }) => await checksumMatches({
+    candidate,
+    value,
+  },),
 })(filePath,);
+// stored is the original candidate, filePath.
 ```
 
 ## Types
@@ -295,8 +312,8 @@ import type {
   Used internally by every `Extract`-based narrowing helper so `unknown` inputs
   (e.g. parsed JSON) narrow correctly.
 - `SatisfiesOrThrowPredicateParameters<Candidate, Value>`: object passed into custom predicates.
-- `SatisfiesOrThrowPredicate<Value>`: synchronous predicate type returning `boolean`.
-- `SatisfiesOrThrowAsyncPredicate<Value>`: async-capable predicate type returning `boolean`
+- `SatisfiesOrThrowPredicate<Value, Candidate = unknown>`: synchronous predicate type returning `boolean`.
+- `SatisfiesOrThrowAsyncPredicate<Value, Candidate = unknown>`: async-capable predicate type returning `boolean`
   or `Promise<boolean>`.
 
 ## NaN caveat

@@ -15,7 +15,9 @@ import {
   satisfiesOrThrow,
   satisfiesOrThrowAsync,
   type SatisfiesOrThrowAsyncPredicate,
+  type SatisfiesOrThrowAsyncPredicateOptions,
   type SatisfiesOrThrowPredicate,
+  type SatisfiesOrThrowPredicateOptions,
 } from '@monochromatic-dev/module-or-throw';
 
 await describe({
@@ -43,7 +45,7 @@ await describe({
             expect(() => checker('pending',),).toThrow('ready',);
 
             const zeroChecker = satisfiesOrThrow({ value: 0, },);
-            expect(() => zeroChecker(-0,),).toThrow('0',);
+            expect(() => zeroChecker(-0,),).toThrow('-0',);
           },
         },),
 
@@ -88,6 +90,35 @@ await describe({
         },),
 
         it({
+          name: 'throws when custom predicate returns promise in sync helper',
+          fn: async () => {
+            const checker = satisfiesOrThrow({
+              value: 'ready',
+              predicate: (async () => true) as unknown as SatisfiesOrThrowPredicate<
+                string
+              >,
+            },);
+
+            expect(() => checker('ready',),).toThrow(satisfiesOrThrowAsync.name,);
+          },
+        },),
+
+        it({
+          name: 'accepts custom predicates with typed candidate parameters',
+          fn: async () => {
+            const options: SatisfiesOrThrowPredicateOptions<string, string> = {
+              value: 'ready',
+              predicate: ({ candidate, value, }) => candidate.toLowerCase() === value,
+            };
+            const checker = satisfiesOrThrow(options,);
+            const output = checker('READY' as string,);
+
+            expect(output,).toBe('READY',);
+            expectTypeOf(output,).toEqualTypeOf<string>();
+          },
+        },),
+
+        it({
           name: 'narrows default equality to configured value type',
           fn: async () => {
             const unknownInput: unknown = 'ready';
@@ -96,11 +127,29 @@ await describe({
             },)(unknownInput,);
             expectTypeOf(unknownOutput,).toEqualTypeOf<'ready'>();
 
+            const stringInput: string = 'ready';
+            const stringOutput = satisfiesOrThrow({
+              value: 'ready' as const,
+            },)(stringInput,);
+            expectTypeOf(stringOutput,).toEqualTypeOf<'ready'>();
+
             const unionInput = 'ready' as string | number;
             const unionOutput = satisfiesOrThrow({
               value: 'ready' as const,
             },)(unionInput,);
             expectTypeOf(unionOutput,).toEqualTypeOf<'ready'>();
+          },
+        },),
+
+        it({
+          name: 'narrows object identity equality to candidate and value intersection',
+          fn: async () => {
+            const expected = { status: 'ready' as const, };
+            const candidate: { readonly status: string; } = expected;
+            const output = satisfiesOrThrow({ value: expected, })(candidate,);
+
+            expect(output,).toBe(expected,);
+            expectTypeOf(output.status,).toEqualTypeOf<'ready'>();
           },
         },),
 
@@ -147,6 +196,19 @@ await describe({
 
             expect(caught,).toBeInstanceOf(Error,);
             expect((caught as Error).message,).toContain('ready',);
+          },
+        },),
+
+        it({
+          name: 'resolves candidate when sync predicate passes async helper',
+          fn: async () => {
+            const checker = satisfiesOrThrowAsync({
+              value: 'ready',
+              predicate: ({ candidate, value, }) => candidate === value,
+            },);
+
+            const result = await checker('ready',);
+            expect(result,).toBe('ready',);
           },
         },),
 
@@ -223,6 +285,21 @@ await describe({
               value: 'ready' as const,
             },)(unionInput,);
             expectTypeOf(unionOutput,).toEqualTypeOf<'ready'>();
+          },
+        },),
+
+        it({
+          name: 'accepts async custom predicates with typed candidate parameters',
+          fn: async () => {
+            const options: SatisfiesOrThrowAsyncPredicateOptions<string, string> = {
+              value: 'ready',
+              predicate: async ({ candidate, value, }) => candidate.toLowerCase() === value,
+            };
+            const checker = satisfiesOrThrowAsync(options,);
+            const output = await checker('READY' as string,);
+
+            expect(output,).toBe('READY',);
+            expectTypeOf(output,).toEqualTypeOf<string>();
           },
         },),
 
