@@ -336,3 +336,8 @@ The `troubleshooting-doc` skill's exception is a disposable prototype clone crea
 upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
 third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
+
+## Changelog
+
+- 2026-06-06: Merged TH2 and TH3 into THR, preserving idempotent-command coverage, guard-test fixture coverage,
+  and the destructive-operation cue while keeping the combined rule under 100 words.
