@@ -647,14 +647,11 @@ DL6: No automated check guards root regression; this rule is the cure.
 ### Handling external changes
 
 EC1: External worktree changes normal + often expected in this repo. Treat `git status` entries you didn't modify as concurrent work, not emergency.
+Never `git restore`, `git stash`, cleanup, move aside, or revert unrelated external changes.
+Only touch task-scope files; unrelated change blocks necessary edit -> acknowledge it + ask before changing/reverting.
 
-EC2: Never run `git restore`, `git stash`, cleanup, other move-aside commands on unrelated external changes. Only touch files in your task scope; unrelated external change blocks necessary edit -> ask before changing it.
-
-EC3: Acknowledge externally modified files; ask before reverting.
-
-EC4: Never proceed with implementing features that won't achieve their intended effect.
-
-EC5: Explain when tool/command doesn't support requested functionality instead of creating non-functional code.
+EC4: Never implement features that won't achieve intended effect.
+If tool/command doesn't support requested functionality, explain that instead of creating non-functional code.
 
 ### Git commit guidelines
 
