@@ -50,6 +50,40 @@ export function destinationsForFiles(
 }
 
 /**
+ * Asserts glob mirroring produced one writer per destination path.
+ *
+ * @param destinations - Concrete destinations to inspect before writing.
+ *
+ * @throws When multiple sources map to the same destination.
+ *
+ * @example
+ * ```ts
+ * assertUniqueDestinations([{ path: './out/a.txt', content: 'a', sourcePath: './src/a.txt' }]);
+ * ```
+ */
+function assertUniqueDestinations(destinations: readonly GlobDestination[],): void {
+  /**
+   * First source path seen for each destination path.
+   */
+  const sourcePathByDestination = new Map<string, string>();
+  destinations.forEach(function assertUniqueDestination(destination,): void {
+    /**
+     * Source path that already claimed this destination, when present.
+     */
+    const existingSourcePath = sourcePathByDestination.get(destination.path,);
+    if (existingSourcePath !== undefined) {
+      throw new Error(
+        `Duplicate overwriteEach destination "${destination.path}" from "${existingSourcePath}" and "${destination.sourcePath}"`,
+      );
+    }
+    sourcePathByDestination.set(
+      destination.path,
+      destination.sourcePath,
+    );
+  },);
+}
+
+/**
  * Reconciles concrete glob destinations.
  *
  * @param destinations - Concrete destinations with content.
@@ -74,6 +108,7 @@ export async function writeGlobDestinations(
     readonly recordStaleness?: boolean;
   },
 ): Promise<void> {
+  assertUniqueDestinations(destinations,);
   await Promise.all(
     destinations.map(async function writeOneDestination(destination,): Promise<void> {
       await writeIfChanged(recordStaleness === undefined
