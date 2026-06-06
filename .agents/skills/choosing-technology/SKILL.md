@@ -180,6 +180,45 @@ Distinguish these states explicitly:
 
 Never cite open issue count alone as evidence for or against a package.
 
+### Clone and spot-read source before recommending
+
+For open-source libraries, frameworks, and build tools,
+clone every finalist and every serious alternative that survives basic metadata screening
+under `/tmp/agent/` before recommending one.
+Use the repository-cloning convention from the main agent rules:
+private `/tmp/agent` root,
+`gh repo clone <repo> /tmp/agent/<descriptive-name>-<date-or-random> -- --depth 1`,
+unless history is part of the investigation.
+Do not rely only on README, npm, registry, stars, issue counts, or generated docs.
+A metadata-only recommendation is unfinished.
+
+Required source audit:
+
+- Spot-read production source paths for the promised behavior and the integration boundary
+  the repo would depend on.
+  Cite files and behavior, not just package names.
+- Spot-read tests and CI configuration.
+  Identify unit, integration, end-to-end, property-based, and fixture tests,
+  plus any coverage configuration or published coverage report.
+  Absence of coverage evidence is a finding.
+- Search for fuzzing and mutation-testing evidence.
+  Look for fuzz harnesses, corpora, arbitrary generators, property tests,
+  and tools such as cargo-fuzz, libFuzzer, AFL, proptest, quickcheck, fast-check,
+  Stryker, mutmut, or language-equivalent mutation runners.
+  If present, spot-read the harness invariants and how runs are wired into tasks or CI.
+  If absent, report absence inline.
+- Inspect code-quality signals from source itself:
+  module size, type strictness, lint rules, generated-code boundaries,
+  native or Wasm safety boundaries, escaping or parser boundary tests,
+  and error-handling shape.
+- Run the candidate's bounded validation task only when it is safe and cheap.
+  Do not run unbounded fuzz, benchmark, stress, or broad test jobs on the host;
+  use the repo's resource-isolation rules for heavy validation.
+
+Report exact cloned paths, files, and commands inspected inline with the recommendation.
+If a candidate cannot be cloned or lacks public source,
+state that limitation before comparing it with source-audited alternatives.
+
 ### Maintain a decision document
 
 After the user picks, write the choice and rejected alternatives to
@@ -255,6 +294,10 @@ Decision doc: `docs/decisions/staging-database.md`."
 - Open-source default applied; closed-source exceptions labelled with a reason.
 - Open-source maintenance signals checked for library, framework, and build-tool candidates:
   issue responsiveness, maintainer actions, pull-request activity, release cadence, and stale backlog shape.
+- Open-source source audit completed for finalists and serious alternatives:
+  cloned repos, production source spot-read, tests and CI inspected,
+  fuzzing or mutation-testing evidence found or reported absent,
+  code-quality signals read from source itself.
 - Dependency replacements include parity audit: transitive deps, source-path behavior,
   native/Wasm provenance, and maintenance signals.
 - Decision doc updated at `docs/decisions/<project>.md`.
