@@ -18,7 +18,8 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-matrix": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "fast-check": "catalog:"
   },
   "dependencies": {
     "@lezer/common": "catalog:",

@@ -22,7 +22,7 @@ export type JetbrainsOptionsDirectory = {
 /**
  * Sentinel for a product directory that is not a requested, version-named product.
  */
-const NOT_A_MATCHING_PRODUCT: unique symbol = Symbol('file-enforcer/jetbrains: directory is not a requested versioned product',);
+export const NOT_A_MATCHING_PRODUCT: unique symbol = Symbol('file-enforcer/jetbrains: directory is not a requested versioned product',);
 
 /**
  * Sentinel returned when no matching JetBrains product options directory exists.
@@ -67,7 +67,7 @@ function isDecimalDigits({ value, }: { readonly value: string; },): boolean {
  * parseVersionParts({ productName: 'IntelliJIdea2026.2', prefixes: ['IntelliJIdea'] });
  * ```
  */
-function parseVersionParts(
+export function parseVersionParts(
   {
     productName,
     prefixes,
@@ -120,7 +120,7 @@ function parseVersionParts(
  * compareVersionParts({ left: [2026, 2], right: [2026, 1] });
  * ```
  */
-function compareVersionParts(
+export function compareVersionParts(
   {
     left,
     right,

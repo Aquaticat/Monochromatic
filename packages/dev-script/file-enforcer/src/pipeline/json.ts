@@ -38,6 +38,50 @@ export function isJsonObject(value: unknown,): value is JsonObject {
 }
 
 /**
+ * Assigns an own enumerable data property, safe for special keys.
+ *
+ * Plain bracket assignment routes the key `__proto__` through the
+ * `Object.prototype` setter instead of creating an own property, silently
+ * dropping such a key. `Object.defineProperty` always creates an own data
+ * property, so JSON content carrying a `__proto__` key (legal JSON the
+ * parser preserves) survives every edit intact.
+ *
+ * @param target - Object receiving the property.
+ *
+ * @param key - Property key, including special keys like `__proto__`.
+ *
+ * @param value - JSON value to store.
+ *
+ * @example
+ * ```ts
+ * setOwnJsonValue({ target: {}, key: '__proto__', value: 1 });
+ * ```
+ */
+function setOwnJsonValue(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- target is mutated in place via Object.defineProperty.
+  {
+    target,
+    key,
+    value,
+  }: {
+    readonly key: string;
+    readonly target: JsonObject;
+    readonly value: JsonValue;
+  },
+): void {
+  Object.defineProperty(
+    target,
+    key,
+    {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    },
+  );
+}
+
+/**
  * Parses JSON text expected to hold an object.
  *
  * @param content - JSON text.
@@ -119,7 +163,13 @@ export function omitJsonKey(
    */
   const updated: JsonObject = {};
   for (const [entryKey, entryValue,] of Object.entries(object,)) {
-    if (entryKey !== key) updated[entryKey] = entryValue;
+    if (entryKey !== key) {
+      setOwnJsonValue({
+        target: updated,
+        key: entryKey,
+        value: entryValue,
+      },);
+    }
   }
   return updated;
 }
@@ -161,15 +211,25 @@ export function mergeFlatJson(
   const updated: JsonObject = { ...base, };
   if (set !== undefined) {
     for (const [key, value,] of Object.entries(set,)) {
-      updated[key] = value;
+      setOwnJsonValue({
+        target: updated,
+        key,
+        value,
+      },);
     }
   }
   if (arrayUnion !== undefined) {
     for (const [key, additions,] of Object.entries(arrayUnion,)) {
       /**
-       * Existing value at the key, if any.
+       * Existing own value at the key, or null when the key is not an own
+       * property, so inherited members of special keys never leak in.
        */
-      const existing = updated[key];
+      const existing = Object.hasOwn(
+        updated,
+        key,
+      )
+        ? updated[key]
+        : null;
       /**
        * Existing string members, ignoring non-string entries.
        */
@@ -178,10 +238,14 @@ export function mergeFlatJson(
           return (typeof member) === 'string';
         },)
         : [];
-      updated[key] = [...new Set([
-        ...existingMembers,
-        ...additions,
-      ],),];
+      setOwnJsonValue({
+        target: updated,
+        key,
+        value: [...new Set([
+          ...existingMembers,
+          ...additions,
+        ],),],
+      },);
     }
   }
   return updated;
@@ -216,7 +280,20 @@ export function mergeObjectDefaults(
    */
   const updated: JsonObject = { ...base, };
   for (const [key, value,] of Object.entries(defaults,)) {
-    updated[key] ??= value;
+    // Fill only genuinely absent keys; an own value (including an explicit
+    // null or false) is an existing value and is preserved, matching the
+    // documented contract. The own-property check also keeps special keys
+    // like __proto__ from reading inherited members.
+    if (!Object.hasOwn(
+      updated,
+      key,
+    )) {
+      setOwnJsonValue({
+        target: updated,
+        key,
+        value,
+      },);
+    }
   }
   return updated;
 }

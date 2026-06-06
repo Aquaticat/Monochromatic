@@ -1104,6 +1104,9 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.8.0
 
   packages/dev-script/page-weight:
     dependencies:
