@@ -558,16 +558,10 @@ VB6: Verification must cross integration boundary between artifact + consumer.
 
 ### Verify on a throwaway, not against real state
 
-THR: Verification means state-mutating/destructive operation: run against disposable fixture you create, never user's real/shared state (working tree, real tool caches, populated database, live conf).
-Reproduce real scenario: `mktemp -d` plus `git init` for repo, scratch dir, throwaway branch/worktree, container, fresh sqlite file;
-exercise real artifact against it, delete afterward.
-Pairs with "Verify at the user boundary": real artifact, throwaway state.
-
-TH2: Rule holds even when command looks idempotent or you committed first;
-testing whether guard blocks destructive operation, build both allowed case + rejected case as fixtures.
-
-TH3: Cue: about to run `reset --hard`, `clean -fd`, migration, bulk delete, overwrite, any other state-mutating command against user's actual repo, cache, data solely to observe how it behaves.
-Create throwaway target first.
+THR: Verification involving state-mutating/destructive operation runs against disposable fixture you create, never user's real/shared state (working tree, caches, database, live conf), even if command looks idempotent or you committed first.
+Reproduce real scenario: `mktemp -d` + `git init`, scratch dir, throwaway branch/worktree, container, fresh sqlite file; exercise real artifact, delete afterward.
+Guard tests need both allowed + rejected fixtures.
+Cue: about to run `reset --hard`, `clean -fd`, migration, bulk delete, overwrite, or state-mutating observation against real repo/cache/data; create throwaway target first.
 
 TAE: Writing instructions, conf, documentation prescribing how a tool/API behaves: test claim first with real invocation.
 Never write "use X for Y" based on how X **should** work;
