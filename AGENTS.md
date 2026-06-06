@@ -408,8 +408,6 @@ LG3: Never embed tags manually in message strings. Use `tagged` wrapper instead.
 
 ### Security
 
-SEC: No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.
-
 SYB: Any code transforming/embedding text across syntax boundary must treat destination grammar as authority.
 Source escapes not portable: Markdown `\<`, shell quotes, JSON escaping, URL encoding, regex escaping don't make
 text safe in another language. Normalize source semantics only as needed, then encode for exact destination subcontext
