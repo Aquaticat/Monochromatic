@@ -696,13 +696,11 @@ Don't silently let it stand;
 future readers see only message.
 Cue: about to write "the commit message overstates scope" or similar in chat as one-off note instead of recording it where commit lives.
 
-CLG: Never preemptively bypass `cli-git` enforcement.
-`git add` + `git commit` guards reject bulk staging (`-A`, `.`) + pathspec-less commits on purpose: with dirty tree or concurrent sessions they sweep unintended files into commit.
-Not obstacles to route around; compliant path satisfies them.
-Stage + commit explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit + can't capture another session's files.
-
-CL2: Reach for `--no-enforce-bulk-add`/`--no-enforce-only` only when no scoped pathspec can express change (genuine whole-tree single-session operation), never as default, never baked into instructions to child sessions.
-Cue: about to type `--no-enforce`, `git add -A`, `git add .` before trying scoped pathspec, or hand child commit recipe carrying bypass flag.
+CLG: Never preemptively bypass `cli-git` guards.
+They reject bulk staging (`-A`, `.`) + pathspec-less commits because dirty trees/concurrent sessions sweep unrelated files.
+Stage/commit explicit scoped pathspecs (`git add <path>`; `git commit <path> -m ...`).
+Use `--no-enforce-bulk-add`/`--no-enforce-only` only when no scoped pathspec can express genuine whole-tree single-session change; never default or child-session recipe.
+Cue: about to type `--no-enforce`, `git add -A`, `git add .`, or pathspec-less `git commit`.
 
 XCM: Never append work-inviting offers to external communications: PR descriptions + review replies, issue + commit comments, emails, anything maintainer/third party reads.
 Trailing lines like "happy to also...", "want me to...", "say the word", "I can switch to X if you prefer", or "let me know and I'll..." push decision/follow-up task onto reader, usually user.
