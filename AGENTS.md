@@ -600,17 +600,9 @@ TP8: Check `.out-of-scope/` before filing upstream tracking issue; listed exempt
 
 #### Prose style
 
-WR1: No emojis in human-readable content.
-
 WR2: No em-dashes (`—`), en-dashes (`–`), their ASCII substitutes (`-`, `--`) when used in prose as em-dashes; all such uses informal. Use paired commas/parentheses for asides, colon for elaboration/lists, semicolon for linked independent clauses, period for abrupt breaks. Use "to" for ranges. Hyphens fine in compound words ("user-facing"), `--` fine in CLI flags (`--watch`); ban applies only to em-dash use.
 
 WR3: Sentence case for headings; **bold** for inline emphasis only (not ALL CAPS). Never use bold as standalone title; use appropriate ATX header level instead.
-
-WR4: Active voice without collective pronouns; state facts directly; avoid meta-references to project's own philosophy.
-
-WR5: Present tense for current state, future tense only for planned features.
-
-WR6: Eliminate unnecessary connecting phrases.
 
 #### Markdown syntax
 
