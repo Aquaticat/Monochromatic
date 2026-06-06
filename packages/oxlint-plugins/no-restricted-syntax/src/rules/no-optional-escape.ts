@@ -13,7 +13,7 @@ import type {
  * `string | undefined` union (which `no-nullish-union` bans) and dogfoods the
  * real-sentinel pattern this rule prescribes as the fix for fake optionality.
  */
-const NO_MATCH = Symbol('no-optional-escape-no-match',);
+const NO_MATCH = Symbol('node matches no banned fake-optional form',);
 
 /**
  * Keyword `type` names whose presence in a union widens the slot to accept

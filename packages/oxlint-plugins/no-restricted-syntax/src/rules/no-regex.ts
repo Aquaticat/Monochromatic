@@ -30,7 +30,7 @@ const REGEX_ACCEPTING_STRING_METHODS = [
  * sentinel keeps the "no static name" signal out of a `string | undefined`
  * union, which `no-restricted-syntax/no-nullish-union` bans.
  */
-const NO_STATIC_METHOD_NAME = Symbol('no-static-method-name',);
+const NO_STATIC_METHOD_NAME = Symbol('member property computed without a static name',);
 
 //endregion Constants
 
