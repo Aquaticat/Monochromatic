@@ -1,12 +1,10 @@
 import { configDependencyPaths, } from '../context.ts';
-import {
-  addWatchedPaths,
-  setWriteTimestamp,
-  trackDest,
-  type TrackedGlob,
-} from '../tracker.ts';
-import { destinationStampListsMatch, } from './staleness-destination-match.ts';
+import type { TrackedGlob, } from '../tracker.ts';
 import { destinationStamps, } from './staleness-destinations.ts';
+import {
+  registerFreshPaths,
+  stampsAreFresh,
+} from './staleness-freshness.ts';
 import {
   loadManifest,
   resolveManifestPath,
@@ -16,8 +14,6 @@ import {
 } from './staleness-manifest.ts';
 import { hashSourceSet, } from './staleness-hash.ts';
 import {
-  fileStampListsMatch,
-  globStampsMatch,
   normalizeGlobStamps,
   readFileStamps,
 } from './staleness-stamps.ts';
@@ -38,85 +34,6 @@ export {
   stalenessKeyForDest,
   stalenessKeyForDestGlob,
 };
-
-/**
- * Checks source metadata, glob path sets, and destination metadata for a cached entry.
- *
- * @param entry - Persisted entry to validate.
- *
- * @returns Whether the entry is still fresh.
- *
- * @example
- * ```ts
- * const fresh = await entryMetadataMatches(entry);
- * ```
- */
-async function entryMetadataMatches(entry: StalenessEntry,): Promise<boolean> {
-  /**
-   * Whether captured glob path sets are unchanged.
-   */
-  const globsFresh = await globStampsMatch(entry.sourceGlobs,);
-  if (!globsFresh)
-    return false;
-
-  /**
-   * Current source metadata.
-   */
-  const sourcePaths = entry
-    .sourceFiles
-    .map(function sourcePath(sourceFile,): string {
-      return sourceFile.path;
-    },);
-  /**
-   * Current metadata for source files.
-   */
-  const currentSources = readFileStamps(sourcePaths,);
-  if (currentSources === ABSENT_FILE_STAMPS)
-    return false;
-  if (!fileStampListsMatch({
-    currentStamps: currentSources,
-    recordedStamps: entry.sourceFiles,
-  }))
-    return false;
-
-  /**
-   * Current destination metadata and content hashes.
-   */
-  if (!destinationStampListsMatch({ recordedStamps: entry.destinationFiles, }))
-    return false;
-
-  return true;
-}
-
-/**
- * Registers source and destination paths from a fresh manifest entry.
- *
- * @param entry - Fresh manifest entry.
- *
- * @example
- * ```ts
- * registerFreshEntryPaths(entry);
- * ```
- */
-function registerFreshEntryPaths(entry: StalenessEntry,): void {
-  /**
-   * Source paths to restore into the global tracker.
-   */
-  const sourcePaths = entry
-    .sourceFiles
-    .map(function sourcePath(sourceFile,): string {
-      return sourceFile.path;
-    },);
-  addWatchedPaths(sourcePaths,);
-  entry.destinationFiles
-    .forEach(function registerDestination(destinationFile,): void {
-      trackDest(destinationFile.path,);
-      setWriteTimestamp({
-        filePath: destinationFile.path,
-        timestamp: Math.floor(destinationFile.mtimeMs,),
-      },);
-    },);
-}
 
 /**
  * Checks whether a cached manifest entry is fresh and registers its tracked paths.
@@ -158,11 +75,18 @@ export async function freshStalenessEntryExists(
   /**
    * Whether filesystem metadata still matches the entry.
    */
-  const fresh = await entryMetadataMatches(entry,);
+  const fresh = await stampsAreFresh({
+    sourceFiles: entry.sourceFiles,
+    sourceGlobs: entry.sourceGlobs,
+    destinationFiles: entry.destinationFiles,
+  },);
   if (!fresh)
     return false;
 
-  registerFreshEntryPaths(entry,);
+  registerFreshPaths({
+    sourceFiles: entry.sourceFiles,
+    destinationFiles: entry.destinationFiles,
+  },);
   return true;
 }
 

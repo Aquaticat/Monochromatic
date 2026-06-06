@@ -1,31 +1,21 @@
 import { configDependencyPaths, } from '../context.ts';
 import {
-  addWatchedPaths,
-  setWriteTimestamp,
-  trackDest,
-} from '../tracker.ts';
-import { destinationStampListsMatch, } from './staleness-destination-match.ts';
+  registerFreshPaths,
+  stampsAreFresh,
+} from './staleness-freshness.ts';
 import {
   loadManifest,
   resolveManifestPath,
 } from './staleness-manifest.ts';
-import {
-  fileStampListsMatch,
-  globStampsMatch,
-  readFileStamps,
-} from './staleness-stamps.ts';
 import {
   selectDestinations,
   selectSources,
   uniqueGlobStamps,
   uniqueStampsByPath,
 } from './staleness-aggregate.ts';
-import {
-  ABSENT_FILE_STAMPS,
-  type DestinationStamp,
-  type FileStamp,
-  type StalenessEntry,
-  type StalenessOptions,
+import type {
+  StalenessEntry,
+  StalenessOptions,
 } from './staleness-types.ts';
 
 /**
@@ -56,39 +46,6 @@ function entryBelongsToActiveConfig(
     .some(function sourceIsActiveConfig(sourceFile,): boolean {
       return configPaths.has(sourceFile.path,);
     },);
-}
-
-/**
- * Registers source and destination paths after a fresh whole-manifest check.
- *
- * @param sourceFiles - Fresh source stamps.
- *
- * @param destinationFiles - Fresh destination stamps.
- *
- * @example
- * ```ts
- * registerFreshManifestPaths({ sourceFiles, destinationFiles });
- * ```
- */
-function registerFreshManifestPaths(
-  {
-    sourceFiles,
-    destinationFiles,
-  }: {
-    readonly sourceFiles: readonly FileStamp[];
-    readonly destinationFiles: readonly DestinationStamp[];
-  },
-): void {
-  addWatchedPaths(sourceFiles.map(function sourcePath(sourceFile,): string {
-    return sourceFile.path;
-  },),);
-  destinationFiles.forEach(function registerDestination(destinationFile,): void {
-    trackDest(destinationFile.path,);
-    setWriteTimestamp({
-      filePath: destinationFile.path,
-      timestamp: Math.floor(destinationFile.mtimeMs,),
-    },);
-  },);
 }
 
 /**
@@ -155,29 +112,14 @@ export async function freshStalenessManifest(
    * Unique glob path-set stamps across every active entry.
    */
   const sourceGlobs = uniqueGlobStamps(entries,);
-  /**
-   * Current source metadata.
-   */
-  const currentSources = readFileStamps(sourceFiles.map(function sourcePath(sourceFile,): string {
-    return sourceFile.path;
-  },),);
-  if (currentSources === ABSENT_FILE_STAMPS)
-    return false;
-  if (!fileStampListsMatch({
-    currentStamps: currentSources,
-    recordedStamps: sourceFiles,
-  }))
+  if (!await stampsAreFresh({
+    sourceFiles,
+    sourceGlobs,
+    destinationFiles,
+  },))
     return false;
 
-  /**
-   * Current destination metadata and content hashes.
-   */
-  if (!destinationStampListsMatch({ recordedStamps: destinationFiles, }))
-    return false;
-  if (!await globStampsMatch(sourceGlobs,))
-    return false;
-
-  registerFreshManifestPaths({
+  registerFreshPaths({
     sourceFiles,
     destinationFiles,
   },);
