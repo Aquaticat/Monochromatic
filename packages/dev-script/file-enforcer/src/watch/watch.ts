@@ -85,7 +85,7 @@ export function startWatching(configPath: string,): Promise<never> {
     }
     rl.info('re-run complete',);
     lifecycle.closeAllWatchers();
-    setupWatchers();
+    await setupWatchers();
   }
 
   /**
@@ -112,7 +112,7 @@ export function startWatching(configPath: string,): Promise<never> {
    *
    * @param kind - classification of the filesystem event
    *
-   * @param filename - filename from the fs.watch event
+   * @param filename - filename from the watch event
    *
    * @param dir - directory the event occurred in
    */
@@ -173,18 +173,22 @@ export function startWatching(configPath: string,): Promise<never> {
    *
    * @param controller - Abort controller for normal watcher teardown.
    *
+   * @param onReady - Callback fired after chokidar reports initial scan readiness.
+   *
    * @example
    * ```ts
-   * await monitorWatcher({ dir: '/repo/src', controller });
+   * await monitorWatcher({ dir: '/repo/src', controller, onReady });
    * ```
    */
   async function monitorWatcher(
     {
       dir,
       controller,
+      onReady,
     }: {
       readonly controller: AbortController;
       readonly dir: string;
+      readonly onReady: () => void;
     },
   ): Promise<void> {
     try {
@@ -193,6 +197,7 @@ export function startWatching(configPath: string,): Promise<never> {
         signal: controller.signal,
         configPath: absoluteConfig,
         logger: rl,
+        onReady,
         onEvent: function onWatchEvent(
           kind,
           filename,
@@ -211,9 +216,10 @@ export function startWatching(configPath: string,): Promise<never> {
   }
 
   /**
-   * Creates watchers for every directory derived from tracked reads and writes.
+   * Creates watchers for every directory derived from tracked reads and writes,
+   * waiting until their initial chokidar scans have completed.
    */
-  function setupWatchers(): void {
+  async function setupWatchers(): Promise<void> {
     if (lifecycle.hasFailed())
       return;
     /**
@@ -222,7 +228,10 @@ export function startWatching(configPath: string,): Promise<never> {
     const dirs = watchDirs(absoluteConfig,);
     rl.info(`watching ${String(dirs.size,)} directories`,);
 
-    dirs.forEach(function setupDir(dir,): void {
+    /**
+     * Per-watcher readiness signals; all must resolve before setup is complete.
+     */
+    const readySignals = [...dirs,].map(function setupDir(dir,): Promise<void> {
       /**
        * Per-directory abort controller for teardown
        */
@@ -231,16 +240,41 @@ export function startWatching(configPath: string,): Promise<never> {
         dir,
         controller,
       },);
+      /**
+       * Readiness signal for this chokidar watcher.
+       */
+      const ready = Promise.withResolvers<void>();
+
+      /**
+       * Marks this watcher ready after chokidar's initial scan completes.
+       *
+       * @example
+       * ```ts
+       * markWatcherReady();
+       * ```
+       */
+      function markWatcherReady(): void {
+        ready.resolve();
+      }
 
       // oxlint-disable-next-line typescript/no-floating-promises -- monitorWatcher catches watcher failures and rejects watchModeFailure after restart limits.
       monitorWatcher({
         dir,
         controller,
+        onReady: markWatcherReady,
       },);
+
+      return ready.promise;
     },);
+
+    await Promise.race([
+      Promise.all(readySignals,),
+      lifecycle.failure,
+    ],);
   }
 
-  setupWatchers();
-
-  return lifecycle.failure;
+  return (async function runInitialWatchSetup(): Promise<never> {
+    await setupWatchers();
+    return await lifecycle.failure;
+  })();
 }

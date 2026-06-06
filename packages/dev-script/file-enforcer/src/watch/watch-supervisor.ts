@@ -54,6 +54,11 @@ type SupervisedWatcherOptions = Readonly<{
   ) => void;
 
   /**
+   * Callback fired after chokidar reports its initial scan is ready.
+   */
+  onReady?: () => void;
+
+  /**
    * Tagged logger for restart and limit diagnostics.
    */
   logger: WatchSupervisorLogger;
@@ -200,6 +205,8 @@ async function waitBeforeWatcherRestart(
  *
  * @param onEvent - Watch event callback forwarded to `watchDirectory`.
  *
+ * @param onReady - Callback fired after chokidar reports its initial scan is ready.
+ *
  * @param logger - Tagged logger for restart and limit diagnostics.
  *
  * @param watchDirectoryImpl - Watcher implementation, injectable for focused tests.
@@ -229,6 +236,7 @@ export async function watchDirectoryWithRestarts(
     signal,
     configPath,
     onEvent,
+    onReady,
     logger,
     watchDirectoryImpl = watchDirectory,
     restartLimit = WATCHER_RESTART_LIMIT,
@@ -246,6 +254,9 @@ export async function watchDirectoryWithRestarts(
         signal,
         configPath,
         onEvent,
+        ...(onReady === undefined
+          ? {}
+          : { onReady, }),
       },);
       return;
     }

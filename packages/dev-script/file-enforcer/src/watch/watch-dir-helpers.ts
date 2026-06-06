@@ -30,6 +30,11 @@ export type WatchDirectoryOptions = Readonly<{
     kind: EventKind,
     filename: string,
   ) => void;
+
+  /**
+   * Optional callback fired after chokidar reports its initial scan is ready.
+   */
+  onReady?: () => void;
 }>;
 
 /**

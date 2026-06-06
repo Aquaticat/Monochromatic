@@ -23,11 +23,6 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- * Delay before mutating a watched file so chokidar can finish initial setup.
- */
-const WATCH_DIRECTORY_READY_DELAY_MS = 250;
-
-/**
  * Maximum time allowed for a live chokidar event to reach watchDirectory's callback.
  */
 const WATCH_EVENT_TIMEOUT_MS = 2_000;
@@ -41,6 +36,11 @@ const WATCH_DIRECTORY_STOP_TIMEOUT_MS = 2_000;
  * Sentinel returned when a live watch event does not arrive in time.
  */
 const WATCH_EVENT_TIMEOUT = Symbol('watchDirectory event timeout');
+
+/**
+ * Sentinel returned when chokidar reports initial scan readiness.
+ */
+const WATCH_DIRECTORY_READY = Symbol('watchDirectory ready');
 
 /**
  * Sentinel returned when watchDirectory closes normally after abort.
@@ -83,6 +83,15 @@ type WatchDirectoryFailure = Readonly<{
 type WatchDirectoryFinish = typeof WATCH_DIRECTORY_CLOSED | WatchDirectoryFailure;
 
 /**
+ * Result candidates while waiting for chokidar readiness.
+ */
+type WatchDirectoryReadyResult =
+  | WatchDirectoryFailure
+  | typeof WATCH_DIRECTORY_READY
+  | typeof WATCH_EVENT_TIMEOUT
+  | typeof WATCH_DIRECTORY_CLOSED;
+
+/**
  * Result candidates while waiting for one live watch event.
  */
 type WatchDirectoryRaceResult =
@@ -112,6 +121,11 @@ type WatchDirectoryCapture = Readonly<{
    * First event observed by watchDirectory.
    */
   eventReceived: Promise<WatchDirectoryObservedEvent>;
+
+  /**
+   * Signal that chokidar's initial scan completed.
+   */
+  readyReceived: Promise<typeof WATCH_DIRECTORY_READY>;
 
   /**
    * Completion state of the background watchDirectory call.
@@ -174,7 +188,7 @@ async function teardown(tempDir: string,): Promise<void> {
  * ```
  */
 function watchDirectoryResultIsFailure(
-  result: WatchDirectoryRaceResult | WatchDirectoryStopResult,
+  result: WatchDirectoryRaceResult | WatchDirectoryReadyResult | WatchDirectoryStopResult,
 ): result is WatchDirectoryFailure {
   if ((typeof result) !== 'object')
     return false;
@@ -216,6 +230,10 @@ function startWatchDirectoryCapture(
    */
   const eventReceived = Promise.withResolvers<WatchDirectoryObservedEvent>();
   /**
+   * Chokidar initial-scan readiness signal.
+   */
+  const readyReceived = Promise.withResolvers<typeof WATCH_DIRECTORY_READY>();
+  /**
    * Background watchDirectory completion state.
    */
   const watcherFinished = Promise.withResolvers<WatchDirectoryFinish>();
@@ -226,6 +244,9 @@ function startWatchDirectoryCapture(
         dir,
         signal: controller.signal,
         configPath,
+        onReady: function captureReady(): void {
+          readyReceived.resolve(WATCH_DIRECTORY_READY,);
+        },
         onEvent: function captureEvent(
           kind: EventKind,
           filename: string,
@@ -246,6 +267,7 @@ function startWatchDirectoryCapture(
   return {
     controller,
     eventReceived: eventReceived.promise,
+    readyReceived: readyReceived.promise,
     watcherFinished: watcherFinished.promise,
   };
 }
@@ -327,7 +349,30 @@ async function captureWatchDirectoryEvent(
     dir,
     configPath,
   },);
-  await wait(WATCH_DIRECTORY_READY_DELAY_MS,);
+  /**
+   * Readiness, timeout, or early watcher completion before mutation.
+   */
+  const readyResult: WatchDirectoryReadyResult = await Promise.race([
+    capture.readyReceived,
+    wait(
+      WATCH_EVENT_TIMEOUT_MS,
+      WATCH_EVENT_TIMEOUT,
+    ),
+    capture.watcherFinished,
+  ],);
+  if (readyResult === WATCH_EVENT_TIMEOUT) {
+    await stopWatchDirectoryCapture(capture,);
+    throw new Error('watchDirectory did not become ready before timeout',);
+  }
+  if (readyResult === WATCH_DIRECTORY_CLOSED) {
+    await stopWatchDirectoryCapture(capture,);
+    throw new Error('watchDirectory closed before becoming ready',);
+  }
+  if (watchDirectoryResultIsFailure(readyResult,)) {
+    await stopWatchDirectoryCapture(capture,);
+    throw readyResult.error;
+  }
+
   await trigger();
   /**
    * First event, timeout, or early watcher completion.

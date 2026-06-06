@@ -63,6 +63,7 @@ export async function watchDirectory(
     signal,
     configPath,
     onEvent,
+    onReady,
   }: WatchDirectoryOptions,
 ): Promise<void> {
   /**
@@ -76,6 +77,10 @@ export async function watchDirectory(
    * Lifecycle state for completion settlement and chokidar teardown.
    */
   const lifecycle = createWatchDirectoryLifecycle();
+  /**
+   * Signal fired when chokidar reports that its initial scan is ready.
+   */
+  const ready = Promise.withResolvers<void>();
 
   /**
    * Closes and resolves this watcher after normal abort teardown.
@@ -118,6 +123,27 @@ export async function watchDirectory(
   }
 
   /**
+   * Chokidar ready listener that releases callers waiting for initial scan completion.
+   *
+   * @example
+   * ```ts
+   * onWatcherReady();
+   * ```
+   */
+  function onWatcherReady(): void {
+    try {
+      if (onReady !== undefined)
+        onReady();
+      ready.resolve();
+    }
+    catch (readyError: unknown) {
+      ready.resolve();
+      // oxlint-disable-next-line typescript/no-floating-promises -- lifecycle.completion observes ready callback failures.
+      closeForFailure(readyError,);
+    }
+  }
+
+  /**
    * Chokidar error listener that fails this watched directory closed.
    *
    * @param watchError - Error emitted by chokidar.
@@ -128,7 +154,7 @@ export async function watchDirectory(
    * ```
    */
   function onWatcherError(watchError: unknown,): void {
-    // oxlint-disable-next-line typescript/no-floating-promises -- completion.promise observes close success or failure.
+    // oxlint-disable-next-line typescript/no-floating-promises -- lifecycle.completion observes close success or failure.
     closeForFailure(watchError,);
   }
 
@@ -226,6 +252,10 @@ export async function watchDirectory(
       },
     };
     watcher.on(
+      'ready',
+      onWatcherReady,
+    );
+    watcher.on(
       'error',
       onWatcherError,
     );
@@ -235,6 +265,10 @@ export async function watchDirectory(
         onPathEvent,
       );
     }
+    await Promise.race([
+      ready.promise,
+      lifecycle.completion,
+    ],);
     await lifecycle.completion;
   }
   catch (watchError: unknown) {
