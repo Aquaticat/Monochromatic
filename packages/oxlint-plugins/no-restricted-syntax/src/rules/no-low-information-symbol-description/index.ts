@@ -1,0 +1,104 @@
+import type {
+  Context,
+  CreateOnceRule,
+  ESTree,
+  VisitorWithHooks,
+} from '@oxlint/plugins';
+
+import {
+  isSymbolCall,
+  isSymbolForCall,
+  staticDescription,
+} from './ast.ts';
+import { classifySymbolDescription, } from './classify.ts';
+
+/**
+ * Requires static Symbol descriptions to carry enough debugging information.
+ *
+ * Sentinel Symbols stand in for nullish unions, so their descriptions are the
+ * only debugging identity at a crash site. Descriptions that read like generic
+ * code identifiers, generic absence labels, or repeated low-information phrases
+ * report; descriptions with enough contextual detail pass even when short.
+ *
+ * Only static `Symbol('...')`, `Symbol.for('...')`, and zero-expression
+ * template-literal descriptions are checked. Absent, dynamic, and non-string
+ * descriptions are skipped because type information is unavailable in an oxlint
+ * JS plugin. No-argument `Symbol()` is never reported.
+ *
+ * The classifier is structural: word counts, casing, namespace shape, repetition,
+ * and a small set of grammar hooks (`no`, `not`, `because`, `ed`, `ing`). It uses
+ * no Shannon entropy, no global compression, and no broad vocabulary lists.
+ *
+ * @example
+ * ```ts
+ * // Bad
+ * const A = Symbol('meow');
+ * const B = Symbol('not-found');
+ * const C = Symbol('runWithContext');
+ *
+ * // Good
+ * const D = Symbol('github token expired');
+ * const E = Symbol('penpot/figma-input-has-no-counterpart');
+ * const F = Symbol('average divisor is zero');
+ * ```
+ */
+export const noLowInformationSymbolDescription: CreateOnceRule = {
+  meta: {
+    type: 'suggestion',
+    docs: {
+      description:
+        'Require static Symbol descriptions to carry enough debugging information; reject generic identifiers, absence labels, and repeated low-information phrases.',
+      recommended: true,
+    },
+    messages: {
+      tooFewWords:
+        'Symbol description has fewer than 3 distinct words, so it carries little debugging signal. Name what is absent and why, for example "config file missing on disk".',
+      allUppercase:
+        'Symbol description is entirely uppercase words, which reads like a constant name. Use a descriptive lowercase phrase, for example "github token expired".',
+      bareCamelIdentifier:
+        'Symbol description is a bare camelCase or PascalCase identifier with no separators, which reads like a function name. Describe the condition as a phrase, for example "run completed without a context".',
+      repeatedMeaningfulWord:
+        'Symbol description repeats a meaningful word, which adds no information. Replace the repetition with concrete detail about the condition.',
+      shortNamespacedTail:
+        'Symbol description has a namespace prefix but a tail shorter than 3 words. A namespace does not rescue a generic tail; expand it, for example "penpot/figma-input-has-no-counterpart".',
+      startsWithNoWithoutMarker:
+        'Symbol description starts with "no" but has no specificity marker (uppercase, digit, dot, underscore, or a consonant-dense token). Name the specific thing that is absent, for example "no upstream branch for HEAD".',
+      startsWithNotWithoutMarker:
+        'Symbol description starts with "not" but has no specificity marker. Name the specific condition, for example "not inside a Git worktree".',
+      shortPhraseLacksSpecificityMarker:
+        'Symbol description is a 3-word phrase with no specificity marker and no past-tense or continuous verb. Add a concrete technical token or describe the action, for example "average divisor is zero".',
+    },
+  },
+  createOnce(context: Context,): VisitorWithHooks {
+    /**
+     * Reports a Symbol or Symbol.for call whose static description fails the
+     * classifier. Calls without a static string description are skipped.
+     *
+     * @param node - call expression visited by oxlint
+     */
+    function checkCallExpression(node: ESTree.CallExpression,): void {
+      if ((!isSymbolCall({ node, },)) && (!isSymbolForCall({ node, },)))
+        return;
+      /**
+       * Static description text, or sentinel when not statically known.
+       */
+      const description = staticDescription({ node, },);
+      if ((typeof description) !== 'string')
+        return;
+      /**
+       * Verdict from the structural classifier.
+       */
+      const verdict = classifySymbolDescription({ description, },);
+      if (verdict.status === 'pass')
+        return;
+      context.report({
+        node,
+        messageId: verdict.messageId,
+      },);
+    }
+
+    return {
+      CallExpression: checkCallExpression,
+    };
+  },
+};

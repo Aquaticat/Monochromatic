@@ -36,7 +36,7 @@ import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
 import {
   noLowInformationSymbolDescription,
-} from './rules/no-low-information-symbol-description.ts';
+} from './rules/no-low-information-symbol-description/index.ts';
 import { noModuleRootLet, } from './rules/no-module-root-let.ts';
 import { noNullishUnion, } from './rules/no-nullish-union.ts';
 import { noOptionalEscape, } from './rules/no-optional-escape.ts';
