@@ -104,6 +104,29 @@ await describe({
         },),
 
         it({
+          name: 'propagates errors thrown by custom predicates',
+          fn: async () => {
+            const predicateError = new Error('domain-specific predicate failure',);
+            const checker = satisfiesOrThrow({
+              value: 'ready',
+              predicate: () => {
+                throw predicateError;
+              },
+            },);
+            let caught: unknown;
+
+            try {
+              checker('pending',);
+            }
+            catch (error) {
+              caught = error;
+            }
+
+            expect(caught,).toBe(predicateError,);
+          },
+        },),
+
+        it({
           name: 'accepts custom predicates with typed candidate parameters',
           fn: async () => {
             const options: SatisfiesOrThrowPredicateOptions<string, string> = {
@@ -268,6 +291,29 @@ await describe({
 
             expect(caught,).toBeInstanceOf(Error,);
             expect((caught as Error).message,).toContain('boolean',);
+          },
+        },),
+
+        it({
+          name: 'propagates errors rejected by async custom predicates',
+          fn: async () => {
+            const predicateError = new Error('async predicate failure',);
+            const checker = satisfiesOrThrowAsync({
+              value: 'ready',
+              predicate: async () => {
+                throw predicateError;
+              },
+            },);
+            let caught: unknown;
+
+            try {
+              await checker('pending',);
+            }
+            catch (error) {
+              caught = error;
+            }
+
+            expect(caught,).toBe(predicateError,);
           },
         },),
 

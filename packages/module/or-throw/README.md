@@ -232,10 +232,14 @@ When `predicate` is present, it receives one object parameter:
 `{ candidate, value }`.
 A `true` result returns `candidate` unchanged.
 A `false` result throws an `Error`.
+Predicates may also throw their own error.
+That is a supported use case: the helper does not wrap or replace predicate-thrown errors,
+so predicates can provide domain-specific diagnostics.
 Predicates must return literal booleans.
 The synchronous helper rejects Promise-returning predicates at runtime and points callers to
 `satisfiesOrThrowAsync`.
 The async helper accepts `boolean` or `Promise<boolean>`, then rejects resolved non-boolean values.
+Async predicate rejections also propagate unchanged.
 Custom predicates deliberately return the candidate type as-is because predicates can be fuzzy:
 for example, a case-insensitive predicate can accept `'READY'` for configured value `'ready'`,
 so typing the result as literal `'ready'` would lie about the runtime value.

@@ -195,12 +195,16 @@ function formatSatisfactionValue(value: unknown,): string {
  * types. With a predicate, the returned checker passes `{ candidate, value }`
  * into the predicate and returns the candidate unchanged when predicate returns
  * `true`.
+ * Predicate-thrown errors intentionally propagate unchanged so predicates can
+ * provide domain-specific diagnostics.
  *
  * @param options - Expected value and optional synchronous predicate
  *
  * @returns Checker returning candidate when satisfaction check passes
  *
  * @throws Error when predicate returns non-boolean result
+ *
+ * @throws Error when predicate throws its own error
  *
  * @example
  * Default equality:
@@ -296,12 +300,16 @@ export function satisfiesOrThrow<const Value, const PredicateCandidate = unknown
  * types. With a predicate, the returned checker passes `{ candidate, value }`
  * into the predicate and returns the candidate unchanged when awaited predicate
  * result is `true`.
+ * Predicate-thrown errors and predicate promise rejections intentionally
+ * propagate unchanged so predicates can provide domain-specific diagnostics.
  *
  * @param options - Expected value and optional async-capable predicate
  *
  * @returns Checker returning candidate when satisfaction check passes
  *
  * @throws Error when awaited predicate result is non-boolean
+ *
+ * @throws Error when predicate throws or rejects with its own error
  *
  * @example
  * Default equality:
