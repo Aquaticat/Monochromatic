@@ -1,7 +1,4 @@
-import {
-  type FSWatcher,
-  watch as chokidarWatch,
-} from 'chokidar';
+import { watch as chokidarWatch, } from 'chokidar';
 
 import {
   l,
@@ -9,11 +6,9 @@ import {
 } from '../log.ts';
 import {
   assertExistingWatchDirectory,
+  createWatchDirectoryLifecycle,
   filenameForChokidarPath,
-  rejectWatchDirectoryAfterClose,
-  resolveWatchDirectoryAfterClose,
   type WatchDirectoryOptions,
-  type WatchDirectorySettledState,
 } from './watch-dir-helpers.ts';
 import { classifyEvent, } from './watch-filter.ts';
 
@@ -78,17 +73,9 @@ export async function watchDirectory(
     l,
   },);
   /**
-   * Resolver pair for abort or failure completion of this watcher.
+   * Lifecycle state for completion settlement and chokidar teardown.
    */
-  const completion = Promise.withResolvers<void>();
-  /**
-   * Single-key state preventing abort, chokidar error, and dispatch error from settling twice.
-   */
-  const settledState: WatchDirectorySettledState = new Map<'settled', true>();
-  /**
-   * Chokidar watcher, assigned after setup succeeds so teardown helpers can close it.
-   */
-  let watcher: FSWatcher | undefined;
+  const lifecycle = createWatchDirectoryLifecycle();
 
   /**
    * Closes and resolves this watcher after normal abort teardown.
@@ -99,11 +86,7 @@ export async function watchDirectory(
    * ```
    */
   async function closeForAbort(): Promise<void> {
-    await resolveWatchDirectoryAfterClose({
-      completion,
-      settledState,
-      watcher,
-    },);
+    await lifecycle.resolveAfterClose();
   }
 
   /**
@@ -117,12 +100,7 @@ export async function watchDirectory(
    * ```
    */
   async function closeForFailure(watchError: unknown,): Promise<void> {
-    await rejectWatchDirectoryAfterClose({
-      completion,
-      settledState,
-      watcher,
-      watchError,
-    },);
+    await lifecycle.rejectAfterClose({ watchError, },);
   }
 
   /**
@@ -216,7 +194,10 @@ export async function watchDirectory(
     if (signal.aborted)
       return;
 
-    watcher = chokidarWatch(
+    /**
+     * Chokidar watcher for this directory.
+     */
+    const watcher = chokidarWatch(
       dir,
       {
         atomic: true,
@@ -227,11 +208,15 @@ export async function watchDirectory(
         persistent: true,
       },
     );
+    lifecycle.setWatcher({ watcher, },);
     signal.addEventListener(
       'abort',
       onAbort,
       { once: true, },
     );
+    /**
+     * Removes abort listener when this watchDirectory invocation exits.
+     */
     using _abortListenerCleanup = {
       [Symbol.dispose](): void {
         signal.removeEventListener(
@@ -250,7 +235,7 @@ export async function watchDirectory(
         onPathEvent,
       );
     }
-    await completion.promise;
+    await lifecycle.completion;
   }
   catch (watchError: unknown) {
     if (signal.aborted)

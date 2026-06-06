@@ -33,14 +33,29 @@ export type WatchDirectoryOptions = Readonly<{
 }>;
 
 /**
- * Settled state marker for one chokidar watcher promise.
+ * Lifecycle helper for one chokidar-backed watchDirectory call.
  */
-export type WatchDirectorySettledState = Map<'settled', true>;
+export type WatchDirectoryLifecycle = Readonly<{
+  /**
+   * Promise resolved by normal close and rejected by watcher failure.
+   */
+  completion: Promise<void>;
 
-/**
- * Completion resolver pair for one watch loop.
- */
-export type WatchDirectoryCompletion = ReturnType<typeof Promise.withResolvers<void>>;
+  /**
+   * Records active chokidar watcher for later teardown.
+   */
+  setWatcher(args: { readonly watcher: FSWatcher; }): void;
+
+  /**
+   * Resolves completion after closing chokidar for normal abort teardown.
+   */
+  resolveAfterClose(): Promise<void>;
+
+  /**
+   * Rejects completion after closing chokidar for watcher failure paths.
+   */
+  rejectAfterClose(args: { readonly watchError: unknown; }): Promise<void>;
+}>;
 
 /**
  * Verifies that chokidar is being asked to watch an existing directory.
@@ -69,49 +84,6 @@ export async function assertExistingWatchDirectory(
     return;
 
   throw new Error(`watch root is not a directory: ${dir}`,);
-}
-
-/**
- * Returns whether one watchDirectory completion path already settled.
- *
- * @param settledState - Single-key holder for settled state.
- *
- * @returns Whether completion was already resolved or rejected.
- *
- * @example
- * ```ts
- * const done = watchDirectoryAlreadySettled({ settledState });
- * ```
- */
-function watchDirectoryAlreadySettled(
-  { settledState, }: { readonly settledState: ReadonlyMap<'settled', true>; },
-): boolean {
-  return settledState.has('settled',);
-}
-
-/**
- * Marks a watcher completion as settled if it was still pending.
- *
- * @param settledState - Mutable single-key settled-state holder.
- *
- * @returns Whether this call won the settlement race.
- *
- * @example
- * ```ts
- * const first = settleWatchDirectoryOnce({ settledState });
- * ```
- */
-function settleWatchDirectoryOnce(
-  { settledState, }: { readonly settledState: WatchDirectorySettledState; },
-): boolean {
-  if (watchDirectoryAlreadySettled({ settledState, },))
-    return false;
-
-  settledState.set(
-    'settled',
-    true,
-  );
-  return true;
 }
 
 /**
@@ -152,109 +124,149 @@ export function filenameForChokidarPath(
 }
 
 /**
- * Closes an active chokidar watcher, returning any close failure to the caller.
+ * Creates completion and watcher-teardown helpers for one watched directory.
  *
- * @param watcher - Chokidar watcher to close, if setup reached creation.
- *
- * @returns Close failure, or `undefined` after a clean close.
+ * @returns Lifecycle helpers closed over one watcher state holder.
  *
  * @example
  * ```ts
- * const closeError = await closeActiveWatcher({ watcher });
+ * const lifecycle = createWatchDirectoryLifecycle();
+ * lifecycle.setWatcher({ watcher });
+ * await lifecycle.resolveAfterClose();
  * ```
  */
-async function closeActiveWatcher(
-  { watcher, }: { readonly watcher: FSWatcher | undefined; },
-): Promise<unknown | undefined> {
-  if (watcher === undefined)
-    return undefined;
-
-  try {
-    await watcher.close();
-  }
-  catch (closeError: unknown) {
-    return closeError;
-  }
-
-  return undefined;
-}
-
-/**
- * Resolves watch completion after closing chokidar for normal abort teardown.
- *
- * @param completion - Resolver pair awaited by watchDirectory.
- *
- * @param settledState - Single-key state preventing double settlement.
- *
- * @param watcher - Active chokidar watcher.
- *
- * @example
- * ```ts
- * await resolveWatchDirectoryAfterClose({ completion, settledState, watcher });
- * ```
- */
-export async function resolveWatchDirectoryAfterClose(
-  {
-    completion,
-    settledState,
-    watcher,
-  }: {
-    readonly completion: WatchDirectoryCompletion;
-    readonly settledState: WatchDirectorySettledState;
-    readonly watcher: FSWatcher | undefined;
-  },
-): Promise<void> {
-  if (!settleWatchDirectoryOnce({ settledState, },))
-    return;
+export function createWatchDirectoryLifecycle(): WatchDirectoryLifecycle {
+  /**
+   * Resolver pair for abort or failure completion of this watcher.
+   */
+  const completion = Promise.withResolvers<void>();
+  /**
+   * Single-key state preventing abort, chokidar error, and dispatch error from settling twice.
+   */
+  const settledState = new Map<'settled', true>();
+  /**
+   * Chokidar watcher holder, populated after setup succeeds.
+   */
+  const watcherState = new Map<'watcher', FSWatcher>();
 
   /**
-   * Any failure while closing chokidar during normal teardown.
+   * Returns whether one completion path already settled.
+   *
+   * @returns Whether completion was already resolved or rejected.
+   *
+   * @example
+   * ```ts
+   * const done = alreadySettled();
+   * ```
    */
-  const closeError = await closeActiveWatcher({ watcher, },);
-  if (closeError === undefined) {
+  function alreadySettled(): boolean {
+    return settledState.has('settled',);
+  }
+
+  /**
+   * Marks completion as settled if it was still pending.
+   *
+   * @returns Whether this call won the settlement race.
+   *
+   * @example
+   * ```ts
+   * const first = settleOnce();
+   * ```
+   */
+  function settleOnce(): boolean {
+    if (alreadySettled())
+      return false;
+
+    settledState.set(
+      'settled',
+      true,
+    );
+    return true;
+  }
+
+  /**
+   * Closes active chokidar watcher if setup reached watcher creation.
+   *
+   * @example
+   * ```ts
+   * await closeActiveWatcher();
+   * ```
+   */
+  async function closeActiveWatcher(): Promise<void> {
+    /**
+     * Active chokidar watcher, absent only when setup failed before creation.
+     */
+    const activeWatcher = watcherState.get('watcher',);
+    if (activeWatcher === undefined)
+      return;
+
+    await activeWatcher.close();
+  }
+
+  /**
+   * Resolves completion after closing chokidar for normal abort teardown.
+   *
+   * @example
+   * ```ts
+   * await resolveAfterClose();
+   * ```
+   */
+  async function resolveAfterClose(): Promise<void> {
+    if (!settleOnce())
+      return;
+
+    try {
+      await closeActiveWatcher();
+    }
+    catch (closeError: unknown) {
+      completion.reject(closeError,);
+      return;
+    }
+
     completion.resolve();
-    return;
   }
 
-  completion.reject(closeError,);
-}
-
-/**
- * Rejects watch completion after closing chokidar for watcher failure paths.
- *
- * @param completion - Resolver pair awaited by watchDirectory.
- *
- * @param settledState - Single-key state preventing double settlement.
- *
- * @param watcher - Active chokidar watcher.
- *
- * @param watchError - Failure that should reject the watch loop.
- *
- * @example
- * ```ts
- * await rejectWatchDirectoryAfterClose({ completion, settledState, watcher, watchError });
- * ```
- */
-export async function rejectWatchDirectoryAfterClose(
-  {
-    completion,
-    settledState,
-    watcher,
-    watchError,
-  }: {
-    readonly completion: WatchDirectoryCompletion;
-    readonly settledState: WatchDirectorySettledState;
-    readonly watcher: FSWatcher | undefined;
-    readonly watchError: unknown;
-  },
-): Promise<void> {
-  if (!settleWatchDirectoryOnce({ settledState, },))
-    return;
-
   /**
-   * Any failure while closing chokidar after the original watcher failure.
+   * Rejects completion after closing chokidar for watcher failure paths.
+   *
+   * @param watchError - Failure that should reject the watch loop.
+   *
+   * @example
+   * ```ts
+   * await rejectAfterClose({ watchError });
+   * ```
    */
-  const closeError = await closeActiveWatcher({ watcher, },);
-  completion.reject(closeError
-    ?? watchError,);
+  async function rejectAfterClose(
+    { watchError, }: { readonly watchError: unknown; },
+  ): Promise<void> {
+    if (!settleOnce())
+      return;
+
+    try {
+      await closeActiveWatcher();
+    }
+    catch (closeError: unknown) {
+      completion.reject(closeError,);
+      return;
+    }
+
+    completion.reject(watchError,);
+  }
+
+  return {
+    completion: completion.promise,
+
+    setWatcher(
+      { watcher, }: { readonly watcher: FSWatcher; },
+    ): void {
+      watcherState.set(
+        'watcher',
+        watcher,
+      );
+    },
+
+    resolveAfterClose,
+
+    rejectAfterClose,
+  };
 }
