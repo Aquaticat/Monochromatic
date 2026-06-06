@@ -259,9 +259,6 @@ RT3: `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source stil
 
 RT4: `gh`: GitHub issues, PRs, release notes, repository metadata.
 
-RT6: Never remove cloned repos or other audit artifacts from `/tmp/agent`;
-user will clean up when ready.
-
 ## Before running a command
 
 ### Command execution conventions
