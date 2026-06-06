@@ -42,9 +42,11 @@ re-reading its own diff. Keep that in mind when picking who does the reviewing.
   per-file cost. It is the same vendor family as a lot of your coding, so it is the least independent of
   the real options.
 - pi review (pi.dev): pi is your other harness, currently running codex `gpt-5.5`. It has no built-in
-  code review, but you already ship a `packages/pi/advisor` extension, so you would script a review skill
-  on top of it. Most control and your own model choice, but you build and maintain it, and a review of
-  your own session's work carries the independence caveat above.
+  code review of git changes. You would script one as a fresh, headless pi run (print or JSON mode) handed
+  just the push diff plus a review prompt. Note that your `packages/pi/advisor` extension is not the tool
+  for this: it reviews the current session's conversation with a secondary model (modelled after Claude
+  Code's Advisor), which is exactly the same-session self-review your rules call non-independent. A fresh
+  pi run on only the diff is more independent than that, though still your own model.
 - CodeRabbit CLI: a hosted reviewer with a local command (`cr`), installed with a curl one-liner. It
   reviews staged, unstaged, or committed changes right in the terminal, and is built to slot into Claude
   Code and Codex loops before any pull request exists. It is a genuinely independent engine. Free tier is
@@ -74,13 +76,14 @@ Same shape, but the reviewer is the `/code-review` you already have.
   use.
 - Bad: less independent than a separate product; still spends tokens and adds latency on every push.
 
-### Option 3: pi-driven review at pre-push (DIY with your advisor extension)
+### Option 3: pi-driven review at pre-push (DIY, fresh pi run on the diff)
 
-Extend `packages/pi/advisor`, or add a new pi skill, to review the push diff with codex `gpt-5.5`.
+A hook hands the push diff to a fresh headless `pi` run (print or JSON mode) with a review prompt, using a
+model you choose, for example codex `gpt-5.5`.
 
 - Good: your harness, your model choice, no extra vendor; folds into the pi setup you already run.
-- Bad: you build and maintain it; the same-session self-review independence caveat applies; the most
-  effort of the local options.
+- Bad: you build and maintain it; do not use the `advisor` extension for this, since it reviews the
+  session conversation, which your rules flag as non-independent; the most effort of the local options.
 
 ### Option 4: any of the above, but blocking
 
