@@ -4,6 +4,7 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { caughtErrorHasCode, } from './error.ts';
 
 /**
  * Directory name searched while locating the workspace dependency root.
@@ -34,8 +35,14 @@ function hasNodeModulesDirectory(directory: string,): boolean {
     return statSync(nodeModulesPath,)
       .isDirectory();
   }
-  catch {
-    return false;
+  catch (statError: unknown) {
+    if (caughtErrorHasCode({
+      error: statError,
+      code: 'ENOENT',
+    },))
+      return false;
+
+    throw statError;
   }
 }
 

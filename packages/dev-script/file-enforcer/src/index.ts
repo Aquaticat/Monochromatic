@@ -17,6 +17,10 @@ export {
   mirrorGlobPath,
 } from './io/glob.ts';
 export { freshStalenessManifest, } from './io/staleness-run.ts';
+export {
+  findNodeModulesRoot,
+  NODE_MODULES_DIRECTORY_NAME,
+} from './io/staleness-root.ts';
 export type {
   ContentBuilder,
   GlobResultsBuilder,
