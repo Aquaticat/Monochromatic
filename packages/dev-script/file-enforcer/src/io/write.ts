@@ -11,11 +11,18 @@ import {
   updateCache,
 } from './cache.ts';
 import type { GlobResults, } from './cat.ts';
+import {
+  caughtErrorHasCode,
+} from './error.ts';
 import { writeFileAtomically, } from './write-atomic.ts';
 import {
   destinationsForFiles,
   writeGlobDestinations,
 } from './write-each-destinations.ts';
+import {
+  FILE_ALREADY_EXISTS,
+  writeFileIfAbsentAtomically,
+} from './write-if-absent-atomic.ts';
 import {
   isContentBuilder,
   isGlobResultsBuilder,
@@ -29,9 +36,6 @@ import {
   rememberEagerEach,
   rememberEagerWrite,
 } from './write-staleness.ts';
-import {
-  caughtErrorHasCode,
-} from './error.ts';
 
 /**
  * Sentinel for "file does not exist" returned by {@link readExisting}.
@@ -235,6 +239,8 @@ export async function overwrite(
  * Writes content to dest only if the file does not already exist.
  * Uses {@link readExisting} to check for the file rather than a separate
  * `exists()` call, avoiding a TOCTOU race gap.
+ * Uses no-clobber final-path creation after the absence check so a path that
+ * appears before create time is preserved instead of replaced.
  *
  * @param dest - Destination file path
  *
@@ -266,10 +272,32 @@ export async function overwriteIfNotExists(
     l.debug(`skip (exists): ${dest}`,);
     return;
   }
-  await writeIfChanged({
+  trackDest(dest,);
+  /**
+   * Actual post-create destination timestamp used for watch echo suppression,
+   * or a sentinel when another directory entry won the final path first.
+   */
+  const writeTimestamp = writeFileIfAbsentAtomically({
+    filePath: dest,
+    content,
+  },);
+  if (writeTimestamp === FILE_ALREADY_EXISTS) {
+    l.debug(`skip (exists): ${dest}`,);
+    return;
+  }
+  updateCache({
+    filePath: dest,
+    content,
+  },);
+  setWriteTimestamp({
+    filePath: dest,
+    timestamp: writeTimestamp,
+  },);
+  rememberEagerWrite({
     dest,
     content,
   },);
+  l.info(`-> ${dest}`,);
 }
 
 /**

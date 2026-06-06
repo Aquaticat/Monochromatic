@@ -75,7 +75,7 @@ export type AtomicTempFileWriter = (
  * const unsupported = directoryFsyncUnsupported(error);
  * ```
  */
-function directoryFsyncUnsupported(error: unknown,): boolean {
+export function directoryFsyncUnsupported(error: unknown,): boolean {
   return UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES.some(function errorCodeMatches(code,): boolean {
     return caughtErrorHasCode({
       error,
@@ -138,7 +138,7 @@ function openWritableFile(path: string,): DisposableFileDescriptor {
  * writeTempFileDurably({ tempPath, content });
  * ```
  */
-function writeTempFileDurably(
+export function writeTempFileDurably(
   {
     tempPath,
     content,
@@ -170,7 +170,7 @@ function writeTempFileDurably(
  * fsyncDirectory('/tmp/output-directory');
  * ```
  */
-function fsyncDirectory(directoryPath: string,): void {
+export function fsyncDirectory(directoryPath: string,): void {
   try {
     /**
      * Directory descriptor fsynced after destination rename.
