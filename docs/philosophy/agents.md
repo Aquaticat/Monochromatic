@@ -327,8 +327,3 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
-
-## Changelog
-
-- 2026-06-06: Merged GIT and GCT into GCG so one commit-message rule owns Conventional Commits format,
-  allowed types, scope guidance, and grouped-message structure.
