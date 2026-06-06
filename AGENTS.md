@@ -524,8 +524,6 @@ RG2: Regex you remove must become single linear pass (`for...of`/`for`/`reduce`,
 
 RG3: Regex literals, `RegExp` constructor calls, string methods using regex must be guarded by scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. Justification must explain why regex is right tool, what input shape bounds it, why it can't backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, don't use regex.
 
-RG4: For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap input or prove linear behaviour in disable justification + regression tests.
-
 ## Before declaring work complete
 
 ### Package completeness
