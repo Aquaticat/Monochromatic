@@ -130,7 +130,14 @@ The rendered page reported:
 
 `agent-browser errors` and `agent-browser console` returned no output after verification.
 
+## Plan state
+
+The implementation plan at `/var/home/user/.claude/plans/implement-this-oxlint-rule-dynamic-torvalds.md` has been
+refined to replace the obsolete Shannon-entropy and compression-first approach with the current structural classifier.
+It now calls out the pass, fail, and borderline data files, the repo-remediation step before enabling the rule as an
+error, and the requirement to test against the `.txt` datasets.
+
 ## Next steps
 
-1. Commit the updated benchmark HTML and this refreshed handover.
-2. If implementing the oxlint rule, port this classifier carefully without broad hardcoded word lists and without global compression.
+1. If implementing the oxlint rule, port this classifier carefully without broad hardcoded word lists and without global compression.
+2. Use the refined plan as the execution checklist.
