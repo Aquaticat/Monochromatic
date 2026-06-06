@@ -336,8 +336,3 @@ The `troubleshooting-doc` skill's exception is a disposable prototype clone crea
 upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
 third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
-
-## Changelog
-
-- 2026-06-06: Merged CB2 and BRG into CB1, preserving browser, native GUI, auth, hardware, and conversion bridge
-  guidance while keeping the combined capability/handoff rule under 100 words.
