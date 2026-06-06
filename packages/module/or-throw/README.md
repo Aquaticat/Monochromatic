@@ -217,6 +217,25 @@ Boxed-primitive wrappers (`new String(...)`, `new Number(...)`, etc.) are intent
 
 `numericOrThrow` corresponds to the `t numeric/` category in `module-es`.
 
+### Custom predicates
+
+- `satisfiesOrThrow({ value, predicate? })(candidate)` throws when the synchronous
+  satisfaction check fails.
+- `satisfiesOrThrowAsync({ value, predicate? })(candidate)` throws when the async-capable
+  satisfaction check fails.
+
+When `predicate` is omitted, both helpers use `Object.is(candidate, value)`.
+Default equality narrows the successful return type to the intersection of the candidate type
+and the configured value type.
+
+When `predicate` is present, it receives one object parameter:
+`{ candidate, value }`.
+A `true` result returns `candidate` unchanged.
+A `false` result throws an `Error`.
+Custom predicates deliberately return the candidate type as-is because predicates can be fuzzy:
+for example, a case-insensitive predicate can accept `'READY'` for configured value `'ready'`,
+so typing the result as literal `'ready'` would lie about the runtime value.
+
 ## Usage
 
 ```ts
@@ -236,6 +255,30 @@ const tokens = arrayOrThrow(text.match(/\w+/g,),);
 // tokens is readonly unknown[] (was RegExpMatchArray | null)
 ```
 
+### Custom predicate usage
+
+```ts
+import {
+  satisfiesOrThrow,
+  satisfiesOrThrowAsync,
+} from '@monochromatic-dev/module-or-throw';
+
+const exactReady = satisfiesOrThrow({ value: 'ready' as const, })(rawStatus,);
+// exactReady is typed as 'ready' when rawStatus was unknown.
+
+const readyish = satisfiesOrThrow({
+  value: 'ready',
+  predicate: ({ candidate, value, }) =>
+    (typeof candidate) === 'string' && candidate.toLowerCase() === value,
+})('READY',);
+// readyish is the original candidate, 'READY'.
+
+const stored = await satisfiesOrThrowAsync({
+  value: expectedChecksum,
+  predicate: async ({ candidate, value, }) => await checksumMatches({ candidate, value, }),
+})(filePath,);
+```
+
 ## Types
 
 ```ts
@@ -251,6 +294,10 @@ import type {
   instead of collapsing to `never`.
   Used internally by every `Extract`-based narrowing helper so `unknown` inputs
   (e.g. parsed JSON) narrow correctly.
+- `SatisfiesOrThrowPredicateParameters<Candidate, Value>`: object passed into custom predicates.
+- `SatisfiesOrThrowPredicate<Value>`: synchronous predicate type returning `boolean`.
+- `SatisfiesOrThrowAsyncPredicate<Value>`: async-capable predicate type returning `boolean`
+  or `Promise<boolean>`.
 
 ## NaN caveat
 
@@ -273,5 +320,4 @@ Callers that need a NaN-narrowed type must use `Number.isNaN` separately.
   silently breaking the most common call shape (a value typed `unknown` from parsed JSON or
   a fetched payload). Every narrowing helper uses `ExtractOrUnknown` instead.
 - **Skipped categories.** Value-range refinements (`positiveOrThrow`, `finiteOrThrow`,
-  `integerOrThrow`) and parameterized helpers (`instanceOfOrThrow(value, ctor)`) are
-  intentionally out of scope; add them when a call site needs them.
+  `integerOrThrow`) are intentionally out of scope; add them when a call site needs them.

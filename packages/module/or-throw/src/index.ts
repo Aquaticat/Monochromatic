@@ -15,6 +15,7 @@
  * - Standard built-ins: `promiseOrThrow`, `dateOrThrow`, `regExpOrThrow`, `errorOrThrow`
  * - typeof primitives: `stringOrThrow`, `numberOrThrow`, `bigintOrThrow`, `booleanOrThrow`, `symbolOrThrow`, `functionOrThrow`, `objectOrThrow`
  * - Numeric union: `numericOrThrow`
+ * - Custom predicates: `satisfiesOrThrow`, `satisfiesOrThrowAsync`
  *
  * @example
  * ```ts
@@ -34,6 +35,21 @@
 
 export type { ExtractOrUnknown, } from './extract-or-unknown.ts';
 export type { Falsy, } from './falsy.ts';
+export type {
+  SatisfiesOrThrowAsyncOptions,
+  SatisfiesOrThrowAsyncPredicate,
+  SatisfiesOrThrowAsyncPredicateOptions,
+  SatisfiesOrThrowEqualityOptions,
+  SatisfiesOrThrowOptions,
+  SatisfiesOrThrowPredicate,
+  SatisfiesOrThrowPredicateOptions,
+  SatisfiesOrThrowPredicateParameters,
+} from './satisfies-or-throw.ts';
+
+export {
+  satisfiesOrThrow,
+  satisfiesOrThrowAsync,
+} from './satisfies-or-throw.ts';
 
 export { nonNullishOrThrow, } from './non-nullish-or-throw.ts';
 
