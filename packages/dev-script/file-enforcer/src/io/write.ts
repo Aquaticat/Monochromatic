@@ -29,6 +29,9 @@ import {
   rememberEagerEach,
   rememberEagerWrite,
 } from './write-staleness.ts';
+import {
+  caughtErrorHasCode,
+} from './error.ts';
 
 /**
  * Sentinel for "file does not exist" returned by {@link readExisting}.
@@ -46,6 +49,9 @@ export const ABSENT_FILE_CONTENT: unique symbol = Symbol('file-enforcer/io/write
  *
  * @returns File content as string, or {@link ABSENT_FILE_CONTENT} if absent
  *
+ * @throws Non-absence read failures so permissions, directories, and transient I/O
+ *   errors are not mistaken for a missing destination.
+ *
  * @example
  * ```ts
  * const existing = await readExisting('./dist/config.json');
@@ -58,8 +64,14 @@ export async function readExisting(filePath: string,): Promise<string | typeof A
   try {
     return await readCached(filePath,);
   }
-  catch {
-    return ABSENT_FILE_CONTENT;
+  catch (readError: unknown) {
+    if (caughtErrorHasCode({
+      error: readError,
+      code: 'ENOENT',
+    },))
+      return ABSENT_FILE_CONTENT;
+
+    throw readError;
   }
 }
 
