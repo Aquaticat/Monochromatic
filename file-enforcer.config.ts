@@ -1,13 +1,22 @@
 import { glob, } from 'node:fs/promises';
 
 import {
+  addWatchedPaths,
   cat,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
+import { manageHarperLsp4ijSettings, } from './file-enforcer.harper-lsp4ij.ts';
+
 import type browserslist from 'browserslist';
+
+addWatchedPaths([
+  './file-enforcer.harper-lsp4ij.ts',
+  './file-enforcer.harper-lsp4ij-idea.ts',
+  './file-enforcer.harper-lsp4ij-xml.ts',
+],);
 
 /**
  * Resolver function exported by the `browserslist` package.
@@ -212,6 +221,8 @@ ${await cat(['./AGENTS.md',],)}`,
   generateForbiddenStringsRules(),
 
   generateResolvedBrowserslistTargets(),
+
+  manageHarperLsp4ijSettings(),
 
   mirrorSkills(),
   // Oxlint config: root oxlint.config.ts imports @monochromatic-dev/config-oxlint and adds jsPlugins.
