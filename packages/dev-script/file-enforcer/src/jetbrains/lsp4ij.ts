@@ -26,7 +26,7 @@ import type {
   Lsp4ijServerSettings,
 } from './lsp4ij-types.ts';
 
-//region Helpers: read and describe errors
+//region Helpers: read tracked files
 
 /**
  * Default LSP4IJ persistent-state file names under a JetBrains options directory.
@@ -55,22 +55,6 @@ async function readTrackedExisting(
   return await readExisting(filePath,);
 }
 
-/**
- * Returns human-readable text for an unknown caught value.
- *
- * @param error - Caught value.
- *
- * @returns Error message text.
- *
- * @example
- * ```ts
- * friendlyErrorMessage({ error });
- * ```
- */
-function friendlyErrorMessage({ error, }: { readonly error: unknown; },): string {
-  return error instanceof Error ? error.message : String(error,);
-}
-
 //endregion Helpers
 
 //region Public task: non-blocking editor-local LSP4IJ sync
@@ -79,6 +63,8 @@ function friendlyErrorMessage({ error, }: { readonly error: unknown; },): string
  * Syncs LSP4IJ language-server settings in the latest JetBrains product config.
  * Missing JetBrains config, settings files, or base server are intentionally
  * non-blocking because not every developer uses this editor integration.
+ * Corrupt config discovery, unreadable settings, XML update failures, and
+ * write failures propagate so broken local state does not look like absence.
  *
  * @param settings - Declarative LSP4IJ server settings policy.
  *
@@ -99,91 +85,86 @@ export async function manageLsp4ijServerSettings(settings: Lsp4ijServerSettings,
     tag: manageLsp4ijServerSettings.name,
     l,
   },);
-  try {
-    /**
-     * Latest matching JetBrains product options directory, or absent sentinel.
-     */
-    const latest = await latestJetbrainsOptionsDirectory({ productPrefixes: settings.productPrefixes, },);
-    if (latest === NO_JETBRAINS_OPTIONS_DIRECTORY) {
-      log.warn(`No JetBrains product config found for prefixes [${settings.productPrefixes
-        .join(', ',)}]; skipping LSP4IJ settings sync.`,);
-      return;
-    }
-    /**
-     * LSP4IJ persistent-state file names to manage.
-     */
-    const files = settings.optionsFiles ?? DEFAULT_OPTIONS_FILES;
-    /**
-     * Absolute path to the global language-server settings file.
-     */
-    const languageSettingsPath = join(
-      latest.optionsDirectory,
-      files.languageSettings,
-    );
-    /**
-     * Absolute path to the user-defined language-server settings file.
-     */
-    const userDefinedPath = join(
-      latest.optionsDirectory,
-      files.userDefined,
-    );
-    /**
-     * Current contents of both settings files, or absent sentinels.
-     */
-    const [languageXml, userDefinedXml,] = await Promise.all([
-      readTrackedExisting({ filePath: languageSettingsPath, },),
-      readTrackedExisting({ filePath: userDefinedPath, },),
-    ],);
-    if ((languageXml === ABSENT_FILE_CONTENT) || (userDefinedXml === ABSENT_FILE_CONTENT)) {
-      log.warn(`LSP4IJ settings files not found in ${latest.productDirectory}; skipping LSP4IJ settings sync.`,);
-      return;
-    }
-    /**
-     * Server ids ineligible to be the base server (the managed scoped servers).
-     */
-    const excludedIds = new Set([
-      ...(settings.baseServerMatch
-        .excludeServerIds
-        ?? []),
-      ...settings.scopedServers
-        .map(function scopedId(scoped,): string {
-        return scoped.id;
-      },),
-    ],);
-    /**
-     * Base user-defined server entry, or absent sentinel.
-     */
-    const baseEntry = findBaseServerEntry({
-      userDefinedXml,
-      match: settings.baseServerMatch,
-      excludedIds,
-    },);
-    if (baseEntry === ABSENT_XML_ENTRY) {
-      log.warn(`No base LSP4IJ server matched in ${latest.productDirectory}; skipping LSP4IJ settings sync.`,);
-      return;
-    }
-    await Promise.all([
-      overwrite({
-        dest: languageSettingsPath,
-        content: updatedLanguageSettingsXml({
-          languageXml,
-          baseEntry,
-          settings,
-        },),
-      },),
-      overwrite({
-        dest: userDefinedPath,
-        content: updatedUserDefinedXml({
-          userDefinedXml,
-          baseEntry,
-          scopedServers: settings.scopedServers,
-        },),
-      },),
-    ],);
+  /**
+   * Latest matching JetBrains product options directory, or absent sentinel.
+   */
+  const latest = await latestJetbrainsOptionsDirectory({ productPrefixes: settings.productPrefixes, },);
+  if (latest === NO_JETBRAINS_OPTIONS_DIRECTORY) {
+    log.warn(`No JetBrains product config found for prefixes [${settings.productPrefixes
+      .join(', ',)}]; skipping LSP4IJ settings sync.`,);
+    return;
   }
-  catch (error) {
-    log.warn(`LSP4IJ server settings were not updated: ${friendlyErrorMessage({ error, },)}. Skipping editor-local sync.`,);
+  /**
+   * LSP4IJ persistent-state file names to manage.
+   */
+  const files = settings.optionsFiles ?? DEFAULT_OPTIONS_FILES;
+  /**
+   * Absolute path to the global language-server settings file.
+   */
+  const languageSettingsPath = join(
+    latest.optionsDirectory,
+    files.languageSettings,
+  );
+  /**
+   * Absolute path to the user-defined language-server settings file.
+   */
+  const userDefinedPath = join(
+    latest.optionsDirectory,
+    files.userDefined,
+  );
+  /**
+   * Current contents of both settings files, or absent sentinels.
+   */
+  const [languageXml, userDefinedXml,] = await Promise.all([
+    readTrackedExisting({ filePath: languageSettingsPath, },),
+    readTrackedExisting({ filePath: userDefinedPath, },),
+  ],);
+  if ((languageXml === ABSENT_FILE_CONTENT) || (userDefinedXml === ABSENT_FILE_CONTENT)) {
+    log.warn(`LSP4IJ settings files not found in ${latest.productDirectory}; skipping LSP4IJ settings sync.`,);
+    return;
   }
+  /**
+   * Server ids ineligible to be the base server (the managed scoped servers).
+   */
+  const excludedIds = new Set([
+    ...(settings.baseServerMatch
+      .excludeServerIds
+      ?? []),
+    ...settings.scopedServers
+      .map(function scopedId(scoped,): string {
+      return scoped.id;
+    },),
+  ],);
+  /**
+   * Base user-defined server entry, or absent sentinel.
+   */
+  const baseEntry = findBaseServerEntry({
+    userDefinedXml,
+    match: settings.baseServerMatch,
+    excludedIds,
+  },);
+  if (baseEntry === ABSENT_XML_ENTRY) {
+    log.warn(`No base LSP4IJ server matched in ${latest.productDirectory}; skipping LSP4IJ settings sync.`,);
+    return;
+  }
+  await Promise.all([
+    overwrite({
+      dest: languageSettingsPath,
+      content: updatedLanguageSettingsXml({
+        languageXml,
+        baseEntry,
+        settings,
+      },),
+    },),
+    overwrite({
+      dest: userDefinedPath,
+      content: updatedUserDefinedXml({
+        userDefinedXml,
+        baseEntry,
+        scopedServers: settings.scopedServers,
+      },),
+    },),
+  ],);
 }
 
 //endregion Public task
