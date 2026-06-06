@@ -9,10 +9,10 @@ import { dirname, } from 'node:path';
 
 import { caughtErrorHasCode, } from './error.ts';
 import {
+  type AtomicTempFileWriter,
   fsyncDirectory,
   writeTempFileDurably,
 } from './write-atomic.ts';
-import type { AtomicTempFileWriter, } from './write-atomic.ts';
 
 //region Atomic create-if-absent constants and types
 
