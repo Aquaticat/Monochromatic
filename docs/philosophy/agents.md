@@ -327,9 +327,3 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
-
-## Changelog
-
-- 2026-06-06: Merged EC2 and EC3 into EC1 under 100 words, preserving concurrent-worktree handling,
-  no-revert/no-move-aside behavior, and ask-before-changing blocked unrelated edits. Merged EC5 into EC4 so unsupported
-  tool behavior stays with non-functional implementation guidance.
