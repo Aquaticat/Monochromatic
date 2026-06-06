@@ -1,4 +1,5 @@
 import { readFileSync, } from 'node:fs';
+import { caughtErrorHasCode, } from './error.ts';
 import { hashContent, } from './staleness-hash.ts';
 import {
   fileStampListsMatch,
@@ -15,6 +16,8 @@ import {
  * @param recordedStamps - Destination stamps persisted in manifest.
  *
  * @returns Whether every destination is unchanged.
+ *
+ * @throws When destination content cannot be read for reasons other than absence.
  *
  * @example
  * ```ts
@@ -49,8 +52,14 @@ export function destinationStampListsMatch(
         'utf8',
       ),) === stamp.hash;
     }
-    catch {
-      return false;
+    catch (hashReadError: unknown) {
+      if (caughtErrorHasCode({
+        error: hashReadError,
+        code: 'ENOENT',
+      },))
+        return false;
+
+      throw hashReadError;
     }
   },);
 }
