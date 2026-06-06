@@ -4,7 +4,11 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
-import { caughtErrorHasCode, } from './staleness-manifest-error.ts';
+import {
+  caughtErrorHasCode,
+  caughtErrorMessage,
+  StalenessManifestPersistenceError,
+} from './staleness-manifest-error.ts';
 
 //region Lock owner constants and types
 
@@ -24,7 +28,7 @@ const MINIMUM_PROCESS_ID = 1;
 const PROCESS_EXISTS_SIGNAL = 0;
 
 /**
- * Sentinel for absent or invalid lock owner metadata.
+ * Sentinel for absent lock owner metadata.
  */
 const ABSENT_MANIFEST_LOCK_OWNER: unique symbol = Symbol('file-enforcer/io/staleness-manifest-lock-owner: absent lock owner metadata',);
 
@@ -148,7 +152,9 @@ export function writeLockOwner(lockPath: string,): void {
  *
  * @param lockPath - Lock directory path.
  *
- * @returns Owner metadata, or absence sentinel when absent or invalid.
+ * @returns Owner metadata, or absence sentinel when absent.
+ *
+ * @throws When owner metadata exists but cannot be parsed or validated.
  *
  * @example
  * ```ts
@@ -167,7 +173,9 @@ function readLockOwner(lockPath: string,): ManifestLockOwnerRead {
     if (isManifestLockOwner(owner,))
       return owner;
 
-    return ABSENT_MANIFEST_LOCK_OWNER;
+    throw new StalenessManifestPersistenceError(
+      `Invalid staleness manifest lock owner schema at ${lockOwnerPath(lockPath,)}`,
+    );
   }
   catch (ownerError: unknown) {
     if (caughtErrorHasCode({
@@ -175,8 +183,12 @@ function readLockOwner(lockPath: string,): ManifestLockOwnerRead {
       code: 'ENOENT',
     },))
       return ABSENT_MANIFEST_LOCK_OWNER;
-    if (ownerError instanceof SyntaxError)
-      return ABSENT_MANIFEST_LOCK_OWNER;
+    if (ownerError instanceof SyntaxError) {
+      throw new StalenessManifestPersistenceError(
+        `Invalid staleness manifest lock owner ${lockOwnerPath(lockPath,)}: ${caughtErrorMessage(ownerError,)}`,
+        { cause: ownerError, },
+      );
+    }
 
     throw ownerError;
   }

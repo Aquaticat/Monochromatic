@@ -3,6 +3,7 @@ import {
   mkdir,
   readFile,
   utimes,
+  writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -122,6 +123,62 @@ await describe({
           manifestPath,
           outputPath,
           content: 'charlie',
+        },);
+
+        const spawnError = await runConfigExpectingError({
+          configPath,
+          cwd: tempDir,
+        },);
+
+        expect(spawnError,).toBeInstanceOf(Error,);
+        await access(lockPath,);
+      },
+    },),
+
+    it({
+      name: 'does not reclaim old manifest lock directories with malformed owner metadata',
+      timeout: 10_000,
+      fn: async function doesNotReclaimMalformedOwnerManifestLock(): Promise<void> {
+        const tempDir = await setupStalenessLockFixture();
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return teardownStalenessLockFixture(tempDir,);
+          },
+        };
+        const manifestPath = join(
+          tempDir,
+          'manifest.json',
+        );
+        const lockPath = `${manifestPath}.lock`;
+        const configPath = join(
+          tempDir,
+          'malformed-owner-config.ts',
+        );
+        const outputPath = join(
+          tempDir,
+          'malformed-owner-output.txt',
+        );
+        await mkdir(
+          lockPath,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            lockPath,
+            'owner.json',
+          ),
+          '{ malformed owner json',
+        );
+        await utimes(
+          lockPath,
+          STALE_LOCK_DATE,
+          STALE_LOCK_DATE,
+        );
+        await writeOverwriteConfig({
+          configPath,
+          manifestPath,
+          outputPath,
+          content: 'delta',
         },);
 
         const spawnError = await runConfigExpectingError({
