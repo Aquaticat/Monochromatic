@@ -23,18 +23,28 @@ Make every non-exempt cross-package import in `packages/` resolve to TypeScript 
    bin bundles only for CLIs.
 4. Everything with a source-to-dist transformation must build a dist, even though the workspace consumes `/ts` source.
 5. Tree scope: `packages/` only.
-6. `config-oxlint` family: keep source-only.
+6. `config-oxlint` family: builds a `node` dist like any source-to-dist package (decision 4 applies). Its consumers,
+   notably the repo-root `oxlint.config.ts`, import the built `.` on purpose: loading the prebuilt config is 20% to
+   40% faster than evaluating `/ts` source on every lint run. It is exempt only from the import-rewrite-to-`/ts` rule
+   (decision 1), not from building, so it is NOT source-only.
 7. CLI/app packages lacking a build task: add bundled-bin builds.
 8. Shims (`shim-*`) and stubs (`stub-*`): leave hand-written `.cjs`/`.d.cts` as-is.
 9. Executable-index packages (`cli-mvm`, `dev-script-inference-canary`): restructure to a library barrel `index.ts`
    plus a separate executable file (done in Phase A).
 
-## Exemptions (NOT built, imports of them NOT rewritten)
+## Exemptions (imports of them NOT rewritten to `/ts`)
 
-Pure-data configs (`config-typescript`, `config-dprint`, `config-stylelint`, `config-cosign`, `config-tofu`,
-`config-dotfiles`); `config-tsdown` (circular); `config-oxlint` family; `claude-code-plugins-source` (curated source
-named subpaths consumed by sibling plugin bins); `test-fixture-*`; `shim-*`; `stub-*`. The codemod must skip these
-targets. There are ~72 imports of these; they stay verbatim.
+The codemod skips these targets; their ~72 imports stay verbatim. Two distinct reasons, do not conflate them:
+
+Not built AND not rewritten (pure data or curated source, no source-to-dist transformation):
+`config-typescript`, `config-dprint`, `config-stylelint`, `config-cosign`, `config-tofu`, `config-dotfiles`;
+`config-tsdown` (circular); `claude-code-plugins-source` (curated source named subpaths consumed by sibling plugin
+bins); `test-fixture-*`; `shim-*`; `stub-*`.
+
+Built BUT not rewritten: the `config-oxlint` family. It has a real source-to-dist build
+(`tsdown.node.config.ts`, dist under `dist/final/node`), so decision 4 applies and it must build. Its consumers
+import the built `.` deliberately because the prebuilt config loads 20% to 40% faster than `/ts` source per lint run.
+Its imports are not rewritten to `/ts`, but it is not source-only.
 
 ## Verification helpers
 
@@ -345,7 +355,7 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   owns a distinct `dist/test-output-<fixture>-<test>.css` path; deterministic 4/4. (module-test runs it-blocks within a
   describe concurrently — a key gotcha for any test sharing mutable disk/registry state.)
 - `claude-code-plugins-hook-types` — DECIDED EXEMPT (pure types, zero value exports; the `.d.mts` IS the source, no
-  source-to-dist transformation; same rationale as config-*). Source-only; no build, no `.` flip. Decided by the
+  source-to-dist transformation; same rationale as the pure-data configs). Source-only; no build, no `.` flip. Decided by the
   exemption rule, not asked.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
@@ -368,7 +378,7 @@ Relocate any flaky/slow/network/VM test that the new `test:unit` glob activates 
 NEUTRAL, no bin: ALL DONE. `claude-code-plugins-hook-types` is DECIDED EXEMPT: its `src/` is pure type declarations
 (common.ts + event/tool-input types; verified zero `export const|function|class|let|var|default` value exports). A
 build would emit only a `.d.mts` (or an empty `.mjs`) with no runtime code -- there is no source-to-dist
-TRANSFORMATION, exactly the config-* / pure-data exemption rationale. It keeps `.` + `./ts` + `./ts/*` at source; no
+TRANSFORMATION, exactly the pure-data config exemption rationale. It keeps `.` + `./ts` + `./ts/*` at source; no
 build, no `.` flip. This is determined by the exemption rule (pure types = the `.d.mts` IS the source), not a
 preference, so it was decided rather than asked.
 
