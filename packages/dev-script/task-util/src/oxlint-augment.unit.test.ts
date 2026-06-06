@@ -427,6 +427,31 @@ await describe({
           },
         },),
         it({
+          name: 'injects guidance for no-misused-spread after help line',
+          fn: async () => {
+            const input = [
+              ...buildDiagnostic({
+                rule: 'no-misused-spread',
+                plugin: 'typescript',
+                message: 'Using the spread operator on a string can mishandle special characters.',
+                file: 'src/rules/tokenize.ts',
+                helpText: 'Consider using `Intl.Segmenter` for locale-aware string decomposition.',
+              },),
+              '',
+            ]
+              .join('\n',);
+
+            const result = augmentOxlintOutput(input,);
+
+            expect(result,).toContain(`  note: ${RULE_GUIDANCE['no-misused-spread']}`,);
+
+            // Note should appear after help
+            const helpIdx = result.indexOf('help:',);
+            const noteIdx = result.indexOf('note:',);
+            expect(noteIdx,).toBeGreaterThan(helpIdx,);
+          },
+        },),
+        it({
           name: 'injects guidance before blank line when no help line exists',
           fn: async () => {
             const input = [

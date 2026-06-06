@@ -282,6 +282,20 @@ export const RULE_GUIDANCE: Record<string, string> = {
     'For an existing reference such as `Number.parseInt`, wrap it with `unary` or `binary` from `@monochromatic-dev/module-function-arity` to cap the arity safely.',
   ]
     .join(' ',),
+  'no-misused-spread': [
+    'Spreading a string splits it into code points, which silently breaks grapheme clusters such as emoji and combining marks.',
+    'Fix: use a string API instead. `str !== str.toLowerCase()` detects an uppercase letter; `[allowed,].some(function has(c,) { return str.includes(c,); },)` tests character membership; `str.charAt(i,)` inside a counted `for` loop scans by index.',
+    'Do not switch to `Array.from(str)` or `for (const c of str)`: both share the grapheme problem, and unicorn/prefer-spread rewrites `Array.from` straight back into a spread.',
+    'If code-point iteration is genuinely needed and grapheme-incorrectness is acceptable, add a scoped `oxlint-disable-next-line typescript/no-misused-spread -- <why code points, why graphemes are irrelevant here>`.',
+  ]
+    .join(' ',),
+  'prefer-spread': [
+    'On an array or arguments object this spread autofix is correct and needs no further action.',
+    'On a string, the resulting `[...str]` then trips typescript/no-misused-spread because code-point spreading breaks grapheme clusters.',
+    'Fix for strings: use a string API (`toLowerCase`/`toUpperCase` comparisons, `includes`, or `charAt` index scans) rather than Array.from, spread, or `for...of` over the string.',
+    'When code-point iteration is genuinely required, keep the spread and add a scoped `oxlint-disable-next-line typescript/no-misused-spread` with justification.',
+  ]
+    .join(' ',),
 };
 
 //endregion Rule guidance
