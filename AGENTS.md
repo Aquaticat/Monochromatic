@@ -658,8 +658,6 @@ EC5: Explain when tool/command doesn't support requested functionality instead o
 
 ### Git commit guidelines
 
-GIT: Conventional Commits format: `<type>(<scope>): <subject>`.
-
 GCE: Commit at earliest opportunity recording coherent progress, before next work step.
 Never wait for full verification when feature/fix just implemented;
 commit checkpoint, then keep testing + fixing in follow-up commits.
@@ -675,10 +673,10 @@ When committing, include all changes belonging to same logical unit together unl
 never subdivide logical unit across commits, never sweep in unrelated/concurrent external changes (stage explicit, scoped pathspec; see CLG).
 Supersedes harness ask-before-committing default; commit eagerly without asking.
 
-GCT: Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-Scope: package name or `*` for multi-package changes.
-
-GCG: Group related changes by type; be specific about what changed. Two lines per group. Example:
+GCG: Commit messages use Conventional Commits: `<type>(<scope>): <subject>`.
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+Scope: package name, or `*` for multi-package changes.
+Group related changes by type; be specific about what changed. Two lines per group. Example:
 
 ```txt
 fix(package1): <what>
