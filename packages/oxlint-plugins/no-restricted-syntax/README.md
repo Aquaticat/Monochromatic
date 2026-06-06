@@ -16,6 +16,7 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-for-in**: bans `for...in` loops in favor of `Object.entries`/`Object.keys`/`Object.values`
 - **no-function-root-let**: bans `let` at function-body root unless the helper-shape exception applies
 - **no-hasownproperty**: bans `.hasOwnProperty()` in favor of `Object.hasOwn()`
+- **no-low-information-symbol-description**: requires static `Symbol('...')` descriptions to carry enough debugging information; rejects generic identifiers, absence labels, and repeated low-information phrases
 - **no-module-root-let**: bans module-root `let` in favor of containers or memoization helpers
 - **no-promise-catch**: bans `.catch()` chaining in favor of `try`/`catch` with `async`/`await`
 - **no-promise-finally**: bans `.finally()` chaining in favor of `using`/`await using`
@@ -128,6 +129,49 @@ A pattern is undetectable when the type annotation itself is honest and carries 
 - `class Sentinel {}` plus `T | typeof Sentinel`: same blind spot as `typeof CONST`, and a class instance type is itself a distinct non-empty value, so it is an allowed sentinel anyway.
 - `0n` (bigint zero) as a union literal: deliberately skipped; rare, and bigint literals add magic-literal friction for little gain.
 - `NaN` as a union member is not expressible (`NaN` is a value, not a type), so there is nothing to detect.
+
+## no-low-information-symbol-description
+
+Sentinel `Symbol`s replace nullish unions across this codebase, so a Symbol's description is often the only debugging identity at a crash site.
+This rule requires static descriptions to carry enough context.
+It checks `Symbol('...')`, `Symbol.for('...')`, and zero-expression template literals.
+Absent, dynamic, and non-string descriptions are skipped because an oxlint JS plugin has no type information; no-argument `Symbol()` is never reported.
+
+The classifier is structural, not semantic.
+It uses word count, distinct-word count, casing, namespace shape (`prefix/tail`, `prefix:tail`), meaningful-word repetition, and a small set of named grammar hooks (`no`, `not`, `because`, `ed`, `ing`).
+It deliberately uses no Shannon entropy, no global compression, and no broad vocabulary lists.
+A description passes when it carries a structural specificity marker (an uppercase letter, a digit, a dot, an underscore, or a consonant-dense token) or otherwise reads like a phrase rather than a bare identifier, even when short.
+
+```ts
+// Pass: enough context, even when short
+Symbol('github token expired');
+Symbol('file log.jsonl exists');
+Symbol('penpot/figma-input-has-no-counterpart');
+Symbol('average divisor is zero');
+
+// Fail: too few words, all-caps constant, bare identifier, repetition, generic namespace tail
+Symbol('meow');
+Symbol('STATE IS UNKNOWN');
+Symbol('runWithContext');
+Symbol('file file exists');
+Symbol('tsdoc/no-tag');
+```
+
+Dynamic and absent descriptions are skipped:
+
+```ts
+Symbol(buildId());            // skipped: not a static string
+Symbol(`prefix-${dynamic}`);  // skipped: template literal with an expression
+Symbol();                     // skipped: no description argument
+```
+
+Some descriptions are intentionally borderline and excluded from the calibration data, so they are labeled neither pass nor fail.
+`no-static-method-name` and its uppercase variant are the current borderline rows.
+If the rule reports a borderline-style description in real source, rewrite that Symbol description to carry more context rather than weakening the classifier.
+
+The calibration data lives in `packages/test-fixture/oxlint-no-restricted-syntax/data/`.
+A browser benchmark there (`no-low-information-symbol-description.benchmark.html`) compares this production classifier against threshold-only baselines (minimum length, distinct words, type-token ratio) over the labeled pass and fail rows.
+The classifier reaches zero misclassifications where the threshold baselines do not.
 
 ## Ban-disable rules
 

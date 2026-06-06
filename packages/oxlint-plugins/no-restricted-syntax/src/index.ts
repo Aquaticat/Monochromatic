@@ -34,6 +34,9 @@ import { noEnum, } from './rules/no-enum.ts';
 import { noForIn, } from './rules/no-for-in.ts';
 import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
+import {
+  noLowInformationSymbolDescription,
+} from './rules/no-low-information-symbol-description.ts';
 import { noModuleRootLet, } from './rules/no-module-root-let.ts';
 import { noNullishUnion, } from './rules/no-nullish-union.ts';
 import { noOptionalEscape, } from './rules/no-optional-escape.ts';
@@ -86,6 +89,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-for-in': noForIn,
     'no-function-root-let': noFunctionRootLet,
     'no-hasownproperty': noHasownproperty,
+    'no-low-information-symbol-description': noLowInformationSymbolDescription,
     'no-module-root-let': noModuleRootLet,
     'no-nullish-union': noNullishUnion,
     'no-optional-escape': noOptionalEscape,

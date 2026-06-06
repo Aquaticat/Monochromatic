@@ -3,7 +3,7 @@
 // Each form here would be a tempting false positive; the rule must leave it.
 
 // Real Symbol sentinel: the sanctioned alternative to a fake-optional union.
-const NOT_FOUND = Symbol('not-found',);
+const NOT_FOUND = Symbol('requested key not found in store',);
 
 // Bare `(): void` return: only `void` inside a union is banned.
 type VoidReturn = () => void;

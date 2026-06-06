@@ -1,4 +1,14 @@
-import { resolve, } from 'node:path';
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir, } from 'node:os';
+import {
+  join,
+  resolve,
+} from 'node:path';
 
 import {
   describe,
@@ -54,6 +64,12 @@ const FIXTURES = resolve(
   'src',
 );
 
+/** Calibration data root holding the labeled `.txt` description files. */
+const DATA = resolve(
+  FIXTURE_PKG,
+  'data',
+);
+
 /**
  * Fixture-specific oxlint config with all no-restricted-syntax rules enabled
  * and no ignorePatterns that would skip test-fixture or invalid paths.
@@ -72,12 +88,7 @@ const FIXTURE_CONFIG = resolve(
  * const diags = await lint('invalid/no-switch.ts');
  * ```
  */
-async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
-  const target = resolve(
-    FIXTURES,
-    fixturePath,
-  );
-
+async function runOxlint(target: string,): Promise<readonly OxlintDiagnostic[]> {
   // oxlint exits non-zero when violations are found: capture stdout from the error
   async function captureStdout(): Promise<string> {
     try {
@@ -111,6 +122,21 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
 }
 
 /**
+ * Runs oxlint against a fixture file under the fixture `src/` root.
+ *
+ * @example
+ * ```ts
+ * const diags = await lint('invalid/no-switch.ts');
+ * ```
+ */
+async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
+  return runOxlint(resolve(
+    FIXTURES,
+    fixturePath,
+  ),);
+}
+
+/**
  * Extracts unique rule codes from a set of diagnostics.
  *
  * @example
@@ -131,6 +157,95 @@ function uniqueRules(
     .toSorted();
 }
 
+/** Bare rule name for the low-information Symbol description rule. */
+const LOW_INFO_RULE = 'no-low-information-symbol-description';
+
+/** Diagnostic `code` emitted by the low-information Symbol description rule. */
+const LOW_INFO_RULE_CODE = `no-restricted-syntax(${LOW_INFO_RULE})`;
+
+/** Disposable temp TypeScript source generated from calibration rows. */
+type GeneratedSource = {
+  /** Absolute path to the generated source file. */
+  readonly filePath: string;
+  /** Removes the temp directory holding the generated source. */
+  [Symbol.dispose](): void;
+};
+
+/**
+ * Reads non-empty rows from a calibration `.txt` data file, preserving exact
+ * description text.
+ *
+ * @example
+ * ```ts
+ * readDataRows({ fileName: 'no-low-information-symbol-description.pass.txt' });
+ * ```
+ */
+function readDataRows({ fileName, }: { readonly fileName: string; },): readonly string[] {
+  return readFileSync(
+    resolve(
+      DATA,
+      fileName,
+    ),
+    'utf8',
+  )
+    .split('\n',)
+    .filter(function nonEmpty(line,): boolean {
+      return line.length > 0;
+    },);
+}
+
+/**
+ * Builds TypeScript source with one `Symbol(<json string>)` statement per row,
+ * so each row maps to exactly one Symbol call the rule can classify.
+ *
+ * @example
+ * ```ts
+ * symbolCallsSource({ rows: ['meow'] }); // 'Symbol("meow");\n'
+ * ```
+ */
+function symbolCallsSource({ rows, }: { readonly rows: readonly string[]; },): string {
+  return `${rows
+    .map(function toCall(row,): string {
+      return `Symbol(${JSON.stringify(row,)});`;
+    },)
+    .join('\n',)}\n`;
+}
+
+/**
+ * Writes generated source into a unique temp directory with disposal-backed
+ * cleanup, so the file is linted in isolation from the fixture tree.
+ *
+ * @example
+ * ```ts
+ * using fixture = createGeneratedSource({ fileName: 'pass.ts', source });
+ * ```
+ */
+function createGeneratedSource(
+  { fileName, source, }: { readonly fileName: string; readonly source: string; },
+): GeneratedSource {
+  const dirPath = mkdtempSync(join(
+    tmpdir(),
+    'oxlint-low-info-symbol-',
+  ),);
+  const filePath = resolve(
+    dirPath,
+    fileName,
+  );
+  writeFileSync(filePath, source,);
+  return {
+    filePath,
+    [Symbol.dispose]: function cleanup(): void {
+      rmSync(
+        dirPath,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
 /**
  * Names of the substantive syntax rules; each has a fixture in `invalid/`
  * that triggers the rule.
@@ -142,6 +257,7 @@ const SUBSTANTIVE_RULES = [
   'no-for-in',
   'no-function-root-let',
   'no-hasownproperty',
+  'no-low-information-symbol-description',
   'no-module-root-let',
   'no-nullish-union',
   'no-optional-escape',
@@ -401,6 +517,108 @@ await describe({
                 'String#search() with an inline regex requires a scoped disable with justification. Explain why regex is clearer than a string API or parser, and what bounds matching cost.',
                 'String#split() with an inline regex requires a scoped disable with justification. Explain why regex is clearer than a string API or parser, and what bounds matching cost.',
               ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'no-low-information-symbol-description data',
+      children: [
+        it({
+          name: 'passes every labeled pass-data description',
+          fn: async () => {
+            const rows = readDataRows({
+              fileName: 'no-low-information-symbol-description.pass.txt',
+            },);
+            using fixture = createGeneratedSource({
+              fileName: 'pass-rows.ts',
+              source: symbolCallsSource({ rows, },),
+            },);
+            const reported = (await runOxlint(fixture.filePath,)).filter(
+              function isLowInfo(diagnostic,): boolean {
+                return diagnostic.code === LOW_INFO_RULE_CODE;
+              },
+            );
+            expect(reported,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'fails every labeled fail-data description exactly once',
+          fn: async () => {
+            const rows = readDataRows({
+              fileName: 'no-low-information-symbol-description.fail.txt',
+            },);
+            using fixture = createGeneratedSource({
+              fileName: 'fail-rows.ts',
+              source: symbolCallsSource({ rows, },),
+            },);
+            const reported = (await runOxlint(fixture.filePath,)).filter(
+              function isLowInfo(diagnostic,): boolean {
+                return diagnostic.code === LOW_INFO_RULE_CODE;
+              },
+            );
+            expect(reported.length,).toBe(rows.length,);
+          },
+        },),
+        it({
+          name: 'reports a distinct message for every failure branch',
+          fn: async () => {
+            // One representative description per failure branch, in classifier order.
+            const branchRows = [
+              'meow',
+              'STATE IS UNKNOWN',
+              'runWithContext',
+              'token token value status result',
+              'tsdoc/no-tag',
+              'no nested script',
+              'not-a-data-row',
+              'plain old value',
+            ];
+            const expectedPrefixes = [
+              'Symbol description has fewer than 3 distinct words',
+              'Symbol description is entirely uppercase words',
+              'Symbol description is a bare camelCase or PascalCase identifier',
+              'Symbol description repeats a meaningful word',
+              'Symbol description has a namespace prefix but a tail shorter',
+              'Symbol description starts with "no" but has no specificity marker',
+              'Symbol description starts with "not" but has no specificity marker',
+              'Symbol description is a 3-word phrase with no specificity marker',
+            ];
+            using fixture = createGeneratedSource({
+              fileName: 'branches.ts',
+              source: symbolCallsSource({ rows: branchRows, },),
+            },);
+            const messages = (await runOxlint(fixture.filePath,))
+              .filter(function isLowInfo(diagnostic,): boolean {
+                return diagnostic.code === LOW_INFO_RULE_CODE;
+              },)
+              .map(function pickMessage(diagnostic,): string {
+                return diagnostic.message;
+              },);
+            const missing = expectedPrefixes.filter(function unmatched(prefix,): boolean {
+              return !messages.some(function hasPrefix(message,): boolean {
+                return message.startsWith(prefix,);
+              },);
+            },);
+            expect(missing,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'keeps borderline rows out of pass and fail data',
+          fn: async () => {
+            const borderline = readDataRows({
+              fileName: 'no-low-information-symbol-description.borderline.txt',
+            },);
+            const passRows = new Set(readDataRows({
+              fileName: 'no-low-information-symbol-description.pass.txt',
+            },),);
+            const failRows = new Set(readDataRows({
+              fileName: 'no-low-information-symbol-description.fail.txt',
+            },),);
+            const leaked = borderline.filter(function isLeaked(row,): boolean {
+              return passRows.has(row,) || failRows.has(row,);
+            },);
+            expect(leaked,).toEqual([],);
           },
         },),
       ],

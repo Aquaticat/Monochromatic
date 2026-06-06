@@ -10,7 +10,7 @@ type WithOptional = {
 type Plain = string;
 
 // Genuine Symbol sentinel instead of widening the slot to a nullish member.
-const NOT_FOUND = Symbol('not-found',);
+const NOT_FOUND = Symbol('requested key not found in store',);
 
 type LookupResult = string | typeof NOT_FOUND;
 

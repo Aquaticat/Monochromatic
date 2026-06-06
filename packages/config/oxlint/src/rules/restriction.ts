@@ -132,6 +132,15 @@ export const restrictionRules: DummyRuleMap = {
   // why-regex, input-bound, and backtracking-safety rationale.
   'no-restricted-syntax/no-regex': 'error',
 
+  // Static Symbol descriptions must carry enough debugging information. Sentinel
+  // Symbols stand in for nullish unions, so the description is the only identity
+  // at a crash site. A structural classifier (word count, casing, namespace
+  // shape, repetition, and a few grammar hooks) gates it; no Shannon entropy, no
+  // global compression, no vocabulary lists. Initial severity 'warn' until the
+  // remaining repo descriptions are remediated; see
+  // packages/oxlint-plugins/no-restricted-syntax/README.md.
+  'no-restricted-syntax/no-low-information-symbol-description': 'warn',
+
   //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
   'no-restricted-syntax/no-disable-require-tsdoc': 'error',
   'no-restricted-syntax/no-disable-no-switch': 'error',
