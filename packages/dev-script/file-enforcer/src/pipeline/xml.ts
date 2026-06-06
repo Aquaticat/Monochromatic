@@ -203,7 +203,6 @@ function elementAttribute(
  * ```
  */
 function elementsByTag(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- @lezer Tree is an external class, traversed read-only here.
   {
     tree,
     source,

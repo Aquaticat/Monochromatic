@@ -5,6 +5,11 @@ import {
   resolve,
 } from 'node:path';
 import {
+  expandGlob,
+  globWatchDirectory,
+} from '../io/glob.ts';
+import {
+  globs,
   reads,
   writes,
   writeTimestamps,
@@ -38,9 +43,46 @@ export function watchDirs(configPath: string,): Set<string> {
     ...writes,
     resolve(configPath,),
   ];
-  return new Set(allPaths.map(function toDir(filePath,): string {
-    return dirname(filePath,);
-  },),);
+  return new Set([
+    ...allPaths.map(function toDir(filePath,): string {
+      return dirname(filePath,);
+    },),
+    ...[...globs.keys(),].map(function toGlobWatchDirectory(pattern,): string {
+      return globWatchDirectory(pattern,);
+    },),
+  ],);
+}
+
+/**
+ * Returns whether a path currently matches one of the tracked glob patterns.
+ *
+ * @param absolutePath - Absolute path from filesystem event.
+ *
+ * @returns Whether the event path belongs to a tracked glob.
+ *
+ * @example
+ * ```ts
+ * const matched = await matchesTrackedGlob('/repo/src/new.ts');
+ * ```
+ */
+async function matchesTrackedGlob(absolutePath: string,): Promise<boolean> {
+  /**
+   * Per-glob checks for whether current expansion contains the event path.
+   */
+  const matchResults = await Promise.all(
+    [...globs.keys(),].map(async function globContainsPath(pattern,): Promise<boolean> {
+      /**
+       * Current paths matched by this tracked glob.
+       */
+      const matchedPaths = await expandGlob(pattern,);
+      return matchedPaths.some(function pathMatches(candidate,): boolean {
+        return resolve(candidate,) === absolutePath;
+      },);
+    },),
+  );
+  return matchResults.some(function foundMatch(matched,): boolean {
+    return matched;
+  },);
 }
 
 /**
@@ -125,7 +167,8 @@ export async function classifyEvent(
   const resolvedConfig = resolve(configPath,);
 
   if (reads.has(absolutePath,)
-    || (absolutePath === resolvedConfig))
+    || (absolutePath === resolvedConfig)
+    || await matchesTrackedGlob(absolutePath,))
     return 'source';
 
   return 'ignore';

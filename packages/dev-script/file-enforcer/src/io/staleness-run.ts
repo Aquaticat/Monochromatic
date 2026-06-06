@@ -1,13 +1,10 @@
-import {
-  basename,
-  resolve,
-} from 'node:path';
 import { configDependencyPaths, } from '../context.ts';
 import {
   addWatchedPaths,
   setWriteTimestamp,
   trackDest,
 } from '../tracker.ts';
+import { destinationStampListsMatch, } from './staleness-destination-match.ts';
 import {
   loadManifest,
   resolveManifestPath,
@@ -30,60 +27,6 @@ import {
   type StalenessEntry,
   type StalenessOptions,
 } from './staleness-types.ts';
-
-/**
- * File name that marks direct file-enforcer config execution.
- */
-const CONFIG_FILE_NAME = 'file-enforcer.config.ts';
-
-/**
- * Returns whether current process is directly executing a file-enforcer config.
- *
- * @returns Whether `process.argv[1]` is `file-enforcer.config.ts`.
- *
- * @example
- * ```ts
- * const direct = isDirectFileEnforcerConfigRun();
- * ```
- */
-function isDirectFileEnforcerConfigRun(): boolean {
-  /**
-   * Script entry point from process arguments.
-   */
-  const [, entryPoint,] = process.argv;
-  if (entryPoint === undefined)
-    return false;
-
-  return basename(entryPoint,) === CONFIG_FILE_NAME;
-}
-
-/**
- * Exits a directly executed config before consumer builders run when the manifest is fresh.
- *
- * @example
- * ```ts
- * await exitIfFreshDirectConfigRun();
- * ```
- */
-export async function exitIfFreshDirectConfigRun(): Promise<void> {
-  if (!isDirectFileEnforcerConfigRun())
-    return;
-
-  /**
-   * Absolute entry point, used to avoid exiting when the package is imported by a nested helper.
-   */
-  const [, entryPoint,] = process.argv;
-  if (entryPoint === undefined)
-    return;
-  if (resolve(entryPoint,) !== configDependencyPaths()[0])
-    return;
-
-  if (!await freshStalenessManifest({}))
-    return;
-
-  // oxlint-disable-next-line unicorn/no-process-exit -- required to stop direct config execution before consumer builders run on a fresh staleness manifest.
-  process.exit(0,);
-}
 
 /**
  * Returns whether a manifest entry belongs to the active config file.
@@ -149,8 +92,9 @@ function registerFreshManifestPaths(
 }
 
 /**
- * Checks whether every persisted manifest entry is fresh.
- * Used by the CLI to skip importing a no-op config entirely on one-shot runs.
+ * Checks whether every persisted manifest entry for current config is fresh.
+ * This is a diagnostic/helper API; config import must still run so TypeScript
+ * config code can discover untracked and newly-added effects.
  *
  * @param manifestPath - Optional custom manifest path.
  *
@@ -177,11 +121,11 @@ export async function freshStalenessManifest(
    */
   const manifest = loadManifest(resolvedManifestPath,);
   /**
-   * Active config dependency paths for this CLI invocation.
+   * Active config dependency paths for this process invocation.
    */
   const configPaths = new Set(configDependencyPaths(),);
   /**
-   * Persisted entries for the active config run.
+   * Persisted entries for the active config path.
    */
   const entries = Object.values(manifest.entries,)
     .filter(function keepActiveConfigEntry(entry,): boolean {
@@ -226,17 +170,9 @@ export async function freshStalenessManifest(
     return false;
 
   /**
-   * Current destination metadata.
+   * Current destination metadata and content hashes.
    */
-  const currentDestinations = readFileStamps(destinationFiles.map(function destinationPath(destinationFile,): string {
-    return destinationFile.path;
-  },),);
-  if (currentDestinations === ABSENT_FILE_STAMPS)
-    return false;
-  if (!fileStampListsMatch({
-    currentStamps: currentDestinations,
-    recordedStamps: destinationFiles,
-  }))
+  if (!destinationStampListsMatch({ recordedStamps: destinationFiles, }))
     return false;
   if (!await globStampsMatch(sourceGlobs,))
     return false;

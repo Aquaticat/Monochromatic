@@ -1,6 +1,5 @@
 import { findUp, } from 'find-up';
 import { setActiveConfigPath, } from './context.ts';
-import { freshStalenessManifest, } from './io/staleness-run.ts';
 import { l, } from './log.ts';
 import { startWatching, } from './watch/watch.ts';
 
@@ -41,20 +40,8 @@ if (configPath === undefined)
 l.info(`loading config: ${configPath}`,);
 setActiveConfigPath({ configPath, },);
 
-/**
- * Whether a one-shot run can skip importing the config entirely.
- */
-const manifestFresh = watchMode
-  ? false
-  : await freshStalenessManifest({});
-
-if (manifestFresh) {
-  l.info('staleness cache fresh; skipping config import',);
-}
-else {
-  // Importing the config executes it: the config uses top-level await
-  await import(configPath);
-}
+// Importing the config executes it: the config uses top-level await.
+await import(configPath);
 
 if (watchMode)
   await startWatching(configPath,);

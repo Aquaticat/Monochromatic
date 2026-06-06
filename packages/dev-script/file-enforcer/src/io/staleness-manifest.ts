@@ -1,14 +1,11 @@
 import {
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
-import {
-  dirname,
   join,
   resolve,
 } from 'node:path';
-import { isStalenessManifest, } from './staleness-guards.ts';
+import {
+  readManifestFromDisk,
+  writeMergedManifest,
+} from './staleness-manifest-persist.ts';
 import {
   findNodeModulesRoot,
   NODE_MODULES_DIRECTORY_NAME,
@@ -17,7 +14,6 @@ import {
   CACHE_DIRECTORY_NAME,
   EACH_ENTRY_PREFIX,
   MANIFEST_FILE_NAME,
-  MANIFEST_VERSION,
   SINGLE_ENTRY_PREFIX,
   type StalenessEntry,
   type StalenessManifest,
@@ -82,17 +78,16 @@ function flushManifestPath(manifestPath: string,): void {
   if (manifest === undefined)
     return;
 
-  mkdirSync(
-    dirname(manifestPath,),
-    { recursive: true, },
-  );
-  writeFileSync(
+  /**
+   * Manifest merged with any entries other processes wrote while this process ran.
+   */
+  const mergedManifest = writeMergedManifest({
     manifestPath,
-    `${JSON.stringify(
-      manifest,
-      null,
-      2,
-    )}\n`,
+    manifest,
+  },);
+  manifestCache.set(
+    manifestPath,
+    mergedManifest,
   );
 }
 
@@ -115,23 +110,6 @@ process.on(
   'exit',
   flushDirtyManifests,
 );
-
-/**
- * Returns the default empty manifest.
- *
- * @returns Empty manifest for a cache file that does not exist yet.
- *
- * @example
- * ```ts
- * const manifest = emptyManifest();
- * ```
- */
-function emptyManifest(): StalenessManifest {
-  return {
-    version: MANIFEST_VERSION,
-    entries: {},
-  };
-}
 
 /**
  * Resolves the manifest path for a write call.
@@ -196,41 +174,6 @@ export function stalenessKeyForDest(dest: string,): string {
  */
 export function stalenessKeyForDestGlob(destGlob: string,): string {
   return `${EACH_ENTRY_PREFIX}${resolve(destGlob,)}`;
-}
-
-/**
- * Reads a manifest from disk without throwing on absent or invalid files.
- *
- * @param manifestPath - Absolute manifest path.
- *
- * @returns Parsed manifest or an empty manifest.
- *
- * @example
- * ```ts
- * const manifest = readManifestFromDisk('/tmp/manifest.json');
- * ```
- */
-function readManifestFromDisk(manifestPath: string,): StalenessManifest {
-  try {
-    /**
-     * Raw JSON manifest content.
-     */
-    const rawManifest = readFileSync(
-      manifestPath,
-      'utf8',
-    );
-    /**
-     * Parsed JSON manifest value.
-     */
-    const parsedManifest: unknown = JSON.parse(rawManifest,);
-    if (isStalenessManifest(parsedManifest,))
-      return parsedManifest;
-
-    return emptyManifest();
-  }
-  catch {
-    return emptyManifest();
-  }
 }
 
 /**

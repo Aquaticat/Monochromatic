@@ -62,8 +62,10 @@ bun packages/dev-script/file-enforcer/src/index.ts --watch
 One-shot runs persist a manifest at `node_modules/.cache/file-enforcer/staleness-manifest.json`.
 The default manifest path walks up from the current directory until it finds `node_modules`, then writes under that root.
 The manifest records the config file, files read through `cat()` or `addWatchedPaths()`, glob expansions,
-and managed destination metadata.
-On a no-op run, matching metadata exits before consumer config code runs, so existing configs do not need to change.
+and managed destination metadata plus content hashes.
+Config code still executes on every run so new or untracked effects can be discovered.
+Lazy `overwrite()` and `overwriteEach()` builders can skip their content callbacks when captured sources,
+glob expansions, and destination hashes still match.
 
 Pass `manifestPath` only for throwaway fixtures or benchmarks that should not share the default cache.
 

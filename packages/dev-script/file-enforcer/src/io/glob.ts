@@ -169,6 +169,26 @@ export async function expandGlob(pattern: string,): Promise<readonly string[]> {
 }
 
 /**
+ * Returns static directory that should be watched for a glob pattern.
+ *
+ * @param pattern - Glob pattern tracked during config execution.
+ *
+ * @returns Absolute directory whose entries can change the glob result.
+ *
+ * @example
+ * ```ts
+ * const dir = globWatchDirectory('./src/*.ts');
+ * ```
+ */
+export function globWatchDirectory(pattern: string,): string {
+  /**
+   * Static matcher directory from the glob split.
+   */
+  const [cwd,] = splitGlob(pattern,);
+  return cwd;
+}
+
+/**
  * Extracts wildcard segments from a source path using the source glob pattern,
  * then substitutes them into the destination glob pattern.
  *

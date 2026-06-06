@@ -270,7 +270,7 @@ await describe({
       },
     },),
     it({
-      name: 'direct file-enforcer config exits before builders when manifest is fresh',
+      name: 'direct file-enforcer config reruns builders when manifest is fresh',
       fn: async () => {
         const tempDir = await mkdtemp(join(tmpdir(), 'file-enforcer-integ-',),);
         await using _cleanup = {
@@ -295,13 +295,13 @@ await describe({
         await spawn('bun', [configPath,], { cwd: tempDir, },);
         await spawn('bun', [configPath,], { cwd: tempDir, },);
 
-        expect(await readFile(markerPath, 'utf8',),).toBe('ran\n',);
+        expect(await readFile(markerPath, 'utf8',),).toBe('ran\nran\n',);
         expect(await readFile(destPath, 'utf8',),).toBe('stable',);
 
         await writeFile(destPath, 'external edit',);
         await spawn('bun', [configPath,], { cwd: tempDir, },);
 
-        expect(await readFile(markerPath, 'utf8',),).toBe('ran\nran\n',);
+        expect(await readFile(markerPath, 'utf8',),).toBe('ran\nran\nran\n',);
         expect(await readFile(destPath, 'utf8',),).toBe('stable',);
       },
     },),

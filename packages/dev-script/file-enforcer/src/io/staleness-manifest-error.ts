@@ -1,0 +1,92 @@
+//region Error type and unknown-error helpers
+
+/**
+ * Error thrown when manifest cache persistence cannot safely proceed.
+ *
+ * @example
+ * ```ts
+ * throw new StalenessManifestPersistenceError('Invalid staleness manifest');
+ * ```
+ */
+export class StalenessManifestPersistenceError extends Error {
+  /**
+   * Creates a manifest persistence error.
+   *
+   * @param message - Human-readable persistence failure.
+   *
+   * @param options - Optional error cause.
+   *
+   * @example
+   * ```ts
+   * new StalenessManifestPersistenceError('Invalid staleness manifest');
+   * ```
+   */
+  constructor(
+    message: string,
+    options?: Readonly<ErrorOptions>,
+  ) {
+    super(
+      message,
+      options,
+    );
+    this.name = 'StalenessManifestPersistenceError';
+  }
+}
+
+/**
+ * Returns readable message from unknown caught value.
+ *
+ * @param error - Unknown caught value.
+ *
+ * @returns Error message text.
+ *
+ * @example
+ * ```ts
+ * const message = caughtErrorMessage(error);
+ * ```
+ */
+export function caughtErrorMessage(error: unknown,): string {
+  if (error instanceof Error)
+    return error.message;
+
+  return String(error,);
+}
+
+/**
+ * Returns whether unknown caught value carries expected error code.
+ *
+ * @param error - Unknown caught value.
+ *
+ * @param code - Error code to match.
+ *
+ * @returns Whether caught value has requested code.
+ *
+ * @example
+ * ```ts
+ * const absent = caughtErrorHasCode({ error, code: 'ENOENT' });
+ * ```
+ */
+export function caughtErrorHasCode(
+  {
+    error,
+    code,
+  }: {
+    readonly code: string;
+    readonly error: unknown;
+  },
+): boolean {
+  if ((typeof error) !== 'object')
+    return false;
+  if (error === null)
+    return false;
+  /**
+   * Unknown code-like property from caught value.
+   */
+  const { code: actualCode, } = error as { readonly code?: unknown; };
+  if ((typeof actualCode) !== 'string')
+    return false;
+
+  return actualCode === code;
+}
+
+//endregion Error type and unknown-error helpers

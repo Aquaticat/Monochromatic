@@ -1,0 +1,175 @@
+import { readFileSync, } from 'node:fs';
+
+import { isStalenessManifest, } from './staleness-guards.ts';
+import {
+  caughtErrorHasCode,
+  caughtErrorMessage,
+  StalenessManifestPersistenceError,
+} from './staleness-manifest-error.ts';
+import {
+  MANIFEST_VERSION,
+  type StalenessEntry,
+  type StalenessManifest,
+} from './staleness-types.ts';
+
+/**
+ * Read-only manifest shape accepted by persistence helpers.
+ */
+export type PersistableStalenessManifest = Readonly<{
+  /**
+   * Manifest schema version.
+   */
+  readonly version: number;
+
+  /**
+   * Read-only entry map for serialization and merge.
+   */
+  readonly entries: Readonly<Record<string, StalenessEntry>>;
+}>;
+
+//region Manifest parsing and serialization
+
+/**
+ * Returns default empty manifest.
+ *
+ * @returns Empty manifest for absent cache file.
+ *
+ * @example
+ * ```ts
+ * const manifest = emptyManifest();
+ * ```
+ */
+export function emptyManifest(): StalenessManifest {
+  return {
+    version: MANIFEST_VERSION,
+    entries: {},
+  };
+}
+
+/**
+ * Serializes manifest as pretty JSON with trailing newline.
+ *
+ * @param manifest - Manifest object to serialize.
+ *
+ * @returns Manifest JSON text.
+ *
+ * @example
+ * ```ts
+ * const text = serializeManifest(manifest);
+ * ```
+ */
+export function serializeManifest(manifest: PersistableStalenessManifest,): string {
+  return `${JSON.stringify(
+    manifest,
+    null,
+    2,
+  )}\n`;
+}
+
+/**
+ * Reads manifest from disk, returning empty only when file is absent.
+ *
+ * @param manifestPath - Absolute manifest path.
+ *
+ * @returns Parsed manifest.
+ *
+ * @throws When manifest exists but is unreadable or invalid.
+ *
+ * @example
+ * ```ts
+ * const manifest = readManifestFromDisk('/tmp/manifest.json');
+ * ```
+ */
+export function readManifestFromDisk(manifestPath: string,): StalenessManifest {
+  /**
+   * Raw manifest JSON content read from disk.
+   */
+  const rawManifest = readManifestContent(manifestPath,);
+  /**
+   * Parsed manifest JSON value.
+   */
+  const parsedManifest = parseManifestJson({
+    manifestPath,
+    rawManifest,
+  },);
+
+  if (isStalenessManifest(parsedManifest,))
+    return parsedManifest;
+
+  throw new StalenessManifestPersistenceError(
+    `Invalid staleness manifest schema at ${manifestPath}`,
+  );
+}
+
+/**
+ * Reads raw manifest JSON text from disk.
+ *
+ * @param manifestPath - Absolute manifest path.
+ *
+ * @returns Raw manifest text, or empty manifest JSON when absent.
+ *
+ * @throws When manifest exists but cannot be read.
+ *
+ * @example
+ * ```ts
+ * const raw = readManifestContent('/tmp/manifest.json');
+ * ```
+ */
+function readManifestContent(manifestPath: string,): string {
+  try {
+    return readFileSync(
+      manifestPath,
+      'utf8',
+    );
+  }
+  catch (readError: unknown) {
+    if (caughtErrorHasCode({
+      error: readError,
+      code: 'ENOENT',
+    },))
+      return serializeManifest(emptyManifest(),);
+
+    throw new StalenessManifestPersistenceError(
+      `Could not read staleness manifest ${manifestPath}: ${caughtErrorMessage(readError,)}`,
+      { cause: readError, },
+    );
+  }
+}
+
+/**
+ * Parses raw manifest JSON text.
+ *
+ * @param manifestPath - Absolute manifest path for diagnostics.
+ *
+ * @param rawManifest - Raw manifest JSON text.
+ *
+ * @returns Parsed JSON value.
+ *
+ * @throws When JSON parsing fails.
+ *
+ * @example
+ * ```ts
+ * const parsed = parseManifestJson({ manifestPath, rawManifest });
+ * ```
+ */
+function parseManifestJson(
+  {
+    manifestPath,
+    rawManifest,
+  }: {
+    readonly manifestPath: string;
+    readonly rawManifest: string;
+  },
+): unknown {
+  try {
+    return JSON.parse(rawManifest,);
+  }
+  catch (parseError: unknown) {
+    throw new StalenessManifestPersistenceError(
+      `Invalid staleness manifest ${manifestPath}: ${caughtErrorMessage(parseError,)}`,
+      { cause: parseError, },
+    );
+  }
+}
+
+//endregion Manifest parsing and serialization

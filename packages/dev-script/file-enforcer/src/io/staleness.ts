@@ -5,6 +5,7 @@ import {
   trackDest,
   type TrackedGlob,
 } from '../tracker.ts';
+import { destinationStampListsMatch, } from './staleness-destination-match.ts';
 import { destinationStamps, } from './staleness-destinations.ts';
 import {
   loadManifest,
@@ -80,24 +81,12 @@ async function entryMetadataMatches(entry: StalenessEntry,): Promise<boolean> {
     return false;
 
   /**
-   * Current destination metadata.
+   * Current destination metadata and content hashes.
    */
-  const destinationPaths = entry
-    .destinationFiles
-    .map(function destinationPath(destinationFile,): string {
-      return destinationFile.path;
-    },);
-  /**
-   * Current metadata for destination files.
-   */
-  const currentDestinations = readFileStamps(destinationPaths,);
-  if (currentDestinations === ABSENT_FILE_STAMPS)
+  if (!destinationStampListsMatch({ recordedStamps: entry.destinationFiles, }))
     return false;
 
-  return fileStampListsMatch({
-    currentStamps: currentDestinations,
-    recordedStamps: entry.destinationFiles,
-  });
+  return true;
 }
 
 /**
