@@ -137,8 +137,6 @@ OPA: `AskUserQuestion`: each option's `description` holds its pros + cons; order
 
 OPI: Inline prose: one short paragraph/bullet block per option with pros + cons, then "Ranking: B > A > C, because ..." line explaining each step of order, not just top pick.
 
-OP2: Skip when user asked yes/no on single proposal, or already narrowed criteria enough that one option determined.
-
 ### Hedge phrases that signal a skipped step
 
 HDG: Don't write these; do the step instead. Catch before sending.
