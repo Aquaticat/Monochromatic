@@ -466,9 +466,7 @@ TQ1: No rest parameters (`...args`) in functions we control; accept array parame
 
 TQ2: Export immediately at declaration; avoid `Object.assign` for extending typed objects.
 
-XPT: Exposing a small helper through package API for built-artifact tests is allowed.
-Do not treat public-surface expansion for testability as a blocker;
-still document, type, and name that helper like normal supported API.
+XPT: Exporting small helpers through package API for built-artifact tests allowed.
 
 TQ3: Throw + return early; use overloads (most specific first).
 

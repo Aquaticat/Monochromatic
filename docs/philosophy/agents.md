@@ -188,6 +188,13 @@ work. AGENTS.md should name concrete forks agents face, not broad slogans that c
 
 TypeScript does not propagate `const` narrowing into function declarations (both tsc and tsgo); the compiler only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures, because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check.
 
+#### TypeScript: export-for-testability API seams
+
+Built-artifact tests import package output. Sometimes the right seam is a small helper factored from production code,
+not only the top-level behavior. Exposing that helper is acceptable because the package boundary is also the testing
+boundary. Do not block the choice merely because it expands public surface. Once exported, treat it like normal supported
+API: document it, type it, name it clearly, and keep behavior stable unless intentionally changed.
+
 #### Git cleanup and worktree safety reviews: the cli-git tool-cache allowlist
 
 When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`, currently uv's git cache): repositories whose git-dir resolves under an allowed dir bypass that guard, so destructive git is not actually blocked there.
@@ -336,3 +343,8 @@ The `troubleshooting-doc` skill's exception is a disposable prototype clone crea
 upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
 third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
+
+## Changelog
+
+- Moved export-for-testability rationale from AGENTS.md into this philosophy doc so AGENTS.md keeps only the terse XPT
+  rule while the common-sense details stay available for readers who want the reasoning.
