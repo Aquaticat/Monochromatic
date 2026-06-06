@@ -149,7 +149,7 @@ export async function watchDirectory(
    * onWatcherError(new Error('synthetic watcher error'));
    * ```
    */
-  function onWatcherError(watchError: Error,): void {
+  function onWatcherError(watchError: unknown,): void {
     // oxlint-disable-next-line typescript/no-floating-promises -- completion.promise observes close success or failure.
     closeForFailure(watchError,);
   }
