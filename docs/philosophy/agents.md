@@ -171,6 +171,15 @@ This is the test-tooling instance of the general rule above ("Code examples for 
 
 The explanatory "why/how" for each rule below was moved here so AGENTS.md keeps only the terse enforceable rule, cue, and tokens. Headings match the AGENTS.md section they came from.
 
+### Rule details
+
+#### Architecture decisions: why AD3 names concrete pattern only
+
+AD3 is a narrow architecture rule: prefer calling async functions directly over building descriptor objects that another
+interpreter executes. It is not a shortcut license. The earlier "apply YAGNI to architecture" clause compressed that
+intent into a slogan, and agents misread the slogan as permission to skip verification, tests, documentation, or design
+work. AGENTS.md should name concrete forks agents face, not broad slogans that can override other rules in practice.
+
 #### Essential commands: why `bun test` is banned for this harness
 
 `bun test` specifically: never substitute it for a missing mise task. The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import, so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations). The misleading summary suggests the run was broken when in fact every test passed. Use `mise run //packages/<path>:test:unit`; if no such task exists, run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern). A `PreToolUse` hook (`ccgr`, source at `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.

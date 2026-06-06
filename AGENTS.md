@@ -757,7 +757,7 @@ AD1: Root `package.json` may depend on workspace packages; root configs import b
 
 AD2: Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`, `await`).
 
-AD3: Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
+AD3: Direct async execution over descriptor/interpreter patterns.
 
 AD4: Nested calls (`b(a())`) over method chaining to keep functions self-contained;
 split chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
