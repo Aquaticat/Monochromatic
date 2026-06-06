@@ -336,9 +336,3 @@ The `troubleshooting-doc` skill's exception is a disposable prototype clone crea
 upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
 third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
-
-## Changelog
-
-- 2026-06-06: Migrated TP4, TP5, TP7, and TP8 meanings into `troubleshooting-doc`, and TP6 replacement-audit
-  meaning into `choosing-technology`. AGENTS.md now keeps only immediate API and CLI lookup rules for third-party
-  libraries.
