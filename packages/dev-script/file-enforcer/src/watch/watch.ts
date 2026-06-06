@@ -18,6 +18,10 @@ import {
   type EventKind,
   watchDirs,
 } from './watch-filter.ts';
+import {
+  createWatchRerunQueue,
+  type WatchRerunBatch,
+} from './watch-rerun-queue.ts';
 
 /**
  * Watches source files and managed destinations, re-executing the config
@@ -101,6 +105,23 @@ export function startWatching(configPath: string,): Promise<never> {
   }
 
   /**
+   * Serial queue that prevents overlapping config reruns from interleaving tracker
+   * reset, config import, and watcher recreation.
+   */
+  const rerunQueue = createWatchRerunQueue({
+    run: async function runWatchRerunBatch(batch: WatchRerunBatch,): Promise<void> {
+      for (const protectedPath of batch.protectedPaths) {
+        // oxlint-disable-next-line no-await-in-loop -- sequential notification to avoid spamming
+        await notifyWriteProtection(protectedPath,);
+      }
+      await rerun(batch.paths,);
+    },
+    onError: function logWatchRerunError(runError: unknown,): void {
+      rl.error(`watch rerun failed: ${String(runError,)}`,);
+    },
+  },);
+
+  /**
    * Handles a classified filesystem event by accumulating the changed path
    * and scheduling a debounced re-run. Multiple rapid events are coalesced
    * into a single re-run that invalidates all accumulated paths.
@@ -150,17 +171,18 @@ export function startWatching(configPath: string,): Promise<never> {
            * Snapshot of paths that need write-protection notifications, paired with `paths`.
            */
           const protectedPaths = [...pendingProtected,];
+          /**
+           * Debounced watch event batch submitted to the serial rerun queue.
+           */
+          const batch: WatchRerunBatch = {
+            paths,
+            protectedPaths,
+          };
           pendingPaths.clear();
           pendingProtected.clear();
           debounceTimerHolder.delete('timer',);
-          // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
-          (async function batchRerun(): Promise<void> {
-            for (const protectedPath of protectedPaths) {
-              // oxlint-disable-next-line no-await-in-loop -- sequential notification to avoid spamming
-              await notifyWriteProtection(protectedPath,);
-            }
-            await rerun(paths,);
-          })();
+          // oxlint-disable-next-line typescript/no-floating-promises -- queued reruns report errors and keep draining later batches
+          rerunQueue.enqueue(batch,);
         },
         DEBOUNCE_MS,
       ),

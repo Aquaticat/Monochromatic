@@ -145,6 +145,16 @@ export {
   DEBOUNCE_MS,
   watchDirectory,
 } from './watch/watch-dir.ts';
+export {
+  createWatchRerunQueue,
+} from './watch/watch-rerun-queue.ts';
+export type {
+  WatchRerunBatch,
+  WatchRerunErrorHandler,
+  WatchRerunHandler,
+  WatchRerunQueue,
+  WatchRerunReporterLogger,
+} from './watch/watch-rerun-queue.ts';
 export type { EventKind, } from './watch/watch-filter.ts';
 export {
   classifyEvent,
