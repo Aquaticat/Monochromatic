@@ -143,10 +143,12 @@ assumes a second reviewer, and this repo is one person, so the human-review fram
 only gate that means anything to a solo author is the machine kind: requiring CI to pass before code is
 permanent on `main`. The repo does have CI workflows (`.github/workflows/`), but the `*` protection
 rule's `requiredStatusChecks` lists zero contexts, so nothing is actually enforced, which is why a broken
-commit can land and then need one of the 37 reverts. So the keep-able nugget is narrow: name the
-lint/type/test checks as required status checks so `main` self-defends. Everything else about committing
-straight to `main` is correct for a one-cat repo, and adding pull-request ceremony for an audience of one
-would be pure overhead.
+commit can land and then need one of the 37 reverts. So the keep-able nugget is narrow: a local pre-push hook that
+runs lint, types, and tests, so a red commit never reaches `main` in the first place, needing no PRs and
+no second person. (Server-side required status checks are the equivalent only if you later adopt pull
+requests, since they gate merges rather than direct pushes.) Everything else about committing straight to
+`main` is correct for a one-cat repo, and adding pull-request ceremony for an audience of one would be
+pure overhead.
 
 ## What is actually fine, credit where due
 
