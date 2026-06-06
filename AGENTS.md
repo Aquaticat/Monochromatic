@@ -194,14 +194,8 @@ Recommendation after only checking layer 1 is guess shaped by surface you happen
 
 ### Before claiming inability
 
-CB1: "I cannot read this file format" / "I can't render / preview / test the page in a browser" / "you'll need to do X yourself" are capability claims about whole toolset, not Read/Bash alone.
-Bash + shell utilities compose with Read into more than any single tool.
-Before refusing/handing off, try a bridge: convert input to format your tools accept, decompose into supported steps, pipe file through shell utility, or drive real browser via `agent-browser` (opens local `file://` URLs, evals JS, screenshots, console errors).
-
-CB2: Browser-claim form especially sticky;
-about to write any phrasing meaning "can't see / render / interact with a web page," reach for `agent-browser` first.
-
-BRG: Manual actions usually have a bridge too: GUI clicks (`agent-browser` for web UIs, `xdotool`/`wtype`/`ydotool` for native UIs, synthesised keyboard shortcut, backing HTTP/IPC endpoint), interactive auth (`expect`, API tokens), hardware activation (almost always a CLI).
+CB1: Capability/handoff claims ("can't read/render/test", "you'll need to") cover whole toolset, not Read/Bash limits.
+Before refusing, bridge: convert/decompose/pipe through shell utilities; web/browser via `agent-browser`; native GUI via `xdotool`/`wtype`/`ydotool`, shortcuts, or HTTP/IPC; auth via `expect`/tokens; hardware via CLI.
 
 BR2: Refuse/hand off only after attempting bridge + confirming no path exists.
 State bridges you tried;
