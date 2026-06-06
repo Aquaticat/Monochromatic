@@ -421,11 +421,7 @@ TLG: Always use tagged loggers from `@monochromatic-dev/module-logger`.
 Never raw `console.log`/`console.error` or untagged logger instances in production code.
 Exception: raw `console` when precise control over terminal output needed (CLI user-facing messages, progress indicators, interactive prompts).
 
-LG1: Tag at every module + function boundary; use `myFn.name` as tag to stay in sync with refactors.
-
-LG2: Compose tags deeply: calling sub-function that accepts a logger, wrap current logger with additional tag before passing it.
-
-LG3: Never embed tags manually in message strings. Use `tagged` wrapper instead.
+LG1: Tag every module + function boundary with logger tags, using `myFn.name`; when passing logger to tagged sub-function, wrap with additional tag. Never embed tags in message strings; use `tagged` wrapper.
 
 ### Security
 
