@@ -84,6 +84,12 @@ Cue: about to attribute rule to source without verifying it contains it.
 EXT: External tool features, CLI options, conf syntax, API capabilities: fetch current docs/src before responding.
 "Does X support Y", "how do I do Y in X" = research tasks, not recall.
 
+VQS: Open-source tool/library/framework vetting requires upstream source inspection before recommendation.
+Clone the upstream repo under `/tmp/agent` (see CLN), spot-read core implementation paths,
+inspect CI/lint/build config, enumerate tests, coverage, fuzzing/property tests, mutation testing or explicit absence,
+and run at least one lightweight source-backed verification command (metadata, listing, targeted check) unless unsafe/impractical.
+Report path/command evidence plus gaps; docs and repository metadata alone are not a vet.
+
 WRN: Explaining warning/error: name exact emitting tool, not vague category; cite diagnostic code/message.
 Unsure? Investigate first: grep codebase for diagnostic, check tool docs, run tool.
 
