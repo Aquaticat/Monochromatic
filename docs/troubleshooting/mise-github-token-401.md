@@ -1,4 +1,4 @@
-# mise 2026.5.15 sends stale MISE_GITHUB_TOKEN to GitHub tags API and gets 401
+# mise 2026.5.15 uses current MISE_GITHUB_TOKEN and gets 401 when GitHub rejects it
 
 This note records a local diagnosis from 2026-06-05 against mise 2026.5.15
 (`v2026.5.15`, upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`).
@@ -55,8 +55,9 @@ for var_name in &["MISE_GITHUB_TOKEN", "GITHUB_API_TOKEN", "GITHUB_TOKEN"] {
 }
 ```
 
-That means a stale `MISE_GITHUB_TOKEN` blocks fallback to gh CLI credentials,
-`github_tokens.toml`, or unauthenticated public API access.
+That means any non-empty `MISE_GITHUB_TOKEN`, including an old or otherwise
+rejected value, blocks fallback to gh CLI credentials, `github_tokens.toml`, or
+unauthenticated public API access.
 
 ### Step 2: mise sends the resolved token as a GitHub API bearer token
 
@@ -73,8 +74,8 @@ if is_github_api_url(&url)
     );
 ```
 
-If the current shell still contains the revoked pre-rotation token, every new
-mise process sees that stale value and sends it.
+If the current shell contains an old, revoked, malformed, or otherwise rejected
+token, every new mise process sees that value and sends it.
 
 ### Step 3: `mise token github` reports source, not validity
 
@@ -210,7 +211,7 @@ Tradeoff: this only fixes processes launched after the export. Existing shells,
 watchers, terminals, IDEs, and background services keep their old inherited
 environment until restarted or explicitly updated.
 
-### Remove the stale token for a one-off public lookup
+### Remove the rejected token for a one-off public lookup
 
 For public repositories, unset the token variables for a single command:
 
@@ -272,8 +273,8 @@ No matching issue was found. The only PR search hit was closed PR `jdx/mise#401`
 ### Upstream filing decision
 
 1.  Is it really upstream's fault? No. mise chose the documented highest-priority
-    environment token and GitHub rejected that token. The stale value lives in
-    the local process environment.
+    environment token and GitHub rejected that token. The rejected value lives
+    in the local process environment.
 2.  Can upstream fix it? Not as a correctness bug. Upstream could improve wording
     for invalid environment tokens, but it cannot update already-running shells
     after a user rotates a token elsewhere.
