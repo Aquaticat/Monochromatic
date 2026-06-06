@@ -13,8 +13,8 @@ Reach zero misclassifications on the persisted symbol-description calibration da
 ## Current dataset state
 
 The pass dataset has 144 descriptions.
-The fail dataset has 188 descriptions.
-The current benchmark page embeds 332 rows.
+The fail dataset has 198 descriptions.
+The current benchmark page embeds 342 rows.
 
 The user added short pass examples, then asked for more low-character pass cases. The pass file now includes examples such as:
 
@@ -38,6 +38,19 @@ Adversarial fail rows were added after the classifier first reached zero errors:
 - `NO STATIC METHOD NAME`
 - `value missing because value missing`
 - `file absent because file absent`
+
+Repo-existing all-uppercase symbol descriptions added as definite fail rows:
+
+- `NO_CHURN`
+- `NO_DEEPEN`
+- `NO_HOST_COMMITS`
+- `NO_LAST_PAGE`
+- `NO_ORIGIN`
+- `NO_REFS`
+- `NO_STORAGE`
+- `NO_TREE0`
+- `NOT_FOUND`
+- `UNMEASURED`
 
 ## Classifier now embedded in the benchmark
 
@@ -73,11 +86,11 @@ A browser verification loaded the benchmark HTML through `agent-browser` at its 
 The rendered page reported:
 
 - pass count: 144,
-- fail count: 188,
+- fail count: 198,
 - classifier errors: 0,
 - classifier summary: `Classifier gives 0 total errors, 0 false-failed pass descriptions, and 0 missed fail descriptions.`,
 - classifier mismatch table: `No classifier mismatches.`,
-- dataset rows: 332.
+- dataset rows: 342.
 
 `agent-browser errors` and `agent-browser console` returned no output after verification.
 
