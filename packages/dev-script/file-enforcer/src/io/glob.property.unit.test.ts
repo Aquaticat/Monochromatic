@@ -111,15 +111,21 @@ await describe({
                   const index = firstGlobMetaIndex(candidate,);
                   if (index === (-1)) {
                     for (let cursor = 0; cursor < candidate.length; cursor += 1) {
-                      expect(GLOB_META_CHARS.includes(candidate.charAt(cursor,),),).toBe(false,);
+                      const char = candidate.charAt(cursor,);
+                      expect(GLOB_META_CHARS.includes(char,),).toBe(false,);
                     }
                     return;
                   }
                   expect(index,).toBeGreaterThanOrEqual(0,);
                   expect(index,).toBeLessThan(candidate.length,);
-                  expect(GLOB_META_CHARS.includes(candidate.charAt(index,),),).toBe(true,);
+                  /**
+                   * Character at the reported metacharacter index.
+                   */
+                  const metaChar = candidate.charAt(index,);
+                  expect(GLOB_META_CHARS.includes(metaChar,),).toBe(true,);
                   for (let cursor = 0; cursor < index; cursor += 1) {
-                    expect(GLOB_META_CHARS.includes(candidate.charAt(cursor,),),).toBe(false,);
+                    const char = candidate.charAt(cursor,);
+                    expect(GLOB_META_CHARS.includes(char,),).toBe(false,);
                   }
                 },
               ),

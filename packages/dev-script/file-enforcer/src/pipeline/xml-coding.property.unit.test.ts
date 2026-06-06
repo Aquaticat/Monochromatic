@@ -71,6 +71,12 @@ const DIGIT_ZERO_CODE_POINT = 48;
 const DIGIT_NINE_CODE_POINT = 57;
 
 /**
+ * Highest Unicode code point (`U+10FFFF`); upper bound for the digit-range
+ * property so the whole code space is sampled.
+ */
+const MAX_UNICODE_CODE_POINT = 1_114_111;
+
+/**
  * Arbitrary text rich in characters that exercise the coder's branches:
  * the escaped delimiters, entity punctuation, an apostrophe, control
  * characters, a no-break space, and an astral code point. Unioned with the
@@ -168,7 +174,7 @@ await describe({
               asyncProperty(
                 integer({
                   min: -10,
-                  max: 0x10FFFF,
+                  max: MAX_UNICODE_CODE_POINT,
                 },),
                 async function matchesRange(codePoint,) {
                   /**
