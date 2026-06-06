@@ -327,3 +327,8 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+
+## Changelog
+
+- 2026-06-06: Merged XC2 into XCM, keeping the combined external-communication rule under 100 words while
+  preserving user-only choice handling and necessary blocker-question allowance.
