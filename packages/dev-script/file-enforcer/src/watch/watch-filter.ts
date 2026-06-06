@@ -14,6 +14,10 @@ import {
   writes,
   writeTimestamps,
 } from '../tracker.ts';
+import {
+  nearestExistingDirectory,
+  trackedGlobStaticDirectoryAffected,
+} from './watch-path.ts';
 
 /**
  * Possible outcomes when classifying a filesystem event
@@ -48,7 +52,7 @@ export function watchDirs(configPath: string,): Set<string> {
       return dirname(filePath,);
     },),
     ...[...globs.keys(),].map(function toGlobWatchDirectory(pattern,): string {
-      return globWatchDirectory(pattern,);
+      return nearestExistingDirectory(globWatchDirectory(pattern,),);
     },),
   ],);
 }
@@ -168,6 +172,7 @@ export async function classifyEvent(
 
   if (reads.has(absolutePath,)
     || (absolutePath === resolvedConfig)
+    || trackedGlobStaticDirectoryAffected(absolutePath,)
     || await matchesTrackedGlob(absolutePath,))
     return 'source';
 

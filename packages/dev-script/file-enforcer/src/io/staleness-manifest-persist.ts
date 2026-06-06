@@ -1,5 +1,9 @@
+import { randomUUID, } from 'node:crypto';
 import {
+  closeSync,
+  fsyncSync,
   mkdirSync,
+  openSync,
   renameSync,
   rmSync,
   writeFileSync,
@@ -7,6 +11,7 @@ import {
 import { dirname, } from 'node:path';
 
 import { acquireManifestLock, } from './staleness-manifest-lock.ts';
+import { caughtErrorHasCode, } from './staleness-manifest-error.ts';
 import {
   readManifestFromDisk,
   serializeManifest,
@@ -19,6 +24,16 @@ import {
 
 export { readManifestFromDisk, } from './staleness-manifest-parse.ts';
 
+/**
+ * Disposable file descriptor used for synchronous durability helpers.
+ */
+type DisposableFileDescriptor = Disposable & Readonly<{
+  /**
+   * Open file descriptor.
+   */
+  readonly fd: number;
+}>;
+
 //region Atomic write constants
 
 /**
@@ -27,6 +42,150 @@ export { readManifestFromDisk, } from './staleness-manifest-parse.ts';
 const TEMP_FILE_SUFFIX = '.tmp';
 
 //endregion Atomic write constants
+
+//region File descriptor durability helpers
+
+/**
+ * Error codes meaning directory fsync is unsupported by platform or filesystem.
+ */
+const UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES = [
+  'EACCES',
+  'EINVAL',
+  'EISDIR',
+  'ENOSYS',
+  'ENOTSUP',
+  'EPERM',
+] as const;
+
+/**
+ * Returns whether caught error means directory fsync is unsupported.
+ *
+ * @param error - Unknown caught value from directory open or fsync.
+ *
+ * @returns Whether directory fsync should degrade to best effort.
+ *
+ * @example
+ * ```ts
+ * const unsupported = directoryFsyncUnsupported(error);
+ * ```
+ */
+function directoryFsyncUnsupported(error: unknown,): boolean {
+  return UNSUPPORTED_DIRECTORY_FSYNC_ERROR_CODES.some(function errorCodeMatches(code,): boolean {
+    return caughtErrorHasCode({
+      error,
+      code,
+    },);
+  },);
+}
+
+/**
+ * Wraps file descriptor in disposable close handle.
+ *
+ * @param fd - Open file descriptor.
+ *
+ * @returns Disposable file descriptor wrapper.
+ *
+ * @example
+ * ```ts
+ * using file = disposableFileDescriptor({ fd });
+ * ```
+ */
+function disposableFileDescriptor({ fd, }: { readonly fd: number; },): DisposableFileDescriptor {
+  return {
+    fd,
+    [Symbol.dispose](): void {
+      closeSync(fd,);
+    },
+  };
+}
+
+/**
+ * Opens writable file as disposable descriptor.
+ *
+ * @param path - Path to open for writing.
+ *
+ * @returns Disposable writable descriptor.
+ *
+ * @example
+ * ```ts
+ * using file = openWritableFile('/tmp/manifest.tmp');
+ * ```
+ */
+function openWritableFile(path: string,): DisposableFileDescriptor {
+  return disposableFileDescriptor({
+    fd: openSync(
+      path,
+      'w',
+    ),
+  },);
+}
+
+/**
+ * Writes and fsyncs manifest temp file before rename.
+ *
+ * @param tempPath - Same-directory temp path.
+ *
+ * @param manifest - Manifest to serialize.
+ *
+ * @example
+ * ```ts
+ * writeManifestTempFile({ tempPath, manifest });
+ * ```
+ */
+function writeManifestTempFile(
+  {
+    tempPath,
+    manifest,
+  }: {
+    readonly manifest: PersistableStalenessManifest;
+    readonly tempPath: string;
+  },
+): void {
+  {
+    /**
+     * Writable temp-file descriptor fsynced before rename.
+     */
+    using tempFile = openWritableFile(tempPath,);
+    writeFileSync(
+      tempFile.fd,
+      serializeManifest(manifest,),
+    );
+    fsyncSync(tempFile.fd,);
+  }
+}
+
+/**
+ * Fsyncs directory containing renamed manifest to persist directory entry.
+ *
+ * @param directoryPath - Directory path to fsync.
+ *
+ * @example
+ * ```ts
+ * fsyncDirectory('/tmp/cache');
+ * ```
+ */
+function fsyncDirectory(directoryPath: string,): void {
+  try {
+    /**
+     * Directory descriptor fsynced after manifest rename.
+     */
+    using directory = disposableFileDescriptor({
+      fd: openSync(
+        directoryPath,
+        'r',
+      ),
+    },);
+    fsyncSync(directory.fd,);
+  }
+  catch (directoryFsyncError: unknown) {
+    if (directoryFsyncUnsupported(directoryFsyncError,))
+      return;
+
+    throw directoryFsyncError;
+  }
+}
+
+//endregion File descriptor durability helpers
 
 //region Atomic write and inter-process merge
 
@@ -51,14 +210,18 @@ function writeManifestAtomically(
     readonly manifestPath: string;
   },
 ): void {
+  /**
+   * Directory containing manifest and same-directory temp files.
+   */
+  const manifestDirectory = dirname(manifestPath,);
   mkdirSync(
-    dirname(manifestPath,),
+    manifestDirectory,
     { recursive: true, },
   );
   /**
    * Same-directory temp path used for atomic replacement.
    */
-  const tempPath = `${manifestPath}.${String(process.pid,)}.${String(Date.now(),)}${TEMP_FILE_SUFFIX}`;
+  const tempPath = `${manifestPath}.${String(process.pid,)}.${randomUUID()}${TEMP_FILE_SUFFIX}`;
   /**
    * Cleanup handle for temp file when write or rename fails.
    */
@@ -70,14 +233,15 @@ function writeManifestAtomically(
       );
     },
   };
-  writeFileSync(
+  writeManifestTempFile({
     tempPath,
-    serializeManifest(manifest,),
-  );
+    manifest,
+  },);
   renameSync(
     tempPath,
     manifestPath,
   );
+  fsyncDirectory(manifestDirectory,);
 }
 
 /**

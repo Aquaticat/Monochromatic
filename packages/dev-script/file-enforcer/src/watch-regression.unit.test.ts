@@ -120,5 +120,137 @@ await describe({
         },),).toBe('source',);
       },
     },),
+
+    it({
+      name: 'missing glob dependency roots watch nearest existing ancestor',
+      fn: async function missingGlobRootWatchesAncestor(): Promise<void> {
+        const tempDir = await setup();
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return teardown(tempDir,);
+          },
+        };
+        reset();
+        resetWriteTimestamps();
+        const sourceDirectory = join(
+          tempDir,
+          'future',
+          'src',
+        );
+        const configPath = join(
+          tempDir,
+          'file-enforcer.config.ts',
+        );
+        await writeFile(
+          configPath,
+          '',
+        );
+        await cat(join(
+          sourceDirectory,
+          '*.txt',
+        ),);
+
+        /**
+         * Directories watched after recording an empty glob with missing static root.
+         */
+        const watchedDirectories = watchDirs(configPath,);
+        expect(watchedDirectories.has(tempDir,),).toBe(true,);
+        /**
+         * Missing glob root that should not be watched directly until it exists.
+         */
+        const resolvedSourceDirectory = resolve(sourceDirectory,);
+        expect(watchedDirectories.has(resolvedSourceDirectory,),).toBe(false,);
+        await mkdir(
+          sourceDirectory,
+          { recursive: true, },
+        );
+        expect(await classifyEvent({
+          filename: 'future',
+          watchedDir: tempDir,
+          configPath,
+        },),).toBe('source',);
+      },
+    },),
+
+    it({
+      name: 'missing glob dependency roots advance watched ancestor after each rerun',
+      fn: async function missingGlobRootAdvancesWatchedAncestor(): Promise<void> {
+        const tempDir = await setup();
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return teardown(tempDir,);
+          },
+        };
+        reset();
+        resetWriteTimestamps();
+        const futureDirectory = join(
+          tempDir,
+          'future',
+        );
+        const sourceDirectory = join(
+          futureDirectory,
+          'src',
+        );
+        const sourceGlob = join(
+          sourceDirectory,
+          '*.txt',
+        );
+        const configPath = join(
+          tempDir,
+          'file-enforcer.config.ts',
+        );
+        await writeFile(
+          configPath,
+          '',
+        );
+        await cat(sourceGlob,);
+        /**
+         * Directories watched before any missing glob-root ancestors exist.
+         */
+        const initiallyWatchedDirectories = watchDirs(configPath,);
+        expect(initiallyWatchedDirectories.has(tempDir,),).toBe(true,);
+
+        await mkdir(futureDirectory,);
+        expect(await classifyEvent({
+          filename: 'future',
+          watchedDir: tempDir,
+          configPath,
+        },),).toBe('source',);
+
+        reset();
+        await cat(sourceGlob,);
+        /**
+         * Directories watched after first missing ancestor exists.
+         */
+        const futureWatchedDirectories = watchDirs(configPath,);
+        expect(futureWatchedDirectories.has(futureDirectory,),).toBe(true,);
+        await mkdir(sourceDirectory,);
+        expect(await classifyEvent({
+          filename: 'src',
+          watchedDir: futureDirectory,
+          configPath,
+        },),).toBe('source',);
+
+        reset();
+        await cat(sourceGlob,);
+        /**
+         * Directories watched after static glob root exists.
+         */
+        const sourceWatchedDirectories = watchDirs(configPath,);
+        expect(sourceWatchedDirectories.has(sourceDirectory,),).toBe(true,);
+        await writeFile(
+          join(
+            sourceDirectory,
+            'new.txt',
+          ),
+          'new content',
+        );
+        expect(await classifyEvent({
+          filename: 'new.txt',
+          watchedDir: sourceDirectory,
+          configPath,
+        },),).toBe('source',);
+      },
+    },),
   ],
 },);

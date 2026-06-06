@@ -4,6 +4,8 @@ import {
 } from 'node:fs';
 import { dirname, } from 'node:path';
 
+import { recoverStaleManifestLock, } from './staleness-manifest-lock-recovery.ts';
+import { writeLockOwner, } from './staleness-manifest-lock-owner.ts';
 import {
   caughtErrorHasCode,
   StalenessManifestPersistenceError,
@@ -55,7 +57,7 @@ const sleepArray = new Int32Array(sleepBuffer,);
 
 //endregion Locking and synchronous sleep constants
 
-//region Lock acquisition
+//region Lock acquisition helpers
 
 /**
  * Sleeps synchronously while polling manifest lock.
@@ -75,6 +77,91 @@ function sleepSync({ durationMs, }: { readonly durationMs: number; },): void {
     durationMs,
   );
 }
+
+/**
+ * Removes lock directory if owner metadata cannot be written.
+ *
+ * @param lockPath - Lock directory path.
+ *
+ * @param ownerError - Error thrown while writing owner metadata.
+ *
+ * @throws Always rethrows `ownerError` after cleanup.
+ *
+ * @example
+ * ```ts
+ * cleanupFailedOwnerWrite({ lockPath, ownerError });
+ * ```
+ */
+function cleanupFailedOwnerWrite(
+  {
+    lockPath,
+    ownerError,
+  }: {
+    readonly lockPath: string;
+    readonly ownerError: unknown;
+  },
+): never {
+  rmSync(
+    lockPath,
+    {
+      recursive: true,
+      force: true,
+    },
+  );
+  throw ownerError;
+}
+
+/**
+ * Records lock owner metadata after directory acquisition.
+ *
+ * @param lockPath - Lock directory path.
+ *
+ * @example
+ * ```ts
+ * recordLockOwner('/tmp/manifest.json.lock');
+ * ```
+ */
+function recordLockOwner(lockPath: string,): void {
+  try {
+    writeLockOwner(lockPath,);
+  }
+  catch (ownerError: unknown) {
+    cleanupFailedOwnerWrite({
+      lockPath,
+      ownerError,
+    },);
+  }
+}
+
+/**
+ * Returns disposable handle that releases lock directory.
+ *
+ * @param lockPath - Lock directory path.
+ *
+ * @returns Disposable release handle.
+ *
+ * @example
+ * ```ts
+ * using lock = lockReleaseHandle('/tmp/manifest.json.lock');
+ * ```
+ */
+function lockReleaseHandle(lockPath: string,): Disposable {
+  return {
+    [Symbol.dispose](): void {
+      rmSync(
+        lockPath,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+//endregion Lock acquisition helpers
+
+//region Lock acquisition
 
 /**
  * Acquires manifest directory lock and returns disposable release handle.
@@ -107,17 +194,8 @@ export function acquireManifestLock(manifestPath: string,): Disposable {
   while (true) {
     try {
       mkdirSync(lockPath,);
-      return {
-        [Symbol.dispose](): void {
-          rmSync(
-            lockPath,
-            {
-              recursive: true,
-              force: true,
-            },
-          );
-        },
-      };
+      recordLockOwner(lockPath,);
+      return lockReleaseHandle(lockPath,);
     }
     catch (lockError: unknown) {
       if (!caughtErrorHasCode({
@@ -125,6 +203,8 @@ export function acquireManifestLock(manifestPath: string,): Disposable {
         code: 'EEXIST',
       },))
         throw lockError;
+      if (recoverStaleManifestLock(lockPath,))
+        continue;
       if (Date.now() > deadline) {
         throw new StalenessManifestPersistenceError(
           `Timed out waiting for staleness manifest lock ${lockPath}`,
