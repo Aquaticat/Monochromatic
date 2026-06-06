@@ -114,7 +114,7 @@ PRE: Before sending any response with substantive claims, run this checklist.
 
 CK1: Quantitative claim (size, speed, complexity, count) without measuring? Measure or rephrase as guess; unbuilt-fix difficulty/duration is claim to drop, not label (CK3).
 
-CK2: Described how external tool works without reading its src? Clone + read (see "Third-party libraries"), or label recall-from-training.
+CK2: Described how external tool works without following `troubleshooting-doc` investigation path? Do it, or label recall-from-training.
 
 CK3: Estimated difficulty of fix you haven't built? Drop estimate.
 
@@ -180,7 +180,7 @@ HG7: "this is a tractable PR": drop "tractable" or build fix.
 
 HG8: "should be straightforward": drop "straightforward" or test path.
 
-HG9: "no public diagnosis exists" as stopping point: drop, or clone source (see "Third-party libraries").
+HG9: "no public diagnosis exists" as stopping point: drop, or follow `troubleshooting-doc` investigation path.
 
 HGA: "an afternoon" or any duration estimate: drop unless you built similar fix in this codebase before.
 
@@ -604,16 +604,6 @@ TP1: Undefined method error: retrieve docs immediately.
 TP2: Check actual type definitions before using APIs.
 
 TP3: Note CLI command patterns across examples; test simplest case first.
-
-TP4: Never modify files in cloned third-party repositories; use conf, env vars, wrapper scripts. "Third-party" decided by ownership, not origin: fork under our own account (git user's GitHub namespace) is our code, modify freely (e.g. to prepare pull request). Rule binds only clones of repos we don't own. Skill may carve narrow documented exception; today only `troubleshooting-doc` skill's disposable prototype clone (mechanics in philosophy doc).
-
-TP5: Investigating external tool's behavior, bug, capability, fix difficulty: clone its src + read relevant code path. "No public diagnosis exists" never valid stopping point when source open; quote file path, line number, code excerpt when citing finding.
-
-TP6: Proposing package to replace dependency: audit candidate to incumbent's depth: transitive deps, src paths handling cases incumbent mishandles, build provenance for native/wasm modules, maintenance signals. Report findings inline with recommendation, not as trailing caveats.
-
-TP7: Finished diagnosing/working around external tool's bug, quirk, capability gap: write `docs/troubleshooting/<topic>.md` via `troubleshooting-doc` skill before declaring done; it gates draft upstream issue on 6-constraint check.
-
-TP8: Check `.out-of-scope/` before filing upstream tracking issue; listed exemptions still get `docs/troubleshooting/<topic>.md` writeup but skip GitHub issue.
 
 ## When committing or documenting
 

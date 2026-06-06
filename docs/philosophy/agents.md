@@ -246,13 +246,16 @@ Non-zero-match silent failures (same shape, opposite direction): `head -N` trunc
 
 #### Third-party libraries: investigation and replacement-audit detail
 
-Clone an external tool's source whether you hit the bug yourself, are summarizing an undiagnosed tracker issue, or are estimating fix difficulty: a linked issue without diagnosis means nobody has diagnosed it yet, not that it is undiagnosable, and the next investigator can be you.
-
-Replacement-audit depth: transitive deps; the src paths that handle the same cases the incumbent mishandles; build provenance for native or wasm modules (compiler flags, wasm import surface, whether upstream sources are checksum-verified); maintenance signals (downloads, stars, last commit, single-maintainer concentration). Without this depth the recommendation swaps a known-flaw dependency for an unknown-flaw one.
+The source-clone investigation rule, cloned-repo modification boundary, troubleshooting write-up gate, and
+`.out-of-scope/` upstream-filing check now live in the `troubleshooting-doc` skill. Replacement-audit depth now
+lives in the `choosing-technology` skill. They fire only during external-tool diagnosis or technology selection,
+not every session, so AGENTS.md retains only immediate API and CLI lookup rules.
 
 #### Third-party libraries: the `.out-of-scope/` upstream-tracking exemptions
 
-`.out-of-scope/` lists external-tool bug classes that still get a `docs/troubleshooting/<topic>.md` writeup but no upstream GitHub issue, because filing one is wasted effort here. AGENTS.md keeps only "check `.out-of-scope/` before filing"; the enumerated examples live here. Current exemptions:
+`.out-of-scope/` lists external-tool bug classes that still get a `docs/troubleshooting/<topic>.md` writeup but no
+upstream GitHub issue, because filing one is wasted effort here. The `troubleshooting-doc` skill carries the active
+check; examples here explain why entries exist. Examples include:
 
 - Claude Code (`.out-of-scope/claude-code-upstream-bugs.md`): upstream very unresponsive, so tracking issues produce clutter without changing the outcome; encode the workaround as a rule in AGENTS.md instead.
 - JSR (`.out-of-scope/jsr.md`): the workspace consumes no JSR-hosted packages (`docs/philosophy/tool-choices.md` covers tool selection), so install-path bugs there do not affect it.
@@ -260,7 +263,11 @@ Replacement-audit depth: transitive deps; the src paths that handle the same cas
 
 #### Choosing technology and vendors: the encoded checklist
 
-The `choosing-technology` skill encodes context-fork questions, the six vendor vetting layers (layoffs, reviews, outages, funding, signup friction, security), the open-source default, constraint-fit before stack-fit, the alternative survey rule (name at least two with rejection reasons), and the `docs/decisions/<project>.md` maintenance rule. AGENTS.md keeps the terse "invoke the skill" rule plus the layer-summary tokens; the enumerated detail lives in the skill.
+The `choosing-technology` skill encodes context-fork questions, the six vendor vetting layers (layoffs, reviews,
+outages, funding, signup friction, security), the open-source default, constraint-fit before stack-fit, replacement
+parity audit, the alternative survey rule (name at least two with rejection reasons), and the
+`docs/decisions/<project>.md` maintenance rule. The available-skill description supplies the trigger; the enumerated
+detail lives in the skill.
 
 #### Before claiming inability: how each manual-action bridge works
 
@@ -325,5 +332,7 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 #### Third-party libraries: the unforked-upstream-clone exception mechanics
 
-The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
-That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
+The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an
+upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
+third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
+`troubleshooting-doc` no-modify rule.

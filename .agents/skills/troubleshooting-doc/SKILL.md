@@ -1,17 +1,19 @@
 ---
 name: troubleshooting-doc
-description: Use proactively the moment you finish diagnosing or working around an external tool's bug, quirk, surprising behavior, or capability gap, even when the user did not ask; also when writing or updating a docs/troubleshooting/<topic>.md file. The write-up is a required completion step, not an offer.
+description: Use when investigating an external tool's behavior, bug, quirk, capability gap, or fix difficulty; proactively write the troubleshooting doc the moment you finish diagnosing or working around one, even when the user did not ask; also use when writing or updating a docs/troubleshooting/<topic>.md file. The write-up is a required completion step, not an offer.
 ---
 
 # Writing a troubleshooting file
 
-Fires automatically, no user request needed, the moment you finish diagnosing
-or land a workaround for an external tool's bug, quirk, surprising behavior,
-or capability gap. Writing the doc is a required completion step, not
-something to offer or defer: do not declare the work done, and do not say
-"I could document this" or "want me to write it up?", until
-docs/troubleshooting/<topic>.md exists. Walk this skill end-to-end whenever
-you write or update one.
+Fires automatically, no user request needed, when you investigate an
+external tool's behavior, bug, quirk, capability gap, or fix difficulty.
+The source-clone and clone-boundary sections apply during investigation.
+It also fires the moment you finish diagnosing or land a workaround for
+an external tool's bug, quirk, surprising behavior, or capability gap.
+Writing the doc is a required completion step, not something to offer or
+defer: do not declare the work done, and do not say "I could document
+this" or "want me to write it up?", until docs/troubleshooting/<topic>.md
+exists. Walk this skill end-to-end whenever you write or update one.
 
 Other surface phrases that should trigger the skill:
 "document this", "write it up", "add a troubleshooting entry".
@@ -19,6 +21,8 @@ But the primary trigger is self-initiated: you just fixed or explained an
 external tool behaving unexpectedly, so write it up now without being asked.
 
 The skill encodes the required sections, the source-trace rule,
+source-clone investigation rule, third-party clone boundary,
+out-of-scope upstream-filing check,
 and the 6-constraint upstream-filing check that gates the draft GitHub
 issue at the end.
 
@@ -33,6 +37,29 @@ match its shape unless the topic genuinely lacks a section.
 `docs/troubleshooting/<topic>.md`. `<topic>` is kebab-case,
 specific enough to distinguish from sibling docs (`bun-fetch-streaming`,
 not `bun`). One bug or one cluster of related bugs per file.
+
+## External source investigation
+
+When investigating an external tool's behavior, bug, quirk,
+capability gap, or fix difficulty, clone the tool's source and read the
+relevant code path. "No public diagnosis exists" is not a stopping
+point when the source is open. Cite file path, line number, and code
+excerpt whenever you present a source finding.
+
+This applies whether you reproduced the bug yourself, are summarizing an
+undiagnosed tracker report, or are estimating whether a fix is possible.
+
+## Third-party clone boundaries
+
+Never modify files in cloned repositories we do not own for local
+workarounds. "Third-party" is determined by repository ownership, not
+origin URL: a fork under our git user's GitHub namespace is our code and
+may be edited, including to prepare a pull request.
+
+For repos we do not own, use configuration, environment variables,
+wrapper scripts, or consumer-side code at our boundary. The only
+unforked-clone edit path this skill permits is the disposable prototype
+clone in "Auto-prototype when constraints 1-5 hold or sorta-hold".
 
 ## Required sections
 
@@ -175,20 +202,31 @@ that is merely large or intricate is not grounds to re-evaluate; only
 an architectural blocker is. The prototype is also a probe; a failed
 probe is useful data, not a wasted step.
 
-AGENTS.md's "never modify files in cloned third-party repositories"
-rule still applies to local workarounds (where editing source bypasses
-the intended boundary). Two paths are open for the prototype. A fork
-under our own account is our code, not a third-party repository, so
-editing it is unrestricted; prefer the fork when the prototype is headed
-for a pull request. Otherwise AGENTS.md grants one narrow exception for
-an unforked upstream clone, the disposable prototype clone described
-here: created fresh for the upstream patch diff, after origin
-verification, and verified without exposing credentials or this
-repository to third-party scripts.
+The third-party clone boundary above still applies to local workarounds,
+where editing source bypasses the intended boundary. Two paths are open
+for the prototype. A fork under our own account is our code, not a
+third-party repository, so editing it is unrestricted; prefer the fork
+when the prototype is headed for a pull request. Otherwise this skill
+permits one narrow exception for an unforked upstream clone: the
+disposable prototype clone described here, created fresh for the upstream
+patch diff, after origin verification, and verified without exposing
+credentials or this repository to third-party scripts.
 
 The consumer-side workaround belongs at our boundary (e.g. a parse-time
 guard in the consuming crate) where it solves the user-facing problem
 regardless of upstream movement.
+
+## Check `.out-of-scope/` before filing upstream
+
+Before filing or drafting an upstream issue/comment, read `.out-of-scope/`
+for the tool or bug class. A listed exemption means upstream tracking is
+out of scope: still write or update `docs/troubleshooting/<topic>.md`,
+still record symptoms, root cause, verification, and workarounds, but skip
+GitHub issue/comment filing.
+
+Record the exemption path and reason in the "Upstream filing decision"
+subsection. If no exemption matches, continue with duplicate search and
+the 6-constraint check.
 
 ## Check for an existing issue before filing
 
@@ -243,6 +281,8 @@ nothing to add), not a new-issue draft presented as fileable.
 - Every workaround names a tradeoff.
 - The 6-constraint subsection is present even when you decide to file,
   so the rationale is auditable.
+- `.out-of-scope/` was checked before upstream filing. If an exemption
+  matched, the doc names its path and does not keep a fileable draft.
 - The draft issue is wrapped in a fenced block and marked "do not file
   as-is" unless all six constraints hold.
 - The upstream tracker was searched for a duplicate. If one exists, the

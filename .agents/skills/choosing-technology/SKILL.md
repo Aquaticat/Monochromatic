@@ -23,7 +23,8 @@ the constraint picks the technology, not familiarity with the surrounding stack.
 The skill encodes three layers:
 context-fork questions (asked first),
 vendor vetting layers (six checks for SaaS candidates),
-and tool selection rules (open-source default, alternatives survey, decision-doc maintenance).
+and tool selection rules (open-source default, alternatives survey, dependency replacement parity,
+decision-doc maintenance).
 Skip none of the three.
 Report findings inline, not as trailing caveats.
 A recommendation made after checking only "do they satisfy the constraints" is a guess;
@@ -124,6 +125,24 @@ and name every meaningful candidate inline.
 About to recommend a hand-rolled module without having named at least two real packages
 and the concrete reason each fails the constraints?
 Stop; that is the violation signal.
+
+### Dependency replacement parity audit
+
+When proposing a package to replace an incumbent dependency,
+audit each candidate to the incumbent's depth before recommending it.
+Required checks:
+
+- Transitive dependencies.
+- Source paths handling the cases the incumbent mishandles;
+  cite path and behavior.
+- Build provenance for native or Wasm modules: compiler flags,
+  imported host functions, source archives, checksum or release verification.
+- Maintenance signals: downloads, stars, last commit, release cadence,
+  maintainer concentration, issue and PR responsiveness.
+
+Report findings inline with the recommendation, not as trailing caveats.
+Without this depth, the recommendation swaps a known-flaw dependency
+for an unknown-flaw dependency.
 
 ### Name two alternatives with rejection reasons
 
@@ -236,6 +255,8 @@ Decision doc: `docs/decisions/staging-database.md`."
 - Open-source default applied; closed-source exceptions labelled with a reason.
 - Open-source maintenance signals checked for library, framework, and build-tool candidates:
   issue responsiveness, maintainer actions, pull-request activity, release cadence, and stale backlog shape.
+- Dependency replacements include parity audit: transitive deps, source-path behavior,
+  native/Wasm provenance, and maintenance signals.
 - Decision doc updated at `docs/decisions/<project>.md`.
 
 If any item is unmet, do not name a candidate yet.
