@@ -13,12 +13,15 @@
 ## Watch mode reliability
 
 - `fs.watch` is platform-dependent and can miss events on some Linux filesystems (notably NFS, FUSE mounts).
+  Current watch-mode setup logs watcher failures, retries each watcher a bounded number of times,
+  and fails watch mode closed when retries are exhausted.
   Consider a fallback to polling for unreliable backends.
 - Debounce currently uses a fixed 100ms debounce period.
-  Rapid burst edits (e.g., `git checkout` touching many files) may trigger multiple re-runs.
-  A smarter strategy: accumulate events during debounce, then invalidate all changed paths in one batch re-run.
-- The watch loop blocks forever with `new Promise<never>(() => {})`.
-  No graceful shutdown on SIGINT/SIGTERM; open file watchers and AbortControllers are never cleaned up.
+  Rapid burst edits (e.g., `git checkout` touching many files) can still trigger multiple batched re-runs
+  when the burst spans more than one debounce window.
+- The watch loop blocks on a fail-closed promise.
+  No graceful shutdown on SIGINT/SIGTERM; open file watchers and AbortControllers are only cleaned up
+  during reruns or watcher failure paths.
   Add signal handling for clean shutdown.
 
 ## Write-protection notifications
