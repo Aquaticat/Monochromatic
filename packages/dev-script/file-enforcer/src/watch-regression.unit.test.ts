@@ -9,7 +9,6 @@ import {
   join,
   resolve,
 } from 'node:path';
-
 import {
   describe,
   expect,
@@ -293,5 +292,6 @@ await describe({
         );
       },
     },),
+
   ],
 },);

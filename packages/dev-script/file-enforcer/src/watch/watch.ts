@@ -12,7 +12,6 @@ import { reset, } from '../tracker.ts';
 import { notifyWriteProtection, } from './notify.ts';
 import {
   DEBOUNCE_MS,
-  watchDirectory,
 } from './watch-dir.ts';
 import {
   type EventKind,
@@ -22,6 +21,8 @@ import {
   createWatchRerunQueue,
   type WatchRerunBatch,
 } from './watch-rerun-queue.ts';
+import { createWatchModeLifecycle, } from './watch-lifecycle.ts';
+import { watchDirectoryWithRestarts, } from './watch-supervisor.ts';
 
 /**
  * Watches source files and managed destinations, re-executing the config
@@ -52,19 +53,9 @@ export function startWatching(configPath: string,): Promise<never> {
   rl.info('watch mode started',);
 
   /**
-   * Active AbortControllers for each watched directory, keyed by dir path
+   * Watch-mode state holder for watcher teardown, debounce cleanup, and fail-closed rejection.
    */
-  const controllers = new Map<string, AbortController>();
-
-  /**
-   * Tears down all active watchers for re-creation after a re-run.
-   */
-  function closeAllWatchers(): void {
-    controllers.forEach(function abortController(controller,): void {
-      controller.abort();
-    },);
-    controllers.clear();
-  }
+  const lifecycle = createWatchModeLifecycle();
 
   /**
    * Paths accumulated during the debounce window, invalidated together on re-run
@@ -74,13 +65,6 @@ export function startWatching(configPath: string,): Promise<never> {
    * Protected paths that need notification, accumulated during the debounce window
    */
   const pendingProtected: Set<string> = new Set<string>();
-  /**
-   * Single-key holder for the active debounce timer.
-   * Replaced on every event so the most recent timer wins; previous timers are
-   * cleared via {@link clearTimeout} before a new one is scheduled.
-   */
-  const debounceTimerHolder = new Map<'timer', ReturnType<typeof setTimeout>>();
-
   /**
    * Re-imports the config with a cache-busting query parameter,
    * then updates the watcher set from newly tracked reads/writes.
@@ -100,7 +84,7 @@ export function startWatching(configPath: string,): Promise<never> {
       return;
     }
     rl.info('re-run complete',);
-    closeAllWatchers();
+    lifecycle.closeAllWatchers();
     setupWatchers();
   }
 
@@ -150,70 +134,65 @@ export function startWatching(configPath: string,): Promise<never> {
       dir,
       filename,
     ),);
+    if (lifecycle.hasFailed())
+      return;
     pendingPaths.add(changedPath,);
     if (kind === 'protected')
       pendingProtected.add(changedPath,);
-    /**
-     * Active debounce timer handle, or `undefined` between bursts.
-     */
-    const previousTimer = debounceTimerHolder.get('timer',);
-    if (previousTimer !== undefined)
-      clearTimeout(previousTimer,);
-    debounceTimerHolder.set(
-      'timer',
-      setTimeout(
-        function debouncedRerun(): void {
-          /**
-           * Snapshot accumulated state before clearing
-           */
-          const paths = [...pendingPaths,];
-          /**
-           * Snapshot of paths that need write-protection notifications, paired with `paths`.
-           */
-          const protectedPaths = [...pendingProtected,];
-          /**
-           * Debounced watch event batch submitted to the serial rerun queue.
-           */
-          const batch: WatchRerunBatch = {
-            paths,
-            protectedPaths,
-          };
-          pendingPaths.clear();
-          pendingProtected.clear();
-          debounceTimerHolder.delete('timer',);
-          // oxlint-disable-next-line typescript/no-floating-promises -- queued reruns report errors and keep draining later batches
-          rerunQueue.enqueue(batch,);
-        },
-        DEBOUNCE_MS,
-      ),
-    );
+    lifecycle.scheduleDebounce({
+      delayMs: DEBOUNCE_MS,
+      callback: function debouncedRerun(): void {
+        /**
+         * Snapshot accumulated state before clearing
+         */
+        const paths = [...pendingPaths,];
+        /**
+         * Snapshot of paths that need write-protection notifications, paired with `paths`.
+         */
+        const protectedPaths = [...pendingProtected,];
+        /**
+         * Debounced watch event batch submitted to the serial rerun queue.
+         */
+        const batch: WatchRerunBatch = {
+          paths,
+          protectedPaths,
+        };
+        pendingPaths.clear();
+        pendingProtected.clear();
+        lifecycle.clearDebounceTimer();
+        // oxlint-disable-next-line typescript/no-floating-promises -- queued reruns report errors and keep draining later batches
+        rerunQueue.enqueue(batch,);
+      },
+    },);
   }
 
   /**
-   * Creates watchers for every directory derived from tracked reads and writes.
+   * Supervises one watcher, reporting exhausted restart attempts to watch mode.
+   *
+   * @param dir - Directory being watched.
+   *
+   * @param controller - Abort controller for normal watcher teardown.
+   *
+   * @example
+   * ```ts
+   * await monitorWatcher({ dir: '/repo/src', controller });
+   * ```
    */
-  function setupWatchers(): void {
-    /**
-     * Directories to watch, derived from current tracked reads + writes
-     */
-    const dirs = watchDirs(absoluteConfig,);
-    rl.info(`watching ${String(dirs.size,)} directories`,);
-
-    dirs.forEach(function setupDir(dir,): void {
-      /**
-       * Per-directory abort controller for teardown
-       */
-      const controller = new AbortController();
-      controllers.set(
-        dir,
-        controller,
-      );
-
-      // oxlint-disable-next-line typescript/no-floating-promises -- intentional fire-and-forget watcher loop
-      watchDirectory({
+  async function monitorWatcher(
+    {
+      dir,
+      controller,
+    }: {
+      readonly controller: AbortController;
+      readonly dir: string;
+    },
+  ): Promise<void> {
+    try {
+      await watchDirectoryWithRestarts({
         dir,
         signal: controller.signal,
         configPath: absoluteConfig,
+        logger: rl,
         onEvent: function onWatchEvent(
           kind,
           filename,
@@ -225,12 +204,43 @@ export function startWatching(configPath: string,): Promise<never> {
           },);
         },
       },);
+    }
+    catch (watchError: unknown) {
+      lifecycle.fail(watchError,);
+    }
+  }
+
+  /**
+   * Creates watchers for every directory derived from tracked reads and writes.
+   */
+  function setupWatchers(): void {
+    if (lifecycle.hasFailed())
+      return;
+    /**
+     * Directories to watch, derived from current tracked reads + writes
+     */
+    const dirs = watchDirs(absoluteConfig,);
+    rl.info(`watching ${String(dirs.size,)} directories`,);
+
+    dirs.forEach(function setupDir(dir,): void {
+      /**
+       * Per-directory abort controller for teardown
+       */
+      const controller = new AbortController();
+      lifecycle.registerController({
+        dir,
+        controller,
+      },);
+
+      // oxlint-disable-next-line typescript/no-floating-promises -- monitorWatcher catches watcher failures and rejects watchModeFailure after restart limits.
+      monitorWatcher({
+        dir,
+        controller,
+      },);
     },);
   }
 
   setupWatchers();
 
-  // Block forever: watch mode runs until the process is killed.
-  // oxlint-disable-next-line promise/avoid-new -- intentional infinite block requires explicit Promise
-  return new Promise<never>(function neverResolve(): void {/* intentionally empty */},);
+  return lifecycle.failure;
 }
