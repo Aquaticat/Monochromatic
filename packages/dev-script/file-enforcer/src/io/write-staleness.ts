@@ -41,9 +41,11 @@ function currentTrackedGlobs(): readonly TrackedGlob[] {
  *
  * @param content - Generated destination content.
  *
+ * @param manifestPath - Resolved staleness manifest path.
+ *
  * @example
  * ```ts
- * rememberEagerWrite({ dest: './CLAUDE.md', content: '...' });
+ * rememberEagerWrite({ dest: './CLAUDE.md', content: '...', manifestPath });
  * ```
  */
 export function rememberEagerWrite(
@@ -54,28 +56,20 @@ export function rememberEagerWrite(
   }: {
     readonly dest: string;
     readonly content: string;
-    readonly manifestPath?: string;
+    readonly manifestPath: string;
   },
 ): void {
-  /**
-   * Manifest entry data shared by default and custom manifest paths.
-   */
-  const entry = {
+  rememberFreshStalenessEntry({
+    manifestPath,
     key: stalenessKeyForDest(dest,),
-    kind: 'single' as const,
+    kind: 'single',
     trackedReads: [...reads,],
     trackedGlobs: currentTrackedGlobs(),
     destinations: [{
       path: dest,
       content,
     },],
-  };
-  rememberFreshStalenessEntry(manifestPath === undefined
-    ? entry
-    : {
-      manifestPath,
-      ...entry,
-    },);
+  },);
 }
 
 /**
@@ -85,9 +79,11 @@ export function rememberEagerWrite(
  *
  * @param destinations - Concrete destinations written by the rule.
  *
+ * @param manifestPath - Resolved staleness manifest path.
+ *
  * @example
  * ```ts
- * rememberEagerEach({ destGlob: './out/*.md', destinations });
+ * rememberEagerEach({ destGlob: './out/*.md', destinations, manifestPath });
  * ```
  */
 export function rememberEagerEach(
@@ -98,23 +94,15 @@ export function rememberEagerEach(
   }: {
     readonly destGlob: string;
     readonly destinations: readonly GlobDestination[];
-    readonly manifestPath?: string;
+    readonly manifestPath: string;
   },
 ): void {
-  /**
-   * Manifest entry data shared by default and custom manifest paths.
-   */
-  const entry = {
+  rememberFreshStalenessEntry({
+    manifestPath,
     key: stalenessKeyForDestGlob(destGlob,),
-    kind: 'each' as const,
+    kind: 'each',
     trackedReads: [...reads,],
     trackedGlobs: currentTrackedGlobs(),
     destinations,
-  };
-  rememberFreshStalenessEntry(manifestPath === undefined
-    ? entry
-    : {
-      manifestPath,
-      ...entry,
-    },);
+  },);
 }

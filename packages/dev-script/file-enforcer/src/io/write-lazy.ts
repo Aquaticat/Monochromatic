@@ -11,7 +11,6 @@ import {
   rememberFreshStalenessEntry,
   stalenessKeyForDest,
   stalenessKeyForDestGlob,
-  type StalenessOptions,
 } from './staleness.ts';
 
 /**
@@ -41,6 +40,7 @@ export type WriteIfChanged = (
   args: {
     readonly dest: string;
     readonly content: string;
+    readonly manifestPath: string;
     readonly sourcePath?: string;
     readonly recordStaleness?: boolean;
   },
@@ -87,13 +87,13 @@ export function isGlobResultsBuilder(files: OverwriteEachFiles,): files is GlobR
  *
  * @param sourcePath - Optional source path for mirror-style logs.
  *
- * @param manifestPath - Optional custom staleness manifest path.
+ * @param manifestPath - Resolved staleness manifest path.
  *
  * @param writeIfChanged - Reconciliation function from `write.ts`.
  *
  * @example
  * ```ts
- * await writeLazyIfChanged({ dest, content: build, writeIfChanged });
+ * await writeLazyIfChanged({ manifestPath, dest, content: build, writeIfChanged });
  * ```
  */
 export async function writeLazyIfChanged(
@@ -103,7 +103,8 @@ export async function writeLazyIfChanged(
     sourcePath,
     manifestPath,
     writeIfChanged,
-  }: StalenessOptions & {
+  }: {
+    readonly manifestPath: string;
     readonly dest: string;
     readonly content: ContentBuilder;
     readonly sourcePath?: string;
@@ -114,16 +115,11 @@ export async function writeLazyIfChanged(
    * Manifest key for this destination.
    */
   const key = stalenessKeyForDest(dest,);
-  if (await freshStalenessEntryExists(manifestPath === undefined
-    ? {
-      key,
-      kind: 'single',
-    }
-    : {
-      manifestPath,
-      key,
-      kind: 'single',
-    },))
+  if (await freshStalenessEntryExists({
+    manifestPath,
+    key,
+    kind: 'single',
+  },))
     return;
 
   /**
@@ -134,36 +130,27 @@ export async function writeLazyIfChanged(
     ? {
       dest,
       content: captured.value,
+      manifestPath,
       recordStaleness: false,
     }
     : {
       dest,
       content: captured.value,
+      manifestPath,
       sourcePath,
       recordStaleness: false,
     },);
-  rememberFreshStalenessEntry(manifestPath === undefined
-    ? {
-      key,
-      kind: 'single',
-      trackedReads: captured.reads,
-      trackedGlobs: captured.globs,
-      destinations: [{
-        path: dest,
-        content: captured.value,
-      },],
-    }
-    : {
-      manifestPath,
-      key,
-      kind: 'single',
-      trackedReads: captured.reads,
-      trackedGlobs: captured.globs,
-      destinations: [{
-        path: dest,
-        content: captured.value,
-      },],
-    },);
+  rememberFreshStalenessEntry({
+    manifestPath,
+    key,
+    kind: 'single',
+    trackedReads: captured.reads,
+    trackedGlobs: captured.globs,
+    destinations: [{
+      path: dest,
+      content: captured.value,
+    },],
+  },);
 }
 
 /**
@@ -173,13 +160,13 @@ export async function writeLazyIfChanged(
  *
  * @param files - Lazy glob-results builder.
  *
- * @param manifestPath - Optional custom staleness manifest path.
+ * @param manifestPath - Resolved staleness manifest path.
  *
  * @param writeIfChanged - Reconciliation function from `write.ts`.
  *
  * @example
  * ```ts
- * await writeLazyEach({ destGlob, files: readFiles, writeIfChanged });
+ * await writeLazyEach({ manifestPath, destGlob, files: readFiles, writeIfChanged });
  * ```
  */
 export async function writeLazyEach(
@@ -188,7 +175,8 @@ export async function writeLazyEach(
     files,
     manifestPath,
     writeIfChanged,
-  }: StalenessOptions & {
+  }: {
+    readonly manifestPath: string;
     readonly destGlob: string;
     readonly files: GlobResultsBuilder;
     readonly writeIfChanged: WriteIfChanged;
@@ -198,16 +186,11 @@ export async function writeLazyEach(
    * Manifest key for this destination glob.
    */
   const key = stalenessKeyForDestGlob(destGlob,);
-  if (await freshStalenessEntryExists(manifestPath === undefined
-    ? {
-      key,
-      kind: 'each',
-    }
-    : {
-      manifestPath,
-      key,
-      kind: 'each',
-    },))
+  if (await freshStalenessEntryExists({
+    manifestPath,
+    key,
+    kind: 'each',
+  },))
     return;
 
   /**
@@ -224,22 +207,15 @@ export async function writeLazyEach(
   await writeGlobDestinations({
     destinations,
     writeIfChanged,
+    manifestPath,
     recordStaleness: false,
   },);
-  rememberFreshStalenessEntry(manifestPath === undefined
-    ? {
-      key,
-      kind: 'each',
-      trackedReads: captured.reads,
-      trackedGlobs: captured.globs,
-      destinations,
-    }
-    : {
-      manifestPath,
-      key,
-      kind: 'each',
-      trackedReads: captured.reads,
-      trackedGlobs: captured.globs,
-      destinations,
-    },);
+  rememberFreshStalenessEntry({
+    manifestPath,
+    key,
+    kind: 'each',
+    trackedReads: captured.reads,
+    trackedGlobs: captured.globs,
+    destinations,
+  },);
 }

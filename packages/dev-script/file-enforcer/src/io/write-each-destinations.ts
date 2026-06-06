@@ -90,21 +90,25 @@ function assertUniqueDestinations(destinations: readonly GlobDestination[],): vo
  *
  * @param writeIfChanged - Reconciliation function from `write.ts`.
  *
+ * @param manifestPath - Resolved staleness manifest path.
+ *
  * @param recordStaleness - Whether each destination write should record eager staleness metadata.
  *
  * @example
  * ```ts
- * await writeGlobDestinations({ destinations, writeIfChanged });
+ * await writeGlobDestinations({ destinations, writeIfChanged, manifestPath });
  * ```
  */
 export async function writeGlobDestinations(
   {
     destinations,
     writeIfChanged,
+    manifestPath,
     recordStaleness,
   }: {
     readonly destinations: readonly GlobDestination[];
     readonly writeIfChanged: WriteIfChanged;
+    readonly manifestPath: string;
     readonly recordStaleness?: boolean;
   },
 ): Promise<void> {
@@ -115,11 +119,13 @@ export async function writeGlobDestinations(
         ? {
           dest: destination.path,
           content: destination.content,
+          manifestPath,
           sourcePath: destination.sourcePath,
         }
         : {
           dest: destination.path,
           content: destination.content,
+          manifestPath,
           sourcePath: destination.sourcePath,
           recordStaleness,
         },);

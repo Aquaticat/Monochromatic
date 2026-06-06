@@ -113,9 +113,9 @@ export async function freshStalenessManifest(
   /**
    * Absolute manifest path selected the same way writer calls select it.
    */
-  const resolvedManifestPath = manifestPath === undefined
-    ? resolveManifestPath({},)
-    : resolveManifestPath({ manifestPath, },);
+  const resolvedManifestPath = resolveManifestPath(manifestPath === undefined
+    ? {}
+    : { manifestPath, },);
   /**
    * Manifest loaded from the selected path.
    */

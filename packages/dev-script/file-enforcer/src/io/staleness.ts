@@ -26,7 +26,6 @@ import {
   type StalenessDestination,
   type StalenessEntry,
   type StalenessEntryKind,
-  type StalenessOptions,
 } from './staleness-types.ts';
 
 export type {
@@ -122,7 +121,7 @@ function registerFreshEntryPaths(entry: StalenessEntry,): void {
 /**
  * Checks whether a cached manifest entry is fresh and registers its tracked paths.
  *
- * @param manifestPath - Optional custom manifest path.
+ * @param manifestPath - Resolved manifest path.
  *
  * @param key - Manifest key to inspect.
  *
@@ -132,7 +131,7 @@ function registerFreshEntryPaths(entry: StalenessEntry,): void {
  *
  * @example
  * ```ts
- * const fresh = await freshStalenessEntryExists({ key, kind: 'single' });
+ * const fresh = await freshStalenessEntryExists({ manifestPath, key, kind: 'single' });
  * ```
  */
 export async function freshStalenessEntryExists(
@@ -140,21 +139,16 @@ export async function freshStalenessEntryExists(
     manifestPath,
     key,
     kind,
-  }: StalenessOptions & {
+  }: {
+    readonly manifestPath: string;
     readonly key: string;
     readonly kind: StalenessEntryKind;
   },
 ): Promise<boolean> {
   /**
-   * Absolute manifest path.
-   */
-  const resolvedManifestPath = manifestPath === undefined
-    ? resolveManifestPath({},)
-    : resolveManifestPath({ manifestPath, },);
-  /**
    * Persisted entry for this builder.
    */
-  const entry = loadManifest(resolvedManifestPath,)
+  const entry = loadManifest(manifestPath,)
     .entries[key];
   if (entry === undefined)
     return false;
@@ -196,7 +190,7 @@ function sourceStampsForReads(
 /**
  * Records a fresh manifest entry after a builder computes and reconciles output.
  *
- * @param manifestPath - Optional custom manifest path.
+ * @param manifestPath - Resolved manifest path.
  *
  * @param key - Manifest key to update.
  *
@@ -210,7 +204,7 @@ function sourceStampsForReads(
  *
  * @example
  * ```ts
- * await rememberFreshStalenessEntry({ key, kind: 'single', trackedReads, trackedGlobs, destinations });
+ * rememberFreshStalenessEntry({ manifestPath, key, kind: 'single', trackedReads, trackedGlobs, destinations });
  * ```
  */
 export function rememberFreshStalenessEntry(
@@ -221,7 +215,8 @@ export function rememberFreshStalenessEntry(
     trackedReads,
     trackedGlobs,
     destinations,
-  }: StalenessOptions & {
+  }: {
+    readonly manifestPath: string;
     readonly key: string;
     readonly kind: StalenessEntryKind;
     readonly trackedReads: readonly string[];
@@ -262,18 +257,12 @@ export function rememberFreshStalenessEntry(
     updatedAt: new Date().toISOString(),
   };
   /**
-   * Absolute manifest path.
-   */
-  const resolvedManifestPath = manifestPath === undefined
-    ? resolveManifestPath({},)
-    : resolveManifestPath({ manifestPath, },);
-  /**
    * Mutable manifest object for this path.
    */
-  const manifest = loadManifest(resolvedManifestPath,);
+  const manifest = loadManifest(manifestPath,);
   manifest.entries[key] = entry;
   writeManifest({
-    manifestPath: resolvedManifestPath,
+    manifestPath,
     manifest,
   },);
 }

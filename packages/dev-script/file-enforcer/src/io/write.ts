@@ -14,6 +14,7 @@ import type { GlobResults, } from './cat.ts';
 import {
   caughtErrorHasCode,
 } from './error.ts';
+import { resolveManifestPath, } from './staleness.ts';
 import { writeFileAtomically, } from './write-atomic.ts';
 import {
   destinationsForFiles,
@@ -90,7 +91,7 @@ export async function readExisting(filePath: string,): Promise<string | typeof A
  *
  * @param sourcePath - Optional source path for log messages (used by overwriteEach)
  *
- * @param manifestPath - Optional staleness manifest path override
+ * @param manifestPath - Resolved staleness manifest path
  *
  * @param recordStaleness - Whether reconciliation should record eager staleness metadata
  */
@@ -104,8 +105,8 @@ async function writeIfChanged(
   }: {
     readonly dest: string;
     readonly content: string;
+    readonly manifestPath: string;
     readonly sourcePath?: string;
-    readonly manifestPath?: string;
     readonly recordStaleness?: boolean;
   },
 ): Promise<void> {
@@ -126,16 +127,11 @@ async function writeIfChanged(
       `skip (unchanged): ${sourcePath !== undefined ? `${sourcePath} -> ` : ''}${dest}`,
     );
     if (recordStaleness !== false) {
-      rememberEagerWrite(manifestPath === undefined
-        ? {
-          dest,
-          content,
-        }
-        : {
-          dest,
-          content,
-          manifestPath,
-        },);
+      rememberEagerWrite({
+        dest,
+        content,
+        manifestPath,
+      },);
     }
     return;
   }
@@ -155,16 +151,11 @@ async function writeIfChanged(
     timestamp: writeTimestamp,
   },);
   if (recordStaleness !== false) {
-    rememberEagerWrite(manifestPath === undefined
-      ? {
-        dest,
-        content,
-      }
-      : {
-        dest,
-        content,
-        manifestPath,
-      },);
+    rememberEagerWrite({
+      dest,
+      content,
+      manifestPath,
+    },);
   }
   rl.info(`${sourcePath !== undefined ? `${sourcePath} -> ` : '-> '}${dest}`,);
 }
@@ -207,32 +198,27 @@ export async function overwrite(
     readonly manifestPath?: string;
   },
 ): Promise<void> {
+  /**
+   * Manifest path resolved once so internal staleness helpers receive a concrete path.
+   */
+  const resolvedManifestPath = resolveManifestPath(manifestPath === undefined
+    ? {}
+    : { manifestPath, },);
   if (isContentBuilder(content,)) {
-    await writeLazyIfChanged(manifestPath === undefined
-      ? {
-        dest,
-        content,
-        writeIfChanged: writeIfChangedForLazy,
-      }
-      : {
-        manifestPath,
-        dest,
-        content,
-        writeIfChanged: writeIfChangedForLazy,
-      },);
+    await writeLazyIfChanged({
+      manifestPath: resolvedManifestPath,
+      dest,
+      content,
+      writeIfChanged: writeIfChangedForLazy,
+    },);
     return;
   }
 
-  await writeIfChanged(manifestPath === undefined
-    ? {
-      dest,
-      content,
-    }
-    : {
-      dest,
-      content,
-      manifestPath,
-    },);
+  await writeIfChanged({
+    dest,
+    content,
+    manifestPath: resolvedManifestPath,
+  },);
 }
 
 /**
@@ -296,6 +282,7 @@ export async function overwriteIfNotExists(
   rememberEagerWrite({
     dest,
     content,
+    manifestPath: resolveManifestPath({},),
   },);
   l.info(`-> ${dest}`,);
 }
@@ -328,19 +315,19 @@ export async function overwriteEach(
     readonly manifestPath?: string;
   },
 ): Promise<void> {
+  /**
+   * Manifest path resolved once so internal staleness helpers receive a concrete path.
+   */
+  const resolvedManifestPath = resolveManifestPath(manifestPath === undefined
+    ? {}
+    : { manifestPath, },);
   if (isGlobResultsBuilder(files,)) {
-    await writeLazyEach(manifestPath === undefined
-      ? {
-        destGlob,
-        files,
-        writeIfChanged: writeIfChangedForLazy,
-      }
-      : {
-        manifestPath,
-        destGlob,
-        files,
-        writeIfChanged: writeIfChangedForLazy,
-      },);
+    await writeLazyEach({
+      manifestPath: resolvedManifestPath,
+      destGlob,
+      files,
+      writeIfChanged: writeIfChangedForLazy,
+    },);
     return;
   }
 
@@ -355,15 +342,11 @@ export async function overwriteEach(
   await writeGlobDestinations({
     destinations,
     writeIfChanged: writeIfChangedForLazy,
+    manifestPath: resolvedManifestPath,
   },);
-  rememberEagerEach(manifestPath === undefined
-    ? {
-      destGlob,
-      destinations,
-    }
-    : {
-      destGlob,
-      destinations,
-      manifestPath,
-    },);
+  rememberEagerEach({
+    destGlob,
+    destinations,
+    manifestPath: resolvedManifestPath,
+  },);
 }
