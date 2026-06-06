@@ -58,6 +58,15 @@ a `git branch -a` you cannot read and real history that is invisible because it 
 Fix: delete merged and abandoned branches (`git branch -d` / `git push origin --delete`). For anything
 worth keeping, tag it and delete the branch. Rename or drop `refactor(vitest)`.
 
+Caveat discovered while cleaning up: the local merged branches delete fine, but every *remote* delete is
+rejected with `GH006 Cannot delete this branch`. The cause is a classic branch-protection rule on the
+wildcard pattern `*` with `allowsDeletions: false` (a second rule pins `main` the same way). So the
+remote graveyard cannot be pruned from the CLI until that rule is changed. The same `*` rule also sets
+`requiresStatusChecks: true` and `requiresConversationResolution: true` on every branch, which imposes a
+PR-style gate on throwaway branches and is a plausible contributor to finding 6 (work goes straight to
+`main` to avoid the friction). Recommended: scope protection to `main` only, or at minimum flip
+`allowsDeletions` to true on the `*` rule, then prune.
+
 ### 3. Commit message bodies get mangled into one line
 
 696 commits have a subject longer than 72 characters. The worst is `40d9c51`, whose entire multi
