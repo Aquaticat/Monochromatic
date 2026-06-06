@@ -121,6 +121,37 @@ match resolved {
 The command proves which token source mise will use. It does not call GitHub to
 prove the token is accepted.
 
+### Step 5: project env files can override shell startup edits
+
+A follow-up check found another local failure shape in this workspace:
+`~/.bashrc` exported `MISE_GITHUB_TOKEN` after `mise activate`, while the repo's
+ignored `.env.local` also contained a GitHub token assignment.
+
+The relevant shell startup order was:
+
+```text
+/var/home/user/.bashrc:26:eval "$(/home/user/.local/bin/mise activate bash)"
+/var/home/user/.bashrc:42:export MISE_GITHUB_TOKEN=<redacted>
+```
+
+mise also reported that this repo loads `.env.local`:
+
+```text
+/var/home/user/Monochromatic/.env.local       (none)
+```
+
+A path-only token search found the local override without printing the token:
+
+```text
+/var/home/user/Monochromatic/.env.local:4:<redacted token assignment>
+```
+
+That can explain why regenerating a token and editing only `~/.bashrc` still
+produces 401s in this repo: mise activation can encounter a different
+project-local token source before or after shell startup edits. The fix is to
+keep the token in one source of truth: remove or update `.env.local` line 4, and
+if `~/.bashrc` remains the source, place the export before `mise activate`.
+
 ## Verification
 
 Version and source under test:
@@ -271,6 +302,9 @@ current shell, not tokens configured in other terminals or services.
   is not the minimal fix. GitHub documents no-scope classic tokens as sufficient
   for read-only public repository information, and the failing status is `401`,
   not the `403` or `404` expected for missing or insufficient permissions.
+- Editing only `~/.bashrc` is not enough when an ignored project env file also
+  defines `MISE_GITHUB_TOKEN`, `GITHUB_API_TOKEN`, or `GITHUB_TOKEN`. mise can
+  load the project env file during activation and override the shell edit.
 
 [github-list-tags]: https://docs.github.com/rest/repos/repos#list-repository-tags
 [github-oauth-scopes]: https://docs.github.com/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
