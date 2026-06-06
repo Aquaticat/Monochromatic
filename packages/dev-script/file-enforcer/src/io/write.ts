@@ -1,21 +1,17 @@
 import {
-  mkdir,
-  writeFile,
-} from 'node:fs/promises';
-import { dirname, } from 'node:path';
-import {
   l,
   tagged,
 } from '../log.ts';
 import {
+  setWriteTimestamp,
   trackDest,
-  trackWriteTime,
 } from '../tracker.ts';
 import {
   readCached,
   updateCache,
 } from './cache.ts';
 import type { GlobResults, } from './cat.ts';
+import { writeFileAtomically, } from './write-atomic.ts';
 import {
   destinationsForFiles,
   writeGlobDestinations,
@@ -33,18 +29,6 @@ import {
   rememberEagerEach,
   rememberEagerWrite,
 } from './write-staleness.ts';
-
-/**
- * Ensures the parent directory of a file path exists before writing.
- *
- * @param filePath - Path to the file about to be written
- */
-async function ensureDir(filePath: string,): Promise<void> {
-  await mkdir(
-    dirname(filePath,),
-    { recursive: true, },
-  );
-}
 
 /**
  * Sentinel for "file does not exist" returned by {@link readExisting}.
@@ -139,16 +123,21 @@ async function writeIfChanged(
     }
     return;
   }
-  await ensureDir(dest,);
-  await writeFile(
-    dest,
+  /**
+   * Actual post-rename destination timestamp used for watch echo suppression.
+   */
+  const writeTimestamp = writeFileAtomically({
+    filePath: dest,
     content,
-  );
+  },);
   updateCache({
     filePath: dest,
     content,
   },);
-  trackWriteTime(dest,);
+  setWriteTimestamp({
+    filePath: dest,
+    timestamp: writeTimestamp,
+  },);
   if (recordStaleness !== false) {
     rememberEagerWrite(manifestPath === undefined
       ? {

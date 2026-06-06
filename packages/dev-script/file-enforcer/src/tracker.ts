@@ -161,8 +161,8 @@ export function trackWriteTime(filePath: string,): void {
 
 /**
  * Directly sets a write timestamp for a path.
- * Primarily for testing; production code should use {@link trackWriteTime}
- * which captures the current time automatically.
+ * Used when caller has authoritative filesystem metadata after durable writes,
+ * and by tests that need deterministic echo-suppression timestamps.
  *
  * @param filePath - path to set timestamp for (resolved to absolute)
  *
