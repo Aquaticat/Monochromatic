@@ -77,7 +77,25 @@ if is_github_api_url(&url)
 If the current shell contains an old, revoked, malformed, or otherwise rejected
 token, every new mise process sees that value and sends it.
 
-### Step 3: `mise token github` reports source, not validity
+### Step 3: a classic no-scope token is enough for public tag reads
+
+GitHub's REST API docs for [List repository tags][github-list-tags] say the
+endpoint needs `Metadata` read permission for fine-grained tokens, but also say:
+"This endpoint can be used without authentication or the aforementioned
+permissions if only public resources are requested."
+
+GitHub's scope docs for [OAuth app scopes][github-oauth-scopes] list
+`(no scope)` as granting "read-only access to public information (including
+user profile info, repository info, and gists)."
+
+So a classic personal access token with no selected scopes is a valid shape for
+mise's public `aws/aws-cli` tags request. A `401 Unauthorized` on that public
+endpoint points at invalid credentials, not insufficient repository scope.
+GitHub's [authentication docs][github-authentication] say missing or insufficient
+permissions return `404 Not Found` or `403 Forbidden`, while invalid credentials
+initially return `401 Unauthorized`.
+
+### Step 4: `mise token github` reports source, not validity
 
 `mise token github` calls the same resolver and prints the source at
 `src/cli/token/github.rs:41-54`:
@@ -249,6 +267,14 @@ current shell, not tokens configured in other terminals or services.
   does not work. `MISE_GITHUB_TOKEN` has higher priority than gh CLI tokens in
   `src/github.rs:464-474` and returns before lower-priority sources are checked
   in `src/github.rs:492-500`.
+- Adding `public_repo` or `repo` to a classic token for this public tags lookup
+  is not the minimal fix. GitHub documents no-scope classic tokens as sufficient
+  for read-only public repository information, and the failing status is `401`,
+  not the `403` or `404` expected for missing or insufficient permissions.
+
+[github-list-tags]: https://docs.github.com/rest/repos/repos#list-repository-tags
+[github-oauth-scopes]: https://docs.github.com/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
+[github-authentication]: https://docs.github.com/rest/authentication/authenticating-to-the-rest-api
 
 ## Upstream filing artifact
 
