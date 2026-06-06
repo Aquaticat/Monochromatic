@@ -354,6 +354,40 @@ gh search prs 'redacted values mise env' --repo jdx/mise --state closed --limit 
 
 No matching issue or PR was found.
 
+### Prototype
+
+A disposable upstream clone was created under `/tmp/agent/` and verified as the
+real upstream repository:
+
+```text
+$ git -C /tmp/agent/mise-redacted-prototype.RFPyQS remote get-url origin
+https://github.com/jdx/mise.git
+
+$ git -C /tmp/agent/mise-redacted-prototype.RFPyQS rev-parse HEAD
+ae7c0c34bd87310d8701f8a69e885a8b89adfd9a
+```
+
+The prototype changes only wording. It updates:
+
+- `src/cli/env.rs`: the Clap help for `--redacted`.
+- `docs/cli/env.md`: the generated CLI docs mirror of that help.
+- `docs/environments/index.md`: the environment docs section that demonstrates
+  `mise env --redacted` and `mise env --redacted --values`.
+
+The patch is saved beside this document as
+[`mise-env-redacted-values.patch`](mise-env-redacted-values.patch).
+
+Verification searched the patched files for the clarified wording:
+
+```text
+verification-grep:
+/tmp/agent/mise-redacted-prototype.RFPyQS/docs/environments/index.md:143:redaction. These commands do not mask values; they select variables whose keys
+/tmp/agent/mise-redacted-prototype.RFPyQS/docs/environments/index.md:147:# Show assignments for variables marked for redaction. Values are not masked.
+/tmp/agent/mise-redacted-prototype.RFPyQS/docs/environments/index.md:153:# Show only values of variables marked for redaction. Values are not masked.
+/tmp/agent/mise-redacted-prototype.RFPyQS/docs/cli/env.md:49:Only show variables marked for redaction; values are printed unmasked
+/tmp/agent/mise-redacted-prototype.RFPyQS/src/cli/env.rs:38:    /// Only show variables marked for redaction; values are printed unmasked
+```
+
 ### Upstream filing decision
 
 1.  Is it really upstream's fault? Partly. The implementation matches the
@@ -370,15 +404,171 @@ No matching issue or PR was found.
     GitHub Discussions. No AI-assistance ban was found in `CONTRIBUTING.md`, the
     fetched contribution guide, or the issue template during the earlier mise
     token investigation.
-5.  Will they likely fix it? Unknown. The current behavior is documented, so a
-    wording-only change is plausible but not a correctness fix.
-6.  Have we prototyped a minimal fix compatible with their architecture? No. This
-    entry does not file upstream because the behavior is documented and the
-    immediate risk is local operator misunderstanding. A future upstream filing
-    should prototype help text such as "Only show variables marked for
-    redaction; values are printed unmasked."
+5.  Will they likely fix it? Soft yes. The current behavior is documented, so
+    this is wording clarification rather than correctness fix. The suggested
+    diff is small and follows the existing command semantics.
+6.  Have we prototyped a minimal fix compatible with their architecture? Yes.
+    The prototype changes the Clap help text and the docs that describe
+    `mise env --redacted` without changing runtime behavior.
 
-### Nothing to file
+### GitHub Discussion draft
 
-Do not file an upstream issue as-is. If this recurs for more users, open a
-GitHub Discussion proposing a help-text clarification rather than a bug report.
+Category: Questions or Ideas
+
+Title: Clarify that `mise env --redacted` prints values for variables marked for redaction
+
+~~~md
+## Summary
+
+`mise env --redacted` is documented and implemented as "show only variables
+marked for redaction." It does not mask those variables' values.
+
+That behavior is useful for workflows such as:
+
+```bash
+for value in $(mise env --redacted --values); do
+  echo "::add-mask::$value"
+done
+```
+
+The flag name and current help text are easy to misread as "show env output with
+values redacted." I hit this while debugging a GitHub token and expected masked
+output, but the command printed the token value.
+
+This is a wording clarification request, not a runtime behavior change request.
+
+## Current wording
+
+In `src/cli/env.rs`, the flag is described as:
+
+```rust
+/// Only show redacted environment variables
+#[clap(long)]
+redacted: bool,
+```
+
+The generated CLI docs mirror that wording:
+
+```md
+### `--redacted`
+
+Only show redacted environment variables
+```
+
+The environment docs say:
+
+```bash
+# Show only redacted environment variables
+mise env --redacted
+
+# Show only values of redacted variables
+mise env --redacted --values
+```
+
+## Why this is confusing
+
+In many CLIs, "redacted" means "masked before display." Here it means
+"selected because the key is marked for redaction," and the selected raw values
+are printed.
+
+A no-secret fixture demonstrates the behavior:
+
+```bash
+fixture_dir=$(mktemp --directory /tmp/mise-redacted-fixture.XXXXXX)
+cat > "$fixture_dir/mise.toml" <<'EOF'
+[env]
+SECRET_TOKEN = { value = "fixture-secret-token", redact = true }
+PUBLIC_VALUE = "visible"
+EOF
+
+MISE_TRUSTED_CONFIG_PATHS="$fixture_dir" \
+MISE_CONFIG_DIR="$fixture_dir/config" \
+MISE_DATA_DIR="$fixture_dir/data" \
+MISE_CACHE_DIR="$fixture_dir/cache" \
+mise env --cd "$fixture_dir" --redacted
+```
+
+Observed output:
+
+```bash
+export SECRET_TOKEN=fixture-secret-token
+```
+
+`--redacted --values` prints only the raw value:
+
+```text
+fixture-secret-token
+```
+
+`--redacted --json` includes the raw value:
+
+```json
+{
+  "SECRET_TOKEN": "fixture-secret-token"
+}
+```
+
+## Source trace
+
+`src/cli/env.rs` collects redaction-marked keys:
+
+```rust
+let redacted_keys = if self.redacted {
+    let env_results = config.env_results().await?;
+    let mut keys = IndexSet::new();
+    keys.extend(env_results.redactions.clone());
+    if let Some((_, ref tools_env_results)) = final_env {
+        keys.extend(tools_env_results.redactions.clone());
+    }
+    keys.extend(config.redaction_keys());
+    Some(keys)
+} else {
+```
+
+The output paths filter by key and then print the raw values. Shell output:
+
+```rust
+if let Some(keys) = redacted_keys {
+    env.retain(|k, _| self.should_include_key(k, keys));
+}
+
+for (k, v) in env {
+    let k = k.to_string();
+    let v = v.to_string();
+    miseprint!("{}", shell.set_env(&k, &v))?;
+```
+
+Value-only output:
+
+```rust
+for (_, v) in env {
+    miseprintln!("{}", v);
+}
+```
+
+## Suggested wording
+
+I prototyped a wording-only patch against
+`ae7c0c34bd87310d8701f8a69e885a8b89adfd9a`.
+
+Proposed CLI help:
+
+```rust
+/// Only show variables marked for redaction; values are printed unmasked
+#[clap(long)]
+redacted: bool,
+```
+
+Proposed environment docs wording:
+
+```md
+The `mise env` command provides flags to work with variables marked for
+redaction. These commands do not mask values; they select variables whose keys
+match redaction rules and print the selected raw values.
+```
+
+The same wording would be mirrored in the generated CLI docs.
+
+Prepared with AI assistance; I verified the reproduction, source trace, and
+wording-only prototype locally before posting.
+~~~
