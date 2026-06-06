@@ -1,3 +1,7 @@
+import {
+  lazyOnce,
+  lazyOnceAsync,
+} from '../lazy-once.ts';
 import { exec, } from '../pipeline/exec.ts';
 import { evaluatePredicate, } from '../platform/evaluate-predicate.ts';
 import { MANAGERS, } from './manager-defs.ts';
@@ -45,30 +49,17 @@ function fillTemplate(
 export const NO_PACKAGE_MANAGER: unique symbol = Symbol('file-enforcer/package: detection ran but found no supported package manager',);
 
 /**
- * Single-key holder for the lazily-detected package manager.
- * {@link NO_PACKAGE_MANAGER} value means detection ran but no manager was found; missing
- * key means detection has not run yet. Using a {@link Map} container side-steps a
- * module-root `let` binding while keeping the same lazy-cache semantics.
- */
-const managerCache = new Map<'manager', PackageManager | typeof NO_PACKAGE_MANAGER>();
-
-/**
- * Detects the highest-priority available package manager on the current system.
- * All candidates are probed concurrently; the winner is the first by {@link MANAGERS} insertion order.
- * Result is cached for the lifetime of the process.
+ * Probes every registered manager concurrently and returns the highest-priority
+ * available one, the first by {@link MANAGERS} insertion order.
  *
- * @returns Detected manager name, or {@link NO_PACKAGE_MANAGER} if none found
+ * @returns Detected manager name, or {@link NO_PACKAGE_MANAGER} if none found.
  *
  * @example
  * ```ts
- * const mgr = await detectManager();
- * // 'brew' when installed, otherwise 'apt' on Debian/Ubuntu, 'dnf' on Fedora, etc.
+ * const manager = await detectAvailableManager();
  * ```
  */
-export async function detectManager(): Promise<PackageManager | typeof NO_PACKAGE_MANAGER> {
-  if (managerCache.has('manager',))
-    return managerCache.get('manager',)
-      ?? NO_PACKAGE_MANAGER;
+async function detectAvailableManager(): Promise<PackageManager | typeof NO_PACKAGE_MANAGER> {
   /**
    * Snapshot of registered manager entries; iteration order defines detection priority.
    */
@@ -93,15 +84,29 @@ export async function detectManager(): Promise<PackageManager | typeof NO_PACKAG
   const detected = results.find(function isPresent(name,): name is PackageManager {
     return name !== NO_PACKAGE_MANAGER;
   },);
-  /**
-   * Resolved value stored in the cache and returned to the caller.
-   */
-  const resolved = detected ?? NO_PACKAGE_MANAGER;
-  managerCache.set(
-    'manager',
-    resolved,
-  );
-  return resolved;
+  return detected ?? NO_PACKAGE_MANAGER;
+}
+
+/**
+ * Lazily-detected package manager, cached for the process lifetime.
+ */
+const managerDetection = lazyOnceAsync({ compute: detectAvailableManager, },);
+
+/**
+ * Detects the highest-priority available package manager on the current system.
+ * All candidates are probed concurrently; the winner is the first by {@link MANAGERS} insertion order.
+ * Result is cached for the lifetime of the process.
+ *
+ * @returns Detected manager name, or {@link NO_PACKAGE_MANAGER} if none found
+ *
+ * @example
+ * ```ts
+ * const mgr = await detectManager();
+ * // 'brew' when installed, otherwise 'apt' on Debian/Ubuntu, 'dnf' on Fedora, etc.
+ * ```
+ */
+export async function detectManager(): Promise<PackageManager | typeof NO_PACKAGE_MANAGER> {
+  return await managerDetection.get();
 }
 
 /**
@@ -114,7 +119,7 @@ export async function detectManager(): Promise<PackageManager | typeof NO_PACKAG
  * ```
  */
 export function resetManagerCache(): void {
-  managerCache.delete('manager',);
+  managerDetection.reset();
 }
 
 //endregion Manager detection
@@ -160,10 +165,25 @@ export async function binaryExists(
 //region Privilege detection
 
 /**
- * Single-key holder for the lazily-detected root status.
- * Missing key means detection has not run yet.
+ * Detects whether the current process is running as root (UID 0).
+ * Returns `false` on platforms where `process.getuid` is unavailable (Windows).
+ *
+ * @returns `true` if running as root.
+ *
+ * @example
+ * ```ts
+ * const root = detectRoot();
+ * ```
  */
-const rootCache = new Map<'isRoot', boolean>();
+function detectRoot(): boolean {
+  return process.getuid?.()
+    === 0;
+}
+
+/**
+ * Lazily-detected root status, cached for the process lifetime.
+ */
+const rootDetection = lazyOnce({ compute: detectRoot, },);
 
 /**
  * Detects whether the current process is running as root (UID 0).
@@ -180,22 +200,7 @@ const rootCache = new Map<'isRoot', boolean>();
  * ```
  */
 export function isRoot(): boolean {
-  /**
-   * Cached detection, or `undefined` when detection has not run yet.
-   */
-  const cached = rootCache.get('isRoot',);
-  if (cached !== undefined)
-    return cached;
-  /**
-   * Fresh detection result; stored before return so subsequent calls short-circuit.
-   */
-  const detected = process.getuid?.()
-    === 0;
-  rootCache.set(
-    'isRoot',
-    detected,
-  );
-  return detected;
+  return rootDetection.get();
 }
 
 /**
@@ -208,7 +213,7 @@ export function isRoot(): boolean {
  * ```
  */
 export function resetRootCache(): void {
-  rootCache.delete('isRoot',);
+  rootDetection.reset();
 }
 
 //endregion Privilege detection

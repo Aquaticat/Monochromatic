@@ -1,3 +1,4 @@
+import { lazyOnce, } from '../lazy-once.ts';
 import {
   l,
   tagged,
@@ -17,37 +18,11 @@ import type {
 //region Package index
 
 /**
- * Single-key holder for the lazily-built lookup index.
- * Using a {@link Map} container side-steps a module-root `let` binding while
- * letting {@link registerPackages} clear the cache by deleting the sole key.
- */
-const indexCache = new Map<'index', ReadonlyMap<string, PackageEntry>>();
-
-/**
  * Registered package entries awaiting indexing.
  * Populated by consumers who import a data file and pass its entries
  * to {@link registerPackages} before calling {@link ensurePackage}.
  */
 const registered: PackageEntry[] = [];
-
-/**
- * Registers package entries for lookup by {@link ensurePackage}.
- * Call this once with the array exported from a data file.
- * Clears any previously built index so the next lookup rebuilds it.
- *
- * @param entries - Package entries produced by {@link p}
- *
- * @example
- * ```ts
- * import { packages } from './data/packages.ts';
- * registerPackages(packages);
- * ```
- */
-export function registerPackages(entries: readonly PackageEntry[],): void {
-  registered.length = 0;
-  registered.push(...entries,);
-  indexCache.delete('index',);
-}
 
 /**
  * Builds the binary-name lookup index from registered entries.
@@ -67,6 +42,30 @@ function buildIndex(): ReadonlyMap<string, PackageEntry> {
     );
   }
   return map;
+}
+
+/**
+ * Lazily-built binary lookup index, cleared by {@link registerPackages}.
+ */
+const packageIndex = lazyOnce({ compute: buildIndex, },);
+
+/**
+ * Registers package entries for lookup by {@link ensurePackage}.
+ * Call this once with the array exported from a data file.
+ * Clears any previously built index so the next lookup rebuilds it.
+ *
+ * @param entries - Package entries produced by {@link p}
+ *
+ * @example
+ * ```ts
+ * import { packages } from './data/packages.ts';
+ * registerPackages(packages);
+ * ```
+ */
+export function registerPackages(entries: readonly PackageEntry[],): void {
+  registered.length = 0;
+  registered.push(...entries,);
+  packageIndex.reset();
 }
 
 //endregion Package index
@@ -152,25 +151,9 @@ function resolvePackageName(
  */
 export async function ensurePackage(binary: string,): Promise<void> {
   /**
-   * Lazily-built lookup index; reuses prior build when {@link registerPackages} hasn't cleared it.
+   * Lazily-built lookup index; reuses prior build until {@link registerPackages} clears it.
    */
-  const index = (function getOrBuildIndex(): ReadonlyMap<string, PackageEntry> {
-    /**
-     * Existing build, or `undefined` when the cache is empty.
-     */
-    const cached = indexCache.get('index',);
-    if (cached !== undefined)
-      return cached;
-    /**
-     * Freshly-built lookup; stored before return so subsequent calls short-circuit.
-     */
-    const fresh = buildIndex();
-    indexCache.set(
-      'index',
-      fresh,
-    );
-    return fresh;
-  })();
+  const index = packageIndex.get();
 
   /**
    * Registered entry for `binary`, or `undefined` when the caller never declared it.

@@ -1,3 +1,4 @@
+import { lazyOnceAsync, } from '../lazy-once.ts';
 import {
   l,
   tagged,
@@ -23,73 +24,47 @@ type NotificationTool = 'notify-send' | 'osascript' | 'pwsh' | 'powershell';
 const NO_NOTIFICATION_TOOL = Symbol('file-enforcer/watch: detection found no desktop notification tool',);
 
 /**
- * Single-key holder for the lazily-detected notification backend.
- * {@link NO_NOTIFICATION_TOOL} value means detection ran but no tool was found; missing key
- * means detection has not run yet.
- */
-const toolCache = new Map<'tool', NotificationTool | typeof NO_NOTIFICATION_TOOL>();
-
-/**
  * Detects the first available desktop notification tool.
- * Result is cached for the lifetime of the process:
- * available tools don't change between events.
  *
- * @returns Detected tool name, or {@link NO_NOTIFICATION_TOOL} if none found
+ * @returns Detected tool name, or {@link NO_NOTIFICATION_TOOL} if none found.
+ *
+ * @example
+ * ```ts
+ * const tool = await detectAvailableNotificationTool();
+ * ```
  */
-async function detectNotificationTool(): Promise<NotificationTool | typeof NO_NOTIFICATION_TOOL> {
-  if (toolCache.has('tool',))
-    return toolCache.get('tool',)
-      ?? NO_NOTIFICATION_TOOL;
-
+async function detectAvailableNotificationTool(): Promise<NotificationTool | typeof NO_NOTIFICATION_TOOL> {
   if (await evaluatePredicate([
     'notify-send',
     '--version',
-  ],)) {
-    toolCache.set(
-      'tool',
-      'notify-send',
-    );
+  ],))
     return 'notify-send';
-  }
   if (await evaluatePredicate([
     'osascript',
     '-e',
     'return',
-  ],)) {
-    toolCache.set(
-      'tool',
-      'osascript',
-    );
+  ],))
     return 'osascript';
-  }
   if (await evaluatePredicate([
     'pwsh',
     '--version',
-  ],)) {
-    toolCache.set(
-      'tool',
-      'pwsh',
-    );
+  ],))
     return 'pwsh';
-  }
   if (await evaluatePredicate([
     'powershell',
     '-Command',
     'exit',
-  ],)) {
-    toolCache.set(
-      'tool',
-      'powershell',
-    );
+  ],))
     return 'powershell';
-  }
 
-  toolCache.set(
-    'tool',
-    NO_NOTIFICATION_TOOL,
-  );
   return NO_NOTIFICATION_TOOL;
 }
+
+/**
+ * Lazily-detected desktop notification backend, cached for the process lifetime:
+ * available tools don't change between events.
+ */
+const notificationToolDetection = lazyOnceAsync({ compute: detectAvailableNotificationTool, },);
 
 //endregion Notification tool detection
 
@@ -130,7 +105,7 @@ async function sendDesktopNotification(filePath: string,): Promise<void> {
   /**
    * Detected notification backend, or NO_NOTIFICATION_TOOL when no compatible tool is installed.
    */
-  const tool = await detectNotificationTool();
+  const tool = await notificationToolDetection.get();
   if (tool === NO_NOTIFICATION_TOOL)
     return;
 
