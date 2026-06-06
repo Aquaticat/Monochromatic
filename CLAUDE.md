@@ -452,8 +452,6 @@ ST2: Use `//region`/`//endregion` markers with purpose and explanation for logic
 
 ST3: Cross-package workspace imports must resolve to TypeScript source, not built output.
 
-ST4: Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
-
 ST5: Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
 
 ST6: Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time, no async preload step needed.
