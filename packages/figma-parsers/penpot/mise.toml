@@ -24,7 +24,12 @@ extends = "lint:oxlint"
 
 [tasks."format:oxlint"]
 description = "Auto-fix with Oxlint (type-aware)"
-run = "task-oxlint --type-aware --fix"
+run = """
+{{vars.monorepo_root_setup}}
+{{vars.ensure_oxlint_config}}
+{{vars.workspace_node_dispatch}}
+run_workspace_node $root packages/dev-script/task-util oxlint-wrapper --type-aware --fix
+"""
 
 [tasks."lint:types"]
 extends = "lint:types"

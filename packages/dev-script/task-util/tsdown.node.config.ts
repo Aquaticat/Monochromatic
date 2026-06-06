@@ -10,10 +10,11 @@ import {
  * Six bin entries, one per declared `bin` (task-command, task-append,
  * task-depends, task-oxlint, task-pnpm, task-tsgo). Each lands under
  * `dist/final/node/` as `.mjs` with its shebang preserved. node-only
- * (node:fs/node:path, shells out to oxlint/tsgo/pnpm). The mise lint
- * templates invoke `task-oxlint`/`task-tsgo`/`task-pnpm` repo-wide via
- * the `.bin` symlinks, so `package.json#bin` must resolve to these built
- * files (flip the bin only after this build emits them).
+ * (node:fs/node:path, shells out to oxlint/tsgo/pnpm). `package.json#bin`
+ * still resolves to these built files for normal shell use. Bootstrap-critical
+ * mise tasks use inline Nushell dispatch to call the built file directly when
+ * present, otherwise the matching TypeScript source, so they do not depend on
+ * pnpm `.bin` shims.
  */
 const config: UserConfig = defineConfig({
   ...base,

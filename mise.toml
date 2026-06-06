@@ -214,6 +214,35 @@ let d = ($p | split row ":" | length)
 let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) })
 if ($c | is-empty) { error make { msg: $"no child tasks for ($env.MISE_TASK_NAME)" } } else { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
 """
+# Resolve the monorepo root from either root or package-local mise tasks.
+monorepo_root_setup = """
+let config_root = ($env.MISE_CONFIG_ROOT? | default (pwd))
+let root = ($env.MISE_MONOREPO_ROOT? | default (if ([$config_root mise.no-env.toml] | path join | path exists) { $config_root } else { ([$config_root '..' '..' '..'] | path join | path expand) }))
+"""
+# Bootstrap-safe inline Nushell dispatch. Prefer built dist when present, otherwise run TypeScript source through Node.
+workspace_node_dispatch = """
+def --wrapped run_workspace_node [root: string, package_path: string, entry_name: string, ...entry_args: string] {
+  let package_root = ([$root $package_path] | path join)
+  let built = ([$package_root dist final node $"($entry_name).mjs"] | path join)
+  let src = ([$package_root src $"($entry_name).ts"] | path join)
+  if ($built | path exists) {
+    node $built ...$entry_args
+  } else {
+    if ($src | path exists) {
+      node $src ...$entry_args
+    } else {
+      error make { msg: $"missing built or source entry: ($package_path)/($entry_name)" }
+    }
+  }
+}
+"""
+# Root oxlint config imports a built workspace package, so build it once on fresh trees before oxlint runs.
+ensure_oxlint_config = """
+let oxlint_config = ([$root packages config oxlint dist final node index.mjs] | path join)
+if not ($oxlint_config | path exists) {
+  mise run //packages/config/oxlint:build:js:node
+}
+"""
 
 [task_templates.build]
 run = "{{vars.fanout}}"
@@ -281,11 +310,20 @@ run = "{{vars.fanout}}"
 
 [task_templates."lint:oxlint"]
 description = "Lint with Oxlint"
-run = "task-oxlint --type-aware"
+run = """
+{{vars.monorepo_root_setup}}
+{{vars.ensure_oxlint_config}}
+{{vars.workspace_node_dispatch}}
+run_workspace_node $root packages/dev-script/task-util oxlint-wrapper --type-aware
+"""
 
 [task_templates."lint:types"]
 description = "TypeScript"
-run = "task-tsgo --build"
+run = """
+{{vars.monorepo_root_setup}}
+{{vars.workspace_node_dispatch}}
+run_workspace_node $root packages/dev-script/task-util tsgo-filter --build
+"""
 
 [task_templates."watch:lint:types"]
 description = "Type check in watch mode"
@@ -529,7 +567,12 @@ hide = true
 # A proper fix would require per-package fan-out like lint:oxlint,
 # but the format task is not the right place for that complexity.
 description = "Auto-fix with Oxlint (non-type-aware only)"
-run = "task-oxlint --fix"
+run = """
+{{vars.monorepo_root_setup}}
+{{vars.ensure_oxlint_config}}
+{{vars.workspace_node_dispatch}}
+run_workspace_node $root packages/dev-script/task-util oxlint-wrapper --fix
+"""
 
 # Applies markdownlint autofixes (e.g. no-pipe-tables converting pipe tables to
 # HTML) over the config `globs`, or only the given file paths. dprint handles
@@ -563,14 +606,20 @@ mise run format && mise run build && mise run test
 
 [tasks.prepare]
 description = "Prepare environment (install Playwright browsers, etc.)"
-extends = "prepare"
+run = """
+mise run prepare:pnpm
+let p = $env.MISE_TASK_NAME + ":"
+let d = ($p | split row ":" | length)
+let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) and ($n != "prepare:pnpm") })
+if ($c | is-not-empty) { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
+"""
 
 [tasks."prepare:pnpm"]
 run = [{ tasks = ["prepare:pnpm:install"] }, { tasks = ["prepare:pnpm:others:*"] }]
 
 [tasks."prepare:pnpm:install"]
 alias = "pi"
-run = "task-pnpm install"
+run = "pnpm install"
 
 [tasks."prepare:pnpm:others:approve-builds"]
 description = "Approve build scripts for native dependencies"
@@ -583,7 +632,9 @@ run = "bun file-enforcer.config.ts"
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
 run = """
-task-depends -s "sh:echo Infinity" -o "sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity" -- podman build -t monochromatic-playwright -f playwright.Dockerfile .
+{{vars.monorepo_root_setup}}
+{{vars.workspace_node_dispatch}}
+run_workspace_node $root packages/dev-script/task-util depends --sources "sh:echo Infinity" --outputs "sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity" -- podman build -t monochromatic-playwright -f playwright.Dockerfile .
 """
 
 [tasks.prepareAndBuild]
@@ -659,7 +710,7 @@ run = "bun packages/dev-script/page-weight/src/index.ts $env.usage_dist"
 
 [tasks."fix:reinstall"]
 description = "Clean reinstall to work around registry or resolution issues"
-run = "rm -rf node_modules; task-pnpm install"
+run = "rm --recursive --force node_modules; pnpm install"
 
 #endregion Fix Tasks
 
