@@ -1,6 +1,7 @@
 import { statSync, } from 'node:fs';
 import { resolve, } from 'node:path';
 import type { TrackedGlob, } from '../tracker.ts';
+import { caughtErrorHasCode, } from './error.ts';
 import { expandGlob, } from './glob.ts';
 import {
   ABSENT_FILE_STAMPS,
@@ -64,6 +65,8 @@ export function normalizeGlobStamps(globs: readonly TrackedGlob[],): readonly Gl
  *
  * @returns File metadata, or sentinel when path is absent.
  *
+ * @throws When stat fails for reasons other than file absence.
+ *
  * @example
  * ```ts
  * const stamp = await readFileStamp('./AGENTS.md');
@@ -81,8 +84,14 @@ function readFileStamp(path: string,): FileStamp | typeof ABSENT_FILE_STAMPS {
       mtimeMs: fileStat.mtimeMs,
     };
   }
-  catch {
-    return ABSENT_FILE_STAMPS;
+  catch (statError: unknown) {
+    if (caughtErrorHasCode({
+      error: statError,
+      code: 'ENOENT',
+    },))
+      return ABSENT_FILE_STAMPS;
+
+    throw statError;
   }
 }
 
@@ -108,6 +117,8 @@ function isPresentFileStamp(value: FileStamp | typeof ABSENT_FILE_STAMPS,): valu
  * @param paths - Paths to stat.
  *
  * @returns Sorted metadata list when every path exists.
+ *
+ * @throws When stat fails for reasons other than file absence.
  *
  * @example
  * ```ts
