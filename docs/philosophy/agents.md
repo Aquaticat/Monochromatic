@@ -339,12 +339,7 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 #### Third-party libraries: the unforked-upstream-clone exception mechanics
 
-The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an
+The `troubleshooting-doc` skill's exception is a disposable prototype clone created solely to test or prepare an
 upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to
 third-party scripts. That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the
 `troubleshooting-doc` no-modify rule.
-
-## Changelog
-
-- Moved export-for-testability rationale from AGENTS.md into this philosophy doc so AGENTS.md keeps only the terse XPT
-  rule while the common-sense details stay available for readers who want the reasoning.
