@@ -295,6 +295,8 @@ it's display substitution for `/var/home/user` or `/home/user` by `bash-output-f
 Account for it when debugging path issues, before concluding path is wrong.
 Skip filter for one command: include blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, `> file`.
 
+WCD: In git worktree, prepend `cd <worktree-abs-path> &&` to every Bash command; Bash tool cwd resets to primary checkout between commands.
+
 ### Long-form flags
 
 LFF: Use long-form (`--flag`) options for CLI commands, not bundled/single-letter short flags.
