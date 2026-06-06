@@ -14,7 +14,7 @@ this package implements only JSON-RPC 2.0, initialization handshake,
 `tools/list`, `tools/call`, and `ping`.
 
 **Inference canary**:
-[`inference-canary`](packages/dev-script/inference-canary/) runs five
+[`inference-canary`](packages-paused/dev-script/inference-canary/) runs five
 code-generation probes (CSV parser, expression evaluator, CSS mixin transpiler,
 stack interpreter, task scheduler) against 8 LLM models in parallel.
 Each probe executes inside a locked-down Podman container (no network,

@@ -634,15 +634,6 @@ run = "bun packages/dev-script/file-enforcer/src/cli.ts --watch"
 
 #endregion File Enforcer
 
-#region Inference Canary -- probes to detect LLM inference degradation before starting work
-
-[tasks.canary]
-description = "Run inference canary probes against the configured model"
-usage = 'arg "[args]" var=#true help="Additional arguments (--model <id> --runs <n>)"'
-run = "bun packages/dev-script/inference-canary/src/canary.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
-
-#endregion Inference Canary
-
 #region Catalog Tighten -- tighten >= ranges in pnpm-workspace.yaml catalog to match installed versions
 
 [tasks."catalog:tighten"]
@@ -674,6 +665,9 @@ run = "rm -rf node_modules; task-pnpm install"
 
 # Forge shortcut tasks (forge:dev, forge:seed, forge:stress, prepare:garage) were removed when
 # webapp-forge moved to packages-paused/. Re-add them on un-pause.
+
+# The canary task was removed when inference-canary moved to packages-paused/
+# (superseded by marginlab.ai). Re-add it on un-pause.
 
 #endregion tasks
 
@@ -707,8 +701,6 @@ _.path = [
   "packages/webapp-content/ssg-test/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
-  "packages/dev-script/inference-canary-viewer/node_modules/.bin",
-  "packages/dev-script/inference-canary/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
 ]
 
