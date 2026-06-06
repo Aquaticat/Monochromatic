@@ -1,0 +1,2 @@
+no-static-method-name
+NO STATIC METHOD NAME

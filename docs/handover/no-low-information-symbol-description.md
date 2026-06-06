@@ -8,13 +8,15 @@ Reach zero misclassifications on the persisted symbol-description calibration da
 
 - `packages/test-fixture/oxlint-no-restricted-syntax/data/no-low-information-symbol-description.pass.txt`
 - `packages/test-fixture/oxlint-no-restricted-syntax/data/no-low-information-symbol-description.fail.txt`
+- `packages/test-fixture/oxlint-no-restricted-syntax/data/no-low-information-symbol-description.borderline.txt`
 - `packages/test-fixture/oxlint-no-restricted-syntax/data/no-low-information-symbol-description.benchmark.html`
 
 ## Current dataset state
 
-The pass dataset has 144 descriptions.
-The fail dataset has 198 descriptions.
-The current benchmark page embeds 342 rows.
+The pass dataset has 145 descriptions.
+The fail dataset has 217 descriptions.
+The borderline dataset has 2 descriptions.
+The current benchmark page embeds 362 pass/fail rows.
 
 The user added short pass examples, then asked for more low-character pass cases. The pass file now includes examples such as:
 
@@ -52,6 +54,39 @@ Repo-existing all-uppercase symbol descriptions added as definite fail rows:
 - `NOT_FOUND`
 - `UNMEASURED`
 
+User-labeled repo-existing descriptions added as fail rows:
+
+- `wrapper-succeeded`
+- `unparseable-timestamp`
+- `shared`
+- `realpath-absent`
+- `realpath-unavailable`
+- `runWithContext`
+- `package-unavailable`
+- `outside-string`
+- `outside-worktree`
+- `no-verdict`
+- `no-tool-call`
+- `no-partial`
+- `no-node-fs`
+- `no nested script`
+- `kv-store/absent`
+- `invalidValue`
+- `invalid-input`
+- `flag-unset`
+- `hash-oversized`
+- `css-absent`
+- `chip-not-found`
+
+User-labeled repo-existing description added as a pass row:
+
+- `unparseable-iso8601-timestamp`
+
+Borderline descriptions removed from fail rows and persisted in the new borderline file:
+
+- `no-static-method-name`
+- `NO STATIC METHOD NAME`
+
 ## Classifier now embedded in the benchmark
 
 The benchmark HTML now uses a classifier that reaches 0 misclassifications without broad word lists or non-discriminative compression.
@@ -65,10 +100,11 @@ Classifier shape:
 4. Fail repeated meaningful words, ignoring words of length 2 or less and words that came from the namespace prefix.
    If the description contains `because`, compare meaningful words on both sides of `because` and fail only when both sides repeat the same phrase.
 5. Fail all-uppercase phrases, because capitalization alone is not specificity.
-6. Fail namespaced descriptions whose tail has fewer than 3 words.
-7. Fail non-namespaced descriptions that start with `no` or `not` unless they have a specificity marker.
-8. Fail non-namespaced 3-word descriptions without a specificity marker and without an `ed` or `ing` ending on the third word.
-9. Otherwise pass.
+6. Fail bare camelCase identifiers with three or more words.
+7. Fail namespaced descriptions whose tail has fewer than 3 words.
+8. Fail non-namespaced descriptions that start with `no` or `not` unless they have a specificity marker.
+9. Fail non-namespaced 3-word descriptions without a specificity marker and without an `ed` or `ing` ending on the third word.
+10. Otherwise pass.
 
 Specificity marker is structural, not vocabulary-based:
 
@@ -85,12 +121,12 @@ If compression is added later, run it only inside a narrow ambiguity branch such
 A browser verification loaded the benchmark HTML through `agent-browser` at its local `file://` URL.
 The rendered page reported:
 
-- pass count: 144,
-- fail count: 198,
+- pass count: 145,
+- fail count: 217,
 - classifier errors: 0,
 - classifier summary: `Classifier gives 0 total errors, 0 false-failed pass descriptions, and 0 missed fail descriptions.`,
 - classifier mismatch table: `No classifier mismatches.`,
-- dataset rows: 342.
+- dataset rows: 362.
 
 `agent-browser errors` and `agent-browser console` returned no output after verification.
 

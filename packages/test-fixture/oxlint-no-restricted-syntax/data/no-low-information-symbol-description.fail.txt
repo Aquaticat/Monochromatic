@@ -125,7 +125,6 @@ discard entry
 ignore-value
 ignore value
 not-a-data-row
-no-static-method-name
 no-optional-escape-no-match
 module/not-found
 module/no-value
@@ -183,7 +182,6 @@ worker-terminated
 network-timeout
 VALUE IS MISSING
 STATE IS UNKNOWN
-NO STATIC METHOD NAME
 value missing because value missing
 file absent because file absent
 NO_CHURN
@@ -196,3 +194,24 @@ NO_STORAGE
 NO_TREE0
 NOT_FOUND
 UNMEASURED
+wrapper-succeeded
+unparseable-timestamp
+shared
+realpath-absent
+realpath-unavailable
+runWithContext
+package-unavailable
+outside-string
+outside-worktree
+no-verdict
+no-tool-call
+no-partial
+no-node-fs
+no nested script
+kv-store/absent
+invalidValue
+invalid-input
+flag-unset
+hash-oversized
+css-absent
+chip-not-found

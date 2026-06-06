@@ -142,3 +142,4 @@ cache-layer/cache-record-expired
 cache-layer/cache-entry-not-found
 user-settings/preference-key-not-registered
 user-settings/settings-file-unreadable
+unparseable-iso8601-timestamp
