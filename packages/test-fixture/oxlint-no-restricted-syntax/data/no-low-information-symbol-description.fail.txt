@@ -181,3 +181,8 @@ clipboard-denied
 manifest-unreadable
 worker-terminated
 network-timeout
+VALUE IS MISSING
+STATE IS UNKNOWN
+NO STATIC METHOD NAME
+value missing because value missing
+file absent because file absent

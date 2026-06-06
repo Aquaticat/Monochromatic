@@ -13,8 +13,8 @@ Reach zero misclassifications on the persisted symbol-description calibration da
 ## Current dataset state
 
 The pass dataset has 144 descriptions.
-The fail dataset has 183 descriptions.
-The current benchmark page embeds 327 rows.
+The fail dataset has 188 descriptions.
+The current benchmark page embeds 332 rows.
 
 The user added short pass examples, then asked for more low-character pass cases. The pass file now includes examples such as:
 
@@ -31,6 +31,14 @@ Do not hardcode broad word lists such as `stopWords` or `specificWords`. The use
 
 Do not run compression non-discriminatively. Compression may only run after a structural signal indicates a redundancy check is relevant.
 
+Adversarial fail rows were added after the classifier first reached zero errors:
+
+- `VALUE IS MISSING`
+- `STATE IS UNKNOWN`
+- `NO STATIC METHOD NAME`
+- `value missing because value missing`
+- `file absent because file absent`
+
 ## Classifier now embedded in the benchmark
 
 The benchmark HTML now uses a classifier that reaches 0 misclassifications without broad word lists or non-discriminative compression.
@@ -42,11 +50,12 @@ Classifier shape:
    This keeps `penpot:skip` namespaced, but does not treat `File absent: eaten by cat` as namespaced.
 3. Fail descriptions with fewer than 3 words or fewer than 3 distinct words.
 4. Fail repeated meaningful words, ignoring words of length 2 or less and words that came from the namespace prefix.
-   If the description contains `because`, skip this repetition failure so `package-json-manifest-unreadable-because-json-parse-failed` can pass.
-5. Fail namespaced descriptions whose tail has fewer than 3 words.
-6. Fail non-namespaced descriptions that start with `no` or `not` unless they have a specificity marker.
-7. Fail non-namespaced 3-word descriptions without a specificity marker and without an `ed` or `ing` ending on the third word.
-8. Otherwise pass.
+   If the description contains `because`, compare meaningful words on both sides of `because` and fail only when both sides repeat the same phrase.
+5. Fail all-uppercase phrases, because capitalization alone is not specificity.
+6. Fail namespaced descriptions whose tail has fewer than 3 words.
+7. Fail non-namespaced descriptions that start with `no` or `not` unless they have a specificity marker.
+8. Fail non-namespaced 3-word descriptions without a specificity marker and without an `ed` or `ing` ending on the third word.
+9. Otherwise pass.
 
 Specificity marker is structural, not vocabulary-based:
 
@@ -64,11 +73,11 @@ A browser verification loaded the benchmark HTML through `agent-browser` at its 
 The rendered page reported:
 
 - pass count: 144,
-- fail count: 183,
+- fail count: 188,
 - classifier errors: 0,
 - classifier summary: `Classifier gives 0 total errors, 0 false-failed pass descriptions, and 0 missed fail descriptions.`,
 - classifier mismatch table: `No classifier mismatches.`,
-- dataset rows: 327.
+- dataset rows: 332.
 
 `agent-browser errors` and `agent-browser console` returned no output after verification.
 
