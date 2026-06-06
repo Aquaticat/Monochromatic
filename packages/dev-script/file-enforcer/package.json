@@ -25,6 +25,7 @@
     "@lezer/xml": "catalog:",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-toml-edit": "workspace:*",
+    "chokidar": "catalog:",
     "dot-prop": "catalog:",
     "find-up": "catalog:",
     "nano-spawn": "catalog:",

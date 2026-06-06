@@ -31,7 +31,7 @@ type WatchSupervisorLogger = Pick<Logger, 'error' | 'info'>;
  */
 type SupervisedWatcherOptions = Readonly<{
   /**
-   * Directory path passed to `fs.watch`.
+   * Directory path passed to chokidar.
    */
   dir: string;
 
@@ -192,7 +192,7 @@ async function waitBeforeWatcherRestart(
 /**
  * Runs one watcher and restarts it after non-abort failures up to a bounded limit.
  *
- * @param dir - Directory path passed to `fs.watch`.
+ * @param dir - Directory path passed to chokidar.
  *
  * @param signal - Abort signal used to stop watcher during normal teardown.
  *

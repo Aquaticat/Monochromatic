@@ -1,12 +1,32 @@
-import { watch, } from 'node:fs/promises';
+import {
+  type FSWatcher,
+  watch as chokidarWatch,
+} from 'chokidar';
+
 import {
   l,
   tagged,
 } from '../log.ts';
 import {
-  classifyEvent,
-  type EventKind,
-} from './watch-filter.ts';
+  assertExistingWatchDirectory,
+  filenameForChokidarPath,
+  rejectWatchDirectoryAfterClose,
+  resolveWatchDirectoryAfterClose,
+  type WatchDirectoryOptions,
+  type WatchDirectorySettledState,
+} from './watch-dir-helpers.ts';
+import { classifyEvent, } from './watch-filter.ts';
+
+/**
+ * Chokidar path-level events that can affect tracked sources or protected destinations.
+ */
+const CHOKIDAR_PATH_EVENTS = [
+  'add',
+  'change',
+  'unlink',
+  'addDir',
+  'unlinkDir',
+] as const;
 
 /**
  * Minimum delay between re-runs to avoid overlapping executions from rapid saves
@@ -14,11 +34,11 @@ import {
 export const DEBOUNCE_MS = 100;
 
 /**
- * Starts an fs.watch loop for a single directory, classifying events and
+ * Starts a chokidar watcher for a single directory, classifying events and
  * calling the appropriate callback.
  *
- * Runs until the abort signal fires. AbortError is silently caught since
- * it is the expected teardown mechanism. Other watcher failures are logged
+ * Runs until the abort signal fires. Abort teardown is silently caught since
+ * it is expected during watcher re-setup. Other watcher failures are logged
  * and rethrown so failed setup or broken watch loops do not look healthy.
  *
  * @param dir - Absolute directory path to watch
@@ -48,15 +68,7 @@ export async function watchDirectory(
     signal,
     configPath,
     onEvent,
-  }: {
-    readonly dir: string;
-    readonly signal: AbortSignal;
-    readonly configPath: string;
-    readonly onEvent: (
-      kind: EventKind,
-      filename: string,
-    ) => void;
-  },
+  }: WatchDirectoryOptions,
 ): Promise<void> {
   /**
    * Function-scoped logger tagged with the call site for traceable watcher logs.
@@ -65,40 +77,183 @@ export async function watchDirectory(
     tag: watchDirectory.name,
     l,
   },);
-  try {
+  /**
+   * Resolver pair for abort or failure completion of this watcher.
+   */
+  const completion = Promise.withResolvers<void>();
+  /**
+   * Single-key state preventing abort, chokidar error, and dispatch error from settling twice.
+   */
+  const settledState: WatchDirectorySettledState = new Map<'settled', true>();
+  /**
+   * Chokidar watcher, assigned after setup succeeds so teardown helpers can close it.
+   */
+  let watcher: FSWatcher | undefined;
+
+  /**
+   * Closes and resolves this watcher after normal abort teardown.
+   *
+   * @example
+   * ```ts
+   * void closeForAbort();
+   * ```
+   */
+  async function closeForAbort(): Promise<void> {
+    await resolveWatchDirectoryAfterClose({
+      completion,
+      settledState,
+      watcher,
+    },);
+  }
+
+  /**
+   * Closes and rejects this watcher after chokidar or classification failure.
+   *
+   * @param watchError - Failure that should reject the watch loop.
+   *
+   * @example
+   * ```ts
+   * void closeForFailure(error);
+   * ```
+   */
+  async function closeForFailure(watchError: unknown,): Promise<void> {
+    await rejectWatchDirectoryAfterClose({
+      completion,
+      settledState,
+      watcher,
+      watchError,
+    },);
+  }
+
+  /**
+   * AbortSignal event listener. EventTarget listeners cannot be async, so this
+   * detaches the async close path and lets `completion` carry the result.
+   *
+   * @example
+   * ```ts
+   * onAbort();
+   * ```
+   */
+  function onAbort(): void {
+    // oxlint-disable-next-line typescript/no-floating-promises -- completion.promise observes close success or failure.
+    closeForAbort();
+  }
+
+  /**
+   * Chokidar error listener that fails this watched directory closed.
+   *
+   * @param watchError - Error emitted by chokidar.
+   *
+   * @example
+   * ```ts
+   * onWatcherError(new Error('synthetic watcher error'));
+   * ```
+   */
+  function onWatcherError(watchError: Error,): void {
+    // oxlint-disable-next-line typescript/no-floating-promises -- completion.promise observes close success or failure.
+    closeForFailure(watchError,);
+  }
+
+  /**
+   * Classifies one chokidar path event and forwards actionable events.
+   *
+   * @param path - Path emitted by chokidar.
+   *
+   * @example
+   * ```ts
+   * await dispatchPathEvent('/repo/src/index.ts');
+   * ```
+   */
+  async function dispatchPathEvent(path: string,): Promise<void> {
     /**
-     * Async iterator yielding filesystem events in this directory
+     * Filename relative to watched directory, preserving the old fs.watch API shape.
      */
-    const watcher = watch(
+    const filename = filenameForChokidarPath({
       dir,
-      { signal, },
+      path,
+    },);
+    /**
+     * Classification determines whether this event triggers action.
+     */
+    const kind = await classifyEvent({
+      filename,
+      watchedDir: dir,
+      configPath,
+    },);
+    if (kind === 'ignore')
+      return;
+
+    onEvent(
+      kind,
+      filename,
     );
-    // for-await is the only way to consume an AsyncIterable from fs.watch:
-    // there is no functional alternative for an unbounded event stream.
-    for await (const event of watcher) {
-      if (event.filename
-        === null)
-        continue;
-      /**
-       * Classification determines whether this event triggers action
-       */
-      const kind = await classifyEvent({
-        filename: event.filename,
-        watchedDir: dir,
-        configPath,
-      },);
-      if (kind === 'ignore')
-        continue;
-      onEvent(
-        kind,
-        event.filename,
+  }
+
+  /**
+   * Chokidar path-event listener. Chokidar ignores returned promises, so this
+   * listener contains its own async error boundary.
+   *
+   * @param path - Path emitted by chokidar.
+   *
+   * @example
+   * ```ts
+   * onPathEvent('/repo/src/index.ts');
+   * ```
+   */
+  function onPathEvent(path: string,): void {
+    void (async function classifyAndDispatchPathEvent(): Promise<void> {
+      try {
+        await dispatchPathEvent(path,);
+      }
+      catch (dispatchError: unknown) {
+        await closeForFailure(dispatchError,);
+      }
+    })();
+  }
+
+  try {
+    await assertExistingWatchDirectory({ dir, },);
+    if (signal.aborted)
+      return;
+
+    watcher = chokidarWatch(
+      dir,
+      {
+        atomic: true,
+        awaitWriteFinish: false,
+        depth: 0,
+        followSymlinks: false,
+        ignoreInitial: true,
+        persistent: true,
+      },
+    );
+    signal.addEventListener(
+      'abort',
+      onAbort,
+      { once: true, },
+    );
+    using _abortListenerCleanup = {
+      [Symbol.dispose](): void {
+        signal.removeEventListener(
+          'abort',
+          onAbort,
+        );
+      },
+    };
+    watcher.on(
+      'error',
+      onWatcherError,
+    );
+    for (const eventName of CHOKIDAR_PATH_EVENTS) {
+      watcher.on(
+        eventName,
+        onPathEvent,
       );
     }
+    await completion.promise;
   }
   catch (watchError: unknown) {
-    // AbortError is expected when closing watchers during re-setup
-    if ((watchError instanceof Error) && (watchError.name
-      === 'AbortError'))
+    if (signal.aborted)
       return;
     rl.error(`watcher error in ${dir}: ${String(watchError,)}`,);
     throw watchError;

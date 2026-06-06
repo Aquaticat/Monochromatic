@@ -25,7 +25,7 @@ import {
 export type EventKind = 'source' | 'protected' | 'ignore';
 
 /**
- * Derives the unique set of parent directories that need `fs.watch` watchers,
+ * Derives the unique set of parent directories that need chokidar watchers,
  * covering every tracked read path, every tracked write path (for protection),
  * and the config file itself.
  *
@@ -98,7 +98,7 @@ async function matchesTrackedGlob(absolutePath: string,): Promise<boolean> {
  * For write paths, uses `stat()` to compare the file's mtime against our
  * recorded write timestamp. If mtime \> our timestamp, the edit is external.
  *
- * @param filename - Filename from the fs.watch event (relative to watched dir)
+ * @param filename - Filename from the watch event (relative to watched dir)
  *
  * @param watchedDir - Absolute path of the directory being watched
  *
@@ -182,7 +182,7 @@ export async function classifyEvent(
 /**
  * Backwards-compatible wrapper that returns true for any actionable event.
  *
- * @param filename - Filename from the fs.watch event (relative to watched dir)
+ * @param filename - Filename from the watch event (relative to watched dir)
  *
  * @param watchedDir - Absolute path of the directory being watched
  *

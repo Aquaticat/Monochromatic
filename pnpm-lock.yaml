@@ -1073,6 +1073,9 @@ importers:
       '@monochromatic-dev/module-toml-edit':
         specifier: workspace:*
         version: link:../../module/toml-edit
+      chokidar:
+        specifier: 'catalog:'
+        version: 5.0.0
       dot-prop:
         specifier: 'catalog:'
         version: 10.1.0
