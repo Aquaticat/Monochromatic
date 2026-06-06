@@ -87,6 +87,9 @@ Borderline descriptions removed from fail rows and persisted in the new borderli
 - `no-static-method-name`
 - `NO STATIC METHOD NAME`
 
+The borderline file is not an allowlist. If the production classifier reports either description in real source, fix
+the actual Symbol description rather than weakening the classifier for that borderline case.
+
 ## Classifier now embedded in the benchmark
 
 The benchmark HTML now uses a classifier that reaches 0 misclassifications without broad word lists or non-discriminative compression.
@@ -135,7 +138,8 @@ The rendered page reported:
 The implementation plan at `/var/home/user/.claude/plans/implement-this-oxlint-rule-dynamic-torvalds.md` has been
 refined to replace the obsolete Shannon-entropy and compression-first approach with the current structural classifier.
 It now calls out the pass, fail, and borderline data files, the repo-remediation step before enabling the rule as an
-error, and the requirement to test against the `.txt` datasets.
+error, and the requirement to test against the `.txt` datasets. It also states that borderline rows are not classifier
+exemptions: if real source trips the implemented classifier, fix the source description.
 
 ## Next steps
 
