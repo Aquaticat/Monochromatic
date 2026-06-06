@@ -447,7 +447,7 @@ TQ2: Export immediately at declaration; avoid `Object.assign` for extending type
 
 XPT: Exporting small helpers through package API for built-artifact tests allowed.
 
-TQ3: Throw + return early; use overloads (most specific first).
+TQ3: Throw + return early.
 
 #### Type system
 
