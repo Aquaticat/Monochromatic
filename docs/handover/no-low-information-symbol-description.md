@@ -31,9 +31,11 @@ Do not hardcode broad word lists such as `stopWords` or `specificWords`. The use
 
 Do not run compression non-discriminatively. Compression may only run after a structural signal indicates a redundancy check is relevant.
 
-## Candidate classifier with zero errors in a Node probe
+## Classifier now embedded in the benchmark
 
-A probe reached 0 misclassifications without broad word lists or non-discriminative compression. The classifier shape was:
+The benchmark HTML now uses a classifier that reaches 0 misclassifications without broad word lists or non-discriminative compression.
+
+Classifier shape:
 
 1. Split words by non-alphanumeric separators plus camel and acronym boundaries.
 2. Treat `/` or `:` as namespace separators only when the prefix before the separator has no spaces.
@@ -53,18 +55,24 @@ Specificity marker is structural, not vocabulary-based:
 - dot or underscore,
 - any word of length at least 4 with no vowel.
 
-Compression was not needed for zero errors in that probe. If compression is added, run it only inside the repeated-meaningful-word branch or another similarly narrow ambiguity branch.
+Compression is not run in the current classifier because the structural classifier already reaches zero errors.
+If compression is added later, run it only inside a narrow ambiguity branch such as repeated meaningful words.
 
 ## Verification already run
 
-A Node probe using the candidate classifier against the persisted pass/fail text files printed `errors 0`.
+A browser verification loaded the benchmark HTML through `agent-browser` at its local `file://` URL.
+The rendered page reported:
 
-The benchmark HTML has not yet been updated with this classifier.
+- pass count: 144,
+- fail count: 183,
+- classifier errors: 0,
+- classifier summary: `Classifier gives 0 total errors, 0 false-failed pass descriptions, and 0 missed fail descriptions.`,
+- classifier mismatch table: `No classifier mismatches.`,
+- dataset rows: 327.
+
+`agent-browser errors` and `agent-browser console` returned no output after verification.
 
 ## Next steps
 
-1. Update the HTML benchmark to add the candidate classifier.
-2. Remove or deemphasize non-discriminative global deflate threshold sweep, because it violates the new constraint.
-3. Show classifier result counts and mismatch table.
-4. Verify the HTML through `agent-browser` on `file://` and check page errors plus console output.
-5. Commit the updated benchmark and this handover.
+1. Commit the updated benchmark HTML and this refreshed handover.
+2. If implementing the oxlint rule, port this classifier carefully without broad hardcoded word lists and without global compression.
