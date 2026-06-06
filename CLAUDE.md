@@ -287,14 +287,6 @@ user will clean up when ready.
 
 ### Command execution conventions
 
-VTS: Spawn something in another terminal, window, session: use real terminal launcher.
-Arbitrary commands, including Codex: `terminal-exec -- <command> ...`.
-`spawn-claude` only for Claude Code child sessions.
-`spawn_agent` not an OS terminal;
-PTY/TTY not visible terminal emulator window.
-Never probe `terminal-exec` with `--help`;
-read its README/src, since unknown options ignored + it opens a terminal.
-
 TMO: Never wrap routine verification commands in external `timeout` binary.
 Use command tool's session/polling first;
 process truly remaining after producing useful output: inspect PID, stop that stale process.
