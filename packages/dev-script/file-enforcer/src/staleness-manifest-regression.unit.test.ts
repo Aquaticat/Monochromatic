@@ -1,6 +1,7 @@
 import { createHash, } from 'node:crypto';
 import {
   mkdtemp,
+  readFile,
   rm,
   stat,
   writeFile,
@@ -17,7 +18,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { freshStalenessManifest, } from '../dist/final/node/index.mjs';
+import {
+  freshStalenessManifest,
+  overwrite,
+} from '../dist/final/node/index.mjs';
 
 //region Manifest fixture helpers
 
@@ -191,6 +195,40 @@ await describe({
         );
 
         expect(await freshStalenessManifest({ manifestPath, },),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'overwrite flushes manifest entry before returning',
+      fn: async function overwriteFlushesManifestEntryBeforeReturning(): Promise<void> {
+        const tempDir = await setup();
+        await using _cleanup = {
+          [Symbol.asyncDispose](): Promise<void> {
+            return teardown(tempDir,);
+          },
+        };
+        const manifestPath = join(
+          tempDir,
+          'manifest.json',
+        );
+        const destPath = join(
+          tempDir,
+          'output.txt',
+        );
+
+        await overwrite({
+          dest: destPath,
+          content: 'immediate manifest content',
+          manifestPath,
+        },);
+
+        const manifest = JSON.parse(await readFile(manifestPath, 'utf8',),) as {
+          readonly entries?: Record<string, unknown>;
+        };
+
+        expect(Object.keys(manifest.entries ?? {},),).toContain(
+          `single:${resolve(destPath,)}`,
+        );
       },
     },),
   ],

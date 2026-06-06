@@ -56,7 +56,7 @@ type WriteManifestOptions = Readonly<{
 const manifestCache: Map<string, StalenessManifest> = new Map<string, StalenessManifest>();
 
 /**
- * Manifest paths changed in memory and awaiting a process-exit flush.
+ * Manifest paths staged for a current immediate flush attempt.
  */
 const dirtyManifestPaths: Set<string> = new Set<string>();
 
@@ -233,4 +233,14 @@ export function writeManifest(
     },
   );
   dirtyManifestPaths.add(manifestPath,);
+  /**
+   * Cleanup that keeps failed immediate flushes fail-fast instead of retrying
+   * during process exit.
+   */
+  using _dirtyManifestCleanup = {
+    [Symbol.dispose](): void {
+      dirtyManifestPaths.delete(manifestPath,);
+    },
+  };
+  flushManifestPath(manifestPath,);
 }
