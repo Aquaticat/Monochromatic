@@ -327,9 +327,3 @@ Happy-path formatting and idempotence tests are not enough; the adversarial boun
 
 The `troubleshooting-doc` skill's exception is a disposable prototype clone created fresh under `/tmp/agent` for an upstream-fix patch diff, made only after origin verification and run without exposing credentials or this repo to third-party scripts.
 That narrowness (disposable, origin-verified, credential-free) is what keeps it from eroding the no-modify rule.
-
-## Changelog
-
-- 2026-06-06: Removed AD3's YAGNI shorthand from AGENTS.md because agents misread it as permission to skip
-  verification, tests, documentation, or design work. Added stable rationale explaining that AD3 only prefers direct async
-  execution over descriptor/interpreter patterns.
