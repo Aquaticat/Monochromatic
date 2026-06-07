@@ -59,7 +59,7 @@ await describe({
   name: selectTestsForSource.name,
   children: [
     it({
-      name: 'selects related sibling and regression tests by default',
+      name: 'selects related sibling and regression tests plus integration tests by default',
       fn: async () => {
         const packageRoot = await fixturePackage();
         const selected = await selectTestsForSource({
@@ -69,6 +69,7 @@ await describe({
         },);
 
         expect(selected,).toEqual([
+          'src/integration.unit.test.ts',
           'src/io/glob-regression.unit.test.ts',
           'src/io/glob.unit.test.ts',
         ],);

@@ -206,7 +206,7 @@ export async function runConfigExpectingError(
 ): Promise<unknown> {
   try {
     await spawn(
-      'bun',
+      'node',
       [configPath,],
       { cwd, },
     );

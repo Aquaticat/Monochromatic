@@ -31,7 +31,8 @@ Stryker session for one source file.
 Dependencies are baked into a local runtime image tagged by lockfile hash and
 platform. The image starts from `fedora:latest`, installs Nushell with `dnf`,
 and installs the repo-pinned latest Node plus pnpm through mise rather than corepack. Bun is intentionally
-absent while the repository migrates away from it, and mise's missing-tool warning is acceptable. At container
+absent while the repository migrates away from it; selected package tests run fixture config files through
+Node. At container
 startup the entrypoint rsyncs current repository source from `/src-ro` into
 writable `/work`, excludes `node_modules`, `dist`, and `.git`, then recreates
 root and package-local `node_modules` from `/baked`. Stryker runs in
@@ -43,8 +44,8 @@ but does not type-check, so type-invalid mutants must become `CompileError`
 rather than ordinary runtime results. The CLI has `--typescript-performance-mode`
 for measured follow-up runs where the accuracy tradeoff is explicitly accepted.
 
-The default test selection runs related sibling tests and related regression tests while excluding
-Bun-dependent package-wide integration tests. `--full-suite` runs every unit test for every source file when
+The default test selection runs related sibling tests, related regression tests, and
+integration tests. `--full-suite` runs every unit test for every source file when
 stricter coverage is worth the runtime.
 
 ## Rejected alternatives

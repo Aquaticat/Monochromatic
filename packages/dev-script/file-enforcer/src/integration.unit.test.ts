@@ -292,14 +292,14 @@ await describe({
           `;
         await writeFile(configPath, configContent,);
 
-        await spawn('bun', [configPath,], { cwd: tempDir, },);
-        await spawn('bun', [configPath,], { cwd: tempDir, },);
+        await spawn('node', [configPath,], { cwd: tempDir, },);
+        await spawn('node', [configPath,], { cwd: tempDir, },);
 
         expect(await readFile(markerPath, 'utf8',),).toBe('ran\nran\n',);
         expect(await readFile(destPath, 'utf8',),).toBe('stable',);
 
         await writeFile(destPath, 'external edit',);
-        await spawn('bun', [configPath,], { cwd: tempDir, },);
+        await spawn('node', [configPath,], { cwd: tempDir, },);
 
         expect(await readFile(markerPath, 'utf8',),).toBe('ran\nran\nran\n',);
         expect(await readFile(destPath, 'utf8',),).toBe('stable',);

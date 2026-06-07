@@ -84,7 +84,7 @@ async function teardown(tempDir: string,): Promise<void> {
  */
 async function runCli({ cwd, }: { readonly cwd: string; },): Promise<void> {
   await spawn(
-    'bun',
+    'node',
     [CLI_PATH,],
     { cwd, },
   );

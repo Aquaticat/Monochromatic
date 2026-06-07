@@ -234,8 +234,8 @@ while (!existsSync(${jsString(releasePath,)})) {
         );
 
         const childRuns = Promise.all([
-          spawn('bun', [configAPath,], { cwd: tempDir, },),
-          spawn('bun', [configBPath,], { cwd: tempDir, },),
+          spawn('node', [configAPath,], { cwd: tempDir, },),
+          spawn('node', [configBPath,], { cwd: tempDir, },),
         ],);
         await waitForPaths([readyAPath, readyBPath,],);
         await writeFile(

@@ -35,6 +35,11 @@ const UNIT_TEST_SUFFIX = '.unit.test.ts';
 const REGRESSION_TEST_SUFFIX = '-regression.unit.test.ts';
 
 /**
+ * Integration test path used by file-enforcer and future packages with package-level integration tests.
+ */
+const INTEGRATION_TEST_PATH = 'src/integration.unit.test.ts';
+
+/**
  * Returns all files under a directory as absolute paths.
  *
  * @param directory - Directory to walk.
@@ -165,8 +170,8 @@ function relatedTestStem(testFile: string,): string {
 /**
  * Selects tests for one source file.
  *
- * Default mode runs directly related sibling and regression tests.
- * Full-suite mode runs every unit test.
+ * Default mode runs directly related sibling tests, related regression tests,
+ * and package-level integration tests. Full-suite mode runs every unit test.
  * Returned paths are package-relative for execution from the container package cwd.
  *
  * @param options - Target package and source file selection inputs.
@@ -207,6 +212,9 @@ export async function selectTestsForSource(options: TestSelectionOptions,): Prom
    * Tests selected for current source file.
    */
   const selected = tests.filter(function isRelatedTest(testFile,): boolean {
+    if (testFile === INTEGRATION_TEST_PATH)
+      return true;
+
     if (packageWideTests.includes(testFile,))
       return true;
 

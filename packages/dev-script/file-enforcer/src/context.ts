@@ -78,7 +78,7 @@ export function configDependencyPaths(): readonly string[] {
 
   /**
    * Bun's direct-script entry path, used when a config runs as
-   * `bun file-enforcer.config.ts` without going through the CLI.
+   * `node file-enforcer.config.ts` without going through the CLI.
    */
   const [, mainPath,] = process.argv;
   if (mainPath === undefined)

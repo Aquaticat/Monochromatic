@@ -64,7 +64,7 @@ await describe({
         },);
 
         await spawn(
-          'bun',
+          'node',
           [configPath,],
           { cwd: tempDir, },
         );
