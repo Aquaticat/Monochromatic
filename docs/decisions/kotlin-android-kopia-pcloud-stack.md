@@ -1,128 +1,155 @@
-# Kotlin tooling stack for the Android kopia-to-pCloud backup app
+# Android UI/app-shell stack vet for the kopia-to-pCloud backup app
 
-Status: accepted (tooling go/no-go). Date: 2026-06-07.
+Status: per-technology vet and four-stack comparison complete. UI/app-shell stack decision is open
+(not yet recorded). Date updated: 2026-06-07.
 
 ## Context
 
-The planned app is an Android-only application whose job is to run kopia on the phone and back up to
-pCloud without staging a second copy of the data on the device. kopia speaks S3, so the app stands up
-a local S3 endpoint that kopia targets, and the app translates those S3 calls to pCloud's native API,
-streaming bytes through rather than buffering whole objects on disk.
+The planned app is Android-only. It runs kopia on the phone and backs up to pCloud without staging a
+second copy on the device. kopia speaks S3, so the app stands up a local S3 endpoint that kopia targets
+and translates those calls to pCloud's native API, streaming bytes through rather than buffering whole
+objects.
 
-Three load-bearing pieces are owner-decided and explicitly out of scope of this vet:
-running kopia on Android, the pCloud native API, and the necessity of a custom S3 gateway.
-This document only records the Kotlin tooling decisions and the evidence behind them.
+Owner-decided and out of scope of this vet: running kopia on Android, the pCloud native API, and the
+necessity of a custom S3 gateway.
 
-Each candidate below was vetted to the full-verification bar in the choosing-technology skill:
-cloned upstream, source-audited, and actually built and run in a bounded container or on the device,
-not judged from metadata. Reports live under `/tmp/agent/vet-*.md` for this session.
+Standard: choosing-technology full-verification. Every candidate was cloned, source-audited, and actually
+built and run, in a bounded container or on the real device, not judged from metadata. The target device
+is the owner's Pixel 6 (oriole), GrapheneOS, Android 16 / API 36. The repo is a TypeScript plus Rust
+monorepo (mise, pnpm, cargo).
 
-## Decision: go
+## Decisive result: run on the real device
 
-The Kotlin tooling needed to build this app all clears the "good enough" bar. The single tool that did
-not (kotlinx.fuzz) has a maintained drop-in replacement, and the one weak tool (Pitest on Kotlin) is an
-optional nice-to-have, so neither blocks the build.
+All four UI stacks were built and launched on the physical Pixel 6:
 
-## Stack
+- Native Jetpack Compose: runs. Counter increments; an in-app Ktor CIO server served HTTP 200.
+- Compose Multiplatform: runs (desktop runComposeUiTest plus a debug APK on the device).
+- Tauri v2: runs. The JavaScript to Rust command bridge works on device.
+- Slint plus Rust: builds, but the UI crashes at startup. Slint's Android backend loads its Java helper
+  only via dynamic code loading (`internal/backends/android-activity/javahelper.rs:251-307`,
+  `InMemoryDexClassLoader`), which GrapheneOS blocks by default, raising a `SecurityException` before any
+  UI renders. Disqualified for this device as shipped; the issue is unreported upstream.
 
-### Language and build: Kotlin plus Gradle (Kotlin DSL)
+## Candidate stacks
 
-Kotlin builds reproducibly from source: an earlier in-container `./gradlew dist` produced a working
-`kotlinc 2.4.255-SNAPSHOT` that compiled and ran a program. Gradle is mandatory for Android and Compose.
+### Native Jetpack Compose (Kotlin)
 
-Caveat: this app is a Gradle/JVM/Android island inside a mise plus pnpm plus Rust monorepo. It does not
-share the repo's oxlint/tsgo/dprint/tsdown toolchain. Treat it as a self-contained package with its own
-Gradle build, wired into mise only at the task boundary.
+Runs on the device. All-Kotlin: Compose UI, Ktor CIO as the local S3 server (verified in-app on the
+device), OkHttp 5.3.2 / Retrofit 3.0.0 as the pCloud client (Retrofit pulls stable OkHttp 4.12.0),
+WorkManager plus a dataSync Foreground Service for the backup.
 
-### UI: Compose Multiplatform plus runComposeUiTest
+Pros: one language and one build system, no FFI bridge; the app's hard parts (foreground service,
+permissions, kopia binary exec, GrapheneOS handling) are first-class in Kotlin; strongest verified testing
+(createAndroidComposeRule in-process plus Maestro black-box). Cons: a Kotlin/JVM/Gradle island in a
+TypeScript plus Rust monorepo; the S3 gateway is written in Kotlin rather than reusing Rust.
 
-Verified on both boundaries on the current stack (Kotlin 2.3.20, Compose 1.11.1, AGP 9.2.1, Gradle 9.5.0):
-a desktop `runComposeUiTest` test passed headless, and a debug APK installed, launched, and incremented a
-counter on the physical Pixel 6 (Android 16). It is genuine AOSP Jetpack Compose (Apache-2.0) plus
-JetBrains targets; JetBrains-maintained, daily commits, monthly releases.
+### Tauri v2 (Rust core plus web UI)
 
-Note on fit: the goal is Android-only, and for Android-only UI native Jetpack Compose is the lighter
-choice (identical `androidx.compose` API, no multiplatform plumbing). Compose Multiplatform is the chosen
-path anyway; it loses nothing on Android and keeps a desktop/iOS door open. Rejected alternatives: Flutter
-(adds Dart, a third language runtime), React Native (weak Linux-desktop story, no offscreen component test
-runner), Slint (the repo's desktop incumbent, but mobile-immature and no semantics-tree UI test harness).
+Runs on the device. The S3 gateway stays in Rust (axum plus reqwest, verified streaming), the UI is
+HTML/CSS/TypeScript, and a `gen/android` Gradle project provides the Android manifest and services.
 
-runComposeUiTest was the smoothest component: clean multiplatform expect/actual, offscreen Skiko rendering
-needing no display, deterministic `mainClock`/`waitForIdle`, self-tested upstream. Plan to adopt the `v2`
-entry point: the classic `runComposeUiTest` is `@Deprecated(WARNING)` as of 1.12-alpha. Rejected
-alternatives: Espresso (Android-only, View-centric, subsumed by the Android actual), Maestro (black-box
-E2E, no semantics access, needs a running device).
+Pros: keeps the gateway in Rust matching the monorepo; web UI suits the repo's TypeScript strength.
+Cons: most polyglot of the options (Rust plus TypeScript plus Kotlin glue; cargo plus a JS bundler plus
+Gradle); the UI runs in the Android System WebView; the desktop UI-test driver (tauri-driver) is
+self-labeled pre-alpha, Linux and Windows only, with no native click support and no Playwright attach
+path on WebKitGTK. It still needs the Gradle/Kotlin shell for the foreground service.
 
-### Local S3 server and pCloud client: Ktor
+### Compose Multiplatform (Kotlin, multi-target)
 
-Verified: a Ktor CIO server plus client round-tripped a known body in a container. Ktor is the natural fit
-for both halves of the gateway: an embedded CIO server on Android to expose the local S3 endpoint kopia
-targets, and the Ktor client (OkHttp engine) to call the pCloud native API. Coroutine streaming bodies
-match the "do not duplicate storage on the phone" constraint: stream S3 PUT bodies straight to pCloud
-uploads and pCloud downloads straight back to S3 GET responses, with backpressure.
+Runs on the device. Same `androidx.compose` UI as native Jetpack plus the multiplatform layer and
+runComposeUiTest. For an Android-only app the multiplatform layer adds version coupling and an AGP 9
+migration off the stale official template for no benefit over native Jetpack. It earns its place only if
+iOS or desktop becomes a real target.
 
-Gap to watch: Ktor ships no fuzzing, property, mutation, or lincheck tests despite a concurrent core, and
-upstream CI is JetBrains-internal TeamCity, not public. Rejected alternatives for the local server:
-NanoHTTPD (blocking I/O, no coroutine streaming ergonomics, thin maintenance), Spring Boot (far too heavy
-for an embedded on-device server).
+### Slint plus Rust
 
-### HTTP engine: OkHttp (under Ktor client)
+Best repo fit on paper (pure Rust, matching the existing Slint desktop apps), and the Rust ecosystem core
+is strong and DCL-free. But the Slint UI does not run on the owner's GrapheneOS device (see above), which
+disqualifies it for the target device unless the per-app dynamic-code-loading restriction is disabled or
+Slint upstream gains an app-classpath helper path.
 
-Verified: a live HTTPS GET returned 200 in a container. Fail-closed TLS, lean dependencies (Okio plus
-stdlib), broad CI. Use it as the Ktor client engine on Android rather than standalone. Rejected
-alternative: `java.net.http` (no Ktor-engine integration path, fewer Android-tuned connection controls).
+## Ranking (analysis, not a recorded decision)
 
-### Tests: kotlin.test plus Kotest, with runComposeUiTest for UI
+Native Jetpack Compose > Tauri v2 > Compose Multiplatform > Slint.
 
-kotlin.test (verified) is the minimal assertion plus `@Test` layer; pair it with JUnit5 as the engine.
-Kotest (verified, including property tests with shrinking) earns its place specifically for the S3-to-pCloud
-translation: property tests over generated S3 request shapes and byte ranges are the right tool for
-checking the gateway's correctness. Caution: Kotest maintenance is concentrated on a single maintainer
-(sksamuel); active releases, but a real bus-factor note. Rejected alternatives: JUnit5 alone (no property
-testing or multiplatform), Spek (effectively dormant), Spock (forces Groovy).
+- Native Jetpack over Tauri: every viable stack needs a Gradle/Kotlin Android shell anyway for the
+  foreground service and kopia bundling, so Tauri does not escape the JVM/Gradle island; it adds Rust plus
+  a JS bundler on top of it. Native Jetpack is the only single-language, single-build option, with the
+  best Android integration and the strongest verified testing. Its cost is rewriting the gateway in Kotlin,
+  which was verified to work on the device.
+- Tauri over Compose Multiplatform: Tauri is a genuinely different architecture (Rust core, web UI);
+  Compose Multiplatform is a heavier native Jetpack for an Android-only app.
+- Compose Multiplatform over Slint: Slint does not run on the device.
 
-### Fuzzing the S3 request surface: Jazzer (not kotlinx.fuzz)
+Flip conditions: if iOS or desktop becomes a real target, Compose Multiplatform rises above native Jetpack;
+if keeping the gateway in Rust and out of the JVM is weighted highest, Tauri rises above native Jetpack.
 
-kotlinx.fuzz is rejected: it cannot be installed or built today. Its only artifact host
-(`plan-maven.apal-research.com`) is NXDOMAIN, it is not on Maven Central, and the Gradle Plugin Portal
-publish step is disabled. It is also `JetBrains-Research/kotlinx.fuzz`, a research-lab project, not an
-official Kotlin library (the name oversells it), last released roughly 14 months ago. Following its README
-fails at plugin resolution; building from source fails resolving its forked Jazzer. Impractical to verify,
-so disqualified.
+The pick is a value judgment reserved to the owner; this document records the comparison, not a selection.
 
-Use Jazzer directly (`com.code-intelligence:jazzer`, `jazzer-junit`, on Maven Central, JUnit5 `@FuzzTest`)
-for coverage-guided fuzzing. This matters here: the S3 requests kopia sends are a peer-controlled parsing
-boundary, exactly the kind of input the repo's syntax-boundary rules want fuzzed. Property-based options
-(jqwik, Kotest property) are not coverage-guided and do not replace it for crash discovery.
+## Per-technology scorecard
 
-### Mutation testing: Pitest, optional and eyes-open
+S3-gateway core, Rust path (Tauri and Slint): axum 0.8.9 plus reqwest 0.13.4 streamed a 256 MiB object
+end to end at about 8.2 MiB peak RSS, with pure-Rust TLS (rustls, no OpenSSL).
 
-Pitest works on Kotlin (a sample run scored 16 mutations, 12 killed, 75 percent), but its open-source
-Kotlin support is a self-described "quick dirty hack" (`KotlinFilter.java:14-52` in the clone), and proper
-Kotlin handling is paywalled behind the same maintainer's commercial Arcmutate plugin, which Pitest nags
-for on every Kotlin run. Single-maintainer bus factor. Treat mutation testing as optional: adopt only if
-the team will tolerate equivalent-mutant noise on richer Kotlin, or skip it. Rejected alternative:
-Arcmutate (closed-source, paid; violates the open-source default, name only as the commercial exception).
+S3-gateway core, Kotlin path (Jetpack and Compose Multiplatform): Ktor CIO server verified in-app on the
+device; OkHttp 5.3.2 / Retrofit 3.0.0 streaming client verified. Rejected: NanoHTTPD (dormant, blocking),
+Spring Boot (too heavy), `java.net.http` (no Ktor-engine path).
 
-## Adoption caveats (budget for these)
+Background execution (needed by every stack): WorkManager plus a dataSync Foreground Service verified
+surviving backgrounding on the device. Constraint: apps targeting API 35+ get about 6 hours of dataSync
+foreground-service time per 24 hours, after which `onTimeout` fires. A kopia snapshot can exceed that, so
+backups must be chunked and resumable with onTimeout checkpointing, and the bulk transfer should use a
+user-initiated data transfer job rather than a bare dataSync service.
 
-- The official Compose Multiplatform template is roughly 2.5 years stale and does not build on AGP 9.
-  Use `com.android.kotlin.multiplatform.library` for the shared module and plain `com.android.application`
-  for the app, per JetBrains' current examples, not the template's broken `com.android.library` plus
-  kotlin-multiplatform combo.
-- Build requires JDK 21 to run AGP 9 even though the compile target stays Java 17.
-- Pin a known-good (Kotlin, compose-compiler, Compose, AGP, Gradle) set and bump them together; the coupling
-  is tight and the wizard lags the release train.
-- Handle edge-to-edge insets on modern Android (targetSdk 36 draws under the status bar and camera cutout).
+Testing, in-process: runComposeUiTest (Compose Multiplatform, verified, offscreen, deterministic clock;
+adopt the `v2` entry point since the classic one is deprecated in 1.12-alpha); createAndroidComposeRule
+(native Jetpack, verified; pin androidx.test 3.7.0 / runner 1.7.0 / core 1.7.0 on Android 15/16);
+slint::testing (verified headless, but text input is gated); tauri-driver (verified on Linux desktop but
+pre-alpha, Linux and Windows only, no native clicks).
 
-## Evidence index
+Testing, black-box end-to-end (the Playwright peer): Maestro verified driving native Compose via testTag
+(`Modifier.semantics { testTagsAsResourceId = true }`), single binary, self-cleaning; the recommended
+peer for native Android. Appium plus the uiautomator2 driver also verified (W3C, heavier; locate via
+`-android uiautomator` or accessibility-id). UiAutomator is the shared primitive both wrap.
 
-- `/tmp/agent/vet-compose.md`: Compose Multiplatform plus runComposeUiTest, desktop and Pixel 6 runs.
-- `/tmp/agent/vet-ktor.md`: Ktor server plus client round-trip.
-- `/tmp/agent/vet-okhttp.md`: OkHttp live HTTPS request.
-- `/tmp/agent/vet-test-frameworks.md`: kotlin.test and Kotest green runs.
-- `/tmp/agent/vet-kotlinx-fuzz.md`: kotlinx.fuzz install failure and disqualification.
-- `/tmp/agent/vet-pitest.md`: Pitest Kotlin mutation run and the Arcmutate upsell finding.
+Fuzzing: Jazzer (`com.code-intelligence:jazzer`, on Maven Central, JUnit5 `@FuzzTest`) verified, found a
+planted crash in a Kotlin parser in under a second and emitted a reproducer. It is the JVM fuzzer to use.
+kotlinx.fuzz is disqualified: uninstallable (its only artifact host is NXDOMAIN, not on Maven Central,
+plugin-portal publish disabled), and it is a research-lab project, not an official Kotlin library. For the
+Rust path, cargo-fuzz (the repo incumbent) is verified.
+
+Mutation testing: Pitest works on Kotlin (a sample scored 16 mutations, 12 killed) but its open-source
+Kotlin support is a self-described "quick dirty hack" (`KotlinFilter.java:14-52`), with proper handling
+paywalled behind the commercial Arcmutate plugin. For the Rust path, cargo-mutants 27.x is verified and is
+effectively the only maintained Rust option. Mutation testing is optional either way.
+
+Property testing: Kotest (verified, with shrinking) on the Kotlin path; proptest 1.x (verified, integrated
+shrinking) on the Rust path. kotlin.test is the minimal Kotlin assertion layer (verified), pair it with
+JUnit5.
+
+## Cross-cutting Android constraints (any stack)
+
+- GrapheneOS device: INTERNET is a revocable per-app permission (default off), so the app must request
+  Network access; dynamic code loading is restricted (this is what disqualifies Slint's UI).
+- Foreground-service time cap (API 35+): about 6 hours of dataSync per 24 hours; design backups as
+  chunked, resumable, onTimeout-checkpointed, and prefer a user-initiated data transfer job for bulk.
+- kopia binary: ship per ABI as `jniLibs/<abi>/lib*.so` with `extractNativeLibs=true`, and exec it from
+  `nativeLibraryDir` (W^X since API 29). This is language-neutral.
+- Native shared objects need 16 KB page alignment on Android 15/16 (hit during the Slint build, fixed with
+  `-Wl,-z,max-page-size=16384`); relevant to the kopia `.so` and any Rust `.so`.
+
+## Evidence
+
+Sixteen per-technology full-verification vets were run this session, each producing a report with exact
+commands, outputs, and source citations. The load-bearing numbers and version pins are inlined above so
+this document stands alone. The full raw reports are persisted alongside this doc under
+`kotlin-android-kopia-pcloud-vet-reports/` (verbatim agent output, not lint-conformed):
+
+- Stacks: `vet-jetpack-compose.md`, `vet-compose.md`, `vet-tauri.md`, `vet-slint-rust.md`.
+- Gateway core: `vet-ktor.md`, `vet-okhttp.md`, `vet-rust-http-core.md`.
+- Background and runtime: `vet-android-runtime.md`.
+- Testing: `vet-slint-testing.md`, `vet-tauri-driver.md`, `vet-android-e2e.md`, `vet-test-frameworks.md`.
+- Fuzz and mutation: `vet-jazzer.md`, `vet-kotlinx-fuzz.md`, `vet-pitest.md`, `vet-rust-qa.md`.
 
 ## Out of scope (owner-decided)
 
