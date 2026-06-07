@@ -168,6 +168,7 @@ podman run \
   --read-only \
   --cap-drop=ALL \
   --security-opt=no-new-privileges \
+  --security-opt=label=disable \
   --memory=<perFileMemory> \
   --cpus=<perFileCpus> \
   --pids-limit=<perFilePids> \
@@ -191,8 +192,10 @@ Notes:
   `Timeout` classification.
 - The repo mount is read-only and is used only as the rsync source; the container never executes from it.
 - `node_modules` comes from the baked image, never from the host checkout.
-- Copy the existing canary SELinux pattern if one is required; otherwise make the `:Z` relabel suffix
-  configurable so non-SELinux hosts do not relabel unnecessarily.
+- Disable SELinux label separation for the per-file runtime containers instead of relabeling the checkout.
+  The source mount remains read-only, the reports mount remains the only writable host mount, and the
+  container still runs networkless with dropped capabilities. Keep the explicit `:Z` relabel suffix
+  configurable only for hosts that require relabeling despite label separation being disabled.
 - Prefer rootless Podman; add `--userns=keep-id` only if it matches the existing canary pattern.
 
 ## New package
@@ -512,8 +515,9 @@ container gets a unique JSON report path under the host reports directory.
   runtime input hash, and platform and builds if the tag is missing, so changed dependencies, runtime
   source, image build recipe, root tool declarations, root `.pnpmfile.mjs`, its imported policy JSON,
   workspace manifests, or platform force a rebuild automatically.
-- SELinux relabeling differs across hosts. Mitigation: make the `:Z` suffix configurable and copy the
-  existing canary pattern when present.
+- SELinux relabeling differs across hosts. Mitigation: default to `--security-opt=label=disable` so dry-run
+  containers can read the checkout without mutating host labels; keep the `:Z` suffix configurable for hosts
+  that explicitly require relabeling.
 
 ## Stryker upstream vet
 
