@@ -250,8 +250,8 @@ Nushell, pnpm installed through mise, and installed repo dependencies. Use `fedo
 image. Do not use corepack. Build steps:
 
 1.  Start from `fedora:latest` for the build platform Podman selects.
-2.  Install system prerequisites with `dnf`, including `rsync`, `git`, `curl`, `dnf-plugins-core`, and
-    `ca-certificates`.
+2.  Install system prerequisites with `dnf`, including `rsync`, `git`, `curl`, `dnf-plugins-core`,
+    `ca-certificates`, and `libatomic` (required by the repo-pinned latest Node binary on Fedora).
 3.  Install Nushell with `dnf`. Nushell must exist before any mise task shell or inline Nu verification runs.
 4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node` and
     `npm:pnpm` tools. Do not activate or install the entire root toolset, since the image only needs Node and pnpm.
