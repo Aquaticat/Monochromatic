@@ -1,0 +1,20 @@
+# Minimise mutation runtime build context.
+# Keep workspace manifests for pnpm install, plus mutation-test source for the baked entrypoint.
+**
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!mise.toml
+!packages/
+!packages/*/
+!packages/*/*/
+!packages/*/*/package.json
+!packages-deprecated/
+!packages-deprecated/*/
+!packages-deprecated/*/*/
+!packages-deprecated/*/*/package.json
+!packages/dev-script/mutation-test/
+!packages/dev-script/mutation-test/src/
+!packages/dev-script/mutation-test/src/**
+!packages/dev-script/mutation-test/runtime/
+!packages/dev-script/mutation-test/runtime/Containerfile

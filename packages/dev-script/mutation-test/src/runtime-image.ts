@@ -30,6 +30,11 @@ import type {
 const IMAGE_PREFIX = 'localhost/monochromatic-mutation-runtime';
 
 /**
+ * Ignorefile used to stage a minimal runtime image build context.
+ */
+const RUNTIME_IGNOREFILE = 'Containerfile.dockerignore';
+
+/**
  * Length of lockfile hash embedded in local image tags.
  */
 const TAG_HASH_LENGTH = 16;
@@ -181,10 +186,20 @@ export function buildRuntimeImageArgs(options: {
     'runtime',
     'Containerfile',
   );
+  /**
+   * Absolute path to context ignorefile for mutation runtime builds.
+   */
+  const ignorefile = join(
+    options.packageRoot,
+    'runtime',
+    RUNTIME_IGNOREFILE,
+  );
 
   return [
     'build',
     '--pull=missing',
+    '--ignorefile',
+    ignorefile,
     '--tag',
     options.image,
     '--file',

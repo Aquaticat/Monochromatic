@@ -28,6 +28,16 @@ import {
 const TYPESCRIPT_EXTENSION = '.ts';
 
 /**
+ * Package manifest filename used by pnpm workspace install.
+ */
+const PACKAGE_MANIFEST = 'package.json';
+
+/**
+ * Runtime build context ignorefile name.
+ */
+const RUNTIME_IGNOREFILE = 'Containerfile.dockerignore';
+
+/**
  * File included in runtime image input hashing.
  */
 type RuntimeInputFile = {
@@ -107,6 +117,99 @@ async function runtimeSourceFiles(packageRoot: string,): Promise<readonly string
 }
 
 /**
+ * Lists package manifests two levels below a workspace root.
+ *
+ * @param workspaceRoot - Root containing package category directories.
+ *
+ * @returns Absolute package manifest paths.
+ *
+ * @example
+ * ```ts
+ * await packageManifestsUnder('/repo/packages');
+ * ```
+ */
+async function packageManifestsUnder(workspaceRoot: string,): Promise<readonly string[]> {
+  /**
+   * Package category directory entries.
+   */
+  const categories = await readdir(
+    workspaceRoot,
+    { withFileTypes: true, },
+  );
+  /**
+   * Manifest lists by package category.
+   */
+  const manifestsByCategory = await Promise.all(categories
+    .filter(function isDirectory(category,): boolean {
+      return category.isDirectory();
+    },)
+    .map(async function manifestsForCategory(category,): Promise<readonly string[]> {
+      /**
+       * Absolute package category directory.
+       */
+      const categoryRoot = join(
+        workspaceRoot,
+        category.name,
+      );
+      /**
+       * Package directory entries within current category.
+       */
+      const packages = await readdir(
+        categoryRoot,
+        { withFileTypes: true, },
+      );
+
+      return packages
+        .filter(function isPackageDirectory(packageEntry,): boolean {
+          return packageEntry.isDirectory();
+        },)
+        .map(function packageManifest(packageEntry,): string {
+          return join(
+            categoryRoot,
+            packageEntry.name,
+            PACKAGE_MANIFEST,
+          );
+        },);
+    },),);
+
+  return manifestsByCategory.flat();
+}
+
+/**
+ * Lists workspace package manifests that affect pnpm install in the image.
+ *
+ * @param repoRoot - Monorepo root.
+ *
+ * @returns Absolute package manifest paths.
+ *
+ * @example
+ * ```ts
+ * await workspacePackageManifests('/repo');
+ * ```
+ */
+async function workspacePackageManifests(repoRoot: string,): Promise<readonly string[]> {
+  /**
+   * Active package manifests.
+   */
+  const activeManifests = await packageManifestsUnder(join(
+    repoRoot,
+    'packages',
+  ),);
+  /**
+   * Deprecated package manifests still included by pnpm workspace globs.
+   */
+  const deprecatedManifests = await packageManifestsUnder(join(
+    repoRoot,
+    'packages-deprecated',
+  ),);
+
+  return [
+    ...activeManifests,
+    ...deprecatedManifests,
+  ];
+}
+
+/**
  * Lists non-source files that affect the baked runtime image.
  *
  * @param options - Repository and runtime package roots.
@@ -128,13 +231,26 @@ function staticRuntimeInputFiles(options: {
       'mise.toml',
     ),
     join(
+      options.repoRoot,
+      PACKAGE_MANIFEST,
+    ),
+    join(
+      options.repoRoot,
+      'pnpm-workspace.yaml',
+    ),
+    join(
       options.packageRoot,
-      'package.json',
+      PACKAGE_MANIFEST,
     ),
     join(
       options.packageRoot,
       'runtime',
       'Containerfile',
+    ),
+    join(
+      options.packageRoot,
+      'runtime',
+      RUNTIME_IGNOREFILE,
     ),
   ];
 }
@@ -185,17 +301,26 @@ async function runtimeInputFiles(options: {
    */
   const sourceFiles = await runtimeSourceFiles(options.packageRoot,);
   /**
-   * Relative paths sorted for stable hashing.
+   * Absolute workspace package manifests.
    */
-  const relativePaths = sortStrings([
+  const workspaceManifests = await workspacePackageManifests(options.repoRoot,);
+  /**
+   * Unsorted relative paths for all runtime image inputs.
+   */
+  const unsortedRelativePaths = [
     ...staticRuntimeInputFiles(options,),
+    ...workspaceManifests,
     ...sourceFiles,
   ].map(function relativeInputPath(absolutePath,): string {
     return toPosixPath(relative(
       options.repoRoot,
       absolutePath,
     ),);
-  },),);
+  },);
+  /**
+   * Relative paths sorted for stable hashing.
+   */
+  const relativePaths = sortStrings([...new Set(unsortedRelativePaths,),],);
 
   return relativePaths.map(function fileForRelativePath(relativePath,): RuntimeInputFile {
     return runtimeInputFile({

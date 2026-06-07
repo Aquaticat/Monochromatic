@@ -28,6 +28,37 @@ import {
 const BAKED_ROOT = '/baked';
 
 /**
+ * Rsync exclude patterns for generated or heavyweight repository artifacts.
+ */
+const RSYNC_EXCLUDES: readonly string[] = [
+  '**/node_modules',
+  '**/dist',
+  '**/.git',
+  '**/target',
+  '**/output',
+  '**/corpus',
+];
+
+/**
+ * Converts one rsync exclude pattern into argv tokens.
+ *
+ * @param pattern - Pattern excluded from rsync traversal.
+ *
+ * @returns Rsync exclude flag and value.
+ *
+ * @example
+ * ```ts
+ * rsyncExcludeArgs('**\\/node_modules');
+ * ```
+ */
+function rsyncExcludeArgs(pattern: string,): readonly string[] {
+  return [
+    '--exclude',
+    pattern,
+  ];
+}
+
+/**
  * Copies current repository source into the writable work tree.
  *
  * @example
@@ -41,12 +72,9 @@ export async function rsyncSourceToWorkTree(): Promise<void> {
     [
       '--archive',
       '--delete',
-      '--exclude',
-      '**/node_modules',
-      '--exclude',
-      '**/dist',
-      '--exclude',
-      '**/.git',
+      ...RSYNC_EXCLUDES.flatMap(function excludeArgs(pattern,): readonly string[] {
+        return rsyncExcludeArgs(pattern,);
+      },),
       `${SOURCE_MOUNT}/`,
       `${WORK_MOUNT}/`,
     ],
@@ -77,6 +105,39 @@ async function pathExists(path: string,): Promise<boolean> {
   catch {
     return false;
   }
+}
+
+/**
+ * Copies one package-local node_modules symlink farm from the baked layer.
+ *
+ * @param options - Baked and work-tree node_modules paths.
+ *
+ * @example
+ * ```ts
+ * await copyNodeModulesSymlinkFarm({ bakedNodeModules: '/baked/packages/dev-script/x/node_modules', workNodeModules: '/work/packages/dev-script/x/node_modules' });
+ * ```
+ */
+async function copyNodeModulesSymlinkFarm(options: {
+  readonly bakedNodeModules: string;
+  readonly workNodeModules: string;
+},): Promise<void> {
+  await mkdir(
+    options.workNodeModules,
+    { recursive: true, },
+  );
+  await spawn(
+    'rsync',
+    [
+      '--archive',
+      '--delete',
+      `${options.bakedNodeModules}/`,
+      `${options.workNodeModules}/`,
+    ],
+    {
+      stdout: 'inherit',
+      stderr: 'inherit',
+    },
+  );
 }
 
 /**
@@ -141,13 +202,13 @@ async function symlinkPackageNodeModules(options: {
     workPackage,
     { recursive: true, },
   );
-  await symlink(
+  await copyNodeModulesSymlinkFarm({
     bakedNodeModules,
-    join(
+    workNodeModules: join(
       workPackage,
       'node_modules',
     ),
-  );
+  },);
 }
 
 /**

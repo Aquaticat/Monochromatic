@@ -58,6 +58,13 @@ async function writeRuntimeFixture(options: {
     packageRoot,
     'runtime',
   );
+  /**
+   * Deprecated workspace root included by pnpm workspace globs.
+   */
+  const deprecatedRoot = join(
+    options.repoRoot,
+    'packages-deprecated',
+  );
 
   await Promise.all([
     mkdir(
@@ -68,11 +75,23 @@ async function writeRuntimeFixture(options: {
       runtimeRoot,
       { recursive: true, },
     ),
+    mkdir(
+      deprecatedRoot,
+      { recursive: true, },
+    ),
   ],);
   await Promise.all([
     writeFile(
       join(options.repoRoot, 'mise.toml',),
       'node = "latest"\n',
+    ),
+    writeFile(
+      join(options.repoRoot, 'package.json',),
+      '{"name":"fixture"}\n',
+    ),
+    writeFile(
+      join(options.repoRoot, 'pnpm-workspace.yaml',),
+      'packages:\n  - "packages/*/*"\n  - "packages-deprecated/*/*"\n',
     ),
     writeFile(
       join(packageRoot, 'package.json',),
@@ -81,6 +100,10 @@ async function writeRuntimeFixture(options: {
     writeFile(
       join(runtimeRoot, 'Containerfile',),
       'FROM fedora:latest\n',
+    ),
+    writeFile(
+      join(runtimeRoot, 'Containerfile.dockerignore',),
+      '**/target\n',
     ),
     writeFile(
       join(sourceRoot, 'in-container.ts',),
@@ -132,6 +155,8 @@ await describe({
         expect(args,).toEqual([
           'build',
           '--pull=missing',
+          '--ignorefile',
+          '/repo/packages/dev-script/mutation-test/runtime/Containerfile.dockerignore',
           '--tag',
           'localhost/example:tag',
           '--file',
