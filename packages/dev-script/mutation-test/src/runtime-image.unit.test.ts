@@ -11,6 +11,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  buildRuntimeImageArgs,
   platformTag,
   runtimeImage,
   sha256Hex,
@@ -37,6 +38,32 @@ await describe({
       name: 'sanitizes platform overrides for image tags',
       fn: async () => {
         expect(platformTag('linux/arm64',),).toBe('linux-arm64',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: buildRuntimeImageArgs.name,
+  children: [
+    it({
+      name: 'pulls a missing Fedora base while keeping runtime images local',
+      fn: async () => {
+        const args = buildRuntimeImageArgs({
+          repoRoot: '/repo',
+          packageRoot: '/repo/packages/dev-script/mutation-test',
+          image: 'localhost/example:tag',
+        },);
+
+        expect(args,).toEqual([
+          'build',
+          '--pull=missing',
+          '--tag',
+          'localhost/example:tag',
+          '--file',
+          '/repo/packages/dev-script/mutation-test/runtime/Containerfile',
+          '/repo',
+        ],);
       },
     },),
   ],

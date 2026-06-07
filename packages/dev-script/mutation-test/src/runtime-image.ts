@@ -145,6 +145,43 @@ export async function imageExists(image: string,): Promise<boolean> {
 }
 
 /**
+ * Builds Podman arguments for constructing the runtime image.
+ *
+ * @param options - Build context and image reference.
+ *
+ * @returns Podman build arguments.
+ *
+ * @example
+ * ```ts
+ * buildRuntimeImageArgs({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', image: 'localhost/example:tag' });
+ * ```
+ */
+export function buildRuntimeImageArgs(options: {
+  readonly repoRoot: string;
+  readonly packageRoot: string;
+  readonly image: string;
+},): readonly string[] {
+  /**
+   * Absolute path to mutation runtime Containerfile.
+   */
+  const containerfile = join(
+    options.packageRoot,
+    'runtime',
+    'Containerfile',
+  );
+
+  return [
+    'build',
+    '--pull=missing',
+    '--tag',
+    options.image,
+    '--file',
+    containerfile,
+    options.repoRoot,
+  ];
+}
+
+/**
  * Builds the runtime image with the repository root as build context.
  *
  * @param options - Build context and image reference.
@@ -159,26 +196,9 @@ export async function buildRuntimeImage(options: {
   readonly packageRoot: string;
   readonly image: string;
 },): Promise<void> {
-  /**
-   * Absolute path to mutation runtime Containerfile.
-   */
-  const containerfile = join(
-    options.packageRoot,
-    'runtime',
-    'Containerfile',
-  );
-
   await spawn(
     'podman',
-    [
-      'build',
-      '--pull=never',
-      '--tag',
-      options.image,
-      '--file',
-      containerfile,
-      options.repoRoot,
-    ],
+    buildRuntimeImageArgs(options,),
     {
       stdout: 'inherit',
       stderr: 'inherit',

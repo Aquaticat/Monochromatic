@@ -50,6 +50,7 @@ export {
 } from './report.ts';
 export {
   buildRuntimeImage,
+  buildRuntimeImageArgs,
   ensureRuntimeImage,
   imageExists,
   platformTag,
