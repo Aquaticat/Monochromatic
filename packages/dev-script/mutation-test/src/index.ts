@@ -48,6 +48,7 @@ export {
   mutationScore,
   parseStatus,
 } from './report.ts';
+export { runtimeInputHash, } from './runtime-inputs.ts';
 export {
   buildRuntimeImage,
   buildRuntimeImageArgs,
@@ -66,6 +67,68 @@ export {
 export type * from './types.ts';
 
 /**
+ * Extracts CLI exit code from a caught error.
+ *
+ * @param error - Unknown caught error.
+ *
+ * @returns Exit code to report to the process supervisor.
+ *
+ * @example
+ * ```ts
+ * cliExitCode({ exitCode: 2 });
+ * // 2
+ * ```
+ */
+function cliExitCode(error: unknown,): number {
+  return ((typeof error) === 'object')
+    && (error !== null)
+    && ('exitCode' in error)
+    && ((typeof error.exitCode) === 'number')
+    ? error.exitCode
+    : 1;
+}
+
+/**
+ * Formats CLI errors without asking Node to dump bundled source context.
+ *
+ * @param error - Unknown caught error.
+ *
+ * @returns Concise user-facing error message.
+ *
+ * @example
+ * ```ts
+ * cliErrorMessage(new Error('bad'));
+ * // 'Error: bad'
+ * ```
+ */
+function cliErrorMessage(error: unknown,): string {
+  if (error instanceof Error)
+    return `${error.name}: ${error.message}`;
+
+  return `Error: ${String(error,)}`;
+}
+
+/**
+ * Runs the direct CLI entrypoint and reports concise failures.
+ *
+ * @param argv - CLI arguments after executable and script path.
+ *
+ * @example
+ * ```ts
+ * await runDirectCli(['--package', 'packages/dev-script/file-enforcer']);
+ * ```
+ */
+async function runDirectCli(argv: readonly string[],): Promise<void> {
+  try {
+    await runCli(argv,);
+  }
+  catch (error) {
+    console.error(cliErrorMessage(error,),);
+    process.exitCode = cliExitCode(error,);
+  }
+}
+
+/**
  * Whether this module is running as the process entrypoint.
  */
 const isDirectEntrypoint = (process.argv[1] !== undefined)
@@ -74,6 +137,6 @@ const isDirectEntrypoint = (process.argv[1] !== undefined)
     .href);
 
 if (isDirectEntrypoint) {
-  await runCli(process.argv
+  await runDirectCli(process.argv
     .slice(2,),);
 }

@@ -18,6 +18,7 @@ import { createHash, } from 'node:crypto';
 import spawn from 'nano-spawn';
 
 import { sanitizeTagFragment, } from './path-utils.ts';
+import { runtimeInputHash, } from './runtime-inputs.ts';
 import type {
   RuntimeImage,
   RuntimeImageOptions,
@@ -101,9 +102,19 @@ export async function runtimeImage(options: RuntimeImageOptions,): Promise<Runti
    */
   const selectedPlatform = platformTag(options.platformOverride,);
   /**
-   * Local Podman image reference for current lockfile and platform.
+   * Hash for runtime source and image-build inputs.
+   */
+  const runtimeHash = await runtimeInputHash({
+    repoRoot: options.repoRoot,
+    packageRoot: options.packageRoot,
+  },);
+  /**
+   * Local Podman image reference for current lockfile, runtime source, and platform.
    */
   const reference = `${IMAGE_PREFIX}:${sanitizeTagFragment(options.nodeTag,)}-${lockHash.slice(
+    0,
+    TAG_HASH_LENGTH,
+  )}-${runtimeHash.slice(
     0,
     TAG_HASH_LENGTH,
   )}-${selectedPlatform}`;
@@ -111,6 +122,7 @@ export async function runtimeImage(options: RuntimeImageOptions,): Promise<Runti
   return {
     reference,
     lockHash,
+    runtimeHash,
     platform: selectedPlatform,
   };
 }

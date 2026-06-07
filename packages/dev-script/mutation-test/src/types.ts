@@ -149,6 +149,7 @@ export type RuntimeImageOptions = {
 export type RuntimeImage = {
   readonly reference: string;
   readonly lockHash: string;
+  readonly runtimeHash: string;
   readonly platform: string;
 };
 
