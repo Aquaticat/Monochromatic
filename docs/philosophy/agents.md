@@ -227,6 +227,8 @@ The harness system prompt's rule sources include the Git Safety Protocol, tool-u
 
 Never substitute "I'll keep it in mind" or any promise to a future self: sessions have no memory; rules persist only in AGENTS.md, a skill, or a hook. The mechanism is monotonic by default (every unmet expectation adds rules), leading to unbounded growth. Counteract: AGENTS.md should grow only when no existing rule covers the failure mode.
 
+The rejected `/grill-with-docs` follow-through rule is an AGENTS.md growth example: it is too narrow for every session, and the cost of not adding it is at most one follow-up prompt from the user. Record that rejection rationale here rather than loading a bespoke rule into every agent context.
+
 #### Proactivity calibration: the git-commit guardrail example
 
 The git-commit guardrail typifies the harness "too proactive" defaults this project overrides: "It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive." The same calibration applies to every similar default.
