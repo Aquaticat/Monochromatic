@@ -255,8 +255,9 @@ image. Do not use corepack. Build steps:
 
 1.  Start from `fedora:latest` for the build platform Podman selects.
 2.  Install system prerequisites with `dnf`, including `rsync`, `git`, `curl`, `dnf-plugins-core`,
-    `ca-certificates`, `which` (used by runtime symlink creation), and `libatomic` (required by the
-    repo-pinned latest Node binary on Fedora).
+    `ca-certificates`, `which` (used by runtime symlink creation), `libatomic` (required by the
+    repo-pinned latest Node binary on Fedora), and `procps-ng` (provides `ps`, which Stryker reaches
+    through `tree-kill` when cleaning child process trees).
 3.  Install Nushell with `dnf`. Nushell must exist before any mise task shell or inline Nu verification runs.
 4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node` and
     `npm:pnpm` tools. Do not activate or install the entire root toolset, since the image only needs Node and pnpm.
@@ -285,6 +286,7 @@ Build one Stryker config per source file (executed inside that file's container)
   mutate: ['<one source file, relative to the package>'],
   coverageAnalysis: 'off',
   inPlace: true,
+  plugins: ['/baked/packages/dev-script/mutation-test/node_modules/@stryker-mutator/typescript-checker/dist/src/index.js'],
   checkers: ['typescript'],
   tsconfigFile: '<package or repo tsconfig that resolves /ts subpaths and .ts extensions>',
   typescriptChecker: { prioritizePerformanceOverAccuracy: false },
@@ -299,6 +301,9 @@ Rationale:
 - `coverageAnalysis: 'off'` is required because the command runner cannot report per-test coverage.
 - `inPlace: true` avoids Stryker's sandbox, which always excludes `node_modules` and would therefore drop
   the isolated per-package `node_modules` this repo needs.
+- The explicit TypeScript checker plugin path is required under isolated pnpm linking; Stryker's default
+  `@stryker-mutator/*` glob searches from `@stryker-mutator/core`'s package tree, not from this orchestrator's
+  dependency tree.
 - `checkers: ['typescript']` keeps type-invalid mutants out of the score (Node does not type-check).
 - `concurrency: 1` gives the outer orchestrator sole ownership of parallelism; one container per file is
   the unit of concurrency.
