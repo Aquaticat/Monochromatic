@@ -65,6 +65,15 @@ async function writeRuntimeFixture(options: {
     options.repoRoot,
     'packages-deprecated',
   );
+  /**
+   * Workspace directory that is not a package and lacks package.json.
+   */
+  const nonPackageRoot = join(
+    options.repoRoot,
+    'packages',
+    'claude-code-plugins',
+    'research-agent',
+  );
 
   await Promise.all([
     mkdir(
@@ -77,6 +86,10 @@ async function writeRuntimeFixture(options: {
     ),
     mkdir(
       deprecatedRoot,
+      { recursive: true, },
+    ),
+    mkdir(
+      nonPackageRoot,
       { recursive: true, },
     ),
   ],);

@@ -9,6 +9,7 @@
 
 import { createHash, } from 'node:crypto';
 import {
+  access,
   readdir,
   readFile,
 } from 'node:fs/promises';
@@ -117,6 +118,28 @@ async function runtimeSourceFiles(packageRoot: string,): Promise<readonly string
 }
 
 /**
+ * Returns whether a file exists.
+ *
+ * @param path - File path to probe.
+ *
+ * @returns True when path can be accessed.
+ *
+ * @example
+ * ```ts
+ * await fileExists('/repo/package.json');
+ * ```
+ */
+async function fileExists(path: string,): Promise<boolean> {
+  try {
+    await access(path,);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
  * Lists package manifests two levels below a workspace root.
  *
  * @param workspaceRoot - Root containing package category directories.
@@ -159,7 +182,10 @@ async function packageManifestsUnder(workspaceRoot: string,): Promise<readonly s
         { withFileTypes: true, },
       );
 
-      return packages
+      /**
+       * Candidate package manifests under this category.
+       */
+      const manifestCandidates = packages
         .filter(function isPackageDirectory(packageEntry,): boolean {
           return packageEntry.isDirectory();
         },)
@@ -169,6 +195,26 @@ async function packageManifestsUnder(workspaceRoot: string,): Promise<readonly s
             packageEntry.name,
             PACKAGE_MANIFEST,
           );
+        },);
+      /**
+       * Existence checks for candidate package manifests.
+       */
+      const manifestChecks = await Promise.all(manifestCandidates.map(async function checkManifest(manifest,): Promise<{
+        readonly exists: boolean;
+        readonly manifest: string;
+      }> {
+        return {
+          exists: await fileExists(manifest,),
+          manifest,
+        };
+      },),);
+
+      return manifestChecks
+        .filter(function hasManifest(check,): boolean {
+          return check.exists;
+        },)
+        .map(function checkedManifest(check,): string {
+          return check.manifest;
         },);
     },),);
 
