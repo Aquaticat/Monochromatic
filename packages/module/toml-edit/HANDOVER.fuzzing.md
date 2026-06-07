@@ -1,156 +1,468 @@
-# Planning brief: strengthen fuzzing coverage for module-toml-edit
+# Implementation plan: strengthen fuzzing coverage for module-toml-edit
 
-This is a brief for a planning agent, not a finished plan. It states the
-goal, the diagnosis to design against, scope boundaries, constraints, and
-the decisions the planner must resolve. Produce the detailed, step-by-step
-plan from this.
+This is the source-of-truth plan for the toml-edit fuzzing work. It replaces the
+brief-only version with resolved sequencing, explicit oracle design, and pass
+criteria for each layer.
 
-## Why this exists
+## Evidence checked
 
-A first pass of property-based fuzzing was added to
-`packages/dev-script/file-enforcer` (see its `HANDOVER.fuzzing.md` and
-`docs/decisions/file-enforcer-fuzzing.md`). Its TOML coverage shipped all
-green yet would not have caught the bugs known to exist in
-`@monochromatic-dev/module-toml-edit`. The failure was structural, not a
-one-off:
+This plan was sharpened against current repository state, not written from memory:
 
-- it fuzzed the thin file-enforcer wrappers, not the package where the
-  logic and bugs live;
-- its oracle was "returns a string or throws `TomlEditError`", which cannot
-  fail on silent corruption (a wrong-but-still-a-string result);
-- its generators only produced string values, single bare keys, and empty
-  base documents, so most of the grammar was never generated.
+- `packages/dev-script/file-enforcer/mise.toml` and
+  `packages/dev-script/file-enforcer/src/fuzz-budget.ts` show the existing
+  env-parameterized property-test campaign pattern.
+- `packages/dev-script/file-enforcer/src/pipeline/toml.property.unit.test.ts`
+  shows the weak TOML wrapper properties this plan must not copy as the whole
+  target.
+- `packages/module/toml-edit/src/index.ts` lists the public API surface to cover.
+- `packages/module/toml-edit/src/fixtures.unit.test.ts` and
+  `packages/test-fixture/toml-edit/src/` already provide 91 valid and 108 invalid
+  TOML fixture files.
+- GitHub issue #198 is still open and asks for a bounded toml-edit fuzz task, a
+  committed seed corpus entry, CI wiring for toml-edit changes, and explicit issue
+  closure.
+- `toml-test` was inspected at `/tmp/agent/toml-test-20260606` commit
+  `af5f8052e9109206ad3977508263c97907f0797d`; its README documents the valid and
+  invalid corpus split, tagged JSON format, TOML 1.0 and 1.1 file lists, and the
+  option to reimplement the runner inside another language's test suite. The
+  implementation still needs to pin a release or commit deliberately; the scratch
+  clone path is research evidence only.
+- A local node v26.3.0 smoke run with `NODE_V8_COVERAGE` produced V8 JSON containing
+  covered and uncovered source ranges, so the coverage gate can start from raw V8
+  coverage without first adding a coverage dependency.
 
-Nothing measured whether the suite was any good, so green meant nothing.
+No root `CONTEXT.md` or `CONTEXT-MAP.md` exists. No glossary file was created,
+because the terms here are TOML and fuzzing terms, not project-domain language.
 
-## Goal
+## Core diagnosis
 
-Improve fuzzing coverage of `@monochromatic-dev/module-toml-edit` and, more
-importantly, install a feedback loop and a reusable checklist so future
-fuzzing cannot ship green-but-weak again. The goal is coverage and method,
-not fixing any specific bug (see non-goals).
+The file-enforcer TOML properties were green but weak because every factor in
+this product was too small:
 
-## Mental model the plan should satisfy
-
-A fuzzer catches a bug only when all three factors are non-zero, and the
-product is dominated by the weakest:
-
-```
+```txt
 reachable(generator)  x  detectable(oracle)  x  present(target layer)
 ```
 
-The plan must strengthen each factor and, separately, add a meta-layer that
-measures `reachable` and `detectable` rather than trusting a green run.
+- `present(target layer)` was small because the tests hit file-enforcer wrappers,
+  not `@monochromatic-dev/module-toml-edit`, where the parser, editor, splicer,
+  and emitter logic live.
+- `detectable(oracle)` was small because “returns a string or throws
+  `TomlEditError`” cannot catch silent value corruption.
+- `reachable(generator)` was small because the generators mostly produced strings,
+  single bare keys, and empty base documents.
+- There was no measurement layer, so a green run said nothing about grammar reach,
+  branch reach, or oracle strength.
 
-## In scope
+The implementation must strengthen all three factors and must add feedback that
+measures whether the suite is still strong.
 
-- Fuzz `module-toml-edit` directly, at every public entry point and the
-  internal seams (parse, `emit-value`, splice, comments, AOT, path-create),
-  co-located `*.property.unit.test.ts` files importing sibling source, in
-  the same env-parameterized style already established in file-enforcer
-  (`src/fuzz-budget.ts`, the `fuzz` mise task).
-- Grammar-complete generators: every scalar form (basic/literal/multiline
-  strings, ints, floats incl. `inf`/`nan`/exponents, bools, datetimes),
-  arrays, inline tables, nested tables, dotted/quoted/bare keys, array-of-
-  tables, comments; boundary-biased (empty, huge, deeply nested, duplicate
-  keys, unicode and escape edges); plus a real-world seed corpus (the
-  repo's own `*.toml`, `Cargo.toml`) and structure-aware mutation of it.
-- A ladder of oracles (use all of them; the user asked for "everything"):
-  round-trip (`parse` then `stringify` then `parse`, and value-model round
-  trips), metamorphic relations (key reorder, whitespace reflow, comment
-  add/strip leave effective values unchanged), differential vs a vetted
-  third-party TOML parser, the official toml-test conformance corpus
-  (valid and invalid cases), and model-based/stateful edit sequences
-  checked against an in-memory model.
-- A coverage gate: run the campaign under node V8 coverage and treat
-  uncovered parser/emitter branches as a `reachable` gap to close; flag or
-  fail when coverage regresses.
-- Persisted regression corpus: every counterexample becomes a permanent
-  fast-check `examples` entry.
-- A reusable fuzz-target checklist (in the decision doc or a `fuzzing`
-  skill) so any future target is vetted the same way: right layer? every
-  entry point? oracle stronger than no-crash? generators cover the whole
-  grammar? seeded with real corpus? coverage measured?
+## Goal
 
-## Explicitly out of scope (deferred)
+Improve fuzzing coverage of `@monochromatic-dev/module-toml-edit` and install a
+repeatable method so future fuzzing cannot ship green-but-weak again. The work
+should close issue #198 after implementation and verification.
 
-- Mutation testing is OUT OF SCOPE for this plan. It is deferred, not
-  rejected. It is the ideal objective measure of oracle strength (it mutates
-  the source and checks whether the properties kill the mutant, and would
-  have flagged the weak totality oracle directly), and it is the intended
-  follow-up, but it is not part of this plan. Do not add Stryker or any
-  mutation tooling here. Because the best strength-measure is deferred, this
-  plan must lean on the in-scope proxies for oracle strength: branch
-  coverage from the coverage gate, and the disagreement count from the
-  differential and conformance oracles.
+The goal is not to request a hidden bug list. If the new properties discover real
+bugs, fix the bugs needed to make the properties land green, then pin each
+counterexample as a permanent regression example. The original “not fixing known
+bugs” rule means “do not depend on a supplied bug list,” not “land failing tests.”
+
+Related issue boundaries:
+
+- #198 is the issue this plan should close. Its original acceptance criteria ask
+  for smoke fuzzing and CI, while this plan adds a stronger coverage gate because
+  the wrapper-only fuzzing failure proved smoke fuzzing is not enough.
+- #165 tracks broader editor completeness and workspace adoption. Do not widen this
+  fuzzing plan into replacing every TOML edit caller.
+- #244 tracks sentinel conversion in file-enforcer wrappers. It can add wrapper
+  regressions, but it does not replace direct toml-edit fuzzing.
 
 ## Non-goals
 
-- Not fixing the specific known bugs. The point is coverage and method; the
-  bugs are a rediscovery target, not a work item. Do not request the bug
-  list; design the suite to surface its own findings.
-- Not widening the public API for testing. Internal helpers needed by tests
-  are exported at file level only, never added to `src/index.ts` (mirror the
-  file-enforcer approach).
+- Do not add mutation-testing tooling in this plan. Mutation testing remains the
+  intended follow-up for measuring oracle strength more directly.
+- Do not widen `packages/module/toml-edit/src/index.ts` only for tests. Internal
+  helpers may be exported at file level and imported by co-located seam tests.
+- Do not use the file-enforcer wrapper properties as proof that toml-edit itself
+  is covered. They remain wrapper coverage only.
+- Do not create an AGENTS.md pointer or global agent rule unless the user asks.
 
-## Constraints and conventions the plan must honor
+## Constraints
 
-- Runtime is node (the project is migrating to node). node v26 runs the
-  `.ts` files directly; tests run and the harness exits non-zero on failure.
-  Author tasks and run verification under node, not bun.
-- Tests use the `@monochromatic-dev/module-test/ts` harness and `fast-check`
-  (already in the catalog at `>=4.8.0`). Test files are exempt from the
-  `stylistic/*-per-line` rules but not from `invocation-depth-per-line`,
-  `no-mixed-operators`, or numeric-separator rules.
-- Any new third-party dependency (a reference TOML parser for differential
-  testing) must go through the `choosing-technology` skill and VQS vetting.
-  The toml-test corpus is data only, so it carries no code-dependency risk
-  and is the lowest-risk external oracle to stand up first.
-- Follow the decision-doc precedent (`docs/decisions/`); no AGENTS.md
-  pointer unless the user asks.
-- Reference source files by repo-relative path. No em-dashes in prose.
+- Runtime is node. node v26 runs `.ts` files directly, the harness exits non-zero
+  on failure, and campaign tasks must invoke node, not bun.
+- Tests use `@monochromatic-dev/module-test/ts` and `fast-check`.
+- Normal unit runs stay bounded. Campaign runs use a per-property time budget.
+- Test files remain subject to `invocation-depth-per-line`, `no-mixed-operators`,
+  and numeric-separator rules.
+- New third-party parser dependencies require the `choosing-technology` skill and
+  VQS source vetting before selection.
+- The `toml-test` corpus is data. Pin it by release or commit before vendoring or
+  generating fixture files from it.
+- Reference source files by repo-relative path. Keep prose free of em dashes.
 
-## Decisions for the planning agent to resolve
+## Resolved planning decisions
 
-- Reference implementation for differential testing: which library (for
-  example `smol-toml` or `@iarna/toml`), how to reconcile legitimate edge-
-  case disagreements without flaky noise, and the vetting record.
-- toml-test integration: how to drive our parser/encoder against the
-  JSON-tagged corpus from node (a small adapter), and which corpus version
-  to pin.
-- Coverage gate mechanics: how to collect V8 coverage for a node fuzz run,
-  what threshold or no-regression rule to enforce, and where it runs.
-- Where the campaign task and any shared fuzz helpers live (reuse the
-  file-enforcer `fuzz-budget.ts` pattern, or factor a shared module).
-- Seed corpus sourcing and how mutated-corpus inputs are fed to fast-check.
-- Whether the reusable checklist becomes a `fuzzing` skill or a doc section.
+### Campaign shape
 
-## Reference artifacts
+Use the file-enforcer pattern, but package-local:
 
-- Pattern to mirror: the seven `*.property.unit.test.ts` files and
-  `src/fuzz-budget.ts` plus the `fuzz` task in
-  `packages/dev-script/file-enforcer/`.
-- Decision precedent: `docs/decisions/file-enforcer-fuzzing.md` and
-  `docs/decisions/forbidden-strings-fuzzing.md`.
-- Target package: `packages/module/toml-edit/src/` (entry points in
-  `index.ts`; seams in `parse-toml-edit.ts`, `emit-value.ts`,
-  `emit-value-string.ts`, `splice.ts`, `comments.ts`, `toml-set-aot.ts`,
-  `path-create.ts`, `canonical.unit.test.ts` already does a small
-  parse-after-stringify check to build on).
-- Tracking issue: GitHub #198 "Add fuzz target for toml-edit parser"; this
-  plan should resolve it. Related: #165 (editor completeness), #244
-  (`getTomlProperty` sentinel conversion).
+- Add `packages/module/toml-edit/src/fuzz-budget.ts` with
+  `TOML_EDIT_FUZZ_BUDGET_MS`.
+- Add a `fuzz` task to `packages/module/toml-edit/mise.toml`, mirroring
+  file-enforcer's task, with `--budget <ms>` defaulting to `60000`.
+- Keep the same `*.property.unit.test.ts` files in both normal and campaign modes.
+- Co-locate property files beside the source seam they exercise.
+- Put shared arbitraries, semantic-normalization helpers, and corpus loaders under
+  `packages/module/toml-edit/src/fuzz/` so individual test files do not exceed the
+  max-lines budget.
+
+### Import boundary
+
+Use source and artifact imports deliberately:
+
+- Campaign properties that run `.ts` files directly under node may import
+  `./index.ts` for the public API and sibling source files for internal seams.
+- Internal seam helpers may be exported at file level only. Do not add them to
+  `packages/module/toml-edit/src/index.ts`.
+- Add at least one built-artifact smoke that imports the built package entry point
+  and exercises a generated public-API case, so user-boundary coverage is not
+  source-only.
+
+Document this exception in `docs/decisions/toml-edit-fuzzing.md`, because the
+standard unit-test preference is built-artifact imports.
+
+### Corpus source
+
+Use three corpus tiers:
+
+1. Existing fixture package:
+   `packages/test-fixture/toml-edit/src/valid/` and
+   `packages/test-fixture/toml-edit/src/invalid/`.
+2. Real repository TOML files, excluding generated, dependency, and build-output
+   directories.
+3. `toml-test` valid and invalid files, generated or vendored from a pinned release
+   or commit.
+
+The existing fixture package is the right home for reusable TOML corpus data. Add
+new generated corpus files there if the data is useful beyond one property test;
+keep one-off shrunk counterexamples in the owning property via fast-check
+`examples`.
+
+### External oracle order
+
+Bring up the external oracles in this order:
+
+1. `toml-test` conformance first, because it is data and already specifies tagged
+   JSON comparison semantics for integers, floats, booleans, datetimes, arrays,
+   tables, and invalid inputs.
+2. Differential parser second, after VQS. Compare only normalized semantic values,
+   not raw formatting.
+3. Mutation testing later, in a separate plan.
+
+The differential-parser vetting task must survey at least `smol-toml`,
+`@iarna/toml`, `@ltd/j-toml`, and any current npm TOML parser that appears from a
+fresh search. The chosen parser must have source inspected under `/tmp/agent`,
+tests and CI inspected, maintenance signals checked, and rejected alternatives
+recorded in the decision doc.
+
+### Coverage gate
+
+Use raw V8 coverage first:
+
+- Add a node-driven coverage campaign that runs the property files with
+  `NODE_V8_COVERAGE` pointed at a temporary output directory.
+- Summarize coverage for target files under `packages/module/toml-edit/src/`,
+  especially `parse-toml-edit.ts`, `emit-value.ts`, `emit-value-string.ts`,
+  `splice.ts`, `comments.ts`, `toml-set-aot.ts`, `path-create.ts`,
+  `toml-set.ts`, `toml-delete.ts`, `effective-value.ts`, and `resolve.ts`.
+- Treat V8 uncovered ranges as a reachability signal. If a branch-like range in
+  parser, emitter, comments, AOT, splice, or path-create code is untouched, add a
+  generator case or a seed before calling the campaign strong.
+- Gate on no regression from a committed baseline after the first complete
+  campaign lands. Do not set an arbitrary percentage threshold before the baseline
+  exists.
+- If raw V8 ranges cannot give enough human-readable signal, vet a coverage
+  summarizer as a separate dependency decision rather than silently adding one.
+
+Call the task `fuzz:coverage` or make `fuzz --coverage` available. The task should
+produce a text summary suitable for CI logs and a machine-readable baseline file
+under the package, not under a generated output directory.
+
+### Reusable checklist
+
+Record the reusable fuzz-target checklist as a section in
+`docs/decisions/toml-edit-fuzzing.md` first. Do not create a project-local
+`fuzzing` skill in this plan. A skill becomes worthwhile after the checklist is
+used on at least one more target and the wording proves stable.
+
+## Implementation phases
+
+### Phase 1: Scaffold the campaign
+
+Deliverables:
+
+- `packages/module/toml-edit/src/fuzz-budget.ts`.
+- `packages/module/toml-edit/mise.toml` `fuzz` task.
+- One smoke property file that proves bounded mode and campaign mode both run
+  under node.
+- A fast-check seed and counterexample policy copied from the file-enforcer
+  decision: random seeds in normal and campaign modes, pinned `examples` for every
+  discovered counterexample.
+
+Pass criteria:
+
+- `mise run //packages/module/toml-edit:test:unit` still passes.
+- `mise run //packages/module/toml-edit:fuzz --budget 1000` exits cleanly.
+
+### Phase 2: Build semantic helpers and generators
+
+Deliverables:
+
+- A normalized TOML value model matching the `toml-test` tagged JSON shape.
+- Equality helpers that handle `nan`, signed infinities, integer spelling, float
+  equivalence, boolean case, datetime equivalence, arrays, inline tables, standard
+  tables, and array-of-tables.
+- Grammar-focused arbitraries for:
+  - basic, literal, multiline-basic, and multiline-literal strings;
+  - integers in decimal, hex, octal, binary, signed, and underscore forms;
+  - floats with decimal points, exponents, `inf`, `-inf`, `nan`, and `-nan`;
+  - booleans;
+  - offset datetimes, local datetimes, local dates, and local times;
+  - arrays, nested arrays, inline tables, standard tables, nested tables, and
+    array-of-tables;
+  - bare, quoted, empty, dotted, unicode, escaped, numeric-looking, and
+    float-looking keys;
+  - comments before keys, same-line trailing comments, header comments, blank
+    lines, and CRLF variants;
+  - duplicate keys, table collisions, path-create-through-scalar cases, deep
+    nesting, huge strings, and unicode edge cases.
+- Structure-aware mutators for valid corpus inputs, so invalid and near-invalid
+  documents are not just arbitrary byte noise.
+
+Pass criteria:
+
+- Every generator has at least one deterministic `examples` value for each grammar
+  family above.
+- The generator file set stays below max-lines by splitting helpers rather than
+  compressing code.
+
+### Phase 3: Parser and stringify properties
+
+Properties:
+
+- Arbitrary text either parses to a state or throws `TomlEditError`, never a raw
+  `ParseError` or unrelated exception.
+- Valid generated documents parse successfully.
+- Invalid generated and corpus documents reject with `TomlEditError`.
+- Splice mode with no deltas is byte-identical for every accepted source.
+- `parseTomlEdit` then `tomlStringify` then `parseTomlEdit` preserves the
+  normalized semantic model.
+- `emptyTomlEdit` plus setters emits TOML that reparses and matches the intended
+  model.
+- `tomlVersion` is part of the generated case. TOML 1.0 and 1.1 differences are
+  asserted explicitly rather than treated as flake.
+
+Pass criteria:
+
+- The parser properties cover both current fixture-package files and generated
+  grammar cases.
+- A failing parse on a supposedly valid generator case shrinks to a useful example
+  and is added to the property examples before the fix lands.
+
+### Phase 4: Emitter and seam properties
+
+Properties:
+
+- `encodeKey` output reparses as one key segment and never creates an unintended
+  dotted path.
+- `jsValueToTomlText` output reparses under a synthetic key for every accepted JS
+  and wrapped TOML input.
+- `emitContentNode` preserves parse-time spelling for unchanged strings, numbers,
+  floats, booleans, datetimes, arrays, and inline tables when the AST carries that
+  spelling.
+- `emitStringValue` covers quote styles, multiline trimming, escapes, backslashes,
+  control characters, unicode, and source-escaped variants.
+- `spliceEmit` preserves untouched byte ranges and only replaces the ranges marked
+  by edits, insertions, deletions, or header-comment changes.
+- Comment helpers preserve the documented distinction between attached preceding
+  comments, blank-line-separated comments, same-line trailing comments, and header
+  comments.
+
+Pass criteria:
+
+- Every seam named in the target package reference section has at least one
+  property file or a named property block.
+- Coverage output shows each seam file is exercised by the campaign.
+
+### Phase 5: Stateful edit model
+
+Model commands:
+
+- Start from either `parseTomlEdit({ source })` over generated or corpus TOML, or
+  `emptyTomlEdit()`.
+- Set existing scalar, array element, inline-table entry, table body, and
+  array-of-tables collection.
+- Path-create under top-level, under a standard table, and inside an inline table.
+- Delete key-values, table blocks, array elements at multiple depths, and
+  array-of-tables collections.
+- Read with `tomlGet`, `tomlGetValue`, `tomlHas`, `tomlKeys`, `tomlGetRaw`,
+  `tomlGetNode`, and comment accessors after each mutation.
+- Insert comments before and after keys, and set header comments.
+
+Oracles:
+
+- The in-memory model predicts effective reads after every command.
+- `tomlStringify` output reparses after every command sequence unless the command
+  is expected to throw.
+- Repeating an identical set or delete is idempotent when the API contract says it
+  should be.
+- Operations that should reject do so with the documented `TomlEditError` subclass.
+- Parse-time views (`tomlGetNode` and `tomlGetRaw`) stay parse-time views after
+  deltas; delta-aware reads reflect pending edits.
+
+Pass criteria:
+
+- The command generator includes successful and rejecting paths.
+- The model covers AOT, inline tables, comments, cross-path effective reads, and
+  dotted-key collisions.
+
+### Phase 6: toml-test conformance
+
+Deliverables:
+
+- A node adapter that converts toml-edit parse output to the `toml-test` tagged
+  JSON shape.
+- Valid corpus tests for TOML 1.0 and 1.1 using the pinned `tests/files-toml-*`
+  lists.
+- Invalid corpus tests that assert parse rejection.
+- Encoder-style tests where tagged JSON is converted through toml-edit setters,
+  stringified, reparsed, and compared semantically.
+
+Pass criteria:
+
+- Legitimate TOML 1.0 versus TOML 1.1 differences are named and tested under the
+  right `tomlVersion`.
+- Any unsupported encoder cases are skipped only with a documented reason and a
+  follow-up issue if they represent a real toml-edit capability gap.
+
+### Phase 7: Differential parser oracle
+
+Deliverables:
+
+- VQS record in `docs/decisions/toml-edit-fuzzing.md` for the selected parser and
+  rejected alternatives.
+- A semantic normalizer for the selected parser's output.
+- A disagreement classifier with three outcomes:
+  - toml-edit wrong;
+  - reference parser wrong or less capable;
+  - spec ambiguity or intentional version difference.
+- A stable allow-list for intentional disagreements, with each entry tied to a
+  source path, spec clause, or issue.
+
+Pass criteria:
+
+- Differential properties fail on unexplained disagreements.
+- Explained disagreements do not become broad suppressions.
+
+### Phase 8: Coverage and meta-checks
+
+Deliverables:
+
+- `fuzz:coverage` or `fuzz --coverage` task.
+- Coverage summary for parser, emitter, splice, comments, AOT, path-create,
+  effective-value, and resolve files.
+- Committed baseline after the first complete strong campaign.
+- Checklist section in `docs/decisions/toml-edit-fuzzing.md`.
+
+Pass criteria:
+
+- Coverage task fails or flags when target-file coverage regresses from baseline.
+- The checklist requires all five questions for future targets:
+  - Is the tested layer where the logic and bugs live?
+  - Are all public entry points and internal seams covered?
+  - Is every oracle stronger than no-crash or returns-a-string?
+  - Do generators cover the full grammar and boundary cases?
+  - Are real corpus seeds, counterexamples, and coverage feedback wired in?
+
+### Phase 9: CI and issue closure
+
+Deliverables:
+
+- CI workflow or workflow step running a short bounded toml-edit fuzz smoke on PRs
+  and merge groups that touch `packages/module/toml-edit/**`,
+  `packages/test-fixture/toml-edit/**`, or the toml-edit fuzz decision doc.
+- CI command uses the package task, not raw `node` commands pasted into workflow
+  logic.
+- Explicit `gh issue close 198` after the implementation commit and verification.
+
+Pass criteria:
+
+- Local verification includes:
+  - `mise run //packages/module/toml-edit:lint:types`;
+  - `mise run //packages/module/toml-edit:test:unit`;
+  - `mise run //packages/module/toml-edit:fuzz --budget 60000`;
+  - the coverage task.
+- CI path filtering is proven with an actual workflow run or a documented dry-run
+  mechanism before issue #198 is closed.
+
+## Target package reference
+
+Public entry points from `packages/module/toml-edit/src/index.ts`:
+
+- `parseTomlEdit`
+- `emptyTomlEdit`
+- `tomlHas`
+- `tomlGet`
+- `tomlGetValue`
+- `tomlGetRaw`
+- `tomlGetNode`
+- `tomlKeys`
+- `tomlGetComments`
+- `tomlGetCommentsBefore`
+- `tomlGetCommentAfter`
+- `tomlSet`
+- `tomlDelete`
+- `tomlSetHeaderComment`
+- `tomlInsertCommentBefore`
+- `tomlInsertCommentAfter`
+- `tomlStringify`
+- re-exported `getStaticTOMLValue` and `parseTOML` from `toml-eslint-parser`
+
+Internal seams that need direct properties or named coverage blocks:
+
+- `packages/module/toml-edit/src/parse-toml-edit.ts`
+- `packages/module/toml-edit/src/emit-value.ts`
+- `packages/module/toml-edit/src/emit-value-string.ts`
+- `packages/module/toml-edit/src/values.ts`
+- `packages/module/toml-edit/src/value-encoders.ts`
+- `packages/module/toml-edit/src/keys.ts`
+- `packages/module/toml-edit/src/splice.ts`
+- `packages/module/toml-edit/src/comments.ts`
+- `packages/module/toml-edit/src/toml-set.ts`
+- `packages/module/toml-edit/src/toml-set-aot.ts`
+- `packages/module/toml-edit/src/path-create.ts`
+- `packages/module/toml-edit/src/path-create-merge.ts`
+- `packages/module/toml-edit/src/toml-delete.ts`
+- `packages/module/toml-edit/src/effective-value.ts`
+- `packages/module/toml-edit/src/resolve.ts`
+- `packages/module/toml-edit/src/walk.ts`
+- `packages/module/toml-edit/src/collision.ts`
 
 ## Definition of done
 
-- toml-edit has property/fuzz coverage across all value types, key forms,
-  nesting, AOT, inline tables, and comments, exercised at the parser and
-  emitter seams.
-- The oracle set (round-trip, metamorphic, differential, toml-test
-  conformance, model-based) is in place and runs in bounded mode in the
-  normal suite and in budgeted campaign mode via the `fuzz` task.
-- The coverage gate reports parser/emitter branch coverage for the campaign
-  and gates on no regression.
-- A fuzz-target checklist exists and is referenced from the decision doc.
-- Issue #198 is closed. Mutation testing is recorded as the deferred
-  follow-up.
+- toml-edit has property coverage across all scalar values, key forms, nesting,
+  inline tables, standard tables, AOT, comments, path-create, delete, and splice
+  behavior.
+- The oracle set includes round-trip, metamorphic, conformance, differential, and
+  stateful model oracles.
+- The normal unit suite runs bounded properties; the `fuzz` task runs a budgeted
+  campaign; the coverage task reports and gates target-file coverage.
+- Every discovered counterexample is either fixed and pinned in `examples`, or
+  recorded as a separate issue only when it cannot be fixed in this scope without
+  changing the package contract.
+- `docs/decisions/toml-edit-fuzzing.md` records the method, the dependency vetting
+  record, rejected alternatives, the reusable checklist, and mutation testing as
+  deferred follow-up.
+- CI runs a short toml-edit fuzz smoke for relevant changes.
+- Issue #198 is closed explicitly with `gh issue close 198` after verification.
