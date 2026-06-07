@@ -32,6 +32,17 @@ extends = "lint:oxlint"
 description = "Run ensurePackage container tests across OS/user matrix"
 run = "bun src/package/mise.container-test.ts"
 
-[tasks."generate:index"]
-description = "Generate packages.generated.ts from Repology data"
-run = "bun src/package/mise.generate-index.ts"
+[tasks.fuzz]
+description = "Run the property tests as a time-budgeted fuzz campaign under node"
+usage = '''
+flag "--budget <ms>" help="Per-property time budget in milliseconds (default 60000)"
+'''
+run = '''
+let budget = ($env.usage_budget? | default "60000" | str trim)
+let files = (glob src/**/*.property.unit.test.ts)
+print $"Fuzz campaign over ($files | length) property files at ($budget)ms each"
+$files | each {|file|
+  print $"fuzzing ($file)"
+  with-env { FILE_ENFORCER_FUZZ_BUDGET_MS: $budget } { ^node $file }
+}
+'''
