@@ -123,10 +123,13 @@ container owns one source file's full Stryker session.
 
 The image bakes a repo-shaped tree with installed dependencies at a fixed path, for example `/baked`,
 containing `/baked/node_modules` (root virtual store) and `/baked/packages/*/node_modules` (the isolated
-per-package symlink farms). The runtime image tag includes the lockfile hash, platform, and a hash of
-mutation-test runtime source, `runtime/Containerfile`, root `mise.toml`, and package metadata so baked
-entrypoint changes force a rebuild even when dependencies are unchanged. The container runs with these
-mounts and options:
+per-package symlink farms). The Podman build uses a package-local ignorefile so the context contains root
+workspace manifests, workspace package manifests, and the mutation-test runtime source, not heavyweight
+artifacts such as Rust `target/`, VM `output/`, fuzz corpora, `node_modules`, or `dist`. The runtime image
+tag includes the lockfile hash, platform, and a hash of mutation-test runtime source,
+`runtime/Containerfile`, the build ignorefile, root `mise.toml`, root workspace manifests, and workspace
+package metadata so baked entrypoint and dependency-layout changes force a rebuild even when dependencies
+are unchanged. The container runs with these mounts and options:
 
 - repo source mounted read-only at `/src-ro` (used only as the rsync source);
 - a writable tmpfs work tree at `/work` (size-capped);
@@ -137,14 +140,14 @@ mounts and options:
 
 The entrypoint, before launching Stryker:
 
-1.  `rsync /src-ro/ /work/` excluding `**/node_modules`, `**/dist`, `**/.git`. Source is small once
-    `node_modules` is excluded, so this copies the current state of all workspace packages, not just
-    file-enforcer, which keeps workspace dependency source fresh.
-2.  Symlink `node_modules` from the baked layer into the work tree: `/work/node_modules` to
-    `/baked/node_modules`, and each `/work/packages/<pkg>/node_modules` to
-    `/baked/packages/<pkg>/node_modules`. Dependency `.ts`/`.js` resolution stays inside `/baked`
-    (read-only). Workspace `/ts` imports resolve to real `packages/...` paths in `/work`, outside any
-    `node_modules` segment, which is what current Node native type stripping requires.
+1.  `rsync /src-ro/ /work/` excluding `**/node_modules`, `**/dist`, `**/.git`, `**/target`, `**/output`,
+    and `**/corpus`. This copies current workspace source while skipping generated heavyweight artifacts.
+2.  Symlink root `node_modules` from `/work/node_modules` to `/baked/node_modules`, then copy each
+    package-local baked `node_modules` symlink farm into `/work/packages/<pkg>/node_modules` instead of
+    symlinking the whole directory. External dependency symlinks still resolve through `/work/node_modules`
+    into the baked virtual store, while workspace package symlinks resolve relative to `/work` and therefore
+    load current source outside any `node_modules` segment. That is what current Node native type stripping
+    requires.
 
 Stryker then runs with `cwd` at `/work/packages/dev-script/file-enforcer` and `inPlace: true`, so it mutates
 the writable copy in place and restores it from its backup afterward. Because `inPlace` is on, Stryker does
@@ -252,8 +255,8 @@ image. Do not use corepack. Build steps:
 3.  Install Nushell with `dnf`. Nushell must exist before any mise task shell or inline Nu verification runs.
 4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node` and
     `npm:pnpm` tools. Do not activate or install the entire root toolset, since the image only needs Node and pnpm.
-5.  Copy the repo (or at least every `package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml`) into
-    `/baked`.
+5.  Copy the minimal build context into `/baked`: root manifests, workspace package manifests, and
+    mutation-test runtime source selected by `runtime/Containerfile.dockerignore`.
 6.  Run `pnpm install --frozen-lockfile` through `mise exec node npm:pnpm -- ...` so `/baked` holds the
     full isolated `node_modules` layout while still using the repo's pinned package-manager version.
 
@@ -492,8 +495,9 @@ container gets a unique JSON report path under the host reports directory.
 ## Risks and mitigations
 
 - Workspace dependency source is stale in the baked image. Mitigation: the container rsyncs current source
-  for all workspace packages into the work tree before running, so only `node_modules` is baked, not the
-  source under test or its workspace dependencies' source.
+  for all workspace packages into the work tree before running, and package-local `node_modules` symlink
+  farms are copied into `/work` so workspace symlinks resolve to current `/work/packages/...` source. Only
+  external dependency payloads and the mutation-test entrypoint are baked.
 - Node refuses `.ts` under `node_modules`. Mitigation: the workspace import smoke proves workspace `.ts`
   resolves to real `packages/...` paths outside `node_modules`; this already works on the host via pnpm
   symlinks and Node realpath. Do not add `tsx`.
@@ -504,7 +508,8 @@ container gets a unique JSON report path under the host reports directory.
   full run, and record the decision.
 - The image rebuild is needed but missed. Mitigation: `src/runtime-image.ts` tags by lockfile hash,
   runtime input hash, and platform and builds if the tag is missing, so changed dependencies, runtime
-  source, image build recipe, root tool declarations, or platform force a rebuild automatically.
+  source, image build recipe, build ignorefile, root tool declarations, workspace manifests, or platform
+  force a rebuild automatically.
 - SELinux relabeling differs across hosts. Mitigation: make the `:Z` suffix configurable and copy the
   existing canary pattern when present.
 
