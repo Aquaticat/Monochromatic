@@ -25,6 +25,8 @@ config_roots = [
 
 [tools]
 # Primary runtime
+# Migration note: this repo is moving from Bun to Node. Keep this pin only for
+# remaining Bun-dependent tasks during transition.
 # Pinned to 1.3.14 because the Rust rewrite's robustness invites serious doubts.
 bun = "1.3.14"
 

@@ -26,6 +26,8 @@ config_roots = [
 
 [tools]
 # Primary runtime
+# Migration note: this repo is moving from Bun to Node. Keep this pin only for
+# remaining Bun-dependent tasks during transition.
 # Pinned to 1.3.14 because the Rust rewrite's robustness invites serious doubts.
 bun = "1.3.14"
 
@@ -752,7 +754,9 @@ _.path = [
   "packages/webapp-content/messages-demo/node_modules/.bin",
   "packages/webapp-content/ssg-test/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
+  "packages/dev-script/mutation-test/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
+  "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
 ]
 
