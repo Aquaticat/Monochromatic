@@ -262,8 +262,8 @@ image. Do not use corepack. Build steps:
 3.  Install Nushell with `dnf`. Nushell must exist before any mise task shell or inline Nu verification runs.
 4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node` and
     `npm:pnpm` tools. Do not install Bun in the mutation runtime; the repository is migrating away from Bun,
-    and the missing-tool warning is acceptable. Default test selection must avoid Bun-dependent package-wide
-    tests until those tests migrate.
+    and the missing-tool warning is acceptable. Package tests selected by mutation runs must execute fixture
+    config files through Node instead of spawning Bun.
 5.  Copy the host-staged minimal build context into `/baked`: root manifests, root `.pnpmfile.mjs` and its
     imported policy JSON, workspace package manifests, and mutation-test runtime source.
 6.  Run `pnpm install --frozen-lockfile` through `mise exec node npm:pnpm -- ...` so `/baked` holds the
@@ -375,9 +375,9 @@ fixed total.
 
 For each source file, select sibling `*.unit.test.ts`, related regression tests
 (`*-regression.unit.test.ts` whose stem matches the source stem after removing the `-regression` suffix),
-and any manually configured package-wide tests. Do not include unrelated regression tests by suffix alone, and
-keep package integration tests out of the default selection while they spawn Bun. `--full-suite` covers the
-broader pass. Provide a `--full-suite` mode that runs the package's full
+package integration tests (`integration.unit.test.ts`), and any manually configured package-wide tests. Do not
+include unrelated regression tests by suffix alone; `--full-suite` covers that broader pass. Provide a
+`--full-suite` mode that runs the package's full
 unit/regression/integration set for every source file. The default per-file selection is a runtime
 optimization; `--full-suite` is the stricter pass. Test paths handed to the sequencer are relative to the
 container work tree, never absolute host paths.
