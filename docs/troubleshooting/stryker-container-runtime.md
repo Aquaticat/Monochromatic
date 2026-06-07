@@ -299,6 +299,19 @@ Patch selected file-enforcer tests and helpers to spawn `node` instead of `bun` 
 Tradeoff: config fixtures now follow the repository's migration direction. Tests that are explicitly about
 Bun behavior should stay out of mutation runtime selection or be rewritten separately.
 
+## `convert-source-map` is carried transitively but never loaded
+
+StrykerJS pulls `convert-source-map` through `@stryker-mutator/instrumenter` ->
+`@babel/core@7.29.7`. The repo bans that package, so the blocklist substitutes it with the
+throw-on-import stub `@monochromatic-dev/stub-throwing`. This does not break mutation testing:
+the instrumenter is parse-only (`babel.parseAsync` + manual `traverse` + `@babel/generator`)
+and never enters Babel's `transform` pipeline, the only place `@babel/core` requires
+`convert-source-map`. The stub is therefore never imported at runtime (verified empirically with
+a `Module._load` interceptor: a real instrumentation run loaded it zero times). Do not treat the
+install-time `[blocked-dep]` warning for `convert-source-map` as a Stryker runtime failure, and do
+not add it to an allowlist. See the `convert-source-map` deep-dive in
+`docs/troubleshooting/dependencies.md` for the full evidence and the revisit triggers.
+
 ## What does not work
 
 - Installing Bun in the mutation runtime solves `spawn bun ENOENT`, but it works against the repository's

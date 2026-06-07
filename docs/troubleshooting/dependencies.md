@@ -26,8 +26,11 @@ They sit alongside the global mechanisms, not inside them, and stay in `pnpm-wor
 
 `.pnpmfile.mjs` declares 24 transitive utilities as blocked with `action: 'throw'`
 as of 2026-05-12.
-None are in the resolved graph at the time the entries were added
+None were in the resolved graph at the time the entries were added
 (verified: zero matches in `pnpm-lock.yaml`).
+One has since entered the graph: `convert-source-map`, pulled transitively by
+StrykerJS via `@babel/core`. See its deep-dive under "Package Management Warnings"
+below for why the throwing stub is never loaded at runtime.
 The policy is a forward-looking canary:
 if a future manifest declares one of these as a dependency,
 `pnpm install` emits a stderr `[blocked-dep]` line naming the consumer,
@@ -55,7 +58,8 @@ The 24 split into four groups:
 - Source-map / browser-data / JSON utilities replaced by bundler built-ins
   or catalog deps (4):
   `caniuse-lite` (blocked except `browserslist` itself, which resolves
-  `.browserslistrc` for file-enforcer and config-tsdown), `convert-source-map`,
+  `.browserslistrc` for file-enforcer and config-tsdown),
+  `convert-source-map` (now in the graph via StrykerJS; see its deep-dive below),
   `fast-json-stable-stringify`, `source-map-resolve`.
 
 ### Conditions for revisiting
@@ -877,6 +881,88 @@ seed `<agentDir>/settings.json` with `{}` before re-running `pi --help`.
 See `docs/decisions/proper-lockfile-removal.md` for the decision rationale
 (why a shim was preferred over silent stub or pure removal) and
 `docs/dependency-blocklist.md` for the policy reference.
+
+### `convert-source-map` (throwing stub; never loaded by Stryker)
+
+This is the one pre-emptive ban that has since entered the resolved graph.
+`@monochromatic-dev/dev-script-mutation-test` runs StrykerJS 9.6.1, which pulls
+`convert-source-map` transitively. The `action: 'throw'` policy substitutes it with
+`@monochromatic-dev/stub-throwing`, so the canary in "Pre-emptive bans" above has
+fired for this one package. Mutation testing is unaffected: Stryker never loads the
+package at runtime, so the throwing stub is never imported.
+
+#### Dependency chain
+
+```text
+@monochromatic-dev/dev-script-mutation-test
+└─┬ @stryker-mutator/core@9.6.1
+  └─┬ @stryker-mutator/instrumenter@9.6.1
+    └─┬ @babel/core@7.29.7
+      └── convert-source-map  (substituted: link:packages/stub/throwing)
+```
+
+`@babel/core@7.29.7` is the sole consumer (`pnpm-lock.yaml:6129`,
+`convert-source-map: link:packages/stub/throwing`). No workspace package depends on
+`@babel/core` directly; it arrives only through the Stryker instrumenter.
+
+#### Why runtime is fine
+
+Stryker's instrumenter is parse-only. For each source file it calls
+`babel.parseAsync` (`@stryker-mutator/instrumenter/dist/src/parsers/ts-parser.js`,
+`js-parser.js`), wraps the AST in `new File(...)`
+(`transformers/babel-transformer.js`), traverses it manually, and prints with
+`@babel/generator` (`printers/ts-printer.js`, `mutant.js`,
+`generate(..., { sourceMaps: false })`). None of these enter Babel's `transform`
+pipeline.
+
+Every `convert-source-map` call site in `@babel/core` lives in that transform
+pipeline and is a lazy, memoized `require`:
+`lib/transformation/normalize-file.js:21-27,56,62`, `lib/transformation/file/generate.js`,
+`lib/transformation/read-input-source-map-file.js`. In `normalize-file.js` the require
+fires only when `options.inputSourceMap !== false` and the source carries an
+inline-sourcemap object or a `//# sourceMappingURL` comment (lines 54-81). Hand-written
+`.ts` source has neither, and `babel.parseAsync` routes through `lib/parse.js` ->
+`parser/index.js`, never `normalize-file.js`.
+
+A sweep of every `@stryker-mutator/*` dist (core, instrumenter, typescript-checker,
+util, api) found zero `transformSync` / `transformAsync` / `transformFromAst`, zero
+direct `convert-source-map` import, and zero `istanbul-lib-source-maps`. The
+typescript-checker uses the TypeScript compiler API, not Babel. The mutation config
+sets `coverageAnalysis: 'off'` and uses the `command` test runner, so no
+coverage or source-map path runs either.
+
+Verified empirically (read-only probe, 2026-06-06): instrumenting a sample `.ts`
+string through the real `Instrumenter` produced 16 mutants and instrumented output
+while a `Module._load` interceptor recorded zero requests for `convert-source-map`.
+As a positive control, a direct `require('convert-source-map')` resolved from
+`@babel/core`'s location flipped the same interceptor and threw the stub's
+`[blocked-dep]` error, confirming both that the interceptor catches real requests and
+that the installed module is the throwing stub.
+
+#### Why the throw action is correct
+
+Babel's `require("convert-source-map")` is a hard require with no `try/catch` guard,
+so `throw` (a loud, doc-pointing failure at the import site) is the right substitution
+per the decision rule in "Global blocklist (substitution vs removal)" above. It stays
+inert only because Stryker never exercises the transform pipeline that would trigger it.
+
+#### Why removal was not used
+
+A parent-scoped override `'@babel/core>convert-source-map': '-'` in `pnpm-workspace.yaml`
+would also work and is functionally equivalent for this graph. The throwing stub was
+kept instead because its message points at `docs/dependency-blocklist.md`, which is more
+useful than a bare `Cannot find module 'convert-source-map'` if a future change ever
+reaches the transform pipeline. Revisit and switch to removal (or a functional shim) if:
+a Stryker upgrade starts calling `babel.transform*`, `coverageAnalysis` is enabled, or a
+plugin or reporter is added that transforms code.
+
+#### Verification
+
+`grep convert-source-map pnpm-lock.yaml` shows only the `@babel/core` edge. A real
+mutation run (for example `mise run //packages/dev-script/file-enforcer:test:mutation`)
+completes and reports killed and survived mutants without any `convert-source-map`
+error. See `docs/troubleshooting/stryker-container-runtime.md` for the Stryker runtime
+notes and `docs/dependency-blocklist.md` for the policy reference.
 
 ## Why we do not file the policy entries upstream
 
