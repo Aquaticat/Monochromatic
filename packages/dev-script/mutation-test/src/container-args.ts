@@ -92,6 +92,7 @@ export function buildContainerArgs(options: ContainerArgsOptions,): readonly str
     '--read-only',
     '--cap-drop=ALL',
     '--security-opt=no-new-privileges',
+    '--security-opt=label=disable',
     '--memory',
     options.resources
       .memory,

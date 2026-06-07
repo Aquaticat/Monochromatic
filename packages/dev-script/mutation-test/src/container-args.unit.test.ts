@@ -56,6 +56,7 @@ await describe({
         expect(args,).toContain('--read-only',);
         expect(args,).toContain('--cap-drop=ALL',);
         expect(args,).toContain('--security-opt=no-new-privileges',);
+        expect(args,).toContain('--security-opt=label=disable',);
         expect(args.join(' ',),).not.toContain('docker',);
         expect(args.join(' ',),).not.toContain('tsx',);
       },
