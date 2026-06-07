@@ -30,6 +30,7 @@ import { TEST_FILES_ENV, } from './inline-nu.ts';
 import type { InContainerOptions, } from './in-container-options.ts';
 import { sanitizeTagFragment, } from './path-utils.ts';
 import { buildStrykerConfig, } from './stryker-config.ts';
+import { writeMutationTsconfig, } from './mutation-tsconfig.ts';
 
 /**
  * Default per-mutant timeout in milliseconds when the host does not override it.
@@ -114,12 +115,13 @@ function timeoutMsFromEnv(): number {
  *
  * @example
  * ```ts
- * await writeStrykerConfig({ options, configDir: '/tmp/x' });
+ * await writeStrykerConfig({ options, configDir: '/tmp/x', tsconfigFile: 'tsconfig.mutation.json' });
  * ```
  */
 async function writeStrykerConfig(options: {
   readonly options: InContainerOptions;
   readonly configDir: string;
+  readonly tsconfigFile: string;
 },): Promise<string> {
   /**
    * File-name-safe report stem for temporary config naming.
@@ -148,7 +150,7 @@ async function writeStrykerConfig(options: {
         process.env
           .MUTATION_TYPESCRIPT_PERFORMANCE_MODE
           === 'true',
-      tsconfigFile: 'tsconfig.json',
+      tsconfigFile: options.tsconfigFile,
     },),
       null,
       2,
@@ -205,11 +207,18 @@ export async function runStryker(options: {
     'mutation-stryker-',
   ),);
   /**
+   * Generated TypeScript config used by the checker.
+   */
+  const tsconfigFile = await writeMutationTsconfig({
+    packageCwd: options.packageCwd,
+  },);
+  /**
    * Generated Stryker config path passed to CLI.
    */
   const configFile = await writeStrykerConfig({
     options: options.options,
     configDir,
+    tsconfigFile,
   },);
   /**
    * Selected package-relative tests for this Stryker session.
