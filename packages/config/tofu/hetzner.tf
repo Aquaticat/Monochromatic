@@ -204,6 +204,20 @@ locals {
     if can(cidrhost(ip, 0))
   ]
 
+  # archive.ubuntu.com resolves through Cloudflare, not Ubuntu's AS41231.
+  # Fresh containers can need port 80 before HTTPS certificates exist.
+  archive_ubuntu_ips = [
+    "104.20.28.246/32",
+    "172.66.152.176/32",
+    "2606:4700:10::6814:1cf6/128",
+    "2606:4700:10::ac42:98b0/128",
+  ]
+
+  ubuntu_http_ips = distinct(concat(
+    local.ubuntu_ips,
+    local.archive_ubuntu_ips,
+  ))
+
   storagebox_dns_ips = length(var.storagebox_hostnames) == 0 ? [] : [
     for ip in split(",", data.external.storagebox_ips[0].result.ips) : ip
     if ip != "" && can(cidrhost(ip, 0))
@@ -217,8 +231,8 @@ locals {
     if can(cidrhost(ip, 0))
   ]
 
-  ubuntu_ips_v4        = [for ip in local.ubuntu_ips : ip if !strcontains(ip, ":")]
-  ubuntu_ips_v6        = [for ip in local.ubuntu_ips : ip if strcontains(ip, ":")]
+  ubuntu_ips_v4        = [for ip in local.ubuntu_http_ips : ip if !strcontains(ip, ":")]
+  ubuntu_ips_v6        = [for ip in local.ubuntu_http_ips : ip if strcontains(ip, ":")]
   ubuntu_ips_v4_chunks = chunklist(local.ubuntu_ips_v4, 20)
   ubuntu_ips_v6_chunks = chunklist(local.ubuntu_ips_v6, 20)
 
@@ -414,7 +428,16 @@ locals {
 
 check "ip_syntax_validation" {
   assert {
-    condition     = alltrue([for ip in concat(local.cdn_ips, local.hetzner_ips, local.coolify_ips, local.tor_relay_ips, local.storagebox_destination_ips) : can(cidrhost(ip, 0))])
+    condition = alltrue([
+      for ip in concat(
+        local.cdn_ips,
+        local.archive_ubuntu_ips,
+        local.hetzner_ips,
+        local.coolify_ips,
+        local.tor_relay_ips,
+        local.storagebox_destination_ips,
+      ) : can(cidrhost(ip, 0))
+    ])
     error_message = "Typo detected in your local IP list!"
   }
 }
