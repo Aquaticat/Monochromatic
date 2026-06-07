@@ -8,8 +8,10 @@ export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'gif';
  *
  * @example
  * ```ts
+ * import { readFile } from 'node:fs/promises';
+ *
  * const input: ImageBuffer = {
- *   buffer: await Bun.file('photo.png').arrayBuffer(),
+ *   buffer: new Uint8Array(await readFile('photo.png')).buffer,
  *   format: 'png',
  * };
  * ```

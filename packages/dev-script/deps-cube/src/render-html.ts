@@ -1,7 +1,7 @@
 /**
  * Composes the final HTML audit report.
  *
- * Bundles the browser-side controller via `Bun.build` (IIFE,
+ * Bundles the browser-side controller via rolldown (IIFE,
  * minified), inlines the probe array as `globalThis.__PROBES__`, embeds
  * the control-panel HTML from {@link renderControls}, and wraps
  * everything in an HTML document with the package's CSS in a
@@ -20,6 +20,11 @@
 
 import { readFile, } from 'node:fs/promises';
 import { resolve as resolvePath, } from 'node:path';
+
+import {
+  type OutputChunk,
+  rolldown,
+} from 'rolldown';
 
 import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 
@@ -50,7 +55,7 @@ const PACKAGE_ROOT = await findPackageRootCached({
  * is evaluated from: an `import.meta.url`-relative path would resolve
  * to `<pkg>/dist/final/node/scripts/controller.ts` after tsdown
  * bundles this file into a single `cli.mjs`, and that target doesn't
- * exist. `Bun.build` needs the original TypeScript source path; the
+ * exist. rolldown needs the original TypeScript source path; the
  * source tree is shipped alongside the built artifacts (see
  * `package.json#files`) so the path resolves in both modes.
  */
@@ -92,45 +97,39 @@ const PAGE_TITLE = 'deps-cube; catalog dependency audit';
 //region Helpers
 
 /**
- * Bundles the browser-side controller via Bun's bundler into a
- * single self-contained IIFE string.
+ * Bundles the browser-side controller via rolldown into a single
+ * self-contained IIFE string.
  *
  * @returns Minified IIFE JS, ready to splice into a `<script>` block.
  *
- * @throws When the bundle fails; the bundler's logs are joined into
- *   the error message so the CLI surfaces them.
+ * @throws When rolldown emits no JS chunk for the controller entry point.
+ *   rolldown surfaces compile/resolve failures by rejecting on its own, so
+ *   those propagate without extra wrapping.
  */
 async function bundleController(): Promise<string> {
   /**
-   * Bundle handle from Bun's bundler; carries either the IIFE output or diagnostic logs.
+   * In-memory rolldown handle; `await using` releases its native resources even when `generate` rejects.
    */
-  const result = await Bun.build({
-    entrypoints: [
-      CONTROLLER_ENTRY_PATH,
-    ],
+  await using bundle = await rolldown({
+    input: CONTROLLER_ENTRY_PATH,
+    platform: 'browser',
+  },);
+  /**
+   * Generated bundle; `output` holds at least one chunk for the single entry point.
+   */
+  const { output, } = await bundle.generate({
     format: 'iife',
     minify: true,
-    target: 'browser',
   },);
-  if (!result.success) {
-    /**
-     * Newline-joined bundler diagnostic messages; surfaced in the thrown error so the CLI can print them.
-     */
-    const messages = result
-      .logs
-      .map(function describeLog(log,) {
-        return log.message;
-      },)
-      .join('\n',);
-    throw new Error(`Failed to bundle controller for HTML inlining:\n${messages}`,);
-  }
   /**
-   * First (and only) output artifact from the single-entrypoint build; further `outputs[0..n]` are unused.
+   * First emitted JS chunk; assets carry no `code` field, so the chunk is selected by its discriminant.
    */
-  const [output,] = result.outputs;
-  if (output === undefined)
-    throw new Error('Bun.build returned no outputs for controller entry point',);
-  return await output.text();
+  const chunk = output.find(function isChunk(part,): part is OutputChunk {
+    return part.type === 'chunk';
+  },);
+  if (chunk === undefined)
+    throw new Error('rolldown emitted no chunk for controller entry point',);
+  return chunk.code;
 }
 
 /**
@@ -168,6 +167,9 @@ function escapeForScriptTag(js: string,): string {
  *
  * @param probes - Resolved package probes for every catalog entry.
  *
+ * @param bundle - Controller-bundler seam; defaults to the rolldown-backed
+ *   bundler. Tests override it to skip a multi-second real build.
+ *
  * @returns Self-contained HTML document as a single string.
  *
  * @example
@@ -179,8 +181,10 @@ function escapeForScriptTag(js: string,): string {
 export async function renderHtml(
   {
     probes,
+    bundle = bundleController,
   }: {
     readonly probes: readonly PackageProbe[];
+    readonly bundle?: () => Promise<string>;
   },
 ): Promise<string> {
   /**
@@ -199,7 +203,7 @@ export async function renderHtml(
   /**
    * Minified IIFE JS for the browser-side controller; built once per `renderHtml` call.
    */
-  const bundleJs = await bundleController();
+  const bundleJs = await bundle();
   /**
    * Probe array serialised for inlining as `globalThis.__PROBES__`; escaped below to neutralise `</script>` sequences.
    */

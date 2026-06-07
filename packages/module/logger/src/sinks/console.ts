@@ -50,7 +50,7 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
  * Detects verbose mode from environment variables, process arguments,
  * and runtime environment.
  * Checks `process.env.DEBUG`, `process.argv` for `--verbose`,
- * `import.meta.env.DEBUG`, and whether the runtime is a browser.
+ * and whether the runtime is a browser.
  * Browser environments enable verbose by default because DevTools
  * already provides its own log-level filtering, making logger-side
  * suppression redundant. Each check is individually guarded
@@ -94,16 +94,6 @@ function detectVerbose(): boolean {
   }
   catch {
     // process.argv may be restricted or unavailable - intentionally didn't log to reduce noise.
-  }
-
-  try {
-    if (import.meta?.env
-      ?.DEBUG
-      === 'true')
-      return true;
-  }
-  catch {
-    // import.meta.env may be unavailable - intentionally didn't log to reduce noise.
   }
 
   try {
@@ -382,7 +372,7 @@ export function verifyConsole(): boolean {
  * Enqueues a record for microtask-batched emission.
  * Silently discards `debug`/`trace` unless verbose mode is active
  * (via `DEBUG=true` env var, `--verbose` argv,
- * `import.meta.env.DEBUG === 'true'`, or browser environment).
+ * or browser environment).
  *
  * @param record - log record to write
  *

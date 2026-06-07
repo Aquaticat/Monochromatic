@@ -17,8 +17,9 @@
  * Round-trip a file unchanged (splice mode, byte-identical):
  * ```ts
  * import { parseTomlEdit, tomlStringify } from '\@monochromatic-dev/module-toml-edit';
+ * import { readFile } from 'node:fs/promises';
  *
- * const source = await Bun.file('mise.toml',).text();
+ * const source = await readFile('mise.toml', 'utf8',);
  * const edit = parseTomlEdit({ source, },);
  * const text = tomlStringify({ edit, },);
  * // text === source

@@ -22,7 +22,7 @@
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:"
+    "@types/node": "catalog:"
   },
   "dependencies": {
     "string-dedent": "catalog:",
@@ -35,6 +35,7 @@
     "find-up": "catalog:",
     "nano-spawn": "catalog:",
     "p-limit": "catalog:",
+    "rolldown": "catalog:",
     "yaml": "catalog:"
   },
   "version": "0.0.1",

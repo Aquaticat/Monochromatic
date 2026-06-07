@@ -22,7 +22,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "type-fest": "catalog:",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "typescript": "catalog:",
     "serialize-error": "catalog:",
     "nano-spawn": "catalog:",

@@ -37,7 +37,7 @@ import {
  * per-plugin entry, this resolves to `${pluginRoot}/dist/final/node/`, which
  * `handleSessionStart` walks up three levels to recover the plugin root.
  */
-const HOOK_DIR = import.meta.dir;
+const HOOK_DIR = import.meta.dirname;
 
 /**
  * Discriminated output union preserving the legacy wire convention:

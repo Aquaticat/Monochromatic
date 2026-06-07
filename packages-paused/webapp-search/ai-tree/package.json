@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   }
 }

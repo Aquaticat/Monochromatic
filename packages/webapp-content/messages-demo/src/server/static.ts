@@ -12,6 +12,7 @@ import {
   type EventHandlerWithFetch,
   serveStatic,
 } from 'h3';
+import type { Stats, } from 'node:fs';
 import {
   readFile,
   stat,
@@ -42,7 +43,7 @@ const STAT_ABSENT: unique symbol = Symbol('messages-demo:stat-absent',);
  */
 async function tryStat(
   id: string,
-): Promise<Awaited<ReturnType<typeof stat>> | typeof STAT_ABSENT> {
+): Promise<Stats | typeof STAT_ABSENT> {
   try {
     return await stat(
       join(

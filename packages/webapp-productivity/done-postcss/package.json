@@ -16,7 +16,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/rolldown-plugin-import-attributes": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

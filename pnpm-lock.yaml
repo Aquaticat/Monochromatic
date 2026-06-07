@@ -87,9 +87,6 @@ catalogs:
     '@tursodatabase/database':
       specifier: '>=0.5.1'
       version: 0.5.3
-    '@types/bun':
-      specifier: '>=1.3.8'
-      version: 1.3.11
     '@types/chai':
       specifier: '>=5.2.3'
       version: 5.2.3
@@ -404,9 +401,9 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.59.1
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260507.1
@@ -452,9 +449,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../../packages/module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -491,9 +488,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -510,9 +507,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/claude-spawn:
     dependencies:
@@ -526,9 +523,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/correction-reminder:
     dependencies:
@@ -542,9 +539,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/guardrail:
     dependencies:
@@ -558,9 +555,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/hook-types:
     devDependencies:
@@ -580,9 +577,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/session-start-housekeeping:
     dependencies:
@@ -596,9 +593,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/source:
     dependencies:
@@ -624,9 +621,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/stop-reminders:
     dependencies:
@@ -640,9 +637,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/claude-code-plugins/terminal-title:
     dependencies:
@@ -656,9 +653,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/cli/fy:
     dependencies:
@@ -684,9 +681,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -715,9 +712,9 @@ importers:
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.2
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/cli/git-clone-size:
     dependencies:
@@ -758,9 +755,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -804,9 +801,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/cli/rgffplay:
     dependencies:
@@ -829,9 +826,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/cli/terminal-exec:
     dependencies:
@@ -848,9 +845,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/cli/vmsync:
     dependencies:
@@ -885,9 +882,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
@@ -919,9 +916,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/config/stylelint:
     dependencies:
@@ -938,9 +935,9 @@ importers:
 
   packages/config/tofu:
     devDependencies:
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/config/tsdown:
     dependencies:
@@ -954,9 +951,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -984,9 +981,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/dev-script/backup-path:
     dependencies:
@@ -1003,9 +1000,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/dev-script/catalog-tighten:
     devDependencies:
@@ -1015,9 +1012,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/dev-script/deps-cube:
     dependencies:
@@ -1048,6 +1045,9 @@ importers:
       p-limit:
         specifier: 'catalog:'
         version: 7.3.0
+      rolldown:
+        specifier: 'catalog:'
+        version: 1.0.1
       string-dedent:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1064,9 +1064,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/dev-script/file-enforcer:
     dependencies:
@@ -1113,9 +1113,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       fast-check:
         specifier: 'catalog:'
         version: 4.8.0
@@ -1141,9 +1141,6 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.2
@@ -1178,12 +1175,12 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
       '@types/hast':
         specifier: 'catalog:'
         version: 3.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.2
 
   packages/dev-script/task-util:
     dependencies:
@@ -1218,9 +1215,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/dev-script/vm-builder:
     dependencies:
@@ -1243,9 +1240,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/dev-script/watch-restart:
     dependencies:
@@ -1289,9 +1286,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/figma-parsers/kiwi:
     dependencies:
@@ -1308,9 +1305,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1328,7 +1325,7 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
-        specifier: 0.0.5
+        specifier: workspace:*
         version: link:../../config/typescript
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
@@ -1337,8 +1334,8 @@ importers:
         specifier: workspace:*
         version: link:../../module/test
       '@types/node':
-        specifier: 25.6.0
-        version: 25.6.0
+        specifier: 'catalog:'
+        version: 25.9.2
 
   packages/intellij-plugins/islands-black:
     dependencies:
@@ -1365,9 +1362,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       markdownlint:
         specifier: 'catalog:'
         version: 0.40.0
@@ -1396,9 +1393,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1414,9 +1411,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1432,9 +1429,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1450,9 +1447,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1468,9 +1465,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1486,9 +1483,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1529,9 +1526,9 @@ importers:
       '@total-typescript/ts-reset':
         specifier: 'catalog:'
         version: 0.6.1
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       decircular:
         specifier: 'catalog:'
         version: 1.0.0
@@ -1578,9 +1575,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -1599,9 +1596,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1617,9 +1614,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       csstype:
         specifier: 'catalog:'
         version: 3.2.3
@@ -1638,9 +1635,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1672,9 +1669,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1709,9 +1706,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1727,9 +1724,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1745,9 +1742,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1773,9 +1770,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1795,9 +1792,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1820,9 +1817,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1838,9 +1835,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1856,9 +1853,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1878,9 +1875,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1927,15 +1924,15 @@ importers:
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../const
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
       '@types/chai':
         specifier: 'catalog:'
         version: 5.2.3
       '@types/chai-as-promised':
         specifier: 'catalog:'
         version: 8.0.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.2
       '@types/sinon':
         specifier: 'catalog:'
         version: 21.0.1
@@ -1960,9 +1957,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1994,9 +1991,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2028,9 +2025,9 @@ importers:
       '@monochromatic-dev/test-fixture-toml-edit':
         specifier: workspace:*
         version: link:../../test-fixture/toml-edit
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -2046,9 +2043,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2071,9 +2068,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2096,9 +2093,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/oxlint-plugins/tsdoc:
     dependencies:
@@ -2118,9 +2115,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2155,9 +2152,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/pi/advisor:
     dependencies:
@@ -2192,9 +2189,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typebox:
         specifier: 'catalog:'
         version: 1.1.38
@@ -2229,9 +2226,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       typebox:
         specifier: 'catalog:'
         version: 1.1.38
@@ -2254,9 +2251,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/pi/morph-compact:
     devDependencies:
@@ -2275,9 +2272,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       type-fest:
         specifier: 'catalog:'
         version: 5.5.0
@@ -2303,9 +2300,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/pi/statusline:
     dependencies:
@@ -2325,9 +2322,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/pi/terminal-title:
     devDependencies:
@@ -2343,9 +2340,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/pi/thinking-defaults:
     dependencies:
@@ -2365,9 +2362,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/rolldown-plugins/import-attributes:
     dependencies:
@@ -2384,12 +2381,15 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/runtime-error/bun:
     dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -2397,9 +2397,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
 
   packages/shim/node-domexception:
     devDependencies:
@@ -2508,9 +2508,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2557,9 +2557,9 @@ importers:
       '@monochromatic-dev/rolldown-plugin-import-attributes':
         specifier: workspace:*
         version: link:../../rolldown-plugins/import-attributes
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -2660,12 +2660,12 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
       '@types/hast':
         specifier: 'catalog:'
         version: 3.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -2697,9 +2697,9 @@ importers:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -2737,9 +2737,9 @@ importers:
       '@monochromatic-dev/rolldown-plugin-import-attributes':
         specifier: workspace:*
         version: link:../../rolldown-plugins/import-attributes
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -2768,9 +2768,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -2811,9 +2811,9 @@ importers:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
-      '@types/bun':
+      '@types/node':
         specifier: 'catalog:'
-        version: 1.3.11
+        version: 25.9.2
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
@@ -2836,12 +2836,12 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
       '@types/hyphen':
         specifier: 'catalog:'
         version: 1.14.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.2
 
 packages:
 
@@ -4009,9 +4009,6 @@ packages:
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
 
-  '@types/bun@1.3.11':
-    resolution: {integrity: sha512-5vPne5QvtpjGpsGYXiFyycfpDF2ECyPcTSsFBMa0fraoxiQyMJ3SmuQIGhzPg2WJuWxVBoxWJ2kClYTcw/4fAg==}
-
   '@types/chai-as-promised@8.0.2':
     resolution: {integrity: sha512-meQ1wDr1K5KRCSvG2lX7n7/5wf70BeptTKst0axGvnN6zqaVpRqegoIbugiAPSqOW9K9aL8gDVrm7a2LXOtn2Q==}
 
@@ -4062,9 +4059,6 @@ packages:
 
   '@types/node@24.12.4':
     resolution: {integrity: sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA==}
-
-  '@types/node@25.6.0':
-    resolution: {integrity: sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ==}
 
   '@types/node@25.9.2':
     resolution: {integrity: sha512-G05zqtJhcDLb8uslf5EjCxXg9G1KQxiV8OS0R26IC//Eoyitzqe8z37I7cqvnZlrlSfgocQRfSn/AHBZJJFyGw==}
@@ -4235,9 +4229,6 @@ packages:
     resolution: {integrity: sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
-
-  bun-types@1.3.11:
-    resolution: {integrity: sha512-1KGPpoxQWl9f6wcZh57LvrPIInQMn2TQ7jsgxqpRzg+l0QPOFvJVH7HmvHo/AiPgwXy+/Thf6Ov3EdVn1vOabg==}
 
   cac@7.0.0:
     resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
@@ -5934,9 +5925,6 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
-  undici-types@7.19.2:
-    resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
-
   undici-types@7.24.6:
     resolution: {integrity: sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg==}
 
@@ -7340,10 +7328,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@types/bun@1.3.11':
-    dependencies:
-      bun-types: 1.3.11
-
   '@types/chai-as-promised@8.0.2':
     dependencies:
       '@types/chai': 5.2.3
@@ -7392,10 +7376,6 @@ snapshots:
   '@types/node@24.12.4':
     dependencies:
       undici-types: 7.16.0
-
-  '@types/node@25.6.0':
-    dependencies:
-      undici-types: 7.19.2
 
   '@types/node@25.9.2':
     dependencies:
@@ -7536,10 +7516,6 @@ snapshots:
       electron-to-chromium: 1.5.361
       node-releases: 2.0.46
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
-
-  bun-types@1.3.11:
-    dependencies:
-      '@types/node': 25.6.0
 
   cac@7.0.0: {}
 
@@ -9572,8 +9548,6 @@ snapshots:
   underscore@1.13.8: {}
 
   undici-types@7.16.0: {}
-
-  undici-types@7.19.2: {}
 
   undici-types@7.24.6: {}
 

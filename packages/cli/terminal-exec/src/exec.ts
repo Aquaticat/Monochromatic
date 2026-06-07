@@ -1,9 +1,11 @@
 /**
  * Replaces the current process with the resolved terminal command.
- * Uses `Bun.spawn` with `stdin: 'inherit'` since Bun lacks a native `execvp`.
+ * Uses `node:child_process` `spawn` with inherited stdio since Node lacks a native `execvp`.
  *
  * @module
  */
+
+import { spawn, } from 'node:child_process';
 
 import {
   l as parentLogger,
@@ -42,43 +44,39 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
     throw new Error('execvp: empty command array',);
 
   /**
-   * First token separated so the args slice below can pass the rest to Bun.spawn.
+   * First token separated so the args slice below can pass the rest to `spawn`.
    */
   const [executable,] = command;
   if (executable === undefined)
     throw new Error('execvp: unreachable (length checked above)',);
   /**
-   * Arguments without the executable, ready to feed Bun.spawn's separate argv parameter.
+   * Arguments without the executable, ready to feed spawn's separate argv parameter.
    */
   const args = command.slice(1,);
 
   l.debug(`exec: ${executable} ${args.join(' ',)}`,);
 
   /**
-   * Spawned-process handle; consumed by the exited callback to propagate the exit code.
+   * Spawned-process handle; its lifecycle events propagate the exit code.
    */
-  const proc = Bun.spawn(
-    [
-      executable,
-      ...args,
-    ],
-    {
-      stdin: 'inherit',
-      stdout: 'inherit',
-      stderr: 'inherit',
-    },
+  const proc = spawn(
+    executable,
+    args,
+    { stdio: 'inherit', },
   );
 
-  /* oxlint-disable promise/prefer-await-to-then, promise/always-return, promise/prefer-await-to-callbacks, promise/prefer-catch -- fire-and-forget: process exits with spawned command's code; .then(onSuccess, onError) is intentional for non-async exit handling */
-  proc.exited
-    .then(
+  proc.on(
+    'exit',
     function onExit(code,) {
-      process.exitCode = code;
+      // A null code means the child was terminated by a signal; map that to the failure code.
+      process.exitCode = code ?? EXIT_NOT_FOUND;
     },
+  );
+  proc.on(
+    'error',
     function onError(err: unknown,) {
       console.error(`terminal-exec: failed to execute '${executable}': ${String(err,)}`,);
       process.exitCode = EXIT_NOT_FOUND;
     },
   );
-  /* oxlint-enable promise/prefer-await-to-then, promise/always-return, promise/prefer-await-to-callbacks, promise/prefer-catch */
 }

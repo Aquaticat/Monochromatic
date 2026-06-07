@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "nano-spawn": "catalog:",
     "opentype.js": "catalog:"
   },

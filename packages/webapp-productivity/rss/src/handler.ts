@@ -1,7 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { existsSync, } from 'node:fs';
 import {
   appendFile,
-  exists,
   mkdir,
   stat,
   writeFile,
@@ -99,7 +99,7 @@ export async function ignore(request: Request,): Promise<Response> {
     IGNORE_PATH,
     'api.jsonl',
   );
-  if (!await exists(filePath,)) {
+  if (!existsSync(filePath,)) {
     innerL.debug('creating api.jsonl',);
     await mkdir(
       IGNORE_PATH,

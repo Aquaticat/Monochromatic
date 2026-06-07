@@ -1,9 +1,9 @@
 /**
  * Tests for the HTML composer.
  *
- * `Bun.build` is stubbed to return a fake bundle so the test stays
- * cross-runtime and fast (the real bundle would take multiple
- * seconds and only works under Bun). Structural assertions verify
+ * The controller bundler is injected through `renderHtml`'s `bundle`
+ * seam so the test stays fast (a real rolldown build would take
+ * multiple seconds). Structural assertions verify
  * the composed page is self-contained:
  *
  * - no external `<link rel="stylesheet">` or `<script src="…">` references
@@ -142,20 +142,14 @@ const PROBES: readonly PackageProbe[] = [
 
 await describe({
   name: 'render-html',
-  // Concurrency 1: each test stubs `Bun.build`; concurrent execution would
-  // produce "Attempted to wrap build which is already wrapped" from sinon.
-  concurrency: 1,
   children: [
     it({
       name: 'composes a self-contained HTML document with the stubbed bundle inlined',
-      fn: async ({ sinon, },) => {
-        sinon.stub(Bun, 'build',).resolves({
-          success: true,
-          outputs: [{ text: async (): Promise<string> => FIXTURE_BUNDLE, } as any,],
-          logs: [],
-        } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
-
-        const html = await renderHtml({ probes: PROBES, },);
+      fn: async () => {
+        const html = await renderHtml({
+          probes: PROBES,
+          bundle: async (): Promise<string> => FIXTURE_BUNDLE,
+        },);
 
         expect(html.startsWith('<!doctype html>',),).toBe(true,);
         expect(html,).toContain('<meta charset="utf-8">',);
@@ -186,18 +180,11 @@ await describe({
 
     it({
       name: 'escapes </script and <!-- inside the inlined bundle and data',
-      fn: async ({ sinon, },) => {
-        sinon.stub(Bun, 'build',).resolves({
-          success: true,
-          outputs: [
-            {
-              text: async (): Promise<string> => `</script><!--${FIXTURE_BUNDLE}`,
-            } as any,
-          ],
-          logs: [],
-        } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
-
-        const html = await renderHtml({ probes: PROBES, },);
+      fn: async () => {
+        const html = await renderHtml({
+          probes: PROBES,
+          bundle: async (): Promise<string> => `</script><!--${FIXTURE_BUNDLE}`,
+        },);
         expect(html,).toContain(String.raw`<\/script>`,);
         expect(html,).toContain(String.raw`<\!--`,);
         // No raw `</script>` inside the inlined script blocks (the closing tag
@@ -209,20 +196,16 @@ await describe({
     },),
 
     it({
-      name: 'surfaces bundle failures with the bundler logs joined in the error',
-      fn: async ({ sinon, },) => {
-        sinon.stub(Bun, 'build',).resolves({
-          success: false,
-          outputs: [],
-          logs: [
-            { message: 'first error', },
-            { message: 'second error', },
-          ],
-        } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
-
+      name: 'propagates bundler failures to the caller',
+      fn: async () => {
         const caught = await (async function captureError() {
           try {
-            await renderHtml({ probes: PROBES, },);
+            await renderHtml({
+              probes: PROBES,
+              bundle: async (): Promise<string> => {
+                throw new Error('first error\nsecond error',);
+              },
+            },);
             return null;
           }
           catch (err) {

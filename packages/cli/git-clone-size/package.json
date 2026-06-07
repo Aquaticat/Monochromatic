@@ -17,7 +17,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   },

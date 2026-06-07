@@ -47,7 +47,7 @@ const NO_WARNING: unique symbol = Symbol('claude-spawn/cli-setup-ok',);
  *
  * @param transcriptPath - absolute path to session transcript file
  *
- * @param hookDir - value of `import.meta.dir` from compiled hook entry point,
+ * @param hookDir - value of `import.meta.dirname` from compiled hook entry point,
  *   used to resolve plugin root for CLI symlinking
  *
  * @returns string to write to stdout (empty JSON object or CLI setup warning)
@@ -57,7 +57,7 @@ const NO_WARNING: unique symbol = Symbol('claude-spawn/cli-setup-ok',);
  * const output = handleSessionStart({
  *   sessionId: event.session_id,
  *   transcriptPath: event.transcript_path,
- *   hookDir: import.meta.dir,
+ *   hookDir: import.meta.dirname,
  * });
  * process.stdout.write(output);
  * ```
@@ -195,7 +195,7 @@ function cliIsOnPath(): boolean {
  *
  * @example
  * ```ts
- * const warning = autoSetupCli(import.meta.dir);
+ * const warning = autoSetupCli(import.meta.dirname);
  * if (warning !== NO_WARNING) console.warn(warning);
  * ```
  */

@@ -5,9 +5,9 @@
  * covers `deck-accessors.ts` only: importing `deck-config.ts`
  * fails at module-load time because `@loaders.gl/schema-utils`
  * statically imports `@math.gl/types`, which is not declared as a
- * dependency on disk. `Bun.build` (used by `render-html.ts` at
- * runtime) sidesteps the resolution path via tree-shaking; Node /
- * Bun module-load does not, so any test that touches
+ * dependency on disk. rolldown (used by `render-html.ts` at
+ * runtime) sidesteps the resolution path via tree-shaking; Node
+ * module-load does not, so any test that touches
  * `deck-config.ts` cannot load. The layer-count snapshot from the
  * plan is therefore skipped with an explicit `skip` reason naming
  * the upstream loader-gl packaging bug.
@@ -308,8 +308,8 @@ await describe({
       name: 'snapshots layer count against displayToggles permutations',
       skip:
         'blocked by @loaders.gl/schema-utils ^4.4.1 statically importing @math.gl/types '
-        + 'without declaring it as a dep; deck-config.ts cannot be module-loaded in Bun/Node '
-        + 'until the upstream packaging is fixed. Bun.build resolves it via tree-shaking, '
+        + 'without declaring it as a dep; deck-config.ts cannot be module-loaded in Node '
+        + 'until the upstream packaging is fixed. rolldown resolves it via tree-shaking, '
         + 'so the runtime HTML still works.',
       fn: async () => {
         // Intentionally empty; kept as a documented placeholder so the

@@ -1,7 +1,7 @@
 /**
  * Browser-side runtime entry point.
  *
- * Bundled into the output HTML by `../render-html.ts` via `Bun.build`
+ * Bundled into the output HTML by `../render-html.ts` via rolldown
  * (`format: 'iife'`, `minify: true`) and executed once the DOM has
  * loaded. Reads the embedded `globalThis.__PROBES__` global injected by the
  * HTML composer, instantiates a deck.gl `Deck` with the

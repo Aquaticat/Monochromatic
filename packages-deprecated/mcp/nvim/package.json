@@ -24,7 +24,7 @@
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/mcp-stdio": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "nano-spawn": "catalog:",
     "neovim": "catalog:",
     "typescript": "catalog:"

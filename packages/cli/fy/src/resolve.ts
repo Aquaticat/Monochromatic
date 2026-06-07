@@ -1,3 +1,4 @@
+import { statSync, } from 'node:fs';
 import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
@@ -127,13 +128,13 @@ function findGlobalNodeModules(): string | typeof NOT_FOUND {
   for (const candidate of candidates) {
     try {
       /**
-       * Lazy handle to the candidate's `.package-lock.json`; non-zero size confirms a real global install lives at this path.
+       * Size of the candidate's `.package-lock.json`; a non-zero size confirms a real global install lives at this path. `statSync` throws `ENOENT` when the file is absent, handled by the surrounding catch.
        */
-      const bunFile = Bun.file(join(
+      const lockFileSize = statSync(join(
         candidate,
         '.package-lock.json',
-      ),);
-      if (bunFile.size
+      ),).size;
+      if (lockFileSize
         > 0) {
         rl.info(`found global node_modules at ${candidate}`,);
         return candidate;

@@ -1,3 +1,5 @@
+import { spawn, } from 'node:child_process';
+import { once, } from 'node:events';
 import {
   mkdir,
   mkdtemp,
@@ -8,6 +10,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
+import { text, } from 'node:stream/consumers';
 
 import {
   describe,
@@ -105,32 +108,27 @@ async function runProbe(
     readonly scriptPath: string;
   },
 ): Promise<ProbeResult> {
-  const subprocess = Bun.spawn(
-    [
-      'bun',
-      scriptPath,
-    ],
-    {
-      cwd,
-      stderr: 'pipe',
-      stdout: 'pipe',
-    },
+  // Default stdio is 'pipe', which yields a ChildProcessWithoutNullStreams so
+  // stdout/stderr are non-null Readables. The probe is a `.ts` file, so it is
+  // still launched with `bun`; only the spawning API moved off Bun.
+  const subprocess = spawn(
+    'bun',
+    [scriptPath,],
+    { cwd, },
   );
 
   const [
-    exitCode,
     stdout,
     stderr,
   ] = await Promise.all([
-    subprocess.exited,
-    new Response(subprocess.stdout,)
-      .text(),
-    new Response(subprocess.stderr,)
-      .text(),
+    text(subprocess.stdout,),
+    text(subprocess.stderr,),
+    once(subprocess, 'close',),
   ],);
 
   return {
-    exitCode,
+    // After 'close' the exit code is populated; null means killed by signal.
+    exitCode: subprocess.exitCode ?? (-1),
     stderr,
     stdout,
   };

@@ -19,7 +19,7 @@
     "@monochromatic-dev/dev-script-mutation-test": "workspace:*",
     "@monochromatic-dev/module-matrix": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "fast-check": "catalog:"
   },
   "dependencies": {

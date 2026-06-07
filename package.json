@@ -41,7 +41,7 @@
     "tsdown": "catalog:",
     "@playwright/test": "catalog:",
     "postcss-html": "catalog:",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "browserslist": "catalog:",
     "nano-spawn": "catalog:",
     "execa": "catalog:",

@@ -37,7 +37,7 @@
     "@lezer/yaml": "catalog:",
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
     "@types/hast": "catalog:",
     "tsdown": "catalog:",
     "typesafe-i18n": "catalog:",
