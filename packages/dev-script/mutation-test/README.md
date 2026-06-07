@@ -24,6 +24,9 @@ locations.
 - Stryker runs with `inPlace: true` inside a writable `/work` copy.
 - Stryker's TypeScript checker is enabled by default for accurate
   `CompileError` classification.
+- Bun is intentionally absent from the runtime image while the repository
+  migrates away from it; default test selection avoids Bun-dependent package-wide
+  tests.
 - Aggregation is weighted by raw mutant counts, never by averaging per-file
   percentages.
 
