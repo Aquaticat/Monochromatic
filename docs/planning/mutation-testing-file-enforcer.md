@@ -143,12 +143,13 @@ The entrypoint, before launching Stryker:
 
 1.  `rsync /src-ro/ /work/` excluding `**/node_modules`, `**/dist`, `**/.git`, `**/target`, `**/output`,
     and `**/corpus`. This copies current workspace source while skipping generated heavyweight artifacts.
-2.  Symlink root `node_modules` from `/work/node_modules` to `/baked/node_modules`, then copy each
-    package-local baked `node_modules` symlink farm into `/work/packages/<pkg>/node_modules` instead of
-    symlinking the whole directory. External dependency symlinks still resolve through `/work/node_modules`
-    into the baked virtual store, while workspace package symlinks resolve relative to `/work` and therefore
-    load current source outside any `node_modules` segment. That is what current Node native type stripping
-    requires.
+2.  Recreate root `node_modules` in `/work` as a symlink farm copied from `/baked/node_modules`, with
+    `/work/node_modules/.pnpm` symlinked back to `/baked/node_modules/.pnpm`. Then copy each package-local
+    baked `node_modules` symlink farm into `/work/packages/<pkg>/node_modules` instead of symlinking the whole
+    directory. External dependency symlinks still resolve through `/work/node_modules/.pnpm` into the baked
+    virtual store, while workspace package symlinks resolve relative to `/work` and therefore load current
+    source outside any `node_modules` segment. That is what current Node native type stripping and
+    TypeScript `extends` package resolution require.
 
 Stryker then runs with `cwd` at `/work/packages/dev-script/file-enforcer` and `inPlace: true`, so it mutates
 the writable copy in place and restores it from its backup afterward. Because `inPlace` is on, Stryker does
@@ -306,11 +307,11 @@ Rationale:
 - The explicit TypeScript checker plugin path is required under isolated pnpm linking; Stryker's default
   `@stryker-mutator/*` glob searches from `@stryker-mutator/core`'s package tree, not from this orchestrator's
   dependency tree.
-- Generate `tsconfig.mutation.json` beside the target package before Stryker starts. The file must be a
-  flat config, not `extends: "@monochromatic-dev/config-typescript/dom"`, because Stryker's TypeScript checker
-  rewrites only the configured root tsconfig before constructing its watch builder. Keep the options equivalent
-  to the shared DOM config for Node-native TypeScript execution: `allowImportingTsExtensions`, bundler module
-  resolution, Bun/Node types through `types: ['bun']`, and `ESNext`/`DOM`/`WebWorker` libs.
+- Generate `tsconfig.mutation.json` beside the target package before Stryker starts by running TypeScript's
+  `--showConfig --project tsconfig.json` in the target package work tree and writing that resolved JSON. Do not
+  hand-code shared TypeScript options in mutation-test source. The generated file is still flat, not
+  `extends: "@monochromatic-dev/config-typescript/dom"`, because Stryker's TypeScript checker rewrites only the
+  configured root tsconfig before constructing its watch builder.
 - `checkers: ['typescript']` keeps type-invalid mutants out of the score (Node does not type-check).
 - `concurrency: 1` gives the outer orchestrator sole ownership of parallelism; one container per file is
   the unit of concurrency.
