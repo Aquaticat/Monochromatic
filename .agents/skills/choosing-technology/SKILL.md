@@ -211,9 +211,14 @@ Required source audit:
   module size, type strictness, lint rules, generated-code boundaries,
   native or Wasm safety boundaries, escaping or parser boundary tests,
   and error-handling shape.
-- Run the candidate's bounded validation task only when it is safe and cheap.
-  Do not run unbounded fuzz, benchmark, stress, or broad test jobs on the host;
-  use the repo's resource-isolation rules for heavy validation.
+- Run the candidate's full validation, not a lightweight spot-check.
+  Build it, run its test suite, and exercise the integration boundary the repo would depend on.
+  Metadata, a directory listing, or a single targeted check is not a vet.
+  When validation is heavy or unsafe to run on the host, run it in a fresh container or VM
+  with explicit resource bounds (see the resource-isolation rules); isolation is the answer, never skipping.
+  A candidate that is impractical to verify (cannot be built, cannot be run, has no reproducible validation path)
+  is disqualified by that fact: the tool is toast.
+  Impracticality to verify is a finding against the tool, not an excuse to recommend it unverified.
 
 Report exact cloned paths, files, and commands inspected inline with the recommendation.
 If a candidate cannot be cloned or lacks public source,
@@ -298,6 +303,8 @@ Decision doc: `docs/decisions/staging-database.md`."
   cloned repos, production source spot-read, tests and CI inspected,
   fuzzing or mutation-testing evidence found or reported absent,
   code-quality signals read from source itself.
+- Full validation run for finalists: built, test suite run, integration boundary exercised
+  (in an isolated container or VM when heavy); any candidate impractical to verify rejected.
 - Dependency replacements include parity audit: transitive deps, source-path behavior,
   native/Wasm provenance, and maintenance signals.
 - Decision doc updated at `docs/decisions/<project>.md`.

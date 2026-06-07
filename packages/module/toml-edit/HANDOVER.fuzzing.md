@@ -101,8 +101,8 @@ Related issue boundaries:
 - Normal unit runs stay bounded. Campaign runs use a per-property time budget.
 - Test files remain subject to `invocation-depth-per-line`, `no-mixed-operators`,
   and numeric-separator rules.
-- New third-party parser dependencies require the `choosing-technology` skill and
-  VQS source vetting before selection.
+- New third-party parser dependencies require the `choosing-technology` skill's
+  source audit before selection.
 - The `toml-test` corpus is data, but this plan deliberately follows the latest
   upstream runner through mise rather than pinning it. Every conformance run must
   log the runner version and release asset digest so failures can be traced to an
@@ -168,7 +168,7 @@ that is useful without the upstream runner. Do not vendor the toml-test corpus a
 this plan's primary integration path. Instead, add package-local decoder and
 encoder adapter commands that the upstream toml-test runner can invoke. BurntSushi
 TOML is the default differential oracle after conformance is wired; the decision
-doc still must record VQS evidence and rejected alternatives. Keep one-off shrunk
+doc still must record source-audit evidence and rejected alternatives. Keep one-off shrunk
 counterexamples in the owning property via fast-check `examples`.
 
 ### External oracle order
@@ -179,13 +179,13 @@ Bring up the external oracles in this order:
    upstream runner acquired by mise. It already specifies tagged JSON comparison
    semantics for integers, floats, booleans, datetimes, arrays, tables, and
    invalid inputs.
-2. Differential parser second, after VQS. Compare only normalized semantic values,
+2. Differential parser second, after the source audit. Compare only normalized semantic values,
    not raw formatting.
 3. Mutation testing later, in a separate plan.
 
 Default differential parser: BurntSushi TOML, through its `toml-test-decoder` and
 `toml-test-encoder` command tools. Acquire both Go and the BurntSushi tools through
-mise's Go support without pinning either version. The VQS record must call out this
+mise's Go support without pinning either version. The decision-doc record must call out this
 moving-oracle trade-off and log the concrete tool versions used in every campaign
 run so later disagreements can be reproduced. Initial source evidence already
 found those commands, an internal toml-test runner, Go CI across Linux, macOS,
@@ -396,7 +396,7 @@ Pass criteria:
 
 Deliverables:
 
-- VQS record in `docs/decisions/toml-edit-fuzzing.md` for the selected parser and
+- Source-audit record in `docs/decisions/toml-edit-fuzzing.md` for the selected parser and
   rejected alternatives.
 - A semantic normalizer for the selected parser's output.
 - A disagreement classifier with three outcomes:
