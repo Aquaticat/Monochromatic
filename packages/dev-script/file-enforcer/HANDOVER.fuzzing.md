@@ -80,28 +80,46 @@ documented contract; existing unit test still passes.
 
 ## Status
 
-Done:
+Complete. All seven targets have green property tests; the campaign task,
+decision doc, and full verification are done.
 
 - fast-check devDependency added (`catalog:`), resolves for the package.
 - `src/fuzz-budget.ts` shared run plan (bounded vs campaign via
   `FILE_ENFORCER_FUZZ_BUDGET_MS`).
+- Property tests, all green under node: JSON (`pipeline/json.ts`), glob
+  (`io/glob-split.ts`, `io/glob-mirror.ts`), registry
+  (`package/registry-parse.ts`), XML coding (`pipeline/xml-coding.ts`), TOML
+  (`pipeline/toml.ts`), XML entries (`pipeline/xml.ts`), JetBrains versions
+  (`jetbrains/options-dir.ts`).
 - `src/jetbrains/options-dir.ts`: `parseVersionParts`, `compareVersionParts`,
   and the `NOT_A_MATCHING_PRODUCT` sentinel exported at file level (not in
-  index) for the upcoming property test.
-- `src/pipeline/json.property.unit.test.ts` written and green under node;
-  source bugs 1 and 2 fixed and verified; existing `json.unit.test.ts` still
-  green.
+  index) for the version property test.
+- `fuzz` mise task (node, env-budgeted) added; smoke-run at 500ms per
+  property is green.
+- Decision doc `docs/decisions/file-enforcer-fuzzing.md` written (no
+  AGENTS.md pointer, per user).
 
-Remaining:
+Verification done:
 
-- Property tests: glob (`io/glob.ts`), registry (`package/registry-parse.ts`),
-  XML coding (`pipeline/xml-coding.ts`), TOML (`pipeline/toml.ts`), XML
-  entries (`pipeline/xml.ts`), JetBrains versions (`jetbrains/options-dir.ts`).
-- `fuzz` mise task (node, container-isolated, sets the budget env).
-- Decision doc `docs/decisions/file-enforcer-fuzzing.md` (no AGENTS.md
-  pointer, per user).
-- Full verify: lint, types, all property files under node, falsifiability
-  check, campaign smoke.
+- `lint:oxlint` 0 warnings 0 errors; `lint:types` clean.
+- All seven `*.property.unit.test.ts` pass under node; all existing
+  `*.unit.test.ts` still pass under node (no regression from the `json.ts`
+  fix).
+- Falsifiability: deliberately dropping `&` escaping in `escapeXmlAttribute`
+  made the round-trip property FAIL with counterexample `["&\n"]` and exit
+  non-zero; reverted.
+- Only the JSON pipeline surfaced defects (findings 1 and 2); the other six
+  targets found none.
+
+## How to run the campaign
+
+```bash
+mise run //packages/dev-script/file-enforcer:fuzz --budget 60000
+```
+
+Default budget is 60000ms per property. Bounded mode (the normal suite) runs
+each property file directly, for example
+`node packages/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts`.
 
 ## Files
 
@@ -109,10 +127,18 @@ Created:
 
 - `src/fuzz-budget.ts`
 - `src/pipeline/json.property.unit.test.ts`
+- `src/io/glob.property.unit.test.ts`
+- `src/package/registry-parse.property.unit.test.ts`
+- `src/pipeline/xml-coding.property.unit.test.ts`
+- `src/pipeline/toml.property.unit.test.ts`
+- `src/pipeline/xml.property.unit.test.ts`
+- `src/jetbrains/options-dir.property.unit.test.ts`
 - `HANDOVER.fuzzing.md` (this file)
+- `docs/decisions/file-enforcer-fuzzing.md` (repo-level)
 
 Modified:
 
 - `package.json` (fast-check devDependency)
+- `mise.toml` (`fuzz` task)
 - `src/pipeline/json.ts` (findings 1 and 2)
 - `src/jetbrains/options-dir.ts` (file-level exports)
