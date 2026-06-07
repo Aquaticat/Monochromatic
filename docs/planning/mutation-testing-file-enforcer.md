@@ -311,7 +311,9 @@ Rationale:
   `--showConfig --project tsconfig.json` in the target package work tree and writing that resolved JSON. Do not
   hand-code shared TypeScript options in mutation-test source. The generated file is still flat, not
   `extends: "@monochromatic-dev/config-typescript/dom"`, because Stryker's TypeScript checker rewrites only the
-  configured root tsconfig before constructing its watch builder.
+  configured root tsconfig before constructing its watch builder. After reading showConfig JSON, narrow `files`
+  to the current production mutate file and remove `include`; otherwise the checker also compiles unit tests that
+  import built `dist/final/node` artifacts intentionally absent from the runtime source copy.
 - `checkers: ['typescript']` keeps type-invalid mutants out of the score (Node does not type-check).
 - `concurrency: 1` gives the outer orchestrator sole ownership of parallelism; one container per file is
   the unit of concurrency.
