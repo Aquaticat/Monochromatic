@@ -290,7 +290,7 @@ Build one Stryker config per source file (executed inside that file's container)
     '/baked/packages/dev-script/mutation-test/node_modules/@stryker-mutator/typescript-checker/dist/src/index.js',
   ],
   checkers: ['typescript'],
-  tsconfigFile: '<package or repo tsconfig that resolves /ts subpaths and .ts extensions>',
+  tsconfigFile: 'tsconfig.mutation.json',
   typescriptChecker: { prioritizePerformanceOverAccuracy: false },
   reporters: ['clear-text', 'json'],
   jsonReporter: { fileName: '/out/<unique report path for this source file>' },
@@ -306,6 +306,11 @@ Rationale:
 - The explicit TypeScript checker plugin path is required under isolated pnpm linking; Stryker's default
   `@stryker-mutator/*` glob searches from `@stryker-mutator/core`'s package tree, not from this orchestrator's
   dependency tree.
+- Generate `tsconfig.mutation.json` beside the target package before Stryker starts. The file must be a
+  flat config, not `extends: "@monochromatic-dev/config-typescript/dom"`, because Stryker's TypeScript checker
+  rewrites only the configured root tsconfig before constructing its watch builder. Keep the options equivalent
+  to the shared DOM config for Node-native TypeScript execution: `allowImportingTsExtensions`, bundler module
+  resolution, Bun/Node types through `types: ['bun']`, and `ESNext`/`DOM`/`WebWorker` libs.
 - `checkers: ['typescript']` keeps type-invalid mutants out of the score (Node does not type-check).
 - `concurrency: 1` gives the outer orchestrator sole ownership of parallelism; one container per file is
   the unit of concurrency.
