@@ -43,7 +43,6 @@ export {
 } from './inline-nu.ts';
 export {
   MUTATION_TSCONFIG_NAME,
-  buildMutationTsconfig,
   writeMutationTsconfig,
 } from './mutation-tsconfig.ts';
 export {

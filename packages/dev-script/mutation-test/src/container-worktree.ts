@@ -28,6 +28,16 @@ import {
 const BAKED_ROOT = '/baked';
 
 /**
+ * Node dependency directory name.
+ */
+const NODE_MODULES = 'node_modules';
+
+/**
+ * pnpm virtual store directory name inside node_modules.
+ */
+const PNPM_STORE = '.pnpm';
+
+/**
  * Rsync exclude patterns for generated or heavyweight repository artifacts.
  */
 const RSYNC_EXCLUDES: readonly string[] = [
@@ -114,7 +124,10 @@ async function pathExists(path: string,): Promise<boolean> {
  *
  * @example
  * ```ts
- * await copyNodeModulesSymlinkFarm({ bakedNodeModules: '/baked/packages/dev-script/x/node_modules', workNodeModules: '/work/packages/dev-script/x/node_modules' });
+ * await copyNodeModulesSymlinkFarm({
+ *   bakedNodeModules: '/baked/packages/dev-script/x/node_modules',
+ *   workNodeModules: '/work/packages/dev-script/x/node_modules',
+ * });
  * ```
  */
 async function copyNodeModulesSymlinkFarm(options: {
@@ -141,22 +154,52 @@ async function copyNodeModulesSymlinkFarm(options: {
 }
 
 /**
- * Recreates root node_modules symlink from the baked layer.
+ * Recreates root node_modules symlink farm from the baked layer.
  *
  * @example
  * ```ts
- * await symlinkRootNodeModules();
+ * await recreateRootNodeModules();
  * ```
  */
-async function symlinkRootNodeModules(): Promise<void> {
+async function recreateRootNodeModules(): Promise<void> {
+  /**
+   * Root node_modules directory in writable work tree.
+   */
+  const workRootNodeModules = join(
+    WORK_MOUNT,
+    NODE_MODULES,
+  );
+  await mkdir(
+    workRootNodeModules,
+    { recursive: true, },
+  );
+  await spawn(
+    'rsync',
+    [
+      '--archive',
+      '--delete',
+      '--exclude',
+      PNPM_STORE,
+      `${join(
+        BAKED_ROOT,
+        NODE_MODULES,
+      )}/`,
+      `${workRootNodeModules}/`,
+    ],
+    {
+      stdout: 'inherit',
+      stderr: 'inherit',
+    },
+  );
   await symlink(
     join(
       BAKED_ROOT,
-      'node_modules',
+      NODE_MODULES,
+      PNPM_STORE,
     ),
     join(
-      WORK_MOUNT,
-      'node_modules',
+      workRootNodeModules,
+      PNPM_STORE,
     ),
   );
 }
@@ -183,7 +226,7 @@ async function symlinkPackageNodeModules(options: {
     'packages',
     options.category,
     options.packageName,
-    'node_modules',
+    NODE_MODULES,
   );
 
   if (!await pathExists(bakedNodeModules,))
@@ -206,7 +249,7 @@ async function symlinkPackageNodeModules(options: {
     bakedNodeModules,
     workNodeModules: join(
       workPackage,
-      'node_modules',
+      NODE_MODULES,
     ),
   },);
 }
@@ -273,6 +316,6 @@ async function symlinkWorkspacePackageNodeModules(): Promise<void> {
  * ```
  */
 export async function recreateNodeModulesSymlinks(): Promise<void> {
-  await symlinkRootNodeModules();
+  await recreateRootNodeModules();
   await symlinkWorkspacePackageNodeModules();
 }
