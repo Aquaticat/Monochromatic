@@ -62,16 +62,19 @@ Improve fuzzing coverage of `@monochromatic-dev/module-toml-edit` and install a
 repeatable method so future fuzzing cannot ship green-but-weak again. The work
 should close issue #198 after implementation and verification.
 
-The goal is not to request a hidden bug list. If the new properties discover real
-bugs, fix the bugs needed to make the properties land green, then pin each
-counterexample as a permanent regression example. The original “not fixing known
-bugs” rule means “do not depend on a supplied bug list,” not “land failing tests.”
+The goal is not to request a hidden bug list. If the new properties, conformance
+runs, or differential checks discover real toml-edit bugs, fix every surfaced bug
+in this scope, then pin each counterexample as a permanent regression example. The
+original “not fixing known bugs” rule means “do not depend on a supplied bug
+list,” not “defer bugs that the suite finds.”
 
 Related issue boundaries:
 
 - #198 is the issue this plan should close. Its original acceptance criteria ask
-  for smoke fuzzing and CI, while this plan adds a stronger coverage gate because
-  the wrapper-only fuzzing failure proved smoke fuzzing is not enough.
+  for smoke fuzzing, CI, and Scorecard FuzzingID closure. This plan optimizes for
+  real bug-finding first and treats the Scorecard result as a post-implementation
+  scanner check, not as the design target. The stronger coverage gate exists
+  because the wrapper-only fuzzing failure proved smoke fuzzing is not enough.
 - #165 tracks broader editor completeness and workspace adoption. Do not widen this
   fuzzing plan into replacing every TOML edit caller.
 - #244 tracks sentinel conversion in file-enforcer wrappers. It can add wrapper
@@ -80,9 +83,12 @@ Related issue boundaries:
 ## Non-goals
 
 - Do not add mutation-testing tooling in this plan. Mutation testing remains the
-  intended follow-up for measuring oracle strength more directly.
-- Do not widen `packages/module/toml-edit/src/index.ts` only for tests. Internal
-  helpers may be exported at file level and imported by co-located seam tests.
+  intended follow-up for measuring oracle strength more directly, and this work
+  should create or update a follow-up issue for it.
+- Fuzzing may widen `packages/module/toml-edit/src/index.ts` with underscored seam
+  exports such as `_...` helpers when that is the cleanest way to exercise the
+  built artifact. These exports are explicitly unstable and carry no compatibility
+  promise.
 - Do not use the file-enforcer wrapper properties as proof that toml-edit itself
   is covered. They remain wrapper coverage only.
 - Do not create an AGENTS.md pointer or global agent rule unless the user asks.
@@ -97,11 +103,20 @@ Related issue boundaries:
   and numeric-separator rules.
 - New third-party parser dependencies require the `choosing-technology` skill and
   VQS source vetting before selection.
-- The `toml-test` corpus is data. Pin it by release or commit before vendoring or
-  generating fixture files from it.
+- The `toml-test` corpus is data, but this plan deliberately follows the latest
+  upstream runner through mise rather than pinning it. Every conformance run must
+  log the runner version and release asset digest so failures can be traced to an
+  upstream corpus change or a local code change.
 - Reference source files by repo-relative path. Keep prose free of em dashes.
 
 ## Resolved planning decisions
+
+### Scope relative to issue #198
+
+Optimize for preventing another green-but-weak fuzz suite, not merely for closing
+issue #198's original smoke-fuzz checklist. The smoke fuzzer and CI step remain
+required, but they are the floor below grammar-complete generators, stronger
+oracles, coverage feedback, and the reusable checklist.
 
 ### Campaign shape
 
@@ -119,18 +134,21 @@ Use the file-enforcer pattern, but package-local:
 
 ### Import boundary
 
-Use source and artifact imports deliberately:
+Use built-artifact imports for fuzzing:
 
-- Campaign properties that run `.ts` files directly under node may import
-  `./index.ts` for the public API and sibling source files for internal seams.
-- Internal seam helpers may be exported at file level only. Do not add them to
-  `packages/module/toml-edit/src/index.ts`.
-- Add at least one built-artifact smoke that imports the built package entry point
-  and exercises a generated public-API case, so user-boundary coverage is not
-  source-only.
+- Property files should exercise `@monochromatic-dev/module-toml-edit` through the
+  built package entry point, not sibling source imports.
+- If an internal seam needs direct fuzzing, export it from `src/index.ts` with an
+  underscored name. The underscore marks an unstable seam export that exists for
+  observability and fuzzing, not a compatibility promise.
+- Do not skip seam fuzzing to avoid API growth; expose the seam with a `_` export
+  when the seam matters.
+- Document `_` seam exports in three places: TSDoc at each export declaration,
+  `packages/module/toml-edit/README.md`, and
+  `docs/decisions/toml-edit-fuzzing.md`.
 
-Document this exception in `docs/decisions/toml-edit-fuzzing.md`, because the
-standard unit-test preference is built-artifact imports.
+Document this choice in `docs/decisions/toml-edit-fuzzing.md`, because it is a
+surprising deviation from the previous plan and from hiding internals.
 
 ### Corpus source
 
@@ -139,32 +157,42 @@ Use three corpus tiers:
 1. Existing fixture package:
    `packages/test-fixture/toml-edit/src/valid/` and
    `packages/test-fixture/toml-edit/src/invalid/`.
-2. Real repository TOML files, excluding generated, dependency, and build-output
-   directories.
-3. `toml-test` valid and invalid files, generated or vendored from a pinned release
-   or commit.
+2. Real repository TOML files in two forms: reviewed snapshot seeds for normal
+   tests, plus dynamic discovery during campaigns. Both exclude generated,
+   dependency, build-output, and secret-looking paths.
+3. `toml-test` valid and invalid files, driven through the latest upstream runner
+   acquired by mise.
 
-The existing fixture package is the right home for reusable TOML corpus data. Add
-new generated corpus files there if the data is useful beyond one property test;
-keep one-off shrunk counterexamples in the owning property via fast-check
-`examples`.
+The existing fixture package remains the right home for reusable TOML corpus data
+that is useful without the upstream runner. Do not vendor the toml-test corpus as
+this plan's primary integration path. Instead, add package-local decoder and
+encoder adapter commands that the upstream toml-test runner can invoke. BurntSushi
+TOML is the default differential oracle after conformance is wired; the decision
+doc still must record VQS evidence and rejected alternatives. Keep one-off shrunk
+counterexamples in the owning property via fast-check `examples`.
 
 ### External oracle order
 
 Bring up the external oracles in this order:
 
-1. `toml-test` conformance first, because it is data and already specifies tagged
-   JSON comparison semantics for integers, floats, booleans, datetimes, arrays,
-   tables, and invalid inputs.
+1. `toml-test` conformance first, through a dedicated conformance task using the
+   upstream runner acquired by mise. It already specifies tagged JSON comparison
+   semantics for integers, floats, booleans, datetimes, arrays, tables, and
+   invalid inputs.
 2. Differential parser second, after VQS. Compare only normalized semantic values,
    not raw formatting.
 3. Mutation testing later, in a separate plan.
 
-The differential-parser vetting task must survey at least `smol-toml`,
-`@iarna/toml`, `@ltd/j-toml`, and any current npm TOML parser that appears from a
-fresh search. The chosen parser must have source inspected under `/tmp/agent`,
-tests and CI inspected, maintenance signals checked, and rejected alternatives
-recorded in the decision doc.
+Default differential parser: BurntSushi TOML, through its `toml-test-decoder` and
+`toml-test-encoder` command tools. Acquire both Go and the BurntSushi tools through
+mise's Go support without pinning either version. The VQS record must call out this
+moving-oracle trade-off and log the concrete tool versions used in every campaign
+run so later disagreements can be reproduced. Initial source evidence already
+found those commands, an internal toml-test runner, Go CI across Linux, macOS,
+Windows, and OSS-Fuzz CIFuzz wiring. The implementation still must compare and
+reject at least `smol-toml`, `@iarna/toml`, `@ltd/j-toml`, and any current npm TOML
+parser that appears from a fresh search; record the chosen path and rejected
+alternatives in the decision doc.
 
 ### Coverage gate
 
@@ -204,8 +232,8 @@ Deliverables:
 
 - `packages/module/toml-edit/src/fuzz-budget.ts`.
 - `packages/module/toml-edit/mise.toml` `fuzz` task.
-- One smoke property file that proves bounded mode and campaign mode both run
-  under node.
+- One smoke property file that imports from the built package entry point and
+  proves bounded mode and campaign mode both run under node.
 - A fast-check seed and counterexample policy copied from the file-enforcer
   decision: random seeds in normal and campaign modes, pinned `examples` for every
   discovered counterexample.
@@ -239,6 +267,8 @@ Deliverables:
     nesting, huge strings, and unicode edge cases.
 - Structure-aware mutators for valid corpus inputs, so invalid and near-invalid
   documents are not just arbitrary byte noise.
+- A split repo-corpus loader: deterministic snapshot seeds in bounded unit mode,
+  dynamic discovery of current repo TOML only in campaign mode.
 
 Pass criteria:
 
@@ -262,6 +292,10 @@ Properties:
   model.
 - `tomlVersion` is part of the generated case. TOML 1.0 and 1.1 differences are
   asserted explicitly rather than treated as flake.
+- Aggressive metamorphic transforms reorder keys, reflow whitespace, add or strip
+  comments, perturb table placement, and introduce near-collision shapes. Their
+  oracle classifies each transformed document as same semantics, changed semantics,
+  or invalid output instead of assuming every rewrite preserves meaning.
 
 Pass criteria:
 
@@ -331,20 +365,32 @@ Pass criteria:
 
 Deliverables:
 
-- A node adapter that converts toml-edit parse output to the `toml-test` tagged
-  JSON shape.
-- Valid corpus tests for TOML 1.0 and 1.1 using the pinned `tests/files-toml-*`
-  lists.
-- Invalid corpus tests that assert parse rejection.
-- Encoder-style tests where tagged JSON is converted through toml-edit setters,
-  stringified, reparsed, and compared semantically.
+- A mise-managed acquisition path for the upstream toml-test runner using the
+  `github:` backend for `toml-lang/toml-test` at `latest`. The implementation must
+  smoke-test the `asset_pattern` and `.gz` handling before relying on it, and
+  record the resolved release, asset digest, and any provenance verification in the
+  decision doc and campaign logs.
+- Package-local node adapter commands that satisfy the upstream runner's decoder
+  and encoder interfaces: TOML on stdin to tagged JSON on stdout for decode,
+  tagged JSON on stdin to TOML on stdout for encode, and non-zero exit on
+  rejection.
+- A dedicated `toml-test` or `test:conformance` mise task. Do not fold the binary
+  into the normal unit suite. The task should invoke the mise-installed
+  `toml-test` runner, not a checked-in binary or ad hoc downloader.
+- Valid and invalid conformance runs for TOML 1.0 and 1.1, using the upstream
+  binary's own selection mechanism rather than hand-copying all corpus files.
+- Encoder-style conformance where tagged JSON is converted through toml-edit
+  setters, stringified, reparsed by the runner, and compared semantically.
 
 Pass criteria:
 
+- The conformance task exits non-zero on any valid, invalid, decoder, or encoder
+  failure.
 - Legitimate TOML 1.0 versus TOML 1.1 differences are named and tested under the
   right `tomlVersion`.
-- Any unsupported encoder cases are skipped only with a documented reason and a
-  follow-up issue if they represent a real toml-edit capability gap.
+- Unsupported encoder cases are fixed in this scope unless a narrow allow-list is
+  justified. Every allow-list entry must name the exact corpus case, the toml-edit
+  contract gap, and the follow-up issue if it represents missing package behavior.
 
 ### Phase 7: Differential parser oracle
 
@@ -377,7 +423,8 @@ Deliverables:
 
 Pass criteria:
 
-- Coverage task fails or flags when target-file coverage regresses from baseline.
+- Coverage task fails when target-file coverage regresses from baseline, and CI runs
+  that gate for relevant toml-edit changes.
 - The checklist requires all five questions for future targets:
   - Is the tested layer where the logic and bugs live?
   - Are all public entry points and internal seams covered?
@@ -389,18 +436,26 @@ Pass criteria:
 
 Deliverables:
 
-- CI workflow or workflow step running a short bounded toml-edit fuzz smoke on PRs
-  and merge groups that touch `packages/module/toml-edit/**`,
-  `packages/test-fixture/toml-edit/**`, or the toml-edit fuzz decision doc.
-- CI command uses the package task, not raw `node` commands pasted into workflow
+- CI workflow or workflow step running a short bounded toml-edit fuzz smoke and
+  the coverage no-regression gate on PRs and merge groups that touch
+  `packages/module/toml-edit/**`, `packages/test-fixture/toml-edit/**`, or the
+  toml-edit fuzz decision doc.
+- CI uses a total smoke budget for the package, not 60 seconds per property. Local
+  campaign mode may keep a deeper per-property budget.
+- CI command uses the package tasks, not raw `node` commands pasted into workflow
   logic.
-- Explicit `gh issue close 198` after the implementation commit and verification.
+- Explicit `gh issue close 198` after the verified implementation is merged. Do
+  not rely on a commit message alone, and do not wait for the next Scorecard scan
+  before closing the implementation issue. If the next Scorecard scan still flags
+  FuzzingID, file or update a follow-up about the scanner heuristic without
+  weakening the fuzzing design.
 
 Pass criteria:
 
 - Local verification includes:
   - `mise run //packages/module/toml-edit:lint:types`;
   - `mise run //packages/module/toml-edit:test:unit`;
+  - the toml-test conformance task;
   - `mise run //packages/module/toml-edit:fuzz --budget 60000`;
   - the coverage task.
 - CI path filtering is proven with an actual workflow run or a documented dry-run
@@ -454,15 +509,16 @@ Internal seams that need direct properties or named coverage blocks:
 - toml-edit has property coverage across all scalar values, key forms, nesting,
   inline tables, standard tables, AOT, comments, path-create, delete, and splice
   behavior.
-- The oracle set includes round-trip, metamorphic, conformance, differential, and
-  stateful model oracles.
+- The oracle set includes round-trip, aggressive metamorphic, conformance,
+  differential, and stateful model oracles.
 - The normal unit suite runs bounded properties; the `fuzz` task runs a budgeted
   campaign; the coverage task reports and gates target-file coverage.
-- Every discovered counterexample is either fixed and pinned in `examples`, or
-  recorded as a separate issue only when it cannot be fixed in this scope without
-  changing the package contract.
+- Every discovered counterexample from fuzzing, conformance, or differential
+  testing is fixed in this scope and pinned in `examples` or corpus fixtures.
+  Separate issues are reserved for explicit package-contract changes, not ordinary
+  discovered bugs.
 - `docs/decisions/toml-edit-fuzzing.md` records the method, the dependency vetting
   record, rejected alternatives, the reusable checklist, and mutation testing as
-  deferred follow-up.
+  deferred follow-up with a linked issue.
 - CI runs a short toml-edit fuzz smoke for relevant changes.
 - Issue #198 is closed explicitly with `gh issue close 198` after verification.
