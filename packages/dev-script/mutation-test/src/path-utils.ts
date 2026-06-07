@@ -25,14 +25,7 @@ const WINDOWS_SEPARATOR = '\\';
 /**
  * Characters allowed inside local container image tag fragments.
  */
-const TAG_SAFE_CHARACTERS = new Set([
-  ...'abcdefghijklmnopqrstuvwxyz',
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  ...'0123456789',
-  '.',
-  '_',
-  '-',
-],);
+const TAG_SAFE_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-';
 
 /**
  * Converts any platform path separators to POSIX separators.
@@ -48,7 +41,8 @@ const TAG_SAFE_CHARACTERS = new Set([
  * ```
  */
 export function toPosixPath(path: string,): string {
-  return path.split(WINDOWS_SEPARATOR,).join(POSIX_SEPARATOR,);
+  return path.split(WINDOWS_SEPARATOR,)
+    .join(POSIX_SEPARATOR,);
 }
 
 /**
@@ -89,12 +83,13 @@ export function relativePosix(options: {
  */
 export function isSafeRelativePath(relative: string,): boolean {
   return (relative !== '')
-    && !relative.startsWith(POSIX_SEPARATOR,)
-    && !relative.startsWith(`.${POSIX_SEPARATOR}`,)
-    && !relative.includes(`${POSIX_SEPARATOR}..${POSIX_SEPARATOR}`,)
-    && !relative.endsWith(`${POSIX_SEPARATOR}..`,)
+    && (!relative.startsWith(POSIX_SEPARATOR,))
+    && (!relative.startsWith(`.${POSIX_SEPARATOR}`,))
+    && (!relative.includes(`${POSIX_SEPARATOR}..${POSIX_SEPARATOR}`,))
+    && (!relative.endsWith(`${POSIX_SEPARATOR}..`,))
     && (relative !== '..')
-    && !relative.split(sep,).includes('..',);
+    && (!relative.split(sep,)
+      .includes('..',));
 }
 
 /**
@@ -111,11 +106,14 @@ export function isSafeRelativePath(relative: string,): boolean {
  * ```
  */
 export function sortStrings(values: readonly string[],): readonly string[] {
-  return [...values,].sort(function compareStrings(
+  return [...values,].toSorted(function compareStrings(
     left,
     right,
   ): number {
-    return left.localeCompare(right, 'en',);
+    return left.localeCompare(
+      right,
+      'en',
+    );
   },);
 }
 
@@ -133,7 +131,10 @@ export function sortStrings(values: readonly string[],): readonly string[] {
  * ```
  */
 export function stripTsExtension(path: string,): string {
-  return path.endsWith('.ts',) ? path.slice(0, -'.ts'.length,) : path;
+  return path.endsWith('.ts',) ? path.slice(
+    0,
+    -'.ts'.length,
+  ) : path;
 }
 
 /**
@@ -150,7 +151,14 @@ export function stripTsExtension(path: string,): string {
  * ```
  */
 export function basenameWithoutTs(path: string,): string {
-  const parts = toPosixPath(path,).split(POSIX_SEPARATOR,);
+  /**
+   * POSIX path segments from the input path.
+   */
+  const parts = toPosixPath(path,)
+    .split(POSIX_SEPARATOR,);
+  /**
+   * Last path segment, falling back to input for defensive completeness.
+   */
   const last = parts.at(-1,) ?? path;
   return stripTsExtension(last,);
 }
@@ -169,8 +177,18 @@ export function basenameWithoutTs(path: string,): string {
  * ```
  */
 export function dirnamePosix(path: string,): string {
-  const parts = toPosixPath(path,).split(POSIX_SEPARATOR,);
-  const parentParts = parts.slice(0, -1,);
+  /**
+   * POSIX path segments from the input path.
+   */
+  const parts = toPosixPath(path,)
+    .split(POSIX_SEPARATOR,);
+  /**
+   * Path segments before the basename.
+   */
+  const parentParts = parts.slice(
+    0,
+    -1,
+  );
   return parentParts.length === 0 ? '.' : parentParts.join(POSIX_SEPARATOR,);
 }
 
@@ -188,11 +206,16 @@ export function dirnamePosix(path: string,): string {
  * ```
  */
 export function sanitizeTagFragment(value: string,): string {
-  return [...value,]
-    .map(function mapCharacter(character,): string {
-      return TAG_SAFE_CHARACTERS.has(character,) ? character : '-';
-    },)
-    .join('',);
+  /**
+   * Sanitised characters accumulated from input text.
+   */
+  const sanitized: string[] = [];
+
+  for (const character of value) {
+    sanitized.push(TAG_SAFE_CHARACTERS.includes(character,) ? character : '-',);
+  }
+
+  return sanitized.join('',);
 }
 
 /**
@@ -211,7 +234,11 @@ export function sanitizeTagFragment(value: string,): string {
 export function bytesToHex(bytes: Uint8Array,): string {
   return [...bytes,]
     .map(function byteToHex(byte,): string {
-      return byte.toString(16,).padStart(2, '0',);
+      return byte.toString(16,)
+        .padStart(
+          2,
+          '0',
+        );
     },)
     .join('',);
 }

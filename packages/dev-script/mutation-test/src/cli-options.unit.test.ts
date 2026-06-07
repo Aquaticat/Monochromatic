@@ -55,8 +55,8 @@ await describe({
     it({
       name: 'parses memory limits and report names',
       fn: async () => {
-        expect(memoryBytes('1g',),).toBe(1024 * 1024 * 1024,);
-        expect(memoryBytes('512m',),).toBe(512 * 1024 * 1024,);
+        expect(memoryBytes('1g',),).toBe(1_024 * 1_024 * 1_024,);
+        expect(memoryBytes('512m',),).toBe(512 * 1_024 * 1_024,);
         expect(reportNameForSource('src/io/glob.ts',),).toBe('src__io__glob.ts.json',);
       },
     },),

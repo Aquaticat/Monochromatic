@@ -43,6 +43,16 @@ export type ParsedMutant = {
 };
 
 /**
+ * Sentinel returned when a JSON value is not a mutant record.
+ */
+const NO_MUTANT = Symbol('no mutant');
+
+/**
+ * Parsed mutant or sentinel for invalid JSON shapes.
+ */
+type ParsedMutantResult = ParsedMutant | typeof NO_MUTANT;
+
+/**
  * Returns whether a value is a non-null object record.
  *
  * @param value - Candidate value.
@@ -56,7 +66,8 @@ export type ParsedMutant = {
  * ```
  */
 function isRecord(value: unknown,): value is JsonRecord {
-  return value !== null && typeof value === 'object' && !Array.isArray(value,);
+  return (value !== null) && ((typeof value) === 'object')
+    && (!Array.isArray(value,));
 }
 
 /**
@@ -77,8 +88,11 @@ function stringProperty(options: {
   readonly key: string;
   readonly fallback: string;
 },): string {
+  /**
+   * Raw record property value before string validation.
+   */
   const value = options.record[options.key];
-  return typeof value === 'string' ? value : options.fallback;
+  return (typeof value) === 'string' ? value : options.fallback;
 }
 
 /**
@@ -137,13 +151,27 @@ export function addStatus(options: {
   readonly status: MutantStatus;
 },): MutationTotals {
   return {
-    killed: options.totals.killed + (options.status === 'Killed' ? 1 : 0),
-    survived: options.totals.survived + (options.status === 'Survived' ? 1 : 0),
-    timeout: options.totals.timeout + (options.status === 'Timeout' ? 1 : 0),
-    compileError: options.totals.compileError + (options.status === 'CompileError' ? 1 : 0),
-    runtimeError: options.totals.runtimeError + (options.status === 'RuntimeError' ? 1 : 0),
-    noCoverage: options.totals.noCoverage + (options.status === 'NoCoverage' ? 1 : 0),
-    ignored: options.totals.ignored + (options.status === 'Ignored' ? 1 : 0),
+    killed: options.totals
+      .killed
+      + (options.status === 'Killed' ? 1 : 0),
+    survived: options.totals
+      .survived
+      + (options.status === 'Survived' ? 1 : 0),
+    timeout: options.totals
+      .timeout
+      + (options.status === 'Timeout' ? 1 : 0),
+    compileError: options.totals
+      .compileError
+      + (options.status === 'CompileError' ? 1 : 0),
+    runtimeError: options.totals
+      .runtimeError
+      + (options.status === 'RuntimeError' ? 1 : 0),
+    noCoverage: options.totals
+      .noCoverage
+      + (options.status === 'NoCoverage' ? 1 : 0),
+    ignored: options.totals
+      .ignored
+      + (options.status === 'Ignored' ? 1 : 0),
   };
 }
 
@@ -164,13 +192,24 @@ function formatLocation(location: unknown,): string {
   if (!isRecord(location,))
     return 'unknown';
 
-  const start = location.start;
-  const end = location.end;
+  /**
+   * Raw start and end locations from Stryker JSON.
+   */
+  const {
+    start,
+    end,
+  } = location;
 
   if (!isRecord(start,))
     return 'unknown';
 
+  /**
+   * One-based start line reported by Stryker.
+   */
   const startLine = Number(start.line ?? 0,);
+  /**
+   * Zero-based start column reported by Stryker.
+   */
   const startColumn = Number(start.column ?? 0,);
 
   if (!isRecord(end,))
@@ -184,23 +223,38 @@ function formatLocation(location: unknown,): string {
  *
  * @param mutant - Raw mutant value.
  *
- * @returns Parsed mutant, or undefined when shape is not a mutant.
- *
- * @example
- * ```ts
- * parseMutant({ id: '1', status: 'Killed' });
- * ```
+ * @returns Parsed mutant, or sentinel when shape is not a mutant.
  */
-function parseMutant(mutant: unknown,): ParsedMutant | undefined {
+function parseMutant(mutant: unknown,): ParsedMutantResult {
   if (!isRecord(mutant,))
-    return undefined;
+    return NO_MUTANT;
 
   return {
-    id: stringProperty({ record: mutant, key: 'id', fallback: 'unknown', },),
-    status: parseStatus(stringProperty({ record: mutant, key: 'status', fallback: 'RuntimeError', },),),
-    mutatorName: stringProperty({ record: mutant, key: 'mutatorName', fallback: 'unknown mutator', },),
-    replacement: stringProperty({ record: mutant, key: 'replacement', fallback: '', },),
-    description: stringProperty({ record: mutant, key: 'description', fallback: '', },),
+    id: stringProperty({
+      record: mutant,
+      key: 'id',
+      fallback: 'unknown',
+    },),
+    status: parseStatus(stringProperty({
+      record: mutant,
+      key: 'status',
+      fallback: 'RuntimeError',
+    },),),
+    mutatorName: stringProperty({
+      record: mutant,
+      key: 'mutatorName',
+      fallback: 'unknown mutator',
+    },),
+    replacement: stringProperty({
+      record: mutant,
+      key: 'replacement',
+      fallback: '',
+    },),
+    description: stringProperty({
+      record: mutant,
+      key: 'description',
+      fallback: '',
+    },),
     location: formatLocation(mutant.location,),
   };
 }
@@ -217,25 +271,44 @@ function parseMutant(mutant: unknown,): ParsedMutant | undefined {
  * mutantsFromReport({ files: {} });
  * ```
  */
-export function mutantsFromReport(report: unknown,): readonly (readonly [string, ParsedMutant,])[] {
-  if (!isRecord(report,) || !isRecord(report.files,))
+export function mutantsFromReport(report: unknown,): readonly (readonly [
+  string,
+  ParsedMutant,
+])[] {
+  if ((!isRecord(report,)) || (!isRecord(report.files,)))
     return [];
 
-  return Object.entries(report.files,).flatMap(function mutantsForFile(entry,): readonly (readonly [string, ParsedMutant,])[] {
-    const [file, fileReport,] = entry;
+  return Object.entries(report.files,)
+    .flatMap(function mutantsForFile(entry,): readonly (readonly [
+      string,
+      ParsedMutant,
+    ])[] {
+    /**
+     * File path and per-file report payload from Stryker JSON files record.
+     */
+    const [
+      file,
+      fileReport,
+    ] = entry;
 
-    if (!isRecord(fileReport,) || !Array.isArray(fileReport.mutants,))
+    if ((!isRecord(fileReport,)) || (!Array.isArray(fileReport.mutants,)))
       return [];
 
     return fileReport.mutants
-      .map(function parse(mutant,): ParsedMutant | undefined {
+      .map(function parse(mutant,): ParsedMutantResult {
         return parseMutant(mutant,);
       },)
       .filter(function keep(parsed,): parsed is ParsedMutant {
-        return parsed !== undefined;
+        return parsed !== NO_MUTANT;
       },)
-      .map(function pair(mutant,): readonly [string, ParsedMutant,] {
-        return [file, mutant,];
+      .map(function pair(mutant,): readonly [
+        string,
+        ParsedMutant,
+      ] {
+        return [
+          file,
+          mutant,
+        ];
       },);
   },);
 }
@@ -254,6 +327,9 @@ export function mutantsFromReport(report: unknown,): readonly (readonly [string,
  * ```
  */
 export function mutationScore(totals: MutationTotals,): number {
+  /**
+   * Mutants counted in Stryker mutation score denominator.
+   */
   const denominator = totals.killed
     + totals.survived
     + totals.timeout

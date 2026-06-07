@@ -33,7 +33,10 @@ export type StrykerJsonConfig = {
   readonly typescriptChecker: {
     readonly prioritizePerformanceOverAccuracy: boolean;
   };
-  readonly reporters: readonly ['clear-text', 'json'];
+  readonly reporters: readonly [
+    'clear-text',
+    'json'
+  ];
   readonly jsonReporter: {
     readonly fileName: string;
   };

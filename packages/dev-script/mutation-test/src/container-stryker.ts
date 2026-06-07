@@ -34,7 +34,7 @@ import { buildStrykerConfig, } from './stryker-config.ts';
 /**
  * Default per-mutant timeout in milliseconds when the host does not override it.
  */
-const DEFAULT_TIMEOUT_MS = 5000;
+const DEFAULT_TIMEOUT_MS = 5_000;
 
 /**
  * Reads selected tests from the host-provided environment variable.
@@ -48,16 +48,22 @@ const DEFAULT_TIMEOUT_MS = 5000;
  * ```
  */
 export function readSelectedTests(): readonly string[] {
+  /**
+   * Raw JSON string of selected test files from host.
+   */
   const raw = process.env[SELECTED_TESTS_ENV];
 
   if (raw === undefined)
     throw new Error(`Missing ${SELECTED_TESTS_ENV}`,);
 
+  /**
+   * Parsed selected-test value before runtime validation.
+   */
   const parsed = JSON.parse(raw,) as unknown;
 
-  if (!Array.isArray(parsed,) || !parsed.every(function isString(value,): value is string {
-    return typeof value === 'string';
-  },))
+  if ((!Array.isArray(parsed,)) || (!parsed.every(function isString(value,): value is string {
+    return (typeof value) === 'string';
+  },)))
     throw new Error(`${SELECTED_TESTS_ENV} must be a JSON string array`,);
 
   return parsed;
@@ -74,14 +80,21 @@ export function readSelectedTests(): readonly string[] {
  * ```
  */
 function timeoutMsFromEnv(): number {
-  const raw = process.env.MUTATION_TIMEOUT_MS;
+  /**
+   * Raw per-mutant timeout override from environment.
+   */
+  const raw = process.env
+    .MUTATION_TIMEOUT_MS;
 
   if (raw === undefined)
     return DEFAULT_TIMEOUT_MS;
 
+  /**
+   * Numeric timeout parsed from environment.
+   */
   const parsed = Number(raw,);
 
-  if (!Number.isFinite(parsed,) || parsed <= 0)
+  if ((!Number.isFinite(parsed,)) || (parsed <= 0))
     throw new Error(`MUTATION_TIMEOUT_MS must be positive, received ${raw}`,);
 
   return parsed;
@@ -103,22 +116,38 @@ async function writeStrykerConfig(options: {
   readonly options: InContainerOptions;
   readonly configDir: string;
 },): Promise<string> {
-  const reportStem = sanitizeTagFragment(basename(options.options.reportFile,),);
+  /**
+   * File-name-safe report stem for temporary config naming.
+   */
+  const reportStem = sanitizeTagFragment(basename(options.options
+    .reportFile,),);
+  /**
+   * Temporary Stryker config path outside package tree.
+   */
   const configFile = join(
     options.configDir,
     `${reportStem}.stryker.config.json`,
   );
   await writeFile(
     configFile,
-    `${JSON.stringify(buildStrykerConfig({
-      mutateFile: options.options.mutateFile,
-      reportFile: options.options.reportFile,
-      dryRunOnly: options.options.dryRunOnly,
+    `${JSON.stringify(
+      buildStrykerConfig({
+      mutateFile: options.options
+        .mutateFile,
+      reportFile: options.options
+        .reportFile,
+      dryRunOnly: options.options
+        .dryRunOnly,
       timeoutMS: timeoutMsFromEnv(),
       prioritizePerformanceOverAccuracy:
-        process.env.MUTATION_TYPESCRIPT_PERFORMANCE_MODE === 'true',
+        process.env
+          .MUTATION_TYPESCRIPT_PERFORMANCE_MODE
+          === 'true',
       tsconfigFile: 'tsconfig.json',
-    },), null, 2,)}\n`,
+    },),
+      null,
+      2,
+    )}\n`,
     'utf8',
   );
   return configFile;
@@ -148,8 +177,6 @@ function strykerEnvironment(tests: readonly string[],): NodeJS.ProcessEnv {
  *
  * @param options - Container options and package cwd.
  *
- * @returns Promise resolving after Stryker exits successfully.
- *
  * @example
  * ```ts
  * await runStryker({ options, packageCwd: '/work/packages/dev-script/file-enforcer' });
@@ -160,15 +187,28 @@ export async function runStryker(options: {
   readonly packageCwd: string;
 },): Promise<void> {
   await mkdir(
-    dirname(options.options.reportFile,),
+    dirname(options.options
+      .reportFile,),
     { recursive: true, },
   );
   await realpath(REPORT_MOUNT,);
-  const configDir = await mkdtemp(join(tmpdir(), 'mutation-stryker-',),);
+  /**
+   * Temporary directory holding generated Stryker config.
+   */
+  const configDir = await mkdtemp(join(
+    tmpdir(),
+    'mutation-stryker-',
+  ),);
+  /**
+   * Generated Stryker config path passed to CLI.
+   */
   const configFile = await writeStrykerConfig({
     options: options.options,
     configDir,
   },);
+  /**
+   * Selected package-relative tests for this Stryker session.
+   */
   const tests = readSelectedTests();
   await spawn(
     'node_modules/.bin/stryker',

@@ -30,8 +30,6 @@ const BAKED_ROOT = '/baked';
 /**
  * Copies current repository source into the writable work tree.
  *
- * @returns Promise that resolves after rsync completes.
- *
  * @example
  * ```ts
  * await rsyncSourceToWorkTree();
@@ -84,8 +82,6 @@ async function pathExists(path: string,): Promise<boolean> {
 /**
  * Recreates root node_modules symlink from the baked layer.
  *
- * @returns Promise that resolves after the root symlink exists.
- *
  * @example
  * ```ts
  * await symlinkRootNodeModules();
@@ -93,8 +89,14 @@ async function pathExists(path: string,): Promise<boolean> {
  */
 async function symlinkRootNodeModules(): Promise<void> {
   await symlink(
-    join(BAKED_ROOT, 'node_modules',),
-    join(WORK_MOUNT, 'node_modules',),
+    join(
+      BAKED_ROOT,
+      'node_modules',
+    ),
+    join(
+      WORK_MOUNT,
+      'node_modules',
+    ),
   );
 }
 
@@ -102,8 +104,6 @@ async function symlinkRootNodeModules(): Promise<void> {
  * Recreates one package-local node_modules symlink when the baked package has one.
  *
  * @param options - Package category and package name.
- *
- * @returns Promise resolving after optional symlink work.
  *
  * @example
  * ```ts
@@ -114,6 +114,9 @@ async function symlinkPackageNodeModules(options: {
   readonly category: string;
   readonly packageName: string;
 },): Promise<void> {
+  /**
+   * Baked package-local node_modules path.
+   */
   const bakedNodeModules = join(
     BAKED_ROOT,
     'packages',
@@ -125,6 +128,9 @@ async function symlinkPackageNodeModules(options: {
   if (!await pathExists(bakedNodeModules,))
     return;
 
+  /**
+   * Writable work-tree package directory receiving node_modules symlink.
+   */
   const workPackage = join(
     WORK_MOUNT,
     'packages',
@@ -137,14 +143,15 @@ async function symlinkPackageNodeModules(options: {
   );
   await symlink(
     bakedNodeModules,
-    join(workPackage, 'node_modules',),
+    join(
+      workPackage,
+      'node_modules',
+    ),
   );
 }
 
 /**
  * Recreates package-local node_modules symlinks from the baked layer.
- *
- * @returns Promise resolving after all package symlinks are considered.
  *
  * @example
  * ```ts
@@ -152,36 +159,52 @@ async function symlinkPackageNodeModules(options: {
  * ```
  */
 async function symlinkWorkspacePackageNodeModules(): Promise<void> {
+  /**
+   * Workspace package category directories under baked tree.
+   */
   const packageCategories = await readdir(
-    join(BAKED_ROOT, 'packages',),
+    join(
+      BAKED_ROOT,
+      'packages',
+    ),
     { withFileTypes: true, },
   );
+  /**
+   * Symlink work for each package category.
+   */
+  const categoryTasks = packageCategories
+    .filter(function isDirectory(category,): boolean {
+      return category.isDirectory();
+    },)
+    .map(async function symlinkCategory(category,): Promise<void> {
+      /**
+       * Package directories under current category.
+       */
+      const packages = await readdir(
+        join(
+          BAKED_ROOT,
+          'packages',
+          category.name,
+        ),
+        { withFileTypes: true, },
+      );
+      await Promise.all(packages
+        .filter(function isDirectory(packageEntry,): boolean {
+          return packageEntry.isDirectory();
+        },)
+        .map(async function symlinkPackage(packageEntry,): Promise<void> {
+          await symlinkPackageNodeModules({
+            category: category.name,
+            packageName: packageEntry.name,
+          },);
+        },),);
+    },);
 
-  for (const category of packageCategories) {
-    if (!category.isDirectory())
-      continue;
-
-    const packages = await readdir(
-      join(BAKED_ROOT, 'packages', category.name,),
-      { withFileTypes: true, },
-    );
-
-    for (const packageEntry of packages) {
-      if (!packageEntry.isDirectory())
-        continue;
-
-      await symlinkPackageNodeModules({
-        category: category.name,
-        packageName: packageEntry.name,
-      },);
-    }
-  }
+  await Promise.all(categoryTasks,);
 }
 
 /**
  * Recreates root and package-local node_modules symlinks from the baked layer.
- *
- * @returns Promise that resolves when symlink farm exists.
  *
  * @example
  * ```ts

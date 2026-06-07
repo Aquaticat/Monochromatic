@@ -22,7 +22,9 @@ await describe({
     it({
       name: 'computes stable SHA-256 hex',
       fn: async () => {
-        expect(sha256Hex(Buffer.from('x',),),).toBe('2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881',);
+        expect(
+          sha256Hex(Buffer.from('x',),),
+        ).toBe('2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881',);
       },
     },),
   ],
@@ -57,7 +59,9 @@ await describe({
 
         expect(image.reference,).toContain('localhost/monochromatic-mutation-runtime:node-latest-',);
         expect(image.reference,).toContain('-linux-arm64',);
-        expect(image.lockHash,).toBe(sha256Hex(Buffer.from('lock-content\n',),),);
+        expect(image.lockHash,).toBe(
+          sha256Hex(Buffer.from('lock-content\n',),),
+        );
       },
     },),
   ],

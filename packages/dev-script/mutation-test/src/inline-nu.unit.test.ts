@@ -16,7 +16,7 @@ await describe({
     it({
       name: 'quotes embedded single quotes as one POSIX shell token',
       fn: async () => {
-        expect(quotePosixShellToken("a'b",),).toBe("'a'\\''b'",);
+        expect(quotePosixShellToken("a'b",),).toBe(String.raw`'a'\''b'`,);
       },
     },),
     it({

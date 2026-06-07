@@ -8,7 +8,10 @@
  */
 
 import { readFile, } from 'node:fs/promises';
-import { arch, platform, } from 'node:os';
+import {
+  arch,
+  platform,
+} from 'node:os';
 import { join, } from 'node:path';
 import { createHash, } from 'node:crypto';
 
@@ -43,7 +46,9 @@ const TAG_HASH_LENGTH = 16;
  * ```
  */
 export function sha256Hex(content: Buffer,): string {
-  return createHash('sha256',).update(content,).digest('hex',);
+  return createHash('sha256',)
+    .update(content,)
+    .digest('hex',);
 }
 
 /**
@@ -60,6 +65,9 @@ export function sha256Hex(content: Buffer,): string {
  * ```
  */
 export function platformTag(override?: string,): string {
+  /**
+   * Raw platform identifier before OCI tag sanitisation.
+   */
   const raw = override ?? `${platform()}-${arch()}`;
   return sanitizeTagFragment(raw,);
 }
@@ -77,9 +85,24 @@ export function platformTag(override?: string,): string {
  * ```
  */
 export async function runtimeImage(options: RuntimeImageOptions,): Promise<RuntimeImage> {
-  const lockfile = await readFile(join(options.repoRoot, 'pnpm-lock.yaml',),);
+  /**
+   * Lockfile bytes used for content-addressed image tagging.
+   */
+  const lockfile = await readFile(join(
+    options.repoRoot,
+    'pnpm-lock.yaml',
+  ),);
+  /**
+   * Full SHA-256 lockfile hash.
+   */
   const lockHash = sha256Hex(lockfile,);
+  /**
+   * Sanitised host or override platform tag fragment.
+   */
   const selectedPlatform = platformTag(options.platformOverride,);
+  /**
+   * Local Podman image reference for current lockfile and platform.
+   */
   const reference = `${IMAGE_PREFIX}:${sanitizeTagFragment(options.nodeTag,)}-${lockHash.slice(
     0,
     TAG_HASH_LENGTH,
@@ -126,8 +149,6 @@ export async function imageExists(image: string,): Promise<boolean> {
  *
  * @param options - Build context and image reference.
  *
- * @returns Promise that resolves when Podman finishes successfully.
- *
  * @example
  * ```ts
  * await buildRuntimeImage({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', image: 'localhost/example:tag' });
@@ -138,6 +159,9 @@ export async function buildRuntimeImage(options: {
   readonly packageRoot: string;
   readonly image: string;
 },): Promise<void> {
+  /**
+   * Absolute path to mutation runtime Containerfile.
+   */
   const containerfile = join(
     options.packageRoot,
     'runtime',
@@ -178,6 +202,9 @@ export async function buildRuntimeImage(options: {
 export async function ensureRuntimeImage(options: RuntimeImageOptions & {
   readonly skipBuild: boolean;
 },): Promise<RuntimeImage> {
+  /**
+   * Runtime image identity for current lockfile and platform.
+   */
   const image = await runtimeImage(options,);
 
   if (options.skipBuild)

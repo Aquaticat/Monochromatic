@@ -54,6 +54,9 @@ export function volumeMount(options: {
   readonly mode: 'ro' | 'rw';
   readonly selinuxRelabel: boolean;
 },): string {
+  /**
+   * Optional SELinux relabel suffix for hosts that require it.
+   */
   const relabel = options.selinuxRelabel ? ',Z' : '';
   return `${options.hostPath}:${options.containerPath}:${options.mode}${relabel}`;
 }
@@ -73,6 +76,9 @@ export function volumeMount(options: {
  * ```
  */
 export function buildContainerArgs(options: ContainerArgsOptions,): readonly string[] {
+  /**
+   * Container-visible report path passed to the Stryker entrypoint.
+   */
   const reportPath = join(
     REPORT_MOUNT,
     options.reportFileName,
@@ -87,17 +93,22 @@ export function buildContainerArgs(options: ContainerArgsOptions,): readonly str
     '--cap-drop=ALL',
     '--security-opt=no-new-privileges',
     '--memory',
-    options.resources.memory,
+    options.resources
+      .memory,
     '--cpus',
-    options.resources.cpus,
+    options.resources
+      .cpus,
     '--pids-limit',
-    String(options.resources.pidsLimit,),
+    String(options.resources
+      .pidsLimit,),
     '--timeout',
-    String(options.resources.sessionTimeoutSeconds,),
+    String(options.resources
+      .sessionTimeoutSeconds,),
     '--tmpfs',
     '/tmp:rw,exec,size=1g',
     '--tmpfs',
-    `${WORK_MOUNT}:rw,exec,size=${options.resources.workTmpfsSize}`,
+    `${WORK_MOUNT}:rw,exec,size=${options.resources
+      .workTmpfsSize}`,
     '--env',
     'HOME=/tmp',
     '--env',

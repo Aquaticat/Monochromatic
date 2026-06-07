@@ -67,9 +67,12 @@ export type * from './types.ts';
 /**
  * Whether this module is running as the process entrypoint.
  */
-const isDirectEntrypoint = process.argv[1] !== undefined
-  && import.meta.url === pathToFileURL(process.argv[1],).href;
+const isDirectEntrypoint = (process.argv[1] !== undefined)
+  && (import.meta.url
+    === pathToFileURL(process.argv[1],)
+    .href);
 
 if (isDirectEntrypoint) {
-  await runCli(process.argv.slice(2,),);
+  await runCli(process.argv
+    .slice(2,),);
 }

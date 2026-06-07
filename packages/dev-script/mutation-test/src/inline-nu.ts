@@ -52,7 +52,8 @@ for test in $tests {
  * ```
  */
 export function quotePosixShellToken(token: string,): string {
-  return `'${token.split("'",).join("'\\''",)}'`;
+  return `'${token.split("'",)
+    .join(String.raw`'\''`,)}'`;
 }
 
 /**

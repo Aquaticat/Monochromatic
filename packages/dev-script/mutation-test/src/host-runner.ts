@@ -9,7 +9,10 @@
 
 import { mkdtemp, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { join, resolve, } from 'node:path';
+import {
+  join,
+  resolve,
+} from 'node:path';
 
 import spawn from 'nano-spawn';
 
@@ -52,10 +55,10 @@ const NODE_TAG: string = 'node-latest';
  * ```
  */
 function exitCodeFromError(error: unknown,): number {
-  return typeof error === 'object'
-    && error !== null
-    && 'exitCode' in error
-    && typeof error.exitCode === 'number'
+  return ((typeof error) === 'object')
+    && (error !== null)
+    && ('exitCode' in error)
+    && ((typeof error.exitCode) === 'number')
     ? error.exitCode
     : 1;
 }
@@ -82,14 +85,33 @@ async function runSourceContainer(options: {
   readonly cli: CliOptions;
   readonly sourceFile: string;
 },): Promise<SourceRunResult> {
+  /**
+   * Wall-clock start timestamp for this source-file container.
+   */
   const started = performance.now();
+  /**
+   * Package-relative test files selected for this source file.
+   */
   const tests = await selectTestsForSource({
     packageRoot: options.packageRoot,
     sourceFile: options.sourceFile,
-    fullSuite: options.cli.fullSuite,
+    fullSuite: options.cli
+      .fullSuite,
   },);
+  /**
+   * Unique JSON report filename for this source file.
+   */
   const reportFileName = reportNameForSource(options.sourceFile,);
-  const reportFile = join(options.reportsDir, reportFileName,);
+  /**
+   * Host path where Stryker JSON should appear after container exits.
+   */
+  const reportFile = join(
+    options.reportsDir,
+    reportFileName,
+  );
+  /**
+   * Podman argument vector for this source-file container.
+   */
   const args = buildContainerArgs({
     repoRoot: options.repoRoot,
     hostReportDir: options.reportsDir,
@@ -99,11 +121,16 @@ async function runSourceContainer(options: {
     reportFileName,
     tests,
     resources: options.resources,
-    selinuxRelabel: options.cli.selinuxRelabel,
-    dryRunOnly: options.cli.dryRunOnly,
-    fullSuite: options.cli.fullSuite,
-    timeoutMS: options.cli.timeoutMS,
-    prioritizePerformanceOverAccuracy: options.cli.prioritizePerformanceOverAccuracy,
+    selinuxRelabel: options.cli
+      .selinuxRelabel,
+    dryRunOnly: options.cli
+      .dryRunOnly,
+    fullSuite: options.cli
+      .fullSuite,
+    timeoutMS: options.cli
+      .timeoutMS,
+    prioritizePerformanceOverAccuracy: options.cli
+      .prioritizePerformanceOverAccuracy,
   },);
 
   try {
@@ -138,24 +165,39 @@ async function runSourceContainer(options: {
  *
  * @param result - Mutation run result.
  *
- * @returns Nothing.
- *
  * @example
  * ```ts
  * printRunSummary(result);
  * ```
  */
 function printRunSummary(result: MutationRunResult,): void {
-  console.log(`Mutation score: ${result.aggregate.score.toFixed(2,)}%`,);
-  console.log(`Killed: ${String(result.aggregate.totals.killed,)}`,);
-  console.log(`Survived: ${String(result.aggregate.totals.survived,)}`,);
-  console.log(`Timeout: ${String(result.aggregate.totals.timeout,)}`,);
-  console.log(`CompileError: ${String(result.aggregate.totals.compileError,)}`,);
-  console.log(`RuntimeError: ${String(result.aggregate.totals.runtimeError,)}`,);
-  console.log(`NoCoverage: ${String(result.aggregate.totals.noCoverage,)}`,);
-  console.log(`Ignored: ${String(result.aggregate.totals.ignored,)}`,);
+  console.log(`Mutation score: ${result.aggregate
+    .score
+    .toFixed(2,)}%`,);
+  console.log(`Killed: ${String(result.aggregate
+    .totals
+    .killed,)}`,);
+  console.log(`Survived: ${String(result.aggregate
+    .totals
+    .survived,)}`,);
+  console.log(`Timeout: ${String(result.aggregate
+    .totals
+    .timeout,)}`,);
+  console.log(`CompileError: ${String(result.aggregate
+    .totals
+    .compileError,)}`,);
+  console.log(`RuntimeError: ${String(result.aggregate
+    .totals
+    .runtimeError,)}`,);
+  console.log(`NoCoverage: ${String(result.aggregate
+    .totals
+    .noCoverage,)}`,);
+  console.log(`Ignored: ${String(result.aggregate
+    .totals
+    .ignored,)}`,);
 
-  for (const finding of result.aggregate.findings) {
+  for (const finding of result.aggregate
+    .findings) {
     console.log(`${finding.status}: ${finding.file}:${finding.location} ${finding.mutatorName} ${finding.description}`,);
   }
 }
@@ -173,8 +215,22 @@ function printRunSummary(result: MutationRunResult,): void {
  * ```
  */
 export async function runMutation(cli: CliOptions,): Promise<MutationRunResult> {
-  const repoRoot = process.env.MISE_MONOREPO_ROOT ?? await findRepoRoot(process.cwd(),);
-  const packageRoot = resolve(repoRoot, cli.packagePath,);
+  /**
+   * Absolute monorepo root used for mounts and package resolution.
+   */
+  const repoRoot = process.env
+    .MISE_MONOREPO_ROOT
+    ?? await findRepoRoot(process.cwd(),);
+  /**
+   * Absolute target package root.
+   */
+  const packageRoot = resolve(
+    repoRoot,
+    cli.packagePath,
+  );
+  /**
+   * Per-container resource caps.
+   */
   const resources: ContainerResources = {
     memory: cli.memory,
     cpus: cli.cpus,
@@ -182,29 +238,54 @@ export async function runMutation(cli: CliOptions,): Promise<MutationRunResult> 
     sessionTimeoutSeconds: cli.sessionTimeoutSeconds,
     workTmpfsSize: cli.workTmpfsSize,
   };
+  /**
+   * Local runtime image identity, built on demand unless disabled.
+   */
   const image = await ensureRuntimeImage({
     repoRoot,
-    packageRoot: resolve(repoRoot, 'packages/dev-script/mutation-test',),
+    packageRoot: resolve(
+      repoRoot,
+      'packages/dev-script/mutation-test',
+    ),
     nodeTag: NODE_TAG,
     skipBuild: cli.skipImageBuild,
   },);
+  /**
+   * Dynamic production source-file selection for target package.
+   */
   const selection = await enumerateSourceFiles({ packageRoot, },);
+  /**
+   * Source files requested by CLI after validation against production list.
+   */
   const sourceFiles = resolveRequestedSources({
     allSources: selection.files,
     requested: cli.sourceFiles,
   },);
-  const reportsDir = await mkdtemp(join(tmpdir(), 'mutation-reports-',),);
+  /**
+   * Host temporary directory receiving per-file Stryker JSON reports.
+   */
+  const reportsDir = await mkdtemp(join(
+    tmpdir(),
+    'mutation-reports-',
+  ),);
+  /**
+   * Outer source-file worker count.
+   */
   const workers = cli.workers ?? defaultWorkerCount(resources,);
 
-  console.log(`Mutation targets: ${String(sourceFiles.length,)} of ${String(selection.files.length,)} production source files`,);
+  console.log(`Mutation targets: ${String(sourceFiles.length,)} of ${String(selection.files
+    .length,)} production source files`,);
   console.log(`Runtime image: ${image.reference}`,);
   console.log(`Reports: ${reportsDir}`,);
   console.log(`Outer workers: ${String(workers,)}`,);
 
+  /**
+   * Per-source-file container results in source-file order.
+   */
   const sourceResults = await runBounded({
     items: sourceFiles,
     concurrency: workers,
-    worker: async function runSource(options,): Promise<SourceRunResult> {
+    worker: function runSource(options,): Promise<SourceRunResult> {
       return runSourceContainer({
         repoRoot,
         packagePath: cli.packagePath,
@@ -217,9 +298,15 @@ export async function runMutation(cli: CliOptions,): Promise<MutationRunResult> 
       },);
     },
   },);
+  /**
+   * Weighted aggregate computed from raw Stryker JSON reports.
+   */
   const aggregate = await aggregateReports(sourceResults.map(function reportFile(result,): string {
     return result.reportFile;
   },),);
+  /**
+   * Complete mutation run result returned to programmatic callers.
+   */
   const result = {
     reportsDir,
     sourceResults,
@@ -234,16 +321,21 @@ export async function runMutation(cli: CliOptions,): Promise<MutationRunResult> 
  *
  * @param argv - Arguments after executable and script path.
  *
- * @returns Promise resolving when run succeeds.
- *
  * @example
  * ```ts
  * await runCli(['--package', 'packages/dev-script/file-enforcer', 'src/io/glob.ts']);
  * ```
  */
 export async function runCli(argv: readonly string[],): Promise<void> {
+  /**
+   * Completed mutation run result.
+   */
   const result = await runMutation(parseCliOptions(argv,),);
-  const failed = result.sourceResults.filter(function failedSource(sourceResult,): boolean {
+  /**
+   * Source-file containers that exited non-zero.
+   */
+  const failed = result.sourceResults
+    .filter(function failedSource(sourceResult,): boolean {
     return sourceResult.exitCode !== 0;
   },);
 

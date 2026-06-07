@@ -30,16 +30,20 @@ const SMOKE_DIR = '.mutation-smoke';
 /**
  * Runs latest Node native TypeScript syntax smoke.
  *
- * @returns Promise resolving after smoke exits successfully.
- *
  * @example
  * ```ts
  * await nativeTypeScriptSmoke();
  * ```
  */
 export async function nativeTypeScriptSmoke(): Promise<void> {
+  /**
+   * Temporary TypeScript smoke file executed by plain Node.
+   */
   const smokeFile = join(
-    await mkdtemp(join(tmpdir(), 'mutation-native-ts-',),),
+    await mkdtemp(join(
+      tmpdir(),
+      'mutation-native-ts-',
+    ),),
     'smoke.ts',
   );
   await writeFile(
@@ -70,14 +74,29 @@ async function writeSmokeFile(options: {
   readonly name: string;
   readonly content: string;
 },): Promise<string> {
-  const smokeDir = join(options.packageCwd, SMOKE_DIR,);
+  /**
+   * Absolute smoke directory under target package.
+   */
+  const smokeDir = join(
+    options.packageCwd,
+    SMOKE_DIR,
+  );
   await mkdir(
     smokeDir,
     { recursive: true, },
   );
-  const relative = join(SMOKE_DIR, options.name,);
+  /**
+   * Package-relative smoke file path.
+   */
+  const relative = join(
+    SMOKE_DIR,
+    options.name,
+  );
   await writeFile(
-    join(options.packageCwd, relative,),
+    join(
+      options.packageCwd,
+      relative,
+    ),
     options.content,
     'utf8',
   );
@@ -89,14 +108,15 @@ async function writeSmokeFile(options: {
  *
  * @param packageCwd - Target package cwd inside `/work`.
  *
- * @returns Promise resolving after import resolution succeeds.
- *
  * @example
  * ```ts
  * await workspaceImportSmoke('/work/packages/dev-script/file-enforcer');
  * ```
  */
 export async function workspaceImportSmoke(packageCwd: string,): Promise<void> {
+  /**
+   * Package-relative workspace import smoke file.
+   */
   const smokeFile = await writeSmokeFile({
     packageCwd,
     name: 'workspace-import-smoke.ts',
@@ -123,8 +143,6 @@ console.log('workspace import smoke ok');
  *
  * @param packageCwd - Target package cwd inside `/work`.
  *
- * @returns Promise resolving after smoke exits successfully.
- *
  * @example
  * ```ts
  * await relativeImportSmoke('/work/packages/dev-script/file-enforcer');
@@ -136,6 +154,9 @@ export async function relativeImportSmoke(packageCwd: string,): Promise<void> {
     name: 'relative-target.ts',
     content: 'export const marker: string = "relative-smoke";\n',
   },);
+  /**
+   * Package-relative relative-import entry file.
+   */
   const smokeFile = await writeSmokeFile({
     packageCwd,
     name: 'relative-entry.ts',
@@ -153,24 +174,31 @@ export async function relativeImportSmoke(packageCwd: string,): Promise<void> {
  *
  * @param packageCwd - Target package cwd inside `/work`.
  *
- * @returns Promise resolving after both smoke files execute.
- *
  * @example
  * ```ts
  * await inlineNuTwoFileSmoke('/work/packages/dev-script/file-enforcer');
  * ```
  */
 export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
+  /**
+   * First package-relative marker test for inline Nu sequencing.
+   */
   const first = await writeSmokeFile({
     packageCwd,
     name: 'inline-first.ts',
     content: 'console.log("inline-first-marker");\n',
   },);
+  /**
+   * Second package-relative marker test for inline Nu sequencing.
+   */
   const second = await writeSmokeFile({
     packageCwd,
     name: 'inline-second.ts',
     content: 'console.log("inline-second-marker");\n',
   },);
+  /**
+   * Nushell sequencer result containing both marker outputs.
+   */
   const result = await spawn(
     'nu',
     [
@@ -189,8 +217,10 @@ export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
     },
   );
 
-  if (!result.stdout.includes('inline-first-marker',)
-    || !result.stdout.includes('inline-second-marker',))
+  if ((!result.stdout
+    .includes('inline-first-marker',))
+    || (!result.stdout
+      .includes('inline-second-marker',)))
     throw new Error(`Inline Nu smoke did not execute both files: ${result.stdout}`,);
 }
 
@@ -198,8 +228,6 @@ export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
  * Runs all container preflights before Stryker starts mutating.
  *
  * @param packageCwd - Target package cwd inside `/work`.
- *
- * @returns Promise resolving after all preflights pass.
  *
  * @example
  * ```ts

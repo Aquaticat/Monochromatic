@@ -16,7 +16,7 @@ await describe({
           mutateFile: 'src/io/glob.ts',
           reportFile: '/out/glob.json',
           dryRunOnly: false,
-          timeoutMS: 5000,
+          timeoutMS: 5_000,
           prioritizePerformanceOverAccuracy: false,
           tsconfigFile: 'tsconfig.json',
         },);
@@ -39,13 +39,13 @@ await describe({
           mutateFile: 'src/a.ts',
           reportFile: '/out/a.json',
           dryRunOnly: true,
-          timeoutMS: 1234,
+          timeoutMS: 1_234,
           prioritizePerformanceOverAccuracy: true,
           tsconfigFile: 'tsconfig.json',
         },);
 
         expect(config.dryRunOnly,).toBe(true,);
-        expect(config.timeoutMS,).toBe(1234,);
+        expect(config.timeoutMS,).toBe(1_234,);
         expect(config.thresholds.break,).toBeNull();
         expect(config.typescriptChecker.prioritizePerformanceOverAccuracy,).toBe(true,);
       },

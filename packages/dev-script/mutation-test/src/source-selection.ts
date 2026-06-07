@@ -52,6 +52,16 @@ const TEST_SUFFIXES = [
 ] as const;
 
 /**
+ * Sentinel marking files that remain mutation targets.
+ */
+const INCLUDED_SOURCE = Symbol('included source');
+
+/**
+ * Exclusion reason or inclusion sentinel for source selection.
+ */
+type ExclusionReason = string | typeof INCLUDED_SOURCE;
+
+/**
  * Returns all files under a directory as absolute paths.
  *
  * @param directory - Directory to walk.
@@ -64,11 +74,20 @@ const TEST_SUFFIXES = [
  * ```
  */
 async function walkFiles(directory: string,): Promise<readonly string[]> {
+  /**
+   * Directory entries immediately under current directory.
+   */
   const entries = await readdir(
     directory,
     { withFileTypes: true, },
   );
-  const nested = await Promise.all(entries.map(async function walkEntry(entry,): Promise<readonly string[]> {
+  /**
+   * File lists returned by each child entry.
+   */
+  const nested = await Promise.all(entries.map(function walkEntry(entry,): Promise<readonly string[]> {
+    /**
+     * Absolute path to current child entry.
+     */
     const absolute = join(
       directory,
       entry.name,
@@ -77,7 +96,7 @@ async function walkFiles(directory: string,): Promise<readonly string[]> {
     if (entry.isDirectory())
       return walkFiles(absolute,);
 
-    return entry.isFile() ? [absolute,] : [];
+    return Promise.resolve(entry.isFile() ? [absolute,] : [],);
   },),);
 
   return nested.flat();
@@ -88,7 +107,7 @@ async function walkFiles(directory: string,): Promise<readonly string[]> {
  *
  * @param options - Candidate file and configured extra exclusions.
  *
- * @returns Reason string, or undefined when file remains eligible.
+ * @returns Reason string, or inclusion sentinel when file remains eligible.
  *
  * @example
  * ```ts
@@ -99,26 +118,32 @@ async function walkFiles(directory: string,): Promise<readonly string[]> {
 function exclusionReason(options: {
   readonly file: string;
   readonly extraExclusions: Readonly<Record<string, string>>;
-},): string | undefined {
-  if (!options.file.endsWith('.ts',))
+},): ExclusionReason {
+  if (!options.file
+    .endsWith('.ts',))
     return 'non-TypeScript source';
 
-  if (options.file.endsWith('.d.ts',))
+  if (options.file
+    .endsWith('.d.ts',))
     return DECLARATION_REASON;
 
-  const testReason = TEST_SUFFIXES.some(function hasTestSuffix(suffix,): boolean {
-    return options.file.endsWith(suffix,);
-  },)
-    ? TEST_FILE_REASON
-    : undefined;
+  /**
+   * Whether file suffix marks a test file.
+   */
+  const hasTestSuffix = TEST_SUFFIXES.some(function hasTestSuffix(suffix,): boolean {
+    return options.file
+      .endsWith(suffix,);
+  },);
 
-  if (testReason !== undefined)
-    return testReason;
+  if (hasTestSuffix)
+    return TEST_FILE_REASON;
 
-  if (toPosixPath(options.file,).split('/',).includes('fixtures',))
+  if (toPosixPath(options.file,)
+    .split('/',)
+    .includes('fixtures',))
     return FIXTURE_REASON;
 
-  return options.extraExclusions[options.file];
+  return options.extraExclusions[options.file] ?? INCLUDED_SOURCE;
 }
 
 /**
@@ -135,13 +160,28 @@ function exclusionReason(options: {
  * ```
  */
 export async function enumerateSourceFiles(options: SourceSelectionOptions,): Promise<SourceSelection> {
+  /**
+   * Source directory scanned for mutation targets.
+   */
   const srcDir = options.srcDir ?? DEFAULT_SRC_DIR;
+  /**
+   * Absolute source root to walk.
+   */
   const srcRoot = join(
     options.packageRoot,
     srcDir,
   );
+  /**
+   * Explicit package-relative source exclusions supplied by caller.
+   */
   const extraExclusions = options.extraExclusions ?? {};
+  /**
+   * Absolute TypeScript and non-TypeScript files under source root.
+   */
   const allFiles = await walkFiles(srcRoot,);
+  /**
+   * Package-relative file paths under source root.
+   */
   const relativeFiles = allFiles.map(function toPackageRelative(file,): string {
     return relativePosix({
       from: options.packageRoot,
@@ -149,7 +189,13 @@ export async function enumerateSourceFiles(options: SourceSelectionOptions,): Pr
     },);
   },);
 
+  /**
+   * Included package-relative mutation target files.
+   */
   const included: string[] = [];
+  /**
+   * Excluded package-relative files with documented reasons.
+   */
   const excluded: SourceExclusion[] = [];
 
   for (const file of relativeFiles) {
@@ -161,12 +207,15 @@ export async function enumerateSourceFiles(options: SourceSelectionOptions,): Pr
       continue;
     }
 
+    /**
+     * Exclusion reason or inclusion sentinel for current file.
+     */
     const reason = exclusionReason({
       file,
       extraExclusions,
     },);
 
-    if (reason === undefined) {
+    if (reason === INCLUDED_SOURCE) {
       included.push(file,);
     }
     else {
@@ -181,11 +230,15 @@ export async function enumerateSourceFiles(options: SourceSelectionOptions,): Pr
     files: sortStrings(included,),
     excluded: sortStrings(excluded.map(function exclusionKey(exclusion,): string {
       return `${exclusion.file}\u0000${exclusion.reason}`;
-    },),).map(function parseExclusion(entry,): SourceExclusion {
-      const [file = '', reason = '',] = entry.split('\u0000',);
+    },),)
+      .map(function parseExclusion(entry,): SourceExclusion {
+      /**
+       * Encoded exclusion fields split back into file and reason.
+       */
+      const parts = entry.split('\u0000',);
       return {
-        file,
-        reason,
+        file: parts[0] ?? '',
+        reason: parts[1] ?? '',
       };
     },),
   };

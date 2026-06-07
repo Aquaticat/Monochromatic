@@ -6,10 +6,9 @@ import {
 
 import {
   buildContainerArgs,
+  type ContainerArgsOptions,
   volumeMount,
 } from '../dist/final/node/index.mjs';
-
-import type { ContainerArgsOptions, } from '../dist/final/node/index.mjs';
 
 /**
  * Builds representative container argv options for unit tests.
@@ -34,13 +33,13 @@ function fixtureOptions(): ContainerArgsOptions {
       memory: '4g',
       cpus: '2',
       pidsLimit: 512,
-      sessionTimeoutSeconds: 3600,
+      sessionTimeoutSeconds: 3_600,
       workTmpfsSize: '6g',
     },
     selinuxRelabel: false,
     dryRunOnly: false,
     fullSuite: false,
-    timeoutMS: 5000,
+    timeoutMS: 5_000,
     prioritizePerformanceOverAccuracy: false,
   };
 }

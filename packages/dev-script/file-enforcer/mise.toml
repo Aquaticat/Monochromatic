@@ -53,7 +53,6 @@ usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-r
 run = '''
 {{vars.monorepo_root_setup}}
 {{vars.workspace_node_dispatch}}
-let raw_args = ($env.usage_args? | default '' | str trim)
-let args = if $raw_args == '' { [] } else { (nu -c $"echo ($raw_args)") | split row ' ' | where {|arg| $arg != '' } }
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|arg| $arg != '' })
 run_workspace_node $root packages/dev-script/mutation-test index --package packages/dev-script/file-enforcer ...$args
 '''

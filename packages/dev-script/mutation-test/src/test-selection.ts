@@ -52,11 +52,20 @@ const INTEGRATION_TEST_PATH = 'src/integration.unit.test.ts';
  * ```
  */
 async function walkFiles(directory: string,): Promise<readonly string[]> {
+  /**
+   * Directory entries immediately under current directory.
+   */
   const entries = await readdir(
     directory,
     { withFileTypes: true, },
   );
-  const nested = await Promise.all(entries.map(async function walkEntry(entry,): Promise<readonly string[]> {
+  /**
+   * File lists returned by each child entry.
+   */
+  const nested = await Promise.all(entries.map(function walkEntry(entry,): Promise<readonly string[]> {
+    /**
+     * Absolute path to current child entry.
+     */
     const absolute = join(
       directory,
       entry.name,
@@ -65,7 +74,7 @@ async function walkFiles(directory: string,): Promise<readonly string[]> {
     if (entry.isDirectory())
       return walkFiles(absolute,);
 
-    return entry.isFile() ? [absolute,] : [];
+    return Promise.resolve(entry.isFile() ? [absolute,] : [],);
   },),);
 
   return nested.flat();
@@ -84,7 +93,13 @@ async function walkFiles(directory: string,): Promise<readonly string[]> {
  * ```
  */
 async function listUnitTests(packageRoot: string,): Promise<readonly string[]> {
-  const files = await walkFiles(join(packageRoot, SRC_DIR,),);
+  /**
+   * Absolute files discovered under package source tree.
+   */
+  const files = await walkFiles(join(
+    packageRoot,
+    SRC_DIR,
+  ),);
   return sortStrings(files
     .map(function toRelative(file,): string {
       return relativePosix({
@@ -114,9 +129,11 @@ export function stemsAreRelated(options: {
   readonly sourceStem: string;
   readonly testStem: string;
 },): boolean {
-  return options.sourceStem === options.testStem
-    || options.sourceStem.startsWith(`${options.testStem}-`,)
-    || options.testStem.startsWith(`${options.sourceStem}-`,);
+  return (options.sourceStem === options.testStem)
+    || options.sourceStem
+    .startsWith(`${options.testStem}-`,)
+    || options.testStem
+    .startsWith(`${options.sourceStem}-`,);
 }
 
 /**
@@ -140,14 +157,29 @@ export function stemsAreRelated(options: {
  * ```
  */
 export async function selectTestsForSource(options: TestSelectionOptions,): Promise<readonly string[]> {
+  /**
+   * Package-relative unit tests available to mutation runs.
+   */
   const tests = await listUnitTests(options.packageRoot,);
 
   if (options.fullSuite)
     return tests;
 
+  /**
+   * Directory containing current source file.
+   */
   const sourceDir = dirnamePosix(options.sourceFile,);
+  /**
+   * Basename stem for current source file.
+   */
   const sourceStem = basenameWithoutTs(options.sourceFile,);
+  /**
+   * Manually configured package-wide tests.
+   */
   const packageWideTests = options.packageWideTests ?? [];
+  /**
+   * Tests selected for current source file.
+   */
   const selected = tests.filter(function isRelatedTest(testFile,): boolean {
     if (testFile === INTEGRATION_TEST_PATH)
       return true;
@@ -161,7 +193,11 @@ export async function selectTestsForSource(options: TestSelectionOptions,): Prom
     if (dirnamePosix(testFile,) !== sourceDir)
       return false;
 
-    const testStem = stripTsExtension(basenameWithoutTs(testFile,).slice(
+    /**
+     * Unit test basename without `.unit.test.ts`.
+     */
+    const testStem = stripTsExtension(basenameWithoutTs(testFile,)
+      .slice(
       0,
       -'.unit.test'.length,
     ),);

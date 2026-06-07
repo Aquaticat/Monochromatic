@@ -15,6 +15,7 @@ import {
   mutationScore,
   parseStatus,
   ZERO_TOTALS,
+  type ParsedMutant,
 } from './report-parse.ts';
 import type {
   MutantFinding,
@@ -38,33 +39,83 @@ export type ParsedReport = {
 };
 
 /**
- * Records a survivor or timeout finding when status deserves user attention.
+ * Parsed mutant paired with its source file.
+ */
+type FileMutant = {
+  readonly file: string;
+  readonly mutant: ParsedMutant;
+};
+
+/**
+ * Report read success.
+ */
+type ReportReadSuccess = {
+  readonly ok: true;
+  readonly report: ParsedReport;
+};
+
+/**
+ * Report read failure.
+ */
+type ReportReadFailure = {
+  readonly ok: false;
+  readonly path: string;
+};
+
+/**
+ * Report read result.
+ */
+type ReportReadResult = ReportReadSuccess | ReportReadFailure;
+
+/**
+ * Converts one file mutant pair to a finding.
  *
- * @param options - Current finding list and mutant pair.
+ * @param fileMutant - Parsed mutant with owning file.
  *
- * @returns Nothing.
+ * @returns User-facing finding.
  *
  * @example
  * ```ts
- * pushFinding({ findings: [], file: 'src/a.ts', mutant });
+ * findingFromFileMutant({ file: 'src/a.ts', mutant });
  * ```
  */
-function pushFinding(options: {
-  readonly findings: MutantFinding[];
-  readonly file: string;
-  readonly mutant: ReturnType<typeof mutantsFromReport>[number][1];
-},): void {
-  if (options.mutant.status !== 'Survived' && options.mutant.status !== 'Timeout')
-    return;
+function findingFromFileMutant(fileMutant: FileMutant,): MutantFinding {
+  /**
+   * Parsed mutant reported by Stryker.
+   */
+  const { mutant, } = fileMutant;
+  return {
+    file: fileMutant.file,
+    id: mutant.id,
+    mutatorName: mutant.mutatorName,
+    replacement: mutant.replacement,
+    status: mutant.status,
+    location: mutant.location,
+    description: mutant.description,
+  };
+}
 
-  options.findings.push({
-    file: options.file,
-    id: options.mutant.id,
-    mutatorName: options.mutant.mutatorName,
-    replacement: options.mutant.replacement,
-    status: options.mutant.status,
-    location: options.mutant.location,
-    description: options.mutant.description,
+/**
+ * Extracts file-mutant pairs from parsed reports.
+ *
+ * @param reports - Parsed Stryker reports.
+ *
+ * @returns Flat file-mutant list.
+ *
+ * @example
+ * ```ts
+ * fileMutantsFromReports([{ path: 'x.json', json: { files: {} } }]);
+ * ```
+ */
+function fileMutantsFromReports(reports: readonly ParsedReport[],): readonly FileMutant[] {
+  return reports.flatMap(function fileMutantsForReport(report,): readonly FileMutant[] {
+    return mutantsFromReport(report.json,)
+      .map(function toFileMutant(pair,): FileMutant {
+        return {
+          file: pair[0],
+          mutant: pair[1],
+        };
+      },);
   },);
 }
 
@@ -81,19 +132,41 @@ function pushFinding(options: {
  * ```
  */
 export function aggregateParsedReports(reports: readonly ParsedReport[],): MutationAggregate {
-  let totals: MutationTotals = ZERO_TOTALS;
-  const findings: MutantFinding[] = [];
-
-  for (const report of reports) {
-    for (const [file, mutant,] of mutantsFromReport(report.json,)) {
-      totals = addStatus({ totals, status: mutant.status, },);
-      pushFinding({
-        findings,
-        file,
-        mutant,
+  /**
+   * Flat list of every parsed mutant with its file path.
+   */
+  const fileMutants = fileMutantsFromReports(reports,);
+  /**
+   * Raw mutant totals accumulated across all reports.
+   */
+  const totals: MutationTotals = fileMutants.reduce(
+    function addMutantStatus(
+      currentTotals,
+      fileMutant,
+    ): MutationTotals {
+      return addStatus({
+        totals: currentTotals,
+        status: fileMutant.mutant
+          .status,
       },);
-    }
-  }
+    },
+    ZERO_TOTALS,
+  );
+  /**
+   * Survived and timed-out mutants requiring user review.
+   */
+  const findings = fileMutants
+    .filter(function isFinding(fileMutant,): boolean {
+      /**
+       * Mutant status used to decide whether finding needs review.
+       */
+      const { status, } = fileMutant.mutant;
+      return (status === 'Survived')
+        || (status === 'Timeout');
+    },)
+    .map(function toFinding(fileMutant,): MutantFinding {
+      return findingFromFileMutant(fileMutant,);
+    },);
 
   return {
     totals,
@@ -119,10 +192,44 @@ export function aggregateParsedReports(reports: readonly ParsedReport[],): Mutat
  * ```
  */
 async function readReport(reportFile: string,): Promise<ParsedReport> {
+  /**
+   * Raw Stryker JSON report text.
+   */
+  const reportJson = await readFile(
+    reportFile,
+    'utf8',
+  );
   return {
     path: reportFile,
-    json: JSON.parse(await readFile(reportFile, 'utf8',),) as unknown,
+    json: JSON.parse(reportJson,) as unknown,
   };
+}
+
+/**
+ * Reads one report and captures failures as data.
+ *
+ * @param reportFile - JSON report path.
+ *
+ * @returns Report read result.
+ *
+ * @example
+ * ```ts
+ * await readReportResult('/tmp/mutation.json');
+ * ```
+ */
+async function readReportResult(reportFile: string,): Promise<ReportReadResult> {
+  try {
+    return {
+      ok: true,
+      report: await readReport(reportFile,),
+    };
+  }
+  catch {
+    return {
+      ok: false,
+      path: reportFile,
+    };
+  }
 }
 
 /**
@@ -138,18 +245,35 @@ async function readReport(reportFile: string,): Promise<ParsedReport> {
  * ```
  */
 export async function aggregateReports(reportFiles: readonly string[],): Promise<MutationAggregate> {
-  const parsedReports: ParsedReport[] = [];
-  const failedReports: string[] = [];
-
-  for (const reportFile of reportFiles) {
-    try {
-      parsedReports.push(await readReport(reportFile,),);
-    }
-    catch {
-      failedReports.push(reportFile,);
-    }
-  }
-
+  /**
+   * Per-report read results preserving failures as values.
+   */
+  const readResults = await Promise.all(reportFiles.map(function readOneReport(reportFile,): Promise<ReportReadResult> {
+    return readReportResult(reportFile,);
+  },),);
+  /**
+   * Successfully parsed reports.
+   */
+  const parsedReports = readResults
+    .filter(function isSuccess(result,): result is ReportReadSuccess {
+      return result.ok;
+    },)
+    .map(function report(result,): ParsedReport {
+      return result.report;
+    },);
+  /**
+   * Report paths that could not be read or parsed.
+   */
+  const failedReports = readResults
+    .filter(function isFailure(result,): result is ReportReadFailure {
+      return !result.ok;
+    },)
+    .map(function failedPath(result,): string {
+      return result.path;
+    },);
+  /**
+   * Aggregate over every successfully parsed report.
+   */
   const aggregate = aggregateParsedReports(parsedReports,);
   return {
     ...aggregate,

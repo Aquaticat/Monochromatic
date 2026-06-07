@@ -55,12 +55,23 @@ export function parseBoolean(value: string,): boolean {
  * ```
  */
 function argvToRecord(argv: readonly string[],): Readonly<Record<string, string>> {
-  const values: Record<string, string> = {};
-  let cursor = 0;
+  /**
+   * Mutable argv parser state for one entrypoint invocation.
+   */
+  const state = {
+    values: {} as Record<string, string>,
+    cursor: 0,
+  };
 
-  while (cursor < argv.length) {
-    const key = argv[cursor];
-    const value = argv[cursor + 1];
+  while (state.cursor < argv.length) {
+    /**
+     * Current option key, expected to start with `--`.
+     */
+    const key = argv[state.cursor];
+    /**
+     * Value token immediately following current option key.
+     */
+    const value = argv[state.cursor + 1];
 
     if (key === undefined)
       break;
@@ -71,11 +82,11 @@ function argvToRecord(argv: readonly string[],): Readonly<Record<string, string>
     if (value === undefined)
       throw new Error(`Missing value for ${key}`,);
 
-    values[key.slice('--'.length,)] = value;
-    cursor += 2;
+    state.values[key.slice('--'.length,)] = value;
+    state.cursor += 2;
   }
 
-  return values;
+  return state.values;
 }
 
 /**
@@ -95,6 +106,9 @@ function requiredOption(options: {
   readonly values: Readonly<Record<string, string>>;
   readonly name: string;
 },): string {
+  /**
+   * Required option value from parsed argv record.
+   */
   const value = options.values[options.name];
 
   if (value === undefined)
@@ -116,12 +130,24 @@ function requiredOption(options: {
  * ```
  */
 export function parseInContainerArgs(argv: readonly string[],): InContainerOptions {
+  /**
+   * Parsed long-option values keyed without leading dashes.
+   */
   const values = argvToRecord(argv,);
 
   return {
-    packagePath: requiredOption({ values, name: 'package', },),
-    mutateFile: requiredOption({ values, name: 'mutate', },),
-    reportFile: requiredOption({ values, name: 'report', },),
+    packagePath: requiredOption({
+      values,
+      name: 'package',
+    },),
+    mutateFile: requiredOption({
+      values,
+      name: 'mutate',
+    },),
+    reportFile: requiredOption({
+      values,
+      name: 'report',
+    },),
     dryRunOnly: parseBoolean(values['dry-run-only'] ?? 'false',),
     fullSuite: parseBoolean(values['full-suite'] ?? 'false',),
   };

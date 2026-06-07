@@ -50,8 +50,6 @@ export type { InContainerOptions, } from './in-container-options.ts';
  *
  * @param options - Parsed entrypoint options.
  *
- * @returns Promise resolving after Stryker completes.
- *
  * @example
  * ```ts
  * await runInContainer(parseInContainerArgs(process.argv.slice(2)));
@@ -60,6 +58,9 @@ export type { InContainerOptions, } from './in-container-options.ts';
 export async function runInContainer(options: InContainerOptions,): Promise<void> {
   await rsyncSourceToWorkTree();
   await recreateNodeModulesSymlinks();
+  /**
+   * Target package working directory inside writable container work tree.
+   */
   const packageCwd = join(
     WORK_MOUNT,
     options.packagePath,
@@ -74,9 +75,14 @@ export async function runInContainer(options: InContainerOptions,): Promise<void
 /**
  * Whether this module is running as the process entrypoint.
  */
-const isDirectEntrypoint = process.argv[1] !== undefined
-  && import.meta.url === pathToFileURL(process.argv[1],).href;
+const isDirectEntrypoint = (process.argv[1] !== undefined)
+  && (import.meta.url
+    === pathToFileURL(process.argv[1],)
+    .href);
 
 if (isDirectEntrypoint) {
-  await runInContainer(parseInContainerArgs(process.argv.slice(2,),),);
+  await runInContainer(
+    parseInContainerArgs(process.argv
+      .slice(2,),),
+  );
 }
