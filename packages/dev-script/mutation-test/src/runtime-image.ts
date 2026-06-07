@@ -1,0 +1,196 @@
+/**
+ * Runtime image identity and local Podman build orchestration.
+ *
+ * @example
+ * ```ts
+ * await runtimeImage({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', nodeTag: 'node-latest' });
+ * ```
+ */
+
+import { readFile, } from 'node:fs/promises';
+import { arch, platform, } from 'node:os';
+import { join, } from 'node:path';
+import { createHash, } from 'node:crypto';
+
+import spawn from 'nano-spawn';
+
+import { sanitizeTagFragment, } from './path-utils.ts';
+import type {
+  RuntimeImage,
+  RuntimeImageOptions,
+} from './types.ts';
+
+/**
+ * Prefix for locally built mutation runtime images.
+ */
+const IMAGE_PREFIX = 'localhost/monochromatic-mutation-runtime';
+
+/**
+ * Length of lockfile hash embedded in local image tags.
+ */
+const TAG_HASH_LENGTH = 16;
+
+/**
+ * Computes SHA-256 hex digest for bytes.
+ *
+ * @param content - Content to hash.
+ *
+ * @returns Hex digest.
+ *
+ * @example
+ * ```ts
+ * sha256Hex(Buffer.from('x'));
+ * ```
+ */
+export function sha256Hex(content: Buffer,): string {
+  return createHash('sha256',).update(content,).digest('hex',);
+}
+
+/**
+ * Returns platform tag fragment used by runtime image identity.
+ *
+ * @param override - Optional debug override.
+ *
+ * @returns Sanitised platform fragment.
+ *
+ * @example
+ * ```ts
+ * platformTag('linux/arm64');
+ * // 'linux-arm64'
+ * ```
+ */
+export function platformTag(override?: string,): string {
+  const raw = override ?? `${platform()}-${arch()}`;
+  return sanitizeTagFragment(raw,);
+}
+
+/**
+ * Computes local runtime image identity from lockfile hash and platform.
+ *
+ * @param options - Repository and runtime package paths.
+ *
+ * @returns Runtime image reference and diagnostic inputs.
+ *
+ * @example
+ * ```ts
+ * await runtimeImage({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', nodeTag: 'node-latest' });
+ * ```
+ */
+export async function runtimeImage(options: RuntimeImageOptions,): Promise<RuntimeImage> {
+  const lockfile = await readFile(join(options.repoRoot, 'pnpm-lock.yaml',),);
+  const lockHash = sha256Hex(lockfile,);
+  const selectedPlatform = platformTag(options.platformOverride,);
+  const reference = `${IMAGE_PREFIX}:${sanitizeTagFragment(options.nodeTag,)}-${lockHash.slice(
+    0,
+    TAG_HASH_LENGTH,
+  )}-${selectedPlatform}`;
+
+  return {
+    reference,
+    lockHash,
+    platform: selectedPlatform,
+  };
+}
+
+/**
+ * Tests whether Podman already has a local image tag.
+ *
+ * @param image - Image reference to check.
+ *
+ * @returns True when the image exists locally.
+ *
+ * @example
+ * ```ts
+ * await imageExists('localhost/example:tag');
+ * ```
+ */
+export async function imageExists(image: string,): Promise<boolean> {
+  try {
+    await spawn(
+      'podman',
+      [
+        'image',
+        'exists',
+        image,
+      ],
+    );
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+/**
+ * Builds the runtime image with the repository root as build context.
+ *
+ * @param options - Build context and image reference.
+ *
+ * @returns Promise that resolves when Podman finishes successfully.
+ *
+ * @example
+ * ```ts
+ * await buildRuntimeImage({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', image: 'localhost/example:tag' });
+ * ```
+ */
+export async function buildRuntimeImage(options: {
+  readonly repoRoot: string;
+  readonly packageRoot: string;
+  readonly image: string;
+},): Promise<void> {
+  const containerfile = join(
+    options.packageRoot,
+    'runtime',
+    'Containerfile',
+  );
+
+  await spawn(
+    'podman',
+    [
+      'build',
+      '--pull=never',
+      '--tag',
+      options.image,
+      '--file',
+      containerfile,
+      options.repoRoot,
+    ],
+    {
+      stdout: 'inherit',
+      stderr: 'inherit',
+      stdin: 'inherit',
+    },
+  );
+}
+
+/**
+ * Ensures the content-addressed runtime image exists locally.
+ *
+ * @param options - Image identity inputs and skip flag.
+ *
+ * @returns Runtime image identity.
+ *
+ * @example
+ * ```ts
+ * await ensureRuntimeImage({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', nodeTag: 'node-latest', skipBuild: false });
+ * ```
+ */
+export async function ensureRuntimeImage(options: RuntimeImageOptions & {
+  readonly skipBuild: boolean;
+},): Promise<RuntimeImage> {
+  const image = await runtimeImage(options,);
+
+  if (options.skipBuild)
+    return image;
+
+  if (await imageExists(image.reference,))
+    return image;
+
+  await buildRuntimeImage({
+    repoRoot: options.repoRoot,
+    packageRoot: options.packageRoot,
+    image: image.reference,
+  },);
+
+  return image;
+}

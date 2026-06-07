@@ -46,3 +46,14 @@ $files | each {|file|
   with-env { FILE_ENFORCER_FUZZ_BUDGET_MS: $budget } { ^node $file }
 }
 '''
+
+[tasks."test:mutation"]
+description = "Run container-isolated Stryker mutation tests"
+usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-relative source files"'
+run = '''
+{{vars.monorepo_root_setup}}
+{{vars.workspace_node_dispatch}}
+let raw_args = ($env.usage_args? | default '' | str trim)
+let args = if $raw_args == '' { [] } else { (nu -c $"echo ($raw_args)") | split row ' ' | where {|arg| $arg != '' } }
+run_workspace_node $root packages/dev-script/mutation-test index --package packages/dev-script/file-enforcer ...$args
+'''

@@ -202,6 +202,21 @@ if (!hasPython)
   await exec('apt-get', ['install', '--yes', 'python3',],);
 ```
 
+## Mutation testing
+
+Mutation testing is opt-in because it builds a local Podman runtime image and runs
+one Stryker session per production source file.
+
+```bash
+mise run //packages/dev-script/file-enforcer:test:mutation -- src/io/glob-mirror.ts
+mise run //packages/dev-script/file-enforcer:test:mutation -- --full-suite
+```
+
+The task dynamically enumerates production `src/**/*.ts` files, excludes tests,
+declaration files, and fixtures, and prints the resolved count. Reports are written
+to a host temp directory printed by the run. The aggregate score is weighted from
+raw Stryker mutant counts.
+
 ## Package management
 
 `ensurePackage()` ensures a system-level binary exists on the current machine,

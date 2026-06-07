@@ -1,0 +1,27 @@
+FROM fedora:latest
+
+ENV MISE_DATA_DIR=/mise
+ENV MISE_CONFIG_DIR=/mise
+ENV MISE_CACHE_DIR=/mise/cache
+ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH
+
+RUN dnf install --assumeyes dnf-plugins-core ca-certificates curl git rsync \
+  && dnf copr enable --assumeyes jdxcode/mise \
+  && printf '[gemfury-nushell]\nname=Gemfury Nushell Repo\nbaseurl=https://yum.fury.io/nushell/\nenabled=1\ngpgcheck=0\ngpgkey=https://yum.fury.io/nushell/gpg.key\n' > /etc/yum.repos.d/fury-nushell.repo \
+  && dnf install --assumeyes mise nushell \
+  && dnf clean all \
+  && rm --recursive --force /var/cache/dnf
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+WORKDIR /baked
+COPY . /baked
+
+RUN mise trust /baked/mise.toml \
+  && mise install --yes node npm:pnpm \
+  && ln --symbolic --force "$(mise exec node -- which node)" /usr/local/bin/node \
+  && ln --symbolic --force "$(mise exec node -- which npm)" /usr/local/bin/npm \
+  && ln --symbolic --force "$(mise exec node npm:pnpm -- which pnpm)" /usr/local/bin/pnpm \
+  && mise exec node npm:pnpm -- pnpm install --frozen-lockfile
+
+CMD ["node", "--version"]
