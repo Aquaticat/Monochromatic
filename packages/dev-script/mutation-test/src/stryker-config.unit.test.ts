@@ -24,6 +24,9 @@ await describe({
         expect(config.testRunner,).toBe('command',);
         expect(config.coverageAnalysis,).toBe('off',);
         expect(config.inPlace,).toBe(true,);
+        expect(config.plugins,).toEqual([
+          '/baked/packages/dev-script/mutation-test/node_modules/@stryker-mutator/typescript-checker/dist/src/index.js',
+        ],);
         expect(config.checkers,).toEqual(['typescript',],);
         expect(config.typescriptChecker.prioritizePerformanceOverAccuracy,).toBe(false,);
         expect(config.reporters,).toEqual(['clear-text', 'json',],);

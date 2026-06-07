@@ -18,6 +18,12 @@ import { buildNuCommand, } from './inline-nu.ts';
 import type { StrykerConfigOptions, } from './types.ts';
 
 /**
+ * Baked Stryker TypeScript checker plugin entrypoint.
+ */
+const BAKED_TYPESCRIPT_CHECKER_PLUGIN =
+  '/baked/packages/dev-script/mutation-test/node_modules/@stryker-mutator/typescript-checker/dist/src/index.js';
+
+/**
  * JSON-compatible Stryker options emitted into the container work tree.
  */
 export type StrykerJsonConfig = {
@@ -28,6 +34,7 @@ export type StrykerJsonConfig = {
   readonly mutate: readonly string[];
   readonly coverageAnalysis: 'off';
   readonly inPlace: true;
+  readonly plugins: readonly [typeof BAKED_TYPESCRIPT_CHECKER_PLUGIN];
   readonly checkers: readonly ['typescript'];
   readonly tsconfigFile: string;
   readonly typescriptChecker: {
@@ -80,6 +87,7 @@ export function buildStrykerConfig(options: StrykerConfigOptions,): StrykerJsonC
     mutate: [options.mutateFile,],
     coverageAnalysis: 'off',
     inPlace: true,
+    plugins: [BAKED_TYPESCRIPT_CHECKER_PLUGIN,],
     checkers: ['typescript',],
     tsconfigFile: options.tsconfigFile,
     typescriptChecker: {
