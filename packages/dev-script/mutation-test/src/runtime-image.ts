@@ -18,6 +18,7 @@ import { createHash, } from 'node:crypto';
 import spawn from 'nano-spawn';
 
 import { sanitizeTagFragment, } from './path-utils.ts';
+import { stageRuntimeBuildContext, } from './runtime-context.ts';
 import { runtimeInputHash, } from './runtime-inputs.ts';
 import type {
   RuntimeImage,
@@ -170,11 +171,11 @@ export async function imageExists(image: string,): Promise<boolean> {
  *
  * @example
  * ```ts
- * buildRuntimeImageArgs({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test', image: 'localhost/example:tag' });
+ * buildRuntimeImageArgs({ contextRoot: '/tmp/context', packageRoot: '/tmp/context/packages/dev-script/mutation-test', image: 'localhost/example:tag' });
  * ```
  */
 export function buildRuntimeImageArgs(options: {
-  readonly repoRoot: string;
+  readonly contextRoot: string;
   readonly packageRoot: string;
   readonly image: string;
 },): readonly string[] {
@@ -186,30 +187,20 @@ export function buildRuntimeImageArgs(options: {
     'runtime',
     'Containerfile',
   );
-  /**
-   * Absolute path to context ignorefile for mutation runtime builds.
-   */
-  const ignorefile = join(
-    options.packageRoot,
-    'runtime',
-    RUNTIME_IGNOREFILE,
-  );
 
   return [
     'build',
     '--pull=missing',
-    '--ignorefile',
-    ignorefile,
     '--tag',
     options.image,
     '--file',
     containerfile,
-    options.repoRoot,
+    options.contextRoot,
   ];
 }
 
 /**
- * Builds the runtime image with the repository root as build context.
+ * Builds the runtime image with a staged minimal build context.
  *
  * @param options - Build context and image reference.
  *
@@ -223,9 +214,21 @@ export async function buildRuntimeImage(options: {
   readonly packageRoot: string;
   readonly image: string;
 },): Promise<void> {
+  /**
+   * Minimal temporary build context containing manifests and runtime source.
+   */
+  await using buildContext = await stageRuntimeBuildContext({
+    repoRoot: options.repoRoot,
+    packageRoot: options.packageRoot,
+  },);
+
   await spawn(
     'podman',
-    buildRuntimeImageArgs(options,),
+    buildRuntimeImageArgs({
+      contextRoot: buildContext.root,
+      packageRoot: buildContext.packageRoot,
+      image: options.image,
+    },),
     {
       stdout: 'inherit',
       stderr: 'inherit',

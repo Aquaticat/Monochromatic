@@ -107,16 +107,16 @@ async function writeRuntimeFixture(options: {
       'packages:\n  - "packages/*/*"\n  - "packages-deprecated/*/*"\n',
     ),
     writeFile(
+      join(options.repoRoot, 'pnpm-lock.yaml',),
+      'lockfileVersion: 9.0\n',
+    ),
+    writeFile(
       join(packageRoot, 'package.json',),
       '{"name":"@monochromatic-dev/dev-script-mutation-test"}\n',
     ),
     writeFile(
       join(runtimeRoot, 'Containerfile',),
       'FROM fedora:latest\n',
-    ),
-    writeFile(
-      join(runtimeRoot, 'Containerfile.dockerignore',),
-      '**/target\n',
     ),
     writeFile(
       join(sourceRoot, 'in-container.ts',),
@@ -160,21 +160,19 @@ await describe({
       name: 'pulls a missing Fedora base while keeping runtime images local',
       fn: async () => {
         const args = buildRuntimeImageArgs({
-          repoRoot: '/repo',
-          packageRoot: '/repo/packages/dev-script/mutation-test',
+          contextRoot: '/tmp/mutation-runtime-context',
+          packageRoot: '/tmp/mutation-runtime-context/packages/dev-script/mutation-test',
           image: 'localhost/example:tag',
         },);
 
         expect(args,).toEqual([
           'build',
           '--pull=missing',
-          '--ignorefile',
-          '/repo/packages/dev-script/mutation-test/runtime/Containerfile.dockerignore',
           '--tag',
           'localhost/example:tag',
           '--file',
-          '/repo/packages/dev-script/mutation-test/runtime/Containerfile',
-          '/repo',
+          '/tmp/mutation-runtime-context/packages/dev-script/mutation-test/runtime/Containerfile',
+          '/tmp/mutation-runtime-context',
         ],);
       },
     },),

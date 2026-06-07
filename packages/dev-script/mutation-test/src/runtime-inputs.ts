@@ -34,14 +34,9 @@ const TYPESCRIPT_EXTENSION = '.ts';
 const PACKAGE_MANIFEST = 'package.json';
 
 /**
- * Runtime build context ignorefile name.
- */
-const RUNTIME_IGNOREFILE = 'Containerfile.dockerignore';
-
-/**
  * File included in runtime image input hashing.
  */
-type RuntimeInputFile = {
+export type RuntimeInputFile = {
   readonly absolutePath: string;
   readonly relativePath: string;
 };
@@ -285,6 +280,10 @@ function staticRuntimeInputFiles(options: {
       'pnpm-workspace.yaml',
     ),
     join(
+      options.repoRoot,
+      'pnpm-lock.yaml',
+    ),
+    join(
       options.packageRoot,
       PACKAGE_MANIFEST,
     ),
@@ -292,11 +291,6 @@ function staticRuntimeInputFiles(options: {
       options.packageRoot,
       'runtime',
       'Containerfile',
-    ),
-    join(
-      options.packageRoot,
-      'runtime',
-      RUNTIME_IGNOREFILE,
     ),
   ];
 }
@@ -338,7 +332,7 @@ function runtimeInputFile(options: {
  * await runtimeInputFiles({ repoRoot: '/repo', packageRoot: '/repo/packages/dev-script/mutation-test' });
  * ```
  */
-async function runtimeInputFiles(options: {
+export async function runtimeInputFiles(options: {
   readonly repoRoot: string;
   readonly packageRoot: string;
 },): Promise<readonly RuntimeInputFile[]> {
