@@ -372,8 +372,10 @@ fixed total.
 ### `src/test-selection.ts`
 
 For each source file, select sibling `*.unit.test.ts`, related regression tests
-(`*-regression.unit.test.ts`), package integration tests (`integration.unit.test.ts`), and any manually
-configured package-wide tests. Provide a `--full-suite` mode that runs the package's full
+(`*-regression.unit.test.ts` whose stem matches the source stem after removing the `-regression` suffix),
+package integration tests (`integration.unit.test.ts`), and any manually configured package-wide tests. Do not
+include unrelated regression tests by suffix alone; `--full-suite` covers that broader pass. Provide a
+`--full-suite` mode that runs the package's full
 unit/regression/integration set for every source file. The default per-file selection is a runtime
 optimization; `--full-suite` is the stricter pass. Test paths handed to the sequencer are relative to the
 container work tree, never absolute host paths.
