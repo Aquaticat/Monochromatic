@@ -211,6 +211,9 @@ export async function runStryker(options: {
    */
   const tsconfigFile = await writeMutationTsconfig({
     packageCwd: options.packageCwd,
+    mutateFile: options
+      .options
+      .mutateFile,
   },);
   /**
    * Generated Stryker config path passed to CLI.
