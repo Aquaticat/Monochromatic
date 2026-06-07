@@ -273,6 +273,14 @@ function staticRuntimeInputFiles(options: {
     ),
     join(
       options.repoRoot,
+      '.pnpmfile.mjs',
+    ),
+    join(
+      options.repoRoot,
+      '.pnpmfile.policies.json',
+    ),
+    join(
+      options.repoRoot,
       PACKAGE_MANIFEST,
     ),
     join(

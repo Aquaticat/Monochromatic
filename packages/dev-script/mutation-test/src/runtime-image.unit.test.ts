@@ -103,6 +103,14 @@ async function writeRuntimeFixture(options: {
       '{"name":"fixture"}\n',
     ),
     writeFile(
+      join(options.repoRoot, '.pnpmfile.mjs',),
+      'export const hooks = {};\n',
+    ),
+    writeFile(
+      join(options.repoRoot, '.pnpmfile.policies.json',),
+      '{}\n',
+    ),
+    writeFile(
       join(options.repoRoot, 'pnpm-workspace.yaml',),
       'packages:\n  - "packages/*/*"\n  - "packages-deprecated/*/*"\n',
     ),
