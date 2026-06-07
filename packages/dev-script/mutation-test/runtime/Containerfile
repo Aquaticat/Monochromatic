@@ -5,7 +5,7 @@ ENV MISE_CONFIG_DIR=/mise
 ENV MISE_CACHE_DIR=/mise/cache
 ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH
 
-RUN dnf install --assumeyes dnf-plugins-core ca-certificates curl git rsync \
+RUN dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic rsync \
   && dnf copr enable --assumeyes jdxcode/mise \
   && printf '[gemfury-nushell]\nname=Gemfury Nushell Repo\nbaseurl=https://yum.fury.io/nushell/\nenabled=1\ngpgcheck=0\ngpgkey=https://yum.fury.io/nushell/gpg.key\n' > /etc/yum.repos.d/fury-nushell.repo \
   && dnf install --assumeyes mise nushell \
