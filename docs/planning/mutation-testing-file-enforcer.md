@@ -123,7 +123,10 @@ container owns one source file's full Stryker session.
 
 The image bakes a repo-shaped tree with installed dependencies at a fixed path, for example `/baked`,
 containing `/baked/node_modules` (root virtual store) and `/baked/packages/*/node_modules` (the isolated
-per-package symlink farms). The container runs with these mounts and options:
+per-package symlink farms). The runtime image tag includes the lockfile hash, platform, and a hash of
+mutation-test runtime source, `runtime/Containerfile`, root `mise.toml`, and package metadata so baked
+entrypoint changes force a rebuild even when dependencies are unchanged. The container runs with these
+mounts and options:
 
 - repo source mounted read-only at `/src-ro` (used only as the rsync source);
 - a writable tmpfs work tree at `/work` (size-capped);
@@ -255,9 +258,11 @@ image. Do not use corepack. Build steps:
     full isolated `node_modules` layout while still using the repo's pinned package-manager version.
 
 `src/runtime-image.ts` owns the image reference. It computes a content-derived local tag, for example
-`localhost/monochromatic-mutation-runtime:node-latest-<lockHash>-<platform>`, checks whether it exists,
-and builds it if missing. Do not pin a single-architecture image and run it on another architecture by
-accident; let Podman select the host platform unless an explicit debug override is given.
+`localhost/monochromatic-mutation-runtime:node-latest-<lockHash>-<runtimeHash>-<platform>`, checks whether
+it exists, and builds it if missing. The build may pull `fedora:latest` when the base image is absent
+locally; per-file runtime containers still run with `--pull=never`. Do not pin a single-architecture image
+and run it on another architecture by accident; let Podman select the host platform unless an explicit
+debug override is given.
 
 ### `src/stryker-config.ts`
 
@@ -497,8 +502,9 @@ container gets a unique JSON report path under the host reports directory.
 - Whole-package runtime is unknown until measured. Mitigation: the one-file gate runs first and reports
   wall-clock; if the projection is intolerable, narrow per-file test selection or the checker before the
   full run, and record the decision.
-- The image rebuild is needed but missed. Mitigation: `src/runtime-image.ts` tags by lockfile hash and
-  platform and builds if the tag is missing, so a changed lockfile forces a rebuild automatically.
+- The image rebuild is needed but missed. Mitigation: `src/runtime-image.ts` tags by lockfile hash,
+  runtime input hash, and platform and builds if the tag is missing, so changed dependencies, runtime
+  source, image build recipe, root tool declarations, or platform force a rebuild automatically.
 - SELinux relabeling differs across hosts. Mitigation: make the `:Z` suffix configurable and copy the
   existing canary pattern when present.
 
