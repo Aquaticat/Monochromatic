@@ -14,10 +14,11 @@ below so future sessions can see why the design changed.
 
 Each claim here was checked by running a command or reading source, not from recall.
 
-- Host `node --version` is `v26.3.0`, so the repo's pinned `node = "latest"` (`mise.toml:52`) already
-  resolves to Node 26. Running `node packages/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts`,
+- Host `node --version` is `v26.3.0`, so the repo's pinned `node = "latest"` (`mise.toml:52`) resolved
+  to Node 26 when this plan was written. Running
+  `node packages/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts`,
   `node .../tracker.unit.test.ts`, and `node .../pipeline/inspect.unit.test.ts` all exit 0, so the harness
-  files run under Node 26 native type stripping.
+  files run under the repo-pinned latest Node's native type stripping.
 - The repo already runs property tests under Node: the `fuzz` task in
   `packages/dev-script/file-enforcer/mise.toml` calls `^node $file`. The standard `test:unit`
   task runs under Bun (`mise.toml:302`, `par-each { |file| bun $file }`).
@@ -95,7 +96,7 @@ performance mode or off if the whole-package run is intolerable.
 
 ```text
 mise task: test:mutation
-  -> host orchestrator (Node 26, from @monochromatic-dev/dev-script-mutation-test)
+  -> host orchestrator (repo-pinned latest Node from @monochromatic-dev/dev-script-mutation-test)
     -> resolve repo root and target package root
     -> ensure the runtime image exists (build if the lockfile-hash + platform tag is missing)
     -> enumerate target source files dynamically (no hard-coded count)
@@ -109,7 +110,7 @@ mise task: test:mutation
             -> run Stryker (inPlace) for the one mutated source file
                 -> Stryker TypeScript checker classifies type-invalid mutants as CompileError
                 -> Stryker command runner runs `nu -c <inline script>` per mutant
-                    -> inline Nu runs each selected .ts test file with Node 26, fresh process per file
+                    -> inline Nu runs each selected .ts test file with repo-pinned latest Node, fresh process per file
                 -> Stryker writes a per-file JSON report to the writable reports dir
     -> aggregate JSON reports by raw mutant counts (never by averaging per-file percentages)
     -> print score, survivors, compile errors, timeouts, and preflight failures
@@ -140,7 +141,7 @@ The entrypoint, before launching Stryker:
     `/baked/node_modules`, and each `/work/packages/<pkg>/node_modules` to
     `/baked/packages/<pkg>/node_modules`. Dependency `.ts`/`.js` resolution stays inside `/baked`
     (read-only). Workspace `/ts` imports resolve to real `packages/...` paths in `/work`, outside any
-    `node_modules` segment, which is what Node 26 native type stripping requires.
+    `node_modules` segment, which is what current Node native type stripping requires.
 
 Stryker then runs with `cwd` at `/work/packages/dev-script/file-enforcer` and `inPlace: true`, so it mutates
 the writable copy in place and restores it from its backup afterward. Because `inPlace` is on, Stryker does
@@ -238,8 +239,9 @@ Do not add `tsx`.
 
 ### `runtime/Containerfile`
 
-Build a runtime image containing Fedora userspace, Node 26, Nushell, pnpm installed through mise, and
-installed repo dependencies. Use `fedora:latest` as the base image. Do not use corepack. Build steps:
+Build a runtime image containing Fedora userspace, the repo-pinned latest Node installed through mise,
+Nushell, pnpm installed through mise, and installed repo dependencies. Use `fedora:latest` as the base
+image. Do not use corepack. Build steps:
 
 1.  Start from `fedora:latest` for the build platform Podman selects.
 2.  Install system prerequisites with `dnf`, including `rsync`, `git`, `curl`, `dnf-plugins-core`, and
@@ -253,8 +255,8 @@ installed repo dependencies. Use `fedora:latest` as the base image. Do not use c
     full isolated `node_modules` layout while still using the repo's pinned package-manager version.
 
 `src/runtime-image.ts` owns the image reference. It computes a content-derived local tag, for example
-`localhost/monochromatic-mutation-runtime:node26-<lockHash>-<platform>`, checks whether it exists, and
-builds it if missing. Do not pin a single-architecture image and run it on another architecture by
+`localhost/monochromatic-mutation-runtime:node-latest-<lockHash>-<platform>`, checks whether it exists,
+and builds it if missing. Do not pin a single-architecture image and run it on another architecture by
 accident; let Podman select the host platform unless an explicit debug override is given.
 
 ### `src/stryker-config.ts`
@@ -396,12 +398,12 @@ run = "<workspace_node_dispatch invocation of mutation-test, passing the target 
 
 ### `docs/decisions/mutation-testing.md`
 
-Record why Stryker, why the command runner, why Node 26 native TypeScript replaces `tsx`, why Podman has no
-Docker fallback, why Stryker runs inside one container per file, why dependencies are baked, why `inPlace`
-is required under `nodeLinker: isolated`, why default execution is per-source-file with `--full-suite`
-available, and the known accuracy and runtime tradeoffs.
+Record why Stryker, why the command runner, why the repo-pinned latest Node native TypeScript path replaces
+`tsx`, why Podman has no Docker fallback, why Stryker runs inside one container per file, why dependencies
+are baked, why `inPlace` is required under `nodeLinker: isolated`, why default execution is per-source-file
+with `--full-suite` available, and the known accuracy and runtime tradeoffs.
 
-## Node 26 runtime preflights
+## Latest-Node runtime preflights
 
 Run these from inside the restricted container before the mutation run.
 
@@ -435,13 +437,13 @@ container gets a unique JSON report path under the host reports directory.
     (no Docker fallback, no `tsx`), inline Nu inclusion, image-identity computation, source and test
     selection, and weighted report aggregation.
 2.  Runtime image smoke: build the image, then
-    `podman run --rm --pull=never <runtimeImage> node --version` and `... nu --version`; confirm Node 26
-    and Nushell.
+    `podman run --rm --pull=never <runtimeImage> node --version` and `... nu --version`; confirm the
+    repo-pinned latest Node and Nushell.
 3.  Baked dependency smoke: run a restricted container with the host `node_modules` deliberately
     unavailable and confirm selected tests still pass, proving the container uses baked dependencies.
-4.  Node 26 native TypeScript smoke: inside the container work tree, run one representative test file with
-    plain `node`; confirm no `tsx`, no loader hook, working import specifiers, and workspace `.ts` imports
-    resolving outside `node_modules`.
+4.  Latest-Node native TypeScript smoke: inside the container work tree, run one representative test file
+    with plain `node`; confirm no `tsx`, no loader hook, working import specifiers, and workspace `.ts`
+    imports resolving outside `node_modules`.
 5.  Inline Nu two-file smoke: pass two test files, confirm both markers appear and that a failure in either
     makes the container exit non-zero.
 6.  Stryker dry run: run `dryRunOnly` for one source file with the real container; confirm tests pass with
@@ -471,7 +473,7 @@ container gets a unique JSON report path under the host reports directory.
 1.  `tsx` is absent from package deps, catalog entries, commands, and docs.
 2.  No `.nu` file is added.
 3.  Podman is the only supported runtime.
-4.  Node 26 plain `.ts` execution is proven inside the container.
+4.  Plain `.ts` execution under the repo-pinned latest Node is proven inside the container.
 5.  Inline Nu proves all selected test files execute.
 6.  The container is networkless, root-read-only, capability-dropped, and resource-capped, and it executes
     only from the writable work tree, never from the read-only repo mount.
