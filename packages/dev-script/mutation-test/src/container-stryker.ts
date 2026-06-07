@@ -37,6 +37,11 @@ import { buildStrykerConfig, } from './stryker-config.ts';
 const DEFAULT_TIMEOUT_MS = 5_000;
 
 /**
+ * Stryker executable installed in the baked mutation-test package dependencies.
+ */
+const BAKED_STRYKER_BIN = '/baked/packages/dev-script/mutation-test/node_modules/.bin/stryker';
+
+/**
  * Reads selected tests from the host-provided environment variable.
  *
  * @returns Selected package-relative test files.
@@ -211,7 +216,7 @@ export async function runStryker(options: {
    */
   const tests = readSelectedTests();
   await spawn(
-    'node_modules/.bin/stryker',
+    BAKED_STRYKER_BIN,
     [
       'run',
       configFile,
