@@ -286,7 +286,9 @@ Build one Stryker config per source file (executed inside that file's container)
   mutate: ['<one source file, relative to the package>'],
   coverageAnalysis: 'off',
   inPlace: true,
-  plugins: ['/baked/packages/dev-script/mutation-test/node_modules/@stryker-mutator/typescript-checker/dist/src/index.js'],
+  plugins: [
+    '/baked/packages/dev-script/mutation-test/node_modules/@stryker-mutator/typescript-checker/dist/src/index.js',
+  ],
   checkers: ['typescript'],
   tsconfigFile: '<package or repo tsconfig that resolves /ts subpaths and .ts extensions>',
   typescriptChecker: { prioritizePerformanceOverAccuracy: false },
