@@ -124,12 +124,12 @@ container owns one source file's full Stryker session.
 The image bakes a repo-shaped tree with installed dependencies at a fixed path, for example `/baked`,
 containing `/baked/node_modules` (root virtual store) and `/baked/packages/*/node_modules` (the isolated
 per-package symlink farms). The host stages a minimal temporary build context containing root workspace
-manifests, workspace package manifests, and the mutation-test runtime source, not heavyweight artifacts such
-as Rust `target/`, VM `output/`, fuzz corpora, `node_modules`, or `dist`. The runtime image tag includes the
-lockfile hash, platform, and a hash of mutation-test runtime source, `runtime/Containerfile`, root
-`mise.toml`, root workspace manifests, and workspace package metadata so baked entrypoint and
-dependency-layout changes force a rebuild even when dependencies are unchanged. The container runs with
-these mounts and options:
+manifests, root `.pnpmfile.mjs`, workspace package manifests, and the mutation-test runtime source, not
+heavyweight artifacts such as Rust `target/`, VM `output/`, fuzz corpora, `node_modules`, or `dist`. The
+runtime image tag includes the lockfile hash, platform, and a hash of mutation-test runtime source,
+`runtime/Containerfile`, root `mise.toml`, root `.pnpmfile.mjs`, root workspace manifests, and workspace
+package metadata so baked entrypoint and dependency-layout changes force a rebuild even when dependencies
+are unchanged. The container runs with these mounts and options:
 
 - repo source mounted read-only at `/src-ro` (used only as the rsync source);
 - a writable tmpfs work tree at `/work` (size-capped);
@@ -256,8 +256,8 @@ image. Do not use corepack. Build steps:
 3.  Install Nushell with `dnf`. Nushell must exist before any mise task shell or inline Nu verification runs.
 4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node` and
     `npm:pnpm` tools. Do not activate or install the entire root toolset, since the image only needs Node and pnpm.
-5.  Copy the host-staged minimal build context into `/baked`: root manifests, workspace package manifests,
-    and mutation-test runtime source.
+5.  Copy the host-staged minimal build context into `/baked`: root manifests, root `.pnpmfile.mjs`,
+    workspace package manifests, and mutation-test runtime source.
 6.  Run `pnpm install --frozen-lockfile` through `mise exec node npm:pnpm -- ...` so `/baked` holds the
     full isolated `node_modules` layout while still using the repo's pinned package-manager version.
 
@@ -509,8 +509,8 @@ container gets a unique JSON report path under the host reports directory.
   full run, and record the decision.
 - The image rebuild is needed but missed. Mitigation: `src/runtime-image.ts` tags by lockfile hash,
   runtime input hash, and platform and builds if the tag is missing, so changed dependencies, runtime
-  source, image build recipe, root tool declarations, workspace manifests, or platform force a rebuild
-  automatically.
+  source, image build recipe, root tool declarations, root `.pnpmfile.mjs`, workspace manifests, or
+  platform force a rebuild automatically.
 - SELinux relabeling differs across hosts. Mitigation: make the `:Z` suffix configurable and copy the
   existing canary pattern when present.
 
