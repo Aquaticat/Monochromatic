@@ -32,6 +32,7 @@ async function fixturePackage(): Promise<string> {
   await mkdir(join(root, 'src', 'watch',), { recursive: true, },);
   await Promise.all([
     writeFile(join(root, 'src', 'io', 'glob.unit.test.ts',), 'export {};\n',),
+    writeFile(join(root, 'src', 'io', 'glob-regression.unit.test.ts',), 'export {};\n',),
     writeFile(join(root, 'src', 'io', 'json.unit.test.ts',), 'export {};\n',),
     writeFile(join(root, 'src', 'watch', 'watch-filter.unit.test.ts',), 'export {};\n',),
     writeFile(join(root, 'src', 'watch-regression.unit.test.ts',), 'export {};\n',),
@@ -58,7 +59,7 @@ await describe({
   name: selectTestsForSource.name,
   children: [
     it({
-      name: 'selects related sibling tests plus regression and integration tests by default',
+      name: 'selects related sibling and regression tests plus integration tests by default',
       fn: async () => {
         const packageRoot = await fixturePackage();
         const selected = await selectTestsForSource({
@@ -69,8 +70,8 @@ await describe({
 
         expect(selected,).toEqual([
           'src/integration.unit.test.ts',
+          'src/io/glob-regression.unit.test.ts',
           'src/io/glob.unit.test.ts',
-          'src/watch-regression.unit.test.ts',
         ],);
       },
     },),
@@ -84,7 +85,7 @@ await describe({
           fullSuite: true,
         },);
 
-        expect(selected,).toHaveLength(5,);
+        expect(selected,).toHaveLength(6,);
         expect(selected,).toContain('src/watch/watch-filter.unit.test.ts',);
       },
     },),

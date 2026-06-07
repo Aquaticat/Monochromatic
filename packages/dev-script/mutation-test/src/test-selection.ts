@@ -137,10 +137,41 @@ export function stemsAreRelated(options: {
 }
 
 /**
+ * Removes test suffixes that do not describe source stem affinity.
+ *
+ * @param testFile - Package-relative test file.
+ *
+ * @returns Test stem used for source/test relationship checks.
+ *
+ * @example
+ * ```ts
+ * relatedTestStem('src/watch-regression.unit.test.ts');
+ * // 'watch'
+ * ```
+ */
+function relatedTestStem(testFile: string,): string {
+  /**
+   * Unit test basename without `.unit.test.ts`.
+   */
+  const unitStem = stripTsExtension(basenameWithoutTs(testFile,)
+    .slice(
+      0,
+      -'.unit.test'.length,
+    ),);
+
+  return unitStem.endsWith('-regression',)
+    ? unitStem.slice(
+      0,
+      -'-regression'.length,
+    )
+    : unitStem;
+}
+
+/**
  * Selects tests for one source file.
  *
- * Default mode runs directly related sibling tests plus package-level
- * regression and integration tests. Full-suite mode runs every unit test.
+ * Default mode runs directly related sibling tests, related regression tests,
+ * and package-level integration tests. Full-suite mode runs every unit test.
  * Returned paths are package-relative for execution from the container package cwd.
  *
  * @param options - Target package and source file selection inputs.
@@ -184,23 +215,17 @@ export async function selectTestsForSource(options: TestSelectionOptions,): Prom
     if (testFile === INTEGRATION_TEST_PATH)
       return true;
 
-    if (testFile.endsWith(REGRESSION_TEST_SUFFIX,))
-      return true;
-
     if (packageWideTests.includes(testFile,))
       return true;
 
-    if (dirnamePosix(testFile,) !== sourceDir)
+    if ((!testFile.endsWith(REGRESSION_TEST_SUFFIX,))
+      && (dirnamePosix(testFile,) !== sourceDir))
       return false;
 
     /**
-     * Unit test basename without `.unit.test.ts`.
+     * Unit test basename without relationship-neutral suffixes.
      */
-    const testStem = stripTsExtension(basenameWithoutTs(testFile,)
-      .slice(
-      0,
-      -'.unit.test'.length,
-    ),);
+    const testStem = relatedTestStem(testFile,);
 
     return stemsAreRelated({
       sourceStem,
