@@ -260,8 +260,9 @@ image. Do not use corepack. Build steps:
     repo-pinned latest Node binary on Fedora), and `procps-ng` (provides `ps`, which Stryker reaches
     through `tree-kill` when cleaning child process trees).
 3.  Install Nushell with `dnf`. Nushell must exist before any mise task shell or inline Nu verification runs.
-4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node` and
-    `npm:pnpm` tools. Do not activate or install the entire root toolset, since the image only needs Node and pnpm.
+4.  Install mise with the official Fedora/COPR path, then use mise to install the repo-pinned `node`,
+    `npm:pnpm`, and `bun` tools. Do not activate or install the entire root toolset; Bun is included because
+    selected package tests and config fixtures spawn `bun` directly during Stryker's initial dry run.
 5.  Copy the host-staged minimal build context into `/baked`: root manifests, root `.pnpmfile.mjs` and its
     imported policy JSON, workspace package manifests, and mutation-test runtime source.
 6.  Run `pnpm install --frozen-lockfile` through `mise exec node npm:pnpm -- ...` so `/baked` holds the
