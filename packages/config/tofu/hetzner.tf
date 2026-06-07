@@ -213,9 +213,17 @@ locals {
     "2606:4700:10::ac42:98b0/128",
   ]
 
-  ubuntu_http_ips = distinct(concat(
+  # nginx.org publishes Linux packages under /packages/ and supports HTTP and HTTPS.
+  nginx_org_ips = [
+    "3.136.61.53/32",
+    "2a05:d014:5c0:2600::6/128",
+    "2a05:d014:5c0:2601::6/128",
+  ]
+
+  package_repo_http_ips = distinct(concat(
     local.ubuntu_ips,
     local.archive_ubuntu_ips,
+    local.nginx_org_ips,
   ))
 
   storagebox_dns_ips = length(var.storagebox_hostnames) == 0 ? [] : [
@@ -231,10 +239,10 @@ locals {
     if can(cidrhost(ip, 0))
   ]
 
-  ubuntu_ips_v4        = [for ip in local.ubuntu_http_ips : ip if !strcontains(ip, ":")]
-  ubuntu_ips_v6        = [for ip in local.ubuntu_http_ips : ip if strcontains(ip, ":")]
-  ubuntu_ips_v4_chunks = chunklist(local.ubuntu_ips_v4, 20)
-  ubuntu_ips_v6_chunks = chunklist(local.ubuntu_ips_v6, 20)
+  package_repo_http_ips_v4        = [for ip in local.package_repo_http_ips : ip if !strcontains(ip, ":")]
+  package_repo_http_ips_v6        = [for ip in local.package_repo_http_ips : ip if strcontains(ip, ":")]
+  package_repo_http_ips_v4_chunks = chunklist(local.package_repo_http_ips_v4, 20)
+  package_repo_http_ips_v6_chunks = chunklist(local.package_repo_http_ips_v6, 20)
 
   youtube_ips_unsanitized = concat(
     [for s in split("\n", trimspace(data.http.youtube_ipv4.response_body)) : s if s != ""],
@@ -375,7 +383,30 @@ locals {
     "2a01:4f9:2b:29dc::153/128"
   ]
 
-  small_cdn_ips = concat(local.hetzner_ips, local.syncthing_apt_ips, local.synthetic_ips, local.design_systems_news_ips, local.hn_rss_ips, local.palant_ips, local.wattenberger_ips, local.pCloud_ips, local.linkup_ips, local.resend_ips, local.openrouter_ips, local.ntietz_ips, local.moonbaseLgbt_ips, local.hanselman_ips, local.chrome_ips, local.httpToolkit_ips, local.pencilAndPaper_ips, local.setStudio_ips, local.lscr_ips, local.anthropic_ips, local.nextcloud_ips)
+  small_cdn_ips = concat(
+    local.hetzner_ips,
+    local.syncthing_apt_ips,
+    local.synthetic_ips,
+    local.design_systems_news_ips,
+    local.hn_rss_ips,
+    local.palant_ips,
+    local.wattenberger_ips,
+    local.pCloud_ips,
+    local.linkup_ips,
+    local.resend_ips,
+    local.openrouter_ips,
+    local.ntietz_ips,
+    local.moonbaseLgbt_ips,
+    local.hanselman_ips,
+    local.chrome_ips,
+    local.httpToolkit_ips,
+    local.pencilAndPaper_ips,
+    local.setStudio_ips,
+    local.lscr_ips,
+    local.anthropic_ips,
+    local.nextcloud_ips,
+    local.nginx_org_ips,
+  )
 
   small_cdn_ips_v4 = [for p in local.small_cdn_ips : p if !strcontains(p, ":")]
   small_cdn_ips_v6 = [for p in local.small_cdn_ips : p if strcontains(p, ":")]
@@ -431,7 +462,7 @@ check "ip_syntax_validation" {
     condition = alltrue([
       for ip in concat(
         local.cdn_ips,
-        local.archive_ubuntu_ips,
+        local.package_repo_http_ips,
         local.hetzner_ips,
         local.coolify_ips,
         local.tor_relay_ips,
@@ -511,19 +542,19 @@ locals {
     { port = "443", proto = "udp", desc = "https udp cdn" },
   ]
 
-  # Port 80 only for Ubuntu APT repos (ca-certificates must be fetched over
+  # Port 80 only for package repositories (ca-certificates must be fetched over
   # HTTP before HTTPS sources can work in fresh containers).
-  ubuntu_http_out_rules = flatten(concat(
-    [for i, chunk in local.ubuntu_ips_v4_chunks : {
-      description     = "http ubuntu v4 - chunk ${i}"
+  package_repo_http_out_rules = flatten(concat(
+    [for i, chunk in local.package_repo_http_ips_v4_chunks : {
+      description     = "http package repo v4 - chunk ${i}"
       destination_ips = chunk
       direction       = "out"
       port            = "80"
       protocol        = "tcp"
       source_ips      = []
     }],
-    [for i, chunk in local.ubuntu_ips_v6_chunks : {
-      description     = "http ubuntu v6 - chunk ${i}"
+    [for i, chunk in local.package_repo_http_ips_v6_chunks : {
+      description     = "http package repo v6 - chunk ${i}"
       destination_ips = chunk
       direction       = "out"
       port            = "80"
@@ -716,7 +747,7 @@ locals {
     local.tor_out_firewall_rules,
     local.storagebox_smb_out_rules,
     local.web_out_rules,
-    local.ubuntu_http_out_rules,
+    local.package_repo_http_out_rules,
   )
 
   weighted_firewall_rule_keys = sort([

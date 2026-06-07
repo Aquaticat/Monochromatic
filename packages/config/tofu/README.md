@@ -115,7 +115,7 @@ without adding another helper script to the OpenTofu plan path.
 - DHCP (67-68)
 - DNS to Hetzner (53)
 - HTTPS TCP/UDP to CDN IPs (chunked to respect rule limits)
-- HTTP TCP to Ubuntu APT repo ASN ranges and archive.ubuntu.com DNS edge IPs
+- HTTP TCP to package repository ranges for Ubuntu APT, archive.ubuntu.com, and nginx.org
 - HTTPS TCP (443) to top Tor guards by consensus weight, filtered to ORPort 443 (for the v3 onion service)
 - SMB/CIFS TCP (445) to configured Hetzner Storage Box hostnames or CIDRs
 
@@ -129,6 +129,7 @@ The configuration aggregates IPs from:
 - GitHub (via meta API)
 - Ubuntu (ASN AS41231)
 - archive.ubuntu.com DNS edge IPs for HTTP APT bootstrap
+- nginx.org DNS edge IPs for HTTP and HTTPS package access
 - YouTube (via GitHub repo)
 - Coolify (via API)
 - Tor guards advertising ORPort 443 (via Onionoo, refreshed hourly)
