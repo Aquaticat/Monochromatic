@@ -106,6 +106,16 @@ cpal = "0.15"
 # together). See the comment on the `slint` dependency for why this is a git pin.
 slint-build = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
 
+# Windows-only build dependency: embeds assets/music-player.ico into the .exe so
+# Explorer, the taskbar, and Alt-Tab show the app icon (the macOS icon lives in
+# the .app bundle, Linux in the .desktop Icon= name). Gated to cfg(windows) so it
+# is absent from the Linux and macOS dependency graphs entirely, matching the
+# #[cfg(windows)] gate in build.rs. Windows is built natively on x13-win, where
+# Visual Studio's resource compiler is present; winresource invokes it from the
+# build script. winresource is the maintained successor to the winres crate.
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
 [profile.release]
 # strip: drop the ~8.5 MB .symtab/.strtab symbol table (never loaded at runtime;
 # no .debug_* sections are emitted in release anyway). "symbols" keeps unwind
