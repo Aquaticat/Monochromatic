@@ -200,6 +200,12 @@ packageExtensions:
       '@mitata/counters': '>=0.0.8'
 
 overrides:
+  'qs': '>=6.15.2'
+  # Patch GHSA-q8mj-m7cp-5q26 / CVE-2026-8723: qs@<=6.15.1 crashes with
+  # TypeError on null/undefined entries in comma-format arrays when
+  # encodeValuesOnly is set. Only transitive consumer is
+  # @stryker-mutator/core > typed-rest-client (`qs: ^6.9.4`); patch-level
+  # bump is range-compatible.
   'jspdf>canvg': '-'
   'jspdf>dompurify': '-'
   '@anthropic-ai/sdk': '>=0.91.1'
