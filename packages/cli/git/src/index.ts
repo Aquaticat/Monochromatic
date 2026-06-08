@@ -5,6 +5,7 @@ import {
   l,
   tagged,
 } from './log.ts';
+import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
 import { resolveGit, } from './resolve-git.ts';
 import { addExplicit, } from './rules/add-explicit.ts';
@@ -150,9 +151,13 @@ try {
   );
 
   /**
-   * Layout of `processedArgs`: where the subcommand sits and what precedes it.
+   * Layout of `processedArgs`: where the subcommand sits, what precedes it, and
+   * the directory git will operate in after `-C` chaining.
    */
-  const { subcommandIndex, } = parseGlobalOptions(processedArgs,);
+  const {
+    subcommandIndex,
+    effectiveCwd,
+  } = parseGlobalOptions(processedArgs,);
   /**
    * Subcommand at the located index; `undefined` when args carry no subcommand (e.g. `git --version`).
    */
@@ -168,6 +173,20 @@ try {
    * Post-subcommand region; scanned for status flags that switch git's output to a machine-readable format.
    */
   const postSubcommand = processedArgs.slice(subcommandIndex + 1,);
+
+  /**
+   * True when a real commit just landed (the spawn above succeeded and this was
+   * not a `--dry-run` preview), so the new commit should be backed up to origin.
+   * A failed commit throws out of the spawn and never reaches here.
+   */
+  const committed = (subcommand === 'commit')
+    && (!postSubcommand.includes('--dry-run',));
+
+  if (committed)
+    await autoPush({
+      gitPath,
+      cwd: effectiveCwd,
+    },);
 
   /**
    * True when this invocation asks git for its version, in any of the supported forms (subcommand, global flag, with or without `-C` chaining).
@@ -203,7 +222,7 @@ try {
 
   if (isVersionRequest) {
     console.log(
-      'cli-git wrapper (require-root, linked-worktree-only, add-explicit, atomic-push, commit-only, status-hints-off)',
+      'cli-git wrapper (require-root, linked-worktree-only, add-explicit, atomic-push, commit-only, status-hints-off, auto-push)',
     );
   }
   else if (shouldPrintStatusNote) {

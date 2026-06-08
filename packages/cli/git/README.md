@@ -80,6 +80,24 @@ so git suppresses its stock hints, which suggest patterns the wrapper rejects
 constraints. Skipped when the user has already set `advice.statusHints=...` via
 `-c` (the user's explicit choice wins).
 
+## Post-commit auto-push
+
+After a successful `git commit` (anything except a `--dry-run` preview), the
+wrapper backs up the new commit by pushing it to its upstream with
+`git push --set-upstream origin HEAD`. The push runs against the real git binary
+in the same directory the commit landed in (respecting pre-subcommand
+`-C <path>`), so it does not re-enter the wrapper yet still fires git's native
+pre-push hook.
+
+The push output is filtered: on a clean push only the GitHub `remote:` lines are
+shown; on a failed push the full output is shown so a rejection, a pre-push
+block, or an offline error stays diagnosable. Auto-push is skipped when the
+repository has no `origin` remote, since there is nowhere to back up to.
+
+Because git ignores a post-commit hook's exit status, a failed backup push is
+surfaced but never changes the commit command's own exit code: the commit stays
+saved locally and a later `git push` retries it.
+
 ## How it works
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
@@ -88,7 +106,8 @@ Self-shim detection checks both the package name and the bundled entry path
 `packages/cli/git/dist/final/node/index.mjs`, because pnpm-generated shims can
 point at the built file without naming the package.
 Arguments pass through a rule pipeline that may reject or transform them,
-then the real git is spawned with full stdio inheritance.
+then the real git is spawned with full stdio inheritance. After a successful
+commit, the new commit is auto-pushed to origin as described above.
 
 ## Adding rules
 

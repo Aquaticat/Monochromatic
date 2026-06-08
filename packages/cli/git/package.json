@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-git",
-  "description": "Git wrapper that enforces repo-root, linked-worktree-only, explicit add, atomic push, commit-only, and status-hint safeguards.",
+  "description": "Git wrapper that enforces repo-root, linked-worktree-only, explicit add, atomic push, commit-only, and status-hint safeguards, then auto-pushes each commit to origin.",
   "type": "module",
   "private": true,
   "main": "src/index.ts",

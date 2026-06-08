@@ -9,14 +9,6 @@ local forbiddenStrings = new Step {
   check = "\(binPath) {{files}}"
 }
 
-// Push the new commit to origin after every commit, showing only GitHub
-// "remote:" lines on success and the full output on failure. Implemented as a
-// cross-platform Node script (no shell utilities); see hk.auto-push.ts for the
-// rationale. Run from the repo/worktree root, where hk executes hooks.
-local autoPush = new Step {
-  check = "node hk.auto-push.ts"
-}
-
 hooks {
   ["pre-commit"] {
     steps {
@@ -26,11 +18,6 @@ hooks {
   ["pre-push"] {
     steps {
       ["forbidden-strings"] = forbiddenStrings
-    }
-  }
-  ["post-commit"] {
-    steps {
-      ["auto-push"] = autoPush
     }
   }
   ["check"] {
