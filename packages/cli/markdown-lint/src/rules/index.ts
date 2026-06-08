@@ -5,6 +5,7 @@ import { singleH1, } from './md025-single-h1.ts';
 import { noTrailingPunctuation, } from './md026-no-trailing-punctuation.ts';
 import { noEmphasisAsHeading, } from './md036-no-emphasis-as-heading.ts';
 import { fencedCodeLanguage, } from './md040-fenced-code-language.ts';
+import { referenceDefinitions, } from './md053-reference-definitions.ts';
 import { noPipeTables, } from './no-pipe-tables.ts';
 
 /**
@@ -19,6 +20,7 @@ export const rules: readonly Rule[] = [
   noTrailingPunctuation,
   noEmphasisAsHeading,
   fencedCodeLanguage,
+  referenceDefinitions,
   noPipeTables,
 ];
 
