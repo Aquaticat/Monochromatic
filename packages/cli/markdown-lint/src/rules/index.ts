@@ -10,6 +10,7 @@ import { fencedCodeLanguage, } from './md040-fenced-code-language.ts';
 import { referenceDefinitions, } from './md053-reference-definitions.ts';
 import { linkImageStyle, } from './md054-link-image-style.ts';
 import { noPipeTables, } from './no-pipe-tables.ts';
+import { semanticLineBreaks, } from './semantic-line-breaks.ts';
 
 /**
  * Every rule the linter runs, in execution order. New rules are appended here
@@ -28,6 +29,7 @@ export const rules: readonly Rule[] = [
   referenceDefinitions,
   linkImageStyle,
   noPipeTables,
+  semanticLineBreaks,
 ];
 
 /**
