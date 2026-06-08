@@ -2,7 +2,8 @@
 
 Rebuild-from-scratch procedure for the Seafile replacement: a single-node Garage
 S3 store on Coolify behind a self-managed Caddy, synced to one or more clients by
-rclone bisync on an hourly schedule (systemd on Linux, launchd on macOS).
+rclone bisync on an hourly schedule (systemd on Linux, launchd on macOS, Task
+Scheduler on Windows).
 
 Personal infrastructure, no secrets in this file: credentials appear only as
 placeholder names, never values.
@@ -15,14 +16,21 @@ placeholder names, never values.
   HTTP/2), because HTTP/2's flow-control window throttles uploads to about
   5 MB/s over the ~116 ms RTT to the server.
 - An rclone `garage` S3 remote on each client, path-style, region `garage`.
-- A bisync exclude filter (`garage-filter.txt`, rule `- *‛*`) passed by every
-  client via `--filter-from`. Without it, bisync aborts on 6 stale double-encoded
+- A bisync exclude filter (`garage-filter.txt`, rule `- **‛**`) passed by every
+  client via `--filter-from`. Without it, bisync aborts on the stale double-encoded
   "phantom" keys that the bucket lists but cannot serve. See the phantom-key
   section below and
   [the phantom-keys troubleshooting doc](../troubleshooting/rclone-double-encode-phantom-keys.md).
+- Two flags on every bisync invocation, needed because the link to the server has
+  a high RTT: `--fast-list` (one bulk recursive S3 listing instead of a
+  per-directory walk) and `--use-server-modtime` (compare on each object's
+  LastModified from the listing instead of a per-object HEAD for mtime metadata).
+  Without them a single run spends minutes HEADing every object. Trade-off: a
+  client's local file mtimes become the server-side LastModified, not the original
+  authoring time.
 - An hourly scheduler per client: a `user` systemd timer on Linux, a launchd
-  LaunchAgent on macOS, each bisyncing `garage:files/Plain` against the client's
-  local `Plain` directory.
+  LaunchAgent on macOS, a Task Scheduler job on Windows, each bisyncing
+  `garage:files/Plain` against the client's local `Plain` directory.
 
 ## Artifacts referenced (do not duplicate)
 
@@ -52,11 +60,11 @@ In this repo:
 
 ## The phantom-key filter (read before Stage C)
 
-The bucket contains 6 keys whose names carry rclone's escape rune U+201B (`‛`),
-created once by a double-encode during the original Seafile-to-Garage migration.
-Garage lists them but returns `404` on HEAD/GET, and rclone bisync treats a single
-unreadable source object as fatal: the whole run aborts with
-`Bisync aborted. Must run --resync to recover`.
+The bucket lists a small set of keys (5 as of 2026-06) whose names carry rclone's
+escape rune U+201B (`‛`), created once by a double-encode during the original
+Seafile-to-Garage migration; each is a `…‛‛：…` name. Garage lists them but returns
+`404` on HEAD/GET, and rclone bisync treats a single unreadable source object as
+fatal: the whole run aborts with `Bisync aborted. Must run --resync to recover`.
 
 They cannot be removed: an S3 `DELETE` is a silent no-op on them, and
 `garage repair tables` does not reconcile them on a single node (both verified).
@@ -64,13 +72,25 @@ So every client excludes them with a filter instead. Nothing regenerates them
 (the only writer is rclone on the default encoding with a clean local tree), so
 this is a permanent, set-once measure.
 
+The rule must be `- **‛**`, matching `‛` anywhere in the full path. The narrower
+`- *‛*` matches only the base name, so it catches a phantom file
+(`…‛‛：第2卷.pdf`) but misses one nested inside a phantom directory
+(`…‛‛：第2卷.sdr/metadata.pdf.lua`, base name `metadata.pdf.lua`). Default-modtime
+runs hid that gap: they HEAD every object while listing and silently drop the
+un-HEAD-able phantom. With `--use-server-modtime` there is no per-object HEAD, so
+the filter is the only thing keeping the phantom out. Use the full-path form on
+every client.
+
 Create the filter file on each client before its first bisync:
 
 ```bash
-printf '%s\n' '- *‛*' > ~/.config/rclone/garage-filter.txt
-# verify the bytes are 2d 20 2a e2 80 9b 2a 0a (the ‛ is a literal U+201B)
+printf '%s\n' '- **‛**' > ~/.config/rclone/garage-filter.txt
+# verify the bytes are 2d 20 2a 2a e2 80 9b 2a 2a 0a (the ‛ is a literal U+201B)
 hexdump -C ~/.config/rclone/garage-filter.txt
 ```
+
+On Windows the file lives beside the rclone config at
+`%APPDATA%\rclone\garage-filter.txt`; the byte content is identical.
 
 Pass it to every bisync invocation as `--filter-from ~/.config/rclone/garage-filter.txt`.
 Changing the filter between runs makes bisync abort with "filters have changed",
@@ -150,22 +170,24 @@ Status: TODO | DONE
 3. Create the phantom-key filter file (see the phantom-key section):
 
     ```bash
-    printf '%s\n' '- *‛*' > ~/.config/rclone/garage-filter.txt
+    printf '%s\n' '- **‛**' > ~/.config/rclone/garage-filter.txt
     ```
 
    Expected: `hexdump -C ~/.config/rclone/garage-filter.txt` shows
-   `2d 20 2a e2 80 9b 2a 0a`.
+   `2d 20 2a 2a e2 80 9b 2a 2a 0a`.
 4. Establish the baseline, first run only, never repeat `--resync`:
 
     ```bash
     rclone bisync garage:files/Plain ~/Plain --resync \
       --filter-from ~/.config/rclone/garage-filter.txt \
+      --fast-list --use-server-modtime \
       --transfers 16 --checkers 32 --s3-upload-concurrency 8 -v
     ```
 
-   Expected: the log ends with `Bisync successful`. On a 1 GbE link the first run
-   pulls the full tree (here ~55 GB) in roughly 20 minutes; later runs reuse the
-   listing and take 2 to 3 minutes.
+   Expected: the log ends with `Bisync successful`. The first run pulls the full
+   tree (here ~55 GB), so it is bounded by download bandwidth; `--fast-list` plus
+   `--use-server-modtime` keep the listing and comparison to a few seconds, so
+   later runs finish in well under a minute.
 
 ### Stage D (Linux): install the hourly systemd timer
 
@@ -182,7 +204,7 @@ Status: TODO | DONE
     Type=oneshot
     WorkingDirectory=%h
     TimeoutStartSec=3000
-    ExecStart=%h/.local/share/mise/shims/rclone bisync garage:files/Plain %h/Seafile/Plain --filter-from %h/.config/rclone/garage-filter.txt --transfers 16 --checkers 32 --s3-upload-concurrency 8 --resilient --recover -v
+    ExecStart=%h/.local/share/mise/shims/rclone bisync garage:files/Plain %h/Seafile/Plain --filter-from %h/.config/rclone/garage-filter.txt --fast-list --use-server-modtime --transfers 16 --checkers 32 --s3-upload-concurrency 8 --resilient --recover -v
     Nice=10
     IOSchedulingClass=best-effort
     IOSchedulingPriority=6
@@ -190,7 +212,8 @@ Status: TODO | DONE
 
    The `ExecStart` uses the mise shim (a stable path that resolves the active
    rclone version) so a `mise upgrade rclone` does not break the unit. The
-   `--filter-from` is mandatory (phantom keys).
+   `--filter-from`, `--fast-list`, and `--use-server-modtime` flags are mandatory
+   (phantom keys and the high-latency link); see "What this builds".
 2. Write `~/.config/systemd/user/rclone-bisync-garage.timer`:
 
     ```ini
@@ -237,6 +260,8 @@ Status: TODO | DONE
             <string>/Users/USERNAME/.config/rclone/rclone.conf</string>
             <string>--filter-from</string>
             <string>/Users/USERNAME/.config/rclone/garage-filter.txt</string>
+            <string>--fast-list</string>
+            <string>--use-server-modtime</string>
             <string>--transfers</string>
             <string>16</string>
             <string>--checkers</string>
@@ -280,6 +305,102 @@ Status: TODO | DONE
    is no `linger` equivalent. For a personal Mac that stays logged in, the
    `StartCalendarInterval` fires every hour and catches up once on wake.
 
+### Stage D (Windows): install the hourly Task Scheduler job
+
+The default shell is `cmd`, and a mise-installed rclone is on `PATH` only in
+interactive shells, so the job calls rclone by absolute path
+(`%LOCALAPPDATA%\mise\shims\rclone.exe`, the mise shim, stable across
+`mise upgrade rclone`). Logging uses rclone's own `--log-file` because Task
+Scheduler cannot redirect with `>`.
+
+1. Confirm rclone: `"%LOCALAPPDATA%\mise\shims\rclone.exe" version` prints
+   `rclone v1.74.3` or newer.
+2. Put the rclone config and filter under `%APPDATA%\rclone\`: `rclone.conf` (the
+   `[garage]` remote from Stage C) and `garage-filter.txt` (the `- **‛**` rule).
+   Write the filter from PowerShell so no BOM or codepage corrupts the `‛`:
+
+    ```powershell
+    [IO.File]::WriteAllBytes("$env:APPDATA\rclone\garage-filter.txt",
+      [byte[]](0x2d,0x20,0x2a,0x2a,0xe2,0x80,0x9b,0x2a,0x2a,0x0a))
+    ```
+
+   Expected: `"%LOCALAPPDATA%\mise\shims\rclone.exe" listremotes` prints `garage:`,
+   and `Format-Hex "$env:APPDATA\rclone\garage-filter.txt"` shows
+   `2D 20 2A 2A E2 80 9B 2A 2A 0A`.
+3. Establish the baseline (first run only):
+
+    ```bat
+    "%LOCALAPPDATA%\mise\shims\rclone.exe" bisync garage:files/Plain "%USERPROFILE%\Plain" --resync --config "%APPDATA%\rclone\rclone.conf" --filter-from "%APPDATA%\rclone\garage-filter.txt" --fast-list --use-server-modtime --transfers 16 --checkers 32 --s3-upload-concurrency 8 --resilient --recover -v
+    ```
+
+   Expected: the run ends with `Bisync successful`.
+4. Write the task definition to `%USERPROFILE%\rclone-bisync-garage.xml` (replace
+   `USERNAME`; Task Scheduler does not expand `%USERPROFILE%` inside
+   `<Command>`/`<Arguments>`):
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-16"?>
+    <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+      <RegistrationInfo>
+        <Description>Hourly rclone bisync of garage:files/Plain to the local Plain dir.</Description>
+      </RegistrationInfo>
+      <Triggers>
+        <CalendarTrigger>
+          <Repetition>
+            <Interval>PT1H</Interval>
+            <StopAtDurationEnd>false</StopAtDurationEnd>
+          </Repetition>
+          <StartBoundary>2026-01-01T00:00:00</StartBoundary>
+          <Enabled>true</Enabled>
+          <ScheduleByDay><DaysInterval>1</DaysInterval></ScheduleByDay>
+        </CalendarTrigger>
+      </Triggers>
+      <Principals>
+        <Principal id="Author">
+          <LogonType>InteractiveToken</LogonType>
+          <RunLevel>LeastPrivilege</RunLevel>
+        </Principal>
+      </Principals>
+      <Settings>
+        <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+        <StartWhenAvailable>true</StartWhenAvailable>
+        <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>
+        <AllowStartOnDemand>true</AllowStartOnDemand>
+        <Enabled>true</Enabled>
+        <ExecutionTimeLimit>PT2H</ExecutionTimeLimit>
+        <Priority>7</Priority>
+      </Settings>
+      <Actions Context="Author">
+        <Exec>
+          <Command>C:\Users\USERNAME\AppData\Local\mise\shims\rclone.exe</Command>
+          <Arguments>bisync garage:files/Plain "C:\Users\USERNAME\Plain" --config "C:\Users\USERNAME\AppData\Roaming\rclone\rclone.conf" --filter-from "C:\Users\USERNAME\AppData\Roaming\rclone\garage-filter.txt" --fast-list --use-server-modtime --transfers 16 --checkers 32 --s3-upload-concurrency 8 --resilient --recover --log-file "C:\Users\USERNAME\rclone-bisync.log" -v</Arguments>
+        </Exec>
+      </Actions>
+    </Task>
+    ```
+
+   `MultipleInstancesPolicy` of `IgnoreNew` keeps a slow run from overlapping the
+   next hour; `LogonType` `InteractiveToken` runs as the logged-in user with no
+   stored password (like the Mac agent, it runs only while logged in).
+5. `schtasks` reads the XML as UTF-16 only; a UTF-8 file fails with
+   `ERROR: The task XML is malformed. ... unable to switch the encoding`. Rewrite
+   it as UTF-16 (LE BOM), then register:
+
+    ```powershell
+    $p = "$env:USERPROFILE\rclone-bisync-garage.xml"
+    [IO.File]::WriteAllText($p, (Get-Content -Raw -Encoding UTF8 $p), [Text.Encoding]::Unicode)
+    ```
+
+    ```bat
+    schtasks /create /tn "rclone-bisync-garage" /xml "%USERPROFILE%\rclone-bisync-garage.xml" /f
+    ```
+
+   Expected: `SUCCESS: The scheduled task "rclone-bisync-garage" has successfully been created.`
+6. Trigger one run: `schtasks /run /tn "rclone-bisync-garage"`. Expected: once it
+   finishes, the tail of `%USERPROFILE%\rclone-bisync.log` contains
+   `Bisync successful`, and
+   `schtasks /query /tn "rclone-bisync-garage" /v /fo list` shows `Last Result: 0`.
+
 ## What to check
 
 Status: TODO | DONE
@@ -296,20 +417,28 @@ Run each and match the exact string:
 - rclone can reach the bucket:
   `rclone lsf garage:files` returns `Plain/` without `directory not found`.
 - The filter file is correct on each client:
-  `hexdump -C ~/.config/rclone/garage-filter.txt` shows `2d 20 2a e2 80 9b 2a 0a`.
+  `hexdump -C ~/.config/rclone/garage-filter.txt` shows `2d 20 2a 2a e2 80 9b 2a 2a 0a`
+  (on Windows, `Format-Hex` of `%APPDATA%\rclone\garage-filter.txt` shows the same bytes).
 - The sync ran clean (Linux):
   `journalctl --user -u rclone-bisync-garage.service -n 40` contains
   `Bisync successful`.
 - The sync ran clean (macOS):
   `tail ~/Library/Logs/rclone-bisync-garage.log` contains `Bisync successful`.
+- The sync ran clean (Windows): the tail of `%USERPROFILE%\rclone-bisync.log`
+  contains `Bisync successful`, and
+  `schtasks /query /tn "rclone-bisync-garage" /v /fo list` shows `Last Result: 0`.
 - No phantom files reached the local tree:
-  `find ~/Plain -name '*‛*'` (or `~/Seafile/Plain`) prints nothing.
+  `find ~/Plain -path '*‛*'` (or `~/Seafile/Plain`) prints nothing; on Windows,
+  `Get-ChildItem -Recurse "$env:USERPROFILE\Plain" | Where-Object Name -match '‛'`
+  prints nothing.
 - The scheduler is armed (Linux):
   `systemctl --user list-timers rclone-bisync-garage.timer` prints a `NEXT`
   timestamp.
 - The scheduler is armed (macOS):
   `launchctl print gui/$(id -u)/cat.aquati.rclone-bisync-garage` prints
   `state = waiting` (or `not running`) with the program path.
+- The scheduler is armed (Windows):
+  `schtasks /query /tn "rclone-bisync-garage"` prints `Ready` under `Status`.
 
 ## Restore
 
@@ -325,12 +454,17 @@ directory are never touched by any of these.
 - Stop and remove the scheduler (macOS):
   `launchctl bootout gui/$(id -u)/cat.aquati.rclone-bisync-garage`, then
   `rm ~/Library/LaunchAgents/cat.aquati.rclone-bisync-garage.plist`.
+- Stop and remove the scheduler (Windows):
+  `schtasks /delete /tn "rclone-bisync-garage" /f`, then
+  `del "%USERPROFILE%\rclone-bisync-garage.xml"`.
 - Force a fresh baseline next time (clears bisync state):
-  `rm -rf ~/.cache/rclone/bisync/garage_files_Plain..*` on Linux, or
-  `rm -rf ~/Library/Caches/rclone/bisync/garage_files_Plain..*` on macOS. The
-  next sync then needs `--resync` again.
+  `rm -rf ~/.cache/rclone/bisync/garage_files_Plain..*` on Linux,
+  `rm -rf ~/Library/Caches/rclone/bisync/garage_files_Plain..*` on macOS, or
+  `rmdir /s /q "%LOCALAPPDATA%\rclone\bisync"` on Windows. The next sync then
+  needs `--resync` again.
 - Remove the rclone remote and filter: `rclone config delete garage`, then
-  `rm ~/.config/rclone/garage-filter.txt`.
+  `rm ~/.config/rclone/garage-filter.txt` (on Windows,
+  `del "%APPDATA%\rclone\garage-filter.txt"`).
 - Re-enable HTTP/2 at Caddy: delete the `servers :443 { protocols h1 h3 }` block
   from the Caddyfile and `systemctl reload caddy`.
 - Tear down Garage: in **Coolify**, delete the compose resource and its
