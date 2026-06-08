@@ -319,40 +319,50 @@ with a real size but HEADs `404`.
 
 ## Verified workarounds
 
-### Align the encoder mask across every client (prevention, verified mechanism)
+### Why nothing regenerates them (prevention is already satisfied)
 
-The double-encode cannot happen if no two passes disagree on `EncodeColon`.
-Make every writer to the bucket use the same `--s3-encoding`.
-The rclone desktop and Mac clients already use the S3 default
-(`InvalidUtf8,Slash,Dot`, no colon); the remaining unknown is Android FolderSync's
-S3 key handling.
-Tradeoff: requires auditing and pinning every client's encoding, and if FolderSync cannot
-express the identical mask the mismatch (and the phantom keys) can recur.
-This prevents new phantoms; it does not remove the six that already exist.
+The double-encode needs two rclone passes whose masks disagree on `EncodeColon`, and the quote
+rune is rclone-exclusive, so a non-rclone client (Android FolderSync) cannot create one.
+This deployment has a single rclone client (the desktop; the Mac was added later), both on the
+S3 default mask (`InvalidUtf8,Slash,Dot`, no colon) with clean local trees (verified: zero
+`‛` files locally, no `encoding` override on the remote), so no active client writes `‛` keys.
+The six phantoms are stale artifacts of the one-time Seafile-to-Garage migration.
+If more rclone clients are ever added, keep them all on one explicit `--s3-encoding`; nothing
+needs to encode the fullwidth colon (it is legal on Linux, macOS, and Android), so the default
+mask is safe everywhere and no mismatch can arise.
 
-### Repair the inconsistency in Garage (server-side, preferred)
+### Exclude the phantoms with a filter (the working fix, deployed)
 
-Because the failure is a Garage metadata-reference inconsistency (object listed but not
-point-gettable), the fix that targets the actual defect is server-side, on the Garage host:
+A bisync filter that drops any path containing the quote rune stops every client from listing
+or HEADing the phantoms, so the run no longer aborts:
 
-```bash
-C=$(docker ps --format '{{.Names}}' | grep -i garage)
-docker exec "$C" /garage block list-errors     # case 1 = metadata reference inconsistency
-docker exec "$C" /garage repair --yes versions      # purge orphan versions
-docker exec "$C" /garage repair --yes block-refs    # purge orphan block references
-docker exec "$C" /garage repair --yes tables        # Merkle-tree resync of the metadata tables
+```text
+# garage-filter.txt   (the ‛ is a literal U+201B; file bytes: 2d 20 2a e2 80 9b 2a 0a)
+- *‛*
 ```
 
-Tradeoff: needs host access (the admin API binds loopback only); `repair` walks the whole
-table so it costs some IO, but it is the documented, non-destructive remedy and clears the
-inconsistency for every client at once.
-If a repair leaves the phantom list entry behind, follow with the S3 delete below.
+```bash
+rclone bisync garage:files/Plain <local> --resync --filter-from <path>/garage-filter.txt ...
+```
 
-### Why an S3 DELETE cannot remove these (and why prior cleanups did not stick)
+Use `--filter-from` (a file), not an inline `--filter`, so the same literal bytes ride every
+invocation and the systemd/launchd units stay readable.
+Changing the filter between runs makes bisync abort with "filters have changed", so the first
+run after adding it must include `--resync`.
+Deployed on both clients: the desktop systemd unit and the Mac launchd agent each pass
+`--filter-from .../garage-filter.txt`, and each was re-baselined once with `--resync`.
+Tradeoff: the six rows still exist in a raw bucket listing (~26 MB) and the filter stays on
+every client; it is set once, not a per-run chore.
+Since the only writer is a single rclone client with a clean local tree and the default
+encoding (verified: zero `‛` files locally, no `encoding` override on the remote), nothing
+regenerates them, so the filter is a stable end state, not a recurring patch.
 
-A plain S3 `DELETE` on a phantom is a silent no-op.
-Garage's delete handler point-gets the object first and short-circuits when that returns
-nothing, the same point-get that already fails for these keys:
+### What cannot remove the phantoms (all tested against the live node)
+
+None of these clear the stuck list entries; only a metadata wipe plus re-push does.
+
+S3 `DELETE` is a silent no-op. Garage's delete handler point-gets the object first and
+short-circuits when that returns nothing, the same point-get that already fails here:
 
 ```rust
 // src/api/s3/delete.rs (handle_delete_internal, then handle_delete)
@@ -360,28 +370,28 @@ let object = garage
     .object_table
     .get(bucket_id, &key.to_string())
     .await?
-    .ok_or(Error::NoSuchKey)?; // No need to delete
-// ... the DeleteMarker insert below is skipped on NoSuchKey ...
+    .ok_or(Error::NoSuchKey)?; // No need to delete -> the DeleteMarker insert is skipped
 // handle_delete: Ok(_) | Err(Error::NoSuchKey) => 204 No Content
 ```
 
-So `DeleteObject` returns `204 No Content` (success to the client) but writes no tombstone and
-removes nothing.
-This is exactly why the earlier local-only cleanups did not hold: deleting the doubled-name
-files on the desktop made bisync propagate a remote `DELETE`, Garage answered `204`, and the
-phantom stayed listed, so every fresh client re-encountered it.
-Removing these is therefore only possible server-side, via the `garage repair` above; the
-data is safe to lose (every phantom has an intact, HEADable clean twin).
+`DeleteObject` returns `204` but writes no tombstone. This is why the earlier local-only
+cleanups never held: deleting the doubled-name files made bisync propagate a remote `DELETE`,
+Garage answered `204`, and the phantom stayed listed.
 
-### Exclude the phantoms so bisync ignores them (symptom mask, proposed)
+S3 `PUT` then `DELETE` heals the point-get but still does not unlist it. Writing one byte to a
+phantom key rewrites the canonical row (HEAD `404` becomes `200`), and a following `DELETE`
+then writes a real tombstone (HEAD `404` again, confirmed). But `LIST` still returns the key:
+the range-scan index keeps a separate stale entry that the canonical write never touched.
 
-```bash
-rclone bisync garage:files/Plain ~/Plain --filter '- *‛*' ...
-```
+`garage repair tables` does not reconcile it. Tested: 5+ minutes after
+`garage repair --yes tables`, all six were still listed and the tombstoned vol 1 still
+appeared. On a single node a Merkle resync has no peer to reconcile against, and
+`garage offline-repair` only rebuilds counters (`object_counters`), not object rows.
 
-The `‛` in the filter must be the literal U+201B byte.
-Tradeoffs: this only stops bisync from choking; the duplicates keep consuming storage, the
-filter rides on every invocation, and nothing prevents recreation.
+The only route to a pristine bucket is to stop Garage, delete its metadata and data dirs,
+redeploy (the compose auto-recreates the bucket), and re-push every object from a clean
+client. The data is safe to lose at the S3 layer (every phantom has an intact, HEADable clean
+twin), so this is a choice about listing hygiene, not data recovery.
 
 ## What does not work
 
