@@ -32,6 +32,21 @@ directories = "5"
 # re-exported `winit` (`i_slint_backend_winit::winit`) is reused for the
 # WindowAttributes ext trait, so no separate `winit` dependency is added.
 i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
+# Not called from our code: a feature-unification shim. icu_provider reaches the
+# tree transitively (slint -> parley -> icu_segmenter -> icu_provider). With its
+# `logging` feature OFF, a DEBUG build routes ICU's internal `warn!` to a raw
+# `std::eprintln!` (icu_provider 2.2 src/lib.rs:194), so opening a folder with
+# Japanese (or Thai/Khmer/etc.) filenames floods stderr with
+# "ICU4X data error: No segmentation model for language: ja" once per layout pass:
+# parley builds LineSegmenter::new_for_non_complex_scripts, which bundles no CJK
+# dictionary, so icu_segmenter warns it cannot dictionary-segment the run (text
+# still renders, breaking between graphemes). Release builds already no-op those
+# warns; turning on `logging` makes debug builds route through the real `log`
+# facade too (silent with no subscriber installed), so the flood stops in both.
+# RUST_LOG cannot suppress it (the eprintln shim ignores log filtering). The
+# version must stay compatible with the transitive pin so cargo unifies, not
+# duplicates. See docs/troubleshooting/slint-parley-icu-cjk-segmentation.md.
+icu_provider = { version = "2", features = ["logging"] }
 # Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the
 # background true-peak measurement sweep at idle priority so it never competes
 # with the realtime audio thread or the UI. std exposes no scheduling-class API.
