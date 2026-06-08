@@ -8,11 +8,11 @@ import { mdxjs, } from 'micromark-extension-mdxjs';
 import type { Root, } from 'mdast';
 
 /**
- * Frontmatter matter kinds recognized before any rule runs. Only YAML (`---`)
- * appears in this corpus, but the extension is configured explicitly so a stray
- * TOML fence is not silently misparsed as prose.
+ * Frontmatter kind recognized before any rule runs. Only YAML (`---`) appears
+ * in this corpus, configured explicitly so a leading block is skipped rather
+ * than misparsed as a thematic break plus paragraph.
  */
-const FRONTMATTER_MATTERS = ['yaml',] as const;
+const FRONTMATTER_MATTER = 'yaml';
 
 /**
  * Parameters for {@link parse}.
@@ -56,21 +56,24 @@ export function parse({
    */
   const extensions = [
     gfm(),
-    frontmatter(FRONTMATTER_MATTERS,),
+    frontmatter(FRONTMATTER_MATTER,),
   ];
   /**
    * mdast (tree-construction) extensions, paired one-to-one with `extensions`.
    */
   const mdastExtensions = [
     gfmFromMarkdown(),
-    frontmatterFromMarkdown(FRONTMATTER_MATTERS,),
+    frontmatterFromMarkdown(FRONTMATTER_MATTER,),
   ];
   if (mdx) {
     extensions.push(mdxjs(),);
     mdastExtensions.push(...mdxFromMarkdown(),);
   }
-  return fromMarkdown(source, {
+  return fromMarkdown(
+    source,
+    {
     extensions,
     mdastExtensions,
-  },);
+  },
+  );
 }
