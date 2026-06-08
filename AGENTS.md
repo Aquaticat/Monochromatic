@@ -604,20 +604,13 @@ If tool/command doesn't support requested functionality, explain that instead of
 
 ### Git commit guidelines
 
-GCE: Commit at earliest opportunity recording coherent progress, before next work step.
-Never wait for full verification when feature/fix just implemented;
-commit checkpoint, then keep testing + fixing in follow-up commits.
-Cue:
-"I just finished implementing a feature or fix.
-Not sure it works yet, but committing now records progress."
-
-GCU: Never accumulate independent units in working tree;
-it forces sprawling mixed-concern commit or error-prone split.
-Trigger is "I just finished a thing that stands on its own," not "the user told me to commit" or
-"I am done with the whole task."
-When committing, include all changes belonging to same logical unit together unless instructed otherwise;
-never subdivide logical unit across commits, never sweep in unrelated/concurrent external changes (stage explicit, scoped pathspec; see CLG).
+GCE: Commit at earliest opportunity, even if progress isn't coherent, before next work step.
+Never wait for full verification, for a feature/fix to finish, or for a change to stand on its own;
+commit a checkpoint the moment anything is worth recording, then keep testing + fixing in follow-up commits.
 Supersedes harness ask-before-committing default; commit eagerly without asking.
+Stage explicit, scoped pathspecs so eager commits don't sweep unrelated/concurrent changes (see CLG).
+Cue:
+"I just changed something, even if incomplete, untested, or not a coherent unit; committing now records progress."
 
 GCG: Commit messages use Conventional Commits: `<type>(<scope>): <subject>`.
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
