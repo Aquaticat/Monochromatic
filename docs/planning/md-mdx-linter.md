@@ -269,6 +269,36 @@ Goals: fix the two `markdownlint-cli2` failure modes (misuse and slowness) by co
 7.  Harden the CLI: the internal walk, extension and size filtering, `--fix`, exit codes, and reporters.
 8.  Cutover and cleanup per the section above.
 
+## Effort and size estimate
+
+Anchored on `packages/module/test`, which took 50h and measures (tokei) at 2830 TypeScript code lines
+across 4928 total TS lines (1403 implementation plus 1426 test code, a roughly 1:1 test-to-implementation
+ratio). That is about 57 code lines, or about 99 total TS lines, per hour under this repo's discipline:
+TSDoc on every declaration, zero-warning lint, full unit coverage. The existing `no-pipe-tables` plugin
+measures at 369 implementation plus 192 test code lines, a useful per-rule baseline; its 187-line
+`to-html-table.ts` transform is reused here, not rewritten.
+
+Projected code lines (tokei "code", excluding TSDoc and blanks):
+
+- Parser pipeline plus the iterative tree-walk helper: about 150.
+- Rule, diagnostic, and fix types: about 80.
+- Fix application and the fixpoint loop: about 120.
+- The eleven markdownlint rules: about 960 (simple report-only near 60 each; fixable and two-pass near 100
+  each; the source-slice rules MD034 and MD054 near 140 each).
+- `no-pipe-tables` ported: about 370 lives in the package, but it is mostly reused, so its time cost is low.
+- `semantic-line-breaks`: about 200 (break-point scan, exclusion guards, the continuation-prefix add-only fix).
+- CLI: argument handling, the internal extension/size/gitignore walk, `--fix`, exit codes, two reporters:
+  about 250.
+
+Implementation totals about 2130 code lines. Tests at the roughly 0.9 ratio these two packages show add
+about 1900 code lines, for about 4030 code lines, or about 7000 total TS lines once TSDoc and blanks are
+included. Markdown fixtures, config files, and the README are extra but low-effort.
+
+At the reference rate both derivations converge: 4030 code lines over 57 is about 71h; 7000 TS lines over
+99 is about 71h. Reuse of `to-html-table.ts` pulls slightly down; the above-average-cost pieces that pull
+up are the micromark and mdast extension wiring, the source-slice rules, and the fixpoint loop. Estimate:
+65 to 80 hours, central about 72h.
+
 ## Open decisions
 
 - Tool and package name (`markdown-lint` is a placeholder).
