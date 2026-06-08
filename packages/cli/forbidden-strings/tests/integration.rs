@@ -309,6 +309,65 @@ fn windows_style_path_does_not_basename_skip() {
     let _ = fs::remove_dir_all(&dir);
 }
 
+// What:     `#[test] fn config_file_at_cwd_is_skipped_even_as_explicit_arg()`.
+//           Regression test for the always-on `forbidden-strings.*.txt`-at-cwd
+//           skip. A `forbidden-strings.append.txt` sitting in the scanner's
+//           cwd holds the same literal the rules file forbids; passing it as
+//           an explicit positional arg must NOT produce a hit, because the
+//           scanner's own ruleset files self-match. The contrast invocation
+//           proves the skip is name-anchored: a non-config file at cwd with
+//           the identical literal IS scanned and DOES hit.
+// Why:      CI scans changed files positionally
+//           (`forbidden-strings --rules ... <changed>...`); when a PR edits
+//           the checked-in `forbidden-strings.append.txt`, it lands in that
+//           changed set, and scanning it would re-derive every rule body as a
+//           false positive. The skip closes that without reintroducing BUG 6
+//           (a same-named file in a subdirectory still scans; see the
+//           BUG 6 / BUG 11 tests above).
+// TS map:   `test("config file at cwd is skipped even as explicit arg", ...)`.
+#[test]
+fn config_file_at_cwd_is_skipped_even_as_explicit_arg() {
+    let dir = unique_tmp("cwd-config-skip");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
+    // A forbidden-strings.*.txt config file AT cwd whose body carries the
+    // forbidden literal. As the scanner's own ruleset file it must be skipped.
+    let cfg = dir.join("forbidden-strings.append.txt");
+    fs::write(&cfg, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write cfg");
+    // A plain content file at cwd with the SAME literal: must be scanned.
+    let content = dir.join("content.txt");
+    fs::write(&content, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write content");
+
+    // Run with cwd == dir so the config file sits directly at the cwd root.
+    let skipped = Command::new(BIN)
+        .current_dir(&dir)
+        .args(["--rules", "rules.txt", "forbidden-strings.append.txt"])
+        .output()
+        .expect("spawn binary");
+    assert!(
+        skipped.status.success(),
+        "config file forbidden-strings.append.txt at cwd must be skipped even as explicit arg; got non-zero.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&skipped.stdout),
+        String::from_utf8_lossy(&skipped.stderr),
+    );
+
+    let scanned = Command::new(BIN)
+        .current_dir(&dir)
+        .args(["--rules", "rules.txt", "content.txt"])
+        .output()
+        .expect("spawn binary");
+    assert!(
+        !scanned.status.success(),
+        "a non-config file at cwd with the forbidden literal must still be scanned; got success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&scanned.stdout),
+        String::from_utf8_lossy(&scanned.stderr),
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn nul_byte_in_file_does_not_skip_scan() {
     let dir = unique_tmp("bug5");

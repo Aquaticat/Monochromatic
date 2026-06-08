@@ -282,6 +282,48 @@ fn is_walker_skipped(
     false
 }
 
+// What:     `fn is_config_file_at_cwd(path, cwd_canonical) -> bool` returns
+//           true when `path` names a `forbidden-strings.*.txt` file sitting
+//           DIRECTLY in the current working directory. The basename check is
+//           cheap and runs first; only on a name match do we canonicalize to
+//           confirm the file's parent IS the cwd, so a same-named file in a
+//           subdirectory is not matched.
+// Why:      These are the scanner's own ruleset files
+//           (`forbidden-strings.local.txt`, `.local.example.txt`,
+//           `.append.txt`, `.append.local.txt`). Scanning them re-derives the
+//           rule bodies as self-matches, so they are always skipped, in BOTH
+//           `--all` walker mode and explicit-positional-arg mode. Unlike the
+//           `--all`-only `build_skip_set` guard, this one also fires on
+//           explicit args, because CI passes changed files positionally
+//           (`forbidden-strings --rules ... <changed>...`) and an edited
+//           `forbidden-strings.append.txt` would otherwise self-match.
+//
+//           The cwd anchor keeps BUG 6 / BUG 11 closed: a file like
+//           `sub/forbidden-strings.local.txt` (different parent) still scans,
+//           because only a config file at the cwd root is skipped.
+// TS map:   `function isConfigFileAtCwd(path: string, cwdCanonical?: string): boolean`.
+fn is_config_file_at_cwd(
+    path: &str,
+    cwd_canonical: Option<&std::path::Path>,
+) -> bool {
+    let name_matches = std::path::Path::new(path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .is_some_and(|name| {
+            name.starts_with("forbidden-strings.") && name.ends_with(".txt")
+        });
+    if !name_matches {
+        return false;
+    }
+    let Some(cwd) = cwd_canonical else {
+        return false;
+    };
+    let Ok(canonical) = std::fs::canonicalize(path) else {
+        return false;
+    };
+    canonical.parent() == Some(cwd)
+}
+
 // What:     `BIN_PROBE_SIZE` is the byte length read up-front from every
 //           file before deciding whether the file is binary. 8 KiB is
 //           the same probe size the pre-BUG-5 `is_likely_binary`
@@ -833,9 +875,22 @@ pub fn run_cli_from_env() -> Result<i32, String> {
     // ```
     let skip_set = if all { build_skip_set(&rules_path) } else { std::collections::HashSet::new() };
 
+    // What:     Canonical cwd, resolved once. `is_config_file_at_cwd`
+    //           compares each candidate's canonical parent against this to
+    //           skip the scanner's own `forbidden-strings.*.txt` ruleset
+    //           files at the repo root, in both --all and explicit-arg modes.
+    // Why:      Resolve symlinks once here rather than per file.
+    let cwd_canonical = std::fs::canonicalize(".").ok();
+
     let hits: Vec<String> = files
         .par_iter()
         .flat_map_iter(|p| {
+            // Always skip the scanner's own ruleset files at cwd
+            // (forbidden-strings.*.txt), regardless of --all vs explicit
+            // args: they hold literal rule bodies that self-match.
+            if is_config_file_at_cwd(p, cwd_canonical.as_deref()) {
+                return Vec::new();
+            }
             // What:     `if all && is_walker_skipped(p, &skip_set) { return Vec::new(); }`.
             //           Only runs the skip check on walker output
             //           (--all mode). For explicit positional args

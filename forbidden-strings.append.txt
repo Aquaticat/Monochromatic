@@ -1,0 +1,342 @@
+# forbidden-strings shared appendix (checked into version control).
+# Non-sensitive deny-list rules that apply to every clone of this repo.
+# Add literal substrings or /PATTERN/FLAGS regex rules below; one per line.
+# This file is concatenated onto forbidden-strings.local.example.txt and
+# forbidden-strings.append.local.txt by file-enforcer to produce the runtime
+# forbidden-strings.local.txt. Keep sensitive rules (codenames, customer
+# names, partner identifiers, politically-charged literals) out of this file;
+# put those in the gitignored forbidden-strings.append.local.txt instead.
+
+# Rule-label regex prefix used below:
+# ^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?
+# Matches AGENTS.md shortcode labels at line start, after optional indentation,
+# optional dash-list marker, or optional numbered-dot list marker.
+# Uses [0-9] deliberately because AGENTS.md numbering is ASCII Markdown syntax, not Unicode digits.
+# Does not match generic Markdown markers like `*`, `+`, or `1)` because AGENTS.md uses `-` and `1.` forms.
+
+# Infinity abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?INF:[ \t]/m
+
+# Pro label
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PRO:[ \t]/m
+
+# Pull request abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PR[0-9]:[ \t]/m
+
+# Common name
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?MEA:[ \t]/m
+
+# Common abbreviation for adjective
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ADJ:[ \t]/m
+
+# ISO country code for Canada
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CAN:[ \t]/m
+
+# TypeScript compiler diagnostic shortcode family
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TS[0-9]:[ \t]/m
+
+# Texas abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TX[0-9]:[ \t]/m
+
+# Resident Evil shorthand
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?RE[0-9]:[ \t]/m
+
+# Shell prompt variable and PlayStation shortcode family
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PS[0-9]:[ \t]/m
+
+# DisplayPort abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?DP[0-9]:[ \t]/m
+
+# Autonomous System networking identifier family
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?AS[0-9]:[ \t]/m
+
+# Did Not Finish status abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?DNF:[ \t]/m
+
+# ISO country code for Syria
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SYR:[ \t]/m
+
+# People's Republic of China abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PRC:[ \t]/m
+
+# Free Democratic Party abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?FDP:[ \t]/m
+
+# Software requirements specification abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SRS:[ \t]/m
+
+# International Organization for Standardization abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ISO:[ \t]/m
+
+# Exception abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?EXC:[ \t]/m
+
+# Visual flight rules abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?VFR:[ \t]/m
+
+# Transportation Security Administration abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TSA:[ \t]/m
+
+# Transportation Safety Board abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TSB:[ \t]/m
+
+# TypeScript compiler shorthand
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TSC:[ \t]/m
+
+# Tokyo Stock Exchange abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TSE:[ \t]/m
+
+# Personal Package Archive abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PPA:[ \t]/m
+
+# C# compiler diagnostic shortcode family
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CS[0-9]:[ \t]/m
+
+# StyleCop and Roslyn analyzer shortcode family, also ISO country code for South Africa
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SA[0-9]:[ \t]/m
+
+# .NET code-analysis diagnostic family, also California and certificate authority
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CA[0-9]:[ \t]/m
+
+# Final Fantasy series shorthand family
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?FF[0-9]:[ \t]/m
+
+# Transmission Control Protocol abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TCP:[ \t]/m
+
+# User Datagram Protocol abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?UDP:[ \t]/m
+
+# Domain Name System abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?DNS:[ \t]/m
+
+# Virtual private network abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?VPN:[ \t]/m
+
+# Secure Shell abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SSH:[ \t]/m
+
+# Media access control address, Apple Mac, and message authentication code
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?MAC:[ \t]/m
+
+# Universal Serial Bus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?USB:[ \t]/m
+
+# Peripheral Component Interconnect abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PCI:[ \t]/m
+
+# Central processing unit abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CPU:[ \t]/m
+
+# Graphics processing unit abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?GPU:[ \t]/m
+
+# Amazon Web Services abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?AWS:[ \t]/m
+
+# Google Cloud Platform abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?GCP:[ \t]/m
+
+# Structured Query Language abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SQL:[ \t]/m
+
+# IBM company name
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IBM:[ \t]/m
+
+# npm package registry abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?NPM:[ \t]/m
+
+# Role-playing game abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?RPG:[ \t]/m
+
+# Non-player character abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?NPC:[ \t]/m
+
+# Grand Theft Auto shorthand
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?GTA:[ \t]/m
+
+# ISO country code for the United States
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?USA:[ \t]/m
+
+# ISO country code for China
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CHN:[ \t]/m
+
+# ISO country code for Russia
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?RUS:[ \t]/m
+
+# ISO country code for North Korea
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PRK:[ \t]/m
+
+# ISO country code for Iran
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IRN:[ \t]/m
+
+# ISO country code for Israel
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ISR:[ \t]/m
+
+# ISO country code for Spain, also extrasensory perception and Espressif
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ESP:[ \t]/m
+
+# ISO country code for Ukraine
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?UKR:[ \t]/m
+
+# Work in progress status abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?WIP:[ \t]/m
+
+# To be determined status abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TBD:[ \t]/m
+
+# Proof of concept abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?POC:[ \t]/m
+
+# Minimum viable product abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?MVP:[ \t]/m
+
+# Estimated time of arrival abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ETA:[ \t]/m
+
+# Key performance indicator abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?KPI:[ \t]/m
+
+# Common name
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SAM:[ \t]/m
+
+# Common name
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?BOB:[ \t]/m
+
+# Common name, also maximum
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?MAX:[ \t]/m
+
+# Common name
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IAN:[ \t]/m
+
+# Human immunodeficiency virus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?HIV:[ \t]/m
+
+# Sexually transmitted disease abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?STD:[ \t]/m
+
+# Sexually transmitted infection abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?STI:[ \t]/m
+
+# Urinary tract infection abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?UTI:[ \t]/m
+
+# Amyotrophic lateral sclerosis abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ALS:[ \t]/m
+
+# Obsessive-compulsive disorder abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?OCD:[ \t]/m
+
+# Attention deficit disorder abbreviation, also ordinary verb
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ADD:[ \t]/m
+
+# Dissociative identity disorder abbreviation, also ordinary verb
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?DID:[ \t]/m
+
+# Irritable bowel syndrome abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IBS:[ \t]/m
+
+# Inflammatory bowel disease abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IBD:[ \t]/m
+
+# Coronary artery disease abbreviation, also computer-aided design
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CAD:[ \t]/m
+
+# Congestive heart failure abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CHF:[ \t]/m
+
+# Deep vein thrombosis abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?DVT:[ \t]/m
+
+# Transient ischemic attack abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?TIA:[ \t]/m
+
+# Peripheral artery disease abbreviation, also ordinary word
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PAD:[ \t]/m
+
+# Human papillomavirus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?HPV:[ \t]/m
+
+# Hepatitis B virus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?HBV:[ \t]/m
+
+# Hepatitis C virus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?HCV:[ \t]/m
+
+# Herpes simplex virus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?HSV:[ \t]/m
+
+# Respiratory syncytial virus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?RSV:[ \t]/m
+
+# Cytomegalovirus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CMV:[ \t]/m
+
+# Systemic lupus erythematosus abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?SLE:[ \t]/m
+
+# Pelvic inflammatory disease abbreviation, also process identifier
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PID:[ \t]/m
+
+# Autism spectrum disorder abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ASD:[ \t]/m
+
+# Chronic kidney disease abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CKD:[ \t]/m
+
+# Influenza abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?FLU:[ \t]/m
+
+# Generalized anxiety disorder abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?GAD:[ \t]/m
+
+# Borderline personality disorder abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?BPD:[ \t]/m
+
+# Magnetic resonance imaging abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?MRI:[ \t]/m
+
+# Electrocardiogram abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ECG:[ \t]/m
+
+# Electrocardiogram abbreviation, German spelling
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?EKG:[ \t]/m
+
+# Electroencephalogram abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?EEG:[ \t]/m
+
+# Electromyography abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?EMG:[ \t]/m
+
+# Cardiopulmonary resuscitation abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CPR:[ \t]/m
+
+# In vitro fertilization abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IVF:[ \t]/m
+
+# CT scan procedure abbreviation, also ordinary word
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?CAT:[ \t]/m
+
+# Positron emission tomography scan abbreviation, also ordinary word
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PET:[ \t]/m
+
+# Intrauterine device abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?IUD:[ \t]/m
+
+# Electroconvulsive therapy abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ECT:[ \t]/m
+
+# Do not resuscitate order abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?DNR:[ \t]/m
+
+# Hormone replacement therapy abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?HRT:[ \t]/m
+
+# Assisted reproductive technology abbreviation, also ordinary word
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ART:[ \t]/m
+
+# Papanicolaou smear abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?PAP:[ \t]/m
+
+# Intensive care unit abbreviation
+/^[ \t]*(?:-[ \t]+|[0-9]+\.[ \t]+)?ICU:[ \t]/m

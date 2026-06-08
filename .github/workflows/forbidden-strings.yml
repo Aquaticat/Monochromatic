@@ -71,21 +71,26 @@ jobs:
         "$bin_dir/forbidden-strings" --version
 
     - name: Materialize deny-list
-      # Mirror the local file-enforcer composition: always seed from the
-      # committed baseline (betterleaks port, not sensitive), then append
-      # the per-repo secret if one is configured. This keeps the baseline
-      # credential scan running even when no secret exists, while still
-      # honoring the design that puts repo-specific literals out-of-band.
-      # Use printenv (not shell interpolation) so the secret bytes are
-      # never expanded into a logged command line.
+      # Mirror the local file-enforcer composition: seed from the committed
+      # baseline (betterleaks port, not sensitive), append the committed
+      # shared appendix (forbidden-strings.append.txt, non-sensitive repo-
+      # wide rules), then append the per-repo secret if one is configured.
+      # This keeps the baseline credential scan running even when no secret
+      # exists, while still honoring the design that puts sensitive repo-
+      # specific literals out-of-band: the gitignored append.local.txt is
+      # absent in CI, so its sensitive equivalent is the
+      # FORBIDDEN_STRINGS_LIST secret. Use printenv (not shell
+      # interpolation) so the secret bytes are never expanded into a logged
+      # command line.
       env:
         FORBIDDEN_STRINGS_LIST: ${{ secrets.FORBIDDEN_STRINGS_LIST }}
       run: |
         cp forbidden-strings.local.example.txt forbidden-strings.local.txt
+        cat forbidden-strings.append.txt >> forbidden-strings.local.txt
         if [ -n "$FORBIDDEN_STRINGS_LIST" ]; then
           printenv FORBIDDEN_STRINGS_LIST >> forbidden-strings.local.txt
         else
-          echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline-only scan."
+          echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline + shared appendix scan."
         fi
 
     - name: Scan changed files (PR and merge_group only)

@@ -4,18 +4,22 @@ This document tracks the upstream resharp bugs that `forbidden-strings`
 defends against, the consumer-side guards that block each, and the
 verification path for each finding.
 
-Current status (2026-06-04, resharp main at `264e85b`, v0.6.9): one upstream
-restriction is still live, Bug A (complement-of-lookaround), held behind a
-load-bearing consumer-side guard. The four fixes prototyped and held against
-0.6.8 all landed upstream and are now spent (see "Fixed upstream, now spent").
-The 0.6.8 bump narrative, the combined-PR preparation notes, the per-fix
-prototypes, and the resolved compile-timeout artifact were removed once that
-work landed; git history before this commit holds the full analysis.
+Current status (2026-06-08, resharp v0.6.11): one upstream restriction is
+still live, Bug A (complement-of-lookaround), held behind a load-bearing
+consumer-side guard. The 0.6.9 floor fixes are spent (see "Fixed upstream,
+now spent"), and the 0.6.11 bump adds three more that this project filed
+against the 2026-06-04 fuzz campaign: bug-07 (ASCII `\D`/`\S`/`\W`
+negated-class nullability, PR #15), regression-01 (duplicate zero-width
+`find_all` spans on negative lookahead, PR #14), and bug-04 (NO_MATCH sentinel
+abort/leak in `find_all`, PR #16). The 0.6.10/0.6.11 delta does not touch the
+reverse-pass `Kind::Compl` arm, so Bug A is presumed unchanged; it was last
+behaviourally verified at v0.6.9 (`264e85b`, 2026-06-04).
 
 A separate, broader fuzz campaign against v0.6.9 lives in
 `docs/audit/resharp-fuzz-2026-06-04/` (twenty-three distinct root causes plus
-one regression); this file stays scoped to the forbidden-strings consumer
-guards.
+one regression); bug-04, bug-07, and regression-01 from that campaign are
+fixed in v0.6.11 (PRs #16, #15, #14). This file stays scoped to the
+forbidden-strings consumer guards.
 
 ## Fixed upstream, now spent
 
@@ -46,6 +50,21 @@ guards.
 - The 0.6.8 "compile-time timeout on small patterns" finding was a fork
   fuzz-harness measurement artifact (six compiles per libFuzzer unit under
   AddressSanitizer), not a resharp defect; resolved, not filed.
+- Fixed in v0.6.11, filed by this project from the 2026-06-04 campaign and
+  merged to ieviev/resharp main:
+    - bug-07 ([ieviev/resharp#15](https://github.com/ieviev/resharp/pull/15)):
+      the parser negates the byte class for ASCII `\D`/`\S`/`\W`, so a negated
+      Perl class is no longer treated as nullable.
+    - regression-01
+      ([ieviev/resharp#14](https://github.com/ieviev/resharp/pull/14)):
+      `find_all` registers each null position once, removing duplicate
+      zero-width match spans on negative-lookahead shapes.
+    - bug-04 ([ieviev/resharp#16](https://github.com/ieviev/resharp/pull/16)):
+      `find_all` no longer aborts or leaks state on a NO_MATCH sentinel
+      candidate.
+  None of the three had a consumer-side pre-validator to retire (they were
+  engine/parser match-correctness defects, not rule-shape rejects), so the
+  only consumer change is the dependency floor bump to 0.6.11.
 
 ## Bug A: `\b`, `\B`, `^`, `$` inside complement bodies fail with `Algebra(UnsupportedPattern)`
 

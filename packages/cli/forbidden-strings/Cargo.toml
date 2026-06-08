@@ -1,6 +1,6 @@
 [package]
 name = "forbidden-strings"
-version = "0.1.8"
+version = "0.1.9"
 categories = ["command-line-utilities", "development-tools"]
 edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/packages/cli/forbidden-strings"
@@ -45,19 +45,28 @@ ignore = "0.4"
 memchr = "2"
 rayon = "1"
 regex = "1"
-# Floor raised to 0.6.9. 0.6.9 merges upstream PR #13 (ieviev/resharp#13):
-# the parser now caps recursion at `DEFAULT_MAX_DEPTH = 1_000` (Bug G deep-
-# nesting stack-overflow abort), `resharp-algebra` gained the `rw_active`
-# re-entrancy guard on the distribution rewrites (intersection-over-
-# alternation algebra recursion), and `resharp-engine/src/fas.rs` no longer
-# drops boundary zero-width matches in `find_all`. 0.6.9 also re-admits the
-# `\A`/`\z`-inside-complement workaround that 0.6.8 rejected. The earlier
-# Bug B/C/E/F fixes (intersection-with-lookbehind no longer corrupts, the
-# algebra arithmetic no longer overflows, the prefix loop no longer hangs)
-# landed in 0.6.4 and remain in 0.6.9. Re-verified against published 0.6.9
-# (resharp main `264e85b`) on 2026-06-04; see docs/troubleshooting/resharp.md.
-# Caret semantics keep this within 0.6.x (`>=0.6.9, <0.7`).
-resharp = "0.6.9"
+# Floor raised to 0.6.11. 0.6.11 lands three further upstream fixes filed by
+# this project against the 2026-06-04 fuzz campaign
+# (docs/audit/resharp-fuzz-2026-06-04/), all merged to ieviev/resharp main:
+#   - PR #15 (bug-07): the parser negates the byte class for ASCII `\D`/`\S`/
+#     `\W`, so a negated Perl class is no longer spuriously nullable;
+#   - PR #14 (regression-01): `find_all` registers each null position once,
+#     killing duplicate zero-width spans on negative-lookahead shapes;
+#   - PR #16 (bug-04): `find_all` no longer aborts or leaks on a NO_MATCH
+#     sentinel candidate.
+# Assorted engine edge-case and stack-overflow hardening also landed between
+# 0.6.9 and 0.6.11. The complement-of-lookaround reject (Bug A) is untouched
+# by the 0.6.10/0.6.11 delta (the reverse-pass `Kind::Compl` arm did not
+# change), so it stays the single live restriction, held by the consumer-side
+# `lookaround_in_complement` guard; last behaviourally verified at 0.6.9.
+#
+# History: 0.6.9 merged PR #13 (`DEFAULT_MAX_DEPTH = 1_000` for the Bug G
+# deep-nesting stack-overflow, the `rw_active` re-entrancy guard, and the
+# `find_all` boundary zero-width fix) and re-admitted the `\A`/`\z`-inside-
+# complement workaround; the Bug B/C/E/F fixes landed in 0.6.4 and remain.
+# See docs/troubleshooting/resharp.md. Caret semantics keep this within
+# 0.6.x (`>=0.6.11, <0.7`).
+resharp = "0.6.11"
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:
