@@ -100,6 +100,18 @@ cargo-binstall = "latest"
 # container filesystem does not see host mise tools.
 "cargo:cargo-nextest" = "latest"
 
+# CMake for building vendored C libraries from Rust -sys crates. music-player's
+# `opus` dependency (pinned to opus-rs git HEAD in
+# packages/desktop-app/music-player/Cargo.toml) uses opusic-sys, whose `bundled`
+# feature is on by default and compiles libopus 1.6.1 from source via CMake on
+# every platform. The Linux host carries no system cmake, so mise provides it
+# here; the two podman-built desktop apps install cmake inside their Containerfiles
+# instead, since the container filesystem does not see host mise tools. A CMake
+# generator is also required: the host and macOS fall back to system `make` (Unix
+# Makefiles), Windows uses the Visual Studio generator, and the containers install
+# ninja. See docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
+"aqua:Kitware/CMake" = "latest"
+
 # Zig toolchain for packages/desktop-app/terminal: its libghostty-vt-sys
 # build-dependency compiles vendored Ghostty with Zig and requires Zig 0.15.x
 # (Fedora packages an older 0.14). Pinned to 0.15.2 to match the version the
