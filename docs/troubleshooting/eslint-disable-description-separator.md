@@ -1,9 +1,15 @@
 # ESLint v10.4.1: disable comment descriptions require a whitespace-surrounded hyphen run
 
-Current status (2026-06-06): ESLint intentionally parses disable comment
-reasons only after a whitespace-surrounded run of two or more hyphens. The
-shortest supported separator is ` -- `. Longer runs such as ` -------- ` are
-also supported. A single hyphen, a colon, or `--` without whitespace stays in
+Current status (2026-06-06):
+ ESLint intentionally parses disable comment
+reasons only after a whitespace-surrounded run of two or more hyphens.
+ The
+shortest supported separator is ` -- `.
+ Longer runs such as ` -------- ` are
+also supported.
+ A single hyphen,
+ a colon,
+ or `--` without whitespace stays in
 the directive value and is treated as part of the rule name.
 
 ## Symptom
@@ -25,7 +31,8 @@ The same is true for longer hyphen runs:
 foo;
 ```
 
-Alternate separators do not split the directive from the reason. ESLint treats
+Alternate separators do not split the directive from the reason.
+ ESLint treats
 the entire suffix as the rule identifier and then also reports the original
 rule violation:
 
@@ -97,8 +104,11 @@ justification = "";
 ```
 
 The parser splits only on `\s-{2,}\s` in
-`packages/plugin-kit/src/config-comment-parser.js:210`. That means the
-separator must have whitespace before it, at least two hyphens, and whitespace
+`packages/plugin-kit/src/config-comment-parser.js:210`.
+ That means the
+separator must have whitespace before it,
+ at least two hyphens,
+ and whitespace
 after it:
 
 ```js
@@ -144,18 +154,24 @@ parseDirective(string) {
 }
 ```
 
-So unsupported separators are not rejected by a separate reason parser. They are
-never recognized as separators. The disable directive's rule-name parser sees
-`no-undef - reason`, `no-undef: reason`, or `no-undef --reason` as the rule
+So unsupported separators are not rejected by a separate reason parser.
+ They are
+never recognized as separators.
+ The disable directive's rule-name parser sees
+`no-undef - reason`,
+ `no-undef: reason`,
+ or `no-undef --reason` as the rule
 identifier.
 
 The behavior comes from RFC 33 rather than an accidental implementation detail.
 The RFC motivation says directive comments need colocated explanations because
-exceptions to static analysis need maintenance context, but ESLint previously
+exceptions to static analysis need maintenance context,
+ but ESLint previously
 had no comfortable way to write that explanation
 (`eslint/rfcs/designs/2019-description-in-directive-comments/README.md:11-14`).
 The detailed design chose exactly the same split pattern,
-`\s-{2,}\s`, in
+`\s-{2,}\s`,
+ in
 `eslint/rfcs/designs/2019-description-in-directive-comments/README.md:17`:
 
 ```md
@@ -166,16 +182,20 @@ ESLint ignores the part preceded by `\s-{2,}\s` in directive comments.
 The RFC also records two design constraints that explain why the separator is a
 whitespace-surrounded hyphen run rather than arbitrary free text:
 
-- It should not affect `--` inside rule configuration values. The RFC example
+- It should not affect `--` inside rule configuration values.
+   The RFC example
   `/* eslint spaced-comment: [error, { exceptions: ["--"] }] */` is explicitly
   called out as not affected in
   `eslint/rfcs/designs/2019-description-in-directive-comments/README.md:40-41`.
-- It follows prior art from PHP_CodeSniffer, whose ignore syntax uses
-  `// phpcs:disable PEAR,Squiz.Arrays -- this isn't our code`, cited in
+- It follows prior art from PHP_CodeSniffer,
+   whose ignore syntax uses
+  `// phpcs:disable PEAR,Squiz.Arrays -- this isn't our code`,
+   cited in
   `eslint/rfcs/designs/2019-description-in-directive-comments/README.md:81-85`.
 
 Earlier issue discussion also pushed against arbitrary trailing text because it
-would increase directive parsing complexity and the surface area for bugs. That
+would increase directive parsing complexity and the surface area for bugs.
+ That
 concern appears in
 [eslint/eslint#11298](https://github.com/eslint/eslint/issues/11298#issuecomment-456223984)
 and
@@ -248,7 +268,8 @@ Cleanly supported patterns:
 - `// eslint-disable-next-line no-undef -------- reason` suppressed `no-undef`
   and recorded `justification: "reason"`.
 
-Failure variant, unrecognized rule identifier plus unsuppressed original rule:
+Failure variant,
+ unrecognized rule identifier plus unsuppressed original rule:
 
 - `// eslint-disable-next-line no-undef - reason` produced
   `Definition for rule 'no-undef - reason' was not found.` and
@@ -273,7 +294,9 @@ Failure variant, unrecognized rule identifier plus unsuppressed original rule:
 foo;
 ```
 
-Tradeoff: the reason syntax is fixed by ESLint. A whitespace-surrounded hyphen
+Tradeoff:
+ the reason syntax is fixed by ESLint.
+ A whitespace-surrounded hyphen
 run is the only separator family that round-trips through ESLint's
 `suppressedMessages[].suppressions[].justification` field.
 
@@ -285,7 +308,9 @@ run is the only separator family that round-trips through ESLint's
 foo;
 ```
 
-Tradeoff: it is less common than ` -- `, but it is documented and covered by the
+Tradeoff:
+ it is less common than ` -- `,
+ but it is documented and covered by the
 same `\s-{2,}\s` parser.
 
 ### Put the explanation in a separate normal comment
@@ -297,29 +322,38 @@ same `\s-{2,}\s` parser.
 foo;
 ```
 
-Tradeoff: ESLint does not attach the normal comment to the suppression
-justification field, so formatter output and `suppressedMessages` consumers do
+Tradeoff:
+ ESLint does not attach the normal comment to the suppression
+justification field,
+ so formatter output and `suppressedMessages` consumers do
 not treat the explanation as part of the directive.
 
 ## What does not work
 
 - Single hyphen separators such as `no-undef - reason`.
 - Colon separators such as `no-undef: reason`.
-- `--` without whitespace before it, such as `no-undef-- reason`.
-- `--` without whitespace after it, such as `no-undef --reason`.
-- Arbitrary trailing prose, such as `no-undef because reason`.
+- `--` without whitespace before it,
+   such as `no-undef-- reason`.
+- `--` without whitespace after it,
+   such as `no-undef --reason`.
+- Arbitrary trailing prose,
+   such as `no-undef because reason`.
 
-All of these keep the supposed reason inside the directive value, so ESLint
+All of these keep the supposed reason inside the directive value,
+ so ESLint
 looks for a rule with that whole string as its name.
 
 ## Upstream filing artifact
 
-Nothing to file as-is. This is intended, documented behavior from a merged RFC,
+Nothing to file as-is.
+ This is intended,
+ documented behavior from a merged RFC,
 not an upstream defect.
 
 ### Out-of-scope check
 
-No matching exemption was found under `.out-of-scope/`. Checked the current
+No matching exemption was found under `.out-of-scope/`.
+ Checked the current
 files there on 2026-06-06.
 
 ### Duplicate and history search
@@ -339,28 +373,47 @@ Relevant existing upstream records:
   closed issue proposing free-form comments after disable lines.
 - [eslint/eslint#11806](https://github.com/eslint/eslint/issues/11806),
   closed issue proposing explanations for `eslint-disable`.
-- [eslint/rfcs#33](https://github.com/eslint/rfcs/pull/33), merged RFC that
+- [eslint/rfcs#33](https://github.com/eslint/rfcs/pull/33),
+   merged RFC that
   selected `\s-{2,}\s`.
-- [eslint/eslint#12699](https://github.com/eslint/eslint/pull/12699), merged
+- [eslint/eslint#12699](https://github.com/eslint/eslint/pull/12699),
+   merged
   implementation PR for RFC 33.
 
 ### Upstream filing decision
 
-1.  Is it really upstream's fault? No. ESLint behaves as its current docs, RFC,
+1.  Is it really upstream's fault?
+     No. ESLint behaves as its current docs,
+     RFC,
     and source say it should behave.
-2.  Can upstream fix it? Upstream could add more separators as a feature
-    change, but there is no defect to fix in the current behavior.
-3.  Are they supporting this use case? Yes, they support disable comment
-    descriptions through `\s-{2,}\s`, not through arbitrary trailing text.
-4.  Would the repo welcome our contribution? The repository has
-    `CONTRIBUTING.md`, issue templates, and `PULL_REQUEST_TEMPLATE.md`.
-    `CONTRIBUTING.md:9-11` points contributors to the AI usage policy, and
+2.  Can upstream fix it?
+     Upstream could add more separators as a feature
+    change,
+     but there is no defect to fix in the current behavior.
+3.  Are they supporting this use case?
+     Yes,
+     they support disable comment
+    descriptions through `\s-{2,}\s`,
+     not through arbitrary trailing text.
+4.  Would the repo welcome our contribution?
+     The repository has
+    `CONTRIBUTING.md`,
+     issue templates,
+     and `PULL_REQUEST_TEMPLATE.md`.
+    `CONTRIBUTING.md:9-11` points contributors to the AI usage policy,
+     and
     `docs/src/contribute/ai-policy.md:16-18` permits AI-assisted issues and
     PRs with disclosure and human review.
-5.  Will they likely fix it? No evidence supports filing a change now. The
-    accepted RFC and implemented docs already chose the separator. A broader
+5.  Will they likely fix it?
+     No evidence supports filing a change now.
+     The
+    accepted RFC and implemented docs already chose the separator.
+     A broader
     separator set would need a new change request and likely another RFC.
-6.  Have we prototyped a minimal fix compatible with their architecture? No.
+6.  Have we prototyped a minimal fix compatible with their architecture?
+     No.
     The auto-prototype condition does not hold because constraint 1 fails and
-    constraint 5 is not a yes. A prototype would be feature work, not a bug
+    constraint 5 is not a yes.
+     A prototype would be feature work,
+     not a bug
     diagnosis artifact.

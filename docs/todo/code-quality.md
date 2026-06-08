@@ -2,11 +2,16 @@
 
 ## Cross-References
 
-- [**Build System Issues**](build-system.md#missing-export-issues): TypeScript compilation and export fixes
-- [**Security Practices**](security.md#development-security): Secure coding guidelines and practices
-- [**Performance Patterns**](performance.md#runtime-performance): Performance-focused coding patterns
-- [**Package Standards**](packages.md#cross-package-improvements): Cross-package coding standards
-- [**Automation Tools**](automation.md#code-quality-automation): Automated code quality improvements
+- [**Build System Issues**](build-system.md#missing-export-issues):
+   TypeScript compilation and export fixes
+- [**Security Practices**](security.md#development-security):
+   Secure coding guidelines and practices
+- [**Performance Patterns**](performance.md#runtime-performance):
+   Performance-focused coding patterns
+- [**Package Standards**](packages.md#cross-package-improvements):
+   Cross-package coding standards
+- [**Automation Tools**](automation.md#code-quality-automation):
+   Automated code quality improvements
 
 ## Current Linting Issues
 
@@ -14,14 +19,20 @@
 
 #### Code Quality Issues (Fix in code, not config)
 
-1. **Variable abbreviations** (~135 total occurrences, down from 147)
+1. **Variable abbreviations** (~135 total occurrences,
+    down from 147)
    - Use descriptive names instead of abbreviations
-   - **NEVER use single-letter variables like `i`, `j`, `k`**: they provide no semantic meaning
-   - Exception: Mathematical formulas where single letters have established meaning
+   - **NEVER use single-letter variables like `i`,
+      `j`,
+      `k`**:
+      they provide no semantic meaning
+   - Exception:
+      Mathematical formulas where single letters have established meaning
 
 #### TypeScript Compilation Errors (New - Critical Priority)
 
-**Status**: Critical (blocks builds)
+**Status**:
+ Critical (blocks builds)
 
 Recent analysis shows critical TypeScript compilation errors that must be fixed:
 
@@ -35,7 +46,8 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
   - Type constraint issues in array type definitions
   - Pattern matcher type compatibility issues
 
-**Cross-Reference**: See [Build System Todo](build-system.md#missing-export-issues) for complete list and fixes.
+**Cross-Reference**:
+ See [Build System Todo](build-system.md#missing-export-issues) for complete list and fixes.
 
 #### Remaining Files to Fix
 
@@ -56,19 +68,25 @@ Recent analysis shows critical TypeScript compilation errors that must be fixed:
 1. Re-inventory abbreviation usage beyond package C-style loop counters.
 2. Fix remaining void expression issues in test assertions.
 
-**Cross-Reference**: See [Automation Todo](automation.md#code-quality-automation) for automated linting improvements.
+**Cross-Reference**:
+ See [Automation Todo](automation.md#code-quality-automation) for automated linting improvements.
 
 ## Code Patterns and Best Practices
 
 ### Meilisearch Task Polling Implementation Evolution
 
-**Learning Example**: The user guided progressive simplification through "Do you really need..." questions:
+**Learning Example**:
+ The user guided progressive simplification through "Do you really need..." questions:
 
 1. Started with mutable `let taskStatus` and `while` loop with inline constants
-2. "Do you really need a mutable variable?" → Moved to immutable `const` inside loop
-3. "Do you really need a while(true) break pattern?" → Changed to `while` with proper condition
-4. "Do you really need a while loop at all?" → Changed to `for` loop with calculated iterations
-5. "Do you really need a for loop?" → Changed to recursive helper function
+2. "Do you really need a mutable variable?
+   " → Moved to immutable `const` inside loop
+3. "Do you really need a while(true) break pattern?
+   " → Changed to `while` with proper condition
+4. "Do you really need a while loop at all?
+   " → Changed to `for` loop with calculated iterations
+5. "Do you really need a for loop?
+   " → Changed to recursive helper function
 
 #### Final Implementation: Simple Array with `findAsync`
 
@@ -108,29 +126,40 @@ catch (error) {
 
 #### Potential Future Improvements (1am Ideas)
 
-1. **Different utility function**: Perhaps a `times` or `repeat` async function:
+1. **Different utility function**:
+    Perhaps a `times` or `repeat` async function:
    - `const status = await repeatAsync(100, async () => { /* poll logic */ })`
    - This would eliminate the dummy array entirely
 
-2. **Parallel task validation**: Instead of polling tasks sequentially:
+2. **Parallel task validation**:
+    Instead of polling tasks sequentially:
    - Create an array of all taskUids from the batch
    - Use `Promise.all` with `findAsync` for each task
-   - Or better: a single `findAsync` that polls ALL tasks in each iteration
+   - Or better:
+      a single `findAsync` that polls ALL tasks in each iteration
 
-**Cross-Reference**: See [Packages Todo](packages.md#async-iterator-utilities) for async utility function development.
+**Cross-Reference**:
+ See [Packages Todo](packages.md#async-iterator-utilities) for async utility function development.
 
 ### Lessons from "Do you really need..."
 
 This questioning pattern teaches:
 
-1. **Question every construct**: Each programming construct adds complexity
-2. **Prefer immutability**: Mutable variables should be eliminated when possible
-3. **Prefer declarative over imperative**: Loops can often be replaced with higher-order functions
-4. **Extract and name concepts**: Helper functions like `isTaskPending` improve readability
-5. **Think functionally first**: There's often a functional solution that's cleaner
-6. **Simplify progressively**: Don't stop at the first working solution
+1. **Question every construct**:
+    Each programming construct adds complexity
+2. **Prefer immutability**:
+    Mutable variables should be eliminated when possible
+3. **Prefer declarative over imperative**:
+    Loops can often be replaced with higher-order functions
+4. **Extract and name concepts**:
+    Helper functions like `isTaskPending` improve readability
+5. **Think functionally first**:
+    There's often a functional solution that's cleaner
+6. **Simplify progressively**:
+    Don't stop at the first working solution
 
-**Cross-Reference**: See [Performance Todo](performance.md#javascript-performance) for performance-focused patterns.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#javascript-performance) for performance-focused patterns.
 
 ## Testing Requirements and Standards
 
@@ -142,11 +171,13 @@ This questioning pattern teaches:
   - `mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts`
   - `mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts`
 
-**Cross-Reference**: See [Automation Todo](automation.md#testing-automation) for comprehensive testing automation.
+**Cross-Reference**:
+ See [Automation Todo](automation.md#testing-automation) for comprehensive testing automation.
 
 ### Coverage Requirements
 
-If certain lines or branches can't be tested, use V8 ignore comments:
+If certain lines or branches can't be tested,
+ use V8 ignore comments:
 
 ```typescript
 /* v8 ignore next -- @preserve */
@@ -178,7 +209,8 @@ expect(isError(new Error(),),).toBe(true,);
 
 ### Function Patterns
 
-- Always name functions. Prefer function declarations
+- Always name functions.
+   Prefer function declarations
 - Always use parentheses around arrow function parameters (even single parameter)
 - Provide explicit parameter and return types for all functions
 - Use function overloads for functions with multiple call signatures
@@ -186,35 +218,48 @@ expect(isError(new Error(),),).toBe(true,);
 ### Variable and Immutability Standards
 
 - Prefer `const` over `let` to encourage immutability
-- Strive for immutability: avoid reassigning variables and modifying objects in place
-- **NEVER use single-letter variables**: they provide no semantic meaning
+- Strive for immutability:
+   avoid reassigning variables and modifying objects in place
+- **NEVER use single-letter variables**:
+   they provide no semantic meaning
 - **Prefer functional approaches over imperative loops**
 - Remove unused variables or prefix them with underscore
 - Use `satisfies` operator for type checking without widening
 
 ### Error Handling Best Practices
 
-- **NEVER use process.exit()**: throw errors instead
-- **Combine console.log/error messages into thrown errors**
+- **NEVER use process.
+  exit()**:
+   throw errors instead
+- **Combine console.
+  log/error messages into thrown errors**
 - **Use string-dedent for multi-line error messages**
 - **Always log errors in catch blocks**
 - **Document expected errors with comments**
 
-**Cross-Reference**: See [Security Todo](security.md#secure-coding-practices) for security-focused error handling.
+**Cross-Reference**:
+ See [Security Todo](security.md#secure-coding-practices) for security-focused error handling.
 
 ## Linting Configuration Philosophy
 
 ### When to Fix vs Configure
 
-- **High Priority**: Fix legitimate code issues in the codebase
-- **Medium Priority**: Adjust configuration for team workflow
-- **Never**: Disable rules just to avoid fixing code
+- **High Priority**:
+   Fix legitimate code issues in the codebase
+- **Medium Priority**:
+   Adjust configuration for team workflow
+- **Never**:
+   Disable rules just to avoid fixing code
 
 ### Rule Categories
 
-1. **Code Quality Issues**: Always fix in code, not config
-2. **Style Preferences**: Can be configured for team consistency
-3. **Framework-specific**: May need configuration for specific use cases
+1. **Code Quality Issues**:
+    Always fix in code,
+    not config
+2. **Style Preferences**:
+    Can be configured for team consistency
+3. **Framework-specific**:
+    May need configuration for specific use cases
 
 ### Testing-Specific Linting
 
@@ -231,25 +276,33 @@ expect(isError(new Error(),),).toBe(true,);
 - Avoid await in loops where logically sound
 - Use `Promise.all()` for concurrent operations
 
-**Cross-Reference**: See [Performance Todo](performance.md#async-performance) for comprehensive async optimization.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#async-performance) for comprehensive async optimization.
 
 ### Functional Programming Utilities
 
-Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
+Function composition lives in `@monochromatic-dev/module-pipe`,
+ not module-es:
 
 - Use `piped` for eager synchronous function composition
 - Use `pipedAsync` for eager async function composition
-- Use `pipe`/`pipeAsync` for deferred, reusable function pipelines
+- Use `pipe`/`pipeAsync` for deferred,
+   reusable function pipelines
 - Functions generally don't require `.bind()` for `this` context
 
-**Cross-Reference**: See [Packages Todo](packages.md#module-library-packages-modulees) for functional utility expansion.
+**Cross-Reference**:
+ See [Packages Todo](packages.md#module-library-packages-modulees) for functional utility expansion.
 
 ## Code Organization Standards
 
 ### File Organization
 
 - Use `region` markers to delineate logical sections
-- Group imports in specific order (built-in, external, workspace, relative, type-only)
+- Group imports in specific order (built-in,
+   external,
+   workspace,
+   relative,
+   type-only)
 - Always include file extensions in imports
 - Use absolute imports for workspace packages
 
@@ -263,7 +316,8 @@ Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
 
 ### Secure Coding Practices
 
-**Status**: High Priority (security integration)
+**Status**:
+ High Priority (security integration)
 
 - [ ] Implement input validation in all user-facing functions
 - [ ] Add proper error handling without information disclosure
@@ -271,7 +325,8 @@ Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
 - [ ] Implement proper logging for security events
 - [ ] Add code review focus on security patterns
 
-**Cross-Reference**: See [Security Todo](security.md#secure-coding-practices) for comprehensive security guidelines.
+**Cross-Reference**:
+ See [Security Todo](security.md#secure-coding-practices) for comprehensive security guidelines.
 
 ### Dependency Security Integration
 
@@ -280,7 +335,8 @@ Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
 - [ ] Add license compliance checking
 - [ ] Create secure dependency usage patterns
 
-**Cross-Reference**: See [Security Todo](security.md#dependency-security) for dependency security management.
+**Cross-Reference**:
+ See [Security Todo](security.md#dependency-security) for dependency security management.
 
 ## Future Quality Improvements
 
@@ -291,7 +347,8 @@ Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
 - Monitor code quality metrics over time
 - Integrate with development workflow
 
-**Cross-Reference**: See [Automation Todo](automation.md#code-quality-automation) for comprehensive automation.
+**Cross-Reference**:
+ See [Automation Todo](automation.md#code-quality-automation) for comprehensive automation.
 
 ### Developer Experience
 
@@ -300,7 +357,8 @@ Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
 - Create code templates and snippets
 - Implement automated refactoring tools
 
-**Cross-Reference**: See [Development Todo](development.md#development-workflow-improvements) for developer experience enhancements.
+**Cross-Reference**:
+ See [Development Todo](development.md#development-workflow-improvements) for developer experience enhancements.
 
 ### Performance Integration
 
@@ -309,7 +367,8 @@ Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
 - [ ] Create performance-aware coding guidelines
 - [ ] Add performance impact analysis for code changes
 
-**Cross-Reference**: See [Performance Todo](performance.md#monitoring--metrics) for performance measurement integration.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#monitoring--metrics) for performance measurement integration.
 
 ## Success Criteria
 

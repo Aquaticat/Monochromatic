@@ -2,29 +2,41 @@
 
 ## Cross-References
 
-- [**Build System Integration**](build-system.md#package-management-improvements): Package management tooling integration
-- [**Automation Tools**](automation.md#development-automation): Development workflow automation
-- [**Package Development**](packages.md#build-utilities): Build utility enhancement
-- [**Performance Tools**](performance.md#build-performance): Performance monitoring and optimization tools
-- [**Security Tools**](security.md#development-security): Security-focused development tools
+- [**Build System Integration**](build-system.md#package-management-improvements):
+   Package management tooling integration
+- [**Automation Tools**](automation.md#development-automation):
+   Development workflow automation
+- [**Package Development**](packages.md#build-utilities):
+   Build utility enhancement
+- [**Performance Tools**](performance.md#build-performance):
+   Performance monitoring and optimization tools
+- [**Security Tools**](security.md#development-security):
+   Security-focused development tools
 
 ## High Priority Tools
 
 ### `cpfd`: Copy Files From Dependencies
 
-**Status**: Deprecated; superseded by `packages/dev-script/file-enforcer`
+**Status**:
+ Deprecated;
+ superseded by `packages/dev-script/file-enforcer`
 
 ### `increase-version`
 
-**Status**: Deprecated; no longer needed after monorepo adoption (no frequent npm publishes)
+**Status**:
+ Deprecated;
+ no longer needed after monorepo adoption (no frequent npm publishes)
 
 ### `add-scripts`
 
-**Status**: Deprecated; handled by file-enforcer and mise task templates
+**Status**:
+ Deprecated;
+ handled by file-enforcer and mise task templates
 
 ## Monochromatic CLI Development
 
-**Current state**: Dedicated CLI packages live under `packages/cli/`.
+**Current state**:
+ Dedicated CLI packages live under `packages/cli/`.
 The old `monochromatic new ...` scaffolding ideas remain unimplemented.
 
 ### `monochromatic new <monorepo-name>`
@@ -86,13 +98,15 @@ endif
 - [ ] Add package testing setup automation
 - [ ] Implement package integration validation
 
-**Cross-Reference**: See [Packages Todo](packages.md#configuration-packages) for package template details.
+**Cross-Reference**:
+ See [Packages Todo](packages.md#configuration-packages) for package template details.
 
 ## Utility Tools
 
 ### `append` util
 
-**Status**: Medium Priority
+**Status**:
+ Medium Priority
 
 Terminal append util that appends a new line to a specified file.
 
@@ -114,7 +128,8 @@ append "my new line1" "my new line2" --to myfile.md
 
 ### Write my own mise MCP server
 
-**Status**: Medium Priority
+**Status**:
+ Medium Priority
 
 Create a custom MCP server for better mise integration with Claude/AI tools.
 
@@ -128,13 +143,16 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 - [ ] Add mise troubleshooting and debugging tools
 - [ ] Create comprehensive documentation and examples
 
-**Cross-Reference**: See [Automation Todo](automation.md#development-automation) for AI-assisted development tools.
+**Cross-Reference**:
+ See [Automation Todo](automation.md#development-automation) for AI-assisted development tools.
 
 ## Advanced Development Tools
 
 ### Code Generation and Scaffolding
 
-**Status**: Normal Priority, Developer productivity
+**Status**:
+ Normal Priority,
+ Developer productivity
 
 - [ ] Create automated component scaffolding tools
 - [ ] Implement boilerplate code generation
@@ -143,11 +161,14 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 - [ ] Implement automated documentation generation tools
 - [ ] Add code transformation and migration utilities
 
-**Cross-Reference**: See [Automation Todo](automation.md#code-generation-and-templating) for comprehensive code generation.
+**Cross-Reference**:
+ See [Automation Todo](automation.md#code-generation-and-templating) for comprehensive code generation.
 
 ### Development Workflow Tools
 
-**Status**: Normal Priority, Developer experience
+**Status**:
+ Normal Priority,
+ Developer experience
 
 - [ ] Create development environment validation tools
 - [ ] Implement automated development setup tools
@@ -156,34 +177,50 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 - [ ] Implement development workflow optimization tools
 - [ ] Add development collaboration enhancement tools
 
-**Cross-Reference**: See [Development Todo](development.md#development-workflow-improvements) for workflow optimization.
+**Cross-Reference**:
+ See [Development Todo](development.md#development-workflow-improvements) for workflow optimization.
 
 ## Tool Development Guidelines
 
 ### Script Preferences
 
-- **NEVER write bash/shell scripts** (non-portable, unreadable, unfamiliar)
-- When scripts are needed, create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
+- **NEVER write bash/shell scripts** (non-portable,
+   unreadable,
+   unfamiliar)
+- When scripts are needed,
+   create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
 - Use Bun to execute TypeScript scripts directly
 - Avoid creating main() functions
-  - Instead of wrapping code in a main() function, write top-level code directly
-  - Bad: `function main() { /* code */ } main();`
-  - Good: Just write the code at the top level
-  - For async operations, use top-level await: `await someAsyncOperation();`
-- Avoid exiting with 0; just let the program naturally run to the end
-- NEVER use process.exit(): throw errors instead
+  - Instead of wrapping code in a main() function,
+     write top-level code directly
+  - Bad:
+     `function main() { /* code */ } main();`
+  - Good:
+     Just write the code at the top level
+  - For async operations,
+     use top-level await:
+     `await someAsyncOperation();`
+- Avoid exiting with 0;
+   just let the program naturally run to the end
+- NEVER use process.
+  exit():
+   throw errors instead
 
 ### Tool Version Management
 
 - **Only pin tool versions when necessary** with clear justification
-- If pinning is required, always include comments explaining why
-- Example: `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
+- If pinning is required,
+   always include comments explaining why
+- Example:
+   `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
 - Document version requirements in both the pinning file and README
 - Regularly review pinned versions to check if constraints still apply
 
 ### Security Considerations for CLI Tools
 
-**Status**: High Priority, Tool security
+**Status**:
+ High Priority,
+ Tool security
 
 - [ ] Implement input validation for all CLI arguments
 - [ ] Add secure file handling and path validation
@@ -192,15 +229,18 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 - [ ] Add security scanning for generated code and configurations
 - [ ] Create secure tool update and distribution mechanisms
 
-**Cross-Reference**: See [Security Todo](security.md#development-security) for comprehensive security practices.
+**Cross-Reference**:
+ See [Security Todo](security.md#development-security) for comprehensive security practices.
 
 ## Grammar and Linting Tools
 
 ### Replace `vale` with `harper` or another grammar checker
 
-**Status**: Medium Priority
+**Status**:
+ Medium Priority
 
-`vale` gives `EvalSymlinks: too many links` error. Need to find a replacement.
+`vale` gives `EvalSymlinks: too many links` error.
+ Need to find a replacement.
 
 #### Investigation Tasks
 
@@ -215,9 +255,12 @@ Create a custom MCP server for better mise integration with Claude/AI tools.
 
 ### Pattern Matching Library
 
-**Status**: Low Priority, Experimental
+**Status**:
+ Low Priority,
+ Experimental
 
-Build our own TypeScript pattern matching library that supports async predicates in when clauses, powered by Zod for schema validation.
+Build our own TypeScript pattern matching library that supports async predicates in when clauses,
+ powered by Zod for schema validation.
 
 #### Features
 
@@ -253,11 +296,14 @@ const result = await match({ hasFeature: await checkFeature(), },)
 - [ ] Add performance optimization for pattern matching
 - [ ] Implement extensive testing and documentation
 
-**Cross-Reference**: See [Packages Todo](packages.md#async-iterator-utilities) for related async utility development.
+**Cross-Reference**:
+ See [Packages Todo](packages.md#async-iterator-utilities) for related async utility development.
 
 ### Development Environment Tools
 
-**Status**: Normal Priority, Environment management
+**Status**:
+ Normal Priority,
+ Environment management
 
 - [ ] Create environment consistency checking tools
 - [ ] Implement development environment migration utilities
@@ -266,11 +312,14 @@ const result = await match({ hasFeature: await checkFeature(), },)
 - [ ] Implement environment security validation tools
 - [ ] Add environment backup and restore utilities
 
-**Cross-Reference**: See [Development Todo](development.md#development-environment-automation) for environment automation.
+**Cross-Reference**:
+ See [Development Todo](development.md#development-environment-automation) for environment automation.
 
 ### Performance and Monitoring Tools
 
-**Status**: Normal Priority, Performance optimization
+**Status**:
+ Normal Priority,
+ Performance optimization
 
 - [ ] Create build performance monitoring tools
 - [ ] Implement runtime performance profiling utilities
@@ -279,7 +328,8 @@ const result = await match({ hasFeature: await checkFeature(), },)
 - [ ] Implement performance optimization recommendation tools
 - [ ] Add performance benchmarking and comparison utilities
 
-**Cross-Reference**: See [Performance Todo](performance.md#monitoring--metrics) for comprehensive performance monitoring.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#monitoring--metrics) for comprehensive performance monitoring.
 
 ## Implementation Notes
 

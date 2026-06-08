@@ -6,11 +6,13 @@
 
 **Branch Structure**:
 
-- `main`: Protected production-ready branch
+- `main`:
+   Protected production-ready branch
   - All code in main should be stable and deployable
   - Direct pushes are prevented via branch protection rules
   - Changes only land here via pull requests from `dev`
-- `dev`: Active development branch
+- `dev`:
+   Active development branch
   - Default branch for all development work
   - All new features and fixes go here first
   - Regularly merged to `main` via pull requests
@@ -77,16 +79,19 @@ gh pr create --base dev --head feature/my-feature --title "feat: my feature" --b
 
 **Main branch protection rules** (configured in GitHub web UI):
 
-1. Navigate to: Repository Settings → Branches
+1. Navigate to:
+    Repository Settings → Branches
 2. Add branch protection rule for `main`
-3. Enable: "Require a pull request before merging"
+3. Enable:
+    "Require a pull request before merging"
 4. Optional settings to consider later:
    - Require approvals
    - Require status checks to pass
    - Require conversation resolution
    - Require branches to be up to date
 
-**Current configuration**: Prevent direct pushes only
+**Current configuration**:
+ Prevent direct pushes only
 
 ### Initial Setup Commands
 
@@ -100,9 +105,11 @@ git checkout -b dev
 git push -u origin dev
 ```
 
-**Switch default branch** (optional, via GitHub web UI):
+**Switch default branch** (optional,
+ via GitHub web UI):
 
-1. Go to: Repository Settings → General → Default branch
+1. Go to:
+    Repository Settings → General → Default branch
 2. Change from `main` to `dev`
 3. This makes `dev` the default for new clones and PRs
 
@@ -152,10 +159,12 @@ git push origin dev
 remote: error: GH006: Protected branch update failed
 ```
 
-This is expected. Create a PR instead of pushing directly.
+This is expected.
+ Create a PR instead of pushing directly.
 
 **PR shows too many commits**:
-Ensure you're comparing the right branches (dev → main, not feature → main).
+Ensure you're comparing the right branches (dev → main,
+ not feature → main).
 
 **Merge conflicts**:
 
@@ -200,12 +209,18 @@ git push origin dev
 
 #### Setup Validation Scripts
 
-- **validateSetup task**: Successfully implemented to help diagnose environment issues
-- **Validation scripts**: checkTools, checkDependencies, checkBuild, checkGitHooks are working correctly
+- **validateSetup task**:
+   Successfully implemented to help diagnose environment issues
+- **Validation scripts**:
+   checkTools,
+   checkDependencies,
+   checkBuild,
+   checkGitHooks are working correctly
 
 #### Fresh Clone Verification
 
-Ensure that fresh clones of the repository work correctly when users follow the setup instructions in README.md.
+Ensure that fresh clones of the repository work correctly when users follow the setup instructions in README.
+md.
 
 **Current Setup Instructions Being Tested**:
 

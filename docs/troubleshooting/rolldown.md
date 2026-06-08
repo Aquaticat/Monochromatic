@@ -1,7 +1,9 @@
 # Rolldown 1.0.0-rc.9: import-attributes not applied, ESTree-mismatched `parseSync` types, `platform: 'neutral'` empties `mainFields`, and `node:` subpath imports fail under non-Node platforms
 
-This file groups four independent rolldown 1.0.0-rc.9 issues
-that bite client-side and isomorphic workspace builds. Each
+This file groups four independent rolldown 1.0.0-rc.
+9 issues
+that bite client-side and isomorphic workspace builds.
+ Each
 has its own canonical section.
 
 ---
@@ -10,7 +12,9 @@ has its own canonical section.
 
 Upstream issue:
 [rolldown/rolldown#2758](https://github.com/rolldown/rolldown/issues/2758)
-(open, on hold). Date 2026-03-15.
+(open,
+ on hold).
+ Date 2026-03-15.
 
 ### Symptom
 
@@ -21,14 +25,16 @@ import sql from './schema.sql' with { type: 'text', };
 ```
 
 emits `PARSE_ERROR` because rolldown parses `.sql` as
-JavaScript. The `with` clause is stored but does not affect
+JavaScript.
+ The `with` clause is stored but does not affect
 how the module is loaded.
 
 ### Root cause
 
 Rolldown's Rust AST scanner parses `with { type: 'text' }`
 clauses and stores them in an `import_attribute_map` keyed by
-`ImportRecordIdx`. The scanner does not set
+`ImportRecordIdx`.
+ The scanner does not set
 `asserted_module_type` on the import record based on the
 `type` attribute value.
 
@@ -40,11 +46,14 @@ What works:
 What does not work:
 
 - `resolveId` hook receives no `attributes` field in its
-  options (unlike Rollup 4's `options.attributes`). The
-  `ResolveIdExtraOptions` type only has `custom`, `isEntry`,
+  options (unlike Rollup 4's `options.attributes`).
+   The
+  `ResolveIdExtraOptions` type only has `custom`,
+   `isEntry`,
   and `kind`.
 - `.sql` files imported with `with { type: 'text' }` are
-  parsed as JavaScript, causing `PARSE_ERROR` because
+  parsed as JavaScript,
+   causing `PARSE_ERROR` because
   rolldown does not map the `type` attribute to its native
   `ModuleType::Text`.
 - The only place `asserted_module_type` is set is in
@@ -53,9 +62,11 @@ What does not work:
 
 Source citations (rolldown `main` as of 2026-03-15):
 
-- `crates/rolldown/src/ast_scanner/mod.rs:674-676`: stores
+- `crates/rolldown/src/ast_scanner/mod.rs:674-676`:
+   stores
   attributes but does not set module type.
-- `crates/rolldown/src/ast_scanner/new_url.rs:68`: only
+- `crates/rolldown/src/ast_scanner/new_url.rs:68`:
+   only
   place `asserted_module_type` is set.
 - `crates/rolldown_common/src/types/import_record.rs:31`:
   `asserted_module_type: Option<ModuleType>`.
@@ -64,7 +75,10 @@ Source citations (rolldown `main` as of 2026-03-15):
 
 ### Verification
 
-Version under test: rolldown 1.0.0-rc.9. Reproduce by
+Version under test:
+ rolldown 1.0.0-rc.
+9.
+ Reproduce by
 importing any non-JS asset with `with { type: 'text' }` in a
 client-side bundle.
 
@@ -75,12 +89,16 @@ client-side bundle.
 Bridges the gap by using the `transform` hook to rewrite
 specifiers (appending `?__importattr=<type>` query params)
 and the `load` hook to serve the file content as a JS
-module. For dynamic imports where rolldown's scanner
-discovers dependencies before `transform` runs, the
+module.
+ For dynamic imports where rolldown's scanner
+discovers dependencies before `transform` runs,
+ the
 `resolveId` hook re-parses the importer source with
 `parseSync` to find the attribute type.
 
-Tradeoff: requires a custom plugin; the specifier rewrite
+Tradeoff:
+ requires a custom plugin;
+ the specifier rewrite
 shows up in the dependency graph as a query-suffixed module.
 
 #### `moduleTypes` input option
@@ -91,34 +109,50 @@ Maps file extensions to module types globally:
 inputOptions: { moduleTypes: { '.sql': 'text' } }
 ```
 
-Tradeoff: extension-wide; does not respect per-import `with`
-clauses. Use only when all files of an extension are the
+Tradeoff:
+ extension-wide;
+ does not respect per-import `with`
+clauses.
+ Use only when all files of an extension are the
 same module type.
 
 ### What does not work
 
-- Marking `.sql` as external: rolldown still tries to parse
+- Marking `.sql` as external:
+   rolldown still tries to parse
   it before the external decision is made.
 - Implementing a custom `resolveId` that returns module type:
   the `ResolveIdExtraOptions` type does not pass through
-  attributes, so the plugin cannot tell which type the
+  attributes,
+   so the plugin cannot tell which type the
   import requested.
 
 ### Why we do not file this upstream (already filed; on hold)
 
-Already represented by rolldown/rolldown#2758. 5 constraints:
+Already represented by rolldown/rolldown#2758.
+ 5 constraints:
 
-1. **Is it really upstream's fault?** Yes; the scanner stops
+1. **Is it really upstream's fault?
+   ** Yes;
+    the scanner stops
    short of applying the parsed `type` attribute.
-2. **Can upstream fix it?** Yes; thread the attribute through
+2. **Can upstream fix it?
+   ** Yes;
+    thread the attribute through
    to `asserted_module_type`.
-3. **Are they supporting this use case?** Documented goal.
-4. **Will they likely fix it?** Issue is on hold; no PR
+3. **Are they supporting this use case?
+   ** Documented goal.
+4. **Will they likely fix it?
+   ** Issue is on hold;
+    no PR
    merged yet.
-5. **Have we prototyped a minimal fix?** External plugin is
+5. **Have we prototyped a minimal fix?
+   ** External plugin is
    the prototype.
 
-Decision: no new upstream report; the existing issue is the
+Decision:
+ no new upstream report;
+ the existing issue is the
 right venue.
 
 ---
@@ -127,13 +161,16 @@ right venue.
 
 Upstream issue:
 [oxc-project/oxc#10139](https://github.com/oxc-project/oxc/issues/10139)
-(closed, wontfix). Date 2026-03-15.
+(closed,
+ wontfix).
+ Date 2026-03-15.
 
 ### Symptom
 
 Rolldown re-exports `parseSync` from `rolldown/utils` and
 ESTree types via
-`export type * as ESTree from '@oxc-project/types'`. The
+`export type * as ESTree from '@oxc-project/types'`.
+ The
 `@oxc-project/types` package declares OXC-native type names:
 
 - `StringLiteral` with `type: "StringLiteral"`
@@ -145,7 +182,11 @@ names:
 
 - String literals have `type: "Literal"` (not
   `"StringLiteral"`).
-- All literal types (string, number, boolean, null, regexp)
+- All literal types (string,
+   number,
+   boolean,
+   null,
+   regexp)
   share `type: "Literal"`.
 
 TypeScript discriminated-union narrowing does not work:
@@ -158,16 +199,22 @@ if (node.source.type === 'Literal')
 
 ### Root cause
 
-The OXC team has stated this is intentional; they do not aim
-to align `@oxc-project/types` with ESTree. Recommendation:
+The OXC team has stated this is intentional;
+ they do not aim
+to align `@oxc-project/types` with ESTree.
+ Recommendation:
 use types from another ESTree-compatible implementation
 (Acorn or TS-ESLint) when ESTree compatibility is needed.
 
 ### Verification
 
-Version under test: rolldown 1.0.0-rc.9 (re-exports
-`@oxc-project/types`). Reproduce by writing a plugin that
-inspects literal values via narrowed types; observe the type
+Version under test:
+ rolldown 1.0.0-rc.
+9 (re-exports
+`@oxc-project/types`).
+ Reproduce by writing a plugin that
+inspects literal values via narrowed types;
+ observe the type
 errors.
 
 ### Verified workaround
@@ -181,22 +228,31 @@ if ('value' in node && typeof node.value === 'string') {
 }
 ```
 
-Tradeoff: loses compile-time guarantees that type
-discrimination would provide. For plugin code that operates
-on small AST surfaces, the runtime check is acceptable. For
-larger plugins, switch the type imports to Acorn or
+Tradeoff:
+ loses compile-time guarantees that type
+discrimination would provide.
+ For plugin code that operates
+on small AST surfaces,
+ the runtime check is acceptable.
+ For
+larger plugins,
+ switch the type imports to Acorn or
 TS-ESLint types.
 
 ### What does not work
 
-- Casting to ESTree types: works at the type level but loses
-  any guarantee about the actual runtime shape; OXC may
+- Casting to ESTree types:
+   works at the type level but loses
+  any guarantee about the actual runtime shape;
+   OXC may
   diverge further over time.
-- Filing the issue with OXC: already closed wontfix.
+- Filing the issue with OXC:
+   already closed wontfix.
 
 ### Why we do not file this upstream (closed wontfix)
 
-Already represented by oxc-project/oxc#10139. Decision:
+Already represented by oxc-project/oxc#10139.
+ Decision:
 adapt to upstream's choice by switching type sources if
 needed.
 
@@ -208,9 +264,12 @@ Date 2026-03-22.
 
 ### Symptom
 
-When `platform: 'neutral'`, rolldown defaults
-`resolve.mainFields` to `[]`. Neither `module` nor `main` is
-consulted; packages relying on these fields silently fail
+When `platform: 'neutral'`,
+ rolldown defaults
+`resolve.mainFields` to `[]`.
+ Neither `module` nor `main` is
+consulted;
+ packages relying on these fields silently fail
 with `UNRESOLVED_IMPORT` warnings and are treated as
 externals.
 
@@ -226,32 +285,44 @@ TypeError: The specifier "<package>" was a bare specifier, but was not remapped 
 ```
 
 Transitive dependencies fail too (bundling `jspdf` leaves
-`fast-png`, `canvg`, `stackblur-canvas` unresolved).
+`fast-png`,
+ `canvg`,
+ `stackblur-canvas` unresolved).
 
 ### Root cause
 
 Per-platform `mainFields` defaults (from
 `rolldown/dist/shared/define-config-*.d.mts:3338-3347`):
 
-- `node`: `['main', 'module']`
-- `browser`: `['browser', 'module', 'main']`
-- `neutral`: `[]`
+- `node`:
+   `['main', 'module']`
+- `browser`:
+   `['browser', 'module', 'main']`
+- `neutral`:
+   `[]`
 
-With `[]`, rolldown only resolves packages that have an
-`exports` field with matching conditions. Packages without
+With `[]`,
+ rolldown only resolves packages that have an
+`exports` field with matching conditions.
+ Packages without
 `exports` (or whose `exports` conditions don't match the
 neutral platform) become unresolvable.
 
 ### Verification
 
-Version under test: rolldown 1.0.0-rc.9 (via tsdown).
-Reproduce: set `platform: 'neutral'` in a tsdown config
-without overriding `resolve.mainFields`; bundle a project
+Version under test:
+ rolldown 1.0.0-rc.
+9 (via tsdown).
+Reproduce:
+ set `platform: 'neutral'` in a tsdown config
+without overriding `resolve.mainFields`;
+ bundle a project
 that depends on a package without `exports`.
 
 ### Verified workaround: set `resolve.mainFields` explicitly via `inputOptions`
 
-In tsdown, `resolve` is a rolldown `InputOptions` property,
+In tsdown,
+ `resolve` is a rolldown `InputOptions` property,
 not a top-level tsdown config option:
 
 ```ts
@@ -265,57 +336,77 @@ export default defineConfig({
 },);
 ```
 
-Tradeoff: must be remembered for every neutral-platform
-config. The override duplicates the defaults of the
-`browser` platform; consider whether `platform: 'browser'` is
+Tradeoff:
+ must be remembered for every neutral-platform
+config.
+ The override duplicates the defaults of the
+`browser` platform;
+ consider whether `platform: 'browser'` is
 actually wanted instead.
 
 ### What does not work
 
 - Setting `resolve` at the top level of the tsdown config:
-  tsdown's `UserConfig` type does not include `resolve`, so
+  tsdown's `UserConfig` type does not include `resolve`,
+   so
   it is silently dropped.
 - Adding every transitive dependency to `deps.alwaysBundle`:
   `alwaysBundle` controls whether a package is bundled vs
-  externalised, but if the package cannot be **resolved** in
-  the first place, it is treated as external regardless of
+  externalised,
+   but if the package cannot be **resolved** in
+  the first place,
+   it is treated as external regardless of
   `alwaysBundle`.
 
 ### Source locations
 
-Rolldown 1.0.0-rc.9:
+Rolldown 1.0.0-rc.
+9:
 
 - `dist/shared/define-config-*.d.mts:3338-3347`:
   `mainFields` type and per-platform defaults.
-- `dist/shared/binding-*.d.mts:559`: native binding
+- `dist/shared/binding-*.d.mts:559`:
+   native binding
   `mainFields` field.
 
 tsdown:
 
-- `dist/types-*.d.mts:880-882`: `inputOptions` pass-through
+- `dist/types-*.d.mts:880-882`:
+   `inputOptions` pass-through
   to rolldown `InputOptions`.
-- `dist/types-*.d.mts:763`: `platform` option definition.
+- `dist/types-*.d.mts:763`:
+   `platform` option definition.
 
 ### Why we do not file this upstream
 
-1. **Is it really upstream's fault?** Borderline; the
+1. **Is it really upstream's fault?
+   ** Borderline;
+    the
    neutral default is documented but the silent
    externalisation is a UX wart.
-2. **Can upstream fix it?** Yes; emit a stronger warning,
+2. **Can upstream fix it?
+   ** Yes;
+    emit a stronger warning,
    or default `mainFields` to a sensible value.
-3. **Are they supporting this use case?** Yes; `neutral` is
+3. **Are they supporting this use case?
+   ** Yes;
+    `neutral` is
    documented.
-4. **Will they likely fix it?** Worth proposing as a UX
+4. **Will they likely fix it?
+   ** Worth proposing as a UX
    improvement.
-5. **Have we prototyped a minimal fix?** No.
+5. **Have we prototyped a minimal fix?
+   ** No.
 
-Decision: no upstream report from us yet.
+Decision:
+ no upstream report from us yet.
 
 ---
 
 ## Bug 4: `node:` subpath imports produce `UNRESOLVED_IMPORT` under non-Node platforms
 
-Date 2026-04-04 (initial). Prototype audit 2026-05-17.
+Date 2026-04-04 (initial).
+ Prototype audit 2026-05-17.
 
 ### Symptom
 
@@ -323,20 +414,31 @@ Static imports like
 `import { parse } from 'node:path/posix'` or
 `import { posix } from 'node:path/posix'` emit
 `[UNRESOLVED_IMPORT] Could not resolve 'node:path/posix'`
-when `platform` is `'neutral'` or `'browser'`. Subpath
+when `platform` is `'neutral'` or `'browser'`.
+ Subpath
 specifiers affected include `node:path/win32`,
-`node:stream/promises`, `node:stream/consumers`,
-`node:stream/web`, `node:dns/promises`,
-`node:readline/promises`, `node:timers/promises`, and any
+`node:stream/promises`,
+ `node:stream/consumers`,
+`node:stream/web`,
+ `node:dns/promises`,
+`node:readline/promises`,
+ `node:timers/promises`,
+ and any
 other `node:` subpath export.
 
-Bare parent specifiers (`node:path`, `node:assert`, etc.)
+Bare parent specifiers (`node:path`,
+ `node:assert`,
+ etc.)
 also produce the same warning under `platform: 'neutral'`
-unless they are explicitly listed in `external`. The earlier
+unless they are explicitly listed in `external`.
+ The earlier
 reading that "the bare parent specifier `node:path` resolves
-fine under all platforms" was wrong; the workspace happened
-to list bare names in `external`, which masked the warning
-for those specifiers only. The prototype fixture
+fine under all platforms" was wrong;
+ the workspace happened
+to list bare names in `external`,
+ which masked the warning
+for those specifiers only.
+ The prototype fixture
 (`crates/rolldown/tests/rolldown/resolve/neutral_platform_node_subpath/`)
 shows both bare and subpath specifiers failing identically
 when no external list is set.
@@ -345,21 +447,31 @@ when no external list is set.
 
 oxc-resolver's builtin-module detection is gated on a single
 `builtin_modules` flag that controls both `node:`-prefixed
-specifiers and bare names (`fs`, `path`). Rolldown only sets
+specifiers and bare names (`fs`,
+ `path`).
+ Rolldown only sets
 the flag to `true` when `platform` is `Node`
 (`crates/rolldown_resolver/src/resolver_config.rs:133`:
-`builtin_modules: matches!(platform, Platform::Node)`). On
-`neutral` or `browser`, `builtin_modules` is `false`, so the
+`builtin_modules: matches!(platform, Platform::Node)`).
+ On
+`neutral` or `browser`,
+ `builtin_modules` is `false`,
+ so the
 resolver never short-circuits `node:` specifiers as
 builtins.
 
-Under `Platform::Neutral`, every `node:`-prefixed import
+Under `Platform::Neutral`,
+ every `node:`-prefixed import
 falls through to `resolve_utils.rs`'s NotFound branch and
-gets the "Module not found, treating it as an external
+gets the "Module not found,
+ treating it as an external
 dependency" warning plus the misleading "Main fields must be
 configured explicitly when using the 'neutral' platform"
-help text. The fall-through still externalises the specifier
-in the output, so the bundle is correct at runtime; only the
+help text.
+ The fall-through still externalises the specifier
+in the output,
+ so the bundle is correct at runtime;
+ only the
 diagnostic noise is wrong.
 
 Source locations (rolldown HEAD `14f967a43`,
@@ -369,7 +481,8 @@ Source locations (rolldown HEAD `14f967a43`,
   `builtin_modules` gated on `Platform::Node`.
 - `crates/rolldown_plugin/src/utils/resolve_id_with_plugins.rs:122-131`:
   Auto-external pass handles http/data URLs but not `node:`
-  prefixes; falls through to `resolve_id`.
+  prefixes;
+   falls through to `resolve_id`.
 - `crates/rolldown/src/module_loader/resolve_utils.rs:103-148`:
   NotFound branch externalises with the warning under
   `Platform::Neutral`.
@@ -380,22 +493,32 @@ Source locations (rolldown HEAD `14f967a43`,
 - `crates/rolldown/src/utils/prepare_build_context.rs:157-160`:
   ESM defaults to `Browser` platform.
 
-oxc-resolver (v11.19.1, the version in rolldown's
+oxc-resolver (v11.19.1,
+ the version in rolldown's
 `Cargo.toml`):
 
-- `src/lib.rs:466-481`: `require_core()` checks
+- `src/lib.rs:466-481`:
+   `require_core()` checks
   `starts_with("node:")` and `BUILTINS.binary_search` but
   only when `self.options.builtin_modules` is `true`.
-- `nodejs-built-in-modules` crate (v1.0.0); `BUILTINS`
-  includes `path/posix`, `path/win32`, `stream/promises`,
-  `dns/promises`, etc. as bare entries; subpaths resolve
+- `nodejs-built-in-modules` crate (v1.0.0);
+   `BUILTINS`
+  includes `path/posix`,
+   `path/win32`,
+   `stream/promises`,
+  `dns/promises`,
+   etc. as bare entries;
+   subpaths resolve
   the same way as their parents once the flag is on.
 
 ### Verification
 
-Version under test: rolldown HEAD `14f967a43`
-(`v1.0.1-19-g14f967a43`). The doc was originally written
-against `v1.0.0-rc.9`; the relevant code path is unchanged.
+Version under test:
+ rolldown HEAD `14f967a43`
+(`v1.0.1-19-g14f967a43`).
+ The doc was originally written
+against `v1.0.0-rc.9`;
+ the relevant code path is unchanged.
 
 Reproduction fixture
 (`crates/rolldown/tests/rolldown/resolve/neutral_platform_node_subpath/`):
@@ -427,7 +550,8 @@ Pre-patch run (`INSTA_UPDATE=always cargo test -p rolldown
 
 Both warnings carry the "Main fields must be configured
 explicitly when using the 'neutral' platform" help message,
-which is misleading: the issue is unrelated to main fields.
+which is misleading:
+ the issue is unrelated to main fields.
 
 ### Verified workaround: import from the parent module
 
@@ -442,15 +566,19 @@ import { posix, } from 'node:path';
 posix.parse(somePath,);
 ```
 
-Tradeoff: imports the entire parent module's surface; loses
+Tradeoff:
+ imports the entire parent module's surface;
+ loses
 the narrower import that subpath imports were designed for.
-For tree-shaken bundles the cost is minimal. Note that the
+For tree-shaken bundles the cost is minimal.
+ Note that the
 parent specifier still needs to be in `external` for
 `platform: 'neutral'` builds to suppress the
 `UNRESOLVED_IMPORT` warning.
 
 For code that must also run in browsers (where `node:path`
-does not exist), use a computed specifier to prevent static
+does not exist),
+ use a computed specifier to prevent static
 resolution:
 
 ```ts
@@ -462,13 +590,17 @@ const nodePath = hasNodeRuntime
 
 The workspace previously referenced
 `packages/module/es/src/path/index.ts` as a call site for
-this pattern; that path no longer exists, so the pattern may
+this pattern;
+ that path no longer exists,
+ so the pattern may
 have moved or been removed.
 
 ### What does not work
 
-- Setting `resolve.builtinModules` manually: this option is
-  not exposed in rolldown's public `InputOptions`; it is
+- Setting `resolve.builtinModules` manually:
+   this option is
+  not exposed in rolldown's public `InputOptions`;
+   it is
   derived internally from `platform`.
 
 ### Workaround that started not working but works now: `external` array with exact subpaths
@@ -484,19 +616,30 @@ inputOptions: {
 
 `crates/rolldown_plugin/src/utils/resolve_id_check_external.rs:33-34`
 calls `bundle_options.external.call(specifier, importer, false)`
-**before** the resolver runs. `IsExternal::StringOrRegex` does a
-literal string match, so `external: ['node:path/posix']` short
+**before** the resolver runs.
+ `IsExternal::StringOrRegex` does a
+literal string match,
+ so `external: ['node:path/posix']` short
 circuits and externalises before oxc-resolver ever sees the
-specifier. (The earlier reading that "externalisation applies
-after resolution, and the specifier fails during resolution"
-was true for an older revision and no longer holds; the
+specifier.
+ (The earlier reading that "externalisation applies
+after resolution,
+ and the specifier fails during resolution"
+was true for an older revision and no longer holds;
+ the
 prototype fixture re-runs cleanly when the same `_config.json`
-is given an `external` list.)
+is given an `external` list.
+)
 
-Tradeoff: must enumerate each subpath; missed entries still
-trigger the warning. For a small fixed set of `node:`
-subpaths this is workable, but it does not generalise (e.g.
-to a glob covering every `node:*/promises` entry); a
+Tradeoff:
+ must enumerate each subpath;
+ missed entries still
+trigger the warning.
+ For a small fixed set of `node:`
+subpaths this is workable,
+ but it does not generalise (e.g.
+to a glob covering every `node:*/promises` entry);
+ a
 function-form `external: (id) => id.startsWith('node:')`
 generalises but loses the static analysis upstream consumers
 might rely on.
@@ -523,7 +666,8 @@ Patch applied to a fresh upstream clone
 ```
 
 Effect on the reproduction fixture (the warnings block
-disappears, the emitted module is unchanged):
+disappears,
+ the emitted module is unchanged):
 
 ````diff
 --- pre-patch/artifacts.snap
@@ -552,30 +696,45 @@ disappears, the emitted module is unchanged):
 
 Broader integration-test impact
 (`cargo test -p rolldown --test integration`,
-1710 pass / 5 fail; the 5 failures are environmental
+1710 pass / 5 fail;
+ the 5 failures are environmental
 pre-existing baselines verified by re-running the same
-fixtures with the patch stashed: `cjs-module-lexer` and
+fixtures with the patch stashed:
+ `cjs-module-lexer` and
 `util-deprecate` npm packages are not installed in the
-clone, and the `test262` submodule is not present). The
+clone,
+ and the `test262` submodule is not present).
+ The
 patch updated 9 existing snapshots in the same run:
 
 - 7 esbuild ports
-  (`export_fs_browser`, `export_fs_node`,
-  `export_fs_node_in_common_js_module`, `import_fs_browser`,
-  `re_export_fs_node`, `require_fs_browser`,
+  (`export_fs_browser`,
+   `export_fs_node`,
+  `export_fs_node_in_common_js_module`,
+   `import_fs_browser`,
+  `re_export_fs_node`,
+   `require_fs_browser`,
   `lower_export_star_as_name_collision_no_bundle`)
   and `topics/generated_code/symbols_ns2` lose their
   pre-existing `UNRESOLVED_IMPORT` warnings for bare
-  builtins (`fs`, `path`, `assert`) on default-Browser
-  platform. These are the same bug surface, just hit by
+  builtins (`fs`,
+   `path`,
+   `assert`) on default-Browser
+  platform.
+   These are the same bug surface,
+   just hit by
   bare names rather than `node:`-prefixed ones.
 - **1 genuine regression**:
-  `package_json_browser_map_native_module_disabled`. The
+  `package_json_browser_map_native_module_disabled`.
+   The
   fixture's `node_modules/demo-pkg/package.json` carries
   `{ "browser": { "fs": false } }` to disable the bare `fs`
-  import under default-Browser. After the patch, oxc-resolver
+  import under default-Browser.
+   After the patch,
+   oxc-resolver
   intercepts `fs` as a builtin before the browser-field map
-  applies, and the bundler emits a runtime `__require("fs")`
+  applies,
+   and the bundler emits a runtime `__require("fs")`
   instead of the disabled empty stub:
 
 ````diff
@@ -597,45 +756,73 @@ patch updated 9 existing snapshots in the same run:
 
 The gate flip therefore solves the documented `node:`-prefix
 symptom but bypasses browser-field disabling for bare
-builtins; it is not the minimal fix. A correct upstream
+builtins;
+ it is not the minimal fix.
+ A correct upstream
 change either (a) adds a `node:`-prefix-only flag in
 oxc-resolver (e.g. `builtin_modules_node_prefix`) that is
-separable from the bare-name builtin check, or
+separable from the bare-name builtin check,
+ or
 (b) intercepts `node:`-prefixed builtins inside rolldown
-itself, in `resolve_id_with_plugins.rs:122-131` immediately
-after the http/data-url auto-external block, so bare names
-still flow through the browser-field map. Both options keep
+itself,
+ in `resolve_id_with_plugins.rs:122-131` immediately
+after the http/data-url auto-external block,
+ so bare names
+still flow through the browser-field map.
+ Both options keep
 `builtin_modules: matches!(platform, Platform::Node)`
 intact for bare names.
 
 ### Why we do not file this upstream (audit, post-prototype)
 
-1. **Is it really upstream's fault?** Yes; the resolver's
+1. **Is it really upstream's fault?
+   ** Yes;
+    the resolver's
    builtin check should fire for `node:` subpaths regardless
    of platform when the source code spells the prefix.
-2. **Can upstream fix it?** Yes, but **not** via the gate
-   flip in `resolver_config.rs:133`. The prototype showed
+2. **Can upstream fix it?
+   ** Yes,
+    but **not** via the gate
+   flip in `resolver_config.rs:133`.
+    The prototype showed
    that toggling the single `builtin_modules` flag also
-   bypasses the browser-field map for bare names, breaking
-   `package_json_browser_map_native_module_disabled`. The
+   bypasses the browser-field map for bare names,
+    breaking
+   `package_json_browser_map_native_module_disabled`.
+    The
    correct fix is a `node:`-prefix-only flag in oxc-resolver
-   (`builtin_modules_node_prefix`, evaluated even when
-   `builtin_modules` is `false`), or rolldown-side `node:`
+   (`builtin_modules_node_prefix`,
+    evaluated even when
+   `builtin_modules` is `false`),
+    or rolldown-side `node:`
    interception in `resolve_id_with_plugins.rs:122-131`
-   right after the http/data-url auto-external block. Both
-   are still small changes; the latter is implementable
+   right after the http/data-url auto-external block.
+    Both
+   are still small changes;
+    the latter is implementable
    entirely in rolldown without an oxc-resolver release.
-3. **Are they supporting this use case?** Yes; cross-runtime
+3. **Are they supporting this use case?
+   ** Yes;
+    cross-runtime
    bundles are a documented goal.
-4. **Will they likely fix it?** Plausible; the targeted fix
+4. **Will they likely fix it?
+   ** Plausible;
+    the targeted fix
    is two file-local changes.
-5. **Have we prototyped a minimal fix?** Yes, the one-line
-   gate flip. The prototype is the evidence that the naive
-   fix is wrong, and pinpoints the surgical fix above. The
+5. **Have we prototyped a minimal fix?
+   ** Yes,
+    the one-line
+   gate flip.
+    The prototype is the evidence that the naive
+   fix is wrong,
+    and pinpoints the surgical fix above.
+    The
    diff and fixture above are sufficient to reproduce and
    re-validate the next attempt.
 
-Decision: worth filing upstream; the audit and prototype
+Decision:
+ worth filing upstream;
+ the audit and prototype
 both inform the report.
 
 ### Draft upstream issue (do not file as-is)

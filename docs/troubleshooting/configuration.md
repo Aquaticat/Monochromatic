@@ -2,7 +2,9 @@
 
 ## GitHub MCP Server Configuration (Deprecated)
 
-**Deprecated:** migrated to `gh` CLI, which handles authentication and fork remotes automatically.
+**Deprecated:
+** migrated to `gh` CLI,
+ which handles authentication and fork remotes automatically.
 No MCP server needed.
 
 ```json

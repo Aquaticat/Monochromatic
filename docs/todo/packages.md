@@ -2,16 +2,23 @@
 
 ## Package Development and Improvements
 
-This file tracks improvements needed across different packages in the monorepo, organized by package category.
+This file tracks improvements needed across different packages in the monorepo,
+ organized by package category.
 
 ### Quick Links
 
-- [**Module Library**](#module-library-packages-modulees): Functional programming utilities
-- [**Configuration Packages**](#configuration-packages): Shareable tool configurations
-- [**Style Packages**](#style-packages): CSS framework and design system
-- [**Site Packages**](#site-packages): Applications and documentation
-- [**Figma Plugins**](#figma-plugins): Design tool integrations
-- [**Build Utilities**](#build-utilities): Build-time tools and scripts
+- [**Module Library**](#module-library-packages-modulees):
+   Functional programming utilities
+- [**Configuration Packages**](#configuration-packages):
+   Shareable tool configurations
+- [**Style Packages**](#style-packages):
+   CSS framework and design system
+- [**Site Packages**](#site-packages):
+   Applications and documentation
+- [**Figma Plugins**](#figma-plugins):
+   Design tool integrations
+- [**Build Utilities**](#build-utilities):
+   Build-time tools and scripts
 
 ---
 
@@ -21,82 +28,138 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Expand Array Utilities
 
-**Status**: Normal priority, core library expansion
+**Status**:
+ Normal priority,
+ core library expansion
 
-- [ ] Add `array.shuffle()`: Random array shuffling with proper Fisher-Yates algorithm
-- [ ] Add `array.rotate()`: Rotate array elements left/right by n positions
-- [ ] Add `array.partition()`: Split array into chunks based on predicate
-- [ ] Add `array.difference()`: Find elements in first array not in second
-- [ ] Add `array.intersection()`: Find common elements between arrays
-- [ ] Add `array.union()`: Combine arrays with unique elements
-- [ ] Add `array.zip()`: Combine multiple arrays element-wise
-- [ ] Add `array.unzip()`: Split array of tuples into separate arrays
+- [ ] Add `array.shuffle()`:
+       Random array shuffling with proper Fisher-Yates algorithm
+- [ ] Add `array.rotate()`:
+       Rotate array elements left/right by n positions
+- [ ] Add `array.partition()`:
+       Split array into chunks based on predicate
+- [ ] Add `array.difference()`:
+       Find elements in first array not in second
+- [ ] Add `array.intersection()`:
+       Find common elements between arrays
+- [ ] Add `array.union()`:
+       Combine arrays with unique elements
+- [ ] Add `array.zip()`:
+       Combine multiple arrays element-wise
+- [ ] Add `array.unzip()`:
+       Split array of tuples into separate arrays
 
 #### Async Iterator Utilities
 
-**Status**: High priority, missing critical functionality
+**Status**:
+ High priority,
+ missing critical functionality
 
-- [ ] Add `asyncIterable.map()`: Transform async iterables
-- [ ] Add `asyncIterable.filter()`: Filter async iterables
-- [ ] Add `asyncIterable.reduce()`: Reduce async iterables
-- [ ] Add `asyncIterable.take()`: Take first n items from async iterable
-- [ ] Add `asyncIterable.skip()`: Skip first n items from async iterable
-- [ ] Add `asyncIterable.batch()`: Batch async iterable into groups
-- [ ] Add `asyncIterable.parallel()`: Process async iterable in parallel with concurrency limit
+- [ ] Add `asyncIterable.map()`:
+       Transform async iterables
+- [ ] Add `asyncIterable.filter()`:
+       Filter async iterables
+- [ ] Add `asyncIterable.reduce()`:
+       Reduce async iterables
+- [ ] Add `asyncIterable.take()`:
+       Take first n items from async iterable
+- [ ] Add `asyncIterable.skip()`:
+       Skip first n items from async iterable
+- [ ] Add `asyncIterable.batch()`:
+       Batch async iterable into groups
+- [ ] Add `asyncIterable.parallel()`:
+       Process async iterable in parallel with concurrency limit
 
 #### Object Utilities
 
-**Status**: Normal priority, common operations
+**Status**:
+ Normal priority,
+ common operations
 
 - [x] Add record `pick` helper in current `module-es` taxonomy
 - [x] Add record `omit` helper in current `module-es` taxonomy
 - [x] Add record `merge` helper in current `module-es` taxonomy
-- [ ] Add root-friendly aliases or documentation for record pick, omit, and merge
-- [ ] Add `object.flatten()`: Flatten nested objects with dot notation keys
-- [ ] Add `object.unflatten()`: Convert dot notation keys back to nested objects
-- [ ] Add `object.transform()`: Transform object keys and values
-- [ ] Add `object.isEmpty()`: Check if object has no enumerable properties
+- [ ] Add root-friendly aliases or documentation for record pick,
+       omit,
+       and merge
+- [ ] Add `object.flatten()`:
+       Flatten nested objects with dot notation keys
+- [ ] Add `object.unflatten()`:
+       Convert dot notation keys back to nested objects
+- [ ] Add `object.transform()`:
+       Transform object keys and values
+- [ ] Add `object.isEmpty()`:
+       Check if object has no enumerable properties
 
 #### Date and Time Utilities
 
-**Status**: Normal priority, common need
+**Status**:
+ Normal priority,
+ common need
 
-- [ ] Add `date.format()`: Format dates with locale support
-- [ ] Add `date.parse()`: Parse dates with multiple format support
-- [ ] Add `date.add()`: Add time intervals to dates
-- [ ] Add `date.subtract()`: Subtract time intervals from dates
-- [ ] Add `date.diff()`: Calculate differences between dates
-- [ ] Add `date.isValid()`: Validate date objects
-- [ ] Add `date.timezone()`: Timezone conversion utilities
+- [ ] Add `date.format()`:
+       Format dates with locale support
+- [ ] Add `date.parse()`:
+       Parse dates with multiple format support
+- [ ] Add `date.add()`:
+       Add time intervals to dates
+- [ ] Add `date.subtract()`:
+       Subtract time intervals from dates
+- [ ] Add `date.diff()`:
+       Calculate differences between dates
+- [ ] Add `date.isValid()`:
+       Validate date objects
+- [ ] Add `date.timezone()`:
+       Timezone conversion utilities
 
 #### Validation and Type Guards
 
-**Status**: High priority, type safety
+**Status**:
+ High priority,
+ type safety
 
-- [ ] Add `validate.email()`: Email validation with proper RFC compliance
-- [ ] Add `validate.url()`: URL validation with protocol options
-- [ ] Add `validate.json()`: JSON validation with schema support
-- [ ] Add `validate.range()`: Number range validation
-- [ ] Add `validate.length()`: String/array length validation
-- [ ] Add `is.plainObject()`: Check for plain objects vs class instances
-- [ ] Add `is.emptyArray()`: Type-safe empty array check
-- [ ] Add `is.nonEmptyArray()`: Type-safe non-empty array check
+- [ ] Add `validate.email()`:
+       Email validation with proper RFC compliance
+- [ ] Add `validate.url()`:
+       URL validation with protocol options
+- [ ] Add `validate.json()`:
+       JSON validation with schema support
+- [ ] Add `validate.range()`:
+       Number range validation
+- [ ] Add `validate.length()`:
+       String/array length validation
+- [ ] Add `is.plainObject()`:
+       Check for plain objects vs class instances
+- [ ] Add `is.emptyArray()`:
+       Type-safe empty array check
+- [ ] Add `is.nonEmptyArray()`:
+       Type-safe non-empty array check
 
 ### Medium Priority
 
 #### Math Utilities
 
-- [ ] Add `math.clamp()`: Constrain number to range
-- [ ] Add `math.lerp()`: Linear interpolation
-- [ ] Add `math.round()`: Round to specified decimal places
-- [ ] Add `math.random()`: Seeded random number generation
-- [ ] Add `math.statistics()`: Mean, median, mode calculations
+- [ ] Add `math.clamp()`:
+       Constrain number to range
+- [ ] Add `math.lerp()`:
+       Linear interpolation
+- [ ] Add `math.round()`:
+       Round to specified decimal places
+- [ ] Add `math.random()`:
+       Seeded random number generation
+- [ ] Add `math.statistics()`:
+       Mean,
+       median,
+       mode calculations
 
 #### Path and URL Utilities
 
-- [ ] Decide whether `module-fs-path` should publicly export `normalize()`; path helpers moved out of `module-es`
-- [ ] Add `url.build()`: Build URLs with query parameters
-- [ ] Add `url.parse()`: Parse URLs into components
+- [ ] Decide whether `module-fs-path` should publicly export `normalize()`;
+       path helpers moved out of `module-es`
+- [ ] Add `url.build()`:
+       Build URLs with query parameters
+- [ ] Add `url.parse()`:
+       Parse URLs into components
 
 ---
 
@@ -107,7 +170,8 @@ This file tracks improvements needed across different packages in the monorepo, 
 #### High Priority
 
 - [ ] Create strict configuration variant for new projects
-- [ ] Add configuration for different build targets (Node 18/20, ES2022/ES2023)
+- [ ] Add configuration for different build targets (Node 18/20,
+       ES2022/ES2023)
 - [ ] Document path mapping best practices
 - [ ] Add configuration validation utilities
 
@@ -128,7 +192,9 @@ This file tracks improvements needed across different packages in the monorepo, 
 #### High Priority
 
 - [ ] Complete color system documentation with usage examples
-- [ ] Add component library (buttons, forms, navigation)
+- [ ] Add component library (buttons,
+       forms,
+       navigation)
 - [ ] Create responsive grid system
 - [ ] Add dark mode support with CSS custom properties
 - [ ] Document design tokens and usage patterns
@@ -170,10 +236,15 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 ### RSS Reader (packages/webapp-productivity/rss)
 
-**Note**: RSS package has comprehensive TODO files already. See:
+**Note**:
+ RSS package has comprehensive TODO files already.
+ See:
 
 - [`packages/webapp-productivity/rss/TODO.index.md`](../../packages/webapp-productivity/rss/TODO.index.md) for overview
-- Individual TODO files for testing, performance, caching, etc.
+- Individual TODO files for testing,
+   performance,
+   caching,
+   etc.
 
 ---
 
@@ -183,7 +254,9 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### High Priority
 
-- [ ] Add support for design tokens export in multiple formats (JSON, YAML, JS)
+- [ ] Add support for design tokens export in multiple formats (JSON,
+       YAML,
+       JS)
 - [ ] Implement color palette synchronization with CSS framework
 - [ ] Add validation for CSS variable naming conventions
 - [ ] Create automated testing for Figma API integration
@@ -200,7 +273,8 @@ This file tracks improvements needed across different packages in the monorepo, 
 #### Low Priority
 
 - [ ] Create additional Figma plugins for other design system needs
-- [ ] Add integration with other design tools (Sketch, Adobe XD)
+- [ ] Add integration with other design tools (Sketch,
+       Adobe XD)
 - [ ] Implement design token versioning and migration
 
 ---
@@ -240,7 +314,8 @@ This file tracks improvements needed across different packages in the monorepo, 
 ### Documentation Standards
 
 - [ ] Ensure all packages have comprehensive README files
-- [ ] Add consistent package.json metadata across all packages
+- [ ] Add consistent package.
+      json metadata across all packages
 - [ ] Create package development guidelines
 - [ ] Add automated package documentation generation
 
@@ -262,7 +337,8 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 ## Success Criteria
 
-- All packages have clear, focused improvements identified
+- All packages have clear,
+   focused improvements identified
 - Each improvement has assigned priority and success criteria
 - Package interdependencies are documented and managed
 - All packages follow consistent development standards

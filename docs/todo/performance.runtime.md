@@ -6,7 +6,9 @@
 
 #### JavaScript Performance
 
-**Status**: High priority, user experience
+**Status**:
+ High priority,
+ user experience
 
 - [ ] Profile JavaScript execution times for critical paths
 - [ ] Optimize function call overhead in hot paths
@@ -17,7 +19,9 @@
 
 #### Logging Performance Optimization
 
-**Status**: High priority, function tracing performance
+**Status**:
+ High priority,
+ function tracing performance
 
 - [ ] Migrate function entry tracing from `l.trace()` to `l.debug()`
 - [ ] Replace all function-start `l.trace()` calls across codebase
@@ -28,7 +32,9 @@
 
 #### Memory Management
 
-**Status**: High priority, resource efficiency
+**Status**:
+ High priority,
+ resource efficiency
 
 - [ ] Profile memory usage patterns across applications
 - [ ] Identify and fix memory leaks in long-running processes
@@ -39,7 +45,9 @@
 
 #### Async Performance
 
-**Status**: High priority, responsiveness
+**Status**:
+ High priority,
+ responsiveness
 
 - [ ] Optimize Promise usage and async patterns
 - [ ] Implement efficient async iteration

@@ -2,11 +2,16 @@
 
 ## Cross-References
 
-- [**Package Documentation**](packages.md#cross-package-improvements): Package-specific documentation needs
-- [**Security Documentation**](security.md#security-documentation): Security guidelines and procedures
-- [**Performance Documentation**](performance.md#monitoring--metrics): Performance guidelines and metrics
-- [**Automation Documentation**](automation.md#documentation-automation): Automated documentation generation
-- [**Build System Documentation**](build-system.md#mise-configuration-enhancements): Build system and tooling documentation
+- [**Package Documentation**](packages.md#cross-package-improvements):
+   Package-specific documentation needs
+- [**Security Documentation**](security.md#security-documentation):
+   Security guidelines and procedures
+- [**Performance Documentation**](performance.md#monitoring--metrics):
+   Performance guidelines and metrics
+- [**Automation Documentation**](automation.md#documentation-automation):
+   Automated documentation generation
+- [**Build System Documentation**](build-system.md#mise-configuration-enhancements):
+   Build system and tooling documentation
 
 ## Documentation System Improvements
 
@@ -14,7 +19,8 @@
 
 #### PlantUML Integration
 
-**Status**: Normal Priority (content creation enhancement)
+**Status**:
+ Normal Priority (content creation enhancement)
 
 Add support for PlantUML diagrams in documentation.
 
@@ -29,7 +35,8 @@ Add support for PlantUML diagrams in documentation.
 
 #### API Documentation Automation
 
-**Status**: High Priority (developer experience)
+**Status**:
+ High Priority (developer experience)
 
 - [ ] Implement automated API documentation generation from TSDoc comments
 - [ ] Create interactive API documentation with live examples
@@ -38,11 +45,13 @@ Add support for PlantUML diagrams in documentation.
 - [ ] Create API documentation search and navigation
 - [ ] Add API documentation performance optimization
 
-**Cross-Reference**: See [Automation Todo](automation.md#documentation-automation) for comprehensive automation.
+**Cross-Reference**:
+ See [Automation Todo](automation.md#documentation-automation) for comprehensive automation.
 
 #### Optimize SVG
 
-**Status**: Normal Priority (performance improvement)
+**Status**:
+ Normal Priority (performance improvement)
 
 Reduce redundant attributes in PlantUML-generated SVGs:
 
@@ -59,21 +68,27 @@ Reduce redundant attributes in PlantUML-generated SVGs:
 - [ ] Add SVG performance monitoring
 - [ ] Implement SVG best practices enforcement
 
-**Cross-Reference**: See [Performance Todo](performance.md#asset-optimization) for comprehensive asset optimization.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#asset-optimization) for comprehensive asset optimization.
 
 ### Medium Priority
 
 #### Pre-generate Search Results Pages
 
-**Status**: Done. `webapp-content/ssg-test` runs `pagefind --site dist` in
-`build:postprocess` (parallel with the fingerprinting phases). The client
+**Status**:
+ Done.
+ `webapp-content/ssg-test` runs `pagefind --site dist` in
+`build:postprocess` (parallel with the fingerprinting phases).
+ The client
 consumes the runtime `pagefind.search()` API via `src/client/search.ts`,
-and `data-pagefind-body` is wired into `page-content.ts`. See the ssg-test
+and `data-pagefind-body` is wired into `page-content.ts`.
+ See the ssg-test
 README for the full pipeline.
 
 #### Enhanced Search Implementation
 
-- [x] Adopt pagefind for content webapps (done; see ssg-test).
+- [x] Adopt pagefind for content webapps (done;
+       see ssg-test).
 - [ ] Create search index optimization and maintenance
 - [ ] Add search analytics and usage tracking
 - [ ] Implement search result ranking and relevance optimization
@@ -82,11 +97,15 @@ README for the full pipeline.
 
 #### Set Default Modified Date by Git Log
 
-**Status**: Done in `packages/webapp-content/ssg-test`.
+**Status**:
+ Done in `packages/webapp-content/ssg-test`.
 
 The SSG derives publication and modification dates from git history,
-renders them on content pages, emits feed and Open Graph dates, and warns
-when legacy hand-authored date frontmatter diverges from git. See
+renders them on content pages,
+ emits feed and Open Graph dates,
+ and warns
+when legacy hand-authored date frontmatter diverges from git.
+ See
 `packages/webapp-content/ssg-test/README.md`.
 
 #### Enhanced Git Integration
@@ -100,7 +119,8 @@ when legacy hand-authored date frontmatter diverges from git. See
 
 #### Format MDX Files
 
-**Status**: Low Priority (developer experience)
+**Status**:
+ Low Priority (developer experience)
 
 Find a way to format MDX files properly.
 
@@ -113,13 +133,15 @@ Find a way to format MDX files properly.
 - [ ] Implement MDX accessibility compliance checking
 - [ ] Add MDX best practices enforcement
 
-**Cross-Reference**: See [Build System Todo](build-system.md#framework-updates) for MDX tooling integration.
+**Cross-Reference**:
+ See [Build System Todo](build-system.md#framework-updates) for MDX tooling integration.
 
 ## Localization and Internationalization
 
 ### Multiple Localized 404 Pages
 
-**Status**: Normal Priority (user experience)
+**Status**:
+ Normal Priority (user experience)
 
 Create localized 404 pages for different languages and regions.
 
@@ -134,7 +156,8 @@ Create localized 404 pages for different languages and regions.
 
 ### Automatic Translation Integration
 
-**Status**: Low Priority (future enhancement)
+**Status**:
+ Low Priority (future enhancement)
 
 Consider using [deepl-node](https://github.com/DeepLcom/deepl-node) for automatic translation.
 
@@ -153,10 +176,13 @@ Consider using [deepl-node](https://github.com/DeepLcom/deepl-node) for automati
 
 #### Dim Sidebar on Hover
 
-**Status**: On Hold (potentially annoying)
+**Status**:
+ On Hold (potentially annoying)
 
-Dim sidebar (.Aside) when hovering over main content.
-Currently on hold; could be annoying for users.
+Dim sidebar (.
+Aside) when hovering over main content.
+Currently on hold;
+ could be annoying for users.
 
 #### Enhanced UI/UX Research
 
@@ -167,25 +193,29 @@ Currently on hold; could be annoying for users.
 - [ ] Implement responsive design testing and optimization
 - [ ] Add performance impact analysis for UI changes
 
-**Cross-Reference**: See [Packages Todo](packages.md#style-packages) for design system development.
+**Cross-Reference**:
+ See [Packages Todo](packages.md#style-packages) for design system development.
 
 ### Comment System Implementation
 
 #### Webmention Support
 
-**Status**: Medium Priority (decentralized web)
+**Status**:
+ Medium Priority (decentralized web)
 
 Implement decentralized web mention protocol for comments.
 
 #### Giscus Integration
 
-**Status**: Medium Priority (GitHub integration)
+**Status**:
+ Medium Priority (GitHub integration)
 
 Add GitHub Discussions-based commenting system.
 
 #### Pluggable Comment System
 
-**Status**: Medium Priority (flexibility)
+**Status**:
+ Medium Priority (flexibility)
 
 Allow defining 3rd party comment system.
 Make comment system pluggable for flexibility.
@@ -205,12 +235,17 @@ Make comment system pluggable for flexibility.
 
 #### Technical Documentation Style
 
-When writing technical documentation (README, philosophy, architecture docs):
+When writing technical documentation (README,
+ philosophy,
+ architecture docs):
 
 - Write in active voice without collective pronouns
-- State facts directly: "Astro for documentation" instead of "We chose Astro for our documentation"
-- Avoid meta-references: write "Prioritizing portability" instead of "This aligns with the project's philosophy of portability"
-- Use present tense for current state, future tense only for planned features
+- State facts directly:
+   "Astro for documentation" instead of "We chose Astro for our documentation"
+- Avoid meta-references:
+   write "Prioritizing portability" instead of "This aligns with the project's philosophy of portability"
+- Use present tense for current state,
+   future tense only for planned features
 - Eliminate unnecessary connecting phrases and transitions
 
 #### Enhanced Documentation Guidelines
@@ -222,34 +257,43 @@ When writing technical documentation (README, philosophy, architecture docs):
 - [ ] Implement documentation accessibility compliance checking
 - [ ] Add documentation performance optimization guidelines
 
-**Cross-Reference**: See [Code Quality Todo](code-quality.md#testing-requirements-and-standards) for documentation quality standards.
+**Cross-Reference**:
+ See [Code Quality Todo](code-quality.md#testing-requirements-and-standards) for documentation quality standards.
 
 #### Markdown Conventions
 
 **Text Formatting**:
 
 - One sentence per line for better diffs and readability
-- Use **bold** for emphasis, avoid *italics*
+- Use **bold** for emphasis,
+   avoid *italics*
 - Prefer fenced code blocks with language tags over inline code for multi-line snippets
-- Use inline code `like this` for single commands, function names, or short code
+- Use inline code `like this` for single commands,
+   function names,
+   or short code
 
 **Lists**:
 
 - Use `-` for unordered lists with one space after
-- Numbered lists: pad marker to 4 characters (e.g., `1.`, `10.`)
+- Numbered lists:
+   pad marker to 4 characters (e.g.,
+   `1.`,
+   `10.`)
 - Maintain consistent indentation (2 spaces for nested items)
 - Add blank lines before and after lists
 
 **Code Blocks**:
 
 - Always specify language for syntax highlighting
-- Use `bash` for shell commands, `ts` for TypeScript
+- Use `bash` for shell commands,
+   `ts` for TypeScript
 - Include file paths as comments when showing file contents
 
 **Structure**:
 
 - Use ATX-style headers (`#` not underlines)
-- Maximum header depth: 4 levels (####)
+- Maximum header depth:
+   4 levels (####)
 - Add blank line before headers (except first)
 - Keep line length under 120 characters when possible
 
@@ -258,13 +302,15 @@ When writing technical documentation (README, philosophy, architecture docs):
 #### Never Use Emojis
 
 - NEVER use emojis in any content meant to be read by humans
-- Focus on clear, professional text without decorative elements
+- Focus on clear,
+   professional text without decorative elements
 
 #### Heading Style
 
 - NEVER use ALL CAPS for headings or emphasis in documentation
 - Use sentence case for headings
-- For emphasis, use **bold** formatting instead of capitalization
+- For emphasis,
+   use **bold** formatting instead of capitalization
 
 ## Content Management
 
@@ -299,7 +345,8 @@ When writing technical documentation (README, philosophy, architecture docs):
 - [ ] Implement asset security scanning and validation
 - [ ] Add asset usage analytics and optimization
 
-**Cross-Reference**: See [Performance Todo](performance.md#asset-optimization) for comprehensive asset optimization.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#asset-optimization) for comprehensive asset optimization.
 
 ## User Experience Research
 
@@ -319,7 +366,8 @@ When writing technical documentation (README, philosophy, architecture docs):
 - [ ] Create accessibility training and awareness programs
 - [ ] Add accessibility user testing and feedback collection
 
-**Cross-Reference**: See [Security Todo](security.md#application-security) for accessibility security considerations.
+**Cross-Reference**:
+ See [Security Todo](security.md#application-security) for accessibility security considerations.
 
 ### Performance
 
@@ -337,7 +385,8 @@ When writing technical documentation (README, philosophy, architecture docs):
 - [ ] Implement performance analytics and reporting
 - [ ] Add performance user experience testing
 
-**Cross-Reference**: See [Performance Todo](performance.md#monitoring--metrics) for comprehensive performance monitoring.
+**Cross-Reference**:
+ See [Performance Todo](performance.md#monitoring--metrics) for comprehensive performance monitoring.
 
 ## Future Enhancements
 

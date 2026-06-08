@@ -1,11 +1,17 @@
 # Package structure review
 
-Review date: 2026-02-17
+Review date:
+ 2026-02-17
 
-> Stale as of 2026-05-13: several proposed moves have already happened
-> (`dev-script/`, `test-fixture/`, `webapp-*`, and `desktop-daemon/` now exist).
+> Stale as of 2026-05-13:
+>  several proposed moves have already happened
+> (`dev-script/`,
+>  `test-fixture/`,
+>  `webapp-*`,
+>  and `desktop-daemon/` now exist).
 > Treat the package list and proposed migration below as historical input,
-> not current state. Re-audit with the current `packages/` tree before acting.
+> not current state.
+>  Re-audit with the current `packages/` tree before acting.
 
 ## Current layout
 
@@ -42,7 +48,8 @@ packages/
 
 ## Structural constraint
 
-All packages must live exactly two levels deep: `packages/<category>/<name>`.
+All packages must live exactly two levels deep:
+ `packages/<category>/<name>`.
 Category names are hyphenated multi-word when needed for clarity.
 The `package.json` "name" field follows `@monochromatic-dev/<category>-<name>`.
 
@@ -50,34 +57,56 @@ The `package.json` "name" field follows `@monochromatic-dev/<category>-<name>`.
 
 ### Naming inconsistencies in `package.json` "name" fields
 
-The convention `@monochromatic-dev/<category>-<name>` is used for most packages, but several break it:
+The convention `@monochromatic-dev/<category>-<name>` is used for most packages,
+ but several break it:
 
-- **`ai-tree`**: bare name, no scope or category prefix
-- **`@monochromatic-dev/bun-test`**: missing category prefix
-- **`@monochromatic-dev/ensure-dependencies`**: missing `build-` prefix
-- **`@monochromatic-dev/nvim-mcp`**: missing category prefix
-- **`test-css-*` packages**: use `test-` prefix instead of matching their directory category
+- **`ai-tree`**:
+   bare name,
+   no scope or category prefix
+- **`@monochromatic-dev/bun-test`**:
+   missing category prefix
+- **`@monochromatic-dev/ensure-dependencies`**:
+   missing `build-` prefix
+- **`@monochromatic-dev/nvim-mcp`**:
+   missing category prefix
+- **`test-css-*` packages**:
+   use `test-` prefix instead of matching their directory category
 
 ### Misplaced packages
 
-- **`bun-test`** lives in `site/` but is an experiment for the `done` app, not a standalone site.
+- **`bun-test`** lives in `site/` but is an experiment for the `done` app,
+   not a standalone site.
   Belongs alongside `done` in the same webapp category.
-- **`nvim-mcp`** lives in `module/` but is a standalone MCP server binary, not a reusable library.
+- **`nvim-mcp`** lives in `module/` but is a standalone MCP server binary,
+   not a reusable library.
   Belongs in a dedicated `mcp/` category.
 
 ### Category problems
 
-- **`build/`** is too broad; mixes source transformers (`css`) with developer workflow scripts (`backup-path`, `ensure-dependencies`) and a near-empty stub (`time`).
+- **`build/`** is too broad;
+   mixes source transformers (`css`) with developer workflow scripts (`backup-path`,
+   `ensure-dependencies`) and a near-empty stub (`time`).
 - **`module/`** is vague in a JS ecosystem where "module" means everything.
   Holds both a general-purpose library (`es`) and an MCP server binary (`nvim-mcp`).
-- **`site/`** is the worst offender; conflates full server apps (`done`, `rss`), single-page tools (`exa-search`), a static documentation site (`astro-test`), an AI tool (`ai-tree`), and a build-tool test harness (`bun-test`).
+- **`site/`** is the worst offender;
+   conflates full server apps (`done`,
+   `rss`),
+   single-page tools (`exa-search`),
+   a static documentation site (`astro-test`),
+   an AI tool (`ai-tree`),
+   and a build-tool test harness (`bun-test`).
 - **`fixture/`** contains only test fixtures but uses a non-descriptive name.
-- **`style/`** is adequate for now but undersells the category if it grows to include multiple stylesheet packages (resets, utility sheets, theme packages).
+- **`style/`** is adequate for now but undersells the category if it grows to include multiple stylesheet packages (resets,
+   utility sheets,
+   theme packages).
 
 ### Package flagged for removal
 
-- **`time`** (`build-time`): contains only `console.log(new Date().toISOString())`.
-  Its `package.json` repository.directory points to `build/file-enforcer`, a path that does not exist.
+- **`time`** (`build-time`):
+   contains only `console.log(new Date().toISOString())`.
+  Its `package.json` repository.
+  directory points to `build/file-enforcer`,
+   a path that does not exist.
   Appears to be an abandoned placeholder.
   Recommend removing it.
 
@@ -91,18 +120,39 @@ These `package.json` files have empty or absent `description` fields:
 
 ## Proposed categories
 
-- **`build-tool/`**: packages that transform or compile source code as part of a build pipeline
-- **`config/`**: shared tool configuration presets (oxlint, TypeScript, tsdown, dprint, etc.)
-- **`dev-script/`**: standalone developer automation scripts not directly part of a build pipeline
-- **`library/`**: reusable code meant to be imported by other packages (replaces the vague "module")
-- **`mcp/`**: Model Context Protocol servers
-- **`stylesheet/`**: CSS packages meant to be imported by applications (resets, design tokens, mixins, themes)
-- **`test-fixture/`**: packages that exist solely as inputs for automated tests
-- **`webapp-content/`**: content-driven or documentation websites (static site generators, blogs)
-- **`webapp-productivity/`**: interactive web applications for personal productivity (task managers, feed readers, etc.)
-- **`webapp-search/`**: web applications centered on search and information retrieval
+- **`build-tool/`**:
+   packages that transform or compile source code as part of a build pipeline
+- **`config/`**:
+   shared tool configuration presets (oxlint,
+   TypeScript,
+   tsdown,
+   dprint,
+   etc.)
+- **`dev-script/`**:
+   standalone developer automation scripts not directly part of a build pipeline
+- **`library/`**:
+   reusable code meant to be imported by other packages (replaces the vague "module")
+- **`mcp/`**:
+   Model Context Protocol servers
+- **`stylesheet/`**:
+   CSS packages meant to be imported by applications (resets,
+   design tokens,
+   mixins,
+   themes)
+- **`test-fixture/`**:
+   packages that exist solely as inputs for automated tests
+- **`webapp-content/`**:
+   content-driven or documentation websites (static site generators,
+   blogs)
+- **`webapp-productivity/`**:
+   interactive web applications for personal productivity (task managers,
+   feed readers,
+   etc.)
+- **`webapp-search/`**:
+   web applications centered on search and information retrieval
 
-Experiments and PoCs live as regular siblings in the category of the package they are experimenting for, distinguished by their `package.json` description (e.g. "Experimental companion to done").
+Experiments and PoCs live as regular siblings in the category of the package they are experimenting for,
+ distinguished by their `package.json` description (e.g. "Experimental companion to done").
 New categories are created as needed when a hypothetical non-experiment package would warrant one.
 
 ## Proposed migration

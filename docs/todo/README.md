@@ -2,22 +2,46 @@
 
 ## Quick Links to Specialized Todo Lists
 
-- [**Build System & Package Management**](build-system.md): mise, TypeScript, dependencies
-- [**CLI Tools & Utilities**](cli-tools.md): Custom tools and automation scripts
-- [**Documentation & UI/UX**](documentation.md): Content, design, and user experience
-- [**Development Environment**](development.md): Tooling, setup
-- [**Code Quality & Patterns**](code-quality.md): Linting, testing, best practices
-- [**Package-Specific Improvements**](packages.md): Module library, config packages, style framework
-- [**Security & Infrastructure**](security.md): Application security, deployment hardening
-- [**Performance & Optimization**](performance.md): Build performance, runtime optimization
-- [**Automation & DevOps**](automation.md): CI/CD, development automation, release management
-- [**VM Dev Environment**](vm-dev-environment.md): Portable immutable VM image ([rationale](../philosophy/vm-dev-environment.md))
+- [**Build System & Package Management**](build-system.md):
+   mise,
+   TypeScript,
+   dependencies
+- [**CLI Tools & Utilities**](cli-tools.md):
+   Custom tools and automation scripts
+- [**Documentation & UI/UX**](documentation.md):
+   Content,
+   design,
+   and user experience
+- [**Development Environment**](development.md):
+   Tooling,
+   setup
+- [**Code Quality & Patterns**](code-quality.md):
+   Linting,
+   testing,
+   best practices
+- [**Package-Specific Improvements**](packages.md):
+   Module library,
+   config packages,
+   style framework
+- [**Security & Infrastructure**](security.md):
+   Application security,
+   deployment hardening
+- [**Performance & Optimization**](performance.md):
+   Build performance,
+   runtime optimization
+- [**Automation & DevOps**](automation.md):
+   CI/CD,
+   development automation,
+   release management
+- [**VM Dev Environment**](vm-dev-environment.md):
+   Portable immutable VM image ([rationale](../philosophy/vm-dev-environment.md))
 
 ## Priority Overview
 
 ### Critical priority
 
-Immediate action required: blocking development or production.
+Immediate action required:
+ blocking development or production.
 
 1. **Build System Reliability** → [Build System Todo](build-system.md#critical-issues)
    - Fresh clone setup problems blocking new developers
@@ -85,13 +109,20 @@ Nice-to-have features and experimental improvements.
 
 ### Active development (March 2026)
 
-- **MCP packages**: Building mcp-stdio and mcp-nvim → packages/mcp/
-- **Build System**: Fixing ordering issues for fresh clones → [Build System Todo](build-system.md#fresh-clone-setup-problems)
-- **Security**: Establishing security fundamentals → [Security Todo](security.md#dependency-security)
+- **MCP packages**:
+   Building mcp-stdio and mcp-nvim → packages/mcp/
+- **Build System**:
+   Fixing ordering issues for fresh clones → [Build System Todo](build-system.md#fresh-clone-setup-problems)
+- **Security**:
+   Establishing security fundamentals → [Security Todo](security.md#dependency-security)
 
 ### Next Sprint Candidates
 
-- **Package Development**: Expanding module library functionality → [Packages Todo](packages.md#module-library-packages-modulees)
-- **Performance**: Build system optimization → [Performance Todo](performance.md#build-performance)
-- **Documentation**: API documentation automation → [Documentation Todo](documentation.md#api-documentation)
-- **Automation**: CI/CD pipeline enhancement → [Automation Todo](automation.md#cicd-pipeline)
+- **Package Development**:
+   Expanding module library functionality → [Packages Todo](packages.md#module-library-packages-modulees)
+- **Performance**:
+   Build system optimization → [Performance Todo](performance.md#build-performance)
+- **Documentation**:
+   API documentation automation → [Documentation Todo](documentation.md#api-documentation)
+- **Automation**:
+   CI/CD pipeline enhancement → [Automation Todo](automation.md#cicd-pipeline)

@@ -1,7 +1,11 @@
 # Monochromatic
 
-A TypeScript monorepo (96 packages) for web applications, design systems,
-developer tooling, AI integrations, local agent tooling, and infrastructure automation.
+A TypeScript monorepo (96 packages) for web applications,
+ design systems,
+developer tooling,
+ AI integrations,
+ local agent tooling,
+ and infrastructure automation.
 
 ## Highlights
 
@@ -9,17 +13,32 @@ developer tooling, AI integrations, local agent tooling, and infrastructure auto
 [`mcp-stdio`](packages/mcp/stdio/) implements the Model Context Protocol
 in 800 lines with zero runtime dependencies.
 The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
-(Express, Hono, jose, OAuth, rate limiting, SSE);
-this package implements only JSON-RPC 2.0, initialization handshake,
-`tools/list`, `tools/call`, and `ping`.
+(Express,
+ Hono,
+ jose,
+ OAuth,
+ rate limiting,
+ SSE);
+this package implements only JSON-RPC 2.0,
+ initialization handshake,
+`tools/list`,
+ `tools/call`,
+ and `ping`.
 
 **Inference canary**:
 [`inference-canary`](packages-paused/dev-script/inference-canary/) runs five
-code-generation probes (CSV parser, expression evaluator, CSS mixin transpiler,
-stack interpreter, task scheduler) against 8 LLM models in parallel.
+code-generation probes (CSV parser,
+ expression evaluator,
+ CSS mixin transpiler,
+stack interpreter,
+ task scheduler) against 8 LLM models in parallel.
 Each probe executes inside a locked-down Podman container (no network,
-read-only filesystem, 256 MB memory, 15 s timeout) and scores across
-correctness, lint quality (oxlint), and type safety (tsgo).
+read-only filesystem,
+ 256 MB memory,
+ 15 s timeout) and scores across
+correctness,
+ lint quality (oxlint),
+ and type safety (tsgo).
 Statistical threshold detection (mean - 2*stddev) flags model degradation
 before it affects development.
 
@@ -36,30 +55,43 @@ analysis of h3 vs Elysia vs Hono.
 
 **Custom Oxlint plugins**:
 [`oxlint-tsdoc`](packages/oxlint-plugins/tsdoc/) enforces TSDoc correctness
-across 20+ rules with 23 fixture-based tests, replacing the slow
+across 20+ rules with 23 fixture-based tests,
+ replacing the slow
 eslint-plugin-jsdoc integration that previously required ESLint.
 [`oxlint-no-restricted-syntax`](packages/oxlint-plugins/no-restricted-syntax/)
-encodes 13 monorepo-specific AST rules (no arrow functions, no switch statements,
+encodes 13 monorepo-specific AST rules (no arrow functions,
+ no switch statements,
 require destructured params for 2+ args) that Oxlint's lack of AST selectors
 demands as dedicated rule implementations.
 
 **Monorepo-aware CSS build tool**:
 [`build-tool-css`](packages/build-tool/css/) resolves `@import` through
-`package.json` exports mappings and `node_modules`, processes custom
-`@mixin`/`@apply` syntax, and generates CSS strings for Shadow DOM injection,
+`package.json` exports mappings and `node_modules`,
+ processes custom
+`@mixin`/`@apply` syntax,
+ and generates CSS strings for Shadow DOM injection,
 all without native binaries.
 
 **OpenTofu firewall automation**:
 [`config-tofu`](packages/config/tofu/) dynamically aggregates CIDR ranges
-from 7 CDN sources (Cloudflare, CloudFront, Fastly, GitHub, YouTube,
-Ubuntu ASN, Coolify), summarizes them to minimize Hetzner firewall rule count,
+from 7 CDN sources (Cloudflare,
+ CloudFront,
+ Fastly,
+ GitHub,
+ YouTube,
+Ubuntu ASN,
+ Coolify),
+ summarizes them to minimize Hetzner firewall rule count,
 and caches ASN lookups for 30 days with graceful fallback to expired cache
 on fetch failure.
 
 **Custom typeface from SVG geometry**:
 [`typeface-aquaticat`](packages/typeface/aquaticat/) parses a master glyph strip
-SVG, expands stroked outlines into filled contours using polygon offset math,
-assembles an OpenType font via opentype.js, and converts to WOFF2 through
+SVG,
+ expands stroked outlines into filled contours using polygon offset math,
+assembles an OpenType font via opentype.
+js,
+ and converts to WOFF2 through
 fonttools.
 
 ## Initial setup
@@ -67,7 +99,10 @@ fonttools.
 ### Prerequisites
 
 Install [Mise](https://mise.jdx.dev/) (task runner and tool version manager).
-All other tools (Bun, Node, dprint, etc.) are installed automatically by Mise.
+All other tools (Bun,
+ Node,
+ dprint,
+ etc.) are installed automatically by Mise.
 
 ### Clone and bootstrap
 
@@ -76,8 +111,11 @@ git clone https://github.com/Aquaticat/Monochromatic.git
 cd Monochromatic
 ```
 
-On first entry, Mise will warn about missing tools and an `enter` hook error
-because nushell is not installed yet. This is expected. Run manually once:
+On first entry,
+ Mise will warn about missing tools and an `enter` hook error
+because nushell is not installed yet.
+ This is expected.
+ Run manually once:
 
 ```sh
 mise install
@@ -90,22 +128,29 @@ mise trust
 ```
 
 Trusting the monorepo root implicitly trusts all descendant `mise.toml` files
-under `packages/`. See [mise trust docs](https://mise.jdx.dev/cli/trust.html)
+under `packages/`.
+ See [mise trust docs](https://mise.jdx.dev/cli/trust.html)
 for details on what this enables and why it is required.
 
-Finally, install dependencies and build all packages:
+Finally,
+ install dependencies and build all packages:
 
 ```sh
 mise run prepareAndBuild
 ```
 
-Subsequent directory entries trigger the `enter` hook automatically, which runs
+Subsequent directory entries trigger the `enter` hook automatically,
+ which runs
 `mise install` and `mise upgrade` to keep tools current.
 
 ## Essential commands
 
-All builds and tasks use `mise run`. Never invoke raw tools (`tsc`, `tsdown`,
-`bun test`, `oxlint`) or package manager scripts (`npm run`, `pnpm exec`) directly.
+All builds and tasks use `mise run`.
+ Never invoke raw tools (`tsc`,
+ `tsdown`,
+`bun test`,
+ `oxlint`) or package manager scripts (`npm run`,
+ `pnpm exec`) directly.
 
 ```sh
 # Build all packages
@@ -173,22 +218,42 @@ packages/
 
 ## Technical stack
 
-- **Task runner**: [Mise](https://mise.jdx.dev/) with nushell for cross-platform task execution
-- **Runtime**: [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.js standards)
-- **Package manager**: [pnpm](https://pnpm.io/) workspaces with catalog dependency management and isolated node_modules
-- **Bundler**: [tsdown](https://tsdown.dev/) (Rolldown-based)
-- **Language**: TypeScript with `tsgo` for type checking
-- **Linters**: Oxlint (with custom JS plugins for TSDoc and restricted syntax), Stylelint, Harper (prose)
-- **Formatter**: dprint (orchestrates all formatters including oxlint auto-fix)
-- **Testing**: Bun test runner for unit tests, Playwright in Podman for browser and e2e tests
-- **HTTP framework**: [h3](https://h3.dev/) for server applications
-- **Infrastructure**: OpenTofu, Hetzner Cloud, Caddy, Podman
+- **Task runner**:
+   [Mise](https://mise.jdx.dev/) with nushell for cross-platform task execution
+- **Runtime**:
+   [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.
+  js standards)
+- **Package manager**:
+   [pnpm](https://pnpm.io/) workspaces with catalog dependency management and isolated node_modules
+- **Bundler**:
+   [tsdown](https://tsdown.dev/) (Rolldown-based)
+- **Language**:
+   TypeScript with `tsgo` for type checking
+- **Linters**:
+   Oxlint (with custom JS plugins for TSDoc and restricted syntax),
+   Stylelint,
+   Harper (prose)
+- **Formatter**:
+   dprint (orchestrates all formatters including oxlint auto-fix)
+- **Testing**:
+   Bun test runner for unit tests,
+   Playwright in Podman for browser and e2e tests
+- **HTTP framework**:
+   [h3](https://h3.dev/) for server applications
+- **Infrastructure**:
+   OpenTofu,
+   Hetzner Cloud,
+   Caddy,
+   Podman
 
 ## Platform support
 
-Development targets Linux (Fedora). Use WSL2 on Windows: some tools
+Development targets Linux (Fedora).
+ Use WSL2 on Windows:
+ some tools
 (e.g. Zellij) have no native Windows support.
 
 ## License
 
-[LGPL-3.0-or-later](LGPL-3.0-or-later.txt) for code, with root package metadata also declaring CC-BY-SA-4.0 for shareable documentation/content.
+[LGPL-3.0-or-later](LGPL-3.0-or-later.txt) for code,
+ with root package metadata also declaring CC-BY-SA-4.0 for shareable documentation/content.

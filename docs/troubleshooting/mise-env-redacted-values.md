@@ -1,13 +1,18 @@
 # mise 2026.5.15 `env --redacted` lists sensitive values instead of masking them
 
 This note records a 2026-06-06 diagnosis against mise 2026.5.15
-(`v2026.5.15`, upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`).
-The surprising behavior is real: `mise env --redacted` means "only show variables
-that have been marked for redaction," not "print env output with values masked."
+(`v2026.5.15`,
+ upstream commit `53cd329af53b04c68ac68f3d3b7cba1e4feeda37`).
+The surprising behavior is real:
+ `mise env --redacted` means "only show variables
+that have been marked for redaction,
+" not "print env output with values masked.
+"
 
 ## Symptom
 
-A user runs this command, expecting masked output:
+A user runs this command,
+ expecting masked output:
 
 ```bash
 mise env --redacted
@@ -31,8 +36,13 @@ fixture-secret-token
 }
 ```
 
-For real tokens, that output should be treated as an exposure in terminal
-scrollback, shell capture logs, CI logs, agent transcripts, and command-history
+For real tokens,
+ that output should be treated as an exposure in terminal
+scrollback,
+ shell capture logs,
+ CI logs,
+ agent transcripts,
+ and command-history
 recorders that store output.
 
 ## Root cause
@@ -69,7 +79,7 @@ redactions = ["SECRET_*", "*_TOKEN", "PASSWORD"]
 [env]
 SECRET_KEY = "sensitive_value"
 API_TOKEN = "token_123"
-PASSWORD = "my_password"
+PASSWORD = "masked"
 ```
 
 The docs then explicitly present `mise env --redacted --values` as a way to show
@@ -80,7 +90,8 @@ The docs then explicitly present `mise env --redacted --values` as a way to show
 mise env --redacted --values
 ```
 
-So upstream uses "redacted" as a classification label. It does not promise that
+So upstream uses "redacted" as a classification label.
+ It does not promise that
 this command masks values before printing them.
 
 ### Step 2: mise builds a set of sensitive keys
@@ -101,8 +112,10 @@ let redacted_keys = if self.redacted {
 } else {
 ```
 
-Env directives add keys to that sensitive-key list when `redact = true`. For
-plain `[env]` values, `src/config/env_directive/mod.rs:354-361` stores the key:
+Env directives add keys to that sensitive-key list when `redact = true`.
+ For
+plain `[env]` values,
+ `src/config/env_directive/mod.rs:354-361` stores the key:
 
 ```rust
 r.env_remove.remove(&k);
@@ -113,7 +126,8 @@ if redact.unwrap_or(false) {
 env.insert(k, (v, Some(source.clone())));
 ```
 
-For env files, `src/config/env_directive/mod.rs:453-461` stores each loaded key
+For env files,
+ `src/config/env_directive/mod.rs:453-461` stores each loaded key
 when the file directive has `redact = true`:
 
 ```rust
@@ -149,7 +163,9 @@ for (k, v) in env {
     miseprint!("{}", shell.set_env(&k, &v))?;
 ```
 
-The JSON path follows the same pattern: filter at `src/cli/env.rs:100-104`, then
+The JSON path follows the same pattern:
+ filter at `src/cli/env.rs:100-104`,
+ then
 serialize the remaining map at `src/cli/env.rs:106`:
 
 ```rust
@@ -162,7 +178,8 @@ if let Some(keys) = redacted_keys {
 miseprintln!("{}", serde_json::to_string_pretty(&env)?);
 ```
 
-The value-only path filters at `src/cli/env.rs:221-225`, then prints each raw
+The value-only path filters at `src/cli/env.rs:221-225`,
+ then prints each raw
 value at `src/cli/env.rs:227-228`:
 
 ```rust
@@ -172,7 +189,8 @@ for (_, v) in env {
 ```
 
 The shared predicate confirms that `--redacted` answers "which keys are
-redaction-marked?" at `src/cli/env.rs:233-250`:
+redaction-marked?
+" at `src/cli/env.rs:233-250`:
 
 ```rust
 fn should_include_key(&self, key: &str, redacted_keys: &IndexSet<String>) -> bool {
@@ -277,23 +295,32 @@ Observed output:
 ### Do not use `mise env --redacted` as a diagnostic masking command
 
 Treat `mise env --redacted` and `mise env --redacted --values` as secret-output
-commands. Run them only when the destination is supposed to receive secrets, for
+commands.
+ Run them only when the destination is supposed to receive secrets,
+ for
 example a local shell `eval` or a CI masking primitive.
 
-Tradeoff: this avoids accidental disclosure, but it removes the convenient
+Tradeoff:
+ this avoids accidental disclosure,
+ but it removes the convenient
 "show me which variables are redacted" debugging workflow.
 
 ### For normal activation, pipe only into the shell that consumes the secrets
 
-Use the command as an activation producer, not as something to inspect:
+Use the command as an activation producer,
+ not as something to inspect:
 
 ```bash
 eval "$(mise env --shell bash)"
 ```
 
-Tradeoff: this still materializes secrets in memory and shell state. It avoids
-printing them to the terminal by default, but tracing modes such as `set -x`,
-agent transcripts, and logging wrappers can still capture expanded commands.
+Tradeoff:
+ this still materializes secrets in memory and shell state.
+ It avoids
+printing them to the terminal by default,
+ but tracing modes such as `set -x`,
+agent transcripts,
+ and logging wrappers can still capture expanded commands.
 
 ### For CI masking, route values directly to the masking mechanism
 
@@ -305,34 +332,49 @@ for value in $(mise env --redacted --values); do
 done
 ```
 
-Tradeoff: this loop still emits each value as part of a mask command. It is only
+Tradeoff:
+ this loop still emits each value as part of a mask command.
+ It is only
 safe when the CI system recognizes the mask primitive before storing or showing
-the line. Do not copy this pattern to logs or terminals that do not implement
+the line.
+ Do not copy this pattern to logs or terminals that do not implement
 masking.
 
 ### For local key-name diagnostics, parse and discard values locally
 
-When only key names are needed, process JSON locally and print only keys:
+When only key names are needed,
+ process JSON locally and print only keys:
 
 ```bash
 mise env --redacted --json | jq --raw-output 'keys[]'
 ```
 
-Tradeoff: raw secrets still flow through the pipe into `jq`. This avoids
-printing values, but it is not safe if command pipelines are captured by an
-untrusted wrapper, shell audit facility, or agent transcript.
+Tradeoff:
+ raw secrets still flow through the pipe into `jq`.
+ This avoids
+printing values,
+ but it is not safe if command pipelines are captured by an
+untrusted wrapper,
+ shell audit facility,
+ or agent transcript.
 
 ## What does not work
 
-- `mise env --redacted` does not mask values. It filters output to keys that are
+- `mise env --redacted` does not mask values.
+   It filters output to keys that are
   configured as redaction-worthy.
-- `mise env --redacted --values` is more sensitive, not safer. It prints only
+- `mise env --redacted --values` is more sensitive,
+   not safer.
+   It prints only
   raw values and omits variable names.
 - `mise env --redacted --json` still includes raw values.
-- The typo `--redacated` is not a valid flag; the surprising behavior is on the
+- The typo `--redacated` is not a valid flag;
+   the surprising behavior is on the
   correctly spelled `--redacted` flag.
 - Relying on terminal scrollback cleanup after the fact is insufficient if the
-  command ran in an agent transcript, a CI log, or a shell integration that
+  command ran in an agent transcript,
+   a CI log,
+   or a shell integration that
   records command output.
 
 ## Upstream filing artifact
@@ -367,11 +409,15 @@ $ git -C /tmp/agent/mise-redacted-prototype.RFPyQS rev-parse HEAD
 ae7c0c34bd87310d8701f8a69e885a8b89adfd9a
 ```
 
-The prototype changes only wording. It updates:
+The prototype changes only wording.
+ It updates:
 
-- `src/cli/env.rs`: the Clap help for `--redacted`.
-- `docs/cli/env.md`: the generated CLI docs mirror of that help.
-- `docs/environments/index.md`: the environment docs section that demonstrates
+- `src/cli/env.rs`:
+   the Clap help for `--redacted`.
+- `docs/cli/env.md`:
+   the generated CLI docs mirror of that help.
+- `docs/environments/index.md`:
+   the environment docs section that demonstrates
   `mise env --redacted` and `mise env --redacted --values`.
 
 The patch is saved beside this document as
@@ -390,32 +436,52 @@ verification-grep:
 
 ### Upstream filing decision
 
-1.  Is it really upstream's fault? Partly. The implementation matches the
-    upstream docs, which intentionally expose values for CI masking. The CLI flag
+1.  Is it really upstream's fault?
+     Partly.
+     The implementation matches the
+    upstream docs,
+     which intentionally expose values for CI masking.
+     The CLI flag
     name and help text are easy to misread as a masking promise.
-2.  Can upstream fix it? Yes for wording. Upstream can clarify help text and docs
+2.  Can upstream fix it?
+     Yes for wording.
+     Upstream can clarify help text and docs
     without changing the command's data model.
-3.  Are they supporting this use case? Yes. The environment docs explicitly show
+3.  Are they supporting this use case?
+     Yes.
+     The environment docs explicitly show
     `mise env --redacted` and `mise env --redacted --values` for working with
     redaction-marked variables.
-4.  Would the repo welcome our contribution? The contribution guide says
-    non-obvious changes should start with a discussion or Discord. The issue
+4.  Would the repo welcome our contribution?
+     The contribution guide says
+    non-obvious changes should start with a discussion or Discord.
+     The issue
     template disables blank issues and points bug reports and questions to
-    GitHub Discussions. No AI-assistance ban was found in `CONTRIBUTING.md`, the
-    fetched contribution guide, or the issue template during the earlier mise
+    GitHub Discussions.
+     No AI-assistance ban was found in `CONTRIBUTING.md`,
+     the
+    fetched contribution guide,
+     or the issue template during the earlier mise
     token investigation.
-5.  Will they likely fix it? Soft yes. The current behavior is documented, so
-    this is wording clarification rather than correctness fix. The suggested
+5.  Will they likely fix it?
+     Soft yes.
+     The current behavior is documented,
+     so
+    this is wording clarification rather than correctness fix.
+     The suggested
     diff is small and follows the existing command semantics.
-6.  Have we prototyped a minimal fix compatible with their architecture? Yes.
+6.  Have we prototyped a minimal fix compatible with their architecture?
+     Yes.
     The prototype changes the Clap help text and the docs that describe
     `mise env --redacted` without changing runtime behavior.
 
 ### GitHub Discussion draft
 
-Category: Questions or Ideas
+Category:
+ Questions or Ideas
 
-Title: Clarify that `mise env --redacted` prints values for variables marked for redaction
+Title:
+ Clarify that `mise env --redacted` prints values for variables marked for redaction
 
 ~~~md
 ## Summary

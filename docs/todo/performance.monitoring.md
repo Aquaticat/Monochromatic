@@ -6,7 +6,9 @@
 
 #### Performance Monitoring
 
-**Status**: High priority, visibility and optimization
+**Status**:
+ High priority,
+ visibility and optimization
 
 - [ ] Implement comprehensive performance monitoring
 - [ ] Add real user monitoring (RUM) for web applications
@@ -17,7 +19,9 @@
 
 #### Core Web Vitals
 
-**Status**: High priority, user experience
+**Status**:
+ High priority,
+ user experience
 
 - [ ] Monitor and optimize Largest Contentful Paint (LCP)
 - [ ] Optimize First Input Delay (FID) / Interaction to Next Paint (INP)
@@ -28,7 +32,9 @@
 
 #### Performance Profiling
 
-**Status**: High priority, optimization guidance
+**Status**:
+ High priority,
+ optimization guidance
 
 - [ ] Implement automated performance profiling
 - [ ] Add performance profiling in different environments
