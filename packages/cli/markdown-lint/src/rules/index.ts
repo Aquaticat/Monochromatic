@@ -3,9 +3,11 @@ import { headingIncrement, } from './md001-heading-increment.ts';
 import { noDuplicateHeading, } from './md024-no-duplicate-heading.ts';
 import { singleH1, } from './md025-single-h1.ts';
 import { noTrailingPunctuation, } from './md026-no-trailing-punctuation.ts';
+import { noBareUrls, } from './md034-no-bare-urls.ts';
 import { noEmphasisAsHeading, } from './md036-no-emphasis-as-heading.ts';
 import { fencedCodeLanguage, } from './md040-fenced-code-language.ts';
 import { referenceDefinitions, } from './md053-reference-definitions.ts';
+import { linkImageStyle, } from './md054-link-image-style.ts';
 import { noPipeTables, } from './no-pipe-tables.ts';
 
 /**
@@ -18,9 +20,11 @@ export const rules: readonly Rule[] = [
   noDuplicateHeading,
   singleH1,
   noTrailingPunctuation,
+  noBareUrls,
   noEmphasisAsHeading,
   fencedCodeLanguage,
   referenceDefinitions,
+  linkImageStyle,
   noPipeTables,
 ];
 
