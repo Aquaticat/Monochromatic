@@ -111,6 +111,18 @@ cargo-binstall = "latest"
 # ninja. See docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
 "aqua:Kitware/CMake" = "latest"
 
+# rcodesign (the `apple-codesign` crate) signs, notarizes, and staples the
+# packages/desktop-app/music-player macOS .app from Linux (the Mach-O is still
+# built on the Mac; only signing is cross-platform). The upstream repo publishes
+# per-crate releases with slash tags (`apple-codesign/X.Y.Z`) and target-triple
+# asset archives whose inner binary is named `rcodesign`. The github backend
+# pulls the latest release's x86_64 musl archive directly and extracts that
+# binary; the crate ships no cargo-binstall metadata, so a `cargo:` entry would
+# risk a slow from-source build instead. If a non-codesign `apple-*` crate ever
+# becomes the repo's "latest" GitHub release, pin a version here. See
+# docs/decisions/desktop-app-code-signing.md and the package's sign:macos task.
+"github:indygreg/apple-platform-rs" = { version = "latest", exe = "rcodesign" }
+
 # Zig toolchain for packages/desktop-app/terminal: its libghostty-vt-sys
 # build-dependency compiles vendored Ghostty with Zig and requires Zig 0.15.x
 # (Fedora packages an older 0.14). Pinned to 0.15.2 to match the version the
