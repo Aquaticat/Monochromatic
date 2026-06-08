@@ -348,26 +348,30 @@ table so it costs some IO, but it is the documented, non-destructive remedy and 
 inconsistency for every client at once.
 If a repair leaves the phantom list entry behind, follow with the S3 delete below.
 
-### Delete the six phantom keys (S3 side, caveated)
+### Why an S3 DELETE cannot remove these (and why prior cleanups did not stick)
 
-Verified safe-to-delete: every phantom has a clean twin that HEADs `200` with a byte-identical
-size, so the data is fully present under the correct name and the phantom is pure duplication.
+A plain S3 `DELETE` on a phantom is a silent no-op.
+Garage's delete handler point-gets the object first and short-circuits when that returns
+nothing, the same point-get that already fails for these keys:
 
-```bash
-# enumerate phantoms (read only)
-rclone lsf -R garage:files/Plain | grep '‛'
-# for each, confirm a clean twin exists and HEADs 200 BEFORE deleting, then:
-rclone deletefile "garage:files/Plain/Text/Books/self help/江泽民文选‛‛：第1卷.pdf"
+```rust
+// src/api/s3/delete.rs (handle_delete_internal, then handle_delete)
+let object = garage
+    .object_table
+    .get(bucket_id, &key.to_string())
+    .await?
+    .ok_or(Error::NoSuchKey)?; // No need to delete
+// ... the DeleteMarker insert below is skipped on NoSuchKey ...
+// handle_delete: Ok(_) | Err(Error::NoSuchKey) => 204 No Content
 ```
 
-Tradeoffs and the unverified step: the bucket is shared state (desktop, Mac, Android), so this
-needs coordination and explicit authorization.
-Because the object is not point-gettable, `rclone deletefile` may itself fail
-(`DeleteObject` on a key the backend resolves to `NoSuchKey`) and a `DELETE` could add a
-tombstone to an already-inconsistent row, which is why the server-side repair above is
-preferred.
-If deleting at the S3 layer, test the exact command against one key on a throwaway bucket
-first.
+So `DeleteObject` returns `204 No Content` (success to the client) but writes no tombstone and
+removes nothing.
+This is exactly why the earlier local-only cleanups did not hold: deleting the doubled-name
+files on the desktop made bisync propagate a remote `DELETE`, Garage answered `204`, and the
+phantom stayed listed, so every fresh client re-encountered it.
+Removing these is therefore only possible server-side, via the `garage repair` above; the
+data is safe to lose (every phantom has an intact, HEADable clean twin).
 
 ### Exclude the phantoms so bisync ignores them (symptom mask, proposed)
 
