@@ -2,7 +2,8 @@
 
 Build a purpose-built Markdown and MDX linter, with localized autofixes, to replace `markdownlint-cli2`.
 The fixer half follows the oxlint model: lint rules carry localized fix edits, and `--fix` applies them.
-There is no separate prose-reformatting engine in this scope.
+Line breaks are governed by a lint rule with a localized fix (`semantic-line-breaks`), not by a separate
+prose-reformatting engine.
 
 ## Motivation
 
@@ -23,19 +24,27 @@ later, not in this MVP (see non-goals).
 
 ## MVP scope
 
-- Parity with the rules currently enabled in `.markdownlint-cli2.jsonc`: MD001, MD014, MD024, MD025,
-  MD026, MD034, MD036, MD040, MD052, MD053, MD054, plus the custom `no-pipe-tables` rule.
+- Reimplement the rules currently enabled in `.markdownlint-cli2.jsonc`: MD001, MD014, MD024, MD025,
+  MD026, MD034, MD036, MD040, MD052, MD053, MD054, plus the custom `no-pipe-tables` rule. These rule ids
+  name behavior we own and verify with our own unit tests; this is not a parity port (see testing).
+- A `semantic-line-breaks` rule with a localized autofix. It enforces a line break after every prose
+  break-point character (`,` `.` `;` `:` `?` `!`), excluding code, URLs, MDX nodes, and abbreviations or
+  decimals (see the rule inventory). The fix only adds breaks; it never joins or relocates existing ones.
+  This supersedes the previously deferred semantic-line-breaks non-goal.
 - Lint `.mdx` files in addition to `.md`. MDX files are parsed correctly (so surrounding Markdown is not
   misparsed), but MDX-specific nodes are skipped: no rule inspects JSX, ESM import/export, or expression
   nodes in the MVP.
-- Localized autofixes for the rules markdownlint can fix, applied with a `--fix` flag.
+- Localized autofixes for every fixable rule, applied with a `--fix` flag.
 - A fast, misuse-resistant CLI that runs under Bun.
 
 ## Non-goals (explicitly deferred)
 
-- Semantic line breaks (sentence-per-line reflow). The sembr.org spec defines the rules, but no embeddable
-  TypeScript or remark component exists (`sembr` is Python and Transformers; `readable` is a Go binary;
-  `rumdl` has only an open issue). This is the genuinely open-ended piece and is deferred by decision.
+- Clause-aware semantic line breaks (true sembr.org reflow that understands grammar). The MVP ships a
+  mechanical, punctuation-based `semantic-line-breaks` rule instead, which needs no grammar engine and so
+  sidesteps the blocker that justified deferring this: the absence of an embeddable TypeScript component
+  (`sembr` is Python and Transformers; `readable` is a Go binary; `rumdl` has only an open issue). What
+  stays out of scope is grammar-aware breaking, and joining or relocating existing breaks: the rule only
+  adds breaks at punctuation, it never reflows lines that were wrapped elsewhere.
 - MDX-specific rules (linting JSX attributes, expression contents, import hygiene). Deferred, but the
   architecture below is chosen to make these cheap to add later.
 - Whole-document re-serialization or prose reformatting. Fixes are localized source edits, never a
@@ -59,10 +68,9 @@ Costs accepted by this decision, and how the plan absorbs each:
   versus inline link) and MD054 (link style) need the exact written form, which mdast can collapse. Those
   rules read the original source slice at `node.position.start.offset` to `node.position.end.offset` to
   recover the written form. This is source inspection at known offsets, not a second parser.
-- Parity diagnostics may differ from markdownlint in exact column representation, because markdownlint
-  reports against tokens and we report against mdast positions. The parity acceptance criterion is defined
-  at line and rule granularity, with column differences investigated and documented rather than required
-  to be byte-identical (see testing).
+- Diagnostics report against mdast positions (line, column, offsets). There is no requirement to match any
+  other tool's column representation, because correct output is defined by this tool's own unit tests, not
+  by comparison against markdownlint (see testing).
 
 This is a single engine, not the dual-engine shape discussed earlier: with no serializer in scope, mdast
 is the only representation, and fixes are localized text edits applied to source.
@@ -76,12 +84,13 @@ One parse function, `parse(source, { mdx })`, returns an mdast tree.
   literals affect MD034.
 - MDX (only when `mdx` is true): `micromark-extension-mdxjs` plus `mdast-util-mdx`. This is what prevents
   `import` lines, JSX, and `{expr}` from being misparsed as paragraphs or HTML blocks.
-- Frontmatter: `micromark-extension-frontmatter` plus `mdast-util-frontmatter`. This is parity-relevant,
-  not optional. markdownlint strips a leading YAML block by default before any rule runs, and 71 files in
-  this corpus open with `---` frontmatter. Without the same step, a leading block parses as a thematic
-  break plus paragraph content, producing diagnostics markdownlint never emits, so the parity oracle would
-  diverge on every frontmatter file. The SSG pipeline confirms content files carry frontmatter (its
-  `renderMdx` strips it before rendering); the linter sees the raw on-disk file, so it must handle it.
+- Frontmatter: `micromark-extension-frontmatter` plus `mdast-util-frontmatter`. This is a correctness
+  requirement, not optional. A leading YAML block must be recognized and skipped before any rule runs, and
+  71 files in this corpus open with `---` frontmatter. Without the step, a leading block parses as a
+  thematic break plus paragraph content, so rules would emit spurious diagnostics (and `semantic-line-breaks`
+  would try to break YAML lines) on every frontmatter file. The SSG pipeline confirms content files carry
+  frontmatter (its `renderMdx` strips it before rendering); the linter sees the raw on-disk file, so it
+  must handle it.
 
 Dependency-weight note: these utilities are a small fixed set, and the core parse layer is already present
 in `pnpm-lock.yaml` as a transitive dependency (`mdast-util-from-markdown@2.0.3`, `mdast-util-mdx@3.0.0`,
@@ -100,6 +109,9 @@ a spine).
 - A diagnostic carries: rule id, message, position (line, column, and source offsets), and an optional fix.
 - A fix is a localized edit expressed as source offsets: `{ start, end, insertText }`. This is the
   oxlint and markdownlint `fixInfo` model translated to offsets, which mdast positions provide directly.
+  An add-only fix is the degenerate case where `start === end`: a pure insertion that moves no existing
+  byte. `semantic-line-breaks` uses this exclusively (it inserts a newline plus the block's continuation
+  prefix at each break-point), which is why untouched spans stay byte-for-byte identical.
 - Rules skip MDX node types in the MVP: a rule that walks the tree ignores `mdxjsEsm`,
   `mdxFlowExpression`, `mdxTextExpression`, `mdxJsxFlowElement`, and `mdxJsxTextElement`, plus their
   subtrees. Standard-Markdown nodes around them are linted identically to the `.md` case.
@@ -110,8 +122,9 @@ imports, TSDoc on all declarations.
 
 ## Rule inventory
 
-Fixability below is a best classification and must be confirmed per rule against markdownlint's source
-`fixable` flags during the port, not asserted from memory.
+Fixability below is a best classification and must be confirmed per rule when the rule is implemented, not
+asserted from memory. markdownlint's source is a useful reference for fix semantics (its MIT notice is
+recorded under `LICENSES/`), but each rule's behavior is defined by this tool's own unit tests.
 
 - MD001 heading-increment
   - Nodes: `heading`. Check the depth sequence increments by at most one.
@@ -148,16 +161,33 @@ Fixability below is a best classification and must be confirmed per rule against
 - MD054 link-image-style
   - Nodes: `link` / `image` / `linkReference` / `imageReference`, classified by style. Replicate the
     style flags (`shortcut: false`, etc.). Needs the source slice for exact style.
-  - Fixable for some style conversions; confirm against markdownlint.
+  - Fixable for some style conversions; confirm the exact set when implementing.
 - no-pipe-tables (custom)
   - Nodes: `table` / `tableRow` / `tableCell`. Ported from the existing token-based rule.
   - Fixable: convert to an HTML `<table>`, reusing the `to-html-table.ts` transform logic.
+- semantic-line-breaks (custom)
+  - Nodes: prose `text` inside `paragraph`, `listItem`, and `blockquote`. Walk the text and flag any
+    break-point character (`,` `.` `;` `:` `?` `!`) not already followed by a line break.
+  - Skips, by construction: `heading` (an ATX heading is single-line; a break would split it into heading
+    plus paragraph), `code` / `inlineCode`, `link` / `image` URLs and autolinks, `html`, `table` cells,
+    `definition` lines, and all MDX nodes plus their subtrees.
+  - Skips, by guard within prose text: `.` in known abbreviations (`e.g.`, `i.e.`, `etc.`, `vs.`), in
+    decimals or version-like tokens, and in ellipses (`...`); `,` inside numbers (`1,000`). These guards
+    are why a naive character scan is insufficient (213 abbreviation occurrences exist across the corpus).
+  - Fixable, add-only: insert a newline plus the block's continuation prefix (list-item indentation, or
+    `>` for a blockquote) after each flagged break-point, so the broken line stays inside its block. Never
+    joins or relocates an existing break, so it converges in a single pass and is idempotent.
+  - Owns line breaks only, not maximum line length: a punctuation-free clause that exceeds 120 columns is
+    left long (no MD013 equivalent is in scope).
 
 ## Fix application
 
 - A rule pass collects diagnostics; those with fixes contribute offset edits.
 - Within a pass, apply non-overlapping edits from highest offset to lowest, so earlier edits do not
   invalidate later offsets. Drop any edit that overlaps one already applied in the pass.
+- The `semantic-line-breaks` fixes are all add-only insertions at distinct break-points, so they never
+  overlap and, because the rule treats an already-broken break-point as compliant, they converge after a
+  single pass without relying on the fixpoint loop.
 - After applying a pass, re-parse and re-run, repeating until a pass produces no fixes or a pass cap is
   reached. This fixpoint loop is what makes `--fix` idempotent, matching oxlint behavior rather than
   markdownlint's single pass. The fixpoint loop is the one piece of the fixer worth getting right.
@@ -176,12 +206,16 @@ Goals: fix the two `markdownlint-cli2` failure modes (misuse and slowness) by co
 
 ## Testing and acceptance
 
-- Parity oracle: run the real `markdownlint-cli2` over the 317 `.md` files, capture diagnostics, and diff
-  against the new tool. Acceptance is the same set of (rule, file, line) violations. Investigate every
-  divergence; document any intentional difference (for example column representation) in the package
-  README. This makes "at parity" measurable rather than asserted.
+- Correctness bar: per-rule unit tests are the acceptance criterion. There is no markdownlint oracle,
+  snapshot, or live comparison anywhere; `markdownlint-cli2` is too slow to run as an oracle even once in
+  the dev loop. Each rule's intended behavior is defined and frozen by its own fixtures.
 - Per-rule unit tests with the `@monochromatic-dev/module-test` harness (`*.unit.test.ts`), with fixtures
-  covering each rule's pass, fail, and fix branches.
+  covering each rule's pass, fail, and fix branches. Where useful, derive fixture cases from markdownlint's
+  documented examples, but assert against our own expected output.
+- `semantic-line-breaks` tests: one fixture per break-point character; one per exclusion (inline code,
+  code block, link URL, abbreviation, decimal/version, ellipsis, number comma, heading-skip); and
+  continuation-prefix cases inside a list item and a blockquote. Assert the add-only fix and its
+  single-pass idempotency.
 - MDX tests: fixtures containing JSX, ESM, and expressions, asserting that surrounding Markdown is linted,
   that MDX nodes are skipped, and that MDX constructs produce no false positives.
 - Idempotency: after `--fix`, re-linting is clean and a second `--fix` is a no-op.
@@ -199,11 +233,12 @@ Goals: fix the two `markdownlint-cli2` failure modes (misuse and slowness) by co
 - `mise.toml` extending the shared `build` / `lint` / `test` task templates, plus a task that lints the
   tree and a `--fix` variant, wired into the root `lint` and `format` tasks in place of the markdownlint
   tasks.
-- `README.md`: rule list, CLI usage, parity notes, and the deferred-work list.
+- `README.md`: rule list (including `semantic-line-breaks`), CLI usage, rule-behavior notes, and the
+  deferred-work list.
 
 ## Cutover and cleanup
 
-1.  Build the new tool and reach parity (the oracle diff is empty on `.md`).
+1.  Build the new tool; acceptance is every rule passing its own unit tests (no markdownlint oracle).
 2.  Swap the root `mise.toml` `lint` and `format` tasks from `markdownlint-cli2` to the new CLI.
 3.  Remove `.markdownlint-cli2.jsonc`, and drop `markdownlint` and `markdownlint-cli2` from the catalog and
     package dependencies.
@@ -222,11 +257,13 @@ Goals: fix the two `markdownlint-cli2` failure modes (misuse and slowness) by co
     plus an iterative tree-walk helper using an explicit stack.
 3.  Rule, diagnostic, and fix types.
 4.  Vertical slice: port `no-pipe-tables` as the first rule (table to HTML, reusing the transform logic),
-    wire the fixpoint fixer, run the CLI on one `.md` and one `.mdx`, assert idempotency, and diff the
-    `.md` diagnostics against markdownlint on a fixture. This proves parse, MDX-skip, and the fix loop end
-    to end before porting the rest.
-5.  Port the remaining rules, one per commit, each with unit tests, diffing against markdownlint as you go.
-6.  Build the corpus parity oracle and drive `.md` divergences to zero.
+    wire the fixpoint fixer, run the CLI on one `.md` and one `.mdx`, assert idempotency, and assert the
+    `.md` diagnostics against the rule's own unit fixtures. This proves parse, MDX-skip, and the fix loop
+    end to end before implementing the rest.
+5.  Implement the remaining rules, one per commit, each with unit tests.
+6.  Implement the `semantic-line-breaks` rule and its add-only autofix: the break-point set, the
+    structural and abbreviation/decimal exclusions, and the continuation-prefix insertion; unit-test each
+    and assert single-pass idempotency.
 7.  Harden the CLI: the internal walk, extension and size filtering, `--fix`, exit codes, and reporters.
 8.  Cutover and cleanup per the section above.
 
@@ -234,7 +271,10 @@ Goals: fix the two `markdownlint-cli2` failure modes (misuse and slowness) by co
 
 - Tool and package name (`markdown-lint` is a placeholder).
 - Whether to keep `no-pipe-tables` as a standalone package or fold it in (this plan recommends folding it
-  in after parity).
+  in once the rule set is implemented).
 - The exact GFM sub-extension set to enable, which must match the constructs the rules assume (tables for
   `no-pipe-tables`, autolink literals for MD034).
-- The parity column-representation tolerance, to be fixed once the first divergences are observed.
+- The exact abbreviation list and the decimal/version heuristic for the `semantic-line-breaks` exclusion
+  guard, to be settled against the real corpus when the rule is implemented.
+- Whether the `semantic-line-breaks` rule should run on `.mdx` prose immediately or only on `.md` first,
+  given that breaks adjacent to JSX blocks are the riskiest case.
