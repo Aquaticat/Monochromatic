@@ -2,9 +2,9 @@
 name = "terminal"
 version = "0.1.0"
 edition = "2024"
-description = "Slint desktop terminal prototype backed by Ghostty's libghostty-vt core."
 license = "LGPL-3.0-or-later"
 publish = false
+description = "Slint desktop terminal prototype backed by Ghostty's libghostty-vt core."
 
 [lib]
 name = "terminal_app"
@@ -18,7 +18,6 @@ path = "src/main.rs"
 # Pinned to the same Slint master revision as packages/desktop-app/music-player
 # so Flickable owns smooth wheel and touch scrolling. Keep slint-build below on
 # the same rev because the markup compiler and runtime are versioned together.
-slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 # Same Slint rev as above. The explicit winit backend lets the app stamp its
 # Wayland app id before the window is created.
 i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
@@ -28,6 +27,7 @@ libghostty-vt = { version = "0.1.1", default-features = false }
 # WezTerm's PTY abstraction. It gives this app safe shell spawn, read, write,
 # and resize operations without hand-written forkpty or ioctl setup.
 portable-pty = "0.9.0"
+slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 
 [build-dependencies]
 # Must match the `slint` git rev above.

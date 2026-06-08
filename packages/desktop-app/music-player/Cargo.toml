@@ -2,9 +2,9 @@
 name = "music-player"
 version = "0.1.0"
 edition = "2024"
-description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc queue, broad codec support (symphonia + Opus)."
 license = "LGPL-3.0-or-later"
 publish = false
+description = "Minimal Wayland + PipeWire music player built with Slint. Ad-hoc queue, broad codec support (symphonia + Opus)."
 
 [lib]
 name = "music_player"
@@ -25,28 +25,28 @@ path = "src/main.rs"
 # (`*.lock`), so the rev pin, not the lockfile, is what fixes Slint. slint-build
 # below MUST track the same rev. Revert both to a crates.io `version` once a
 # release including #11338 ships.
-slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+directories = "5"
 # Same Slint rev as above: the winit backend is constructed explicitly (not via
 # the default backend selector) so a window-attributes hook can set the Wayland
 # app_id, which KDE needs to attach taskbar progress to the running window. Its
 # re-exported `winit` (`i_slint_backend_winit::winit`) is reused for the
 # WindowAttributes ext trait, so no separate `winit` dependency is added.
 i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac" }
-symphonia = { version = "0.6", features = ["all"] }
+# Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the
+# background true-peak measurement sweep at idle priority so it never competes
+# with the realtime audio thread or the UI. std exposes no scheduling-class API.
+libc = "0.2"
 opus = "0.3"
 # 0.10 (pulls libspa/libspa-sys 0.10) so the bindgen step parses the host's
 # newer PipeWire/SPA headers. libspa-sys 0.8 emitted an opaque `spa_pod_builder`
 # against PipeWire 1.6.x, breaking the `libspa` wrapper's `.data`/`.size` access.
 pipewire = "0.10"
-# Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the
-# background true-peak measurement sweep at idle priority so it never competes
-# with the realtime audio thread or the UI. std exposes no scheduling-class API.
-libc = "0.2"
 rfd = "0.15"
 ringbuf = "0.4"
-directories = "5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+symphonia = { version = "0.6", features = ["all"] }
 # Already in the tree transitively (Slint's color-scheme watcher, rfd's portal
 # picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
 # signal that drives the KDE taskbar progress. Default features include the
