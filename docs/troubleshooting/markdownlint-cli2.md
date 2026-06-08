@@ -1,5 +1,30 @@
 # markdownlint-cli2 0.22.1: wrapper args can OOM, and config globs can hang on symlinked workspaces
 
+## Status: replaced by cli-markdown-lint
+
+`markdownlint-cli2` has been retired from this repo in favour of
+`@monochromatic-dev/cli-markdown-lint` (`packages/cli/markdown-lint`), a
+purpose-built Markdown and MDX linter. The root `lint`/`format` tasks now call
+`lint:markdown`/`format:markdown`, which run the new tool from TypeScript source
+under Bun.
+
+The replacement removes the failure modes documented below by construction:
+
+- It only ever opens `.md` and `.mdx` files, so a multi-gigabyte binary can
+  never be read as Markdown (no OOM).
+- Its internal walk filters by extension and honours `.gitignore` directly,
+  with no dot-remap footgun and no fast-glob symlink traversal.
+- It runs TypeScript source directly under Bun, so there is no build-dist-before-lint
+  step (issue #231 is closed).
+- It lints `.mdx`, which `markdownlint-cli2` never covered.
+
+Measured runtime: the new tool lints the whole tree (457 `.md`/`.mdx` files) in
+one process in about 3.2 seconds, versus `markdownlint-cli2`'s chunked
+0.4 to 0.7 seconds per 25-file batch (and the hangs and OOMs below for the
+no-arg and dot-plus-arg shapes).
+
+The rest of this document is kept as the record of why the old tool was dropped.
+
 ## Symptom
 
 Two slow paths have appeared in this repo.

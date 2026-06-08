@@ -81,7 +81,6 @@ catalog:
   'kysely': '>=0.28.17'
   'lezer-json5': '>=2.0.0'
   'lezer-toml': '>=1.0.0'
-  'markdownlint': '>=0.40.0'
   'mdast-util-from-markdown': '>=2.0.3'
   'mdast-util-frontmatter': '>=2.0.1'
   'mdast-util-gfm': '>=3.1.0'

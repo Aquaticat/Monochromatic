@@ -145,7 +145,6 @@ zig = "0.15.2"
 opentofu = "latest"
 hcloud = "latest"
 "npm:typescript-language-server" = "latest"
-"npm:markdownlint-cli2" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
 deno = "latest"
 "npm:socket" = "latest"
@@ -487,7 +486,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 description = "Lint"
 run = [
   "mise '//packages/...:lint'",
-  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdownlint", "lint:rust"] },
+  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown", "lint:rust"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -510,25 +509,20 @@ if ($args | is-empty) {
 }
 """
 
-# markdownlint-cli2 appends configured `globs` to CLI file args unless
-# `--no-globs` is present (markdownlint-cli2.mjs:415-418), so explicit file
-# paths MUST pass --no-globs or they still drag in the whole `**/*.md` tree.
-# No-arg lints the whole tree via the config `globs` (`**/*.md`) with
-# `gitignore: true`; `.markdownlint-cli2.jsonc` also ignores nested
-# node_modules so fast-glob prunes workspace package symlink cycles before
-# gitignore's predicate can filter them. The `no-pipe-tables` custom rule loads
-# from a built dist; build it first on a fresh clone (issue #231) or
-# markdownlint-cli2 fails to import it.
-[tasks."lint:markdownlint"]
+# Lints Markdown and MDX with @monochromatic-dev/cli-markdown-lint, run from
+# TypeScript source under Bun (no build-before-lint step, closing issue #231).
+# No-arg walks the whole tree, filtering by extension and honouring .gitignore;
+# file/dir paths restrict the walk. Exits non-zero when violations remain.
+[tasks."lint:markdown"]
 hide = true
-description = "Lint Markdown with markdownlint-cli2, optionally restricted to specific files"
-usage = 'arg "[args]" var=#true help="Markdown file paths (when provided, only those files are linted)"'
+description = "Lint Markdown and MDX with cli-markdown-lint, optionally restricted to specific files"
+usage = 'arg "[args]" var=#true help="File paths (when provided, only those are linted)"'
 run = """
 let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
 if ($args | is-empty) {
-  markdownlint-cli2
+  bun packages/cli/markdown-lint/src/cli.ts .
 } else {
-  markdownlint-cli2 --no-globs ...$args
+  bun packages/cli/markdown-lint/src/cli.ts ...$args
 }
 """
 
@@ -554,7 +548,7 @@ run = "cargo run --quiet --manifest-path packages/linter/rust/Cargo.toml -- pack
 description = "Format all files"
 run = [
   "dprint fmt",
-  { tasks = ["format:stylelint", "format:oxlint", "format:markdownlint"] },
+  { tasks = ["format:stylelint", "format:oxlint", "format:markdown"] },
 ]
 
 [tasks."format:stylelint"]
@@ -576,21 +570,21 @@ run = """
 run_workspace_node $root packages/dev-script/task-util oxlint-wrapper --fix
 """
 
-# Applies markdownlint autofixes (e.g. no-pipe-tables converting pipe tables to
-# HTML) over the config `globs`, or only the given file paths. dprint handles
-# markdown *formatting*; this is for lint fixes dprint cannot do. In the root
-# `format` task it runs after dprint (sequential), so it sees already-formatted
-# files. Build the no-pipe-tables rule first (issue #231).
-[tasks."format:markdownlint"]
+# Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
+# tables to HTML, semantic-line-breaks inserting breaks) over the whole tree or
+# the given file paths. dprint handles markdown *formatting*; this is for lint
+# fixes dprint cannot do. In the root `format` task it runs after dprint
+# (sequential), so it sees already-formatted files.
+[tasks."format:markdown"]
 hide = true
-description = "Apply markdownlint-cli2 autofixes, optionally restricted to specific files"
-usage = 'arg "[args]" var=#true help="Markdown file paths (when provided, only those files are fixed)"'
+description = "Apply cli-markdown-lint autofixes, optionally restricted to specific files"
+usage = 'arg "[args]" var=#true help="File paths (when provided, only those are fixed)"'
 run = """
 let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
 if ($args | is-empty) {
-  markdownlint-cli2 --fix
+  bun packages/cli/markdown-lint/src/cli.ts --fix .
 } else {
-  markdownlint-cli2 --fix --no-globs ...$args
+  bun packages/cli/markdown-lint/src/cli.ts --fix ...$args
 }
 """
 
