@@ -31,9 +31,11 @@ later, not in this MVP (see non-goals).
   break-point character (`,` `.` `;` `:` `?` `!`), excluding code, URLs, MDX nodes, and abbreviations or
   decimals (see the rule inventory). The fix only adds breaks; it never joins or relocates existing ones.
   This supersedes the previously deferred semantic-line-breaks non-goal.
-- Lint `.mdx` files in addition to `.md`. MDX files are parsed correctly (so surrounding Markdown is not
-  misparsed), but MDX-specific nodes are skipped: no rule inspects JSX, ESM import/export, or expression
-  nodes in the MVP.
+- Lint `.mdx` files in addition to `.md`. Every rule, `semantic-line-breaks` included, runs on both
+  extensions uniformly: there is no `.md`-only phase. MDX files are parsed correctly (so surrounding
+  Markdown is not misparsed), and the only `.mdx` difference is that MDX-specific nodes (and their
+  subtrees) are skipped, while all surrounding Markdown prose is linted identically to the `.md` case. The
+  JSX-adjacency risk is handled by skipping those nodes, not by withholding any rule from `.mdx`.
 - Localized autofixes for every fixable rule, applied with a `--fix` flag.
 - A fast, misuse-resistant CLI that runs under Bun.
 
@@ -276,5 +278,3 @@ Goals: fix the two `markdownlint-cli2` failure modes (misuse and slowness) by co
   `no-pipe-tables`, autolink literals for MD034).
 - The exact abbreviation list and the decimal/version heuristic for the `semantic-line-breaks` exclusion
   guard, to be settled against the real corpus when the rule is implemented.
-- Whether the `semantic-line-breaks` rule should run on `.mdx` prose immediately or only on `.md` first,
-  given that breaks adjacent to JSX blocks are the riskiest case.
