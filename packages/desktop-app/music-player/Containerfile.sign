@@ -1,0 +1,20 @@
+# Windows Authenticode signing toolchain, run on Linux by the sign:windows mise
+# task (the host is an immutable-style Fedora without these tools, same podman
+# pattern as the build Containerfile). The Windows .exe is built on x13-win and
+# synced to dist/; only the signing is cross-platform.
+#   osslsigncode  Authenticode-signs a PE/.exe from Linux, with RFC3161
+#                 timestamping; drives either a .pfx (self-signed test path) or a
+#                 PKCS#11 cloud/token key (the real Certum cert; see
+#                 HANDOVER.windows-signing-credentials.md)
+#   opensc        PKCS#11 framework (pkcs11-tool etc.) for the cloud/token path
+#   openssl       generates the throwaway self-signed cert for the test path
+# The real Certum SimplySign PKCS#11 module is a proprietary download, not a
+# Fedora package; the runbook installs/mounts it. This image covers the
+# self-signed test path and the PKCS#11 framework out of the box.
+FROM registry.fedoraproject.org/fedora:41
+RUN dnf install -y \
+      osslsigncode \
+      opensc \
+      openssl \
+    && dnf clean all
+WORKDIR /work

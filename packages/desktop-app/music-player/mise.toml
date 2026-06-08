@@ -266,3 +266,129 @@ podman run --rm --security-opt label=disable -v $mount -w /work $img png2icns as
 podman run --rm --security-opt label=disable -v $mount -w /work $img icotool -c -o assets/music-player.ico dist/icons/icon-16.png dist/icons/icon-32.png dist/icons/icon-48.png dist/icons/icon-64.png dist/icons/icon-128.png dist/icons/icon-256.png
 print "regenerated assets/music-player.icns and assets/music-player.ico; commit them"
 '''
+
+# Distribution / code signing.
+# The per-OS binaries are still BUILT on their own OS (the Mach-O on the Mac via
+# `build`, the .exe on Windows via `build`), because cross-compiling a Slint+cpal
+# GUI from Linux is out of scope. Only the bundling + signing + notarization is
+# cross-platform and centralized here on Linux: rcodesign (a repo-wide mise tool)
+# for macOS, osslsigncode (in Containerfile.sign) for Windows. Each task assumes
+# the freshly built binary has been synced into dist/. Real credentials are read
+# from env vars and, when absent, a throwaway self-signed identity is used so the
+# pipeline runs end to end (those artifacts are NOT distributable). See
+# HANDOVER.macos-signing-credentials.md, HANDOVER.windows-signing-credentials.md,
+# and docs/decisions/desktop-app-code-signing.md.
+
+[tasks."bundle:macos"]
+description = "Assemble dist/Music Player.app around the macOS Mach-O (synced from the Mac)"
+# Runs on Linux. MP_MACOS_BINARY (default dist/music-player) is the Mach-O built
+# on the Mac. Info.plist is a template: __MP_VERSION__ is replaced with the
+# Cargo.toml version; assets/music-player.icns is the committed bundle icon.
+run = '''
+let bin = ($env.MP_MACOS_BINARY? | default 'dist/music-player')
+if not ($bin | path exists) {
+  error make { msg: $"macOS binary not found at ($bin). Build on the Mac then copy target/release/music-player to ($bin). Build task: //packages/desktop-app/music-player:build" }
+}
+let ver = (open Cargo.toml | get package.version)
+let app = 'dist/Music Player.app'
+rm --recursive --force $app
+mkdir $"($app)/Contents/MacOS"
+mkdir $"($app)/Contents/Resources"
+cp $bin $"($app)/Contents/MacOS/music-player"
+^chmod +x $"($app)/Contents/MacOS/music-player"
+open --raw macos/Info.plist | str replace --all '__MP_VERSION__' $ver | save --force $"($app)/Contents/Info.plist"
+cp assets/music-player.icns $"($app)/Contents/Resources/music-player.icns"
+print $"assembled ($app) version ($ver)"
+'''
+
+[tasks."sign:macos"]
+description = "Sign dist/Music Player.app with rcodesign (Developer ID from env, else throwaway self-signed)"
+# Real path: a Developer ID Application .p12 + password file (MP_MACOS_P12 /
+# MP_MACOS_P12_PASSWORD_FILE), signed --for-notarization (hardened runtime +
+# secure timestamp). Test path (env unset): a throwaway self-signed cert under
+# dist/selfsign, neutral subject so no real name leaks; such a build will NOT
+# pass Gatekeeper and cannot be notarized.
+run = '''
+let app = 'dist/Music Player.app'
+if not ($app | path exists) { error make { msg: $"($app) not found; run bundle:macos first" } }
+if 'MP_MACOS_P12' in $env {
+  let pwfile = ($env.MP_MACOS_P12_PASSWORD_FILE? | default '')
+  if ($pwfile | is-empty) { error make { msg: "MP_MACOS_P12 is set but MP_MACOS_P12_PASSWORD_FILE is not" } }
+  print "signing with Developer ID (.p12) for notarization"
+  rcodesign sign --p12-file $env.MP_MACOS_P12 --p12-password-file $pwfile --for-notarization --entitlements-xml-file macos/entitlements.plist $app
+} else {
+  print -e "MP_MACOS_P12 unset: signing with a THROWAWAY self-signed cert (not distributable, cannot notarize)"
+  mkdir dist/selfsign
+  if not ('dist/selfsign/macos-test.crt' | path exists) {
+    rcodesign generate-self-signed-certificate --profile developer-id-application --person-name 'Monochromatic Test (self-signed, not for distribution)' --pem-filename dist/selfsign/macos-test
+  }
+  rcodesign sign --pem-file dist/selfsign/macos-test.crt --pem-file dist/selfsign/macos-test.key --code-signature-flags runtime --entitlements-xml-file macos/entitlements.plist $app
+}
+rcodesign verify $app
+print $"signed ($app)"
+'''
+
+[tasks."notarize:macos"]
+description = "Submit dist/Music Player.app to Apple notary and staple the ticket (needs real Apple creds)"
+# Requires MP_ASC_API_KEY_JSON (an App Store Connect API key encoded by
+# `rcodesign encode-app-store-connect-api-key`). The .app must already be signed
+# with a real Developer ID (sign:macos with MP_MACOS_P12). Contacts Apple's
+# servers; a self-signed build is rejected.
+run = '''
+let app = 'dist/Music Player.app'
+if not ($app | path exists) { error make { msg: $"($app) not found; run bundle:macos + sign:macos first" } }
+if not ('MP_ASC_API_KEY_JSON' in $env) {
+  error make { msg: "MP_ASC_API_KEY_JSON unset. Create an App Store Connect API key, encode it with `rcodesign encode-app-store-connect-api-key -o key.json <issuer-id> <key-id> AuthKey_<key-id>.p8`, then set MP_ASC_API_KEY_JSON=key.json. See HANDOVER.macos-signing-credentials.md." }
+}
+rcodesign notary-submit --api-key-file $env.MP_ASC_API_KEY_JSON --staple $app
+print $"notarized + stapled ($app)"
+'''
+
+[tasks."sign:windows"]
+description = "Authenticode-sign dist/music-player.exe in the sign container (org cert from env, else self-signed)"
+# Runs osslsigncode in Containerfile.sign. MP_WIN_EXE (default
+# dist/music-player.exe) is the .exe built on Windows. Real path: an
+# organization OV cert over PKCS#11 (MP_WIN_PKCS11_MODULE / _CERT / _KEY, e.g.
+# Certum SimplySign cloud) with an RFC3161 timestamp (MP_WIN_TIMESTAMP_URL,
+# default Certum). Test path: a throwaway self-signed .pfx under dist/selfsign,
+# neutral subject; SmartScreen will not trust it. See
+# HANDOVER.windows-signing-credentials.md.
+run = '''
+podman build -t localhost/monochromatic/sign -f Containerfile.sign .
+let exe = ($env.MP_WIN_EXE? | default 'dist/music-player.exe')
+if not ($exe | path exists) {
+  error make { msg: $"Windows exe not found at ($exe). Build on x13-win then copy target/release/music-player.exe to ($exe). Build task: //packages/desktop-app/music-player:build" }
+}
+let out = 'dist/music-player-signed.exe'
+let ts = ($env.MP_WIN_TIMESTAMP_URL? | default 'http://time.certum.pl')
+let pre = ['run' '--rm' '--security-opt' 'label=disable' '-v' $"(pwd):/work" '-w' '/work' 'localhost/monochromatic/sign']
+if 'MP_WIN_PKCS11_MODULE' in $env {
+  print "signing with organization OV cert via PKCS#11"
+  ^podman ...$pre osslsigncode sign -pkcs11module $env.MP_WIN_PKCS11_MODULE -pkcs11cert $env.MP_WIN_PKCS11_CERT -key $env.MP_WIN_PKCS11_KEY -n 'Music Player' -ts $ts -in $exe -out $out
+  ^podman ...$pre osslsigncode verify -in $out
+} else {
+  print -e "MP_WIN_PKCS11_MODULE unset: signing with a THROWAWAY self-signed cert (SmartScreen will warn)"
+  mkdir dist/selfsign
+  if not ('dist/selfsign/win-test.pfx' | path exists) {
+    ^podman ...$pre openssl req -x509 -newkey rsa:2048 -nodes -keyout dist/selfsign/win-test.key -out dist/selfsign/win-test.crt -days 825 -subj '/O=Monochromatic Test/CN=Monochromatic Test (self-signed, not for distribution)'
+    ^podman ...$pre openssl pkcs12 -export -out dist/selfsign/win-test.pfx -inkey dist/selfsign/win-test.key -in dist/selfsign/win-test.crt -passout pass:test
+  }
+  ^podman ...$pre osslsigncode sign -pkcs12 dist/selfsign/win-test.pfx -pass test -n 'Music Player' -in $exe -out $out
+  ^podman ...$pre osslsigncode verify -CAfile dist/selfsign/win-test.crt -in $out
+}
+print $"signed ($out)"
+'''
+
+[tasks."verify:signing"]
+description = "Self-signed end-to-end check of the signing pipeline (needs dist/ binaries synced from the Mac/Windows boxes)"
+# Exercises bundle:macos + sign:macos (self-signed) and sign:windows
+# (self-signed) so the mechanics are proven on Linux without any real
+# credentials. The artifacts produced are NOT distributable.
+run = '''
+print "== macOS: bundle + self-signed sign + verify =="
+mise run bundle:macos
+mise run sign:macos
+print "== Windows: self-signed sign + verify =="
+mise run sign:windows
+print "self-signed signing pipeline OK (artifacts are NOT distributable)"
+'''
