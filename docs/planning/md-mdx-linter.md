@@ -294,10 +294,21 @@ Implementation totals about 2130 code lines. Tests at the roughly 0.9 ratio thes
 about 1900 code lines, for about 4030 code lines, or about 7000 total TS lines once TSDoc and blanks are
 included. Markdown fixtures, config files, and the README are extra but low-effort.
 
-At the reference rate both derivations converge: 4030 code lines over 57 is about 71h; 7000 TS lines over
-99 is about 71h. Reuse of `to-html-table.ts` pulls slightly down; the above-average-cost pieces that pull
-up are the micromark and mdast extension wiring, the source-slice rules, and the fixpoint loop. Estimate:
-65 to 80 hours, central about 72h.
+Two cross-checks pull against each other, and a pure-LoC estimate overstates the result. By LoC, 4030 code
+lines over 57 lines per hour is about 71h. But `module/test` is unusually feature-dense for its 50h: it
+ships 35 expect matchers plus the describe/it/expect framework, scoped expect, the sinon sandbox, the
+descriptor model, and the property-tested `format-error` engine, roughly 40 distinct features. Many of
+those lines are cheap, formulaic matcher bodies over one shared core, which inflates the lines-per-hour
+rate. The linter has far fewer top-level features, about 21 (the thirteen rules plus the parser, the
+tree-walk helper, the fix engine and fixpoint, the CLI walk, argument handling, and two reporters), though
+each rule is heavier than a matcher.
+
+So the LoC figure is a ceiling (every line counted as equal-cost, against module/test's cheap matcher
+lines) and the feature-weighted view is a floor (about 40 features in 50h, and the linter is roughly the
+same total scope, not 1.4 times it). Reuse of `to-html-table.ts` pulls down; the above-average-cost pieces
+that pull up are the micromark and mdast extension wiring, the source-slice rules MD034 and MD054, and the
+fixpoint loop. Estimate: 40 to 70 hours, central about 50h, roughly on par with `module/test` rather than
+half again as large.
 
 ## Open decisions
 
