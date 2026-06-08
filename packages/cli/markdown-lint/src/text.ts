@@ -1,4 +1,7 @@
-import type { Nodes, } from 'mdast';
+import type {
+  Nodes,
+  Text,
+} from 'mdast';
 
 /**
  * Concatenated plain text of a node's subtree: the `value` of every `text` and
@@ -46,4 +49,48 @@ export function collectText(root: Nodes,): string {
     }
   }
   return parts.join('',);
+}
+
+/**
+ * Every `text` descendant of a node's subtree, in document order. Used by rules
+ * that edit the source at a text node's offsets (such as stripping a heading's
+ * trailing punctuation from its last text node).
+ *
+ * @param root - node whose subtree is searched
+ *
+ * @returns text descendants in document order
+ *
+ * @example
+ * ```ts
+ * textNodes(headingNode).at(-1); // last text node, for an end-of-heading edit
+ * ```
+ */
+export function textNodes(root: Nodes,): readonly Text[] {
+  /**
+   * Text nodes gathered in document order.
+   */
+  const found: Text[] = [];
+  /**
+   * Work-stack of nodes still to inspect, seeded with the root.
+   */
+  const stack: Nodes[] = [root,];
+  while (stack.length > 0) {
+    /**
+     * Node currently inspected; the loop guard guarantees it exists.
+     */
+    const node = stack.pop();
+    if (node === undefined) {
+      continue;
+    }
+    if (node.type === 'text') {
+      found.push(node,);
+    }
+    if ('children' in node) {
+      for (const child of node.children
+        .toReversed()) {
+        stack.push(child,);
+      }
+    }
+  }
+  return found;
 }
