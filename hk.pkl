@@ -9,13 +9,12 @@ local forbiddenStrings = new Step {
   check = "\(binPath) {{files}}"
 }
 
-// Push the new commit to origin after every commit. --set-upstream origin HEAD
-// makes it work on branches/worktrees that have no upstream yet (creates the
-// remote branch and sets tracking); on branches already tracking origin it is a
-// harmless re-set. Never force-pushes, so an amend of an already-pushed commit
-// is safely rejected rather than overwriting the remote.
+// Push the new commit to origin after every commit, showing only GitHub
+// "remote:" lines on success and the full output on failure. Implemented as a
+// cross-platform Node script (no shell utilities); see hk.auto-push.ts for the
+// rationale. Run from the repo/worktree root, where hk executes hooks.
 local autoPush = new Step {
-  check = "git push --set-upstream origin HEAD"
+  check = "node hk.auto-push.ts"
 }
 
 hooks {
