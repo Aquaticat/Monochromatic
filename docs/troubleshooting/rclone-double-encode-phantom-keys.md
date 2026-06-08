@@ -18,31 +18,32 @@ Remote variant, seen during `rclone bisync garage:files/Plain ~/Plain --resync` 
 
 ```text
 NOTICE: Text/Books/programming/01897_软件开发本质论‛‛：追求简约、体现价值、逐步构建.pdf: Failed to read metadata: object not found
-NOTICE: Text/Books/self help/江泽民文选‛‛：第1卷.pdf: Failed to read metadata: object not found
-NOTICE: Text/Books/self help/江泽民文选‛‛：第2卷.pdf: Failed to read metadata: object not found
-NOTICE: Text/Books/self help/江泽民文选‛‛：第3卷.pdf: Failed to read metadata: object not found
+NOTICE: Text/Books/self help/示例‛‛：第1卷.pdf: Failed to read metadata: object not found
+NOTICE: Text/Books/self help/示例‛‛：第2卷.pdf: Failed to read metadata: object not found
+NOTICE: Text/Books/self help/示例‛‛：第3卷.pdf: Failed to read metadata: object not found
 ```
 
 Local variant, seen earlier on the desktop during a normal (non-resync) bisync, when the
 double-encoded name had also been written to the local tree:
 
 ```text
-ERROR : Text/Books/self help/江泽民文选‛‛：第1卷.pdf: Failed to copy: failed to open source object: lstat /home/user/Seafile/Plain/Text/Books/self help/江泽民文选‛‛：第1卷.pdf: no such file or directory
+ERROR : Text/Books/self help/示例‛‛：第1卷.pdf: Failed to copy: failed to open source object: lstat /home/user/Seafile/Plain/Text/Books/self help/示例‛‛：第1卷.pdf: no such file or directory
 Bisync critical error: ...
 Bisync aborted. Must run --resync to recover.
 ```
 
 The trigger in both cases is the doubled quote rune `‛‛` (rendered by rclone; two literal
 U+201B bytes) sitting immediately before a fullwidth colon `：` (U+FF1A) in the key.
-The six affected keys on the live bucket, all with intact clean twins:
+The affected keys on the live bucket (5 real objects; the `.sdr/` directory entry is the
+synthetic listing rclone shows for the fourth), all with intact clean twins:
 
 ```text
 Text/Books/programming/01897_软件开发本质论‛‛：追求简约、体现价值、逐步构建.pdf
-Text/Books/self help/江泽民文选‛‛：第1卷.pdf
-Text/Books/self help/江泽民文选‛‛：第2卷.pdf
-Text/Books/self help/江泽民文选‛‛：第2卷.sdr/
-Text/Books/self help/江泽民文选‛‛：第2卷.sdr/metadata.pdf.lua
-Text/Books/self help/江泽民文选‛‛：第3卷.pdf
+Text/Books/self help/示例‛‛：第1卷.pdf
+Text/Books/self help/示例‛‛：第2卷.pdf
+Text/Books/self help/示例‛‛：第2卷.sdr/
+Text/Books/self help/示例‛‛：第2卷.sdr/metadata.pdf.lua
+Text/Books/self help/示例‛‛：第3卷.pdf
 ```
 
 ## Root cause
@@ -53,10 +54,10 @@ Raw S3 keys with rclone's display encoding disabled
 (`rclone lsf --s3-encoding None ...`), hexdumped:
 
 ```text
-clean   : 江泽民文选 ： 第1卷.pdf
-          e6 b1 9f e6 b3 bd e6 b0 91 e6 96 87 e9 80 89          ef bc 9a   e7 ac ac 31 e5 8d b7 2e 70 64 66
-tainted : 江泽民文选 ‛ ‛ ： 第1卷.pdf
-          e6 b1 9f e6 b3 bd e6 b0 91 e6 96 87 e9 80 89 e2 80 9b e2 80 9b ef bc 9a e7 ac ac 31 e5 8d b7 2e 70 64 66
+clean   : 示例 ： 第1卷.pdf
+          e7 a4 ba e4 be 8b                   ef bc 9a e7 ac ac 31 e5 8d b7 2e 70 64 66
+tainted : 示例 ‛ ‛ ： 第1卷.pdf
+          e7 a4 ba e4 be 8b e2 80 9b e2 80 9b ef bc 9a e7 ac ac 31 e5 8d b7 2e 70 64 66
 ```
 
 The two keys are identical except for two `e2 80 9b` (U+201B) bytes inserted before the
@@ -102,10 +103,10 @@ case '␀', QuoteRune:
     out.WriteRune(r)   // '‛' -> '‛‛'
 ```
 
-So a single pass with `EncodeColon` turns the clean title `...文选：第1卷.pdf` into
-`...文选‛：第1卷.pdf` (one quote rune).
+So a single pass with `EncodeColon` turns the clean title `示例：第1卷.pdf` into
+`示例‛：第1卷.pdf` (one quote rune).
 A second pass with a mask that lacks `EncodeColon` (the S3 backend default, see below)
-then sees that lone quote rune as a literal and doubles it, producing `...文选‛‛：第1卷.pdf`
+then sees that lone quote rune as a literal and doubles it, producing `示例‛‛：第1卷.pdf`
 (two quote runes) as a brand new, distinct S3 key alongside the original.
 
 The S3 backend default mask has no `EncodeColon`:
@@ -272,8 +273,8 @@ func main() {
     s3 := encoder.EncodeInvalidUtf8 | encoder.EncodeSlash | encoder.EncodeDot
     win := s3 | encoder.EncodeColon
 
-    clean := "江泽民文选" + fwc + "第1卷.pdf"
-    tainted := "江泽民文选" + quote + quote + fwc + "第1卷.pdf"
+    clean := "示例" + fwc + "第1卷.pdf"
+    tainted := "示例" + quote + quote + fwc + "第1卷.pdf"
 
     // Origin: a Colon-mask pass then an S3-default pass reproduces the stored bytes.
     fmt.Println("mixed double-encode == tainted?", s3.Encode(win.Encode(clean)) == tainted)
@@ -301,10 +302,10 @@ key, disproving the round-trip-bug hypothesis.
 
 ```bash
 # the phantom key: LIST returns it with a real size, HEAD 404s it
-rclone lsl "garage:files/Plain/Text/Books/self help/" | grep '江泽民'
-#   4492720 ... 江泽民文选‛‛：第1卷.pdf      <- phantom, real size
-#   4492720 ... 江泽民文选：第1卷.pdf        <- clean twin, identical size
-name='江泽民文选‛‛：第1卷.pdf'
+rclone lsl "garage:files/Plain/Text/Books/self help/" | grep '示例'
+#   4492720 ... 示例‛‛：第1卷.pdf      <- phantom, real size
+#   4492720 ... 示例：第1卷.pdf        <- clean twin, identical size
+name='示例‛‛：第1卷.pdf'
 rclone --dump headers --low-level-retries 1 --retries 1 \
   lsjson --stat "garage:files/Plain/Text/Books/self help/$name" 2>&1 | grep -iE 'HEAD /|HTTP/1.1'
 #   HEAD /files/.../%E2%80%9B%E2%80%9B%EF%BC%9A...第1卷.pdf HTTP/1.1
@@ -312,9 +313,9 @@ rclone --dump headers --low-level-retries 1 --retries 1 \
 ```
 
 Patterns that work cleanly: any key whose name has no fullwidth colon; the clean twins
-(`江泽民文选：第N卷.pdf`), which HEAD `200` with their true sizes (4492720, 5896878, 8159462).
+(`示例：第N卷.pdf`), which HEAD `200` with their true sizes (4492720, 5896878, 8159462).
 
-Patterns that fail: the six doubled-quote keys listed in Symptom, every one of which lists
+Patterns that fail: the doubled-quote keys listed in Symptom, every one of which lists
 with a real size but HEADs `404`.
 
 ## Verified workarounds
@@ -323,10 +324,10 @@ with a real size but HEADs `404`.
 
 The double-encode needs two rclone passes whose masks disagree on `EncodeColon`, and the quote
 rune is rclone-exclusive, so a non-rclone client (Android FolderSync) cannot create one.
-This deployment has a single rclone client (the desktop; the Mac was added later), both on the
+This deployment now has three rclone clients (desktop, Mac, Windows laptop), all on the
 S3 default mask (`InvalidUtf8,Slash,Dot`, no colon) with clean local trees (verified: zero
 `‛` files locally, no `encoding` override on the remote), so no active client writes `‛` keys.
-The six phantoms are stale artifacts of the one-time Seafile-to-Garage migration.
+The phantoms (5 as of 2026-06) are stale artifacts of the one-time Seafile-to-Garage migration.
 If more rclone clients are ever added, keep them all on one explicit `--s3-encoding`; nothing
 needs to encode the fullwidth colon (it is legal on Linux, macOS, and Android), so the default
 mask is safe everywhere and no mismatch can arise.
@@ -337,25 +338,37 @@ A bisync filter that drops any path containing the quote rune stops every client
 or HEADing the phantoms, so the run no longer aborts:
 
 ```text
-# garage-filter.txt   (the ‛ is a literal U+201B; file bytes: 2d 20 2a e2 80 9b 2a 0a)
-- *‛*
+# garage-filter.txt   (the ‛ is a literal U+201B; file bytes: 2d 20 2a 2a e2 80 9b 2a 2a 0a)
+- **‛**
 ```
 
 ```bash
 rclone bisync garage:files/Plain <local> --resync --filter-from <path>/garage-filter.txt ...
 ```
 
+The pattern must be `- **‛**` (full path), not `- *‛*` (base name). rclone matches a
+slash-free pattern against the base name only, so `- *‛*` drops a phantom file
+(`…‛‛：第2卷.pdf`) but keeps one nested in a phantom directory
+(`…‛‛：第2卷.sdr/metadata.pdf.lua`, base name `metadata.pdf.lua`). A default-modtime run hides
+that gap, because it HEADs every object while building the listing and silently drops the
+un-HEAD-able phantom before the transfer stage. With `--use-server-modtime` (compare on the
+listing's LastModified, no per-object HEAD) that self-heal is gone, so the filter is the only
+guard, and `- *‛*` lets the nested phantom reach the transfer and abort the run. Verified by
+point-get: `- **‛**` drops exactly the phantom rows (5 as of 2026-06) and keeps every real
+file, and a `--resync` with `--use-server-modtime` on each client succeeds transferring 0 B.
+
 Use `--filter-from` (a file), not an inline `--filter`, so the same literal bytes ride every
-invocation and the systemd/launchd units stay readable.
+invocation and the systemd/launchd/Task-Scheduler units stay readable.
 Changing the filter between runs makes bisync abort with "filters have changed", so the first
 run after adding it must include `--resync`.
-Deployed on both clients: the desktop systemd unit and the Mac launchd agent each pass
-`--filter-from .../garage-filter.txt`, and each was re-baselined once with `--resync`.
-Tradeoff: the six rows still exist in a raw bucket listing (~26 MB) and the filter stays on
-every client; it is set once, not a per-run chore.
-Since the only writer is a single rclone client with a clean local tree and the default
-encoding (verified: zero `‛` files locally, no `encoding` override on the remote), nothing
-regenerates them, so the filter is a stable end state, not a recurring patch.
+Deployed on all three clients (desktop systemd unit, Mac launchd agent, Windows Task Scheduler
+job), each passing `--filter-from .../garage-filter.txt --fast-list --use-server-modtime`, each
+re-baselined once with `--resync`.
+Tradeoff: the phantom rows still exist in a raw bucket listing and the filter stays on every
+client; it is set once, not a per-run chore.
+Since every writer uses the default encoding with a clean local tree (verified: zero `‛` files
+locally, no `encoding` override on the remote), nothing regenerates them, so the filter is a
+stable end state, not a recurring patch.
 
 ### What cannot remove the phantoms (all tested against the live node)
 
@@ -384,7 +397,7 @@ then writes a real tombstone (HEAD `404` again, confirmed). But `LIST` still ret
 the range-scan index keeps a separate stale entry that the canonical write never touched.
 
 `garage repair tables` does not reconcile it. Tested: 5+ minutes after
-`garage repair --yes tables`, all six were still listed and the tombstoned vol 1 still
+`garage repair --yes tables`, all were still listed and the tombstoned vol 1 still
 appeared. On a single node a Merkle resync has no peer to reconcile against, and
 `garage offline-repair` only rebuilds counters (`object_counters`), not object rows.
 
@@ -400,10 +413,10 @@ twin), so this is a choice about listing hygiene, not data recovery.
   stored bytes; the `404` is Garage's.
 - `--resilient` / `--recover`: do not downgrade the critical abort to a per-object skip; the
   desktop run still aborted with `Must run --resync to recover`.
-- Re-running `--resync`: re-establishes the baseline but leaves the six phantom keys in place,
+- Re-running `--resync`: re-establishes the baseline but leaves the phantom keys in place,
   so the next run trips on them again.
 - Deleting only the local doubled-name files (the desktop's earlier patch): clears the local
-  `lstat` variant but leaves the six remote phantom keys, which still break every client that
+  `lstat` variant but leaves the remote phantom keys, which still break every client that
   lists the bucket.
 
 ## Upstream filing decision
