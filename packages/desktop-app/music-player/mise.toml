@@ -324,7 +324,7 @@ if 'MP_MACOS_P12' in $env {
   }
   rcodesign sign --pem-file dist/selfsign/macos-test.crt --pem-file dist/selfsign/macos-test.key --code-signature-flags runtime --entitlements-xml-file macos/entitlements.plist $app
 }
-rcodesign verify $app
+rcodesign verify $"($app)/Contents/MacOS/music-player"
 print $"signed ($app)"
 '''
 
