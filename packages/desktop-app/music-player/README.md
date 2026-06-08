@@ -1,15 +1,15 @@
 # music-player
 
 A minimal native music player built with the Slint GUI toolkit. On Linux it pairs a Wayland window with a native
-PipeWire client; on macOS (Apple Silicon) it uses an AppKit window with CoreAudio through cpal. The window layer
-is winit on both platforms, so only the audio backend differs by target. Scope is deliberately small: an ad-hoc
-play queue and broad codec coverage.
+PipeWire client; on macOS (Apple Silicon) and Windows it pairs a winit window with the OS audio engine through
+cpal (CoreAudio on macOS, WASAPI on Windows). The window layer is winit on every platform, so only the audio
+backend differs by target. Scope is deliberately small: an ad-hoc play queue and broad codec coverage.
 
 ## Scope
 
 - Output: the platform's native stack. Linux uses a Wayland window (no X11 fallback) and PipeWire audio (no
-  ALSA/PulseAudio backends); macOS uses an AppKit window and CoreAudio audio. The window is winit on both, so
-  only the audio backend is platform-specific.
+  ALSA/PulseAudio backends); macOS and Windows use a winit window and the OS audio engine via cpal (CoreAudio on
+  macOS, WASAPI on Windows). The window is winit on every platform, so only the audio backend is platform-specific.
 - Source: an ad-hoc queue. Opening a folder replaces the queue with the audio files found under it, scanning
   subfolders recursively. Command-line file or folder arguments are expanded the same way.
 - Transport: play/pause, seek, volume, next/prev, a three-state shuffle (off, within page, all), and a
@@ -25,8 +25,8 @@ play queue and broad codec coverage.
   plus filename), with no tag parsing and no album art. The seek bar's position and duration come from the
   decoder (frame count over sample rate), not from tags.
 - Sample rate: each track is opened at its own native rate, and the OS audio server resamples to the device
-  (PipeWire on Linux, CoreAudio on macOS), so the player itself never resamples. Gapless playback is
-  permanently out of scope.
+  (PipeWire on Linux, CoreAudio on macOS, WASAPI on Windows), so the player itself never resamples. Gapless
+  playback is permanently out of scope.
 - Output safety: per-track true-peak normalization, always on. Each track's true (inter-sample) peak is
   measured by oversampling, and the track plays at a single constant gain that brings that peak down to a
   -1 dBTP ceiling (the EBU R128 / ATSC A/85 true-peak ceiling). Normalization is attenuate-only: tracks already
@@ -66,11 +66,12 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/error.rs`: `PlayerError`, the single error type all fallible functions return.
 - `src/decode.rs`: probing and decoding to interleaved `f32` PCM behind a `Source` trait (`AudioSpec`, `open`).
 - `src/opus.rs`: the libopus `Source` for Opus.
-- `src/output_pipewire.rs` and `src/output_coreaudio.rs`: the audio-output boundary, selected by target in
-  `lib.rs` (PipeWire on Linux, cpal/CoreAudio on macOS). Both expose the identical `Output` surface (`new`,
-  `set_playing`, `reconfigure`); `reconfigure` builds an output stream at a track's native format and returns
-  the producer half of a lock-free ring buffer. Everything outside this boundary is platform-agnostic and only
-  ever touches that producer, so adding the macOS backend changed no engine, controller, or decode code.
+- `src/output_pipewire.rs` and `src/output_cpal.rs`: the audio-output boundary, selected by target in
+  `lib.rs` (PipeWire on Linux; cpal on every non-Linux target, driving CoreAudio on macOS and WASAPI on
+  Windows). Both expose the identical `Output` surface (`new`, `set_playing`, `reconfigure`); `reconfigure`
+  builds an output stream at a track's native format and returns the producer half of a lock-free ring buffer.
+  Everything outside this boundary is platform-agnostic and only ever touches that producer, so adding the cpal
+  backend changed no engine, controller, or decode code.
 - `src/playback.rs`: device-free playback helpers, kept apart so they are unit-testable: the per-sample
   gain-and-clamp stage, frame-to-seconds conversion, recursive folder expansion, and the audio-file test.
   Folder scans enqueue only files whose extension is in the audio allowlist (flac, wav/wave, mp3, ogg/oga,
@@ -107,8 +108,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the OS taskbar progress
   (fraction = position / duration, hidden when paused). Both are best-effort: no session bus or an unsupporting
   shell silently disables progress. KDE Plasma renders it natively; GNOME needs Dash-to-Dock. Both are Linux-only
-  and compile to no-ops on macOS (the Wayland app id and the D-Bus signal have no macOS analogue): the hook is a
-  pass-through and `set_progress` does nothing.
+  and compile to no-ops on every non-Linux target (macOS, Windows), where the Wayland app id and the D-Bus signal
+  have no analogue: the hook is a pass-through and `set_progress` does nothing.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties. It installs the winit backend with the app-id hook before creating the window, creates the
   `Launcher`, and pushes taskbar progress from each position/play-state update. It also derives the pagination
@@ -186,16 +187,20 @@ engine and the realtime callback share audio through a single-producer/single-co
 
 Cargo work runs on the host when the native development libraries are present, and falls back to the Fedora
 container defined by `Containerfile` otherwise. Each task evaluates a `host_ok` predicate (cargo on PATH plus
-`pkg-config --exists libpipewire-0.3 opus fontconfig freetype2`); when all resolve it builds natively, and when
+`pkg-config --exists libpipewire-0.3 fontconfig freetype2`); when all resolve it builds natively, and when
 any is missing it runs the identical cargo command in podman. On an immutable-style Fedora the host libraries are
 layered with:
 
 ```bash
-rpm-ostree install pipewire-devel opus-devel fontconfig-devel freetype-devel
+rpm-ostree install pipewire-devel fontconfig-devel freetype-devel
 ```
 
-The runtime GUI/audio libraries (mesa, wayland, libxkbcommon, fontconfig, freetype) and a CJK font ship with a
-KDE desktop already, and libclang for the bindgen step is present via the layered LLVM. The `run` task always
+libopus is not layered: the `opus` crate is pinned to the opusic-sys backend, which compiles libopus 1.6.1 from
+source via CMake, so the host needs `cmake` (provided by the repo-wide mise `aqua:Kitware/CMake` tool) and a
+generator (the host's system `make`) rather than a system libopus. The container installs `cmake`/`ninja-build`
+itself (it cannot see host mise tools). The runtime GUI/audio libraries (mesa, wayland, libxkbcommon, fontconfig,
+freetype) and a CJK font ship with a KDE desktop already, and libclang for the bindgen step is present via the
+layered LLVM. The `run` task always
 RUNS the binary directly on the host so the window, audio, D-Bus, and KDE taskbar use the host session natively;
 a container-built binary (Fedora 41 glibc) still links only against runtime libraries present on the host
 (Fedora 44+), so the fallback path executes natively too. The Rust toolchain comes from the repo-wide mise `rust`
@@ -247,19 +252,46 @@ Prerequisites on a bare machine:
   (`echo 'export PATH="$(brew --prefix rustup)/bin:$PATH"' >> ~/.zshrc`), then `rustup default stable`. Note that
   `rustup run <toolchain> cargo build` does NOT work here (rustup looks for `rustc` in the uncreated
   `~/.cargo/bin`); see `../../../docs/troubleshooting/homebrew-rustup-keg-only-proxies.md`.
-- libopus via `brew install opus`. The `opus` crate's `audiopus_sys` finds it through pkg-config (Homebrew's
-  `pkgconf` provides `pkg-config`); without a system libopus it builds the bundled source with `cmake` instead,
-  so `brew install cmake` covers that path. bindgen uses the Command Line Tools' libclang automatically, so no
-  `LIBCLANG_PATH` is needed.
+- `cmake` plus the Command Line Tools C compiler. The `opus` crate is pinned to the opusic-sys backend, which
+  compiles libopus 1.6.1 from source via CMake (no system libopus needed). The repo's mise `aqua:Kitware/CMake`
+  tool provides `cmake`; `brew install cmake` also works. CMake uses the system `make` generator. bindgen uses
+  the Command Line Tools' libclang automatically, so no `LIBCLANG_PATH` is needed.
 
 If the GPU OpenGL path misbehaves, force the software renderer with `SLINT_BACKEND=winit-software`.
+
+### Windows (x86_64, MSVC)
+
+On Windows every mise task takes the same native cargo branch as macOS (`$nu.os-info.name != "linux"`): no
+pkg-config or PipeWire probe, no podman fallback (a Linux container cannot produce a Windows binary), and no
+Linux bindgen env. The audio backend is WASAPI via cpal (`src/output_cpal.rs`, shared with the macOS CoreAudio
+path), the window is Win32 via winit, and the Wayland app id plus D-Bus taskbar progress compile to no-ops.
+
+The build targets `x86_64-pc-windows-msvc` and links with LLVM's `lld-link.exe` (pinned for that target in
+`.cargo/config.toml`), not the default MSVC `link.exe`. Prerequisites on a bare machine:
+
+- Rustup with the msvc host and a nightly toolchain (`rustup toolchain install nightly`), matching the Linux and
+  macOS builds. `cargo` and `rustc` land on PATH under `%USERPROFILE%\.cargo\bin`.
+- Visual Studio (or Build Tools) with the Desktop C++ workload, for the MSVC CRT and Windows SDK import
+  libraries that `lld-link` links against. rustc discovers them automatically and passes them as `/LIBPATH:`.
+- `cmake` on PATH. The `opus` crate is pinned to the opusic-sys backend, which builds libopus 1.6.1 from source
+  through the cmake crate (cmake drives the MSVC C compiler from Visual Studio). libopus 1.6.1's
+  `cmake_minimum_required` is 3.16, so CMake 4.x configures it with no `CMAKE_POLICY_VERSION_MINIMUM` override.
+- LLVM on PATH. `lld-link.exe` ships in LLVM's `bin` directory (`C:\Program Files\LLVM\bin`), which the LLVM
+  installer does not add to PATH by default; add it so the linker resolves.
+- `cargo-nextest` for the `test` task (the repo installs it as a mise tool, so `mise run ...:test` finds it).
+
+mise drives every task through nushell on Windows too (`windows_default_inline_shell_args = "nu -c"`), installing
+nushell via aqua on first run, so the `mise run //packages/desktop-app/music-player:...` commands below work
+unchanged. If the GPU OpenGL path misbehaves, force the software renderer with `SLINT_BACKEND=winit-software`.
+
+See `HANDOVER.windows-toolchain-and-check.md` for the step-by-step toolchain setup and the window/audio check.
 
 ## Commands
 
 All commands run through mise tasks. On Linux, build, lint, and test run on the host when the dev libraries are
-present and fall back to `podman run` otherwise; on macOS they always build natively with cargo (see the macOS
-subsection above). `run` builds the same way and then executes the binary directly. Run them from this package
-directory, or prefix with the package path from the repository root.
+present and fall back to `podman run` otherwise; on macOS and Windows they always build natively with cargo (see
+the platform subsections above). `run` builds the same way and then executes the binary directly. Run them from
+this package directory, or prefix with the package path from the repository root.
 
 ```bash
 # build the container image (only needed for the container path; the host
@@ -295,7 +327,8 @@ files can be enqueued through command-line arguments (the portal cannot offer fi
 
 On exit the engine saves the queue (file paths), current index, position, volume, shuffle mode, and the
 repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux,
-`~/Library/Application Support/Monochromatic/music-player` on macOS, both resolved by the `directories` crate).
+`~/Library/Application Support/Monochromatic/music-player` on macOS, the roaming AppData config directory on
+Windows, all resolved by the `directories` crate).
 Because `run` executes on the host, this is the real `~/.config/music-player`, persisting naturally across runs.
 On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
@@ -305,4 +338,6 @@ was stored, or every saved file has since moved and was pruned away), the user's
 paused, so the queue is populated without playing. The directory is resolved from `XDG_MUSIC_DIR`, then the XDG
 user-dirs file, then the `xdg-user-dir MUSIC` command; running on the host, these resolve directly, so no
 bind-mount or `XDG_MUSIC_DIR` injection is needed. On macOS the `directories` crate resolves `~/Music`
-directly, and the `xdg-user-dir` step simply falls through (that command does not exist there).
+directly, and the `xdg-user-dir` step simply falls through (that command does not exist there). On Windows the
+`directories` crate resolves the Music known-folder (`%USERPROFILE%\Music`) directly, and the `xdg-user-dir`
+fallback is compiled out entirely (it is gated `#[cfg(unix)]`).
