@@ -1,20 +1,8 @@
 #!/usr/bin/env bun
-import {
-  l,
-  tagged,
-} from './log.ts';
 import type { ReporterName, } from './reporters.ts';
 import { run, } from './run.ts';
 
 export {};
-
-/**
- * Tagged logger for the CLI entry point.
- */
-const rl = tagged({
-  tag: 'cli',
-  l,
-},);
 
 /**
  * Prefix on `--format=` arguments, sliced off to read the reporter name.
@@ -190,14 +178,10 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv
     .slice(2,),);
   if (args.help) {
-    // User-facing help: raw console, not the tagged logger.
+    // User-facing help on stdout.
     console.log(HELP,);
     return;
   }
-  rl.info(`linting paths: ${args.paths
-    .length
-    === 0 ? '(cwd)' : args.paths
-      .join(', ',)}`,);
   /**
    * Lint or fix result.
    */
@@ -208,11 +192,12 @@ async function main(): Promise<void> {
     cwd: process.cwd(),
   },);
   if (result.output !== '') {
-    // User-facing report: stdout via raw console so it pipes cleanly.
+    // The report is the machine-readable output: stdout, kept clean for pipes.
     console.log(result.output,);
   }
-  if (args.fix) {
-    rl.info(`fixed ${result.fixedFiles} file(s)`,);
+  if (args.fix && (result.fixedFiles > 0)) {
+    // Fix summary is a status line, not the report: stderr so stdout stays clean.
+    console.error(`markdown-lint: fixed ${result.fixedFiles} file(s)`,);
   }
   if (result.hadViolations) {
     process.exitCode = 1;
@@ -223,7 +208,6 @@ try {
   await main();
 } catch (error) {
   if (error instanceof CliUsageError) {
-    rl.error(error.message,);
     // User-facing usage error: stderr.
     console.error(`markdown-lint: ${error.message}`,);
     process.exitCode = 2;
