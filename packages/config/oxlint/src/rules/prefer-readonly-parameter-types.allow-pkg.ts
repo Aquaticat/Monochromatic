@@ -69,6 +69,69 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Tree"
     ],
   },
+  {
+    // mdast/unist nodes are an external syntax tree walked read-only by the
+    // markdown-lint rules, but @types/mdast declares every node with mutable
+    // `children: T[]` arrays (and unist positions with mutable points), the
+    // same situation as the postcss and @lezer entries above. The symbols are
+    // declared in @types/mdast / @types/unist even though imported via the
+    // bare `mdast` / `unist` specifiers, so the matcher keys on the @types
+    // package names (cf. the @types/node Buffer entry).
+    from: "package",
+    package: "@types/mdast",
+    name: [
+      "Nodes",
+      "Parents",
+      "Node",
+      "Parent",
+      "Root",
+      "RootContent",
+      "PhrasingContent",
+      "Blockquote",
+      "Break",
+      "Code",
+      "Definition",
+      "Delete",
+      "Emphasis",
+      "FootnoteDefinition",
+      "FootnoteReference",
+      "Heading",
+      "Html",
+      "Image",
+      "ImageReference",
+      "InlineCode",
+      "Link",
+      "LinkReference",
+      "List",
+      "ListItem",
+      "Paragraph",
+      "Strong",
+      "Table",
+      "TableCell",
+      "TableRow",
+      "Text",
+      "ThematicBreak",
+      "Yaml",
+    ],
+  },
+  {
+    from: "package",
+    package: "@types/unist",
+    name: [
+      "Node",
+      "Parent",
+      "Position",
+      "Point",
+    ],
+  },
+  {
+    // The `ignore` package's matcher object exposes mutator methods (`add`),
+    // so its `Ignore` type is mutable; markdown-lint's file walk holds it
+    // read-only after construction.
+    from: "package",
+    package: "ignore",
+    name: ["Ignore"],
+  },
   ...unbashPackageAllowSpecifiers,
 
   // TODO: Remove them when we get to fixing lint issues in module-logger.
