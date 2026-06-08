@@ -45,7 +45,7 @@ pub mod opus;
 //           player (engine.rs, controller.rs) only ever names `output::Output`
 //           and never learns which backend is behind it.
 // TS map:   like `export * as output from process.platform === "linux"
-//           ? "./output_pipewire" : "./output_coreaudio";` but resolved at
+//           ? "./output_pipewire" : "./output_cpal";` but resolved at
 //           COMPILE time, so only one branch is ever built.
 //
 // In TS you'd write (pseudocode):
@@ -56,22 +56,23 @@ pub mod opus;
 #[path = "output_pipewire.rs"]
 pub mod output;
 
-// What:     The macOS counterpart: `#[cfg(target_os = "macos")]` compiles the
-//           next item only on macOS builds, and `#[path = "output_coreaudio.rs"]`
-//           sources the `output` module from the cpal/CoreAudio file. Same
-//           `pub mod output;` name as the Linux branch above; exactly one of the
-//           two is ever compiled.
-// Why:      macOS has no PipeWire, so it uses CoreAudio (via cpal) while exposing
-//           the IDENTICAL `output::Output` surface, keeping the rest of the
-//           player platform-agnostic.
-// TS map:   the `: "./output_coreaudio"` arm of the conditional re-export above.
+// What:     The non-Linux counterpart: `#[cfg(not(target_os = "linux"))]` compiles
+//           the next item on EVERY target except Linux (macOS and Windows here),
+//           and `#[path = "output_cpal.rs"]` sources the `output` module from the
+//           cpal file. Same `pub mod output;` name as the Linux branch above;
+//           exactly one of the two is ever compiled. `not(...)` inverts a cfg
+//           predicate, so this is "compiled when NOT Linux".
+// Why:      Neither macOS nor Windows has PipeWire, so both use cpal (CoreAudio on
+//           macOS, WASAPI on Windows) while exposing the IDENTICAL `output::Output`
+//           surface, keeping the rest of the player platform-agnostic.
+// TS map:   the `: "./output_cpal"` arm of the conditional re-export above.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export * as output from "./output_coreaudio"; // only on macOS builds
+// export * as output from "./output_cpal"; // on every non-Linux build
 // ```
-#[cfg(target_os = "macos")]
-#[path = "output_coreaudio.rs"]
+#[cfg(not(target_os = "linux"))]
+#[path = "output_cpal.rs"]
 pub mod output;
 
 // What:     `pub mod playback;` the device-free playback helpers (`src/playback.rs`):

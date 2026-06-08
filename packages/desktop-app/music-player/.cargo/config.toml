@@ -1,0 +1,15 @@
+# Use LLVM's lld-link as the linker for the Windows MSVC target only.
+#
+# Scope: this table is keyed on `target.x86_64-pc-windows-msvc`, so cargo applies
+# it ONLY when building that target (that is, on Windows). Linux and macOS builds
+# never read it, so their default linker is unchanged. This is the only
+# .cargo/config.toml in the repo, so it introduces the override cleanly.
+#
+# `lld-link.exe` is LLVM's MSVC-compatible linker (a drop-in for Visual Studio's
+# `link.exe`). It must be on PATH: LLVM ships it in its `bin` directory
+# (`C:\Program Files\LLVM\bin`), which is not on PATH by default, so that directory
+# has to be added (see README "Windows" and HANDOVER.windows-toolchain-and-check.md).
+# rustc still discovers the Visual Studio CRT and Windows SDK import libraries and
+# passes them as `/LIBPATH:` arguments, which lld-link consumes unchanged.
+[target.x86_64-pc-windows-msvc]
+linker = "lld-link.exe"

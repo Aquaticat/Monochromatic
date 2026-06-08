@@ -1,12 +1,19 @@
 # Cargo work runs on the HOST when the native dev libraries are present, and
 # falls back to the Fedora build container otherwise (see Containerfile).
-# On macOS (Apple Silicon) every task takes a NATIVE cargo branch first
-# (`$nu.os-info.name == "macos"`): no pkg-config/PipeWire probe, no podman
-# fallback (a Linux container cannot produce a macOS binary), and the audio
-# backend is CoreAudio via cpal (src/output_coreaudio.rs). macOS prereqs: a Rust
-# toolchain with `cargo` on PATH, and libopus (`brew install opus`) so the
-# `opus` crate's audiopus_sys finds it via pkg-config (else it builds the
-# bundled source with the `cmake`/`pkgconf` you also need on PATH).
+# On non-Linux targets (macOS, Windows) every task takes a NATIVE cargo branch
+# first (`$nu.os-info.name != "linux"`): no pkg-config/PipeWire probe, no podman
+# fallback (a Linux container cannot produce a macOS or Windows binary), and the
+# audio backend is cpal (src/output_cpal.rs: CoreAudio on macOS, WASAPI on
+# Windows). Prereqs:
+#   macOS:   a Rust toolchain with `cargo` on PATH, and libopus (`brew install
+#            opus`) so the `opus` crate's audiopus_sys finds it via pkg-config
+#            (else it builds the bundled source with the `cmake`/`pkgconf` you
+#            also need on PATH).
+#   Windows: rustup (msvc host) + a nightly toolchain on PATH; Visual Studio (CRT
+#            + Windows SDK); `cmake` on PATH (audiopus_sys builds libopus through
+#            the cmake crate); and LLVM's `bin` on PATH so `lld-link.exe` (the
+#            linker pinned for windows-msvc in .cargo/config.toml) resolves. See
+#            HANDOVER.windows-toolchain-and-check.md.
 # Host build deps (layer with rpm-ostree on an immutable Fedora):
 #   pipewire-devel opus-devel fontconfig-devel freetype-devel
 # plus rustup/cargo, libclang, and Zig-less audio toolchain already on PATH.
@@ -57,27 +64,27 @@ description = "Build the Fedora build/run container image"
 run = "podman build -t localhost/monochromatic/music-player -f Containerfile ."
 
 [tasks.build]
-description = "Release build (macOS native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name == "macos") { cargo build --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }'
+description = "Release build (macOS/Windows native, else Linux host if dev libs present, else container)"
+run = 'if ($nu.os-info.name != "linux") { cargo build --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }'
 
 [tasks."build:debug"]
-description = "Debug build (macOS native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name == "macos") { cargo build } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }'
+description = "Debug build (macOS/Windows native, else Linux host if dev libs present, else container)"
+run = 'if ($nu.os-info.name != "linux") { cargo build } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }'
 
 [tasks.lint]
-description = "cargo check, no codegen (macOS native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name == "macos") { cargo check } else if {{vars.host_ok}} { {{vars.host_env}}; cargo check } else { {{vars.container_cargo}} check }'
+description = "cargo check, no codegen (macOS/Windows native, else Linux host if dev libs present, else container)"
+run = 'if ($nu.os-info.name != "linux") { cargo check } else if {{vars.host_ok}} { {{vars.host_env}}; cargo check } else { {{vars.container_cargo}} check }'
 
 [tasks."lint:clippy"]
-description = "Run clippy with warnings denied (macOS native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name == "macos") { cargo clippy --release -- -D warnings } else if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --release -- -D warnings } else { {{vars.container_cargo}} clippy --release -- -D warnings }'
+description = "Run clippy with warnings denied (macOS/Windows native, else Linux host if dev libs present, else container)"
+run = 'if ($nu.os-info.name != "linux") { cargo clippy --release -- -D warnings } else if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --release -- -D warnings } else { {{vars.container_cargo}} clippy --release -- -D warnings }'
 
 [tasks."format:clippy"]
 description = "Apply clippy's machine-applicable suggestions in place (host if dev libs present, else container)"
 # --allow-no-vcs is harmless on the host (the repo .git is visible) and required
 # in the container, where only the package dir is bind-mounted at /work so the
 # repo-root .git is not visible and cargo fix would otherwise refuse to run.
-run = 'if ($nu.os-info.name == "macos") { cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
+run = 'if ($nu.os-info.name != "linux") { cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
 
 [tasks."lint:max-lines"]
 description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust-linter)"
@@ -87,10 +94,11 @@ description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust
 run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
 
 [tasks.test]
-description = "cargo nextest run (macOS native, else Linux host if dev libs present, else container)"
-# macOS branch needs cargo-nextest on PATH (cargo install cargo-nextest, or
-# `brew install cargo-nextest`); the tests are pure logic with no audio backend.
-run = 'if ($nu.os-info.name == "macos") { cargo nextest run --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
+description = "cargo nextest run (macOS/Windows native, else Linux host if dev libs present, else container)"
+# The native (non-Linux) branch needs cargo-nextest on PATH (`cargo install
+# cargo-nextest`, or `brew install cargo-nextest` on macOS); the tests are pure
+# logic with no audio backend, so they run identically on macOS and Windows.
+run = 'if ($nu.os-info.name != "linux") { cargo nextest run --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
 
 [tasks."build:container"]
 description = "Release build forced inside the container (asserts the container path)"
@@ -139,10 +147,10 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # if set (to force the software renderer).
 run = '''
 let home = ($env.HOME? | default '')
-# Build the release binary: macOS builds natively with cargo; on Linux it is
-# host-first, and the container fallback surfaces it on the host at
+# Build the release binary: macOS/Windows build natively with cargo; on Linux it
+# is host-first, and the container fallback surfaces it on the host at
 # target/release/music-player via the bind-mounted target/.
-if ($nu.os-info.name == "macos") { cargo build --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }
+if ($nu.os-info.name != "linux") { cargo build --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }
 # Install onto the host so the KDE .desktop launcher and `mise run` exercise the
 # SAME binary. The .desktop uses a bare `Exec=music-player`, which KDE resolves on
 # the systemd user PATH: that PATH includes ~/.local/bin (verified via
@@ -154,10 +162,11 @@ if ($nu.os-info.name == "macos") { cargo build --release } else if {{vars.host_o
 # unset, both installs are skipped and the freshly built target/release copy is run
 # instead. KDE picks up a new .desktop file on next login if it does not appear
 # immediately.
-let bin = if ($nu.os-info.name == "macos") {
-  # macOS: the KDE .desktop launcher and ~/.local/bin install are Linux-only, so
-  # just run the freshly built release binary directly.
-  './target/release/music-player'
+let bin = if ($nu.os-info.name != "linux") {
+  # macOS/Windows: the KDE .desktop launcher and ~/.local/bin install are
+  # Linux-only, so just run the freshly built release binary directly. Windows
+  # needs the .exe extension; macOS has none.
+  if ($nu.os-info.name == "windows") { './target/release/music-player.exe' } else { './target/release/music-player' }
 } else if ($home != '') {
   let apps_dir = ($home | path join '.local/share/applications')
   mkdir $apps_dir
@@ -189,13 +198,14 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # WAYLAND_DISPLAY, XDG_RUNTIME_DIR, the D-Bus bus, PipeWire, and the XDG user
 # dirs, so the GUI, audio, and auto-load behave exactly as under `run`.
 run = '''
-# Build the debug binary: macOS builds natively with cargo; on Linux it is
+# Build the debug binary: macOS/Windows build natively with cargo; on Linux it is
 # host-first, and the container fallback surfaces it at target/debug/music-player
 # via the bind-mounted target/.
-if ($nu.os-info.name == "macos") { cargo build } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }
+if ($nu.os-info.name != "linux") { cargo build } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }
 let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
-# Run the freshly built debug binary directly on the host.
-^'./target/debug/music-player' ...$extras
+# Run the freshly built debug binary directly. Windows needs the .exe extension.
+let bin = if ($nu.os-info.name == "windows") { './target/debug/music-player.exe' } else { './target/debug/music-player' }
+^$bin ...$extras
 '''
 
 [tasks."gen:fixtures"]

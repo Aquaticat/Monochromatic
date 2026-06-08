@@ -76,11 +76,14 @@ pipewire = "0.10"
 # gated to Linux alongside the launcher integration it powers.
 zbus = "5"
 
-# macOS-only native backend. cpal drives CoreAudio (src/output_coreaudio.rs),
-# the Apple-Silicon counterpart to the PipeWire path. CoreAudio sample-rate-
-# converts to the hardware clock, so the engine still feeds samples at each
-# track's native rate exactly as it does under PipeWire (no in-player resampling).
-[target.'cfg(target_os = "macos")'.dependencies]
+# Non-Linux native backend. cpal drives the OS audio engine (src/output_cpal.rs):
+# CoreAudio on macOS, WASAPI on Windows, the counterpart to the PipeWire path. One
+# cfg(not(linux)) table covers both targets, matching the module gate in lib.rs.
+# cpal links no C: it reaches CoreAudio through Apple framework bindings and WASAPI
+# through pure-Rust windows-sys bindings. The OS audio engine sample-rate-converts
+# to the hardware clock, so the engine still feeds samples at each track's native
+# rate exactly as under PipeWire (no in-player resampling).
+[target.'cfg(not(target_os = "linux"))'.dependencies]
 cpal = "0.15"
 
 [build-dependencies]

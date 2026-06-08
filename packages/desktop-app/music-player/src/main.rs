@@ -17,12 +17,23 @@ slint::include_modules!();
 // TS map:   `import * as uiProgress from "./ui_progress";`
 mod ui_progress;
 
-// What:     `use std::path::{Path, PathBuf};`. `PathBuf` is the OWNED filesystem
-//           path; `Path` is the BORROWED view (like `String` vs `&str`).
-// Why:      CLI arguments and picked files become owned `PathBuf`s; `Path::new`
-//           gives a cheap borrowed path for comparisons without allocating.
-// TS map:   both are just `string` paths in TS.
-use std::path::{Path, PathBuf};
+// What:     `use std::path::PathBuf;`. The OWNED filesystem path type: the heap-
+//           allocated, growable counterpart to the borrowed `&Path` view (like
+//           `String` vs `&str`).
+// Why:      CLI arguments, picked files, and the music dir become owned `PathBuf`s.
+// TS map:   just a `string` path in TS.
+use std::path::PathBuf;
+
+// What:     `#[cfg(unix)] use std::path::Path;`. The BORROWED path view (`&Path`),
+//           imported ONLY on Unix targets. `#[cfg(unix)]` is a conditional-
+//           compilation attribute that keeps the line on Unix (Linux/macOS/BSD)
+//           and drops it elsewhere; siblings: `windows`, `target_os = "..."`.
+// Why:      `Path::new` is used solely inside the Unix-only `xdg_user_dir_music`
+//           helper below, so importing it unconditionally would be an unused
+//           import on Windows (which trips the deny-warnings clippy gate).
+// TS map:   no equivalent; the import simply does not exist in a Windows build.
+#[cfg(unix)]
+use std::path::Path;
 
 // What:     `use std::rc::Rc;`. `Rc<T>` is a single-threaded shared-ownership
 //           pointer (reference counted). Sibling: `Arc<T>` (atomic, multi-thread).
@@ -440,6 +451,15 @@ fn apply_update(app: &AppWindow, update: Update) {
 //           discoverable only through the official `xdg-user-dir` tool; this is the
 //           fallback when the env var and the user-dirs file both come up empty.
 // TS map:   `function xdgUserDirMusic(): string | null`
+// What:     `#[cfg(unix)]` compiles this Unix version of the helper only on Unix
+//           targets (Linux/macOS/BSD); the `#[cfg(not(unix))]` stub just below
+//           replaces it on Windows. `unix` is a built-in cfg covering the whole
+//           Unix family; siblings: `windows`, `target_os = "linux"`.
+// Why:      `xdg-user-dir` is a freedesktop CLI tool that exists only on Unix
+//           desktops; on Windows the spawn would always fail, so gate it out and
+//           let the stub return `None` instead of wasting a process spawn.
+// TS map:   the Unix branch of a platform switch over the function.
+#[cfg(unix)]
 fn xdg_user_dir_music() -> Option<PathBuf> {
     // What:     `let output = std::process::Command::new("xdg-user-dir").arg("MUSIC").output().ok()?;`.
     //           Build and run the external command, capturing its output.
@@ -497,6 +517,24 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
     // Why:      Hand back the discovered music directory.
     // TS map:   `return trimmed;`
     Some(PathBuf::from(trimmed))
+}
+
+// What:     `#[cfg(not(unix))] fn xdg_user_dir_music() -> Option<PathBuf>`. The
+//           non-Unix stub (Windows): same signature as the Unix version above,
+//           compiled only when NOT a Unix target. `not(unix)` inverts the `unix`
+//           cfg predicate.
+// Why:      Windows has no `xdg-user-dir` tool, and `music_dir()` already resolves
+//           the Windows Music known-folder via the `directories` crate one step
+//           earlier, so this fallback has nothing to do; keep the call site
+//           platform-agnostic by returning `None`.
+// TS map:   `function xdgUserDirMusic(): string | null { return null; }`
+#[cfg(not(unix))]
+fn xdg_user_dir_music() -> Option<PathBuf> {
+    // What:     `None`. The empty case of `Option<PathBuf>` (no path); sibling
+    //           `Some(p)` would carry a path. Bare tail expression -> return value.
+    // Why:      Signal "this source found no music dir" on Windows.
+    // TS map:   `return null;`
+    None
 }
 
 // What:     `fn music_dir() -> Option<PathBuf>`. Find the user's music directory:

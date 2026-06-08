@@ -1,12 +1,13 @@
-//! CoreAudio output (macOS): the thin cross-platform-audio boundary, the
-//! Apple-Silicon counterpart to `output_pipewire.rs`. It exposes the SAME
-//! `Output` surface the engine already drives (`Output::new`,
+//! cpal output (macOS CoreAudio / Windows WASAPI): the thin cross-platform-audio
+//! boundary, the non-Linux counterpart to `output_pipewire.rs`. It exposes the
+//! SAME `Output` surface the engine already drives (`Output::new`,
 //! `Output::reconfigure`, `Output::set_playing`), so nothing outside this file
 //! changes between platforms.
 //!
 //! Mental model for a TypeScript reader: cpal is a small Rust library that
-//! talks to the operating system's audio engine (CoreAudio here, the macOS
-//! sound server). We pick the default output device, and per track we open an
+//! talks to the operating system's audio engine (CoreAudio on macOS, WASAPI on
+//! Windows, both reached through one cpal API). We pick the default output
+//! device, and per track we open an
 //! output "stream" at that track's sample rate. cpal calls a callback on a
 //! realtime thread whenever the speakers need more samples; that callback
 //! copies samples out of a lock-free queue (the ring buffer) into the buffer
@@ -17,7 +18,8 @@
 //! us for the sample type), so there is no little-endian byte conversion and no
 //! scratch buffer: we pop straight into cpal's buffer.
 //!
-//! `cpal::Stream` is `!Send` on macOS (it keeps a non-thread-safe handle), so
+//! `cpal::Stream` is `!Send` on both macOS and Windows (it keeps a
+//! non-thread-safe handle), so
 //! `Output` is created, used, and dropped entirely on the engine's controller
 //! thread; only the realtime callback runs elsewhere, and it touches only the
 //! ring-buffer consumer it was given. Stopping is automatic: dropping the
@@ -84,8 +86,8 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 // What:     `use cpal::{BufferSize, SampleRate, StreamConfig};`. `StreamConfig`
 //           is the struct describing a stream (channel count, sample rate, buffer
 //           size). `SampleRate(u32)` is a tiny wrapper around the samples-per-
-//           second number. `BufferSize` is an enum: `Default` (let CoreAudio
-//           pick) or `Fixed(n)`.
+//           second number. `BufferSize` is an enum: `Default` (let the OS
+//           audio engine pick) or `Fixed(n)`.
 // Why:      We build one `StreamConfig` per track to open the output stream at
 //           that track's native rate and channel count.
 // TS map:   `import { BufferSize, SampleRate, StreamConfig } from "cpal";`
@@ -115,7 +117,7 @@ use ringbuf::{HeapProd, HeapRb};
 // TS map:   `import { PlayerError } from "@/error";`
 use crate::error::PlayerError;
 
-// What:     `pub struct Output { ... }`. Owns the CoreAudio output. Fields:
+// What:     `pub struct Output { ... }`. Owns the cpal output. Fields:
 //           - `device: cpal::Device`. The default output device, OWNED and kept
 //             so each `reconfigure` can build a fresh stream on it.
 //           - `stream: Option<cpal::Stream>`. The current output stream, or
@@ -158,7 +160,7 @@ pub struct Output {
     worker: Thread,
 }
 
-// What:     `impl Output { ... }`. The methods for the CoreAudio output.
+// What:     `impl Output { ... }`. The methods for the cpal output.
 // Why:      Construction and per-track reconfiguration, same surface as PipeWire.
 // TS map:   the class body.
 impl Output {
@@ -173,7 +175,8 @@ impl Output {
     // TS map:   `static create(worker: WorkerRef): Output` (throwing on failure)
     pub fn new(worker: Thread) -> Result<Output, PlayerError> {
         // What:     `let host = cpal::default_host();`. The "host" is the audio
-        //           API backend; on macOS there is exactly one (CoreAudio).
+        //           API backend; cpal exposes one default per OS (CoreAudio on
+        //           macOS, WASAPI on Windows).
         // Why:      Devices are enumerated through a host.
         // TS map:   `const host = cpal.defaultHost();`
         let host = cpal::default_host();
@@ -306,9 +309,10 @@ impl Output {
         //           SampleRate(rate), buffer_size: BufferSize::Default };`. Build
         //           the stream description. `channels` is field shorthand (the
         //           `u16` count). `SampleRate(rate)` wraps the raw `u32` rate in
-        //           cpal's newtype. `BufferSize::Default` lets CoreAudio choose the
-        //           callback buffer size (sibling: `BufferSize::Fixed(n)`).
-        // Why:      Open the device at THIS track's native rate/channels; CoreAudio
+        //           cpal's newtype. `BufferSize::Default` lets the OS audio engine
+        //           choose the callback buffer size (sibling: `BufferSize::Fixed(n)`).
+        // Why:      Open the device at THIS track's native rate/channels; the OS
+        //           audio engine (CoreAudio on macOS, WASAPI on Windows)
         //           sample-rate-converts to the hardware clock, so the engine never
         //           resamples (mirrors PipeWire's transparent resampling).
         // TS map:   `const config = { channels, sampleRate: rate, bufferSize: "default" };`
@@ -345,8 +349,9 @@ impl Output {
         //           the `data: &mut [f32]` parameter. `.map_err(|e| ...)` converts
         //           a `BuildStreamError` into our `PlayerError`; `?` returns early
         //           on failure.
-        // Why:      This stream + its realtime callback are how CoreAudio pulls
-        //           samples from us, exactly like PipeWire's `process` callback.
+        // Why:      This stream + its realtime callback are how the OS audio engine
+        //           (CoreAudio/WASAPI) pulls samples from us, exactly like
+        //           PipeWire's `process` callback.
         // TS map:   `const stream = device.buildOutputStream(config, (data) => {...}, (err) => {...});`
         //
         // In TS you'd write (pseudocode):
@@ -365,7 +370,8 @@ impl Output {
                 //           captured variables into it. `data: &mut [f32]` is the
                 //           hardware buffer to fill (interleaved `f32`, already the
                 //           right sample type). `_` ignores the timing-info arg.
-                //           This runs on CoreAudio's realtime thread, so it must NOT
+                //           This runs on the OS audio realtime thread (CoreAudio on
+                //           macOS, WASAPI on Windows), so it must NOT
                 //           allocate, lock, or block.
                 // Why:      Copy decoded samples from the ring buffer into the
                 //           speaker buffer (or silence when paused/underrun).

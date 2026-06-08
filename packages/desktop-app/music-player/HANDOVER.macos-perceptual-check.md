@@ -7,7 +7,7 @@ works. Run it in a Terminal on the Mac itself (a logged-in GUI session).
 
 ## What this proves
 
-That the new `src/output_coreaudio.rs` backend plays sound through CoreAudio and
+That the new `src/output_cpal.rs` backend plays sound through CoreAudio and
 that the winit window renders on macOS, end to end as a user experiences it. The
 code-level and launch-level layers are already verified (see "Already verified").
 
