@@ -37,21 +37,36 @@ i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3
 # with the realtime audio thread or the UI. std exposes no scheduling-class API.
 libc = "0.2"
 opus = "0.3"
-# 0.10 (pulls libspa/libspa-sys 0.10) so the bindgen step parses the host's
-# newer PipeWire/SPA headers. libspa-sys 0.8 emitted an opaque `spa_pod_builder`
-# against PipeWire 1.6.x, breaking the `libspa` wrapper's `.data`/`.size` access.
-pipewire = "0.10"
 rfd = "0.15"
 ringbuf = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 slint = { git = "https://github.com/slint-ui/slint", rev = "85e3eb76819762cdcaa732fa87533ff896546bac", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
 symphonia = { version = "0.6", features = ["all"] }
+
+# Linux-only native backends. PipeWire (audio) and zbus (KDE taskbar progress)
+# have no macOS equivalent, so cargo compiles them only when target_os = linux;
+# on macOS they are absent from the dependency graph entirely.
+[target.'cfg(target_os = "linux")'.dependencies]
+# PipeWire is the Linux-only native audio path (src/output_pipewire.rs); it has
+# no macOS port. 0.10 (pulls libspa/libspa-sys 0.10) so the bindgen step parses
+# the host's newer PipeWire/SPA headers. libspa-sys 0.8 emitted an opaque
+# `spa_pod_builder` against PipeWire 1.6.x, breaking the `libspa` wrapper's
+# `.data`/`.size` access.
+pipewire = "0.10"
 # Already in the tree transitively (Slint's color-scheme watcher, rfd's portal
 # picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
 # signal that drives the KDE taskbar progress. Default features include the
-# blocking API and async-io backend.
+# blocking API and async-io backend. macOS has no D-Bus session bus, so it is
+# gated to Linux alongside the launcher integration it powers.
 zbus = "5"
+
+# macOS-only native backend. cpal drives CoreAudio (src/output_coreaudio.rs),
+# the Apple-Silicon counterpart to the PipeWire path. CoreAudio sample-rate-
+# converts to the hardware clock, so the engine still feeds samples at each
+# track's native rate exactly as it does under PipeWire (no in-player resampling).
+[target.'cfg(target_os = "macos")'.dependencies]
+cpal = "0.15"
 
 [build-dependencies]
 # Must match the `slint` git rev above (the compiler and runtime are versioned

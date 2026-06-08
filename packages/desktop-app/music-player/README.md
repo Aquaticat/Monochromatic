@@ -1,11 +1,15 @@
 # music-player
 
-A minimal native music player for Linux, built with the Slint GUI toolkit and a native PipeWire client.
-Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, and broad codec coverage.
+A minimal native music player built with the Slint GUI toolkit. On Linux it pairs a Wayland window with a native
+PipeWire client; on macOS (Apple Silicon) it uses an AppKit window with CoreAudio through cpal. The window layer
+is winit on both platforms, so only the audio backend differs by target. Scope is deliberately small: an ad-hoc
+play queue and broad codec coverage.
 
 ## Scope
 
-- Output: Wayland for the window, PipeWire for audio. No X11 fallback, no ALSA/PulseAudio backends.
+- Output: the platform's native stack. Linux uses a Wayland window (no X11 fallback) and PipeWire audio (no
+  ALSA/PulseAudio backends); macOS uses an AppKit window and CoreAudio audio. The window is winit on both, so
+  only the audio backend is platform-specific.
 - Source: an ad-hoc queue. Opening a folder replaces the queue with the audio files found under it, scanning
   subfolders recursively. Command-line file or folder arguments are expanded the same way.
 - Transport: play/pause, seek, volume, next/prev, a three-state shuffle (off, within page, all), and a
@@ -20,8 +24,9 @@ Scope is deliberately small: Wayland and PipeWire only, an ad-hoc play queue, an
 - Metadata: filesystem path only. The queue list shows each track's path relative to the loaded folder (folder
   plus filename), with no tag parsing and no album art. The seek bar's position and duration come from the
   decoder (frame count over sample rate), not from tags.
-- Sample rate: each track is declared to PipeWire at its own native rate, and PipeWire resamples to the device.
-  Gapless playback is permanently out of scope.
+- Sample rate: each track is opened at its own native rate, and the OS audio server resamples to the device
+  (PipeWire on Linux, CoreAudio on macOS), so the player itself never resamples. Gapless playback is
+  permanently out of scope.
 - Output safety: per-track true-peak normalization, always on. Each track's true (inter-sample) peak is
   measured by oversampling, and the track plays at a single constant gain that brings that peak down to a
   -1 dBTP ceiling (the EBU R128 / ATSC A/85 true-peak ceiling). Normalization is attenuate-only: tracks already
@@ -61,8 +66,11 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/error.rs`: `PlayerError`, the single error type all fallible functions return.
 - `src/decode.rs`: probing and decoding to interleaved `f32` PCM behind a `Source` trait (`AudioSpec`, `open`).
 - `src/opus.rs`: the libopus `Source` for Opus.
-- `src/output.rs`: the PipeWire FFI boundary. It owns the thread loop, context, and core, and `reconfigure`
-  builds an output stream at a track's native format, returning the producer half of a lock-free ring buffer.
+- `src/output_pipewire.rs` and `src/output_coreaudio.rs`: the audio-output boundary, selected by target in
+  `lib.rs` (PipeWire on Linux, cpal/CoreAudio on macOS). Both expose the identical `Output` surface (`new`,
+  `set_playing`, `reconfigure`); `reconfigure` builds an output stream at a track's native format and returns
+  the producer half of a lock-free ring buffer. Everything outside this boundary is platform-agnostic and only
+  ever touches that producer, so adding the macOS backend changed no engine, controller, or decode code.
 - `src/playback.rs`: device-free playback helpers, kept apart so they are unit-testable: the per-sample
   gain-and-clamp stage, frame-to-seconds conversion, recursive folder expansion, and the audio-file test.
   Folder scans enqueue only files whose extension is in the audio allowlist (flac, wav/wave, mp3, ogg/oga,
@@ -98,7 +106,9 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   stamps the Wayland app id (`monochromatic.music-player`); `Launcher` emits the
   `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the OS taskbar progress
   (fraction = position / duration, hidden when paused). Both are best-effort: no session bus or an unsupporting
-  shell silently disables progress. KDE Plasma renders it natively; GNOME needs Dash-to-Dock.
+  shell silently disables progress. KDE Plasma renders it natively; GNOME needs Dash-to-Dock. Both are Linux-only
+  and compile to no-ops on macOS (the Wayland app id and the D-Bus signal have no macOS analogue): the hook is a
+  pass-through and `set_progress` does nothing.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties. It installs the winit backend with the app-id hook before creating the window, creates the
   `Launcher`, and pushes taskbar progress from each position/play-state update. It also derives the pagination
@@ -222,11 +232,34 @@ The source comments follow the repository's `dum-dum-non-ts` convention: every c
 plain-English explanation and a TypeScript translation, because the maintainer reads TypeScript fluently and Rust
 less so.
 
+### macOS (Apple Silicon)
+
+On macOS every mise task takes a native cargo branch first (`$nu.os-info.name == "macos"`): no pkg-config or
+PipeWire probe, no podman fallback (a Linux container cannot produce a macOS binary), and no Linux bindgen env.
+The audio backend is CoreAudio via cpal (`src/output_coreaudio.rs`), the window is AppKit via winit, and the
+Wayland app id plus D-Bus taskbar progress compile to no-ops.
+
+Prerequisites on a bare machine:
+
+- A Rust toolchain with `cargo` on PATH. Homebrew's `rustup` (`brew install rustup`) is keg-only: the
+  `cargo`/`rustc` proxies live in `$(brew --prefix rustup)/bin` (`/opt/homebrew/opt/rustup/bin`), which is not on
+  PATH by default, and `~/.cargo/bin` is never created. Add that keg bin to PATH as the formula caveat says
+  (`echo 'export PATH="$(brew --prefix rustup)/bin:$PATH"' >> ~/.zshrc`), then `rustup default stable`. Note that
+  `rustup run <toolchain> cargo build` does NOT work here (rustup looks for `rustc` in the uncreated
+  `~/.cargo/bin`); see `../../../docs/troubleshooting/homebrew-rustup-keg-only-proxies.md`.
+- libopus via `brew install opus`. The `opus` crate's `audiopus_sys` finds it through pkg-config (Homebrew's
+  `pkgconf` provides `pkg-config`); without a system libopus it builds the bundled source with `cmake` instead,
+  so `brew install cmake` covers that path. bindgen uses the Command Line Tools' libclang automatically, so no
+  `LIBCLANG_PATH` is needed.
+
+If the GPU OpenGL path misbehaves, force the software renderer with `SLINT_BACKEND=winit-software`.
+
 ## Commands
 
-All commands run through mise tasks. Build, lint, and test run on the host when the dev libraries are present and
-fall back to `podman run` otherwise; `run` builds the same way and then executes the binary on the host. Run them
-from this package directory, or prefix with the package path from the repository root.
+All commands run through mise tasks. On Linux, build, lint, and test run on the host when the dev libraries are
+present and fall back to `podman run` otherwise; on macOS they always build natively with cargo (see the macOS
+subsection above). `run` builds the same way and then executes the binary directly. Run them from this package
+directory, or prefix with the package path from the repository root.
 
 ```bash
 # build the container image (only needed for the container path; the host
@@ -261,7 +294,8 @@ files can be enqueued through command-line arguments (the portal cannot offer fi
 ## Session
 
 On exit the engine saves the queue (file paths), current index, position, volume, shuffle mode, and the
-repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux).
+repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux,
+`~/Library/Application Support/Monochromatic/music-player` on macOS, both resolved by the `directories` crate).
 Because `run` executes on the host, this is the real `~/.config/music-player`, persisting naturally across runs.
 On launch, when no file
 arguments are given, the saved session is restored: the queue, settings, and current track are reinstated and the
@@ -270,4 +304,5 @@ arguments take precedence over a saved session. When no arguments are given and 
 was stored, or every saved file has since moved and was pruned away), the user's music directory is auto-loaded
 paused, so the queue is populated without playing. The directory is resolved from `XDG_MUSIC_DIR`, then the XDG
 user-dirs file, then the `xdg-user-dir MUSIC` command; running on the host, these resolve directly, so no
-bind-mount or `XDG_MUSIC_DIR` injection is needed.
+bind-mount or `XDG_MUSIC_DIR` injection is needed. On macOS the `directories` crate resolves `~/Music`
+directly, and the `xdg-user-dir` step simply falls through (that command does not exist there).

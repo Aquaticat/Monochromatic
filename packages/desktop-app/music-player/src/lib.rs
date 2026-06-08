@@ -34,9 +34,44 @@ pub mod decode;
 // TS map:   `export * as opus from "./opus";`
 pub mod opus;
 
-// What:     `pub mod output;` the PipeWire audio output module (`src/output.rs`).
-// Why:      Thin FFI boundary: streams `f32` PCM to PipeWire via a ring buffer.
-// TS map:   `export * as output from "./output";`
+// What:     `#[cfg(target_os = "linux")]` is a CONDITIONAL-COMPILATION attribute:
+//           the item right below it is compiled into the program ONLY when the
+//           build target is Linux, and skipped entirely otherwise.
+//           `#[path = "output_pipewire.rs"]` overrides the default filename, so
+//           the module named `output` is read from `src/output_pipewire.rs`
+//           instead of `src/output.rs`. `pub mod output;` declares and
+//           re-exports that module.
+// Why:      Linux gets the native PipeWire backend; everything else in the
+//           player (engine.rs, controller.rs) only ever names `output::Output`
+//           and never learns which backend is behind it.
+// TS map:   like `export * as output from process.platform === "linux"
+//           ? "./output_pipewire" : "./output_coreaudio";` but resolved at
+//           COMPILE time, so only one branch is ever built.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as output from "./output_pipewire"; // only on Linux builds
+// ```
+#[cfg(target_os = "linux")]
+#[path = "output_pipewire.rs"]
+pub mod output;
+
+// What:     The macOS counterpart: `#[cfg(target_os = "macos")]` compiles the
+//           next item only on macOS builds, and `#[path = "output_coreaudio.rs"]`
+//           sources the `output` module from the cpal/CoreAudio file. Same
+//           `pub mod output;` name as the Linux branch above; exactly one of the
+//           two is ever compiled.
+// Why:      macOS has no PipeWire, so it uses CoreAudio (via cpal) while exposing
+//           the IDENTICAL `output::Output` surface, keeping the rest of the
+//           player platform-agnostic.
+// TS map:   the `: "./output_coreaudio"` arm of the conditional re-export above.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as output from "./output_coreaudio"; // only on macOS builds
+// ```
+#[cfg(target_os = "macos")]
+#[path = "output_coreaudio.rs"]
 pub mod output;
 
 // What:     `pub mod playback;` the device-free playback helpers (`src/playback.rs`):
