@@ -161,6 +161,59 @@ So rclone requests the right key; Garage v2.3.0 returns `404` on `HeadObject` fo
 That list/HEAD inconsistency, on a key that rclone double-encoding created, is the proximate
 cause of `Failed to read metadata: object not found`.
 
+### What Garage is doing internally
+
+The two S3 operations resolve the object through different table accesses, and for these keys
+they disagree.
+
+`ListObjects` range-scans the object table and reports the first version that holds data:
+
+```rust
+// src/api/s3/list.rs:809
+let version = match object.versions().iter().find(|x| x.is_data()) {
+```
+
+`HeadObject` (and `GetObject`) instead do a point lookup by exact key, then require a data
+version:
+
+```rust
+// src/api/s3/get.rs:183-194
+let object = garage
+    .object_table
+    .get(&bucket_id, &key.to_string())
+    .await?
+    .ok_or(Error::NoSuchKey)?;        // object missing under exact key -> 404
+let object_version = object
+    .versions()
+    .iter()
+    .rev()
+    .find(|v| v.is_data())
+    .ok_or(Error::NoSuchKey)?;        // no readable version -> 404
+```
+
+`is_data()` is true only for a completed, non-tombstone version
+(`src/model/s3/object_table.rs:686-694`: `Complete(DeleteMarker) => false`, other `Complete`
+`=> true`, `Uploading`/`Aborted` `=> false`).
+On the single node both the range scan and the point lookup read the same LMDB tree keyed by
+`(partition_key.hash(), sort_key)` (`src/table/table.rs:287-314`), so for identical key bytes
+they must agree; here they do not, which is a localized metadata-reference inconsistency on
+those specific object rows.
+Garage documents this class and ships repairs for it:
+
+```text
+# doc/book/operations/durability-repairs.md:138-145
+... if an object is deleted, the underlying versions or data blocks may still be held ...
+- garage repair versions:   purges any orphan version
+- garage repair block-refs: purges any orphan block reference
+```
+
+It is not systemic: the Mac resync issued a metadata read for all ~9018 objects and only these
+6 failed, and the clean twins return real bytes (`rclone cat` on the clean key yields
+`%PDF-1.4`).
+The phantom rows' `LastModified` advances to the current time on every `lsjson` (13:24:46 on
+one call, 13:39:09 on the next), which is rclone's `time.Now()` fallback when its per-object
+modtime HEAD 404s, not an active rewrite; nothing is recreating the keys.
+
 ### Why one bad object is fatal
 
 rclone bisync escalates a per-object failure during resync to a critical error that aborts
@@ -277,7 +330,25 @@ Tradeoff: requires auditing and pinning every client's encoding, and if FolderSy
 express the identical mask the mismatch (and the phantom keys) can recur.
 This prevents new phantoms; it does not remove the six that already exist.
 
-### Delete the six phantom keys (permanent cleanup, partially verified)
+### Repair the inconsistency in Garage (server-side, preferred)
+
+Because the failure is a Garage metadata-reference inconsistency (object listed but not
+point-gettable), the fix that targets the actual defect is server-side, on the Garage host:
+
+```bash
+C=$(docker ps --format '{{.Names}}' | grep -i garage)
+docker exec "$C" /garage block list-errors     # case 1 = metadata reference inconsistency
+docker exec "$C" /garage repair --yes versions      # purge orphan versions
+docker exec "$C" /garage repair --yes block-refs    # purge orphan block references
+docker exec "$C" /garage repair --yes tables        # Merkle-tree resync of the metadata tables
+```
+
+Tradeoff: needs host access (the admin API binds loopback only); `repair` walks the whole
+table so it costs some IO, but it is the documented, non-destructive remedy and clears the
+inconsistency for every client at once.
+If a repair leaves the phantom list entry behind, follow with the S3 delete below.
+
+### Delete the six phantom keys (S3 side, caveated)
 
 Verified safe-to-delete: every phantom has a clean twin that HEADs `200` with a byte-identical
 size, so the data is fully present under the correct name and the phantom is pure duplication.
@@ -291,10 +362,12 @@ rclone deletefile "garage:files/Plain/Text/Books/self help/江泽民文选‛‛
 
 Tradeoffs and the unverified step: the bucket is shared state (desktop, Mac, Android), so this
 needs coordination and explicit authorization.
-`rclone deletefile` may itself HEAD-check the object first and inherit the same `404`; if it
-refuses, fall back to a low-level S3 delete that issues `DeleteObject` without a precondition
-HEAD.
-Test the exact delete against one key on a throwaway bucket before running it on `files`.
+Because the object is not point-gettable, `rclone deletefile` may itself fail
+(`DeleteObject` on a key the backend resolves to `NoSuchKey`) and a `DELETE` could add a
+tombstone to an already-inconsistent row, which is why the server-side repair above is
+preferred.
+If deleting at the S3 layer, test the exact command against one key on a throwaway bucket
+first.
 
 ### Exclude the phantoms so bisync ignores them (symptom mask, proposed)
 
@@ -334,8 +407,10 @@ Constraint walk:
 
 1. Upstream's fault? Split. The double-encode needs a cross-client mask mismatch, which is a
    pipeline/config condition, not a single-pass rclone defect. The bisync-aborts-on-one-bad-
-   object behavior is arguably an rclone robustness defect. The list/HEAD inconsistency is
-   plausibly a genuine Garage bug, unconfirmed against Garage source.
+   object behavior is arguably an rclone robustness defect. The list/HEAD inconsistency is a
+   metadata-reference inconsistency that Garage documents and ships repairs for
+   (`garage repair versions`/`tables`, durability-repairs.md), i.e. a known operational
+   condition rather than an unreported defect.
 2. Can upstream fix it? rclone could skip an un-HEADable source object with a warning instead
    of a critical abort; Garage could make HEAD consistent with LIST. Both fixable in principle.
 3. Supporting the use case? Yes for both (S3 sync of arbitrary UTF-8 keys is core to each).
