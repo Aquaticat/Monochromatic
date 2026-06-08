@@ -5,18 +5,21 @@
 # fallback (a Linux container cannot produce a macOS or Windows binary), and the
 # audio backend is cpal (src/output_cpal.rs: CoreAudio on macOS, WASAPI on
 # Windows). Prereqs:
-#   macOS:   a Rust toolchain with `cargo` on PATH, and libopus (`brew install
-#            opus`) so the `opus` crate's audiopus_sys finds it via pkg-config
-#            (else it builds the bundled source with the `cmake`/`pkgconf` you
-#            also need on PATH).
+#   macOS:   a Rust toolchain with `cargo` on PATH; `cmake` plus the Command Line
+#            Tools C compiler (the opus crate's opusic-sys backend builds libopus
+#            1.6.1 from source via cmake). The repo's mise `aqua:Kitware/CMake`
+#            tool provides cmake; `brew install cmake` also works.
 #   Windows: rustup (msvc host) + a nightly toolchain on PATH; Visual Studio (CRT
-#            + Windows SDK); `cmake` on PATH (audiopus_sys builds libopus through
-#            the cmake crate); and LLVM's `bin` on PATH so `lld-link.exe` (the
+#            + Windows SDK); `cmake` on PATH (opusic-sys builds libopus 1.6.1 via
+#            cmake; 1.6.1's cmake_minimum_required is 3.16, so CMake 4 needs no
+#            policy override); and LLVM's `bin` on PATH so `lld-link.exe` (the
 #            linker pinned for windows-msvc in .cargo/config.toml) resolves. See
 #            HANDOVER.windows-toolchain-and-check.md.
 # Host build deps (layer with rpm-ostree on an immutable Fedora):
-#   pipewire-devel opus-devel fontconfig-devel freetype-devel
-# plus rustup/cargo, libclang, and Zig-less audio toolchain already on PATH.
+#   pipewire-devel fontconfig-devel freetype-devel
+# plus rustup/cargo and libclang already on PATH; cmake comes from the repo's mise
+# `aqua:Kitware/CMake` tool (opusic-sys vendors and cmake-builds libopus 1.6.1, so
+# no system opus-devel is needed) and the host's system `make` is its generator.
 # The {{vars.host_ok}} predicate probes pkg-config for those libraries; when any
 # is missing the {{vars.container_cargo}} prefix runs the same cargo command in
 # podman instead (package dir bind-mounted at /work, cargo registry in a named
@@ -40,15 +43,17 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 # (/usr/lib64) would point bindgen at a nonexistent directory there.
 
 [vars]
-# True when the host can build natively: cargo on PATH and every native library
-# pipewire/opus/Slint link against resolvable through pkg-config. pkg-config
-# --exists with several modules succeeds only when all are found (fontconfig
-# also validates its freetype2 Requires).
-host_ok = '((which cargo | is-not-empty) and ((^pkg-config --exists libpipewire-0.3 opus fontconfig freetype2 | complete | get exit_code) == 0))'
+# True when the host can build natively: cargo on PATH and the native libraries
+# Slint/PipeWire link against (pipewire + fontconfig/freetype) resolvable through
+# pkg-config (fontconfig also validates its freetype2 Requires). libopus is NOT
+# probed: the opus crate is pinned to the opusic-sys backend, which compiles
+# libopus 1.6.1 from source via cmake (the mise `aqua:Kitware/CMake` tool), so no
+# system libopus is required.
+host_ok = '((which cargo | is-not-empty) and ((^pkg-config --exists libpipewire-0.3 fontconfig freetype2 | complete | get exit_code) == 0))'
 # Host-only env for the native LINUX cargo branch (interpolated into the same
 # nushell block as `cargo`, so these $env mutations reach it). LIBCLANG_PATH:
 # host libclang ships only versioned (libclang.so.NN, no unversioned symlink), so
-# point bindgen (libspa-sys, audiopus_sys) at the lib dir explicitly. The clang
+# point bindgen (libspa-sys) at the lib dir explicitly. The clang
 # resource headers (stdbool.h and friends) live under /usr/lib/clang/<v>, but
 # libclang.so sits in /usr/lib64 and looks for them beside itself, so bindgen
 # cannot find them without an explicit -resource-dir. Glob the major-version dir

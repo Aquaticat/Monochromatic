@@ -11,9 +11,17 @@ FROM registry.fedoraproject.org/fedora:41
 #                          (1.17.0-dev) and requires rustc >= 1.92, while Fedora
 #                          41 ships 1.91.1. rustup gives the current stable
 #                          toolchain (see the rustup RUN below).
-#   gcc                    cc for building C dependencies (audiopus_sys)
+#   gcc                    cc for building C dependencies (libopus is compiled
+#                          from source by opusic-sys, the opus crate's -sys
+#                          backend; see the opus pin in Cargo.toml)
+#   cmake, ninja-build     opusic-sys builds vendored libopus 1.6.1 via CMake
+#                          (Ninja generator); the host gets cmake from mise, but
+#                          the container does not see host mise tools, so install
+#                          it here. See
+#                          docs/troubleshooting/audiopus-cmake4-libopus-min-version.md
 #   clang, clang-devel     libclang for bindgen used by pipewire's libspa-sys
-#   pkgconf-pkg-config     pkg-config used to locate libpipewire / libopus
+#   pkgconf-pkg-config     pkg-config used to locate libpipewire (no longer opus:
+#                          opusic-sys vendors and statically links libopus)
 #   *-devel                headers for the native audio dependencies
 # Runtime (for `run`):
 #   mesa-*                 OpenGL/EGL for the femtovg renderer + DRI drivers
@@ -27,10 +35,10 @@ FROM registry.fedoraproject.org/fedora:41
 #   xdg-desktop-portal     rfd file picker over the portal (when D-Bus passed)
 RUN dnf install -y \
       gcc \
+      cmake ninja-build \
       clang clang-devel \
       pkgconf-pkg-config \
       pipewire-devel \
-      opus-devel \
       mesa-dri-drivers mesa-libgbm libglvnd-glx libglvnd-egl \
       libwayland-client libwayland-cursor libwayland-egl libxkbcommon \
       fontconfig fontconfig-devel freetype freetype-devel \

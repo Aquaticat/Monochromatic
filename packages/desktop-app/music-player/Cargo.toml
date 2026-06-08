@@ -51,7 +51,22 @@ icu_provider = { version = "2", features = ["logging"] }
 # background true-peak measurement sweep at idle priority so it never competes
 # with the realtime audio thread or the UI. std exposes no scheduling-class API.
 libc = "0.2"
-opus = "0.3"
+# Pinned to opus-rs git HEAD (post-0.3.1) instead of the crates.io 0.3.1 release.
+# 0.3.1 depends on audiopus_sys 0.2.2, whose BUNDLED libopus (commit 7b05f44)
+# declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed compatibility
+# with < 3.5 and aborts configuring it (seen on Windows with CMake 4.3.3). opus-rs
+# HEAD replaced audiopus_sys with opusic-sys 0.7.3, which bundles libopus 1.6.1
+# (cmake_minimum_required(VERSION 3.16)), so it configures cleanly under CMake 4
+# with no CMAKE_POLICY_VERSION_MINIMUM override. opusic-sys's `bundled` feature is
+# ON by default and the `opus` crate pulls it with default features, so libopus is
+# compiled from source via cmake on EVERY platform (this is why the Containerfile
+# now installs cmake; macOS and Windows already have it). The public `opus` API
+# (Decoder/Channels/decode_float/reset_state/Error) is unchanged at this rev, so
+# src/opus.rs and error.rs need no edits. The rev is pinned (not branch=master) so
+# `cargo update` cannot move it, and Cargo.lock is gitignored repo-wide (`*.lock`).
+# Revert to a crates.io `version` once a release with the opusic-sys backend ships.
+# See ../../../docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
+opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
 rfd = "0.15"
 ringbuf = "0.4"
 serde = { version = "1", features = ["derive"] }
