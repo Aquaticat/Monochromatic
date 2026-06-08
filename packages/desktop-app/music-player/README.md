@@ -323,6 +323,39 @@ The binary also accepts file and folder paths as command-line arguments, which a
 The Open button uses the XDG desktop portal folder picker, and a chosen folder is scanned recursively. Individual
 files can be enqueued through command-line arguments (the portal cannot offer files and folders in one dialog).
 
+## Distribution and signing
+
+For distribution outside the app stores, the macOS build ships as a signed, notarized `.app` and the Windows build
+as an Authenticode-signed `.exe`. Each binary is built on its own operating system (the Mach-O on the Mac, the
+`.exe` on Windows, as in the platform subsections above), then bundled and signed from the Linux box: `rcodesign`
+signs and notarizes the macOS app, and `osslsigncode` (in `Containerfile.sign`) signs the Windows exe.
+Cross-compiling the GUI from Linux is out of scope, so only the signing is cross-platform. The signing identity is
+a registered organization, so the maintainer's legal name does not appear in the public signature.
+
+The per-OS binary is copied into `dist/` (gitignored) after building, then:
+
+```bash
+# macOS: assemble the .app, sign it, then notarize + staple it
+mise run //packages/desktop-app/music-player:bundle:macos
+mise run //packages/desktop-app/music-player:sign:macos
+mise run //packages/desktop-app/music-player:notarize:macos
+
+# Windows: Authenticode-sign the exe (osslsigncode in the sign container)
+mise run //packages/desktop-app/music-player:sign:windows
+
+# self-signed end-to-end smoke test of the whole pipeline (no real credentials)
+mise run //packages/desktop-app/music-player:verify:signing
+
+# regenerate the app icon (.icns + .ico) after editing assets/icon.svg
+mise run //packages/desktop-app/music-player:gen:icons
+```
+
+Each sign task reads its real credentials from environment variables and falls back to a throwaway self-signed
+identity when they are unset, so the pipeline runs today; self-signed artifacts are not distributable. Acquiring
+the real credentials is a one-time human task documented in `HANDOVER.macos-signing-credentials.md` and
+`HANDOVER.windows-signing-credentials.md`. The design and the rejected alternatives are recorded in
+`../../../docs/decisions/desktop-app-code-signing.md`.
+
 ## Session
 
 On exit the engine saves the queue (file paths), current index, position, volume, shuffle mode, and the
