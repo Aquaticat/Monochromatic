@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  macOS application bundle metadata for music-player. The `bundle:macos` mise
+  task copies this into `dist/Music Player.app/Contents/Info.plist` and rewrites
+  the two version values from Cargo.toml so they never drift. The values here are
+  the authoritative defaults and keep the file valid on its own.
+
+  CFBundleIdentifier is a stable reverse-DNS string; it need not be a real domain
+  and (for Developer ID distribution + notarization) need not be pre-registered
+  with Apple. It is intentionally distinct from the Linux Wayland app id
+  `monochromatic.music-player`.
+-->
+<plist version="1.0">
+<dict>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleName</key>
+  <string>Music Player</string>
+  <key>CFBundleDisplayName</key>
+  <string>Music Player</string>
+  <key>CFBundleExecutable</key>
+  <string>music-player</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.monochromatic.music-player</string>
+  <key>CFBundleShortVersionString</key>
+  <string>0.1.0</string>
+  <key>CFBundleVersion</key>
+  <string>0.1.0</string>
+  <key>CFBundleIconFile</key>
+  <string>music-player.icns</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>11.0</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.music</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+  <key>NSHumanReadableCopyright</key>
+  <string>LGPL-3.0-or-later</string>
+</dict>
+</plist>

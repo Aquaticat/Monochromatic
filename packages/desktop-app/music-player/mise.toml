@@ -243,3 +243,26 @@ for s in $specs {
 print "generating fixtures/offset.opus"
 ffmpeg -y -i fixtures/tone.opus -c copy -output_ts_offset 0.5 fixtures/offset.opus
 '''
+
+[tasks."gen:icons"]
+description = "Regenerate the macOS .icns + Windows .ico from assets/icon.svg (run once, commit results)"
+# The host (immutable Fedora) carries none of the icon tools, so generation runs
+# in the Containerfile.icons image (built first; layer-cached after the first
+# run). rsvg-convert renders the SVG to PNG at each size; png2icns packs the
+# macOS set (16/32/48/128/256/512/1024 are the icns-valid sizes), icotool packs
+# the Windows set (16/32/48/64/128/256). The PNGs are throwaway (under dist/,
+# gitignored); the committed outputs are assets/music-player.{icns,ico}, which
+# the bundle:macos task and the Windows build.rs consume, so neither needs this
+# image. Rerun only when assets/icon.svg changes.
+run = '''
+podman build -t localhost/monochromatic/icon-tools -f Containerfile.icons .
+let img = "localhost/monochromatic/icon-tools"
+let mount = $"(pwd):/work"
+mkdir dist/icons
+for s in [16 32 48 64 128 256 512 1024] {
+  podman run --rm --security-opt label=disable -v $mount -w /work $img rsvg-convert -w $s -h $s assets/icon.svg -o $"dist/icons/icon-($s).png"
+}
+podman run --rm --security-opt label=disable -v $mount -w /work $img png2icns assets/music-player.icns dist/icons/icon-16.png dist/icons/icon-32.png dist/icons/icon-48.png dist/icons/icon-128.png dist/icons/icon-256.png dist/icons/icon-512.png dist/icons/icon-1024.png
+podman run --rm --security-opt label=disable -v $mount -w /work $img icotool -c -o assets/music-player.ico dist/icons/icon-16.png dist/icons/icon-32.png dist/icons/icon-48.png dist/icons/icon-64.png dist/icons/icon-128.png dist/icons/icon-256.png
+print "regenerated assets/music-player.icns and assets/music-player.ico; commit them"
+'''

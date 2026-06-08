@@ -1,1 +1,5 @@
 /target
+# Signing/packaging working tree: synced per-OS binaries, the assembled
+# `Music Player.app`, the signed `.exe`, and throwaway self-signed test certs.
+# Reproducible from the build + sign mise tasks, so it is never committed.
+/dist

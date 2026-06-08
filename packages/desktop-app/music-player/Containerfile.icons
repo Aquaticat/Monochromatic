@@ -1,0 +1,18 @@
+# Icon-rendering toolchain for the `gen:icons` mise task. The host is an
+# immutable-style Fedora without these tools, so icon generation runs in this
+# throwaway image (same podman pattern as the build Containerfile). gen:icons is
+# rare (regenerate only when assets/icon.svg changes), and its outputs
+# (assets/music-player.icns, assets/music-player.ico) are committed, so neither
+# the build nor the sign tasks need this image.
+#   librsvg2-tools  rsvg-convert: render assets/icon.svg to PNG at each size
+#   libicns-utils   png2icns: pack the PNGs into a macOS .icns
+#   icoutils        icotool: pack the PNGs into a Windows .ico
+#   ImageMagick     fallback rasteriser / format glue if needed
+FROM registry.fedoraproject.org/fedora:41
+RUN dnf install -y \
+      librsvg2-tools \
+      libicns-utils \
+      icoutils \
+      ImageMagick \
+    && dnf clean all
+WORKDIR /work

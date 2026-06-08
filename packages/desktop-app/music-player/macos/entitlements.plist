@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened-runtime entitlements for the notarized macOS build. Intentionally
+  empty: music-player only plays audio (no microphone, no network, no child
+  processes) and is a self-contained statically linked binary, so it needs none
+  of the hardened-runtime exceptions. The hardened runtime itself is turned on by
+  `rcodesign sign --code-signature-flags runtime`, not by this file.
+
+  Add an entitlement here ONLY if a notarized run fails for lack of one (for
+  example `com.apple.security.cs.disable-library-validation` if the app ever
+  dlopen's an unsigned third-party dylib). Keep the set as small as possible:
+  notarization scans for over-broad entitlements.
+-->
+<plist version="1.0">
+<dict>
+</dict>
+</plist>
