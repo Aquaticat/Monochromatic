@@ -113,15 +113,15 @@ cargo-binstall = "latest"
 
 # rcodesign (the `apple-codesign` crate) signs, notarizes, and staples the
 # packages/desktop-app/music-player macOS .app from Linux (the Mach-O is still
-# built on the Mac; only signing is cross-platform). The upstream repo publishes
-# per-crate releases with slash tags (`apple-codesign/X.Y.Z`) and target-triple
-# asset archives whose inner binary is named `rcodesign`. The github backend
-# pulls the latest release's x86_64 musl archive directly and extracts that
-# binary; the crate ships no cargo-binstall metadata, so a `cargo:` entry would
-# risk a slow from-source build instead. If a non-codesign `apple-*` crate ever
-# becomes the repo's "latest" GitHub release, pin a version here. See
+# built on the Mac; only signing is cross-platform). Installed from crates.io by
+# crate name through the cargo backend, consistent with the other Rust CLIs in
+# this list. The crate's single binary is named `rcodesign` (not after the
+# crate), so the package's sign:macos task still resolves it on PATH, the same
+# way `cargo:timeout-cli` ships a `timeout` binary. The crate ships no
+# cargo-binstall metadata, so cargo-binstall falls back to a from-source build
+# here rather than fetching a prebuilt archive. See
 # docs/decisions/desktop-app-code-signing.md and the package's sign:macos task.
-"github:indygreg/apple-platform-rs" = { version = "latest", exe = "rcodesign" }
+"cargo:apple-codesign" = "latest"
 
 # Zig toolchain for packages/desktop-app/terminal: its libghostty-vt-sys
 # build-dependency compiles vendored Ghostty with Zig and requires Zig 0.15.x
