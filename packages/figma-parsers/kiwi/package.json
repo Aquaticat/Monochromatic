@@ -44,8 +44,5 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
-  },
-  "dependencies": {
-    "nano-spawn": "catalog:"
   }
 }

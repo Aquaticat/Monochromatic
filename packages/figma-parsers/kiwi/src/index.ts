@@ -1177,97 +1177,31 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
 }
 
 /**
- * Decompress zstd-compressed data.
+ * Decompress a single zstd frame with Node's built-in node:zlib.
  *
- * Tries the @bokuwatch/zstd module first, then falls back to
- * spawning the `zstd` CLI tool.
+ * Target runtimes ship native zstd in node:zlib (Node >= 22.15, Bun >= 1.3),
+ * so no optional native module or zstd CLI subprocess is needed. Stays async
+ * to preserve the call contract, mirroring the inflateRawSync schema decode
+ * above; the decode itself is synchronous. The dynamic import matches the
+ * file's existing ESM-friendly access of node:zlib for inflateRawSync.
  *
- * @param data - Zstd-compressed bytes
+ * @param data - zstd-compressed bytes spanning exactly one frame
  *
- * @returns Decompressed bytes
+ * @returns decompressed document bytes
+ *
+ * @example
+ * ```ts
+ * const doc = await decompressZstd(frameBytes,);
+ * ```
  */
 async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
-  // Try native zstd module
-  try {
-    /**
-     * Native-binding zstd decoder; available only when the optional dep is installed.
-     */
-    const { decompress, } = await import('@bokuwatch/zstd' as string);
-    return new Uint8Array(
-      decompress(Buffer.from(data,),),
-    );
-  }
-  catch {
-    // Fall through to CLI
-  }
-
-  // Fallback: use zstd CLI
   /**
-   * Cross-platform child-process spawner; used to invoke the system `zstd` CLI.
+   * Node `zlib.zstdDecompressSync` resolved via dynamic import to keep this file ESM-friendly.
    */
-  const { default: spawn, } = await import('nano-spawn');
-  /**
-   * Sync fs helpers; CLI fallback needs temp file shuttling, not streaming I/O.
-   */
-  const {
-    writeFileSync,
-    readFileSync,
-    unlinkSync,
-  } = await import('node:fs');
-  /**
-   * Path joiner used to build temp file paths under the OS temp directory.
-   */
-  const { join, } = await import('node:path');
-  /**
-   * Resolved OS temp directory; nested in a `.then` because `tmpdir()` is not exported as a default.
-   */
-  const tmpDir = await import('node:os').then(m => m.tmpdir());
-  /**
-   * Per-call unique suffix for the temp filenames; a UUID rather than `Date.now()` so concurrent calls landing on the same millisecond cannot collide on the same paths.
-   */
-  const id = crypto.randomUUID();
-  /**
-   * Temp path for the compressed input passed to the CLI.
-   */
-  const tmpIn = join(
-    tmpDir,
-    `figma-kiwi-${id}.zst`,
+  const { zstdDecompressSync, } = await import('node:zlib');
+  return new Uint8Array(
+    zstdDecompressSync(Buffer.from(data,),),
   );
-  /**
-   * Temp path receiving the decompressed output of the CLI.
-   */
-  const tmpOut = join(
-    tmpDir,
-    `figma-kiwi-${id}.bin`,
-  );
-
-  try {
-    writeFileSync(
-      tmpIn,
-      data,
-    );
-    await spawn(
-      'zstd',
-      [
-        '-d',
-        tmpIn,
-        '-o',
-        tmpOut,
-        '-f',
-      ],
-    );
-    return new Uint8Array(readFileSync(tmpOut,),);
-  }
-  finally {
-    try {
-      unlinkSync(tmpIn,);
-    }
-    catch { /* ignore */ }
-    try {
-      unlinkSync(tmpOut,);
-    }
-    catch { /* ignore */ }
-  }
 }
 
 // endregion
