@@ -121,8 +121,13 @@ run = "node src/build/compress.ts"
 
 Run under `node` (not `bun`), since Bun is being removed. Node 26 runs the `.ts` file directly via
 type stripping; the script uses only strippable type annotations (no enums, namespaces, or parameter
-properties). The self-referential `new Worker(new URL(import.meta.url))` pattern was verified to run
-under Node 26.3.0 during benchmarking.
+properties). The self-referential `new Worker(new URL(import.meta.url))` pattern was verified under
+Node 26.3.0 during benchmarking. A separate check confirmed that a `.ts` file in this package run by
+`node` both type-strips and successfully imports the workspace tagged logger (the package is
+`type: module`, and the logger's `exports` map resolves to its built `dist/final/node/index.mjs`, so
+the no-type-stripping-under-`node_modules` rule does not apply). The one prerequisite is that
+workspace dependencies are built before the task runs, which is a property of the broader Bun-to-Node
+build-script migration, not specific to this task.
 
 ### The script
 
@@ -130,9 +135,12 @@ New file `packages/webapp-content/ssg-test/src/build/compress.ts`, beside the ex
 `postprocess.ts` and `favicon.ts`. Single self-dispatching file (main thread plus worker branch).
 Proposed shape, to be adapted to the package's exact logger and module conventions:
 
+The design below incorporates an external review of an earlier draft of this plan (GPT Pro); its
+points are folded in throughout and called out where they changed a decision.
+
 ```ts
 import { Worker, isMainThread, workerData, parentPort, } from 'node:worker_threads';
-import { readdirSync, readFileSync, writeFileSync, statSync, } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, statSync, rmSync, } from 'node:fs';
 import { availableParallelism, } from 'node:os';
 import { join, } from 'node:path';
 import zlib from 'node:zlib';
@@ -144,53 +152,90 @@ import zlib from 'node:zlib';
 const COMPRESSION_LEVEL = 19;
 
 /**
- * File extensions whose contents are already compressed; skipped without being
- * read, since recompressing them wastes CPU and never shrinks them.
+ * Exact zstd parameters. Checksum and content-size flags are set explicitly to
+ * 0 to match the old CLI flags (--no-check, --no-content-size) rather than rely
+ * on library defaults.
+ */
+const ZSTD_OPTIONS = {
+  params: {
+    [zlib.constants.ZSTD_c_compressionLevel]: COMPRESSION_LEVEL,
+    [zlib.constants.ZSTD_c_contentSizeFlag]: 0,
+    [zlib.constants.ZSTD_c_checksumFlag]: 0,
+  },
+} as const;
+
+/**
+ * Extensions whose bytes are already compressed; skipped without being read.
+ * Deliberately conservative: only formats that are genuinely pre-compressed.
+ * ttf/otf/ico were removed on review (their tables are uncompressed and zstd
+ * helps); keep-if-smaller covers any borderline case left in.
  */
 const INCOMPRESSIBLE_EXTENSIONS: ReadonlySet<string> = new Set([
-  'zst', 'gz', 'br', 'avif', 'webp', 'png', 'jpg', 'jpeg', 'gif', 'jxl', 'ico',
-  'woff', 'woff2', 'ttf', 'otf', 'mp4', 'webm', 'mov', 'mp3', 'ogg', 'flac',
+  'zst', 'gz', 'br', 'avif', 'webp', 'png', 'jpg', 'jpeg', 'gif', 'jxl',
+  'woff', 'woff2', 'mp4', 'webm', 'mov', 'mp3', 'ogg', 'flac', 'aac', 'm4a',
 ]);
-
-// ... main-thread branch: enumerate dist, filter extensions, shard, spawn
-//     workers, aggregate results, log a summary via the package tagged logger.
-// ... worker branch: compress its shard with zstdCompressSync, write
-//     <file>.zst only when strictly smaller, postMessage a {written, saved} tally.
 ```
 
-Design points, each tied to the benchmark:
+Design points, with the review's refinements folded in:
 
 - **Engine:** `node:worker_threads`, each worker calling synchronous `zstdCompressSync`. Node's async
   `zstdCompress` is rejected (pathological). The validated reference engine is `compress-node-wt.ts`
   in the benchmark report's reproduction section.
-- **Worker count (resolved):** detect the physical-core count when that is simple, otherwise fall
-  back to `Math.floor(availableParallelism() / 2)`. Concretely: on Linux read `/proc/cpuinfo` and
-  count distinct `(physical id, core id)` pairs (a plain file read, no subprocess); on any other
-  platform, or if the parse yields nothing usable, fall back to `floor(availableParallelism() / 2)`
-  (which equals the physical count on typical 2-way-SMT chips). Clamp the result to
-  `>= 1` and `<= fileCount`. On the benchmark machine this yields 8, inside the measured 4-to-10
-  plateau, and never oversubscribes past the ~12 cliff. An optional `ZSTD_WORKERS` env override may
-  be added for hosts where the heuristic is wrong.
-- **Level:** `COMPRESSION_LEVEL = 19`, with `ZSTD_c_contentSizeFlag = 0` (matching the current task's
-  `--no-content-size`; checksums are already off by default, matching `--no-check`).
+- **Recursive snapshot, `.zst` excluded (review).** The main thread walks `dist/` **recursively**
+  (`readdirSync(dist, { recursive: true })`), and snapshots the full candidate list **before**
+  spawning any worker (so workers never observe `.zst` files being created mid-run). Existing `.zst`
+  files are **excluded from the candidate set** (never recompress a `.zst` into a `.zst.zst`).
+  **Symlinks are skipped** (`statSync` then `isFile()`, not following directory symlinks) to avoid
+  escaping `dist/` or double-processing.
+- **Worker count (resolved + review-hardened).** Order of precedence: (1) the `ZSTD_WORKERS` env var
+  if set (mandatory escape hatch); (2) otherwise a heuristic **capped by `availableParallelism()`**.
+  The cap matters: `os.availableParallelism()` is the value Node documents as the parallelism a
+  program should use and it respects cgroup/CPU quotas, whereas `/proc/cpuinfo` reports host topology
+  and would **oversubscribe a CPU-limited container or CI runner**. So:
+  `workers = min(physicalCores ?? floor(availableParallelism() / 2), availableParallelism(), fileCount)`,
+  where `physicalCores` is the count of distinct `(physical id, core id)` pairs parsed from
+  `/proc/cpuinfo` on Linux (a plain file read) or `undefined` elsewhere. **Zero candidate files is a
+  defined path: spawn no workers, log `0 compressed, N skipped`, exit cleanly.**
+- **Level:** `ZSTD_OPTIONS` above; level 19, content-size off, checksum off (all explicit).
 - **Exclusion (extension skip):** files whose extension is in `INCOMPRESSIBLE_EXTENSIONS` are skipped
-  without being read. This is the spirit of the CLI's `--exclude-compressed`.
-- **Exclusion (keep if smaller):** for the files that are compressed, write `<file>.zst` only when it
-  is strictly smaller than the source. Stricter than `--exclude-compressed` (which is extension-only
-  and can leave a `.zst` larger than its source). The set of produced `.zst` files therefore differs
-  from the CLI's by design; this is correct for `wireSize` and any precompressed server.
-- **Output location:** `<file>.zst` written next to the source inside `dist/`, identical to the CLI's
-  in-place behavior. `build:clean` (`rm -rf dist`) runs before every build, so there are no stale
-  `.zst` to reap.
+  without being read. The list is intentionally conservative (review): only genuinely pre-compressed
+  formats; everything else falls through to keep-if-smaller.
+- **Exclusion (keep if smaller) and stale-output safety (review).** For **every** candidate (whether
+  skipped by extension or compressed), the worker first removes any pre-existing `<file>.zst`. Then,
+  for a compressed file, it writes a fresh `<file>.zst` only if it is strictly smaller than the
+  source. This makes the task **idempotent and self-cleaning even when run standalone** (not just
+  after `build:clean`): no stale companion can survive when its source no longer compresses smaller or
+  becomes a skipped extension. This is stricter than the CLI's extension-only `--exclude-compressed`
+  and is the correct behavior for `wireSize` and any precompressed server. The produced `.zst` set
+  therefore differs from the CLI's by design.
+- **Orphan `.zst` (source deleted).** Per-source removal does not catch a `.zst` whose source file no
+  longer exists (it is never visited). A full build runs `build:clean` (`rm -rf dist`) first, so
+  orphans cannot survive a full build; `postprocess.ts` already prunes stale fingerprinted `.zst`.
+  Standalone reruns rely on those. If stronger guarantees are wanted, the script can also enumerate
+  existing `.zst` and drop any with no surviving source; flagged, not required.
+- **Output location:** `<file>.zst` next to the source inside `dist/`, identical to the CLI's in-place
+  behavior.
+
+### Worker lifecycle contract (review)
+
+Each worker is wrapped in a promise that **resolves only after the expected completion message** and
+**rejects on either an `error` event or a non-zero `exit` code** (Node's own worker example handles
+both; an `error` alone is not a sufficient contract because a worker can exit non-zero without
+emitting `error`). Workers post a `{ written, skipped, savedBytes }` tally on success; the main
+thread aggregates and logs one summary line. A rejection rethrows on the main thread (no
+`process.exit`, no silent catch).
 
 ### Conventions to honor (from AGENTS.md)
 
 - Tagged logger from `@monochromatic-dev/module-logger` (already a dependency of the package); no raw
   `console.log` in the main-thread path. Workers stay silent and report tallies back to the main
-  thread, which logs one summary line (files compressed, files skipped, bytes saved).
+  thread, which logs the summary. Verified empirically that `node src/build/compress.ts` type-strips
+  and imports the workspace logger (which resolves through its `exports` map to the built
+  `dist/final/node/index.mjs`, not TS source, so Node's no-type-stripping-under-`node_modules` rule
+  does not bite), provided workspace deps are built first.
 - Comprehensive TSDoc on every declaration; `//region` markers for the main and worker branches.
-- Throw on errors, do not `process.exit`; a worker error propagates via the worker `error` event and
-  is rethrown on the main thread. No silent catches.
+- Throw on errors, do not `process.exit`; worker failures reject per the lifecycle contract above and
+  rethrow on the main thread. No silent catches.
 - Stay under the max-lines budget; if the single file would exceed it, split the worker branch into a
   sibling `compress.worker.ts` and load it by URL (this needs a quick check that Node strips types in
   a separately-loaded worker module; the single-file self-referential form is already verified).
@@ -213,24 +258,29 @@ Cross the integration boundary, not just "it compiled."
    `bun packages/figma-parsers/kiwi/src/index.unit.test.ts` (no `test` task exists in that package;
    run the file directly per the repo's test convention). Confirm the `.fig` / `.deck` / `.jam`
    integration cases pass.
-2. **ssg compress end-to-end.** Build the site, run the new task, and confirm correctness at the user
-   boundary:
+2. **ssg compress end-to-end, through the real mise task (review).** Run the actual task, not the
+   benchmark script, so `.ts` type-stripping, ESM resolution, and workspace dependency resolution are
+   all exercised under the package's real module graph:
    - `mise run //packages/webapp-content/ssg-test:build:site` then
      `mise run //packages/webapp-content/ssg-test:build:compress`.
-   - Confirm `.zst` companions appear next to compressible assets and not next to skipped
-     extensions.
-   - Decode a sample `.zst` and diff against its source (round-trip): the decompressed bytes must
-     equal the original. Use `node -e` with `zstdDecompressSync`, or the system `zstd -d` if still
-     installed during the transition.
-   - Confirm no `.zst` is larger than its source (the keep-if-smaller guard).
-3. **page-weight still resolves wire sizes.** Run
+   - Confirm `.zst` companions appear next to compressible assets and not next to skipped extensions,
+     and that no `.zst.zst` is produced (existing `.zst` excluded from candidates).
+   - Confirm no `.zst` is larger than its source (keep-if-smaller guard).
+3. **Verify every `.zst`, not a sample (review).** Recursively find all `.zst` companions, decompress
+   each with `zstdDecompressSync`, and byte-compare to its source; require zero mismatches across the
+   whole tree.
+4. **Stale-output test (review).** Plant a bogus, deliberately larger `<file>.zst` next to a known
+   source (and a `.zst` next to a now-skipped-extension file), rerun `build:compress` standalone
+   (without `build:clean`), and confirm each is either replaced with a valid strictly-smaller file or
+   removed. This exercises the idempotent self-cleaning contract.
+5. **page-weight still resolves wire sizes.** Run
    `mise run //packages/webapp-content/ssg-test:audit:weight` and confirm it reports `.zst` sizes
    where present and raw sizes otherwise (it reads the `.zst` companions via `wireSize`).
-4. **Type-check and lint** the touched packages:
+6. **Type-check and lint** the touched packages:
    `mise run //packages/figma-parsers/kiwi:lint:types`,
    `mise run //packages/webapp-content/ssg-test:lint:types`, and the corresponding `lint` tasks. Zero
    errors and zero warnings.
-5. **Tool removal sanity.** After removing the mise tool, confirm a fresh `mise install` / task run
+7. **Tool removal sanity.** After removing the mise tool, confirm a fresh `mise install` / task run
    does not error for a missing `zstd`, and that nothing in the build path still calls the binary.
 
 ## Risks and rollback
@@ -243,6 +293,17 @@ Cross the integration boundary, not just "it compiled."
 - **worker_threads under Node type stripping.** The self-referential single-file pattern is verified
   under Node 26.3.0. If the file is later split into a separate worker module, re-verify type
   stripping loads the worker correctly.
+- **Experimental zstd APIs (review).** Node's docs still mark the `node:zlib` zstd APIs and Zstd
+  options as experimental. With a pinned Node runtime this is acceptable, but it is recorded here
+  because removing the CLI tool removes the fallback: if a future Node changes the zstd API surface,
+  both the figma decode and the ssg compress depend on it with no CLI escape hatch. The `decompress`
+  direction is the higher-stakes one (it parses real Figma files); its round-trip is already
+  validated against CLI-produced frames.
+- **Build-script runtime depends on the Bun-to-Node migration (review).** `node src/build/compress.ts`
+  requires workspace dependencies (the tagged logger) to be built, and assumes the package stays
+  `type: module`. This is verified to work today, but it couples the task to the broader migration's
+  build-ordering story; verify under the real module graph (see verification step 2), not just the
+  dependency-free benchmark file.
 - **Rollback** is a clean revert of the three changes; the `.zst` output format is unchanged (still
   standard zstd frames), so consumers (`wireSize`, any precompressed server) are unaffected by a
   revert.
@@ -254,9 +315,13 @@ The four open questions have been answered by review; recorded here so the plan 
 1. **worker_threads versus sequential: use worker_threads.** The added complexity is acceptable.
    (worker_threads ~168 ms vs sequential ~243 ms on the current `dist/`, ~3x advantage at 2,000
    files.)
-2. **Worker count: detect physical cores when simple, else `floor(availableParallelism() / 2)`.** See
-   the resolved worker-count bullet in Change 2: Linux `/proc/cpuinfo` parse, otherwise the `/2`
-   fallback, clamped to `[1, fileCount]`, with an optional `ZSTD_WORKERS` override.
+2. **Worker count: detect physical cores when simple, else `floor(availableParallelism() / 2)`,
+   hardened on review to cap by `availableParallelism()`.** `min(physicalCores ?? floor(avail/2),
+   avail, fileCount)`, where `physicalCores` comes from a Linux `/proc/cpuinfo` parse (else
+   `undefined`). The `availableParallelism()` cap is mandatory because `/proc/cpuinfo` reports host
+   topology and would oversubscribe a CPU-limited container or CI runner, whereas
+   `availableParallelism()` respects cgroup quotas. Zero candidate files spawns no workers. A
+   `ZSTD_WORKERS` env override is provided as the escape hatch. See the Change 2 worker-count bullet.
 3. **Level: 19.** Best ratio; the dev-loop latency (~170 ms) is acceptable.
 4. **File naming: `src/build/compress.ts` (package pattern) is accepted**, consistent with the
    sibling `postprocess.ts` / `favicon.ts`, in deliberate preference to the global `SCR`
