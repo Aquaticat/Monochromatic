@@ -20,6 +20,14 @@ use serde::{Deserialize, Serialize};
 // TS map:   `import { ShuffleMode } from "./command";`
 use crate::command::ShuffleMode;
 
+// What:     `use crate::identity;` imports the shared identity-strings module
+//           (importing the MODULE, so reads stay qualified as
+//           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
+// Why:      `session_path` builds the config dir from the reverse-DNS triple,
+//           which now lives in one place instead of inline literals.
+// TS map:   `import * as identity from "./identity";`
+use crate::identity;
+
 // What:     `#[derive(...)]` auto-implements: `Clone` (duplicable), `Debug`
 //           (`{:?}` printing), `PartialEq` (`==`, used in tests), and
 //           `Serialize`/`Deserialize` (JSON both ways).
@@ -345,13 +353,22 @@ impl Session {
 // }
 // ```
 fn session_path() -> Option<PathBuf> {
-    // What:     `directories::ProjectDirs::from("dev", "Monochromatic", "music-player")`
-    //           asks the `directories` crate for the standard per-app config
-    //           location (on Linux: `$XDG_CONFIG_HOME/music-player`). It returns
-    //           `Option<ProjectDirs>` (None if the home directory cannot be found).
-    // Why:      Respect the platform's config-dir convention instead of guessing.
-    // TS map:   `const dirs = projectDirs("dev","Monochromatic","music-player");`
-    directories::ProjectDirs::from("dev", "Monochromatic", "music-player")
+    // What:     `directories::ProjectDirs::from(identity::CONFIG_QUALIFIER,
+    //           identity::CONFIG_ORGANIZATION, identity::CONFIG_APPLICATION)` asks
+    //           the `directories` crate for the standard per-app config location
+    //           (on Linux: `$XDG_CONFIG_HOME/music-player`) from the reverse-DNS
+    //           triple, now sourced from the shared `identity` module instead of
+    //           inline literals. It returns `Option<ProjectDirs>` (None if the
+    //           home directory cannot be found).
+    // Why:      Respect the platform's config-dir convention instead of guessing,
+    //           and keep the identity strings in one place (identity.rs) so the
+    //           config path cannot drift from the app's other identifiers.
+    // TS map:   `const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);`
+    directories::ProjectDirs::from(
+        identity::CONFIG_QUALIFIER,
+        identity::CONFIG_ORGANIZATION,
+        identity::CONFIG_APPLICATION,
+    )
         // What:     `.map(|dirs| dirs.config_dir().join("session.json"))` runs only
         //           when `Some`. `dirs.config_dir()` returns `&Path`; `.join(...)`
         //           appends the filename and returns an owned `PathBuf`.

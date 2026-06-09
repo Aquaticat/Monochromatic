@@ -9,6 +9,13 @@
 // TS map:   `export * as command from "./command";`
 pub mod command;
 
+// What:     `pub mod identity;` the platform identity-string module
+//           (`src/identity.rs`).
+// Why:      One home for the Wayland app id, the macOS bundle id, and the config-
+//           dir reverse-DNS triple, so the three platforms' names never drift.
+// TS map:   `export * as identity from "./identity";`
+pub mod identity;
+
 // What:     `pub mod queue;` the play-queue model module.
 // Why:      Pure traversal/shuffle/repeat logic, unit-tested.
 // TS map:   `export * as queue from "./queue";`

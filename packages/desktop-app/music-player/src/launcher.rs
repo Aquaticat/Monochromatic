@@ -82,19 +82,21 @@ use zbus::blocking::Connection;
 #[cfg(target_os = "linux")]
 use zbus::zvariant::Value;
 
-// What:     `pub(crate) const APP_ID: &str = "monochromatic.music-player";`. The
-//           Wayland app id, the `.desktop` basename (`<APP_ID>.desktop`), and the
-//           `StartupWMClass` are all this one string.
+// What:     `use crate::identity::APP_ID;` imports the Wayland app id (the
+//           `.desktop` basename `<APP_ID>.desktop` and the X11 `WM_CLASS` are the
+//           same string) from the shared identity module, instead of defining a
+//           local constant here.
 // Why:      KDE links the window to the launcher entry only when the id stamped on
-//           the window matches the `.desktop` file; one constant keeps them equal.
-// TS map:   `const APP_ID = "monochromatic.music-player";`
-// What:     `#[cfg(target_os = "linux")]`: compile this constant on Linux only.
+//           the window matches the `.desktop` file; sourcing it from one place
+//           keeps the window, the desktop file, and the launcher URI equal.
+// TS map:   `import { APP_ID } from "./identity";`
+// What:     `#[cfg(target_os = "linux")]`: import this on Linux only.
 // Why:      Its only readers (the Wayland `with_name` hook and the launcher URI)
-//           are Linux-only, so on macOS it would be an unused item and trip the
-//           dead-code warning.
+//           are Linux-only, so importing it on macOS would be an unused import and
+//           trip the dead-code/unused-import warning.
 // TS map:   no equivalent; absent from a macOS build.
 #[cfg(target_os = "linux")]
-pub(crate) const APP_ID: &str = "monochromatic.music-player";
+use crate::identity::APP_ID;
 
 // What:     `const SIGNAL_PATH: &str = "/org/monochromatic/MusicPlayer";`. The
 //           object path the `Update` signal is emitted from.
