@@ -45,9 +45,11 @@ open-source maintenance audit does).
   (`vendor/aqua-registry/metadata.json` at `v2026.5.15`).
 - Registry entries read both live (`aquaproj/aqua-registry` HEAD, via `gh api`)
   and as baked into mise `v2026.5.15`, because the two differ (see staleness).
-- Boundary run: installed `nushell`, `betterleaks`, and `hk` through mise's aqua
-  backend into a throwaway `MISE_DATA_DIR` under `/tmp/agent`, with `-v`, and read
-  back the verification steps mise actually performed.
+- Boundary run: installed all five tools through mise's aqua backend into a
+  throwaway `MISE_DATA_DIR` under `/tmp/agent`, with `-v`, and read back the
+  verification steps mise actually performed (`nushell`, `betterleaks`, `hk` in one
+  run; `apple/pkl` and `Kitware/CMake` in a second). The throwaway was deleted
+  after each run.
 
 ## How mise's aqua backend resolves and verifies a tool
 
@@ -111,9 +113,11 @@ Confirmed by the boundary run on mise `2026.5.15` (baked `v4.515.0`):
   reimplementation gap below), so it is silently ignored and hk falls back to the
   GitHub API digest. Verified against the digest, no attestation.
 - `nushell/nushell`, `Kitware/CMake`, `apple/pkl`: integrity only. Their registry
-  entries declare no checksum, cosign, SLSA, minisign, or attestation, in either
-  the live or baked snapshot. They rely entirely on the GitHub API digest. The
-  boundary run confirmed nushell took the digest path. If GitHub ever lacks a
+  entries declare no checksum, cosign, SLSA, minisign, or attestation, confirmed in
+  both the live registry and the baked `v4.515.0` snapshot. They rely entirely on
+  the GitHub API digest, and the boundary run confirmed all three took the digest
+  path: nushell and CMake as tarballs, pkl as a `format: raw` single binary (the
+  digest check is per-asset, so it is format-agnostic). If GitHub ever lacks a
   digest for one of these assets (older pin, host change), the install would drop
   to TLS-only, because nothing else backs it.
 
