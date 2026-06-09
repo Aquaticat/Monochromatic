@@ -52,21 +52,21 @@ export const noLowInformationSymbolDescription: CreateOnceRule = {
     },
     messages: {
       tooFewWords:
-        'Symbol description has fewer than 3 distinct words, so it carries little debugging signal. Name what is absent and why, for example "config file missing on disk".',
+        'Symbol description has fewer than 3 distinct words, so it carries little debugging signal. Name what is absent and why, for example "config file missing on disk". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       allUppercase:
-        'Symbol description is entirely uppercase words, which reads like a constant name. Use a descriptive lowercase phrase, for example "github token expired".',
+        'Symbol description is entirely uppercase words, which reads like a constant name. Use a descriptive lowercase phrase, for example "github token expired". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       bareCamelIdentifier:
-        'Symbol description is a bare camelCase or PascalCase identifier with no separators, which reads like a function name. Describe the condition as a phrase, for example "run completed without a context".',
+        'Symbol description is a bare camelCase or PascalCase identifier with no separators, which reads like a function name. Describe the condition as a phrase, for example "run completed without a context". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       repeatedMeaningfulWord:
-        'Symbol description repeats a meaningful word, which adds no information. Replace the repetition with concrete detail about the condition.',
+        'Symbol description repeats a meaningful word, which adds no information. Replace the repetition with concrete detail about the condition. A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       shortNamespacedTail:
-        'Symbol description has a namespace prefix but a tail shorter than 3 words. A namespace does not rescue a generic tail; expand it, for example "penpot/figma-input-has-no-counterpart".',
+        'Symbol description has a namespace prefix but a tail shorter than 3 words. A namespace does not rescue a generic tail; expand it, for example "penpot/figma-input-has-no-counterpart". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       startsWithNoWithoutMarker:
-        'Symbol description starts with "no" but has no specificity marker (uppercase, digit, dot, underscore, or a consonant-dense token). Name the specific thing that is absent, for example "no upstream branch for HEAD".',
+        'Symbol description starts with "no" but has no specificity marker (uppercase, digit, dot, underscore, or a consonant-dense token). Name the specific thing that is absent, for example "no upstream branch for HEAD". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       startsWithNotWithoutMarker:
-        'Symbol description starts with "not" but has no specificity marker. Name the specific condition, for example "not inside a Git worktree".',
+        'Symbol description starts with "not" but has no specificity marker. Name the specific condition, for example "not inside a Git worktree". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
       shortPhraseLacksSpecificityMarker:
-        'Symbol description is a 3-word phrase with no specificity marker and no past-tense or continuous verb. Add a concrete technical token or describe the action, for example "average divisor is zero".',
+        'Symbol description is a 3-word phrase with no specificity marker and no past-tense or continuous verb. Add a concrete technical token or describe the action, for example "average divisor is zero". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
