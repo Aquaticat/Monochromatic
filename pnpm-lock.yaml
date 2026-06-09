@@ -853,6 +853,9 @@ importers:
 
   packages/cli/mvm:
     dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
       '@monochromatic-dev/module-const':
         specifier: workspace:*
         version: link:../../module/const
@@ -1377,10 +1380,6 @@ importers:
         version: 25.9.2
 
   packages/figma-parsers/kiwi:
-    dependencies:
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

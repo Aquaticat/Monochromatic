@@ -32,6 +32,7 @@
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-numeric-format": "workspace:*",
+    "@monochromatic-dev/module-async-time": "workspace:*",
     "nano-spawn": "catalog:",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"
