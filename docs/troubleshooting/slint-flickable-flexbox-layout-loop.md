@@ -1,15 +1,19 @@
 # Slint 1.17.0-dev can recurse when a Flickable sizes itself from a wrapped FlexboxLayout child
 
 `music-player` pins Slint commit `85e3eb76819762cdcaa732fa87533ff896546bac`.
-At that revision, a `Flickable` whose implicit layout width comes from a wrapped
+At that revision,
+ a `Flickable` whose implicit layout width comes from a wrapped
 `FlexboxLayout` child can compile and then panic with `Recursion detected` at
-runtime. A variant also emits binding-loop warnings during build.
+runtime.
+ A variant also emits binding-loop warnings during build.
 
 ## Symptom
 
 The first side-by-side page navigation attempt kept the page-button grid and
-track rows in one wrapping `FlexboxLayout` inside one `Flickable`. The release
-build finished, then the app panicked before the window became usable:
+track rows in one wrapping `FlexboxLayout` inside one `Flickable`.
+ The release
+build finished,
+ then the app panicked before the window became usable:
 
 ```txt
 thread 'main' (...) panicked at .../internal/core/properties.rs:628:9:
@@ -17,7 +21,8 @@ Recursion detected
 ```
 
 A breakpointed variant that still placed `flick := Flickable` inside a
-`HorizontalLayout` compiled, but Slint warned about a horizontal layout-info
+`HorizontalLayout` compiled,
+ but Slint warned about a horizontal layout-info
 loop:
 
 ```txt
@@ -30,15 +35,22 @@ panic at runtime
 
 ## Root cause
 
-The pinned Slint source is `/tmp/agent/slint-20260601`, with origin
+The pinned Slint source is `/tmp/agent/slint-20260601`,
+ with origin
 `https://github.com/slint-ui/slint.git` and commit
-`85e3eb76819762cdcaa732fa87533ff896546bac`. `music-player` pins the same commit
-for `slint`, `i-slint-backend-winit`, and `slint-build` in
-`packages/desktop-app/music-player/Cargo.toml:28`, `:34`, and `:56`.
+`85e3eb76819762cdcaa732fa87533ff896546bac`.
+ `music-player` pins the same commit
+for `slint`,
+ `i-slint-backend-winit`,
+ and `slint-build` in
+`packages/desktop-app/music-player/Cargo.toml:28`,
+ `:34`,
+ and `:56`.
 
 Slint's compiler gives `Flickable` implicit preferred and maximum sizes from
 layout children when the app does not bind the `Flickable`'s own width or
-height. The relevant source is
+height.
+ The relevant source is
 `internal/compiler/passes/flickable.rs:149-155`:
 
 ```rust
@@ -53,7 +65,8 @@ if !flickable_elem.borrow().bindings.contains_key("width") {
 ```
 
 The same pass also supplies a default viewport width from the `Flickable` width
-and the child layout minimum widths. The source is
+and the child layout minimum widths.
+ The source is
 `internal/compiler/passes/flickable.rs:157-178`:
 
 ```rust
@@ -84,8 +97,10 @@ set_binding_if_not_explicit(flickable_elem, "viewport-width", || {
 ```
 
 Wrapped flex cross-axis layout information needs a main-axis container
-constraint for accurate wrapping. The lowering code either uses a supplied
-constraint or reads the layout geometry size. The source is
+constraint for accurate wrapping.
+ The lowering code either uses a supplied
+constraint or reads the layout geometry size.
+ The source is
 `internal/compiler/llr/lower_layout_expression.rs:518-545`:
 
 ```rust
@@ -108,8 +123,10 @@ if is_cross_axis {
     };
 ```
 
-At runtime, the flex layout helper uses that constraint as the main-axis size
-for Taffy wrapping. The source is `internal/core/layout.rs:1965-1968` and
+At runtime,
+ the flex layout helper uses that constraint as the main-axis size
+for Taffy wrapping.
+ The source is `internal/core/layout.rs:1965-1968` and
 `:1997-2020`:
 
 ```rust
@@ -153,11 +170,13 @@ Those pieces form the loop in this app shape:
 3. The content layout asks the wrapped `FlexboxLayout` for cross-axis layout
    info.
 4. Wrapped flex cross-axis layout asks for the assigned main-axis width.
-5. That width is the `Flickable` width, which the parent layout was still
+5. That width is the `Flickable` width,
+    which the parent layout was still
    solving.
 
 Slint's binding analysis recognizes loops involving window layout and reports
-some of them as warnings rather than hard errors. The source is
+some of them as warnings rather than hard errors.
+ The source is
 `internal/compiler/passes/binding_analysis.rs:358-363`:
 
 ```rust
@@ -180,7 +199,8 @@ if !context.error_on_binding_loop_with_window_layout && has_window_layout {
 }
 ```
 
-The panic is the runtime property lock detecting the recursive get. The source
+The panic is the runtime property lock detecting the recursive get.
+ The source
 is `internal/core/properties.rs:624-628`:
 
 ```rust
@@ -192,30 +212,42 @@ assert!(!self.lock_flag(), "Recursion detected");
 
 ## Verification
 
-Version under test: Slint git commit
-`85e3eb76819762cdcaa732fa87533ff896546bac`, read from
+Version under test:
+ Slint git commit
+`85e3eb76819762cdcaa732fa87533ff896546bac`,
+ read from
 `/tmp/agent/slint-20260601` with `git rev-parse HEAD`.
 
 Failing patterns:
 
 - One shared `Flickable` containing one wrapping `FlexboxLayout` root for both
-  the page-button grid and the selected page rows. Command:
+  the page-button grid and the selected page rows.
+   Command:
   `RUST_BACKTRACE=1 mise run //packages/desktop-app/music-player:run`.
-  Result: release build finished, then `Recursion detected` panicked at
+  Result:
+   release build finished,
+   then `Recursion detected` panicked at
   `internal/core/properties.rs:628:9`.
 - Breakpointed content while keeping `flick := Flickable` as a child of a
-  `HorizontalLayout` with a scrollbar sibling. Command:
+  `HorizontalLayout` with a scrollbar sibling.
+   Command:
   `RUST_BACKTRACE=1 mise run //packages/desktop-app/music-player:run`.
-  Result: build emitted the `root.layoutinfo-h -> content.layoutinfo-h ->
+  Result:
+   build emitted the `root.layoutinfo-h -> content.layoutinfo-h ->
   content.max-width -> flick.max-width` loop warning quoted above.
 
 Working pattern:
 
-- Keep one shared `Flickable`, but make it an explicitly positioned child of a
-  queue `Rectangle` instead of a child participating in a parent layout. Bind
-  `width: max(0px, parent.width - 18px)`, `height: parent.height`,
-  `viewport-width: self.width`, and `viewport-height: content.preferred-height`.
-  Place the scrollbar as a separately positioned sibling. Inside the content,
+- Keep one shared `Flickable`,
+   but make it an explicitly positioned child of a
+  queue `Rectangle` instead of a child participating in a parent layout.
+   Bind
+  `width: max(0px, parent.width - 18px)`,
+   `height: parent.height`,
+  `viewport-width: self.width`,
+   and `viewport-height: content.preferred-height`.
+  Place the scrollbar as a separately positioned sibling.
+   Inside the content,
   use explicit wide and narrow branches guarded by `root.width >= 900px` and
   `root.width < 900px`.
 
@@ -232,7 +264,8 @@ Compiling music-player v0.1.0 (/work)
 Finished `release` profile [optimized] target(s) in 12.44s
 ```
 
-The process stayed running after startup, with no binding-loop warning and no
+The process stayed running after startup,
+ with no binding-loop warning and no
 `Recursion detected` panic in stderr.
 
 ## Verified workarounds
@@ -251,14 +284,19 @@ flick := Flickable {
     viewport-height: content.preferred-height;
 ```
 
-Trade-off: the scrollbar gutter is now a fixed 18px subtraction in the queue
-rectangle. The value keeps the previous prominent custom scrollbar gutter, but
+Trade-off:
+ the scrollbar gutter is now a fixed 18px subtraction in the queue
+rectangle.
+ The value keeps the previous prominent custom scrollbar gutter,
+ but
 future scrollbar width changes need the subtraction updated with it.
 
 ### Use breakpointed content branches inside the shared Flickable
 
-Patch shape in `packages/desktop-app/music-player/ui/app.slint:424`, `:500`,
-`:517`, and `:522`:
+Patch shape in `packages/desktop-app/music-player/ui/app.slint:424`,
+ `:500`,
+`:517`,
+ and `:522`:
 
 ```slint
 if root.width >= 900px: HorizontalLayout { }
@@ -267,44 +305,68 @@ if root.width < 900px && root.page-labels.length > 0: Rectangle { }
 if root.width < 900px: VerticalLayout { }
 ```
 
-Trade-off: the transition is controlled by an explicit breakpoint instead of a
-pure minimum-width wrap rule. The app still preserves the intended user
-behavior: wide viewports show all page buttons beside the selected tracks;
+Trade-off:
+ the transition is controlled by an explicit breakpoint instead of a
+pure minimum-width wrap rule.
+ The app still preserves the intended user
+behavior:
+ wide viewports show all page buttons beside the selected tracks;
 narrow viewports show all page buttons above the selected tracks.
 
 ## What does not work
 
-- Adding `preferred-height: 30px` to repeated track rows: this removes one
-  child-size dependency, but `RUST_BACKTRACE=1 mise run
+- Adding `preferred-height: 30px` to repeated track rows:
+   this removes one
+  child-size dependency,
+   but `RUST_BACKTRACE=1 mise run
   //packages/desktop-app/music-player:run` still panicked with
   `Recursion detected`.
 - Pinning `x: 0px` and `y: 0px` on the content or wrapping the content in an
-  extra rectangle: these changes did not remove the implicit width/layout-info
+  extra rectangle:
+   these changes did not remove the implicit width/layout-info
   path from `Flickable` through its layout child.
 - Keeping the `Flickable` inside `HorizontalLayout` after adding breakpointed
-  content: the app no longer hit the original startup panic during the short
-  run, but Slint emitted the binding-loop warning that says the pattern can
+  content:
+   the app no longer hit the original startup panic during the short
+  run,
+   but Slint emitted the binding-loop warning that says the pattern can
   panic at runtime.
 
 ## Draft upstream issue
 
 ### Why we do not file this upstream now
 
-1. Is it really upstream's fault? Partly. Slint's compiler and runtime expose
-   the loop, but the app can avoid it by explicitly positioning `Flickable` and
+1. Is it really upstream's fault?
+    Partly.
+    Slint's compiler and runtime expose
+   the loop,
+    but the app can avoid it by explicitly positioning `Flickable` and
    by splitting the wrapping flex root into wide and narrow branches.
-2. Can upstream fix it? Possibly, but the source trace crosses `Flickable`
-   geometry fixup, layout-info lowering, binding analysis, and runtime flex
-   layout. This is not a one-line consumer-independent fix from the evidence
+2. Can upstream fix it?
+    Possibly,
+    but the source trace crosses `Flickable`
+   geometry fixup,
+    layout-info lowering,
+    binding analysis,
+    and runtime flex
+   layout.
+    This is not a one-line consumer-independent fix from the evidence
    collected here.
-3. Are they supporting this use case? Slint supports `Flickable` and
-   experimental `FlexboxLayout`, but this exact combination uses an
-   experimental layout primitive with a self-sizing viewport. No upstream docs
+3. Are they supporting this use case?
+    Slint supports `Flickable` and
+   experimental `FlexboxLayout`,
+    but this exact combination uses an
+   experimental layout primitive with a self-sizing viewport.
+    No upstream docs
    or examples were collected for that composition.
-4. Will they likely fix it? Unknown from this investigation. Commit history was
+4. Will they likely fix it?
+    Unknown from this investigation.
+    Commit history was
    not audited for layout-info loop fixes beyond reading the pinned source.
-5. Have we prototyped a minimal fix compatible with their architecture? No. A
-   consumer-side workaround exists and was verified first, so an upstream patch
+5. Have we prototyped a minimal fix compatible with their architecture?
+    No. A
+   consumer-side workaround exists and was verified first,
+    so an upstream patch
    prototype is not justified for this app fix.
 
 Do not file as-is:

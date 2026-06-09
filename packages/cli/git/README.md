@@ -4,110 +4,204 @@ Git wrapper that enforces safety rules before forwarding to the real git binary.
 
 ## Rules
 
-**Require root**: when the effective working directory is inside a git
-repository, rejects commands unless that directory is the repository root
-(where `.git` lives). `.git` may be a directory or a file, so linked worktrees
-and submodules are checked the same way normal repositories are. The effective
+**Require root**:
+ when the effective working directory is inside a git
+repository,
+ rejects commands unless that directory is the repository root
+(where `.git` lives).
+ `.git` may be a directory or a file,
+ so linked worktrees
+and submodules are checked the same way normal repositories are.
+ The effective
 directory is `process.cwd()` with every pre-subcommand `-C <path>` applied in
-order, matching git's own resolution, so `git -C /repo status` from anywhere
-passes the check. When no `.git` is found up the tree from the effective
-directory, the command passes through to real git untouched, so git itself
-reports the missing-repo error if relevant. Exempt subcommands: `init`,
-`clone`, `version`, `help`, and `config` with `--global`/`--system`/`--list`.
+order,
+ matching git's own resolution,
+ so `git -C /repo status` from anywhere
+passes the check.
+ When no `.git` is found up the tree from the effective
+directory,
+ the command passes through to real git untouched,
+ so git itself
+reports the missing-repo error if relevant.
+ Exempt subcommands:
+ `init`,
+`clone`,
+ `version`,
+ `help`,
+ and `config` with `--global`/`--system`/`--list`.
 
-**Linked worktree only for risky worktree commands**: rejects guarded commands
-unless the effective working directory is a linked git worktree root. Guarded
-forms are all `git stash`, state-changing `git clean`, and destructive
-`git reset` modes (`--hard`, `--merge`, `--keep`). This blocks the main
+**Linked worktree only for risky worktree commands**:
+ rejects guarded commands
+unless the effective working directory is a linked git worktree root.
+ Guarded
+forms are all `git stash`,
+ state-changing `git clean`,
+ and destructive
+`git reset` modes (`--hard`,
+ `--merge`,
+ `--keep`).
+ This blocks the main
 worktree and `--git-dir` / `--work-tree` forms launched from unrelated
-directories, because these commands can revert, delete, or rewrite filesystem
-state outside what the caller expects from current cwd. `git clean -n` and
+directories,
+ because these commands can revert,
+ delete,
+ or rewrite filesystem
+state outside what the caller expects from current cwd.
+ `git clean -n` and
 `git clean --dry-run` pass through because Git documents them as inspection
-only; `git clean -i` remains guarded because interactive mode can delete
-selected paths. Clean dry-run, no-dry-run, interactive, and no-interactive
+only;
+ `git clean -i` remains guarded because interactive mode can delete
+selected paths.
+ Clean dry-run,
+ no-dry-run,
+ interactive,
+ and no-interactive
 options are evaluated in argv order to match Git's last-option-wins behavior.
-Run guarded commands from a linked worktree root, or pass
-`-C <linked-worktree-root>` before the subcommand. Pass
+Run guarded commands from a linked worktree root,
+ or pass
+`-C <linked-worktree-root>` before the subcommand.
+ Pass
 `--no-enforce-worktree` after the guarded subcommand and before any `--`
 pathspec separator to bypass linked-worktree enforcement for one invocation;
-the wrapper strips the flag before forwarding to real git. The existing
+the wrapper strips the flag before forwarding to real git.
+ The existing
 require-root rule still rejects linked-worktree subdirectories.
 
 Repositories under a baked-in tool-cache directory are exempt from this rule.
-A third-party tool (currently uv, whose git cache resolves from `UV_CACHE_DIR`,
-`$XDG_CACHE_HOME/uv`, or `~/.cache/uv`) owns disposable clones there and runs
-destructive git against them itself, so `git reset --hard` and the other
-guarded forms pass through instead of being rejected as a main worktree. The
+A third-party tool (currently uv,
+ whose git cache resolves from `UV_CACHE_DIR`,
+`$XDG_CACHE_HOME/uv`,
+ or `~/.cache/uv`) owns disposable clones there and runs
+destructive git against them itself,
+ so `git reset --hard` and the other
+guarded forms pass through instead of being rejected as a main worktree.
+ The
 exempt set is `DEFAULT_ALLOWED_WORKTREE_DIRS` in `src/allowed-worktree-dirs.ts`;
 both the configured directory and the repository's git-dir are realpath-resolved
-before a segment-aware containment check, so symlinks such as `/home` aliasing
-`/var/home` do not defeat the match. Add sibling tool caches there when a new
+before a segment-aware containment check,
+ so symlinks such as `/home` aliasing
+`/var/home` do not defeat the match.
+ Add sibling tool caches there when a new
 tool needs the same exemption.
 
-**Add explicit**: rejects `git add` invocations that use bulk-staging
-patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep
+**Add explicit**:
+ rejects `git add` invocations that use bulk-staging
+patterns (`.`,
+ `./`,
+ `*`,
+ `:/`,
+ `-A`/`--all`,
+ `-u`/`--update`),
+ which sweep
 up paths the caller did not intend to stage and leave the index in a state
-that does not match a single logical change. Pathspecs after `--` are still
-scanned for broad pathspecs such as `.` and `*`, so `git add -- .` is rejected
-for the same reason as `git add .`. Name the paths explicitly, or pass
-`--no-enforce-bulk-add` to bypass for one invocation; the flag is stripped
-before forwarding to real git. The rule walks pre-subcommand global options
+that does not match a single logical change.
+ Pathspecs after `--` are still
+scanned for broad pathspecs such as `.` and `*`,
+ so `git add -- .` is rejected
+for the same reason as `git add .`.
+ Name the paths explicitly,
+ or pass
+`--no-enforce-bulk-add` to bypass for one invocation;
+ the flag is stripped
+before forwarding to real git.
+ The rule walks pre-subcommand global options
 the same way atomic-push does.
 
-**Atomic push**: injects `--atomic` into `git push` commands automatically,
-ensuring all refs update together or none do. Override with `--no-atomic`.
-The rule walks pre-subcommand global options (`-C <path>`, `-c key=val`,
-`--git-dir <path>`, etc.) so forms like `git -C /repo push` still fire.
+**Atomic push**:
+ injects `--atomic` into `git push` commands automatically,
+ensuring all refs update together or none do.
+ Override with `--no-atomic`.
+The rule walks pre-subcommand global options (`-C <path>`,
+ `-c key=val`,
+`--git-dir <path>`,
+ etc.) so forms like `git -C /repo push` still fire.
 
-**Commit only**: injects `-o` (a.k.a. `--only`) into `git commit` commands so
+**Commit only**:
+ injects `-o` (a.
+k.
+a.
+ `--only`) into `git commit` commands so
 every commit must name the paths it includes rather than picking up whatever is
-staged. `git commit -m <msg>` without paths is rejected by the wrapper before
-git can emit its opaque `No paths with --include/--only` fatal. `git commit -a`
+staged.
+ `git commit -m <msg>` without paths is rejected by the wrapper before
+git can emit its opaque `No paths with --include/--only` fatal.
+ `git commit -a`
 and `git commit --all` are rejected because they stage tracked modifications
-implicitly. Pathless commits remain valid when git permits them with `--amend`,
-`--allow-empty`, or `--pathspec-from-file`. Skipped when `-o`, `--only`, or
-`--no-only` is already present (the user has made an explicit choice). Escape
-hatch for a single invocation: pass `--no-enforce-only`, which is stripped
-before forwarding to real git. Pathspec detection uses a scanner for known
-separated-value commit options, so no-value flags such as `-q` and `--dry-run`
-do not consume the following pathspec while wrapper-only validation runs. The
+implicitly.
+ Pathless commits remain valid when git permits them with `--amend`,
+`--allow-empty`,
+ or `--pathspec-from-file`.
+ Skipped when `-o`,
+ `--only`,
+ or
+`--no-only` is already present (the user has made an explicit choice).
+ Escape
+hatch for a single invocation:
+ pass `--no-enforce-only`,
+ which is stripped
+before forwarding to real git.
+ Pathspec detection uses a scanner for known
+separated-value commit options,
+ so no-value flags such as `-q` and `--dry-run`
+do not consume the following pathspec while wrapper-only validation runs.
+ The
 rule walks pre-subcommand global options the same way atomic-push does.
 
-**Status hints off**: injects `-c advice.statusHints=false` before `git status`
-so git suppresses its stock hints, which suggest patterns the wrapper rejects
-(`git add` with bulk patterns, `git commit -a` colliding with commit-only's
-`-o`). A cli-git note prints after the status output describing the wrapper's
-constraints. Skipped when the user has already set `advice.statusHints=...` via
+**Status hints off**:
+ injects `-c advice.statusHints=false` before `git status`
+so git suppresses its stock hints,
+ which suggest patterns the wrapper rejects
+(`git add` with bulk patterns,
+ `git commit -a` colliding with commit-only's
+`-o`).
+ A cli-git note prints after the status output describing the wrapper's
+constraints.
+ Skipped when the user has already set `advice.statusHints=...` via
 `-c` (the user's explicit choice wins).
 
 ## Post-commit auto-push
 
-After a successful `git commit` (anything except a `--dry-run` preview), the
+After a successful `git commit` (anything except a `--dry-run` preview),
+ the
 wrapper backs up the new commit by pushing it to its upstream with
-`git push --set-upstream origin HEAD`. The push runs against the real git binary
+`git push --set-upstream origin HEAD`.
+ The push runs against the real git binary
 in the same directory the commit landed in (respecting pre-subcommand
-`-C <path>`), so it does not re-enter the wrapper yet still fires git's native
+`-C <path>`),
+ so it does not re-enter the wrapper yet still fires git's native
 pre-push hook.
 
-The push output is filtered: on a clean push only the GitHub `remote:` lines are
-shown; on a failed push the full output is shown so a rejection, a pre-push
-block, or an offline error stays diagnosable. Auto-push is skipped when the
-repository has no `origin` remote, since there is nowhere to back up to.
+The push output is filtered:
+ on a clean push only the GitHub `remote:` lines are
+shown;
+ on a failed push the full output is shown so a rejection,
+ a pre-push
+block,
+ or an offline error stays diagnosable.
+ Auto-push is skipped when the
+repository has no `origin` remote,
+ since there is nowhere to back up to.
 
-Because git ignores a post-commit hook's exit status, a failed backup push is
-surfaced but never changes the commit command's own exit code: the commit stays
+Because git ignores a post-commit hook's exit status,
+ a failed backup push is
+surfaced but never changes the commit command's own exit code:
+ the commit stays
 saved locally and a later `git push` retries it.
 
 ## How it works
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
-It scans PATH to find the real git binary, skipping its own entry.
+It scans PATH to find the real git binary,
+ skipping its own entry.
 Self-shim detection checks both the package name and the bundled entry path
-`packages/cli/git/dist/final/node/index.mjs`, because pnpm-generated shims can
+`packages/cli/git/dist/final/node/index.mjs`,
+ because pnpm-generated shims can
 point at the built file without naming the package.
 Arguments pass through a rule pipeline that may reject or transform them,
-then the real git is spawned with full stdio inheritance. After a successful
-commit, the new commit is auto-pushed to origin as described above.
+then the real git is spawned with full stdio inheritance.
+ After a successful
+commit,
+ the new commit is auto-pushed to origin as described above.
 
 ## Adding rules
 

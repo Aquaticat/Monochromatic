@@ -1,25 +1,47 @@
 # Plan: `@monochromatic-dev/module-i18n-compose`
 
-Status: package implementation landed; `ssg-test` migration (Phase 6) pending. See "Implementation status" below for what shipped and "Footguns encountered" for traps the next contributor should sidestep.
+Status:
+ package implementation landed;
+ `ssg-test` migration (Phase 6) pending.
+ See "Implementation status" below for what shipped and "Footguns encountered" for traps the next contributor should sidestep.
 
-This plan supersedes the earlier brainstorm for `PLANNING.module-i18n-compose.md`. The major changes are:
+This plan supersedes the earlier brainstorm for `PLANNING.module-i18n-compose.md`.
+ The major changes are:
 
-- `ca`, `en`, and `zh` are all in scope from day one.
-- The shared package is a grammar/composition library, not an application message library.
-- The shared package never owns application state, product concepts, or the current locale.
-- Locale is an explicit parameter on every render call: `i18n.sentence(locale, ast)`, not `t(locale).sentence(ast)`.
-- Static UI strings are `label` entries, not `noun` entries.
-- `Sentence` is a discriminated AST, not a flat object with many optional fields.
-- Noun phrases are tagged variants; numeric quantity is called `count`, not `adj`.
-- English verbs use structured forms, not a single `(person, number, tense) => string` function.
-- Wh-questions are slot-based; there is no top-level `whWord` field.
+- `ca`,
+   `en`,
+   and `zh` are all in scope from day one.
+- The shared package is a grammar/composition library,
+   not an application message library.
+- The shared package never owns application state,
+   product concepts,
+   or the current locale.
+- Locale is an explicit parameter on every render call:
+   `i18n.sentence(locale, ast)`,
+   not `t(locale).sentence(ast)`.
+- Static UI strings are `label` entries,
+   not `noun` entries.
+- `Sentence` is a discriminated AST,
+   not a flat object with many optional fields.
+- Noun phrases are tagged variants;
+   numeric quantity is called `count`,
+   not `adj`.
+- English verbs use structured forms,
+   not a single `(person, number, tense) => string` function.
+- Wh-questions are slot-based;
+   there is no top-level `whWord` field.
 - Existing generated `typesafe-i18n` locale-registry helpers must be replaced before generated files are deleted.
 
 ## Implementation status
 
-Phases 1 through 5 plus Phase 7 (cleanup and docs) landed under `packages/module/i18n-compose/`. The package type-checks, lints with zero errors and zero warnings, and all tests pass. Phase 6 (`ssg-test` migration) was deferred to a follow-up session at the user's request.
+Phases 1 through 5 plus Phase 7 (cleanup and docs) landed under `packages/module/i18n-compose/`.
+ The package type-checks,
+ lints with zero errors and zero warnings,
+ and all tests pass.
+ Phase 6 (`ssg-test` migration) was deferred to a follow-up session at the user's request.
 
-What shipped (file layout, not the plan's flat `locales/{ca,en,zh}.ts`):
+What shipped (file layout,
+ not the plan's flat `locales/{ca,en,zh}.ts`):
 
 ```txt
 packages/module/i18n-compose/
@@ -64,87 +86,205 @@ packages/module/i18n-compose/
 
 Renderer responsibilities per locale:
 
-- English: do-support for ordinary yes/no and wh questions (`Do/Does/Did` lowercase mid-sentence,
-  capitalized at position 0 via sentence-case fixup); `auxiliaryStrategy: 'copula'` fronts the finite verb;
+- English:
+   do-support for ordinary yes/no and wh questions (`Do/Does/Did` lowercase mid-sentence,
+  capitalized at position 0 via sentence-case fixup);
+   `auxiliaryStrategy: 'copula'` fronts the finite verb;
   `auxiliaryStrategy: 'modal'` fronts the modal and renders nested complements bare;
   `auxiliaryStrategy: 'none'` skips do-insertion for caller-supplied special cases;
-  base form after every auxiliary; future via `will + base`; ordinary infinitive complements via `to + base`;
+  base form after every auxiliary;
+   future via `will + base`;
+   ordinary infinitive complements via `to + base`;
   sentence-case fixup pins English `I` via `EN_CASE_INVARIANTS`.
-- Chinese: ASCII space between digit and classifier (`1 只猫`); 在/到/从 coverbs for locatives;
-  之前/之后 for time; `了` for past, `会` for future; `吗？` for yes/no;
+- Chinese:
+   ASCII space between digit and classifier (`1 只猫`);
+   在/到/从 coverbs for locatives;
+  之前/之后 for time;
+   `了` for past,
+   `会` for future;
+   `吗？` for yes/no;
   in-situ wh-words (`谁/什么/在哪里/什么时候/为什么/怎么`) with no `吗` particle;
-  Chinese terminators `。？！`; sequence fragments concatenated with no separator.
-- Catalan: gender/number article tables (`el/els`, `un/uns`, elided `l'`);
+  Chinese terminators `。？！`;
+   sequence fragments concatenated with no separator.
+- Catalan:
+   gender/number article tables (`el/els`,
+   `un/uns`,
+   elided `l'`);
   finite verb forms indexed by tense and {@link PersonNumberKey} via the sparse `entry.finite[tense][pn]` table,
-  with missing entries throwing; imperative falls back to infinitive;
-  nested complements render the full nested verb phrase, including objects and adverbials;
-  question rendering uses punctuation alone in v1 (no auxiliary inversion); `Qui/Què/On/Quan/Per què/Com` wh-words.
+  with missing entries throwing;
+   imperative falls back to infinitive;
+  nested complements render the full nested verb phrase,
+   including objects and adverbials;
+  question rendering uses punctuation alone in v1 (no auxiliary inversion);
+   `Qui/Què/On/Quan/Per què/Com` wh-words.
 
 Every built-in noun-phrase renderer validates `countability: 'mass'` before rendering `noun.counted`
 and throws instead of inventing a measure phrase.
 
-Tests: `*.unit.test.ts` only (no `*.type.test.ts` files; the workspace convention puts type assertions inline
-via `expectTypeOf` from `@monochromatic-dev/module-test`). Coverage spans every variant of every AST kind:
-noun phrases (bare, counted, definite, indefinite, possessed, external), mass-noun rejection, declaratives,
-yes/no questions with do-support across all three tenses, English copula and modal auxiliary strategies,
-all three wh-slots, imperatives, complements (`want to delete`), Catalan full nested-complement preservation
-in sentences, verb phrases, and fragments, fragments (noun-phrase, verb-phrase non-finite forms, sequence),
-capitalization invariants, Catalan throw-on-missing-form, Chinese absence-of-吗 in wh-questions,
+Tests:
+ `*.unit.test.ts` only (no `*.type.test.ts` files;
+ the workspace convention puts type assertions inline
+via `expectTypeOf` from `@monochromatic-dev/module-test`).
+ Coverage spans every variant of every AST kind:
+noun phrases (bare,
+ counted,
+ definite,
+ indefinite,
+ possessed,
+ external),
+ mass-noun rejection,
+ declaratives,
+yes/no questions with do-support across all three tenses,
+ English copula and modal auxiliary strategies,
+all three wh-slots,
+ imperatives,
+ complements (`want to delete`),
+ Catalan full nested-complement preservation
+in sentences,
+ verb phrases,
+ and fragments,
+ fragments (noun-phrase,
+ verb-phrase non-finite forms,
+ sequence),
+capitalization invariants,
+ Catalan throw-on-missing-form,
+ Chinese absence-of-吗 in wh-questions,
 and package-name public import consumption.
 
 ## Footguns encountered
 
 These trapped the first implementation and will trap the next contributor unless they are recorded:
 
-1. **`createI18n` type-parameter inference is fragile.** The naive
+1. **`createI18n` type-parameter inference is fragile.
+   ** The naive
    `createI18n<Locales, Label, Subject, Verb, Noun>(config)` with `LocaleSpec` arrow-typed methods refuses
-   to compile: renderer parameters (`key: Label`) are in contravariant position, so `LocaleSpec<TestLabel, ...>`
+   to compile:
+    renderer parameters (`key: Label`) are in contravariant position,
+    so `LocaleSpec<TestLabel, ...>`
    is not assignable to `LocaleSpec<string, ...>` (the inferred default when `Label` has no inference source).
-   Method shorthand syntax makes positions bivariant and the assignment works, but then TypeScript can widen
-   or union vocabulary across locale specs in ways that are unsafe at runtime. The working pattern is method
+   Method shorthand syntax makes positions bivariant and the assignment works,
+    but then TypeScript can widen
+   or union vocabulary across locale specs in ways that are unsafe at runtime.
+    The working pattern is method
    shorthand for `LocaleSpec` plus a `Spec` generic in `createI18n` constrained against
-   `AnyLocaleSpec = LocaleSpec<string, string, string, string>`, conditional `LabelOf` / `SubjectOf` /
-   `VerbOf` / `NounOf` extractors, and `EnforceSharedVocabulary` to reject spec records where one locale has
-   keys another locale lacks. The returned `I18n` surface uses `SharedLabelOf` / `SharedSubjectOf` /
-   `SharedVerbOf` / `SharedNounOf`, not the raw union across `Specs[Locales[number]]`. Touch this at your peril.
+   `AnyLocaleSpec = LocaleSpec<string, string, string, string>`,
+    conditional `LabelOf` / `SubjectOf` /
+   `VerbOf` / `NounOf` extractors,
+    and `EnforceSharedVocabulary` to reject spec records where one locale has
+   keys another locale lacks.
+    The returned `I18n` surface uses `SharedLabelOf` / `SharedSubjectOf` /
+   `SharedVerbOf` / `SharedNounOf`,
+    not the raw union across `Specs[Locales[number]]`.
+    Touch this at your peril.
 
-2. **`'who' as Subject` is unsafe and unnecessary.** A first cut threaded `SubjectRef<Subject>` into every verb-form helper, then synthesized `{ kind: 'subject.key', subject: 'who' as Subject }` for wh-subject questions. Oxlint correctly rejects the cast. The fix lives in `agreement.ts`: helpers take `SubjectAgreement = { person, number }`, `subjectAgreement({ ref, subjects })` extracts it from a real subject reference, and `WH_SUBJECT_AGREEMENT` is a pre-built `{ person: 3, number: 'singular' }` constant the wh-subject branches pass directly. The locale's `Subject` union is never abused.
+2. **`'who' as Subject` is unsafe and unnecessary.
+   ** A first cut threaded `SubjectRef<Subject>` into every verb-form helper,
+    then synthesized `{ kind: 'subject.key', subject: 'who' as Subject }` for wh-subject questions.
+    Oxlint correctly rejects the cast.
+    The fix lives in `agreement.ts`:
+    helpers take `SubjectAgreement = { person, number }`,
+    `subjectAgreement({ ref, subjects })` extracts it from a real subject reference,
+    and `WH_SUBJECT_AGREEMENT` is a pre-built `{ person: 3, number: 'singular' }` constant the wh-subject branches pass directly.
+    The locale's `Subject` union is never abused.
 
-3. **`max-lines: 300` (effective) forced the flat-file plan to split.** The plan listed `locales/ca.ts`, `locales/en.ts`, `locales/zh.ts` as single files. Each implementation grew past 400 effective lines once TSDoc was added to every local; oxlint's `eslint/max-lines` is `error` and AGENTS.md forbids disabling it. The remediation is the `locales/<lang>/{index,types,render-np,render-adverbial,render-vp,render-sentence,render-fragment}.ts` split documented above. `test-vocab.ts` hit the same limit and split into `test-vocab/{index,types,en,zh,ca}.ts`. Plan §12's flat layout is normative for the public API surface but not for source-file organization.
+3. **`max-lines: 300` (effective) forced the flat-file plan to split.
+   ** The plan listed `locales/ca.ts`,
+    `locales/en.ts`,
+    `locales/zh.ts` as single files.
+    Each implementation grew past 400 effective lines once TSDoc was added to every local;
+    oxlint's `eslint/max-lines` is `error` and AGENTS.
+   md forbids disabling it.
+    The remediation is the `locales/<lang>/{index,types,render-np,render-adverbial,render-vp,render-sentence,render-fragment}.ts` split documented above.
+    `test-vocab.ts` hit the same limit and split into `test-vocab/{index,types,en,zh,ca}.ts`.
+    Plan §12's flat layout is normative for the public API surface but not for source-file organization.
 
-4. **TSDoc rules are stricter than `or-throw` makes them look.** Every local `const` requires a TSDoc comment (`tsdoc/require-tsdoc`). Every function parameter must be documented by name (`tsdoc/require-param`). For destructured params, each destructured field needs its own `@param <field> - description` line, not a single `@param input - ...` covering the bundle (`tsdoc/check-param-names`). Single-line TSDocs that contain a tag (e.g. `/** Dependency bundle for {@link X}. */`) must be expanded to multi-line (`tsdoc/multiline-blocks`). The `>` character inside TSDoc body text must be replaced with `to` (the helpfully-titled `tsdoc-escape-greater-than` rule). Plan for ~3x the lines you would naively write, and use named extracted helpers when an inner function body would otherwise need 8+ documented locals.
+4. **TSDoc rules are stricter than `or-throw` makes them look.
+   ** Every local `const` requires a TSDoc comment (`tsdoc/require-tsdoc`).
+    Every function parameter must be documented by name (`tsdoc/require-param`).
+    For destructured params,
+    each destructured field needs its own `@param <field> - description` line,
+    not a single `@param input - ...` covering the bundle (`tsdoc/check-param-names`).
+    Single-line TSDocs that contain a tag (e.g. `/** Dependency bundle for {@link X}. */`) must be expanded to multi-line (`tsdoc/multiline-blocks`).
+    The `>` character inside TSDoc body text must be replaced with `to` (the helpfully-titled `tsdoc-escape-greater-than` rule).
+    Plan for ~3x the lines you would naively write,
+    and use named extracted helpers when an inner function body would otherwise need 8+ documented locals.
 
-5. **`eslint/no-magic-numbers` rejects `3` even inside a named-const definition.** AGENTS.md exempts
-   `-2..2`, but English needs the third-person literal for agreement checks. Use the composed constant
-   `const THIRD_PERSON = 1 + 2`; do not cast it to `Person`, because type-aware oxlint flags the narrowing
+5. **`eslint/no-magic-numbers` rejects `3` even inside a named-const definition.
+   ** AGENTS.
+   md exempts
+   `-2..2`,
+    but English needs the third-person literal for agreement checks.
+    Use the composed constant
+   `const THIRD_PERSON = 1 + 2`;
+    do not cast it to `Person`,
+    because type-aware oxlint flags the narrowing
    assertion as unsafe.
 
-6. **dprint and oxlint disagree on inline object/array literals.** dprint leaves `{ entry, count, }` on one line
-   when it fits in 90 columns; oxlint's `stylistic/object-property-per-line` and
-   `stylistic/array-element-per-line` (warnings, not errors) want one property/element per line regardless.
-   `mise run //:format:oxlint` (or `oxlint --fix` directly) auto-fixes both rules, but the full-tree
+6. **dprint and oxlint disagree on inline object/array literals.
+   ** dprint leaves `{ entry, count, }` on one line
+   when it fits in 90 columns;
+    oxlint's `stylistic/object-property-per-line` and
+   `stylistic/array-element-per-line` (warnings,
+    not errors) want one property/element per line regardless.
+   `mise run //:format:oxlint` (or `oxlint --fix` directly) auto-fixes both rules,
+    but the full-tree
    `//:format` task fails on unrelated `figma-parsers/kiwi` lint errors before reaching the fixer.
-   Run the package-local fixer directly when working on this package; the fix is autofixable.
+   Run the package-local fixer directly when working on this package;
+    the fix is autofixable.
    `unicorn/no-nested-ternary` is disabled in `packages/config/oxlint/src/rules/style.ts` to match the existing
    project preference for nested ternaries.
 
-7. **Plan §11 short-form examples are wrong; the AST type is normative.** The §11 examples use `kind: 'counted'`, `kind: 'bare'`, etc., but the actual variant kinds are namespaced (`'noun.counted'`, `'noun.bare'`, ...). The implementation follows the type, not the §11 short-form. Test fixtures and the `ssg-test` migration must use the namespaced form.
+7. **Plan §11 short-form examples are wrong;
+    the AST type is normative.
+   ** The §11 examples use `kind: 'counted'`,
+    `kind: 'bare'`,
+    etc.,
+    but the actual variant kinds are namespaced (`'noun.counted'`,
+    `'noun.bare'`,
+    ...).
+    The implementation follows the type,
+    not the §11 short-form.
+    Test fixtures and the `ssg-test` migration must use the namespaced form.
 
-8. **The plan's `*.type.test.ts` convention does not exist in this workspace.** Workspace tests put type assertions inline in `*.unit.test.ts` files using `expectTypeOf` re-exported from `@monochromatic-dev/module-test`. The implementation followed the workspace convention; `src/ast-types.unit.test.ts` is the type-assertion file.
+8. **The plan's `*.type.test.ts` convention does not exist in this workspace.
+   ** Workspace tests put type assertions inline in `*.unit.test.ts` files using `expectTypeOf` re-exported from `@monochromatic-dev/module-test`.
+    The implementation followed the workspace convention;
+    `src/ast-types.unit.test.ts` is the type-assertion file.
 
 ## What the Phase 6 contributor should know
 
 These are the bits that did not get written down inside the package itself:
 
-- The `ssg-test` cache pipeline glob at `packages/webapp-content/ssg-test/src/build.ts:72` (`PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts'`) **does not include `src/i18n/`**. Phase 6 acceptance says i18n source changes must invalidate cached rendered output (§13 Phase 6 / §15). Widen the glob (or add a separate i18n fingerprint) before declaring the migration done.
-- `ssg-test`'s `package.json` does not yet depend on `@monochromatic-dev/module-i18n-compose`. Phase 6 must add `"@monochromatic-dev/module-i18n-compose": "workspace:*"` to `dependencies` and remove `"typesafe-i18n"` from `devDependencies`.
-- The existing call sites use `const t = i18nObject(lang); t.siteName()` — across roughly ten files (rg `'i18nObject'` from `packages/webapp-content/ssg-test/src`). The plan's §3 forbids exporting a `bindLocale` / `t(locale)` accessor from the shared package. Rewrites must become explicit `i18n.label(lang, 'siteName')` calls; an app-local thin wrapper is allowed if call-site noise becomes painful, but resist adding one unless necessary.
-- All ten existing translation keys in `src/i18n/{ca,en,zh}/index.ts` are static UI strings; they all belong in `label`, not in `noun`. The Phase 6 migration is largely mechanical: build a `Label` union from the existing key set, populate per-locale `labels` records, swap the imports.
-- `src/i18n/lang-names.ts` (autonyms like `Català`, `中文`) is independent of the typesafe-i18n machinery and should be preserved verbatim; do not let it break when deleting the generated files.
-- `src/build.ts:54` calls `loadAllLocales()` from the generated `i18n-util.sync.ts`. The new package has no loader; the call site can be removed.
-- The generated files to remove only after every import has been redirected: `src/i18n/{i18n-types,i18n-util,i18n-util.sync,i18n-util.async,formatters}.ts`. `formatters.ts` is a thin stub that currently returns an empty object; nothing depends on it semantically.
+- The `ssg-test` cache pipeline glob at `packages/webapp-content/ssg-test/src/build.ts:72` (`PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts'`) **does not include `src/i18n/`**.
+   Phase 6 acceptance says i18n source changes must invalidate cached rendered output (§13 Phase 6 / §15).
+   Widen the glob (or add a separate i18n fingerprint) before declaring the migration done.
+- `ssg-test`'s `package.json` does not yet depend on `@monochromatic-dev/module-i18n-compose`.
+   Phase 6 must add `"@monochromatic-dev/module-i18n-compose": "workspace:*"` to `dependencies` and remove `"typesafe-i18n"` from `devDependencies`.
+- The existing call sites use `const t = i18nObject(lang); t.siteName()` — across roughly ten files (rg `'i18nObject'` from `packages/webapp-content/ssg-test/src`).
+   The plan's §3 forbids exporting a `bindLocale` / `t(locale)` accessor from the shared package.
+   Rewrites must become explicit `i18n.label(lang, 'siteName')` calls;
+   an app-local thin wrapper is allowed if call-site noise becomes painful,
+   but resist adding one unless necessary.
+- All ten existing translation keys in `src/i18n/{ca,en,zh}/index.ts` are static UI strings;
+   they all belong in `label`,
+   not in `noun`.
+   The Phase 6 migration is largely mechanical:
+   build a `Label` union from the existing key set,
+   populate per-locale `labels` records,
+   swap the imports.
+- `src/i18n/lang-names.ts` (autonyms like `Català`,
+   `中文`) is independent of the typesafe-i18n machinery and should be preserved verbatim;
+   do not let it break when deleting the generated files.
+- `src/build.ts:54` calls `loadAllLocales()` from the generated `i18n-util.sync.ts`.
+   The new package has no loader;
+   the call site can be removed.
+- The generated files to remove only after every import has been redirected:
+   `src/i18n/{i18n-types,i18n-util,i18n-util.sync,i18n-util.async,formatters}.ts`.
+   `formatters.ts` is a thin stub that currently returns an empty object;
+   nothing depends on it semantically.
 - The `build:i18n` mise task (`typesafe-i18n --no-watch`) and the `typesafe-i18n` devDependency both go away.
-- Test the migration via `mise run //packages/webapp-content/ssg-test:build` (or whatever the equivalent task names are when you read this — `mise tasks -C packages/webapp-content/ssg-test` lists them). Rendered output diff should either be empty or every diff line should have a one-line explanation.
+- Test the migration via `mise run //packages/webapp-content/ssg-test:build` (or whatever the equivalent task names are when you read this — `mise tasks -C packages/webapp-content/ssg-test` lists them).
+   Rendered output diff should either be empty or every diff line should have a one-line explanation.
 
 ## 1. Goal
 
@@ -154,11 +294,22 @@ Build a workspace package at:
 packages/module/i18n-compose/
 ```
 
-The package provides a small, type-safe, no-codegen API for rendering localized UI text from explicit semantic grammar nodes.
+The package provides a small,
+ type-safe,
+ no-codegen API for rendering localized UI text from explicit semantic grammar nodes.
 
 The package is meant to replace `typesafe-i18n` in `ssg-test` and avoid the parser/template-regex failure mode that motivated the original investigation.
 
-The package must not become an app-message registry. It should know how to render generic grammar; it must not know what a page, post, route, confirmation dialog, selected item, timestamp, user, or product-specific workflow is.
+The package must not become an app-message registry.
+ It should know how to render generic grammar;
+ it must not know what a page,
+ post,
+ route,
+ confirmation dialog,
+ selected item,
+ timestamp,
+ user,
+ or product-specific workflow is.
 
 ## 2. Non-negotiable ownership boundary
 
@@ -203,7 +354,9 @@ i18n.siteName(locale,);
 i18n.noResults(locale,);
 ```
 
-Those are product-message semantics. They belong in a consuming app, if they exist at all.
+Those are product-message semantics.
+ They belong in a consuming app,
+ if they exist at all.
 
 The shared package may expose generic calls like:
 
@@ -213,7 +366,10 @@ i18n.np(locale, { kind: 'counted', count, noun: 'item', },);
 i18n.sentence(locale, sentenceAst,);
 ```
 
-Here, `siteName`, `item`, and all other vocabulary keys are consumer-owned.
+Here,
+ `siteName`,
+ `item`,
+ and all other vocabulary keys are consumer-owned.
 
 ## 3. Canonical API shape
 
@@ -237,9 +393,14 @@ const t = i18n(locale,);
 t.sentence(sentenceAst,);
 ```
 
-Do not export `forLocale`, `bindLocale`, or `t(locale)` from the shared package in the first implementation. A consuming package may create an app-local wrapper later if repeated locale passing becomes painful.
+Do not export `forLocale`,
+ `bindLocale`,
+ or `t(locale)` from the shared package in the first implementation.
+ A consuming package may create an app-local wrapper later if repeated locale passing becomes painful.
 
-Rationale: the library should not remember the current locale. Every render is a pure operation over explicit inputs:
+Rationale:
+ the library should not remember the current locale.
+ Every render is a pure operation over explicit inputs:
 
 ```txt
 locale + locale specs + vocabulary key / grammar node -> string
@@ -307,7 +468,13 @@ export const isLocale = i18n.isLocale;
 export const assertLocale = i18n.assertLocale;
 ```
 
-If existing app code currently imports `Locales`, `locales`, `isLocale`, or `loadAllLocales` from generated `typesafe-i18n` files, replace those imports before deleting the generated files. If `loadAllLocales` is only present because of `typesafe-i18n`'s generated loading model, remove the call sites or replace it with an app-local no-op only where unavoidable.
+If existing app code currently imports `Locales`,
+ `locales`,
+ `isLocale`,
+ or `loadAllLocales` from generated `typesafe-i18n` files,
+ replace those imports before deleting the generated files.
+ If `loadAllLocales` is only present because of `typesafe-i18n`'s generated loading model,
+ remove the call sites or replace it with an app-local no-op only where unavoidable.
 
 ## 5. Locale scope
 
@@ -317,7 +484,8 @@ Initial locale scope is:
 ca, en, zh
 ```
 
-Catalan is not a migration afterthought. It is a first-class v1 locale because `ssg-test` already has three locales.
+Catalan is not a migration afterthought.
+ It is a first-class v1 locale because `ssg-test` already has three locales.
 
 The library should expose locale builders for all three:
 
@@ -327,9 +495,14 @@ defineEnglishLocale(...);
 defineChineseLocale(...);
 ```
 
-Consumers provide vocabulary. Builders provide grammar strategy.
+Consumers provide vocabulary.
+ Builders provide grammar strategy.
 
-Do not require every consumer to hand-write `noun`, `np`, `vp`, and `sentence` renderers from scratch for ordinary use. The normal path should be:
+Do not require every consumer to hand-write `noun`,
+ `np`,
+ `vp`,
+ and `sentence` renderers from scratch for ordinary use.
+ The normal path should be:
 
 ```ts
 const en = defineEnglishLocale({ labels, subjects, nouns, verbs, },);
@@ -341,7 +514,8 @@ Expose a lower-level `defineCustomLocale` only as an advanced escape hatch.
 
 ## 6. Vocabulary categories
 
-Static UI text belongs in `label`, not `noun`.
+Static UI text belongs in `label`,
+ not `noun`.
 
 Good:
 
@@ -362,7 +536,8 @@ i18n.noun(locale, 'siteName',);
 i18n.np(locale, { kind: 'counted', count: 3, noun: 'chooseALang', },);
 ```
 
-The second form makes non-grammatical UI labels available in grammatical slots, which defeats the purpose of a typed composition API.
+The second form makes non-grammatical UI labels available in grammatical slots,
+ which defeats the purpose of a typed composition API.
 
 ## 7. No exported core app vocabulary
 
@@ -385,11 +560,13 @@ export type Countability = 'countable' | 'mass' | 'both';
 export type GrammaticalGender = 'masculine' | 'feminine' | 'neuter';
 ```
 
-Package tests may define test vocabulary internally, but that vocabulary must not become part of the public API.
+Package tests may define test vocabulary internally,
+ but that vocabulary must not become part of the public API.
 
 ## 8. Grammar AST
 
-`Sentence` must be a discriminated union. Invalid grammatical states should be unrepresentable where TypeScript can enforce them.
+`Sentence` must be a discriminated union.
+ Invalid grammatical states should be unrepresentable where TypeScript can enforce them.
 
 ### Subject references
 
@@ -399,7 +576,8 @@ export type SubjectRef<S extends string,> =
   | { kind: 'subject.externalName'; text: string; };
 ```
 
-External names are opaque text. The library may position them grammatically but does not translate them or own their meaning.
+External names are opaque text.
+ The library may position them grammatically but does not translate them or own their meaning.
 
 ### External text leaves
 
@@ -410,7 +588,10 @@ export type ExternalText = {
 };
 ```
 
-External text is for values such as item titles, names, or preformatted times. The renderer may place the text but must not parse it or treat it as a translation template.
+External text is for values such as item titles,
+ names,
+ or preformatted times.
+ The renderer may place the text but must not parse it or treat it as a translation template.
 
 Escaping/sanitization remains the caller's responsibility if the rendered output is inserted into HTML.
 
@@ -432,9 +613,18 @@ export type Possessor<S extends string,> =
   | { kind: 'possessor.externalName'; text: string; };
 ```
 
-Use `count`, not `adj`. Word adjectives are a separate future field, not a numeric quantity field.
+Use `count`,
+ not `adj`.
+ Word adjectives are a separate future field,
+ not a numeric quantity field.
 
-Articles are explicit. The renderer must not infer `a`, `an`, `the`, `el`, `la`, etc. from a bare noun.
+Articles are explicit.
+ The renderer must not infer `a`,
+ `an`,
+ `the`,
+ `el`,
+ `la`,
+ etc. from a bare noun.
 
 ### Verb phrases
 
@@ -459,7 +649,8 @@ This supports generic grammar like “want to delete X” without adding a domai
 
 ### Adverbials
 
-Avoid a single `adverbialPrep` field on nouns. A noun does not have one universal preposition.
+Avoid a single `adverbialPrep` field on nouns.
+ A noun does not have one universal preposition.
 
 Use adverbial relation nodes:
 
@@ -543,7 +734,8 @@ This lets English front wh-words and lets Chinese place wh-words in the occupied
 
 ### Fragments
 
-Some UI text is not a complete sentence. Do not fake subjectless declaratives.
+Some UI text is not a complete sentence.
+ Do not fake subjectless declaratives.
 
 ```ts
 export type Fragment<S extends string, V extends string, N extends string,> =
@@ -561,13 +753,16 @@ export type FragmentPart<S extends string, V extends string,
     | { kind: 'part.externalText'; text: string; };
 ```
 
-The exact `fragment.sequence` typing should ensure labels are from the consumer's `Label` union, not arbitrary string. Keep the sketch above conceptually but type it precisely in implementation.
+The exact `fragment.sequence` typing should ensure labels are from the consumer's `Label` union,
+ not arbitrary string.
+ Keep the sketch above conceptually but type it precisely in implementation.
 
 ## 9. Vocabulary entry shapes
 
 ### Subject entries
 
-Subject entries need possessive surfaces. They cannot be derived safely from the nominative surface.
+Subject entries need possessive surfaces.
+ They cannot be derived safely from the nominative surface.
 
 ```ts
 export type SubjectEntry = {
@@ -588,7 +783,9 @@ they: { surface: 'they', possessive: 'their', person: 3, number: 'plural' }
 
 ### Noun entries
 
-Nouns need enough features for English, Chinese, and Catalan.
+Nouns need enough features for English,
+ Chinese,
+ and Catalan.
 
 ```ts
 export type NounEntry = {
@@ -635,15 +832,21 @@ cat: {
 }
 ```
 
-Do not rely on articles for bare nouns. Article intent is carried by the noun-phrase variant.
+Do not rely on articles for bare nouns.
+ Article intent is carried by the noun-phrase variant.
 
 ### Verb entries
 
 Do not model verbs as a single renderer function receiving `{ person, number, tense }`.
 
-English needs finite, base, infinitive, imperative, and participle-like forms so interrogatives and complements do not produce bad output such as `Did I had` or `Does he has`.
+English needs finite,
+ base,
+ infinitive,
+ imperative,
+ and participle-like forms so interrogatives and complements do not produce bad output such as `Did I had` or `Does he has`.
 
-Use structured entries, with locale-specific builders normalizing them into renderer-internal forms.
+Use structured entries,
+ with locale-specific builders normalizing them into renderer-internal forms.
 
 English sketch:
 
@@ -680,7 +883,8 @@ export type CatalanVerbEntry = {
 };
 ```
 
-The exact Catalan shape can be tuned during implementation, but the design must support person/number agreement and should not force Catalan through the English verb model.
+The exact Catalan shape can be tuned during implementation,
+ but the design must support person/number agreement and should not force Catalan through the English verb model.
 
 ## 10. Locale-specific rendering rules
 
@@ -688,33 +892,48 @@ The exact Catalan shape can be tuned during implementation, but the design must 
 
 - Declarative present third-person singular uses the finite third-person form.
 - Yes/no questions use do-support where appropriate.
-- Questions use the base verb after `do`, `does`, or `did`.
+- Questions use the base verb after `do`,
+   `does`,
+   or `did`.
 - Future uses `will` + base.
 - Infinitive complements use `to` + base.
 - Imperatives use base/imperative form.
 - Articles render only when the noun phrase explicitly requests definite or indefinite form.
-- Capitalization applies to the first emitted token unless the token has its own casing invariant, such as `I` or an external proper name.
+- Capitalization applies to the first emitted token unless the token has its own casing invariant,
+   such as `I` or an external proper name.
 
 ### Chinese requirements
 
 - Counted nouns use Arabic digits plus classifier when a classifier exists.
-- Keep the spacing rule between Latin digits and Chinese characters: one ASCII space, for example `1 只猫`.
-- Yes/no questions use the appropriate question particle, for example `吗`, but wh-questions must not receive the yes/no particle merely because they end in a question mark.
+- Keep the spacing rule between Latin digits and Chinese characters:
+   one ASCII space,
+   for example `1 只猫`.
+- Yes/no questions use the appropriate question particle,
+   for example `吗`,
+   but wh-questions must not receive the yes/no particle merely because they end in a question mark.
 - Wh-questions render the wh-word in the occupied slot.
-- Use Chinese punctuation for Chinese sentence terminators: `。`, `？`, `！`.
-- Tense/aspect surfaces come from the Chinese verb entry or renderer strategy; do not pretend Chinese has the same finite-verb model as English.
+- Use Chinese punctuation for Chinese sentence terminators:
+   `。`,
+   `？`,
+   `！`.
+- Tense/aspect surfaces come from the Chinese verb entry or renderer strategy;
+   do not pretend Chinese has the same finite-verb model as English.
 
 ### Catalan requirements
 
 - Nouns support grammatical gender.
 - Definite and indefinite articles agree with noun gender and number for the covered vocabulary.
 - Verbs support person/number agreement for covered tenses.
-- Question rendering may rely on punctuation/intonation for v1 where appropriate, but the renderer must still be explicit and tested.
-- Do not use Catalan as a static-label-only fallback. If grammar primitives are available for `en` and `zh`, the covered primitives should also be implemented and tested for `ca`.
+- Question rendering may rely on punctuation/intonation for v1 where appropriate,
+   but the renderer must still be explicit and tested.
+- Do not use Catalan as a static-label-only fallback.
+   If grammar primitives are available for `en` and `zh`,
+   the covered primitives should also be implemented and tested for `ca`.
 
 ## 11. Examples
 
-These examples use consumer vocabulary keys. They are not built-in library vocabulary.
+These examples use consumer vocabulary keys.
+ They are not built-in library vocabulary.
 
 ### Counted noun phrase
 
@@ -814,7 +1033,8 @@ i18n.sentence('zh', {
 
 ### Generic confirmation-like grammar without domain API
 
-The shared package does not expose `confirmDelete`. A consuming app can compose generic grammar directly:
+The shared package does not expose `confirmDelete`.
+ A consuming app can compose generic grammar directly:
 
 ```ts
 i18n.sentence(locale, {
@@ -835,7 +1055,8 @@ i18n.sentence(locale, {
 },);
 ```
 
-The library sees grammar plus opaque external text. It does not know this is a confirmation dialog.
+The library sees grammar plus opaque external text.
+ It does not know this is a confirmation dialog.
 
 ### Static labels
 
@@ -845,7 +1066,8 @@ i18n.label(locale, 'chooseALang',);
 i18n.label(locale, 'noResults',);
 ```
 
-Labels are generic consumer vocabulary. They are not nouns.
+Labels are generic consumer vocabulary.
+ They are not nouns.
 
 ### Interpolation without template holes
 
@@ -863,7 +1085,9 @@ Good:
 const rendered = `${i18n.label(locale, 'postedAt',)} ${formatTime(time,)}`;
 ```
 
-If locale-specific order is needed, the consuming app owns that composition. The shared library should not gain a `postedAt` method.
+If locale-specific order is needed,
+ the consuming app owns that composition.
+ The shared library should not gain a `postedAt` method.
 
 ## 12. Package layout
 
@@ -896,7 +1120,9 @@ packages/module/i18n-compose/
 ### Phase 1: package skeleton
 
 - Create `packages/module/i18n-compose/`.
-- Add `package.json`, `tsconfig.json`, and `mise.toml` consistent with nearby workspace modules.
+- Add `package.json`,
+   `tsconfig.json`,
+   and `mise.toml` consistent with nearby workspace modules.
 - Add `README.md` documenting the ownership boundary and explicit-locale API.
 - Add root exports but keep implementation minimal until types are ready.
 
@@ -911,7 +1137,11 @@ Acceptance:
 ### Phase 2: type model and AST builders
 
 - Implement vocabulary entry types.
-- Implement `NounPhrase`, `VerbPhrase`, `Adverbial`, `Sentence`, and `Fragment` types.
+- Implement `NounPhrase`,
+   `VerbPhrase`,
+   `Adverbial`,
+   `Sentence`,
+   and `Fragment` types.
 - Add small builder helpers only if they reduce call-site noise without hiding structure.
 - Add type tests proving invalid states are rejected.
 
@@ -995,7 +1225,8 @@ Acceptance:
 
 ### Phase 6: migrate `ssg-test`
 
-Because all call sites are under our control, do not preserve the current accessor shape for its own sake.
+Because all call sites are under our control,
+ do not preserve the current accessor shape for its own sake.
 
 Migration tasks:
 
@@ -1027,15 +1258,18 @@ Verify the exact generated-file list in the repo before deletion.
 
 ### Phase 7: cleanup and docs
 
-- README examples must use `i18n.sentence(locale, ast)`, not `t(locale).sentence(ast)`.
+- README examples must use `i18n.sentence(locale, ast)`,
+   not `t(locale).sentence(ast)`.
 - README must explain that labels are not nouns.
 - README must include the no-template-holes rule.
 - README must include at least one example showing generic grammar composition with opaque external text.
-- README must warn that the package owns language mechanics, not application semantics.
+- README must warn that the package owns language mechanics,
+   not application semantics.
 
 ## 14. Testing plan
 
-Use the workspace's normal test tooling and style. Do not invent unsupported task names in the plan.
+Use the workspace's normal test tooling and style.
+ Do not invent unsupported task names in the plan.
 
 Required tests:
 
@@ -1106,7 +1340,8 @@ Package acceptance:
 
 ## 17. Design checks before merge
 
-Before merging the package or the `ssg-test` migration, verify:
+Before merging the package or the `ssg-test` migration,
+ verify:
 
 ```txt
 - package source contains no `confirmDelete`, `selectedCount`, `postedAt`, `siteName`, `chooseALang`, `noResults`, route, rss, post, or page-specific APIs outside tests/examples

@@ -133,7 +133,8 @@ function findGlobalNodeModules(): string | typeof NOT_FOUND {
       const lockFileSize = statSync(join(
         candidate,
         '.package-lock.json',
-      ),).size;
+      ),)
+        .size;
       if (lockFileSize
         > 0) {
         rl.info(`found global node_modules at ${candidate}`,);

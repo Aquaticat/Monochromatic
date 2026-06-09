@@ -2,38 +2,53 @@
 
 This document tracks the `MODULE_NOT_FOUND` crash that any `pi`
 session running with `@ifi/pi-plan@0.5.1` installed hits when it
-tries to render the plan-mode banner. The crash is a packaging bug
-in upstream `ifiokjr/oh-pi`: between npm publication of
+tries to render the plan-mode banner.
+ The crash is a packaging bug
+in upstream `ifiokjr/oh-pi`:
+ between npm publication of
 `@ifi/pi-shared-qna@0.5.1` and `@ifi/pi-plan@0.5.1` on 2026-04-28
-and the present day, the underlying pi-tui library was renamed
+and the present day,
+ the underlying pi-tui library was renamed
 from `@mariozechner/pi-tui` (deprecated at 0.73.1 on 2026-05-07)
 to `@earendil-works/pi-tui` (started at 0.74.0 30 minutes later).
 Every `@ifi/*` pi extension still pins the deprecated name in both
-its `peerDependencies` and its source imports. Sibling extension
-publishers (`@aliou/*`, `@diegopetrucci/*`, `pi-context`,
-`pi-mcp-adapter`, `@juicesharp/rpiv-todo`) all migrated to the new
-scope; only the `@ifi/*` family did not.
+its `peerDependencies` and its source imports.
+ Sibling extension
+publishers (`@aliou/*`,
+ `@diegopetrucci/*`,
+ `pi-context`,
+`pi-mcp-adapter`,
+ `@juicesharp/rpiv-todo`) all migrated to the new
+scope;
+ only the `@ifi/*` family did not.
 
 The Monochromatic workspace pins `@earendil-works/pi-tui@0.75.4`
-exclusively (`pnpm-workspace.yaml`), and the pi agent's npm tree
+exclusively (`pnpm-workspace.yaml`),
+ and the pi agent's npm tree
 under `~/.pi/agent/npm/node_modules/` installs only
-`@earendil-works/pi-tui@0.74.1`. There is no copy of
+`@earendil-works/pi-tui@0.74.1`.
+ There is no copy of
 `@mariozechner/pi-tui` for the loader to find.
 
 The consumer-side symlink workaround in "Verified workarounds"
 section #1 is the recommended fix until upstream republishes
-`@ifi/pi-shared-qna`, `@ifi/pi-plan`, and
+`@ifi/pi-shared-qna`,
+ `@ifi/pi-plan`,
+ and
 `@ifi/pi-extension-subagents` against the new package name.
 
 ---
 
 ## Symptom
 
-A `pi` session in this workspace (`pi` 0.75.4, installed via
+A `pi` session in this workspace (`pi` 0.75.4,
+ installed via
 `packages/pi/current-time-context/node_modules/.bin/pi`) exits with
 an `uncaughtException` shortly after startup when `@ifi/pi-plan` is
-present in `~/.pi/agent/npm/node_modules/`. The crash fires from a
-`setTimeout` callback inside the TUI render loop, so it surfaces
+present in `~/.pi/agent/npm/node_modules/`.
+ The crash fires from a
+`setTimeout` callback inside the TUI render loop,
+ so it surfaces
 asynchronously and kills the whole process rather than failing the
 single render frame.
 
@@ -65,16 +80,22 @@ dependency and Bun global fallbacks:
 }
 ```
 
-The crash trigger is the plan-mode banner widget: each TUI render
-tick calls `state.ts:102`'s render callback, which calls
-`getPiTui()` (`state.ts:8`), which delegates to `requirePiTuiModule`
-(`pi-tui-loader.ts:54`). The loader hardcodes the old name in two
+The crash trigger is the plan-mode banner widget:
+ each TUI render
+tick calls `state.ts:102`'s render callback,
+ which calls
+`getPiTui()` (`state.ts:8`),
+ which delegates to `requirePiTuiModule`
+(`pi-tui-loader.ts:54`).
+ The loader hardcodes the old name in two
 places (the inline `require` call and the Bun fallback path
-builder), so it finds neither and throws the wrapper error at
+builder),
+ so it finds neither and throws the wrapper error at
 `pi-tui-loader.ts:76`.
 
 The same root cause would also fire from any `@ifi/pi-extension-subagents`
-code path, because that package's TypeScript source contains
+code path,
+ because that package's TypeScript source contains
 direct `import ... from "@mariozechner/pi-tui"` statements rather
 than going through the shared loader (see "Root cause" for the
 inventory).
@@ -118,8 +139,10 @@ The banner widget is registered with the TUI:
 }),
 ```
 
-Each render tick calls `getPiTui()` (no caching), which calls
-`requirePiTuiModule()`. The loader is `@ifi/pi-shared-qna@0.5.1`:
+Each render tick calls `getPiTui()` (no caching),
+ which calls
+`requirePiTuiModule()`.
+ The loader is `@ifi/pi-shared-qna@0.5.1`:
 
 ```ts
 // /var/home/user/.pi/agent/npm/node_modules/@ifi/pi-shared-qna/pi-tui-loader.ts:54-80
@@ -171,29 +194,42 @@ export function getPiTuiFallbackPaths(options: Omit<PiTuiLoaderOptions, "require
 }
 ```
 
-So the resolver tries exactly two locations, both spelled
-`@mariozechner/pi-tui`, and finds neither.
+So the resolver tries exactly two locations,
+ both spelled
+`@mariozechner/pi-tui`,
+ and finds neither.
 
 ### Why the package is not there
 
-`@mariozechner/pi-tui` was deprecated. The npm registry view of the
+`@mariozechner/pi-tui` was deprecated.
+ The npm registry view of the
 deprecated package carries this message in the readme:
 
 ```text
 DEPRECATED ⚠️  - please use @earendil-works/pi-tui instead going forward
 ```
 
-Publication timeline (UTC, from `npm view ... time`):
+Publication timeline (UTC,
+ from `npm view ... time`):
 
-- `@ifi/pi-shared-qna@0.5.1`: 2026-04-28 05:50:21 (still current latest)
-- `@mariozechner/pi-tui@0.73.1`: 2026-05-07 14:45:22 (final version of deprecated scope)
-- `@earendil-works/pi-tui@0.74.0`: 2026-05-07 15:15:52 (first version of new scope, 30 minutes later)
-- `@earendil-works/pi-tui@0.75.4`: 2026-05-20 14:24:20 (current latest, what this workspace pins)
-- This investigation: 2026-05-20 (today)
+- `@ifi/pi-shared-qna@0.5.1`:
+   2026-04-28 05:50:21 (still current latest)
+- `@mariozechner/pi-tui@0.73.1`:
+   2026-05-07 14:45:22 (final version of deprecated scope)
+- `@earendil-works/pi-tui@0.74.0`:
+   2026-05-07 15:15:52 (first version of new scope,
+   30 minutes later)
+- `@earendil-works/pi-tui@0.75.4`:
+   2026-05-20 14:24:20 (current latest,
+   what this workspace pins)
+- This investigation:
+   2026-05-20 (today)
 
 `@ifi/pi-shared-qna@0.5.1` shipped 10 days *before* the rename,
-pinning the then-canonical name. No subsequent
-`@ifi/pi-shared-qna` release has been published; the latest version
+pinning the then-canonical name.
+ No subsequent
+`@ifi/pi-shared-qna` release has been published;
+ the latest version
 on npm is still 0.5.1.
 
 ### Why other extensions are unaffected
@@ -214,18 +250,24 @@ pi-mcp-adapter             → @earendil-works/pi-tui (^0.74.0)
 @ifi/pi-shared-qna         → @mariozechner/pi-tui (*)         ← root of breakage
 ```
 
-The breakage is confined to the `@ifi/*` family. Filing/uninstalling
+The breakage is confined to the `@ifi/*` family.
+ Filing/uninstalling
 `@ifi/pi-plan` removes the only currently-loaded `@ifi/*` extension
 in this workspace and restores `pi` startup.
 
 ### Scope of the upstream fix
 
-Beyond the loader, the bug surface inside upstream
+Beyond the loader,
+ the bug surface inside upstream
 [`ifiokjr/oh-pi`](https://github.com/ifiokjr/oh-pi) at commit
-`1979b3a9` (head of `main`, 2026-05-17) spans 16 package
+`1979b3a9` (head of `main`,
+ 2026-05-17) spans 16 package
 manifests and roughly 15 direct `import ... from "@mariozechner/pi-tui"`
-statements across `packages/subagents/`, `packages/spec/extension/`,
-`packages/providers/`, and the shared-qna README. Inventory captured
+statements across `packages/subagents/`,
+ `packages/spec/extension/`,
+`packages/providers/`,
+ and the shared-qna README.
+ Inventory captured
 from a fresh clone:
 
 ```text
@@ -259,12 +301,16 @@ packages/providers/index.ts:            import { ... } from "@mariozechner/pi-tu
 packages/spec/extension/index.ts:       import { Text } from "@mariozechner/pi-tui";
 ```
 
-A complete upstream fix is therefore not one-line; it is a
-coordinated migration. The minimal patch that resolves *this*
+A complete upstream fix is therefore not one-line;
+ it is a
+coordinated migration.
+ The minimal patch that resolves *this*
 specific crash (the plan-mode banner render in `@ifi/pi-plan`) is
-just the loader, since `@ifi/pi-plan` is the only currently-loaded
+just the loader,
+ since `@ifi/pi-plan` is the only currently-loaded
 `@ifi/*` extension and it talks to pi-tui exclusively through
-`requirePiTuiModule()`. See "Verified workarounds" #2 (loader
+`requirePiTuiModule()`.
+ See "Verified workarounds" #2 (loader
 patch) and the auto-prototype audit in
 "Why we file/do not file this upstream" below.
 
@@ -272,11 +318,20 @@ patch) and the auto-prototype audit in
 
 ### Versions under test
 
-- Failing pi binary: `/var/home/user/Monochromatic/packages/pi/current-time-context/node_modules/.bin/pi` (`pi --version` = `0.75.4`)
-- Failing extension: `@ifi/pi-plan@0.5.1`, installed at `~/.pi/agent/npm/node_modules/@ifi/pi-plan/`, pulling in `@ifi/pi-shared-qna@0.5.1` and `@ifi/pi-extension-subagents@0.5.1`
-- Workspace TUI: `@earendil-works/pi-tui@0.75.4` (pinned in `pnpm-workspace.yaml`)
-- Agent-tree TUI: `@earendil-works/pi-tui@0.74.1` (resolved by `pi`'s extension installer)
-- Upstream clone for the patch prototype: `ifiokjr/oh-pi` at commit `1979b3a9dd042e61602b600492b0d7e79b2e075d`, in a fresh `mktemp -d` directory created at investigation time, `git remote -v` confirmed pointing at `https://github.com/ifiokjr/oh-pi.git`
+- Failing pi binary:
+   `/var/home/user/Monochromatic/packages/pi/current-time-context/node_modules/.bin/pi` (`pi --version` = `0.75.4`)
+- Failing extension:
+   `@ifi/pi-plan@0.5.1`,
+   installed at `~/.pi/agent/npm/node_modules/@ifi/pi-plan/`,
+   pulling in `@ifi/pi-shared-qna@0.5.1` and `@ifi/pi-extension-subagents@0.5.1`
+- Workspace TUI:
+   `@earendil-works/pi-tui@0.75.4` (pinned in `pnpm-workspace.yaml`)
+- Agent-tree TUI:
+   `@earendil-works/pi-tui@0.74.1` (resolved by `pi`'s extension installer)
+- Upstream clone for the patch prototype:
+   `ifiokjr/oh-pi` at commit `1979b3a9dd042e61602b600492b0d7e79b2e075d`,
+   in a fresh `mktemp -d` directory created at investigation time,
+   `git remote -v` confirmed pointing at `https://github.com/ifiokjr/oh-pi.git`
 
 ### Harness — failing scenario (no `@mariozechner/pi-tui` present)
 
@@ -312,7 +367,8 @@ This exactly matches the production crash message.
 ### Harness — passing scenarios
 
 Workaround #1 (consumer-side symlink) and #2 (loader patch) both
-verified through the same harness shape. See each workaround
+verified through the same harness shape.
+ See each workaround
 section for the exact harness invocation and output.
 
 ## Verified workarounds
@@ -329,9 +385,11 @@ ln -s ../@earendil-works/pi-tui \
   ~/.pi/agent/npm/node_modules/@mariozechner/pi-tui
 ```
 
-The link target is relative on purpose: it stays valid even if `pi`
+The link target is relative on purpose:
+ it stays valid even if `pi`
 moves the `@earendil-works` directory during a future extension
-reinstall, as long as the sibling layout is preserved.
+reinstall,
+ as long as the sibling layout is preserved.
 
 Verification (run alongside the failing-scenario harness above):
 
@@ -363,23 +421,34 @@ SYMLINK OK: function
 Tradeoffs:
 
 - `pi` may rewrite `~/.pi/agent/npm/node_modules/` on extension
-  reinstall (`pi install`, `pi update`). The symlink survives most
+  reinstall (`pi install`,
+   `pi update`).
+   The symlink survives most
   noop reinstalls but is wiped by a clean reinstall of any
-  package that brings npm into a deduplicate pass. Reapply the
+  package that brings npm into a deduplicate pass.
+   Reapply the
   symlink after any `pi install`/`pi update`.
 - The `@earendil-works/pi-tui@0.74.1` in the agent tree is older
   than the `@earendil-works/pi-tui@0.75.4` in the Monochromatic
-  workspace. The loader runs `createRequire` from the loader file's
-  location (under `~/.pi/agent/npm/...`), so it always resolves
-  to the older 0.74.1 copy. The two API functions `@ifi/pi-plan`
-  uses (`truncateToWidth`, `wrapTextWithAnsi`) exist in both
-  versions and behave identically; this workaround is safe for the
+  workspace.
+   The loader runs `createRequire` from the loader file's
+  location (under `~/.pi/agent/npm/...`),
+   so it always resolves
+  to the older 0.74.1 copy.
+   The two API functions `@ifi/pi-plan`
+  uses (`truncateToWidth`,
+   `wrapTextWithAnsi`) exist in both
+  versions and behave identically;
+   this workaround is safe for the
   observed call sites.
 - Does not fix `@ifi/pi-extension-subagents`'s direct imports
-  if those code paths activate. The `@ifi/pi-plan` plan-mode
-  banner only goes through the shared loader, so this workaround
+  if those code paths activate.
+   The `@ifi/pi-plan` plan-mode
+  banner only goes through the shared loader,
+   so this workaround
   covers the present crash but does not future-proof against
-  feature paths in the sub-agents extension. Watch for new
+  feature paths in the sub-agents extension.
+   Watch for new
   `Cannot find module '@mariozechner/...'` failures on
   subagent activation.
 
@@ -392,11 +461,16 @@ pi uninstall npm:@ifi/pi-plan
 ```
 
 This removes the only currently-active broken extension and
-restores `pi` startup without touching anything else. The other
+restores `pi` startup without touching anything else.
+ The other
 seven extensions in the agent tree are unaffected.
 
-Tradeoffs: loses plan-mode features (`/plan`, branch-aware plan
-files, delegated research tasks). Acceptable for sessions that do
+Tradeoffs:
+ loses plan-mode features (`/plan`,
+ branch-aware plan
+files,
+ delegated research tasks).
+ Acceptable for sessions that do
 not use plan mode.
 
 ### #3 — apply the upstream loader patch locally
@@ -412,116 +486,181 @@ cp /tmp/oh-pi-prototype-jBg5zK/packages/shared-qna/pi-tui-loader.ts \
 The full diff is recorded at
 [`pi-extensions-pi-tui-rename.patch`](pi-extensions-pi-tui-rename.patch).
 This is the same change a future `@ifi/pi-shared-qna@0.5.2`
-release should ship, so it is the most upstream-shaped local fix.
+release should ship,
+ so it is the most upstream-shaped local fix.
 
-Verification: see "Harness — passing scenarios" — the patched
+Verification:
+ see "Harness — passing scenarios" — the patched
 loader returns both `truncateToWidth` and `wrapTextWithAnsi` and
 produces correct output for the two functions `@ifi/pi-plan`
 exercises.
 
 Tradeoffs:
 
-- Same reinstall fragility as workaround #1: `pi` may overwrite
+- Same reinstall fragility as workaround #1:
+   `pi` may overwrite
   the file on extension reinstall.
-- Does not fix `@ifi/pi-extension-subagents`'s direct imports; if
-  the sub-agent code paths activate, they will fail with the same
-  module-not-found error against `@mariozechner/pi-tui`. The fix
-  is purely structurally upstream-shaped (no new imports); the
+- Does not fix `@ifi/pi-extension-subagents`'s direct imports;
+   if
+  the sub-agent code paths activate,
+   they will fail with the same
+  module-not-found error against `@mariozechner/pi-tui`.
+   The fix
+  is purely structurally upstream-shaped (no new imports);
+   the
   subagent direct imports require a separate set of edits across
   ~9 source files.
 
 ## What does not work
 
 - **Installing the deprecated `@mariozechner/pi-tui@0.73.1`
-  alongside the new package.** `npm view` confirms 0.73.1 still
-  resolves and downloads. The peerDep `@mariozechner/pi-tui: *`
-  in `@ifi/pi-shared-qna` would accept it. But Monochromatic's
+  alongside the new package.
+  ** `npm view` confirms 0.73.1 still
+  resolves and downloads.
+   The peerDep `@mariozechner/pi-tui: *`
+  in `@ifi/pi-shared-qna` would accept it.
+   But Monochromatic's
   `pnpm-workspace.yaml` deliberately filters
-  `@earendil-works/pi-tui>chalk`, `@earendil-works/pi-tui>koffi`,
-  `@earendil-works/pi-tui>mime-types`, etc., which suggests an
-  intentional minimisation of the TUI's transitive surface. Adding
+  `@earendil-works/pi-tui>chalk`,
+   `@earendil-works/pi-tui>koffi`,
+  `@earendil-works/pi-tui>mime-types`,
+   etc.,
+   which suggests an
+  intentional minimisation of the TUI's transitive surface.
+   Adding
   the deprecated package back fights that policy and pollutes the
   agent tree with a known-deprecated copy that will need to be
   uninstalled later.
 - **Setting `BUN_INSTALL` to point at a directory containing
-  `@mariozechner/pi-tui`.** The fallback-path builder respects the
-  override, but the user does not have a `@mariozechner/pi-tui`
-  global install to point it at, and creating one regresses to the
+  `@mariozechner/pi-tui`.
+  ** The fallback-path builder respects the
+  override,
+   but the user does not have a `@mariozechner/pi-tui`
+  global install to point it at,
+   and creating one regresses to the
   "install deprecated package" rejected option above.
 - **Pinning `@earendil-works/pi-tui` to 0.74.1 in the workspace
-  (matching the agent tree).** The pi binary is `0.75.4` and pulls
-  the matching TUI peer-dep at 0.75.4 via the workspace pin; the
-  agent tree's 0.74.1 is independent. The workspace pin does not
+  (matching the agent tree).
+  ** The pi binary is `0.75.4` and pulls
+  the matching TUI peer-dep at 0.75.4 via the workspace pin;
+   the
+  agent tree's 0.74.1 is independent.
+   The workspace pin does not
   influence loader resolution inside `~/.pi/agent/npm/...`.
 
 ## Why we file this upstream — 5-constraint audit
 
-1. **Is it really upstream's fault?** Yes. `@ifi/pi-shared-qna`,
-   `@ifi/pi-plan`, and `@ifi/pi-extension-subagents` all hardcode
+1. **Is it really upstream's fault?
+   ** Yes.
+    `@ifi/pi-shared-qna`,
+   `@ifi/pi-plan`,
+    and `@ifi/pi-extension-subagents` all hardcode
    a package name that has been deprecated on npm with an explicit
-   "use @earendil-works/pi-tui instead" notice. Sibling extension
-   publishers (`@aliou/*`, `@diegopetrucci/*`, `pi-context`,
-   `pi-mcp-adapter`, `@juicesharp/rpiv-todo`) already migrated,
-   confirming the rename is the new canonical name. No
+   "use @earendil-works/pi-tui instead" notice.
+    Sibling extension
+   publishers (`@aliou/*`,
+    `@diegopetrucci/*`,
+    `pi-context`,
+   `pi-mcp-adapter`,
+    `@juicesharp/rpiv-todo`) already migrated,
+   confirming the rename is the new canonical name.
+    No
    consumer-side choice can satisfy a hardcoded require for a
    deprecated package without supplying that deprecated package.
-2. **Can upstream fix it?** Yes for the loader (one file in
-   `packages/shared-qna/`); sorta-yes for the full migration
+2. **Can upstream fix it?
+   ** Yes for the loader (one file in
+   `packages/shared-qna/`);
+    sorta-yes for the full migration
    (~16 package manifests + ~15 direct imports — mechanical
-   rename, no semantic changes since the new package's API
-   surface is a superset). The shared-qna loader change alone
-   restores plan-mode functionality, which is the most visible
+   rename,
+    no semantic changes since the new package's API
+   surface is a superset).
+    The shared-qna loader change alone
+   restores plan-mode functionality,
+    which is the most visible
    crash.
-3. **Are they supporting this use case?** Yes. `@ifi/pi-plan`,
-   `@ifi/pi-shared-qna`, and `@ifi/pi-extension-subagents` are
+3. **Are they supporting this use case?
+   ** Yes.
+    `@ifi/pi-plan`,
+   `@ifi/pi-shared-qna`,
+    and `@ifi/pi-extension-subagents` are
    published-and-advertised packages on npm with `bin` scripts
-   (`pi-plan`), READMEs, and the `pi` extension contract
+   (`pi-plan`),
+    READMEs,
+    and the `pi` extension contract
    (`"pi": { "extensions": ["./index.ts"] }`) in their manifests.
    The `homepage` field in each manifest links to
-   `https://github.com/ifiokjr/oh-pi/tree/main/packages/...`, and
+   `https://github.com/ifiokjr/oh-pi/tree/main/packages/...`,
+    and
    the `bugs.url` field points at upstream issues.
-4. **Will they likely fix it?** Plausible. The upstream repo is
-   actively committing (head at `1979b3a9`, 2026-05-17 — three
-   days ago). The repo's recent commits show ongoing maintenance
-   on `extensions`, `subagents`, and `live-view` — the same areas
-   that contain the stale imports. No open issue currently tracks
+4. **Will they likely fix it?
+   ** Plausible.
+    The upstream repo is
+   actively committing (head at `1979b3a9`,
+    2026-05-17 — three
+   days ago).
+    The repo's recent commits show ongoing maintenance
+   on `extensions`,
+    `subagents`,
+    and `live-view` — the same areas
+   that contain the stale imports.
+    No open issue currently tracks
    the rename (verified via
    `gh issue list --repo ifiokjr/oh-pi --search "pi-tui rename
-   earendil mariozechner"`), so reporting it is the first step;
-   given the repo's commit cadence, a follow-up release is
+   earendil mariozechner"`),
+    so reporting it is the first step;
+   given the repo's commit cadence,
+    a follow-up release is
    plausible within days of the report landing.
 5. **Have we prototyped a minimal fix compatible with their
-   architecture?** Yes — see the loader patch at
+   architecture?
+   ** Yes — see the loader patch at
    [`pi-extensions-pi-tui-rename.patch`](pi-extensions-pi-tui-rename.patch).
    The patch:
    - Touches one file (`packages/shared-qna/pi-tui-loader.ts`).
    - Preserves the public function signatures
-     (`requirePiTuiModule`, `getPiTuiFallbackPaths`) and the
-     `PiTuiLoaderOptions` type, so consumers keep working.
-   - Tries `@earendil-works/pi-tui` first (current name), then
+     (`requirePiTuiModule`,
+      `getPiTuiFallbackPaths`) and the
+     `PiTuiLoaderOptions` type,
+      so consumers keep working.
+   - Tries `@earendil-works/pi-tui` first (current name),
+      then
      deprecated `@mariozechner/pi-tui` (backward compatible with
-     legacy installs), then Bun-global fallbacks for both.
+     legacy installs),
+      then Bun-global fallbacks for both.
    - Verified post-patch against the same node_modules layout as
-     the failing scenario: returns both `truncateToWidth` and
+     the failing scenario:
+      returns both `truncateToWidth` and
      `wrapTextWithAnsi` and produces correct output (see "Harness
      — passing scenarios").
 
    The patch leaves the wider direct-import migration in
-   `subagents/`, `providers/`, and `spec/` for follow-up commits —
+   `subagents/`,
+    `providers/`,
+    and `spec/` for follow-up commits —
    it would be unidiomatic for a single PR to rewrite ~25 files
-   across unrelated package surfaces, and the shared-qna loader
+   across unrelated package surfaces,
+    and the shared-qna loader
    change alone restores end-user functionality for the most
    commonly-installed `@ifi/*` extension (`pi-plan`).
 
-All five constraints hold. The draft below is fileable as-is.
+All five constraints hold.
+ The draft below is fileable as-is.
 
 ## Draft upstream issue
 
-Repository: `https://github.com/ifiokjr/oh-pi/issues`. Title:
+Repository:
+ `https://github.com/ifiokjr/oh-pi/issues`.
+ Title:
 `@ifi/pi-shared-qna loader and peerDeps still reference deprecated
-@mariozechner/pi-tui`. Labels: `bug`, `extensions`, `packaging`.
+@mariozechner/pi-tui`.
+ Labels:
+ `bug`,
+ `extensions`,
+ `packaging`.
 
-The body, ready to paste:
+The body,
+ ready to paste:
 
 ````md
 ## Summary

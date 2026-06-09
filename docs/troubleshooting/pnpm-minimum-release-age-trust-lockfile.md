@@ -28,8 +28,11 @@ env PNPM_CONFIG_TRUST_LOCKFILE=true mise run prepare:pnpm:install
 
 ## Root cause
 
-The workspace enables `minimumReleaseAgeStrict`, so pnpm treats immature package resolutions as policy violations.
-In pnpm 11.5.1, non-interactive strict installs cannot prompt, so the policy handler throws instead of adding
+The workspace enables `minimumReleaseAgeStrict`,
+ so pnpm treats immature package resolutions as policy violations.
+In pnpm 11.5.1,
+ non-interactive strict installs cannot prompt,
+ so the policy handler throws instead of adding
 `minimumReleaseAgeExclude` entries.
 
 `/var/home/user/.local/share/mise/installs/npm-pnpm/11/lib/node_modules/pnpm/dist/pnpm.mjs:167730`:
@@ -71,7 +74,8 @@ ${list2}`, {
 }
 ```
 
-`PNPM_CONFIG_TRUST_LOCKFILE=true` maps to `trustLockfile`. The install path skips lockfile resolution verification when
+`PNPM_CONFIG_TRUST_LOCKFILE=true` maps to `trustLockfile`.
+ The install path skips lockfile resolution verification when
 that option is set.
 
 `/var/home/user/.local/share/mise/installs/npm-pnpm/11/lib/node_modules/pnpm/dist/pnpm.mjs:162332`:
@@ -120,28 +124,38 @@ This succeeded and produced the intended lockfile update for replacing `shell-qu
 env PNPM_CONFIG_TRUST_LOCKFILE=true mise run prepare:pnpm:install
 ```
 
-Tradeoff: pnpm skips lockfile resolution verification for that invocation. Use only when the lockfile diff is expected,
-reviewed, and limited to the dependency change being made.
+Tradeoff:
+ pnpm skips lockfile resolution verification for that invocation.
+ Use only when the lockfile diff is expected,
+reviewed,
+ and limited to the dependency change being made.
 
 ### Add explicit release-age exclusions
 
-Add the rejected package versions to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`, then rerun the normal install.
+Add the rejected package versions to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`,
+ then rerun the normal install.
 
-Tradeoff: the exclusion is durable policy. Use it only when the immature version is intentionally accepted for future
+Tradeoff:
+ the exclusion is durable policy.
+ Use it only when the immature version is intentionally accepted for future
 installs too.
 
 ### Wait for package maturity
 
 Rerun the normal install after the package versions pass the configured release-age cutoff.
 
-Tradeoff: this blocks urgent dependency work until registry age catches up.
+Tradeoff:
+ this blocks urgent dependency work until registry age catches up.
 
 ## What does not work
 
-Running the same install again in a non-interactive agent session does not help. pnpm cannot prompt, so it reaches
+Running the same install again in a non-interactive agent session does not help.
+ pnpm cannot prompt,
+ so it reaches
 `failOnImmature` again.
 
-Using `--no-save` with strict release-age approval is not a substitute. The source has a separate guard for that case.
+Using `--no-save` with strict release-age approval is not a substitute.
+ The source has a separate guard for that case.
 
 `/var/home/user/.local/share/mise/installs/npm-pnpm/11/lib/node_modules/pnpm/dist/pnpm.mjs:167738`:
 
@@ -157,12 +171,20 @@ Do not file as-is.
 
 ### Why this is not filed upstream
 
-1.  Is it really upstream's fault? No. pnpm is enforcing configured release-age policy in a non-interactive session.
-2.  Can upstream fix it? Not applicable because the observed behavior is the intended policy path.
-3.  Are they supporting this use case? Yes. The error hint names the supported choices: interactive approval,
-    `minimumReleaseAgeExclude`, or waiting.
-4.  Will they likely fix it? Not applicable because this is not a defect report.
-5.  Have we prototyped a minimal fix compatible with their architecture? No. A code fix is not appropriate for a
+1.  Is it really upstream's fault?
+     No. pnpm is enforcing configured release-age policy in a non-interactive session.
+2.  Can upstream fix it?
+     Not applicable because the observed behavior is the intended policy path.
+3.  Are they supporting this use case?
+     Yes.
+     The error hint names the supported choices:
+     interactive approval,
+    `minimumReleaseAgeExclude`,
+     or waiting.
+4.  Will they likely fix it?
+     Not applicable because this is not a defect report.
+5.  Have we prototyped a minimal fix compatible with their architecture?
+     No. A code fix is not appropriate for a
     repository-policy gate.
 
 Searched for an existing upstream issue with:
@@ -171,4 +193,5 @@ Searched for an existing upstream issue with:
 gh search issues "pnpm minimumReleaseAge trust-lockfile NO_MATURE_MATCHING_VERSION" --repo pnpm/pnpm --limit 5
 ```
 
-The search returned no matching issues. No upstream issue should be opened for this repository-specific install choice.
+The search returned no matching issues.
+ No upstream issue should be opened for this repository-specific install choice.

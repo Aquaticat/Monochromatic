@@ -1,18 +1,24 @@
 # Em-dash enforcement via forbidden-strings
 
-Date: 2026-05-10
+Date:
+ 2026-05-10
 
 Investigation into using `forbidden-strings`
 (the resharp-based deny-list scanner at `packages/cli/forbidden-strings/`)
-to enforce the AGENTS.md ban on em-dashes (`—`), en-dashes (`–`),
-and their ASCII substitutes (`-`, `--`) when used as em-dashes in prose.
+to enforce the AGENTS.
+md ban on em-dashes (`—`),
+ en-dashes (`–`),
+and their ASCII substitutes (`-`,
+ `--`) when used as em-dashes in prose.
 
 ## Status
 
 Feasibility confirmed for both unicode characters and the ASCII `--` shape.
-Open work: exclusion-list expansion using the literal-space workaround
+Open work:
+ exclusion-list expansion using the literal-space workaround
 for `\b` inside complement bodies (see revised "Resharp HIR limits" below),
-self-match handling for the unicode case, single-dash (`-`) handling.
+self-match handling for the unicode case,
+ single-dash (`-`) handling.
 
 ## What works
 
@@ -32,7 +38,10 @@ and the README's "non-ASCII characters ... gate correctly" note.
 
 Empirical test against `/tmp/em-dash-fixture.md` (constructed during investigation):
 two em-dashes and one en-dash matched at the expected byte offsets;
-hyphens, `--watch`, `user-facing`, and ASCII `--` separators passed through cleanly.
+hyphens,
+ `--watch`,
+ `user-facing`,
+ and ASCII `--` separators passed through cleanly.
 
 ### ASCII regex rules
 
@@ -47,15 +56,21 @@ while skipping high-confidence legitimate uses:
 Rule 1 catches `word--word` (no surrounding spaces),
 routed to the rust `regex` crate (no set-algebra operators present).
 Consuming the boundary letters in the match span is fine
-since the goal is detection, not precise span isolation.
+since the goal is detection,
+ not precise span isolation.
 
 Rule 2 catches `--` between alphabetic words
 on lines that do not contain `npm` or `git`.
 The `&` and `~()` operators route this rule through resharp
 (`packages/cli/forbidden-strings/src/rules/engine.rs:204` `requires_resharp`),
 which supports the set-algebra needed for the line-level complements.
-Since commit `67e844df`, the same routing predicate also detects
-lookaround openers (`(?=`, `(?!`, `(?<=`, `(?<!`), so rules whose only
+Since commit `67e844df`,
+ the same routing predicate also detects
+lookaround openers (`(?=`,
+ `(?!`,
+ `(?<=`,
+ `(?<!`),
+ so rules whose only
 resharp-only feature is a lookaround compile cleanly without needing
 `&_*` as a routing hint.
 
@@ -64,20 +79,26 @@ resharp-only feature is a lookaround compile cleanly without needing
 The regex rule sources (`[a-z]--[a-z]` etc.)
 do not contain `--` or `--` between literal letters;
 the bracket characters break the pattern.
-Confirmed: scanning these rules against themselves produces no hits.
+Confirmed:
+ scanning these rules against themselves produces no hits.
 This is an advantage over literal form for the ASCII case.
 
 ### Empirical scan results
 
 Run on 2026-05-10 against the full tree (`forbidden-strings --all`):
 
-- Rule 1: 36 matches.
+- Rule 1:
+   36 matches.
   Mix of true positives ("permission is not necessary for any reason--for" in LICENSE files)
   and false positives (markdown URL fragments such as `#monitoring--metrics`).
-- Rule 2: 2,117 matches.
+- Rule 2:
+   2,117 matches.
   533 in `AUDIT.em-dash.md` (intentional examples cataloging violations),
   117 in `TODO.claude-code-words.md` (genuine em-dash style violations of shape "word -- description"),
-  the rest scattered across markdown docs, comments, mise.toml task descriptions.
+  the rest scattered across markdown docs,
+   comments,
+   mise.
+  toml task descriptions.
 
 Top hit files:
 
@@ -96,20 +117,34 @@ Top hit files:
 
 The compile-time failure that earlier drafts of this document
 attributed to "alternation count" or "seven chained complements"
-is actually a feature restriction: resharp's HIR translator rejects
-word-boundary assertions (`\b`, `\B`) and text/line anchors (`^`, `$`)
-when they appear inside a complement body, returning
+is actually a feature restriction:
+ resharp's HIR translator rejects
+word-boundary assertions (`\b`,
+ `\B`) and text/line anchors (`^`,
+ `$`)
+when they appear inside a complement body,
+ returning
 `Algebra(UnsupportedPattern)` at compile time.
 
 Verified 2026-05-10 by sweeping rules through the release binary:
 
-- single `~(.*(w0|w1|...|wN).*)` with simple bodies: 500 alternatives compile cleanly
-- chained `&~(.*w0.*)&~(.*w1.*)&...&~(.*wN.*)`: 500 chains compile cleanly
-- `~(.*\bnpm\b.*)` with any alternative count (including 1): fails
-- `~(.*\B.*)`, `~(^foo$)`: fails
-- `\bnpm\b&_*&~(.*foo.*)` (the `\b` is outside the complement): compiles cleanly
-- `(?=foo\b)bar`, `(?<=[a-z])foo` (lookarounds with non-anchor bodies): compile cleanly
-- `(?=^foo)bar`, `(?<=\b)foo`: fail
+- single `~(.*(w0|w1|...|wN).*)` with simple bodies:
+   500 alternatives compile cleanly
+- chained `&~(.*w0.*)&~(.*w1.*)&...&~(.*wN.*)`:
+   500 chains compile cleanly
+- `~(.*\bnpm\b.*)` with any alternative count (including 1):
+   fails
+- `~(.*\B.*)`,
+   `~(^foo$)`:
+   fails
+- `\bnpm\b&_*&~(.*foo.*)` (the `\b` is outside the complement):
+   compiles cleanly
+- `(?=foo\b)bar`,
+   `(?<=[a-z])foo` (lookarounds with non-anchor bodies):
+   compile cleanly
+- `(?=^foo)bar`,
+   `(?<=\b)foo`:
+   fail
 
 The two patterns that earlier failed:
 
@@ -121,22 +156,29 @@ The two patterns that earlier failed:
 both compile cleanly once `\b` is removed from the complement bodies.
 The 35-alternative count and the 7-chain count were unrelated to the failures.
 
-Workaround for token-boundary matching: replace `\bnpm\b` with `npm`
+Workaround for token-boundary matching:
+ replace `\bnpm\b` with `npm`
 (literal whitespace) inside complement bodies.
-Verified: `~(.*(\bnpm\b|\bgit\b).*)` fails;
+Verified:
+ `~(.*(\bnpm\b|\bgit\b).*)` fails;
 `~(.* (npm|git) .*)` succeeds.
-Tradeoff: tokens at start or end of line are not bordered by literal space
+Tradeoff:
+ tokens at start or end of line are not bordered by literal space
 and would slip through.
 Acceptable for prose scans where excluded toolchain names appear mid-line.
 
 ### Sub-span exclusion vs anchored matching
 
-`A&~(B)` applies the complement to the match span only, not surrounding context.
-Without anchors, the engine finds a sub-span that satisfies both conditions
+`A&~(B)` applies the complement to the match span only,
+ not surrounding context.
+Without anchors,
+ the engine finds a sub-span that satisfies both conditions
 even when the whole line contains an excluded token.
-Verified empirically: an unanchored rule
+Verified empirically:
+ an unanchored rule
 matched at column 7 within line `Git: git log -- file.txt is legitimate.`
-because the sub-span starting at column 7 ("it log -- file.txt is leg")
+because the sub-span starting at column 7 ("it log -- file.
+txt is leg")
 does not contain "git".
 Anchors (`^...$`) force the match to span an entire line.
 
@@ -154,25 +196,30 @@ A bare `—` rule fires inside the forbidden-strings package itself:
 roughly 40 occurrences in `src/rules/atom_tests.rs` (test inputs),
 `atom.rs` and `extract.rs` (doc comments explaining em-dash handling),
 and `README.md` line 169.
-Plus `AGENTS.md` (states the rule), `AUDIT.em-dash.md` (lists violations),
+Plus `AGENTS.md` (states the rule),
+ `AUDIT.em-dash.md` (lists violations),
 `TROUBLESHOOTING.*.md` files quoting external output.
 
 The scanner's only path-level exclusion is
 `is_skipped_file` at `packages/cli/forbidden-strings/src/main.rs:171-193`,
 a hardcoded `matches!` over five exact basenames.
-No glob, no path prefix, no rule-scoped exclusion exists.
+No glob,
+ no path prefix,
+ no rule-scoped exclusion exists.
 
 Three options for handling these self-matches:
 
 1. Extend `is_skipped_file` with package paths or test-fixture basenames.
-   Trade-off: those files become exempt from every rule,
+   Trade-off:
+    those files become exempt from every rule,
    including the betterleaks-ported credential rules.
    Whether that gap is acceptable on those specific files is a policy call.
 2. Add per-rule path-prefix exclusion to the rule grammar.
    Real scanner change touching `rules.rs` and the per-file scan loop.
 3. Relocate test-fixture em-dashes into a `data/` file outside scan scope
    and rewrite docs to reference `U+2014` instead of literal characters.
-   Costly across roughly 40 sites; partially defeats the purpose
+   Costly across roughly 40 sites;
+    partially defeats the purpose
    of testing the literal character.
 
 ## Improvement potentials
@@ -185,10 +232,12 @@ Not implemented.
 Rule 2's exclusion list currently has only `npm` and `git`.
 The earlier framing blamed an "algebra ceiling" on alternation count;
 the actual blocker (see "Resharp HIR limits inside `~(...)` complement bodies"
-above) was `\b` inside the complement, not size.
+above) was `\b` inside the complement,
+ not size.
 Splitting exclusions across multiple rules does not help:
 multiple rules combine via union (any rule firing flags the line),
-which makes detection more permissive, not more restrictive.
+which makes detection more permissive,
+ not more restrictive.
 
 Three viable paths:
 
@@ -196,26 +245,50 @@ Three viable paths:
    `~(.* (npm|bun|pnpm|yarn|deno|node|mise|hk|gh|cargo|git|jq|...) .*)`
    compiles cleanly at sizes well beyond the 35-element original list
    (no measured ceiling up to 500 alternatives).
-   Tradeoff: misses tokens at start or end of line; revisit on a
+   Tradeoff:
+    misses tokens at start or end of line;
+    revisit on a
    sampled corpus to confirm the lost coverage is small.
 2. Pre-process the corpus before scanning:
-   strip fenced code blocks, strip markdown URL anchors,
+   strip fenced code blocks,
+    strip markdown URL anchors,
    strip inline backtick spans.
    Requires scanner code changes
    (a pre-pass between file read and rule application).
-3. Hand-pick a smaller, high-impact exclusion set per rule.
-   Iterate against the corpus, classify each false positive,
+3. Hand-pick a smaller,
+    high-impact exclusion set per rule.
+   Iterate against the corpus,
+    classify each false positive,
    keep only the exclusions that retire the most false positives.
-   Still useful even with path 1 available, because some false-positive
-   classes (markdown anchors, inline backticks) are not toolchain names
+   Still useful even with path 1 available,
+    because some false-positive
+   classes (markdown anchors,
+    inline backticks) are not toolchain names
    and need their own exclusion shape.
 
 Categories of false positive observed in the empirical scan:
 
 - markdown anchor links (lines containing `](` or `#`)
 - inline code (lines with backticks)
-- toolchain commands (`mise`, `bun`, `pnpm`, `yarn`, `cargo`, `deno`, `node`, `hk`, `gh`, `jq`)
-- shell builtins (`cp`, `mv`, `rm`, `cat`, `echo`, `exec`, `find`, `ls`, `cd`)
+- toolchain commands (`mise`,
+   `bun`,
+   `pnpm`,
+   `yarn`,
+   `cargo`,
+   `deno`,
+   `node`,
+   `hk`,
+   `gh`,
+   `jq`)
+- shell builtins (`cp`,
+   `mv`,
+   `rm`,
+   `cat`,
+   `echo`,
+   `exec`,
+   `find`,
+   `ls`,
+   `cd`)
 
 ### Single-dash case (`-` em-dash)
 
@@ -243,21 +316,27 @@ Requires scanner code changes (not pure rule-level fix).
 
 Inline backtick parity on a single line is expressible in regex
 by counting pairs before the position.
-Could be added as a complement: exclude positions
+Could be added as a complement:
+ exclude positions
 preceded on the same line by an odd number of backticks.
-Pattern shape (untested): `~(.*`[^`\n]*` -- ` -- ...).
-Worth prototyping; might trip the algebra ceiling.
+Pattern shape (untested):
+ `~(.*`[^`\n]*` -- ` -- ...).
+Worth prototyping;
+ might trip the algebra ceiling.
 
 ### File-level exclusion via skip list
 
 If the scanner gains path-glob skip support
 (extension to `is_skipped_file`),
 the rule grammar would not need code-block awareness
-for files that are uniformly code (`.ts`, `.rs`, `.css`).
+for files that are uniformly code (`.ts`,
+ `.rs`,
+ `.css`).
 Em-dash bans in those files are noise anyway:
 the meaningful target is markdown and prose.
 
-A cheap proxy: skip the rule entirely on lines
+A cheap proxy:
+ skip the rule entirely on lines
 that look like they are inside a code-only file
 by reading the file extension at scan time.
 The scanner currently does not branch on extension.
@@ -267,21 +346,32 @@ The scanner currently does not branch on extension.
 Once the rule reliably flags violations,
 file-enforcer could include an em-dash-fix transform
 that rewrites flagged spans to the recommended punctuation
-(paired commas, parentheses, colon, semicolon, period)
+(paired commas,
+ parentheses,
+ colon,
+ semicolon,
+ period)
 before re-running the lint.
 Out of scope for the current investigation.
 
 ## Reference
 
-- Resharp engine: `https://github.com/ieviev/resharp`
+- Resharp engine:
+   `https://github.com/ieviev/resharp`
   (cloned to `/tmp/resharp` during investigation)
-- Resharp syntax docs: `/tmp/resharp/docs/syntax.md`
-- Forbidden-strings source: `packages/cli/forbidden-strings/`
-- Existing audit data: `AUDIT.em-dash.md` (untracked at investigation time)
-- AGENTS.md em-dash rule: under "Documentation standards"
+- Resharp syntax docs:
+   `/tmp/resharp/docs/syntax.md`
+- Forbidden-strings source:
+   `packages/cli/forbidden-strings/`
+- Existing audit data:
+   `AUDIT.em-dash.md` (untracked at investigation time)
+- AGENTS.
+  md em-dash rule:
+   under "Documentation standards"
 - Test fixtures used for prototyping during investigation:
   `/tmp/em-dash-fixture.md`,
   `/tmp/em-dash-fixture-real.md`,
   `/tmp/em-dash-fixture-no-space.md`
-- Rule iterations during investigation: `/tmp/em-dash-rules-v{1..8}.txt`,
+- Rule iterations during investigation:
+   `/tmp/em-dash-rules-v{1..8}.txt`,
   `/tmp/em-dash-rules-real.txt`

@@ -203,8 +203,14 @@ async function mirrorSkills(): Promise<void> {
  * ```
  */
 function harperLintersDisabled(rules: readonly string[],): Record<string, false> {
-  return Object.fromEntries(rules.map(function toDisabledEntry(rule,): readonly [string, false,] {
-    return [`harper-ls.linters.${rule}`, false,];
+  return Object.fromEntries(rules.map(function toDisabledEntry(rule,): readonly [
+    string,
+    false,
+  ] {
+    return [
+      `harper-ls.linters.${rule}`,
+      false,
+    ];
   },),);
 }
 
@@ -221,20 +227,33 @@ function harperLintersDisabled(rules: readonly string[],): Record<string, false>
  */
 async function manageHarperLsp4ij(): Promise<void> {
   await manageLsp4ijServerSettings({
-    productPrefixes: ['IntelliJIdea', 'IdeaIC',],
+    productPrefixes: [
+      'IntelliJIdea',
+      'IdeaIC',
+    ],
     baseServerMatch: {
       commandLineIncludes: 'harper-ls',
       serverNameEquals: 'Harper Language Server',
       templateId: 'harper-ls',
     },
     baseConfig: {
-      set: harperLintersDisabled(['UseTitleCase', 'SplitWords', 'PhrasalVerbAsCompoundNoun',],),
+      set: harperLintersDisabled([
+        'UseTitleCase',
+        'SplitWords',
+        'PhrasalVerbAsCompoundNoun',
+      ],),
       arrayUnion: {
         'harper-ls.excludePatterns': [
           '**/AGENTS.md',
           '**/CLAUDE.md',
-          join(process.cwd(), 'AGENTS.md',),
-          join(process.cwd(), 'CLAUDE.md',),
+          join(
+            process.cwd(),
+            'AGENTS.md',
+          ),
+          join(
+            process.cwd(),
+            'CLAUDE.md',
+          ),
         ],
       },
     },
@@ -249,7 +268,10 @@ async function manageHarperLsp4ij(): Promise<void> {
       {
         id: 'harper-ls-agents-claude-md',
         name: 'Harper Language Server (AGENTS.md and CLAUDE.md)',
-        fileNames: ['AGENTS.md', 'CLAUDE.md',],
+        fileNames: [
+          'AGENTS.md',
+          'CLAUDE.md',
+        ],
         languageId: 'markdown',
         copyOptions: [
           'commandLine',
@@ -261,7 +283,11 @@ async function manageHarperLsp4ij(): Promise<void> {
           'workspaceFolderStrategyConfiguration',
         ],
         configOmitKeys: ['harper-ls.excludePatterns',],
-        config: { set: harperLintersDisabled(['MissingTo', 'LongSentences', 'OxfordComma',],), },
+        config: { set: harperLintersDisabled([
+          'MissingTo',
+          'LongSentences',
+          'OxfordComma',
+        ],), },
       },
     ],
   },);

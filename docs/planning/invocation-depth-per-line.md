@@ -1,13 +1,18 @@
 # Planning: invocation-depth-per-line stylistic rule
 
-Status: implemented in `packages/oxlint-plugins/stylistic`
-(`src/rules/invocation-depth-per-line.ts`, `src/utility/invocation-spine.ts`,
-`src/utility/invocation-depth-fix.ts`); enabled `warn` in
+Status:
+ implemented in `packages/oxlint-plugins/stylistic`
+(`src/rules/invocation-depth-per-line.ts`,
+ `src/utility/invocation-spine.ts`,
+`src/utility/invocation-depth-fix.ts`);
+ enabled `warn` in
 `packages/config/oxlint/src/rules/style.ts`.
 
 This file records the full grilling session that produced the `invocation-depth-per-line` rule.
 A future implementer should be able to read only this file and recover the problem statement,
-the evidence gathered, every design branch we settled, the corrections made along the way,
+the evidence gathered,
+ every design branch we settled,
+ the corrections made along the way,
 and the final implementation target.
 
 ## Implementation spec
@@ -18,77 +23,151 @@ an implementer can work from this section alone and drop to the trace for ration
 
 ### Identity
 
-- Package: `packages/oxlint-plugins/stylistic`; new rule file under `src/rules/`, registered in `src/index.ts`.
-- Config key `stylistic/invocation-depth-per-line`, enabled `warn` in `packages/config/oxlint/src/rules/style.ts`.
-- `meta.type: 'layout'`, `meta.fixable: 'whitespace'`. A trailing-comma-inserting reformat is still declared
-  `whitespace` in this repo (`src/rules/argument-per-line.ts:36-38`), so the comma the fixer adds does not change this.
-- Threshold: hardcoded maximum of two counted invocations per source line.
+- Package:
+   `packages/oxlint-plugins/stylistic`;
+   new rule file under `src/rules/`,
+   registered in `src/index.ts`.
+- Config key `stylistic/invocation-depth-per-line`,
+   enabled `warn` in `packages/config/oxlint/src/rules/style.ts`.
+- `meta.type: 'layout'`,
+   `meta.fixable: 'whitespace'`.
+   A trailing-comma-inserting reformat is still declared
+  `whitespace` in this repo (`src/rules/argument-per-line.ts:36-38`),
+   so the comma the fixer adds does not change this.
+- Threshold:
+   hardcoded maximum of two counted invocations per source line.
 
 ### Semantics
 
 A source line fails when one checked operand spine has more than two counted invocation heads starting on that line.
-Threshold-only: already-split layouts pass when every line stays within two.
+Threshold-only:
+ already-split layouts pass when every line stays within two.
 
 ### Counted invocation heads
 
-- `CallExpression` (including optional calls) and `NewExpression`: the spine continues through the single argument
+- `CallExpression` (including optional calls) and `NewExpression`:
+   the spine continues through the single argument
   only when `arguments.length === 1`.
-- `ImportExpression`: the spine operand is `.source`, not `.arguments[0]`, and continues only when `.options` is null
-  (the `@oxlint/plugins` `ImportExpression` interface carries `source`, `options`, `phase`).
-- Do not count `TaggedTemplateExpression`, JSX, or `V8IntrinsicExpression`. The oxc parser as invoked here does not
-  emit `V8IntrinsicExpression` for repo TypeScript, so it needs no explicit exclusion code.
+- `ImportExpression`:
+   the spine operand is `.source`,
+   not `.arguments[0]`,
+   and continues only when `.options` is null
+  (the `@oxlint/plugins` `ImportExpression` interface carries `source`,
+   `options`,
+   `phase`).
+- Do not count `TaggedTemplateExpression`,
+   JSX,
+   or `V8IntrinsicExpression`.
+   The oxc parser as invoked here does not
+  emit `V8IntrinsicExpression` for repo TypeScript,
+   so it needs no explicit exclusion code.
 
 ### Transparent wrappers (spine passes through)
 
-`ChainExpression`, `AwaitExpression`, `UnaryExpression`, `YieldExpression`, `SpreadElement`, `TSAsExpression`,
-`TSSatisfiesExpression`, `TSTypeAssertion`, `TSNonNullExpression`, `TSInstantiationExpression`.
+`ChainExpression`,
+ `AwaitExpression`,
+ `UnaryExpression`,
+ `YieldExpression`,
+ `SpreadElement`,
+ `TSAsExpression`,
+`TSSatisfiesExpression`,
+ `TSTypeAssertion`,
+ `TSNonNullExpression`,
+ `TSInstantiationExpression`.
 
-Not `ParenthesizedExpression`. oxlint strips grouping parentheses and emits no such node here
-(`src/utility/chain.ts` `parenIsolated`, `src/utility/has-parens.ts` `hasParens`), even though the `@oxlint/plugins`
-type union declares the type and a visitor hook for it. Confirmed empirically on oxlint 1.67.0 (see "Verification"):
-`a((b(c())))` parses to three `CallExpression` nodes with no paren node, so detection is unaffected. The autofix is
-affected: see the paren note under "Autofix".
+Not `ParenthesizedExpression`.
+ oxlint strips grouping parentheses and emits no such node here
+(`src/utility/chain.ts` `parenIsolated`,
+ `src/utility/has-parens.ts` `hasParens`),
+ even though the `@oxlint/plugins`
+type union declares the type and a visitor hook for it.
+ Confirmed empirically on oxlint 1.67.0 (see "Verification"):
+`a((b(c())))` parses to three `CallExpression` nodes with no paren node,
+ so detection is unaffected.
+ The autofix is
+affected:
+ see the paren note under "Autofix".
 
 ### Containers (stop the parent spine, descendants still checked)
 
-`ObjectExpression`, `ArrayExpression`, `ConditionalExpression`, `SequenceExpression`, `AssignmentExpression`,
-`TemplateLiteral`, `TaggedTemplateExpression`, and function bodies (`ArrowFunctionExpression`, `FunctionExpression`).
-A container stops the parent spine, but normal visitors still check spines that live inside it (decisions 29, 32).
+`ObjectExpression`,
+ `ArrayExpression`,
+ `ConditionalExpression`,
+ `SequenceExpression`,
+ `AssignmentExpression`,
+`TemplateLiteral`,
+ `TaggedTemplateExpression`,
+ and function bodies (`ArrowFunctionExpression`,
+ `FunctionExpression`).
+A container stops the parent spine,
+ but normal visitors still check spines that live inside it (decisions 29,
+ 32).
 
 ### Autofix
 
-- One report fixes one level: split the reported invocation's single operand onto its own line, dedent the closing
-  delimiter to the source-line indent, always add a trailing comma.
+- One report fixes one level:
+   split the reported invocation's single operand onto its own line,
+   dedent the closing
+  delimiter to the source-line indent,
+   always add a trailing comma.
 - Deep spines converge over repeated `oxlint --fix` passes rather than expanding fully in one pass
-  (`docs/troubleshooting/oxlint-multi-fix-convergence.md`). Tests must include a convergence fixture.
-- Build the replacement with the bracket-locating, offset-slicing approach in `src/utility/item-per-line-fix.ts`,
-  never `getText(item).trim()`, so trailing comments and inner formatting survive.
+  (`docs/troubleshooting/oxlint-multi-fix-convergence.md`).
+   Tests must include a convergence fixture.
+- Build the replacement with the bracket-locating,
+   offset-slicing approach in `src/utility/item-per-line-fix.ts`,
+  never `getText(item).trim()`,
+   so trailing comments and inner formatting survive.
 - Place the trailing comma before trailing line and block comments.
-- Grouping parens: operand spans exclude surrounding parens (`has-parens.ts:17`), so slicing `[operand.start,
-  operand.end]` drops them. Recover the grouping bytes with the `parenIsolated`/`hasParens` byte-peek before slicing,
+- Grouping parens:
+   operand spans exclude surrounding parens (`has-parens.ts:17`),
+   so slicing `[operand.start,
+  operand.end]` drops them.
+   Recover the grouping bytes with the `parenIsolated`/`hasParens` byte-peek before slicing,
   or the fix silently deletes the parentheses.
-- Do not rewrite tagged-template quasis (it changes the tag's observed `strings.raw`); fix only inside `${...}`.
+- Do not rewrite tagged-template quasis (it changes the tag's observed `strings.raw`);
+   fix only inside `${...}`.
 
 ### Diagnostic ownership
 
 Report the highest counted invocation on each line whose spine count exceeds two.
-Independent spines report independently: `a(b(c(x())), d(e(f())))` yields two diagnostics, one on `b` and one on `d`,
+Independent spines report independently:
+ `a(b(c(x())), d(e(f())))` yields two diagnostics,
+ one on `b` and one on `d`,
 because the two-argument `a` breaks both spines.
 
 ### Traversal
 
-Iterative, never recursive: spine depth grows with source length and the repo bans recursion over linear input.
-Before coding, dump node types with a throwaway logging visitor for each fixture shape (call, new, dynamic import,
-optional call, grouping parens, spread, yield, unary, TS wrappers, tagged-template interpolation) to confirm the shapes
+Iterative,
+ never recursive:
+ spine depth grows with source length and the repo bans recursion over linear input.
+Before coding,
+ dump node types with a throwaway logging visitor for each fixture shape (call,
+ new,
+ dynamic import,
+optional call,
+ grouping parens,
+ spread,
+ yield,
+ unary,
+ TS wrappers,
+ tagged-template interpolation) to confirm the shapes
 against the running oxlint version rather than against the type union.
 
 ### Verification
 
 Confirmed on oxlint 1.67.0 with a throwaway probe plugin reporting each visited node's type.
 For `const grouped = a((b(c())));` the probe reported three `CallExpression` nodes and no `ParenthesizedExpression`,
-and the `b(c())` operand span excluded the surrounding parens, so the byte-peek paren recovery above is required.
-`import(...)` surfaced as an `ImportExpression` operand; `await`, `void`, `yield`, and spread surfaced as
-`AwaitExpression`, `UnaryExpression`, `YieldExpression`, and `SpreadElement` wrappers.
+and the `b(c())` operand span excluded the surrounding parens,
+ so the byte-peek paren recovery above is required.
+`import(...)` surfaced as an `ImportExpression` operand;
+ `await`,
+ `void`,
+ `yield`,
+ and spread surfaced as
+`AwaitExpression`,
+ `UnaryExpression`,
+ `YieldExpression`,
+ and `SpreadElement` wrappers.
 Re-run the probe after any oxlint major bump.
 
 ## Starting proposal
@@ -102,8 +181,10 @@ Plan to implement nested-call-per-line (or similar) rule:
   2. gated on depth 2.
 ```
 
-The session used the `grill-me` process: ask one design question at a time,
-explore the codebase for answerable questions instead of asking, and recommend one answer for each branch.
+The session used the `grill-me` process:
+ ask one design question at a time,
+explore the codebase for answerable questions instead of asking,
+ and recommend one answer for each branch.
 
 ## Evidence gathered during grilling
 
@@ -120,38 +201,56 @@ A later search showed this new rule belongs in the stylistic package instead:
   for calls and constructors with two or more arguments.
 - `packages/oxlint-plugins/stylistic/src/rules/param-per-line.ts` enforces one parameter per line
   for function-like declarations with two or more parameters.
-- `packages/oxlint-plugins/stylistic/src/rules/chain-per-line.ts` enforces receiver, member,
-  call-result, binary, and logical chain layout.
+- `packages/oxlint-plugins/stylistic/src/rules/chain-per-line.ts` enforces receiver,
+   member,
+  call-result,
+   binary,
+   and logical chain layout.
 - `packages/config/oxlint/src/rules/style.ts` enables stylistic plugin rules as `warn`.
 
 The Oxlint ESTree type definitions in
 `node_modules/.pnpm/@oxlint+plugins@1.58.0/node_modules/@oxlint/plugins/index.d.ts`
 showed the relevant node shapes:
 
-- `CallExpression` carries `callee`, `arguments`, and `optional`.
+- `CallExpression` carries `callee`,
+   `arguments`,
+   and `optional`.
 - `NewExpression` carries `callee` and `arguments`.
-- `ImportExpression` carries `source`, optional `options`, and optional `phase`.
+- `ImportExpression` carries `source`,
+   optional `options`,
+   and optional `phase`.
 - `TaggedTemplateExpression` carries `tag` and `quasi`.
-- `ChainExpression`, `ParenthesizedExpression`, `AwaitExpression`, `UnaryExpression`, `YieldExpression`,
-  `SpreadElement`, `TSAsExpression`, `TSSatisfiesExpression`, `TSTypeAssertion`, `TSNonNullExpression`,
+- `ChainExpression`,
+   `ParenthesizedExpression`,
+   `AwaitExpression`,
+   `UnaryExpression`,
+   `YieldExpression`,
+  `SpreadElement`,
+   `TSAsExpression`,
+   `TSSatisfiesExpression`,
+   `TSTypeAssertion`,
+   `TSNonNullExpression`,
   and `TSInstantiationExpression` provide wrapper shapes the rule may need to pass through.
 
 A repo source search found no active `.tsx` or `.jsx` files.
 That supported excluding JSX pseudo-call semantics from the first implementation.
 
 A Node check showed that rewriting a tagged template from `` tag`${value}` `` to a multiline template body changes
-`strings.raw`, so tag-quasi rewriting is not semantics-preserving.
+`strings.raw`,
+ so tag-quasi rewriting is not semantics-preserving.
 That forced the later tagged-template decision.
 
 The existing troubleshooting doc `docs/troubleshooting/oxlint-multi-fix-convergence.md` records that Oxlint may need
 multiple `--fix` passes when plugin fixes overlap.
-The new rule may overlap with `argument-per-line`, so the implementation and tests should assume convergence,
+The new rule may overlap with `argument-per-line`,
+ so the implementation and tests should assume convergence,
 not single-pass completion.
 
 ## Session decision trace
 
 This section records each decision in the order it was made.
-When a later branch corrected an earlier branch, the correction is called out explicitly.
+When a later branch corrected an earlier branch,
+ the correction is called out explicitly.
 
 ### 1. Rule semantics: line-sensitive, not structural
 
@@ -161,9 +260,12 @@ Options considered:
 - Structural ban on nested single-argument calls.
 - Formatter-only behavior.
 
-Chosen: line-sensitive.
+Chosen:
+ line-sensitive.
 
-Reason: the rule is about per-line readability. A structural ban would reject already-readable multiline code.
+Reason:
+ the rule is about per-line readability.
+ A structural ban would reject already-readable multiline code.
 Formatter-only behavior would not provide a targeted diagnostic or threshold-specific enforcement.
 
 ```ts
@@ -203,7 +305,8 @@ Options considered:
 - Full cascade split.
 - Outer-only split.
 
-Chosen: max two counted invocations per line.
+Chosen:
+ max two counted invocations per line.
 
 ```ts
 // FAIL
@@ -229,7 +332,8 @@ Options considered:
 - Await plus TypeScript wrappers.
 - Plain calls only.
 
-Chosen: await plus TypeScript wrappers.
+Chosen:
+ await plus TypeScript wrappers.
 
 ```ts
 // FAIL
@@ -259,7 +363,8 @@ Options considered:
 - `CallExpression` only.
 - All invocation-like forms.
 
-Chosen by user: all invocation-like forms.
+Chosen by user:
+ all invocation-like forms.
 
 The follow-up codebase and type-definition check narrowed that to a practical TypeScript set:
 
@@ -280,7 +385,8 @@ Options considered:
 - Head-pair split.
 - Full cascade split.
 
-Chosen: outer-first recursive split as the autofix shape.
+Chosen:
+ outer-first recursive split as the autofix shape.
 
 ```ts
 // FAIL
@@ -294,9 +400,13 @@ const value = a(
 );
 ```
 
-This is an autofix preference, not the lint invariant.
-The shown layout is the converged state: each report splits one operand level, so a spine this deep needs several
-`oxlint --fix` passes (one pass on `a(b(c(d())))` yields `a(\n  b(c(d())),\n)`, still failing).
+This is an autofix preference,
+ not the lint invariant.
+The shown layout is the converged state:
+ each report splits one operand level,
+ so a spine this deep needs several
+`oxlint --fix` passes (one pass on `a(b(c(d())))` yields `a(\n  b(c(d())),\n)`,
+ still failing).
 The later threshold-only decision means hand-written alternatives pass if every line stays at depth two or less.
 
 ### 7. Autofix scope: full autofix
@@ -307,7 +417,8 @@ Options considered:
 - Full autofix.
 - Report-only.
 
-Chosen: full autofix.
+Chosen:
+ full autofix.
 
 ```ts
 // FAIL
@@ -319,7 +430,8 @@ const value = a(
 );
 ```
 
-Later branches refined this: full autofix applies to fixable invocation spines,
+Later branches refined this:
+ full autofix applies to fixable invocation spines,
 but tagged-template quasis must not be rewritten because doing so changes runtime semantics.
 
 ### 8. Nesting path: operand spine
@@ -330,7 +442,8 @@ Options considered:
 - Any descendant invocation.
 - Direct call arguments only.
 
-Chosen: operand spine.
+Chosen:
+ operand spine.
 
 ```ts
 // FAIL
@@ -355,7 +468,8 @@ Options considered:
 - Per-operand branch checking in multi-operand parents.
 - Total line count across sibling operands.
 
-Chosen: strict single operand for traversing through the current invocation.
+Chosen:
+ strict single operand for traversing through the current invocation.
 
 ```ts
 // FAIL for invocation-depth-per-line.
@@ -366,7 +480,8 @@ const value = a(b(c()));
 const value = a(b(c()), other);
 ```
 
-Later refinement: single-operand child spines inside multi-argument parents still get checked.
+Later refinement:
+ single-operand child spines inside multi-argument parents still get checked.
 That means `b(c(d()))` inside `a(b(c(d())), other)` is still owned by `invocation-depth-per-line`.
 
 ### 10. Diagnostic ownership, first pass: outermost over-depth spine
@@ -377,7 +492,8 @@ Options considered:
 - Every violating node.
 - Innermost only.
 
-Chosen at this stage: outermost only.
+Chosen at this stage:
+ outermost only.
 
 The reason was to avoid overlapping diagnostics inside one uninterrupted over-depth spine.
 This was later refined by the threshold-only and owner-line decisions:
@@ -392,9 +508,11 @@ Options considered:
 - `nested-invocation-per-line`.
 - `nested-call-per-line`.
 
-Chosen: `invocation-depth-per-line`.
+Chosen:
+ `invocation-depth-per-line`.
 
-Reason: it names the broader invocation scope without making the rule name too long.
+Reason:
+ it names the broader invocation scope without making the rule name too long.
 
 ### 12. Rule package and enablement
 
@@ -414,7 +532,8 @@ Options considered:
 - Enforce outer-first canonical layout.
 - Threshold-only layout.
 
-Chosen: threshold-only.
+Chosen:
+ threshold-only.
 
 ```ts
 // PASS: no line has more than two counted invocations.
@@ -441,7 +560,8 @@ Options considered:
 - Wrapper start line.
 - Whole-span overlap.
 
-Chosen: invocation head line.
+Chosen:
+ invocation head line.
 
 ```ts
 // FAIL: a, b, and c heads start on line 1.
@@ -464,7 +584,8 @@ Options considered:
 - Include callee position.
 - Count every invocation chain.
 
-Chosen: operand only.
+Chosen:
+ operand only.
 
 ```ts
 // FAIL: operand spine.
@@ -478,7 +599,8 @@ const value = factory()()();
 
 ### 16. Dynamic import and tag single-operand rules
 
-For dynamic import, strict single operand means the rule traverses through `import(source)`
+For dynamic import,
+ strict single operand means the rule traverses through `import(source)`
 but not `import(source, options)`.
 
 ```ts
@@ -498,14 +620,20 @@ Tagged-template handling changed later and no longer follows the counted-invocat
 
 ### 17. Full transparent-wrapper list
 
-After checking Oxlint's node types, the wrapper list expanded beyond the initial await plus TypeScript wrappers.
+After checking Oxlint's node types,
+ the wrapper list expanded beyond the initial await plus TypeScript wrappers.
 
-Chosen transparent wrappers (`ParenthesizedExpression` was later removed; see "Implementation spec"):
+Chosen transparent wrappers (`ParenthesizedExpression` was later removed;
+ see "Implementation spec"):
 
 - `ChainExpression`.
 - `AwaitExpression`.
-- TypeScript wrappers: `TSAsExpression`, `TSSatisfiesExpression`, `TSTypeAssertion`,
-  `TSNonNullExpression`, and `TSInstantiationExpression`.
+- TypeScript wrappers:
+   `TSAsExpression`,
+   `TSSatisfiesExpression`,
+   `TSTypeAssertion`,
+  `TSNonNullExpression`,
+   and `TSInstantiationExpression`.
 
 ```ts
 // FAIL
@@ -525,7 +653,9 @@ const value = a(
 );
 ```
 
-Semantic unary, yield, and spread were not decided until later branches.
+Semantic unary,
+ yield,
+ and spread were not decided until later branches.
 
 ### 18. Folding into `chain-per-line`: rejected
 
@@ -533,12 +663,15 @@ The user asked whether the rule should exist separately or fold into `chain-per-
 
 Evaluation:
 
-- `chain-per-line` currently descends through `CallExpression.callee`, not `CallExpression.arguments`.
+- `chain-per-line` currently descends through `CallExpression.callee`,
+   not `CallExpression.arguments`.
 - `chain-per-line` treats `new` and tagged templates as leaves.
-- `chain-render.ts` inserts newline breaks at offsets; it does not re-render call argument lists with commas.
+- `chain-render.ts` inserts newline breaks at offsets;
+   it does not re-render call argument lists with commas.
 - Folding would turn `chain-per-line` into an umbrella rule with a mostly separate invocation-depth subsystem.
 
-Decision: keep `invocation-depth-per-line` separate.
+Decision:
+ keep `invocation-depth-per-line` separate.
 
 ### 19. Tagged templates: do not rewrite quasis
 
@@ -557,7 +690,8 @@ Options considered:
 - Report-only for tag cases.
 - Rewrite quasis anyway.
 
-The user first chose report-only for tags, then clarified that tagged template literal syntax should be transparent or ignored
+The user first chose report-only for tags,
+ then clarified that tagged template literal syntax should be transparent or ignored
 because the repo does not use tagged template literals.
 The final settled behavior is:
 
@@ -587,7 +721,8 @@ Options considered:
 - Skip children under multi-argument parents.
 - Only check root calls.
 
-Chosen: scan children.
+Chosen:
+ scan children.
 
 ```ts
 // FAIL: argument-per-line owns a(...), invocation-depth-per-line owns b(...).
@@ -610,10 +745,12 @@ Options considered:
 - Report-only when a child fix overlaps another rule's fix.
 - Suppress the child diagnostic.
 
-Chosen: fix and converge.
+Chosen:
+ fix and converge.
 
 This matches the existing documented Oxlint limitation:
-when fixes overlap, a later pass may be needed.
+when fixes overlap,
+ a later pass may be needed.
 Tests should include a convergence fixture rather than requiring one-pass stability.
 
 ### 22. Semantic unary operators: transparent
@@ -624,7 +761,8 @@ Options considered:
 - Semantic unary is transparent.
 - Only `void` is transparent.
 
-Chosen: semantic unary is transparent.
+Chosen:
+ semantic unary is transparent.
 
 ```ts
 // FAIL
@@ -644,7 +782,8 @@ const value = a(
 );
 ```
 
-This makes the rule follow visible invocation density, not only value-preserving wrappers.
+This makes the rule follow visible invocation density,
+ not only value-preserving wrappers.
 
 ### 23. `yield` and `yield*`: transparent
 
@@ -653,7 +792,8 @@ Options considered:
 - Treat `yield` and `yield*` as transparent.
 - Break the spine at `yield`.
 
-Chosen: transparent yield.
+Chosen:
+ transparent yield.
 
 ```ts
 // FAIL
@@ -676,7 +816,8 @@ Options considered:
 - Single spread argument is transparent.
 - Spread breaks the spine.
 
-Chosen: transparent spread.
+Chosen:
+ transparent spread.
 
 ```ts
 // FAIL
@@ -703,9 +844,12 @@ Options considered:
 - Hardcode max depth two.
 - Make the threshold configurable.
 
-Chosen: hardcode two.
+Chosen:
+ hardcode two.
 
-Reason: the repo has one style target, and existing stylistic rules hardcode their thresholds.
+Reason:
+ the repo has one style target,
+ and existing stylistic rules hardcode their thresholds.
 A configurable option would add schema and test complexity without an identified second threshold.
 
 ### 26. Trailing comma: always add
@@ -716,7 +860,8 @@ Options considered:
 - Preserve whether a trailing comma existed.
 - Never add a trailing comma.
 
-Chosen: always add.
+Chosen:
+ always add.
 
 ```ts
 // FAIL
@@ -738,7 +883,8 @@ Options considered:
 - Move the comma before the trailing comment.
 - Put the comma on its own next line.
 
-Chosen: move comma before the trailing comment.
+Chosen:
+ move comma before the trailing comment.
 
 ```ts
 // FAIL
@@ -758,7 +904,9 @@ Options considered:
 - Put the comma before trailing block comments.
 - Put the comma after trailing block comments.
 
-Chosen: comma before trailing block comments, matching the line-comment decision.
+Chosen:
+ comma before trailing block comments,
+ matching the line-comment decision.
 
 ```ts
 // FAIL
@@ -774,11 +922,13 @@ const value = a(
 
 Options considered:
 
-- Containers break the parent spine, but descendants inside containers are checked independently.
+- Containers break the parent spine,
+   but descendants inside containers are checked independently.
 - Containers suppress all descendant checks.
 - Cross containers and count every descendant.
 
-Chosen: check inside.
+Chosen:
+ check inside.
 
 ```ts
 // PASS: object breaks a -> b, and b(c()) is only depth two.
@@ -800,7 +950,8 @@ Options considered:
 - Base indentation of the invocation source line plus two spaces.
 - Align continuation to the call-head column.
 
-Chosen: source-line indent plus two spaces.
+Chosen:
+ source-line indent plus two spaces.
 
 ```ts
 // FAIL
@@ -822,7 +973,8 @@ Options considered:
 - Original spine root.
 - Innermost pair.
 
-Chosen: highest invocation on the bad line.
+Chosen:
+ highest invocation on the bad line.
 
 ```ts
 // FAIL: diagnostic on a(...), because line 1 has a + b + c.
@@ -849,9 +1001,11 @@ The user initially chose "one per root" for multiple independent spines in one l
 That preview implied `invocation-depth-per-line` might rewrite object literals broadly.
 A follow-up pointed out that existing container rules already own object layout.
 
-Final decision: container rules own container layout.
+Final decision:
+ container rules own container layout.
 `invocation-depth-per-line` owns invocation spines inside containers.
-It may report independently fixable child spines, and the combined formatter/linter pass converges with existing container rules.
+It may report independently fixable child spines,
+ and the combined formatter/linter pass converges with existing container rules.
 
 ```ts
 // FAIL: object-property-per-line owns the object, invocation-depth-per-line owns child spines.
@@ -875,12 +1029,18 @@ The confirmed summary became the implementation target below.
 
 ## Final rule identity
 
-- Package: `packages/oxlint-plugins/stylistic`.
-- Rule name: `invocation-depth-per-line`.
-- Config key: `stylistic/invocation-depth-per-line`.
-- Default severity: `warn`.
-- Fixability: `fixable: 'whitespace'` for fixable cases.
-- Threshold: hardcoded maximum of two counted invocations per source line.
+- Package:
+   `packages/oxlint-plugins/stylistic`.
+- Rule name:
+   `invocation-depth-per-line`.
+- Config key:
+   `stylistic/invocation-depth-per-line`.
+- Default severity:
+   `warn`.
+- Fixability:
+   `fixable: 'whitespace'` for fixable cases.
+- Threshold:
+   hardcoded maximum of two counted invocations per source line.
 
 ## Final rule semantics
 
@@ -914,7 +1074,8 @@ const value = a(b(
 
 Count these invocation heads:
 
-- `CallExpression`, including optional calls.
+- `CallExpression`,
+   including optional calls.
 - `NewExpression`.
 - `ImportExpression` when traversed through its source operand.
 
@@ -939,20 +1100,36 @@ The operand-spine walker passes through these node types:
 - `TSNonNullExpression`.
 - `TSInstantiationExpression`.
 
-It does not pass through `ParenthesizedExpression`: oxlint strips grouping parentheses and emits no such node here
-(`src/utility/chain.ts` `parenIsolated`, `src/utility/has-parens.ts` `hasParens`), so the wrapper is unnecessary and
-`a((b(c())))` already parses as depth-three `a(b(c()))`. The autofix must still recover grouping bytes by byte-peek,
-because operand spans exclude surrounding parens. Re-confirm this against the running oxlint version, since the
+It does not pass through `ParenthesizedExpression`:
+ oxlint strips grouping parentheses and emits no such node here
+(`src/utility/chain.ts` `parenIsolated`,
+ `src/utility/has-parens.ts` `hasParens`),
+ so the wrapper is unnecessary and
+`a((b(c())))` already parses as depth-three `a(b(c()))`.
+ The autofix must still recover grouping bytes by byte-peek,
+because operand spans exclude surrounding parens.
+ Re-confirm this against the running oxlint version,
+ since the
 `@oxlint/plugins` type union does declare a `ParenthesizedExpression` node and a visitor hook for it.
 
-The walker does not pass through containers: `ObjectExpression`, `ArrayExpression`, `ConditionalExpression`,
-`SequenceExpression`, `AssignmentExpression`, `TemplateLiteral`, `TaggedTemplateExpression`, and function bodies
-(`ArrowFunctionExpression`, `FunctionExpression`).
-Those containers stop the parent spine, but normal visitors still check descendants inside them.
+The walker does not pass through containers:
+ `ObjectExpression`,
+ `ArrayExpression`,
+ `ConditionalExpression`,
+`SequenceExpression`,
+ `AssignmentExpression`,
+ `TemplateLiteral`,
+ `TaggedTemplateExpression`,
+ and function bodies
+(`ArrowFunctionExpression`,
+ `FunctionExpression`).
+Those containers stop the parent spine,
+ but normal visitors still check descendants inside them.
 
 ## Final autofix rules
 
-For a fixable violating invocation, replace the invocation's argument or operand list with a multiline form:
+For a fixable violating invocation,
+ replace the invocation's argument or operand list with a multiline form:
 
 ```ts
 // FAIL
@@ -980,18 +1157,25 @@ Implement the rule as a new file under `packages/oxlint-plugins/stylistic/src/ru
 Register it in `packages/oxlint-plugins/stylistic/src/index.ts`.
 Enable it in `packages/config/oxlint/src/rules/style.ts`.
 
-Use iterative traversal, not recursion.
+Use iterative traversal,
+ not recursion.
 Invocation nesting depth can grow with source length.
 Recursing over an operand spine would violate the repo rule against recursion over linear input and risks stack overflow.
 
 A workable internal model:
 
-1. Visit `CallExpression`, `NewExpression`, and `ImportExpression`.
-2. For each visited counted invocation, determine whether it is the highest counted invocation on its source line.
-3. Walk the single-operand spine iteratively, passing through transparent wrappers.
+1. Visit `CallExpression`,
+    `NewExpression`,
+    and `ImportExpression`.
+2. For each visited counted invocation,
+    determine whether it is the highest counted invocation on its source line.
+3. Walk the single-operand spine iteratively,
+    passing through transparent wrappers.
 4. Track counted invocation heads by source line.
-5. If any line reaches three counted invocations, report the highest invocation on that line.
-6. Build a fix by splitting that invocation's single operand, when the target syntax is fixable.
+5. If any line reaches three counted invocations,
+    report the highest invocation on that line.
+6. Build a fix by splitting that invocation's single operand,
+    when the target syntax is fixable.
 
 The implementation should compute invocation-head lines rather than using whole-node span overlap.
 Whole-node overlap would treat compliant multiline calls as violations because outer call spans include child lines.
@@ -1000,12 +1184,23 @@ Whole-node overlap would treat compliant multiline calls as violations because o
 
 Add invalid fixtures for:
 
-- Plain calls: `a(b(c()))`.
-- Constructors: `new A(b(c()))` and `a(new B(c()))`.
-- Optional calls: `a(b?.(c()))`.
-- Dynamic import with one operand: `a(import(b(c())))`.
-- Transparent wrappers: `await`, unary, `yield`, spread, parentheses, and TypeScript wrappers.
-- Already-split child-line violation: `a(\n  b(c(d())),\n)`.
+- Plain calls:
+   `a(b(c()))`.
+- Constructors:
+   `new A(b(c()))` and `a(new B(c()))`.
+- Optional calls:
+   `a(b?.(c()))`.
+- Dynamic import with one operand:
+   `a(import(b(c())))`.
+- Transparent wrappers:
+   `await`,
+   unary,
+   `yield`,
+   spread,
+   parentheses,
+   and TypeScript wrappers.
+- Already-split child-line violation:
+   `a(\n  b(c(d())),\n)`.
 - Descendant spines inside containers.
 - Descendant spines inside tagged-template interpolations.
 - Comment-aware autofix for trailing line comments.
@@ -1014,16 +1209,24 @@ Add invalid fixtures for:
 
 Add valid fixtures for:
 
-- Depth two: `a(b())`.
-- Threshold-only noncanonical split: `a(b(\n  c(),\n))`.
-- Callee chains: `factory()()()`.
-- Multi-argument parent with depth-two child: `a(b(c()), other)`.
-- Dynamic import with options: `a(import(b(c()), opts))`.
-- Tagged-template wrapper with depth-two interpolation: `` a(tag`${b(c())}`) ``.
-- Container parent with depth-two descendant: `a({ value: b(c()) })`.
+- Depth two:
+   `a(b())`.
+- Threshold-only noncanonical split:
+   `a(b(\n  c(),\n))`.
+- Callee chains:
+   `factory()()()`.
+- Multi-argument parent with depth-two child:
+   `a(b(c()), other)`.
+- Dynamic import with options:
+   `a(import(b(c()), opts))`.
+- Tagged-template wrapper with depth-two interpolation:
+   `` a(tag`${b(c())}`) ``.
+- Container parent with depth-two descendant:
+   `a({ value: b(c()) })`.
 
 Add autofix convergence tests for cases where `invocation-depth-per-line` overlaps with:
 
 - `argument-per-line`.
 - `object-property-per-line`.
-- `array-element-per-line`, if an array fixture contains multiple child spines.
+- `array-element-per-line`,
+   if an array fixture contains multiple child spines.

@@ -20,7 +20,8 @@ The observed global Pi extension tree had one physical installed copy of each pa
 /var/home/user/.pi/agent/npm/node_modules/protobufjs/package.json
 ```
 
-The `87 packages` count came from lockfile inventory duplication, not from 87 physical directories.
+The `87 packages` count came from lockfile inventory duplication,
+ not from 87 physical directories.
 
 ## Root cause
 
@@ -28,7 +29,8 @@ The cause has three layers.
 
 ### Pi extension installs do not use Monochromatic's pnpm overrides
 
-`pi update` updates extension npm packages before self-update. Pi 0.78.0's installed CLI calls
+`pi update` updates extension npm packages before self-update.
+ Pi 0.78.0's installed CLI calls
 `packageManager.update()` when the update target includes extensions.
 
 `<pi-coding-agent>` below means
@@ -63,7 +65,8 @@ async installNpmBatch(specs, scope) {
 return ["install", ...specs, "--prefix", installRoot, "--legacy-peer-deps"];
 ```
 
-Global extension installs use `agentDir/npm`; project extension installs use `.pi/npm`.
+Global extension installs use `agentDir/npm`;
+ project extension installs use `.pi/npm`.
 
 ```js
 // <pi-coding-agent>/dist/core/package-manager.js:1562-1569
@@ -78,16 +81,19 @@ getNpmInstallRoot(scope, temporary) {
 }
 ```
 
-That npm root is independent from the Monochromatic pnpm workspace. The pnpm overrides that remove
+That npm root is independent from the Monochromatic pnpm workspace.
+ The pnpm overrides that remove
 `@earendil-works/pi-ai>@google/genai` and `@earendil-works/pi-tui>koffi` do not affect
 `/var/home/user/.pi/agent/npm`.
 
 ### `pi-mcp-adapter` directly depends on Pi host packages
 
-The observed global settings include `npm:pi-mcp-adapter`, and the global extension npm project records
+The observed global settings include `npm:pi-mcp-adapter`,
+ and the global extension npm project records
 `pi-mcp-adapter` as a direct dependency.
 
-`pi-mcp-adapter@2.8.0` declares `@earendil-works/pi-ai` and `@earendil-works/pi-tui` as regular dependencies, not
+`pi-mcp-adapter@2.8.0` declares `@earendil-works/pi-ai` and `@earendil-works/pi-tui` as regular dependencies,
+ not
 peer dependencies:
 
 ```jsonc
@@ -177,7 +183,8 @@ package entries=7011
 ```
 
 The duplication is reproducible when npm receives a `--prefix` path through `/home/user` while `/home` is a symlink to
-`var/home`. Repeated lockfile-only installs in a scratch prefix under `/home/user` add another `var/` segment each run:
+`var/home`.
+ Repeated lockfile-only installs in a scratch prefix under `/home/user` add another `var/` segment each run:
 
 ```json
 [
@@ -215,14 +222,21 @@ The duplication is reproducible when npm receives a `--prefix` path through `/ho
 
 Version context:
 
-- Pi CLI: `0.78.0`
-- Node: `v26.3.0`
-- npm: `11.16.0`
-- `HOME`: `/home/user`
-- `/home`: symlink to `var/home`
+- Pi CLI:
+   `0.78.0`
+- Node:
+   `v26.3.0`
+- npm:
+   `11.16.0`
+- `HOME`:
+   `/home/user`
+- `/home`:
+   symlink to `var/home`
 
-`npm ls` in the global Pi extension root shows the direct ancestry. The command exits with `ELSPROBLEMS` because the
-installed Pi peer packages are invalid for `@aliou/pi-linkup`'s exact `0.74.0` peer range, but the dependency chain is
+`npm ls` in the global Pi extension root shows the direct ancestry.
+ The command exits with `ELSPROBLEMS` because the
+installed Pi peer packages are invalid for `@aliou/pi-linkup`'s exact `0.74.0` peer range,
+ but the dependency chain is
 still printed:
 
 ```text
@@ -265,40 +279,66 @@ The same scratch install without `pi-mcp-adapter` contained none of the target p
 }
 ```
 
-The stale project-local root under `Monochromatic/.pi/npm` is a separate artifact. Its package files are dated
-2026-05-14, project settings contain no packages, and its `protobufjs` version is `7.5.8`, not the `7.6.2` version
-reported by the 2026-06-01 warning. It was not the source of the new `pi update` warning.
+The stale project-local root under `Monochromatic/.pi/npm` is a separate artifact.
+ Its package files are dated
+2026-05-14,
+ project settings contain no packages,
+ and its `protobufjs` version is `7.5.8`,
+ not the `7.6.2` version
+reported by the 2026-06-01 warning.
+ It was not the source of the new `pi update` warning.
 
 ## Verified workarounds
 
 ### Remove or replace `pi-mcp-adapter`
 
-Removing `pi-mcp-adapter` from the scratch extension set removes `@earendil-works/pi-ai`, `@earendil-works/pi-tui`,
-`@google/genai`, `koffi`, and `protobufjs` from the npm lock. Tradeoff: MCP adapter functionality is gone unless a
+Removing `pi-mcp-adapter` from the scratch extension set removes `@earendil-works/pi-ai`,
+ `@earendil-works/pi-tui`,
+`@google/genai`,
+ `koffi`,
+ and `protobufjs` from the npm lock.
+ Tradeoff:
+ MCP adapter functionality is gone unless a
 replacement extension supplies it.
 
 ### Patch or fork `pi-mcp-adapter` metadata
 
-If Pi's extension loader supplies `@earendil-works/pi-ai` and `@earendil-works/pi-tui` as host APIs, the package should
-move those entries from `dependencies` to `peerDependencies`. Tradeoff: this must be verified against the adapter's
-sampling and TUI paths, because `sampling-handler.ts` imports runtime values from `@earendil-works/pi-ai`, and panel
+If Pi's extension loader supplies `@earendil-works/pi-ai` and `@earendil-works/pi-tui` as host APIs,
+ the package should
+move those entries from `dependencies` to `peerDependencies`.
+ Tradeoff:
+ this must be verified against the adapter's
+sampling and TUI paths,
+ because `sampling-handler.ts` imports runtime values from `@earendil-works/pi-ai`,
+ and panel
 rendering imports runtime values from `@earendil-works/pi-tui`.
 
 ### Rebuild the Pi extension npm root from a canonical path
 
-A clean scratch install through a `/var/home/user/...` prefix did not create `var/var/...` lockfile entries. Rebuilding
+A clean scratch install through a `/var/home/user/...` prefix did not create `var/var/...` lockfile entries.
+ Rebuilding
 `/var/home/user/.pi/agent/npm` from a clean package root through the canonical path should remove the inflated warning
-count. Tradeoff: this only fixes duplicate lockfile inventory. While `pi-mcp-adapter` remains installed, the clean graph
-still contains one each of `@google/genai`, `koffi`, and `protobufjs`.
+count.
+ Tradeoff:
+ this only fixes duplicate lockfile inventory.
+ While `pi-mcp-adapter` remains installed,
+ the clean graph
+still contains one each of `@google/genai`,
+ `koffi`,
+ and `protobufjs`.
 
 ## What does not work
 
 - Monochromatic's `pnpm-workspace.yaml` overrides do not affect Pi's separate npm extension roots.
-- `--legacy-peer-deps` stops npm from auto-solving peers, but it does not remove regular dependencies declared by
+- `--legacy-peer-deps` stops npm from auto-solving peers,
+   but it does not remove regular dependencies declared by
   `pi-mcp-adapter`.
-- `npm approve-scripts` or `npm deny-scripts` changes script policy only. It does not remove `@google/genai`, `koffi`,
+- `npm approve-scripts` or `npm deny-scripts` changes script policy only.
+   It does not remove `@google/genai`,
+   `koffi`,
   or `protobufjs` from the dependency graph.
-- Cleaning only duplicated lockfile entries reduces the warning count from inflated multiples to three, but it does not
+- Cleaning only duplicated lockfile entries reduces the warning count from inflated multiples to three,
+   but it does not
   remove the three packages while `pi-mcp-adapter` remains.
 
 ## Draft upstream issues
@@ -307,26 +347,51 @@ still contains one each of `@google/genai`, `koffi`, and `protobufjs`.
 
 #### `pi-mcp-adapter` package metadata
 
-1. **Is it really upstream's fault?** Likely yes. Pi extension packages are loaded by a host that already provides Pi
-   APIs, and Pi 0.78.0 explicitly disables peer auto-resolution for host-provided `@earendil-works/pi-*` peers.
-2. **Can upstream fix it?** Yes if the adapter only needs host-provided Pi APIs. The minimal change is package metadata:
+1. **Is it really upstream's fault?
+   ** Likely yes.
+    Pi extension packages are loaded by a host that already provides Pi
+   APIs,
+    and Pi 0.78.0 explicitly disables peer auto-resolution for host-provided `@earendil-works/pi-*` peers.
+2. **Can upstream fix it?
+   ** Yes if the adapter only needs host-provided Pi APIs.
+    The minimal change is package metadata:
    move `@earendil-works/pi-ai` and `@earendil-works/pi-tui` from `dependencies` to `peerDependencies`.
-3. **Are they supporting this use case?** Yes. The package is a Pi extension and declares a `pi.extensions` entry.
-4. **Will they likely fix it?** Unknown. Maintenance activity was not audited beyond the published 2.6.1, 2.7.0, and
-   2.8.0 manifests, which all retain the same direct Pi dependencies.
-5. **Have we prototyped a minimal fix compatible with their architecture?** Not yet. Runtime verification must exercise
+3. **Are they supporting this use case?
+   ** Yes.
+    The package is a Pi extension and declares a `pi.extensions` entry.
+4. **Will they likely fix it?
+   ** Unknown.
+    Maintenance activity was not audited beyond the published 2.6.1,
+    2.7.0,
+    and
+   2.8.0 manifests,
+    which all retain the same direct Pi dependencies.
+5. **Have we prototyped a minimal fix compatible with their architecture?
+   ** Not yet.
+    Runtime verification must exercise
    MCP sampling and TUI panels after changing the manifest.
 
 #### npm `--prefix` with symlinked `/home`
 
-1. **Is it really upstream's fault?** Likely yes. npm repeatedly adds logically duplicate lockfile entries when
+1. **Is it really upstream's fault?
+   ** Likely yes.
+    npm repeatedly adds logically duplicate lockfile entries when
    `--prefix` points through `/home/user` and `/home` is a symlink to `var/home`.
-2. **Can upstream fix it?** Unknown. The failing behavior is in npm's lockfile path handling, but the exact source hunk
+2. **Can upstream fix it?
+   ** Unknown.
+    The failing behavior is in npm's lockfile path handling,
+    but the exact source hunk
    was not traced.
-3. **Are they supporting this use case?** Unknown. `--prefix` is a documented npm install option, but symlinked home
+3. **Are they supporting this use case?
+   ** Unknown.
+    `--prefix` is a documented npm install option,
+    but symlinked home
    directories were not checked against npm's tests.
-4. **Will they likely fix it?** Unknown. npm maintenance in this code path was not audited.
-5. **Have we prototyped a minimal fix compatible with their architecture?** No. The consumer-side workaround is to run
+4. **Will they likely fix it?
+   ** Unknown.
+    npm maintenance in this code path was not audited.
+5. **Have we prototyped a minimal fix compatible with their architecture?
+   ** No. The consumer-side workaround is to run
    Pi extension npm operations through canonical `/var/home/user/...` paths or rebuild the lockfile from that path.
 
 ### Draft issue for `pi-mcp-adapter`, do not file as-is
