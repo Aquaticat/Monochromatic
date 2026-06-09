@@ -13,14 +13,22 @@ code-level and launch-level layers are already verified (see "Already verified")
 
 ## Already verified (no action needed)
 
-- `cargo build` on the M1 (arm64, macOS 26.5.1): succeeded, zero warnings, zero
-  errors. cpal 0.15.3 + coreaudio-rs compiled; `opus` linked against Homebrew
-  libopus via pkg-config.
-- Launch over SSH: the binary ran its event loop for 8s with no panic and no
-  stderr. The engine prints `music-player: audio init failed: ...` when
-  `Output::new` fails (engine.rs:300); stderr was empty, so cpal opened the
-  default output device successfully.
-- Linux regression: `cargo check` still passes; the PipeWire path is unchanged.
+- Build and clippy on the M1 (arm64, macOS 26.5.1) against the CURRENT dependency
+  set: `cargo build` and `cargo clippy -- -D warnings` both finish clean, zero
+  warnings. cpal 0.18.1 + coreaudio-rs compile; `opus` builds libopus 1.6.1 from
+  source via CMake (the opusic-sys backend; there is no Homebrew/pkg-config system
+  libopus in the link); and the macOS background-QoS path in `src/measure.rs`
+  (`pthread_set_qos_class_self_np` / `QOS_CLASS_BACKGROUND`) compiles. Note the
+  build needs `SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` because the `ui/app.slint`
+  page-tab bar uses the experimental `FlexboxLayout`; every mise task sets it, so
+  build with `mise run //packages/desktop-app/music-player:build`, not a bare
+  `cargo build` (which fails with `Unknown element 'FlexboxLayout'`).
+- An earlier launch over SSH ran the event loop for ~8s with no panic and no
+  stderr, so `Output::new` opened the default output device (the engine prints
+  `music-player: audio init failed: ...` from engine.rs:300 on failure, and stderr
+  was empty). The device-init path is unchanged by the cpal 0.15 -> 0.18 bump.
+- Linux regression: build, clippy (`-D warnings`), and the 56-test suite stay
+  green; the PipeWire path is unchanged.
 
 ## Bridges tried before handing this off
 

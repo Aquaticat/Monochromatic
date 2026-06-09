@@ -87,3 +87,16 @@ pub const CONFIG_ORGANIZATION: &str = "Monochromatic";
 // export const CONFIG_APPLICATION = "music-player";
 // ```
 pub const CONFIG_APPLICATION: &str = "music-player";
+
+// What:     `#[cfg(test)] #[path = "identity_tests.rs"] mod tests;`. Declare the
+//           test submodule, sourced from the sibling `identity_tests.rs` file.
+//           `#[cfg(test)]` compiles it only for test builds; `#[path = "..."]`
+//           points the module at the flat sibling file instead of the default
+//           `identity/tests.rs` lookup.
+// Why:      Keep this file to the constants while the drift-guard tests live beside
+//           it (sibling `*_tests.rs` files are exempt from the max-lines linter),
+//           matching the convention in session.rs / peakcache.rs / etc.
+// TS map:   the `identity.unit.test.ts` file beside `identity.ts`.
+#[cfg(test)]
+#[path = "identity_tests.rs"]
+mod tests;

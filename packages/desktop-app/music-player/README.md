@@ -84,7 +84,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   `fingerprint -> peak` map atomically (write a temp file, then rename), and exposes get/insert.
 - `src/measure.rs`: measurement orchestration. `resolve_track_gain` returns a track's gain from the cache or
   measures it now on a miss; `spawn_queue_measurement` runs the detached background sweep over a queue, gently
-  (a short sleep between measurements) and never cancelled.
+  (a short sleep between measurements) and never cancelled. The sweep thread first drops itself to the platform's
+  lowest scheduling tier so its CPU-bound decoding never competes with the audio thread or the UI: Linux
+  `SCHED_IDLE`, macOS background QoS (`pthread_set_qos_class_self_np`), and Windows `THREAD_PRIORITY_IDLE`, with a
+  no-op on any other target.
 - `src/controller.rs`: the playback state machine (state struct, command handling, background-measurement
   kickoff). It owns the queue, the active decoder, the output, and the shared peak cache.
 - `src/controller_audio.rs`: the second `impl Controller` block (loading, gain resolution, audio pumping,
@@ -103,13 +106,19 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   prefix shared by all queued tracks (always leaving at least the filename), so the UI shows `Artist/Album/01.flac`
   rather than the full absolute path, or just `01.flac` when the whole queue is one folder. No I/O, so it is
   unit-tested directly.
-- `src/launcher.rs`: desktop-shell integration. `set_window_app_id` is a winit window-attributes hook that
+- `src/identity.rs`: the single source of truth for the platform identity strings (the Wayland app id, the macOS
+  `CFBundleIdentifier`, and the config-dir reverse-DNS triple), so the three platforms' names cannot drift. The
+  three reverse-DNS roots differ on purpose; a unit test asserts the macOS `Info.plist` and the Linux `.desktop`
+  file still carry the centralized values.
+- `src/launcher.rs`: Linux desktop-shell integration. `set_window_app_id` is a winit window-attributes hook that
   stamps the Wayland app id (`monochromatic.music-player`); `Launcher` emits the
-  `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the OS taskbar progress
+  `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the taskbar progress
   (fraction = position / duration, hidden when paused). Both are best-effort: no session bus or an unsupporting
   shell silently disables progress. KDE Plasma renders it natively; GNOME needs Dash-to-Dock. Both are Linux-only
-  and compile to no-ops on every non-Linux target (macOS, Windows), where the Wayland app id and the D-Bus signal
-  have no analogue: the hook is a pass-through and `set_progress` does nothing.
+  and compile to no-ops on macOS and Windows, where the Wayland app id and the D-Bus signal have no analogue.
+  Windows still gets a taskbar progress bar, driven natively through the `ITaskbarList3` COM interface in
+  `src/ui_progress.rs` (the Windows counterpart to the Linux LauncherEntry signal); macOS has no dock progress
+  API, so there the taskbar progress is genuinely a no-op.
 - `src/main.rs`: builds the Slint window, spawns the engine, and wires callbacks to commands and updates to
   properties. It installs the winit backend with the app-id hook before creating the window, creates the
   `Launcher`, and pushes taskbar progress from each position/play-state update. It also derives the pagination
@@ -149,9 +158,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   palette rather than hardcoded values, so they follow the OS accent colour
   and the light/dark theme: the highlighted row and the checked checkbox use the accent, the same as the active
   page tab's primary button.
-  Seek-bar movement and KDE taskbar progress updates are debounced through the same Rust helper, while play/pause
-  state still emits immediately. This prevents sub-second or zero-duration tracks from flickering the on-screen
-  progress bar or flashing an empty taskbar progress indicator.
+  Seek-bar movement and platform taskbar progress updates (KDE LauncherEntry on Linux, ITaskbarList3 on Windows)
+  are debounced through the same Rust helper, while play/pause state still emits immediately. This prevents
+  sub-second or zero-duration tracks from flickering the on-screen progress bar or flashing an empty taskbar
+  progress indicator.
 
 ## Page navigation UX choices
 
@@ -241,8 +251,10 @@ less so.
 
 On macOS every mise task takes a native cargo branch first (`$nu.os-info.name == "macos"`): no pkg-config or
 PipeWire probe, no podman fallback (a Linux container cannot produce a macOS binary), and no Linux bindgen env.
-The audio backend is CoreAudio via cpal (`src/output_coreaudio.rs`), the window is AppKit via winit, and the
-Wayland app id plus D-Bus taskbar progress compile to no-ops.
+The audio backend is CoreAudio via cpal (`src/output_cpal.rs`, shared with the Windows WASAPI path), the window is
+AppKit via winit, and the Wayland app id and the LauncherEntry taskbar progress compile to no-ops (macOS exposes no
+dock progress API). The background measurement sweep drops itself to background QoS rather than Linux `SCHED_IDLE`,
+through `libc`'s `pthread_set_qos_class_self_np`.
 
 Prerequisites on a bare machine:
 
@@ -264,7 +276,10 @@ If the GPU OpenGL path misbehaves, force the software renderer with `SLINT_BACKE
 On Windows every mise task takes the same native cargo branch as macOS (`$nu.os-info.name != "linux"`): no
 pkg-config or PipeWire probe, no podman fallback (a Linux container cannot produce a Windows binary), and no
 Linux bindgen env. The audio backend is WASAPI via cpal (`src/output_cpal.rs`, shared with the macOS CoreAudio
-path), the window is Win32 via winit, and the Wayland app id plus D-Bus taskbar progress compile to no-ops.
+path), the window is Win32 via winit, and the Wayland app id compiles to a no-op. The Linux D-Bus LauncherEntry
+also compiles to a no-op, but the taskbar progress bar is driven natively through the `ITaskbarList3` COM interface
+in `src/ui_progress.rs`, and the background measurement sweep uses `THREAD_PRIORITY_IDLE`. The `windows` crate
+(pinned to 0.62) supplies both, unified with the same `windows` version cpal 0.18 and the Slint stack already pull.
 
 The build targets `x86_64-pc-windows-msvc` and links with LLVM's `lld-link.exe` (pinned for that target in
 `.cargo/config.toml`), not the default MSVC `link.exe`. Prerequisites on a bare machine:
