@@ -47,21 +47,30 @@ change; the code edits await go-ahead.
    interop (every produced frame round-trips byte-identically) and by the package's existing
    integration test that decodes real `.fig` / `.deck` / `.jam` files.
 
-2. **The ssg `build:compress` task** becomes a Bun build script (`src/build/compress.ts`, alongside
-   the existing `postprocess.ts`) that walks `dist/`, compresses each file with `node:zlib`'s async
-   `zstdCompress`, and writes `<file>.zst`. Specifics, each justified by the benchmark:
-   - **Engine + threading:** parallel `Promise.all` over the async `zstdCompress` with a bounded
-     concurrency of 16, under Bun (the build's runtime). Bun's parallel path is the fastest engine
-     measured at the levels that matter and scales well across files. The CLI's in-frame `-T0`
-     multithreading is useless for many small files, the CLI's cross-file process parallelism is
-     catastrophically slow (process-spawn bound), and Node's async parallel path is pathologically
-     slow here. See the timing sections.
+2. **The ssg `build:compress` task** becomes a build script (`src/build/compress.ts`, alongside the
+   existing `postprocess.ts`) that walks `dist/`, compresses each file with `node:zlib`, and writes
+   `<file>.zst`. The workspace is migrating off Bun, so this script must run under **Node**; the
+   engine choice is made for Node, with Bun numbers kept only as reference. Specifics, each justified
+   by the benchmark:
+   - **Engine + threading:** shard the file list across **`node:worker_threads` (about 8 workers,
+     matching the physical-core count)**, each worker running synchronous `zstdCompressSync`. This is
+     the fastest Node approach measured, and at matched ratio (level 19) it is faster than the zstd
+     CLI itself (168 ms versus 217 ms on tmpfs for the real `dist/`). Three other approaches were
+     measured and rejected: Node's **async** `zstdCompress` via `Promise.all` is pathologically slow
+     (about 1 second at level 19, 7.8 seconds at level 22) because Node's async zlib carries a large
+     fixed per-call overhead; the CLI's in-frame `-T0` multithreading is useless for many small
+     files; the CLI's cross-file process parallelism is catastrophic (process-spawn bound, seconds to
+     tens of seconds). Node sequential `zstdCompressSync` is the simple fallback (243 ms) if the
+     worker_threads machinery is judged not worth it, but it does not scale with file count the way
+     worker_threads does (2,000 files: 787 ms sequential versus 253 ms with 8 workers). Over-
+     subscribing to all 16 logical threads is slightly slower than 8 for CPU-bound zstd. Bun's async
+     parallel path is faster still (72 ms) but Bun is being removed, so it is not the target.
    - **Level:** fixed **level 19**. `node:zlib` has no equivalent of `--adapt`, so a fixed level is
      required, and a fixed level also makes the build's output reproducible (`--adapt` is not; see
-     caveats). Level 19 is the best practical ratio; under the chosen Bun parallel engine its full
-     wall time on the real `dist/` is ~74 ms (tmpfs) / ~90 ms (SSD), comparable to the current task.
-     Level 15 is the knee of the ratio curve (within 0.1 percentage points of level 19's ratio at
-     ~35% less time) and is the better pick only if dev-rebuild latency is ever a felt pain; since
+     caveats). Level 19 is the best practical ratio; under the chosen Node worker_threads engine its
+     full wall time on the real `dist/` is ~168 ms (tmpfs) / ~177 ms (SSD). Level 15 is the knee of
+     the ratio curve (within 0.1 percentage points of level 19's ratio at ~20% less time: ~141 ms /
+     ~146 ms) and is the better pick only if dev-rebuild latency is ever a felt pain; since
      precompressed assets are paid for once and served repeatedly, level 19 is preferred.
    - **Exclusion policy ("keep if smaller" + extension skip):** write `<file>.zst` only when it is
      strictly smaller than the original, and skip known-incompressible extensions
@@ -81,34 +90,41 @@ benchmark exists to justify.
 
 ## Head-to-head: the current task versus the proposal
 
-The single most decision-relevant measurement. Real `dist/` text assets (138 files, 1,257,418 bytes
-raw), full wall time including process startup and file writes, output dir cleared before each run.
-`current-zstd-T0-adapt` is the literal current command. Times are mean +/- stddev over the run count
-noted in methodology.
+The single most decision-relevant measurement, framed for the **Node** target (the workspace is
+migrating off Bun). Real `dist/` text assets (138 files, 1,257,418 bytes raw), full wall time
+including process startup and file writes, output dir cleared before each run. Times are mean +/-
+stddev. The key comparison is at *matched* compression (level 19), since the current `--adapt`
+command's speed comes entirely from it choosing a weak level.
 
 <table>
   <thead>
     <tr><th>Configuration</th><th>tmpfs (RAM) mean</th><th>SSD (btrfs+LUKS) mean</th><th>Output bytes (kept)</th><th>Ratio vs raw</th></tr>
   </thead>
   <tbody>
-    <tr><td>current: <code>zstd -T0 --adapt</code> (CLI)</td><td>13.4 ms &plusmn; 0.8</td><td>88.3 ms &plusmn; 120.7</td><td>404,644 (= level 3 here)</td><td>32.18%</td></tr>
-    <tr><td>proposed: bun parallel, level 19</td><td>74.1 ms &plusmn; 2.8</td><td>88.3 ms &plusmn; 2.2</td><td>374,726</td><td>29.80%</td></tr>
-    <tr><td>proposed: bun parallel, level 15</td><td>46.8 ms &plusmn; 0.9</td><td>61.0 ms &plusmn; 1.5</td><td>375,774</td><td>29.88%</td></tr>
-    <tr><td>proposed: node parallel, level 19</td><td>974.3 ms &plusmn; 28.4</td><td>1007.3 ms &plusmn; 40.4</td><td>374,726</td><td>29.80%</td></tr>
+    <tr><td>current: <code>zstd -T0 --adapt</code> (CLI)</td><td>13.8 ms &plusmn; 0.4</td><td>33.4 ms &plusmn; 34.6</td><td>404,644 (level-3-equiv, nondeterministic)</td><td>32.18%</td></tr>
+    <tr><td>zstd CLI <code>-19 -T0</code> (matched ratio)</td><td>216.6 ms &plusmn; 4.9</td><td>232.1 ms &plusmn; 1.9</td><td>374,726</td><td>29.80%</td></tr>
+    <tr><td><b>proposed: node worker_threads (8), level 19</b></td><td><b>168.1 ms &plusmn; 9.4</b></td><td><b>177.3 ms &plusmn; 4.2</b></td><td>374,726</td><td>29.80%</td></tr>
+    <tr><td>proposed: node worker_threads (8), level 15</td><td>141.4 ms &plusmn; 10.5</td><td>146.4 ms &plusmn; 4.0</td><td>375,774</td><td>29.88%</td></tr>
+    <tr><td>node sequential, level 19 (simple fallback)</td><td>243.4 ms &plusmn; 3.4</td><td>257.4 ms &plusmn; 3.6</td><td>374,726</td><td>29.80%</td></tr>
+    <tr><td>node async parallel, level 19 (rejected)</td><td>980.9 ms &plusmn; 38.2</td><td>987.3 ms &plusmn; 24.7</td><td>374,726</td><td>29.80%</td></tr>
+    <tr><td>bun parallel, level 19 (reference only; Bun being removed)</td><td>74.1 ms &plusmn; 2.8</td><td>88.3 ms &plusmn; 2.2</td><td>374,726</td><td>29.80%</td></tr>
   </tbody>
 </table>
 
 Reading this table:
 
-- On tmpfs the current `--adapt` task looks fastest (13 ms), but only because `--adapt` settled on a
-  low effort level (its output, 404,644 bytes, equals level 3 exactly) and tmpfs hides all I/O. On
-  the real SSD the same command takes 88 ms with enormous variance (stddev 121 ms, range 21 to
-  362 ms), because `--adapt` tunes its level to observed I/O speed and is nondeterministic.
-- The proposed Bun parallel level 19 produces 7.4% smaller output (374,726 vs 404,644) and on the
-  real SSD matches the current command's mean wall time (~88 ms) while being far more consistent.
-- Level 15 beats the current command on the SSD on *both* axes: faster (61 ms vs 88 ms) and smaller
-  (375,774 vs 404,644).
-- Node's parallel path is ~1 second, an order of magnitude slower than Bun's, and is rejected.
+- The current `--adapt` task looks fastest (14 ms / 33 ms) only because `--adapt` settled on a low
+  effort level (its output, 404,644 bytes, equals level 3 exactly) and is nondeterministic (the SSD
+  run has stddev 35 ms because `--adapt` tunes its level to observed I/O speed). It is not a fair
+  comparison: it produces 7.4% larger, irreproducible output.
+- At **matched ratio (level 19)** the proposed Node worker_threads engine (168 ms / 177 ms) is
+  **faster than the zstd CLI at the same level** (217 ms / 232 ms), while removing the external tool
+  and producing reproducible output.
+- worker_threads (8 workers) beats Node sequential (243 ms / 257 ms) by ~1.5x here and by ~3x on
+  larger file counts (see the Node parallelism section), and beats Node's async parallel path (~1 s)
+  by ~6x.
+- Bun's async parallel path (74 ms) is the fastest of all, but Bun is being removed and so is not the
+  target; it is listed only to anchor the Node numbers.
 
 ## Environment
 
@@ -168,16 +184,23 @@ deliberately because they behave very differently.
 - **zstd CLI, cross-file process parallelism** (`xargs -P<n>`): launches one `zstd` process per
   file, up to `n` at a time. This is the only way to parallelize the CLI across many files.
 - **node:zlib sequential** (`zstdCompressSync` in a loop): one thread.
-- **node:zlib parallel** (`Promise.all` over async `zstdCompress`, bounded concurrency `n`): the
-  async calls run on the runtime's internal thread pool, giving cross-file parallelism in-process.
+- **node:zlib async parallel** (`Promise.all` over async `zstdCompress`, bounded concurrency `n`):
+  the async calls run on the runtime's internal thread pool, giving cross-file parallelism
+  in-process. This is the path that turns out pathological under Node.
+- **node:zlib worker_threads** (shard files across `n` `node:worker_threads`, each running
+  synchronous `zstdCompressSync`): real OS-thread, cross-file parallelism that bypasses the async
+  zlib path entirely. This is the chosen Node engine. It was added to the matrix as a follow-up once
+  the constraint that the build must run under Node (Bun is being removed) made the async path's
+  pathology disqualifying.
 - **node:zlib in-frame multithreading** (`ZSTD_c_nbWorkers`): the direct analogue of the CLI's
   `-T<n>`, splitting a single file.
 
 Bun does not honor `UV_THREADPOOL_SIZE` (verified: 4, 8, 16 are indistinguishable); it uses its own
-pool. Node does honor it, and the parallel Node runs set it to match the concurrency.
+pool. Node does honor it, and the async-parallel Node runs set it to match the concurrency.
 
-The candidate node implementation under test is `compress-worker.ts` (reproduced below), run under
-both `bun` and `node`. It uses only `node:` APIs so the bun-vs-node comparison is fair.
+The async/sequential candidate is `compress-worker.ts` (run under both `bun` and `node`); the chosen
+Node engine is `compress-node-wt.ts` (worker_threads). Both are reproduced below and use only
+`node:` APIs so the bun-vs-node comparison is fair.
 
 ### Measurement
 
@@ -300,9 +323,11 @@ without it, the build would emit `.zst` companions that are larger than their so
 
 ### Experiment A: level sweep on real, per engine
 
-Mean wall time in milliseconds, real dataset, output cleared before each run. The two engines that
-matter for the decision are `bun-par` (the proposal) and `cli-rec-T0` (the current style). `node-par`
-is included to show why Node is rejected; `bun-seq` and `node-seq` show the no-parallelism baseline.
+Mean wall time in milliseconds, real dataset, output cleared before each run. This experiment
+predates the Bun-removal constraint, so it sweeps `bun-par` and `node-par` (async); the chosen Node
+worker_threads engine is benchmarked separately in the Node parallelism section. `cli-rec-T0` is the
+current style, `node-par` (async) is shown to be pathological, and `node-seq` is the Node sequential
+baseline that worker_threads improves on. Bun numbers are reference only (Bun is being removed).
 
 tmpfs backend:
 
@@ -486,7 +511,61 @@ is larger than its source. In the real build this branch is only reached for the
 fails to compress; the common incompressible assets (images, fonts) are skipped by extension before
 any compression is attempted.
 
-## The Node parallel pathology (observation, mechanism not isolated)
+## Node parallelism: worker_threads is the best optimized implementation
+
+Because the workspace is migrating off Bun, the parallel engine must work well under Node, and Node's
+async `zstdCompress` does not (see the pathology section). The fast Node path is to shard files
+across `node:worker_threads`, each worker running synchronous `zstdCompressSync`. This avoids Node's
+async zlib per-call overhead entirely and uses real OS threads. The worker_threads compressor was
+validated for correctness (138 files, all decode to the exact originals, total 374,726 bytes = level
+19).
+
+Node engines compared at level 19 (mean ms):
+
+<table>
+  <thead><tr><th>Engine</th><th>real (138 files) tmpfs</th><th>real SSD</th><th>many (2,000 files) tmpfs</th></tr></thead>
+  <tbody>
+    <tr><td>sequential <code>zstdCompressSync</code> loop</td><td>243.4</td><td>257.4</td><td>787.3</td></tr>
+    <tr><td>worker_threads, 4 workers</td><td>172.0</td><td>&mdash;</td><td>312.3</td></tr>
+    <tr><td><b>worker_threads, 8 workers</b></td><td><b>166.9</b></td><td><b>171.2</b></td><td><b>252.9</b></td></tr>
+    <tr><td>worker_threads, 16 workers</td><td>205.0</td><td>207.7</td><td>283.1</td></tr>
+    <tr><td>async <code>zstdCompress</code> + Promise.all (16)</td><td>980.9</td><td>987.3</td><td>(pathological)</td></tr>
+  </tbody>
+</table>
+
+worker_threads with 8 workers is ~1.5x faster than sequential on the 138-file real set and ~3.1x
+faster on the 2,000-file set, which matters as the blog grows.
+
+A full worker-count sweep (1 to 32 workers) on the real set at level 19 shows the optimum is a
+**plateau, not a single point**: workers 4, 8, and 10 are statistically tied, and performance
+degrades steadily above ~12 as extra V8 isolates cost more than they return (zstd is CPU-bound, so
+SMT past the 8 physical cores gives little).
+
+<table>
+  <thead><tr><th>Workers</th><th>1</th><th>2</th><th>3</th><th>4</th><th>6</th><th>8</th><th>10</th><th>12</th><th>16</th><th>24</th><th>32</th></tr></thead>
+  <tbody>
+    <tr><td>tmpfs ms</td><td>281</td><td>365*</td><td>197</td><td>170</td><td>185</td><td>169</td><td>168</td><td>187</td><td>210</td><td>261</td><td>309</td></tr>
+    <tr><td>SSD ms</td><td>298</td><td>227</td><td>204</td><td>178</td><td>196</td><td>177</td><td>176</td><td>196</td><td>217</td><td>277</td><td>311</td></tr>
+  </tbody>
+</table>
+
+(* the W2 tmpfs cell had an outlier run, stddev +/- 406 ms; treat it as noise.) The practical rule is
+**workers in the 4 to 10 range, around the physical-core count (8 here); never oversubscribe past
+~12**. A naive `os.availableParallelism()` returns 16 on this chip, which is already ~25% past the
+optimum, so the implementation should cap at roughly the physical-core count rather than use the
+logical count directly. There is also a fixed worker-spawn floor of roughly 120 ms (V8 isolate
+startup), which is why worker_threads helps at high levels and on large file counts but not at
+trivial levels, where sequential or the CLI's lower startup wins.
+
+The SSD `many` numbers are omitted from the table because parallel writers contending on btrfs
+copy-on-write plus LUKS encryption produced very high variance there (stddev up to +/- 458 ms across
+worker counts); the tmpfs `many` numbers isolate the compute scaling cleanly.
+
+worker_threads level curve (real, tmpfs, 8 workers): level 12 = 130.4 ms, level 15 = 136.5 ms, level
+19 = 169.1 ms, level 22 = 177.2 ms. Flatter than the sequential curve (the per-file work overlaps
+across workers), and level 15 saves ~33 ms over level 19 for 0.08 ratio points.
+
+## The Node async parallel pathology (observation, mechanism not isolated)
 
 Node's async `zstdCompress` driven by `Promise.all` is anomalously slow in this benchmark, and the
 cause was not isolated. Reporting the observation, not a mechanism:
@@ -556,13 +635,17 @@ decodes real `.fig` / `.deck` / `.jam` files (`bun packages/figma-parsers/kiwi/s
 
 ### ssg compression
 
-Add `packages/webapp-content/ssg-test/src/build/compress.ts` (a Bun script beside `postprocess.ts`),
-and change the `build:compress` task from the `zstd` shell command to `bun src/build/compress.ts`.
-The script: walk `dist/`, skip known-incompressible extensions, compress the rest with `node:zlib`
-async `zstdCompress` at level 19 (`ZSTD_c_contentSizeFlag = 0`) via a bounded-concurrency
-`Promise.all` (concurrency 16), and write `<file>.zst` only when strictly smaller than the source.
-The core compression unit is exactly the `compress-worker.ts` used in this benchmark (reproduced
-below), adapted into the package's logging and module conventions.
+Add `packages/webapp-content/ssg-test/src/build/compress.ts` beside `postprocess.ts`, and change the
+`build:compress` task from the `zstd` shell command to `node src/build/compress.ts` (Node, since Bun
+is being removed). The script: on the main thread, walk `dist/`, skip known-incompressible extensions
+without reading them, shard the remaining files across `node:worker_threads` (worker count = physical
+cores, roughly 8; cap below the logical count), and in each worker compress with synchronous
+`zstdCompressSync` at level 19 (`ZSTD_c_contentSizeFlag = 0`), writing `<file>.zst` only when strictly
+smaller than the source. The core engine is exactly the `compress-node-wt.ts` used in this benchmark
+(reproduced below), adapted into the package's logging and module conventions. If the worker_threads
+machinery is judged not worth its complexity for the current `dist/` size, the sequential
+`zstdCompressSync` fallback is a one-file change away and costs ~75 ms more on today's `dist/` (but
+~3x more as the file count grows).
 
 ### Tool and config cleanup
 
@@ -571,10 +654,58 @@ Remove `"github:facebook/zstd" = "latest"` from `mise.toml` and `mise.no-env.tom
 ## Reproduction
 
 The benchmark scripts were scratch artifacts under `/tmp/agent/zbench/` (ephemeral, RAM-backed) and
-a throwaway SSD data dir under `/var/home/user/.cache/agent-zstd-bench/`. The load-bearing one, the
-compression unit under test, is reproduced here in full so the measurement can be rebuilt.
+a throwaway SSD data dir under `/var/home/user/.cache/agent-zstd-bench/`. The two load-bearing units
+are reproduced here in full so the measurement can be rebuilt.
 
-`compress-worker.ts` (cross-runtime; run under both `bun` and `node`):
+`compress-node-wt.ts`, the chosen Node engine (worker_threads + synchronous zstd; run under `node`):
+
+```ts
+import { Worker, isMainThread, workerData, parentPort, } from 'node:worker_threads';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, } from 'node:fs';
+import { dirname, join, } from 'node:path';
+import zlib from 'node:zlib';
+
+const c = zlib.constants;
+
+function compressOne(path, IN, OUT, params, keep) {
+  const raw = readFileSync(path,);
+  const dest = join(OUT, path.slice(IN.length,),);
+  mkdirSync(dirname(dest,), { recursive: true, },);
+  const out = zlib.zstdCompressSync(raw, { params, },);
+  if (keep && out.length >= raw.length) { writeFileSync(dest, raw,); return; }
+  writeFileSync(`${dest}.zst`, out,);
+}
+
+if (isMainThread) {
+  const arg = (name, fb) => {
+    const i = process.argv.indexOf(`--${name}`,);
+    if (i < 0) return fb;
+    const n = process.argv[i + 1];
+    return (n === undefined || n.startsWith('--',)) ? 'true' : n;
+  };
+  const IN = arg('in',), OUT = arg('out',), LEVEL = Number(arg('level', '19',),);
+  const WORKERS = Number(arg('workers', '8',),), KEEP = arg('keep-if-smaller',) === 'true';
+  const files = readdirSync(IN, { recursive: true, },)
+    .map(rel => join(IN, String(rel,),),).filter(p => statSync(p,).isFile());
+  const nWorkers = Math.min(WORKERS, files.length,) || 1;
+  const shards = Array.from({ length: nWorkers, }, () => [],);
+  files.forEach((f, i) => shards[i % nWorkers].push(f,),);
+  await Promise.all(shards.map(shard => new Promise((resolve, reject,) => {
+    const w = new Worker(new URL(import.meta.url,), { workerData: { shard, IN, OUT, LEVEL, KEEP, }, },);
+    w.on('error', reject,);
+    w.on('exit', code => code === 0 ? resolve() : reject(new Error(`worker exit ${code}`,),),);
+  },),),);
+}
+else {
+  const { shard, IN, OUT, LEVEL, KEEP, } = workerData;
+  const params = { [c.ZSTD_c_compressionLevel]: LEVEL, [c.ZSTD_c_contentSizeFlag]: 0, };
+  for (const path of shard) compressOne(path, IN, OUT, params, KEEP,);
+  parentPort.postMessage('done',);
+}
+```
+
+`compress-worker.ts`, the cross-runtime sequential/async unit used to measure the sequential and
+(rejected) async paths under both `bun` and `node`:
 
 ```ts
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, } from 'node:fs';
@@ -641,5 +772,6 @@ To reproduce the headline comparison directly:
 # build dist first (mise run //packages/webapp-content/ssg-test:build:site), then:
 hyperfine --warmup 3 --runs 12 --prepare 'rm -rf /tmp/out && mkdir -p /tmp/out' \
   --command-name current 'cd dist && zstd -q -z -f --no-check --no-content-size -T0 --adapt -r . --output-dir-mirror /tmp/out' \
-  --command-name proposed-L19 'bun compress-worker.ts --in dist --out /tmp/out --level 19 --mode par --concurrency 16 --keep-if-smaller'
+  --command-name 'cli-matched-L19' 'cd dist && zstd -q -19 --ultra --no-check --no-content-size -T0 -r . --output-dir-mirror /tmp/out -f' \
+  --command-name 'proposed-node-wt-L19' 'node compress-node-wt.ts --in dist --out /tmp/out --level 19 --workers 8 --keep-if-smaller'
 ```
