@@ -205,16 +205,20 @@ fn lower_current_thread_to_idle() {
 // TS map:   no equivalent; Node/browsers expose no thread QoS class.
 #[cfg(target_os = "macos")]
 fn lower_current_thread_to_idle() {
-    // What:     `let result = unsafe { libc::pthread_set_qos_class_self_np(libc::QOS_CLASS_BACKGROUND, 0) };`.
+    // What:     `let result = unsafe { libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0) };`.
     //           Call the Apple-specific libc function that sets the CURRENT
     //           thread's QoS class. `unsafe { ... }` is required for ANY raw FFI
-    //           call (Rust cannot verify the C contract). `libc::QOS_CLASS_BACKGROUND`
-    //           selects the lowest QoS tier; the second argument is a
-    //           relative-priority offset WITHIN that class (`0` = no offset).
-    //           Returns `0` on success, a nonzero errno on failure (a `c_int`).
+    //           call (Rust cannot verify the C contract).
+    //           `libc::qos_class_t::QOS_CLASS_BACKGROUND` is a VARIANT of the
+    //           `qos_class_t` C enum (NOT a top-level `libc::` constant), and it is
+    //           the lowest QoS tier; the function's first parameter is typed
+    //           `qos_class_t`, so the variant is passed directly. The second
+    //           argument is a relative-priority offset WITHIN that class (`0` = no
+    //           offset). Returns `0` on success, a nonzero errno on failure.
     // Why:      Actually lower this thread's scheduling tier.
     // TS map:   `const result = pthreadSetQosClassSelfNp(QOS_CLASS_BACKGROUND, 0);`
-    let result = unsafe { libc::pthread_set_qos_class_self_np(libc::QOS_CLASS_BACKGROUND, 0) };
+    let result =
+        unsafe { libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0) };
     // What:     `if result != 0 { eprintln!(...); }`. On failure, log to stderr and
     //           carry on. `result` is a nonzero errno on error.
     // Why:      Best-effort, exactly like the Linux path: a failure just means the

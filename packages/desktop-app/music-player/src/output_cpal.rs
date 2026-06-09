@@ -83,15 +83,16 @@ use std::thread::Thread;
 //           "import the interface to unlock the method" rule, so this is extra.
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
-// What:     `use cpal::{BufferSize, SampleRate, StreamConfig};`. `StreamConfig`
-//           is the struct describing a stream (channel count, sample rate, buffer
-//           size). `SampleRate(u32)` is a tiny wrapper around the samples-per-
-//           second number. `BufferSize` is an enum: `Default` (let the OS
-//           audio engine pick) or `Fixed(n)`.
+// What:     `use cpal::{BufferSize, StreamConfig};`. `StreamConfig` is the struct
+//           describing a stream (channel count, sample rate, buffer size).
+//           `BufferSize` is an enum: `Default` (let the OS audio engine pick) or
+//           `Fixed(n)`. The sample rate is a plain `u32`: cpal 0.18 made
+//           `SampleRate` a `u32` TYPE ALIAS (cpal 0.15 had a `SampleRate(u32)`
+//           newtype), so it is neither imported nor wrapped anymore.
 // Why:      We build one `StreamConfig` per track to open the output stream at
 //           that track's native rate and channel count.
-// TS map:   `import { BufferSize, SampleRate, StreamConfig } from "cpal";`
-use cpal::{BufferSize, SampleRate, StreamConfig};
+// TS map:   `import { BufferSize, StreamConfig } from "cpal";`
+use cpal::{BufferSize, StreamConfig};
 
 // What:     `use ringbuf::traits::{Consumer, Split};`. These TRAITS bring methods
 //           into scope: `Split::split` (cut a ring buffer into a producer and a
@@ -305,12 +306,14 @@ impl Output {
         // TS map:   `this.stream?.stop(); this.stream = null;`
         self.stream = None;
 
-        // What:     `let config = StreamConfig { channels, sample_rate:
-        //           SampleRate(rate), buffer_size: BufferSize::Default };`. Build
-        //           the stream description. `channels` is field shorthand (the
-        //           `u16` count). `SampleRate(rate)` wraps the raw `u32` rate in
-        //           cpal's newtype. `BufferSize::Default` lets the OS audio engine
-        //           choose the callback buffer size (sibling: `BufferSize::Fixed(n)`).
+        // What:     `let config = StreamConfig { channels, sample_rate: rate,
+        //           buffer_size: BufferSize::Default };`. Build the stream
+        //           description. `channels` is field shorthand (the `u16` count).
+        //           `sample_rate: rate` assigns the raw `u32` directly, because
+        //           cpal 0.18's `sample_rate` field is the `SampleRate = u32` type
+        //           alias (cpal 0.15 needed `SampleRate(rate)` to wrap it).
+        //           `BufferSize::Default` lets the OS audio engine choose the
+        //           callback buffer size (sibling: `BufferSize::Fixed(n)`).
         // Why:      Open the device at THIS track's native rate/channels; the OS
         //           audio engine (CoreAudio on macOS, WASAPI on Windows)
         //           sample-rate-converts to the hardware clock, so the engine never
@@ -318,7 +321,7 @@ impl Output {
         // TS map:   `const config = { channels, sampleRate: rate, bufferSize: "default" };`
         let config = StreamConfig {
             channels,
-            sample_rate: SampleRate(rate),
+            sample_rate: rate,
             buffer_size: BufferSize::Default,
         };
 
