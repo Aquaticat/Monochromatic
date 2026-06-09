@@ -8,23 +8,33 @@ from a terminal in your logged-in Windows desktop session (not the SSH session).
 
 ## What this proves
 
-That `src/output_cpal.rs` plays sound through WASAPI and the winit window renders
-on Windows, end to end as a user experiences it. The code-level layers (build,
-link, clippy, unit tests) are already verified over SSH (see "Already verified").
+That `src/output_cpal.rs` plays sound through WASAPI, the winit window renders on
+Windows, and the new `ITaskbarList3` taskbar progress bar actually moves, end to
+end as a user experiences it. The code-level layers (build, link, clippy, unit
+tests) are already verified over SSH (see "Already verified"); the audio and the
+taskbar bar can only be confirmed on the real logged-in desktop.
 
 ## Already verified (no action needed)
 
-- `cargo build` (debug) on the Windows box (Windows 10 build 19044,
+- `cargo build` (debug and `--release`) on the Windows box (Windows 10 build 19044,
   `x86_64-pc-windows-msvc`, CMake 4.3.3, rustc nightly): `Finished` with zero
-  errors. cpal 0.15.3 (WASAPI), Slint 1.17.0-dev, and `opus` (opus-rs HEAD ->
+  errors. cpal 0.18.1 (WASAPI), Slint 1.17.0-dev, and `opus` (opus-rs HEAD ->
   opusic-sys 0.7.3, libopus 1.6.1) all compiled; the binary linked with LLVM
-  `lld-link.exe`. No `CMAKE_POLICY_VERSION_MINIMUM` override was needed (libopus
-  1.6.1's `cmake_minimum_required` is 3.16).
+  `lld-link.exe` and embedded the icon via `winresource`. No
+  `CMAKE_POLICY_VERSION_MINIMUM` override was needed (libopus 1.6.1's
+  `cmake_minimum_required` is 3.16). The build needs
+  `SLINT_ENABLE_EXPERIMENTAL_FEATURES=1` (the page-tab bar uses the experimental
+  `FlexboxLayout`); every mise task sets it, so use
+  `mise run //packages/desktop-app/music-player:build`, not a bare `cargo build`.
+- The Windows-native additions compile and are clippy-clean: the background-sweep
+  `THREAD_PRIORITY_IDLE` call in `src/measure.rs`, and the `ITaskbarList3` taskbar
+  progress in `src/ui_progress.rs`. Both use the `windows` crate (pinned 0.62),
+  unified with the single `windows` 0.62 that cpal 0.18 and the Slint stack pull.
 - `cargo clippy -- -D warnings`: clean (no warnings).
-- `cargo test`: 54 lib tests pass, 0 failed (the pure-logic suite: queue, session,
-  pagination, truepeak, etc., identical to Linux/macOS).
-- Linux regression: host `cargo build`/clippy still pass with the opus pin (libopus
-  now built via cmake from the mise `aqua:Kitware/CMake` tool).
+- `cargo test`: 56 lib tests pass, 0 failed (the pure-logic suite plus the two
+  identity drift-guard tests, identical to Linux/macOS).
+- Linux regression: host build, clippy (`-D warnings`), and the 56-test suite stay
+  green; libopus is built via cmake from the mise `aqua:Kitware/CMake` tool.
 
 ## Bridges tried before handing this off
 
@@ -67,7 +77,13 @@ Status: TODO | DONE
 6. Click **next** then **prev** (the transport buttons). Expected: playback moves to
    the adjacent track and the highlighted row follows.
 7. Drag the **seek bar** to a new position. Expected: playback jumps to that point.
-8. Close the **window**. Expected: the process exits and the prompt returns.
+8. With a track still playing (the longer folder from step 2 gives time to watch),
+   look at the **music-player icon on the Windows taskbar**. Expected: a green
+   **progress bar** fills across the icon as playback advances. Then pause (click the
+   playing row or **play/pause**): the bar **clears**; resume: it **returns**. This
+   is the new `ITaskbarList3` taskbar progress, the Windows counterpart to the Linux
+   KDE LauncherEntry bar.
+9. Close the **window**. Expected: the process exits and the prompt returns.
 
 ## What to check
 
@@ -80,6 +96,10 @@ Status: TODO | DONE
   delayed stop would mean that guard is wrong.
 - No line containing `music-player: audio init failed` or
   `music-player: cpal stream error` is printed in the terminal at any point.
+- In step 8, the taskbar icon shows a green progress bar that tracks playback and
+  clears on pause. A bar that never appears means the window `HWND` was not resolved
+  or COM init failed (the code fails silently and playback is unaffected, so this is
+  the only place that path is observable).
 
 ## Restore
 
