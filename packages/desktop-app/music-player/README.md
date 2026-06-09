@@ -269,6 +269,13 @@ Prerequisites on a bare machine:
   tool provides `cmake`; `brew install cmake` also works. CMake uses the system `make` generator. bindgen uses
   the Command Line Tools' libclang automatically, so no `LIBCLANG_PATH` is needed.
 
+Always build on the external `/Volumes/MacData` disk, never under `~` on the internal disk. The Apple Silicon
+machine's internal disk is only about 251 GB and is mostly consumed by macOS and its data volume (roughly 76 GB
+free as of 2026-06), so a Rust `target/` directory or a synced verification tree will fill it. The external
+`/Volumes/MacData` volume is far larger (about 477 GB, 370 GB free), so put the checkout, the build, and any
+synced tree there, for example `/Volumes/MacData/music-player-verify`. Point cargo at it explicitly when the
+source is elsewhere with `CARGO_TARGET_DIR=/Volumes/MacData/<name>/target`.
+
 If the GPU OpenGL path misbehaves, force the software renderer with `SLINT_BACKEND=winit-software`.
 
 ### Windows (x86_64, MSVC)
