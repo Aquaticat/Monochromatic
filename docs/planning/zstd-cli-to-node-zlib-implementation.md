@@ -30,7 +30,7 @@ The change is three independent pieces:
 The most useful things a reviewer can challenge: the `worker_threads` design and its worker-count
 heuristic; whether the added build latency (~14 ms to ~170 ms on the current `dist/`) is worth the
 better, reproducible compression; the keep-if-smaller and extension-skip exclusion policy; and the
-open questions listed at the end.
+decisions recorded at the end (now resolved by review).
 
 ## Background facts established by the benchmark
 
@@ -163,10 +163,14 @@ Design points, each tied to the benchmark:
 - **Engine:** `node:worker_threads`, each worker calling synchronous `zstdCompressSync`. Node's async
   `zstdCompress` is rejected (pathological). The validated reference engine is `compress-node-wt.ts`
   in the benchmark report's reproduction section.
-- **Worker count:** capped below the logical CPU count. Proposed default
-  `Math.max(1, Math.min(Math.floor(availableParallelism() / 2), fileCount,),)`, which yields 8 on the
-  benchmark machine (2-way SMT, 8 physical cores) and lands inside the measured 4-to-10 plateau,
-  while never oversubscribing. See open questions for alternatives.
+- **Worker count (resolved):** detect the physical-core count when that is simple, otherwise fall
+  back to `Math.floor(availableParallelism() / 2)`. Concretely: on Linux read `/proc/cpuinfo` and
+  count distinct `(physical id, core id)` pairs (a plain file read, no subprocess); on any other
+  platform, or if the parse yields nothing usable, fall back to `floor(availableParallelism() / 2)`
+  (which equals the physical count on typical 2-way-SMT chips). Clamp the result to
+  `>= 1` and `<= fileCount`. On the benchmark machine this yields 8, inside the measured 4-to-10
+  plateau, and never oversubscribes past the ~12 cliff. An optional `ZSTD_WORKERS` env override may
+  be added for hosts where the heuristic is wrong.
 - **Level:** `COMPRESSION_LEVEL = 19`, with `ZSTD_c_contentSizeFlag = 0` (matching the current task's
   `--no-content-size`; checksums are already off by default, matching `--no-check`).
 - **Exclusion (extension skip):** files whose extension is in `INCOMPRESSIBLE_EXTENSIONS` are skipped
@@ -243,18 +247,17 @@ Cross the integration boundary, not just "it compiled."
   standard zstd frames), so consumers (`wireSize`, any precompressed server) are unaffected by a
   revert.
 
-## Open questions for the reviewer
+## Resolved decisions (from review)
 
-1. **worker_threads versus sequential.** For the current 138-file `dist/`, Node-sequential
-   `zstdCompressSync` (243 ms, no worker machinery) is simpler than worker_threads (168 ms). The
-   worker approach wins more as the blog grows (3x at 2,000 files). Is the complexity worth it now,
-   or start sequential and switch when `dist/` grows?
-2. **Worker-count heuristic.** `floor(availableParallelism() / 2)` assumes 2-way SMT. On a non-SMT
-   host it underuses cores (safe, since the plateau extends down to 4 and oversubscription is the
-   real penalty). Alternatives: an explicit physical-core detection, or an env-var override
-   (`ZSTD_WORKERS`). Preference?
-3. **Level 19 versus 15.** Level 19 is best ratio; level 15 is the knee (within 0.1 ratio points,
-   ~20% faster). Default 19, or 15 to keep the dev loop snappier?
-4. **File naming.** The repo's global `SCR` rule prefers `mise.<action>.ts`, but this package's
-   established pattern is `src/build/<name>.ts` (`postprocess.ts`, `favicon.ts`). The plan follows the
-   package pattern for consistency with siblings. Acceptable, or prefer the global rule?
+The four open questions have been answered by review; recorded here so the plan is final.
+
+1. **worker_threads versus sequential: use worker_threads.** The added complexity is acceptable.
+   (worker_threads ~168 ms vs sequential ~243 ms on the current `dist/`, ~3x advantage at 2,000
+   files.)
+2. **Worker count: detect physical cores when simple, else `floor(availableParallelism() / 2)`.** See
+   the resolved worker-count bullet in Change 2: Linux `/proc/cpuinfo` parse, otherwise the `/2`
+   fallback, clamped to `[1, fileCount]`, with an optional `ZSTD_WORKERS` override.
+3. **Level: 19.** Best ratio; the dev-loop latency (~170 ms) is acceptable.
+4. **File naming: `src/build/compress.ts` (package pattern) is accepted**, consistent with the
+   sibling `postprocess.ts` / `favicon.ts`, in deliberate preference to the global `SCR`
+   `mise.<action>.ts` naming.
