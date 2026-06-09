@@ -338,9 +338,12 @@ impl Output {
         // TS map:   `const worker = this.worker;`
         let worker = self.worker.clone();
 
-        // What:     `let stream = self.device.build_output_stream(&config, move
+        // What:     `let stream = self.device.build_output_stream(config, move
         //           |data, _| { ... }, move |err| { ... }, None).map_err(...)?;`.
-        //           Open an output stream. `&config` lends the config read-only.
+        //           Open an output stream. `config` is passed BY VALUE (cpal 0.18
+        //           changed `build_*_stream` to take `StreamConfig` by value, and
+        //           the type is `Copy`, so the move is a cheap bit-copy; cpal 0.15
+        //           took `&config`).
         //           The first closure is the REALTIME data callback (cpal calls it
         //           to fill `data: &mut [f32]`); `move` makes it OWN the captured
         //           `consumer`/`playing`/`worker`. The second closure is the error
@@ -363,7 +366,7 @@ impl Output {
         let stream = self
             .device
             .build_output_stream(
-                &config,
+                config,
                 // What:     `move |data: &mut [f32], _: &cpal::OutputCallbackInfo|
                 //           { ... }`. The realtime callback. `|...|` is a closure
                 //           (anonymous function); `move` transfers ownership of the

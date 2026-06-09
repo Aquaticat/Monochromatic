@@ -193,12 +193,89 @@ fn lower_current_thread_to_idle() {
     }
 }
 
-// What:     `#[cfg(not(target_os = "linux"))] fn lower_current_thread_to_idle()`. The
-//           no-op fallback compiled on every NON-Linux target.
+// What:     `#[cfg(target_os = "macos")] fn lower_current_thread_to_idle()`. The
+//           macOS version: drop the CALLING thread into the BACKGROUND Quality of
+//           Service (QoS) class. `#[cfg(target_os = "macos")]` compiles it only on
+//           macOS (siblings: `target_os = "linux"`, `windows`).
+// Why:      macOS schedules threads by QoS class, not by the POSIX scheduling
+//           classes Linux uses, so the Linux SCHED_IDLE call does not exist here.
+//           `QOS_CLASS_BACKGROUND` is the lowest tier: the sweep's CPU-bound
+//           decoding yields to the realtime audio thread, the UI, and foreground
+//           apps, the same intent as the Linux path.
+// TS map:   no equivalent; Node/browsers expose no thread QoS class.
+#[cfg(target_os = "macos")]
+fn lower_current_thread_to_idle() {
+    // What:     `let result = unsafe { libc::pthread_set_qos_class_self_np(libc::QOS_CLASS_BACKGROUND, 0) };`.
+    //           Call the Apple-specific libc function that sets the CURRENT
+    //           thread's QoS class. `unsafe { ... }` is required for ANY raw FFI
+    //           call (Rust cannot verify the C contract). `libc::QOS_CLASS_BACKGROUND`
+    //           selects the lowest QoS tier; the second argument is a
+    //           relative-priority offset WITHIN that class (`0` = no offset).
+    //           Returns `0` on success, a nonzero errno on failure (a `c_int`).
+    // Why:      Actually lower this thread's scheduling tier.
+    // TS map:   `const result = pthreadSetQosClassSelfNp(QOS_CLASS_BACKGROUND, 0);`
+    let result = unsafe { libc::pthread_set_qos_class_self_np(libc::QOS_CLASS_BACKGROUND, 0) };
+    // What:     `if result != 0 { eprintln!(...); }`. On failure, log to stderr and
+    //           carry on. `result` is a nonzero errno on error.
+    // Why:      Best-effort, exactly like the Linux path: a failure just means the
+    //           sweep runs at normal priority, which is still correct.
+    // TS map:   `if (result !== 0) console.error("...");`
+    if result != 0 {
+        eprintln!("music-player: could not lower sweep thread to background QoS");
+    }
+}
+
+// What:     `#[cfg(windows)] fn lower_current_thread_to_idle()`. The Windows
+//           version: set the CALLING thread to the IDLE priority level.
+//           `#[cfg(windows)]` compiles it only on Windows.
+// Why:      Windows schedules by per-thread priority level, not POSIX classes or
+//           QoS. `THREAD_PRIORITY_IDLE` is the lowest level: the sweep runs only
+//           when no higher-priority thread wants the CPU, the same intent as Linux
+//           SCHED_IDLE and macOS background QoS.
+// TS map:   no equivalent; Node/browsers expose no thread priority level.
+#[cfg(windows)]
+fn lower_current_thread_to_idle() {
+    // What:     `use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE};`.
+    //           Import the Win32 thread-priority bindings from the `windows` crate.
+    //           A function-local `use` keeps these Windows-only names out of the
+    //           module's top scope (they exist only in a Windows build).
+    // Why:      Name the three Win32 items the call below needs.
+    // TS map:   `import { GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE } from "windows";`
+    use windows::Win32::System::Threading::{
+        GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_IDLE,
+    };
+    // What:     `let handle = unsafe { GetCurrentThread() };`. Get a PSEUDO-HANDLE
+    //           to the current thread: a special constant that always means "this
+    //           thread" and never needs closing. `unsafe` because it is a raw Win32
+    //           FFI call. Returns a `HANDLE`.
+    // Why:      `SetThreadPriority` needs a thread handle to act on.
+    // TS map:   `const handle = getCurrentThread();`
+    let handle = unsafe { GetCurrentThread() };
+    // What:     `let result = unsafe { SetThreadPriority(handle, THREAD_PRIORITY_IDLE) };`.
+    //           Set this thread's priority to the idle level. In the high-level
+    //           `windows` crate this returns `windows::core::Result<()>` (`Ok(())`
+    //           on success, `Err` carrying the Win32 error), NOT the raw `BOOL` the
+    //           C API returns.
+    // Why:      Actually lower this thread's priority.
+    // TS map:   `const result = setThreadPriority(handle, THREAD_PRIORITY_IDLE);`
+    let result = unsafe { SetThreadPriority(handle, THREAD_PRIORITY_IDLE) };
+    // What:     `if result.is_err() { eprintln!(...); }`. `.is_err()` is true when
+    //           the `Result` is the error variant. On failure, log and carry on.
+    // Why:      Best-effort, exactly like the other platforms.
+    // TS map:   `if (!ok) console.error("...");`
+    if result.is_err() {
+        eprintln!("music-player: could not lower sweep thread to idle priority");
+    }
+}
+
+// What:     `#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))] fn lower_current_thread_to_idle() {}`.
+//           The no-op fallback compiled on every OTHER target (for example the
+//           BSDs) where no scheduling call is wired up. `not(any(...))` is true
+//           only when NONE of the listed cfg predicates hold.
 // Why:      Keep `run_sweep` portable: the call site stays the same and simply does
-//           nothing where the syscall is unavailable.
+//           nothing where we have not implemented a scheduling tweak.
 // TS map:   `function lowerCurrentThreadToIdle() {}`
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 fn lower_current_thread_to_idle() {}
 
 // What:     `fn flush_pending(cache: &Arc<Mutex<PeakCache>>)`. Persist any unsaved

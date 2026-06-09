@@ -87,11 +87,28 @@ fn emit_launcher_progress(app: &AppWindow, launcher: &Launcher) {
     // Why:      Paused or zero-duration media should hide the taskbar progress bar.
     // TS map:   `const visible = app.playing && duration > 0;`
     let visible = app.get_playing() && duration > 0.0;
-    // What:     `launcher.set_progress(progress_fraction(app), visible);`. Emit the
-    //           clamped fraction plus visibility flag.
+    // What:     `let fraction = progress_fraction(app);`. Compute the 0..1 progress
+    //           once into a local, so both progress sinks below read the same value.
+    // Why:      The Linux LauncherEntry signal and the Windows taskbar must agree.
+    // TS map:   `const fraction = progressFraction(app);`
+    let fraction = progress_fraction(app);
+    // What:     `launcher.set_progress(fraction, visible);`. Emit the clamped
+    //           fraction plus visibility flag. Real D-Bus on Linux; a no-op on
+    //           macOS and Windows (the Windows taskbar is driven just below).
     // Why:      KDE updates or hides the taskbar progress indicator.
-    // TS map:   `launcher.setProgress(progressFraction(app), visible);`
-    launcher.set_progress(progress_fraction(app), visible);
+    // TS map:   `launcher.setProgress(fraction, visible);`
+    launcher.set_progress(fraction, visible);
+    // What:     `#[cfg(windows)] set_windows_taskbar_progress(app, fraction, visible);`.
+    //           On Windows ONLY, drive the native taskbar progress bar through the
+    //           ITaskbarList3 COM interface (see the Windows region at the bottom).
+    //           `#[cfg(windows)]` removes this statement entirely off Windows, where
+    //           the function does not exist. This runs on the UI/event-loop thread,
+    //           the only place the window handle and COM apartment are valid.
+    // Why:      Windows has no D-Bus LauncherEntry protocol, so the taskbar bar is
+    //           the OS-native equivalent of the Linux launcher progress.
+    // TS map:   `if (process.platform === "win32") setWindowsTaskbarProgress(app, fraction, visible);`
+    #[cfg(windows)]
+    set_windows_taskbar_progress(app, fraction, visible);
 }
 
 // What:     `fn should_surface_progress(...) -> bool`. Lock the shared debouncer and
@@ -227,3 +244,268 @@ pub(crate) fn apply_update_with_progress_debounce(
         other => apply_update(app, other),
     }
 }
+
+//region Windows taskbar progress (ITaskbarList3)
+// Purpose: the Windows-native equivalent of the Linux LauncherEntry progress bar.
+// Windows exposes per-window taskbar progress through the ITaskbarList3 COM
+// interface, so this region creates that interface once per UI thread and pushes
+// the same fraction/visibility `emit_launcher_progress` already computed. It is
+// compiled only on Windows; every item is `#[cfg(windows)]`.
+
+// What:     `use std::cell::RefCell;`. A single-threaded interior-mutability cell:
+//           it allows mutation through a shared `&` reference, enforcing the
+//           borrow rules at RUNTIME instead of compile time. Sibling: `Cell<T>`
+//           (move in/out, no borrowing); `RefCell` lets us borrow the inner value.
+// Why:      The cached COM interface lives in a `thread_local!`, which hands out
+//           only `&` references, so mutation (first-time creation) needs a `RefCell`.
+// TS map:   `// no equivalent; like a one-slot mutable box`
+#[cfg(windows)]
+use std::cell::RefCell;
+
+// What:     `use windows::Win32::Foundation::HWND;`. The Win32 window-handle type
+//           (a newtype around a raw pointer to the window).
+// Why:      ITaskbarList3's methods take the target window's `HWND`.
+// TS map:   `type HWND = number; // an opaque window handle`
+#[cfg(windows)]
+use windows::Win32::Foundation::HWND;
+
+// What:     `use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED};`.
+//           COM bootstrap items: `CoInitializeEx` initializes COM on the thread;
+//           `CoCreateInstance` builds a COM object by class id; `CLSCTX_INPROC_SERVER`
+//           asks for an in-process implementation; `COINIT_APARTMENTTHREADED` is the
+//           single-threaded-apartment mode winit's window thread already uses.
+// Why:      Needed to construct the taskbar COM object on the UI thread.
+// TS map:   `import { CoCreateInstance, CoInitializeEx, ... } from "windows-com";`
+#[cfg(windows)]
+use windows::Win32::System::Com::{
+    CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, CoCreateInstance, CoInitializeEx,
+};
+
+// What:     `use windows::Win32::UI::Shell::{ITaskbarList3, TaskbarList, TBPF_NOPROGRESS, TBPF_NORMAL};`.
+//           `ITaskbarList3` is the COM INTERFACE (a fat pointer to vtable methods);
+//           `TaskbarList` is the CLASS ID (`GUID`) of the concrete shell object that
+//           implements it; `TBPF_NORMAL`/`TBPF_NOPROGRESS` are progress-state flags
+//           (show a normal bar / hide the bar).
+// Why:      These drive the taskbar progress bar.
+// TS map:   `import { ITaskbarList3, TaskbarList, TBPF_NORMAL, TBPF_NOPROGRESS } from "windows-shell";`
+#[cfg(windows)]
+use windows::Win32::UI::Shell::{ITaskbarList3, TBPF_NOPROGRESS, TBPF_NORMAL, TaskbarList};
+
+// What:     `thread_local! { static TASKBAR: RefCell<Option<ITaskbarList3>> = const { RefCell::new(None) }; }`.
+//           A per-thread static holding the cached COM interface, or `None` until
+//           first use. `thread_local!` gives each thread its OWN copy; `const { ... }`
+//           is a compile-time initializer (no lazy runtime init needed).
+// Why:      `ITaskbarList3` is a single-threaded-apartment COM object (`!Send`), so
+//           it must never cross threads; a `thread_local` on the UI thread is the
+//           natural home, and caching it avoids recreating it on every progress tick.
+// TS map:   `// per-UI-thread cache: let taskbar: ITaskbarList3 | null = null;`
+#[cfg(windows)]
+thread_local! {
+    static TASKBAR: RefCell<Option<ITaskbarList3>> = const { RefCell::new(None) };
+}
+
+// What:     `fn window_hwnd(app: &AppWindow) -> Option<HWND>`. Resolve the running
+//           window's Win32 handle, or `None` if it is not yet realized or not a
+//           winit/Win32 window. Module-private, Windows-only.
+// Why:      The handle exists only once the event loop has created the window, which
+//           is why this is resolved lazily on each progress tick rather than at
+//           startup.
+// TS map:   `function windowHwnd(app: AppWindow): HWND | null`
+#[cfg(windows)]
+fn window_hwnd(app: &AppWindow) -> Option<HWND> {
+    // What:     `use slint::ComponentHandle;`. Brings the `.window()` accessor into
+    //           scope (a trait method is callable only when its trait is imported).
+    // Why:      `app.window()` returns the `slint::Window` the next call needs.
+    // TS map:   `import { ComponentHandle } from "slint";`
+    use slint::ComponentHandle;
+    // What:     `use i_slint_backend_winit::WinitWindowAccessor;`. The extension trait
+    //           adding `.with_winit_window(...)` to `slint::Window` on the winit
+    //           backend.
+    // Why:      It exposes the underlying winit window, from which the raw handle comes.
+    // TS map:   `import { WinitWindowAccessor } from "slint-winit-backend";`
+    use i_slint_backend_winit::WinitWindowAccessor;
+    // What:     `use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};`.
+    //           `HasWindowHandle` provides `.window_handle()`; `RawWindowHandle` is the
+    //           per-platform handle enum. Imported through winit's OWN re-export so the
+    //           `raw-window-handle` version matches winit's exactly (no separate dep).
+    // Why:      Needed to read and match the platform window handle.
+    // TS map:   `import { HasWindowHandle, RawWindowHandle } from "winit/raw-window-handle";`
+    use i_slint_backend_winit::winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    // What:     `app.window().with_winit_window(|w| { ... }).flatten()`.
+    //           `with_winit_window` runs the closure with the live winit `Window`,
+    //           returning `Some(closure_result)` or `None` if there is no winit window.
+    //           The closure itself returns `Option<HWND>`, so the outer result is
+    //           `Option<Option<HWND>>`; `.flatten()` collapses it to `Option<HWND>`.
+    //           Tail expression -> return value.
+    // Why:      Reach into the winit window to read its raw Win32 handle.
+    // TS map:   `return app.window().withWinitWindow(w => ...) ?? null;`
+    app.window()
+        .with_winit_window(|w| {
+            // What:     `match w.window_handle().ok()?.as_raw() { ... }`.
+            //           `.window_handle()` returns `Result<WindowHandle, _>`; `.ok()?`
+            //           yields the handle or returns `None` from this closure on error.
+            //           `.as_raw()` converts it to the `RawWindowHandle` enum.
+            // Why:      Inspect which platform handle this is.
+            // TS map:   `const raw = w.windowHandle(); if (!raw) return null;`
+            match w.window_handle().ok()?.as_raw() {
+                // What:     `RawWindowHandle::Win32(handle) => Some(HWND(handle.hwnd.get() as *mut core::ffi::c_void))`.
+                //           On Windows the handle is the `Win32` variant; `handle.hwnd`
+                //           is a `NonZeroIsize`, `.get()` reads the raw `isize`, and
+                //           `as *mut core::ffi::c_void` turns it into the pointer the
+                //           `windows` crate's `HWND(*mut c_void)` newtype wraps.
+                // Why:      Build the `HWND` ITaskbarList3 needs.
+                // TS map:   `if (raw.kind === "win32") return new HWND(raw.hwnd);`
+                RawWindowHandle::Win32(handle) => {
+                    Some(HWND(handle.hwnd.get() as *mut core::ffi::c_void))
+                }
+                // What:     `_ => None`. Any other platform variant (cannot happen in a
+                //           Windows build, but the match must be exhaustive).
+                // Why:      Only the Win32 handle is usable here.
+                // TS map:   `return null;`
+                _ => None,
+            }
+        })
+        .flatten()
+}
+
+// What:     `fn create_taskbar_list() -> Option<ITaskbarList3>`. Initialize COM on
+//           this thread and build the taskbar COM object, or `None` on any failure.
+//           Module-private, Windows-only.
+// Why:      Done once and cached; pulled into its own function so `set_..._progress`
+//           reads cleanly.
+// TS map:   `function createTaskbarList(): ITaskbarList3 | null`
+#[cfg(windows)]
+fn create_taskbar_list() -> Option<ITaskbarList3> {
+    // What:     `unsafe { ... }`. COM calls are raw FFI, so the whole body is
+    //           `unsafe` (Rust cannot verify the COM contracts).
+    // Why:      Required to call `CoInitializeEx` / `CoCreateInstance`.
+    // TS map:   `// no equivalent; raw platform calls`
+    unsafe {
+        // What:     `let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);`. Ensure
+        //           COM is initialized on this thread in single-threaded-apartment
+        //           mode. winit already initializes OLE (STA) on its window thread, so
+        //           this typically returns `S_FALSE` (already initialized) and just
+        //           bumps the init count; `let _ =` discards the returned `HRESULT`.
+        // Why:      `CoCreateInstance` requires an initialized apartment; calling this
+        //           defensively makes the code correct even if winit's init changes.
+        // TS map:   `coInitializeEx(null, "apartmentThreaded"); // ignore result`
+        let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+        // What:     `let taskbar: ITaskbarList3 = CoCreateInstance(&TaskbarList, None, CLSCTX_INPROC_SERVER).ok()?;`.
+        //           Create the shell taskbar object and ask for its `ITaskbarList3`
+        //           interface. `&TaskbarList` is the class id; `None` means no
+        //           aggregating outer object; `CLSCTX_INPROC_SERVER` loads it in-process.
+        //           Returns `Result<ITaskbarList3>`; `.ok()?` yields the interface or
+        //           returns `None` on failure.
+        // Why:      This object is what actually moves the taskbar bar.
+        // TS map:   `const taskbar = coCreateInstance(TaskbarList, null, "inproc"); if (!taskbar) return null;`
+        let taskbar: ITaskbarList3 =
+            CoCreateInstance(&TaskbarList, None, CLSCTX_INPROC_SERVER).ok()?;
+        // What:     `taskbar.HrInit().ok()?;`. Required one-time initialization of the
+        //           taskbar interface. Returns `Result<()>`; `.ok()?` returns `None` on
+        //           failure.
+        // Why:      ITaskbarList must be `HrInit`-ed before other methods are called.
+        // TS map:   `if (!taskbar.hrInit()) return null;`
+        taskbar.HrInit().ok()?;
+        // What:     `Some(taskbar)`. Wrap the ready interface as present. Tail
+        //           expression -> return value.
+        // Why:      Hand the cached interface back to the caller.
+        // TS map:   `return taskbar;`
+        Some(taskbar)
+    }
+}
+
+// What:     `fn set_windows_taskbar_progress(app: &AppWindow, fraction: f64, visible: bool)`.
+//           Push the current progress to the Windows taskbar bar. Module-private,
+//           Windows-only. Runs on the UI thread.
+// Why:      The Windows counterpart to the Linux `Launcher::set_progress`; called
+//           from `emit_launcher_progress` under `#[cfg(windows)]`.
+// TS map:   `function setWindowsTaskbarProgress(app: AppWindow, fraction: number, visible: boolean): void`
+#[cfg(windows)]
+fn set_windows_taskbar_progress(app: &AppWindow, fraction: f64, visible: bool) {
+    // What:     `let hwnd = match window_hwnd(app) { Some(h) => h, None => return };`.
+    //           Resolve the window handle, or bail out silently if it is not ready.
+    // Why:      Without a handle there is nothing to drive; best-effort like the Linux
+    //           path (a missing handle never disrupts playback).
+    // TS map:   `const hwnd = windowHwnd(app); if (!hwnd) return;`
+    let hwnd = match window_hwnd(app) {
+        Some(h) => h,
+        None => return,
+    };
+    // What:     `TASKBAR.with(|cell| { ... })`. Access this thread's cached COM
+    //           interface cell. `with` runs the closure with a `&RefCell<...>`.
+    // Why:      Reuse the one interface instead of recreating it each tick.
+    // TS map:   `withThreadLocal(TASKBAR, cell => { ... });`
+    TASKBAR.with(|cell| {
+        // What:     `let needs_init = cell.borrow().is_none();`. Read whether the cache
+        //           is still empty, releasing the borrow at the end of THIS statement
+        //           (so the `borrow_mut` below does not overlap it).
+        // Why:      Decide whether to build the interface without holding a borrow
+        //           across the mutation.
+        // TS map:   `const needsInit = cell.value === null;`
+        let needs_init = cell.borrow().is_none();
+        // What:     `if needs_init { *cell.borrow_mut() = create_taskbar_list(); }`.
+        //           Build and store the interface on first use (or after a prior
+        //           failed attempt). `*cell.borrow_mut() = ...` writes through the
+        //           runtime-checked mutable borrow.
+        // Why:      Lazily create the COM object the first time progress is shown.
+        // TS map:   `if (needsInit) cell.value = createTaskbarList();`
+        if needs_init {
+            *cell.borrow_mut() = create_taskbar_list();
+        }
+        // What:     `let guard = cell.borrow();`. Take a shared runtime borrow to read
+        //           the cached interface.
+        // Why:      Need a reference to call methods on the interface.
+        // TS map:   `const taskbar = cell.value;`
+        let guard = cell.borrow();
+        // What:     `if let Some(taskbar) = guard.as_ref() { ... }`. Proceed only when
+        //           the interface exists (creation may have failed, leaving `None`).
+        // Why:      A failed creation is retried next tick; never panic on it.
+        // TS map:   `if (taskbar) { ... }`
+        if let Some(taskbar) = guard.as_ref() {
+            // What:     `unsafe { ... }`. The COM method calls are raw FFI.
+            // Why:      Required to call ITaskbarList3 methods.
+            // TS map:   `// raw platform calls`
+            unsafe {
+                // What:     `if visible { ... } else { ... }`. Show a moving bar when
+                //           playing, otherwise clear it.
+                // Why:      The bar should appear only while real-duration audio plays.
+                // TS map:   `if (visible) { ... } else { ... }`
+                if visible {
+                    // What:     `let total: u64 = 1000;`. A fixed denominator for the
+                    //           progress ratio. `u64` is the unsigned 64-bit integer
+                    //           SetProgressValue takes (siblings: `u32`, `usize`).
+                    // Why:      ITaskbarList3 wants completed/total as integers, so we
+                    //           scale the 0..1 fraction onto a 0..1000 range.
+                    // TS map:   `const total = 1000;`
+                    let total: u64 = 1000;
+                    // What:     `let completed = (fraction.clamp(0.0, 1.0) * total as f64) as u64;`.
+                    //           Clamp the fraction into 0..=1, scale to the denominator,
+                    //           and truncate to an integer. `total as f64` widens for the
+                    //           multiply; `as u64` narrows the result back.
+                    // Why:      Convert the float fraction into the integer numerator.
+                    // TS map:   `const completed = Math.floor(clamp01(fraction) * total);`
+                    let completed = (fraction.clamp(0.0, 1.0) * total as f64) as u64;
+                    // What:     `let _ = taskbar.SetProgressState(hwnd, TBPF_NORMAL);`.
+                    //           Put the bar in the normal (green, determinate) state.
+                    //           Returns `Result<()>`; `let _ =` ignores failures.
+                    // Why:      A no-progress window must switch to a normal bar before
+                    //           a value is shown.
+                    // TS map:   `taskbar.setProgressState(hwnd, "normal");`
+                    let _ = taskbar.SetProgressState(hwnd, TBPF_NORMAL);
+                    // What:     `let _ = taskbar.SetProgressValue(hwnd, completed, total);`.
+                    //           Move the bar to `completed/total`. Result ignored.
+                    // Why:      This is the actual progress position.
+                    // TS map:   `taskbar.setProgressValue(hwnd, completed, total);`
+                    let _ = taskbar.SetProgressValue(hwnd, completed, total);
+                } else {
+                    // What:     `let _ = taskbar.SetProgressState(hwnd, TBPF_NOPROGRESS);`.
+                    //           Clear the bar (no progress shown). Result ignored.
+                    // Why:      Hide the bar when paused or between tracks.
+                    // TS map:   `taskbar.setProgressState(hwnd, "noProgress");`
+                    let _ = taskbar.SetProgressState(hwnd, TBPF_NOPROGRESS);
+                }
+            }
+        }
+    });
+}
+//endregion

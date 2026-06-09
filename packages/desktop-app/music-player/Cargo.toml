@@ -47,10 +47,6 @@ i-slint-backend-winit = { git = "https://github.com/slint-ui/slint", rev = "85e3
 # version must stay compatible with the transitive pin so cargo unifies, not
 # duplicates. See docs/troubleshooting/slint-parley-icu-cjk-segmentation.md.
 icu_provider = { version = "2", features = ["logging"] }
-# Linux scheduler syscalls (sched_setscheduler / SCHED_IDLE) used to run the
-# background true-peak measurement sweep at idle priority so it never competes
-# with the realtime audio thread or the UI. std exposes no scheduling-class API.
-libc = "0.2"
 # Pinned to opus-rs git HEAD (post-0.3.1) instead of the crates.io 0.3.1 release.
 # 0.3.1 depends on audiopus_sys 0.2.2, whose BUNDLED libopus (commit 7b05f44)
 # declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed compatibility
@@ -95,11 +91,51 @@ zbus = "5"
 # CoreAudio on macOS, WASAPI on Windows, the counterpart to the PipeWire path. One
 # cfg(not(linux)) table covers both targets, matching the module gate in lib.rs.
 # cpal links no C: it reaches CoreAudio through Apple framework bindings and WASAPI
-# through pure-Rust windows-sys bindings. The OS audio engine sample-rate-converts
-# to the hardware clock, so the engine still feeds samples at each track's native
-# rate exactly as under PipeWire (no in-player resampling).
+# through the `windows` crate. The OS audio engine sample-rate-converts to the
+# hardware clock, so the engine still feeds samples at each track's native rate
+# exactly as under PipeWire (no in-player resampling).
+#
+# Pinned to 0.18 (not 0.15) so its Windows backend depends on `windows`
+# ">=0.61, <=0.62", which unifies with the Slint/skia stack's `windows` 0.62 and
+# with our own `windows` 0.62 below: the whole graph then compiles ONE `windows`
+# crate instead of cpal 0.15's lone `windows` 0.54 plus the 0.62 everything else
+# pulled. The 0.15 -> 0.18 bump also moved `build_*_stream` to take `StreamConfig`
+# BY VALUE (handled in output_cpal.rs) and unified cpal's error types (we only
+# Debug-print them, so no change needed there).
 [target.'cfg(not(target_os = "linux"))'.dependencies]
-cpal = "0.15"
+cpal = "0.18"
+
+# libc is used for two native thread-scheduling syscalls, so it is pulled only on
+# the two targets that call them, not on Windows (which uses the `windows` crate
+# below instead):
+# - Linux: sched_setscheduler / SCHED_IDLE (src/measure.rs), to run the background
+#   true-peak sweep at idle priority.
+# - macOS: pthread_set_qos_class_self_np / QOS_CLASS_BACKGROUND (src/measure.rs),
+#   the CoreFoundation-era equivalent that drops the sweep to the background QoS
+#   class.
+# std exposes no thread scheduling-class API, so this is raw FFI either way.
+[target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
+libc = "0.2"
+
+# Windows-only runtime bindings. Two Windows features need the Win32 API:
+# - src/measure.rs lowers the background sweep thread with SetThreadPriority /
+#   THREAD_PRIORITY_IDLE (the Windows counterpart to Linux SCHED_IDLE and macOS
+#   background QoS).
+# - src/launcher.rs drives the taskbar progress bar through the ITaskbarList3 COM
+#   interface (SetProgressValue / SetProgressState).
+# Pinned to 0.62 so it unifies with the `windows` 0.62 that cpal 0.18 and the
+# Slint/skia stack already pull, keeping a single `windows` crate in the graph.
+# The high-level `windows` crate (not `windows-sys`) is required because
+# ITaskbarList3 is a COM interface and needs the crate's IUnknown/Interface
+# machinery; the same crate also exposes the threading call, so one dependency
+# covers both. Built natively on x13-win.
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_System_Com",
+  "Win32_System_Threading",
+  "Win32_UI_Shell",
+] }
 
 [build-dependencies]
 # Must match the `slint` git rev above (the compiler and runtime are versioned
