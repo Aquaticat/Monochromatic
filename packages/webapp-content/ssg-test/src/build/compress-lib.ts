@@ -79,10 +79,21 @@ const ZSTD_OPTIONS = {
 } as const;
 
 /**
- * Extensions whose bytes are already compressed; skipped without being read.
- * Deliberately conservative: only genuinely pre-compressed formats. Uncompressed
- * table formats (ttf/otf/ico) are intentionally absent so zstd still helps;
- * keep-if-smaller covers any borderline case left in.
+ * Extensions skipped without being read: formats a level-19 zstd pass cannot
+ * shrink, established by benchmark on real content (a 1080p cartoon's frames,
+ * audio, and video, plus this site's own assets; see
+ * docs/decisions/zstd-cli-to-node-zlib.md).
+ *
+ * Each kept entry gains roughly 0% under zstd: avif, webp (lossy and lossless),
+ * gif, jxl (lossy and lossless), woff/woff2 (font tables are already deflate /
+ * brotli), gz/br (compression formats by definition), mp3 (~0.7%), flac (~0.3%),
+ * and h264/vp9 video (mp4/webm/mov, ~0.1-0.3%). zst is always skipped (never
+ * recompress a `.zst`).
+ *
+ * Formats zstd DOES shrink further are deliberately absent so they fall through
+ * to keep-if-smaller: png and jpg/jpeg (~1%, this site's icons up to ~15%),
+ * ogg vorbis (~3.6%), and aac/m4a (~6%). Uncompressed table formats (ttf/otf/ico)
+ * are absent for the same reason.
  */
 const INCOMPRESSIBLE_EXTENSIONS: ReadonlySet<string> = new Set([
   'zst',
@@ -90,9 +101,6 @@ const INCOMPRESSIBLE_EXTENSIONS: ReadonlySet<string> = new Set([
   'br',
   'avif',
   'webp',
-  'png',
-  'jpg',
-  'jpeg',
   'gif',
   'jxl',
   'woff',
@@ -101,10 +109,7 @@ const INCOMPRESSIBLE_EXTENSIONS: ReadonlySet<string> = new Set([
   'webm',
   'mov',
   'mp3',
-  'ogg',
   'flac',
-  'aac',
-  'm4a',
 ],);
 
 /**

@@ -611,6 +611,52 @@ parallel path is the fastest engine measured. It is documented so a future reade
 - **tmpfs is RAM.** The tmpfs numbers isolate compute and are not representative of the real build's
   I/O; the SSD numbers are. Both are reported so the compute-versus-I/O split is visible.
 
+## Which precompressed extensions still benefit from zstd
+
+The compressor skips a blocklist of already-compressed extensions without reading them. The blocklist
+is purely an optimization: keep-if-smaller (write `.zst` only when strictly smaller) is the real
+safety net, so the only cost of a wrong "skip" is a missed saving, and the only cost of a wrong
+"compress" is wasted CPU. The question is therefore empirical: which "already compressed" formats does
+a level-19 zstd pass still shrink on real content?
+
+### Methodology
+
+Representative real content, not synthetic tones (a pure sine compresses pathologically and would
+mislead). Three frames, a 20-second audio clip at three timestamps, and a 6-second video clip were
+taken from a 1920x816 AV1 cartoon (`ffmpeg`), plus this site's own `dist/` assets. Each frame was
+re-encoded to every image format (`cwebp`, `magick`, `ffmpeg` with `libjxl` / `libaom-av1`); the audio
+clips to every audio codec; the video clip to h264 / vp9. Every output was compressed with the exact
+production settings (level 19, content-size off, checksum off) and compared to its source size. Audio
+codecs were measured across three independent clips; the spread was within 0.3 points.
+
+### Results
+
+<table>
+<tr><th>Extension</th><th>Sample</th><th>zstd-19 savings</th><th>Decision</th></tr>
+<tr><td>aac</td><td>cartoon audio, n=3</td><td>+6.0 to 6.3%</td><td>remove (compress)</td></tr>
+<tr><td>m4a</td><td>cartoon audio, n=3</td><td>+5.8 to 6.0%</td><td>remove (compress)</td></tr>
+<tr><td>ogg (vorbis)</td><td>cartoon audio, n=3</td><td>+3.6 to 3.9%</td><td>remove (compress)</td></tr>
+<tr><td>png</td><td>site icons + frames</td><td>+0 to 15% (icons compress, photos do not)</td><td>remove (compress)</td></tr>
+<tr><td>jpg / jpeg</td><td>site + frames, n=7</td><td>+1.0 to 1.3% (every file)</td><td>remove (compress)</td></tr>
+<tr><td>mp3</td><td>cartoon audio, n=3</td><td>+0.7%</td><td>keep (skip)</td></tr>
+<tr><td>flac</td><td>cartoon audio, n=3</td><td>+0.3%</td><td>keep (skip)</td></tr>
+<tr><td>avif</td><td>site + frames</td><td>~0% (only sub-kB files compressed)</td><td>keep (skip)</td></tr>
+<tr><td>webp (lossy + lossless)</td><td>frames, n=6</td><td>~0%</td><td>keep (skip)</td></tr>
+<tr><td>gif</td><td>frames, n=3</td><td>~0%</td><td>keep (skip)</td></tr>
+<tr><td>jxl (lossy + lossless)</td><td>frames, n=6</td><td>~0%</td><td>keep (skip)</td></tr>
+<tr><td>woff2</td><td>site fonts, n=8</td><td>+0.1%</td><td>keep (skip)</td></tr>
+<tr><td>mp4 / mov (h264)</td><td>cartoon video</td><td>+0.3%</td><td>keep (skip)</td></tr>
+<tr><td>webm (vp9)</td><td>cartoon video</td><td>+0.1%</td><td>keep (skip)</td></tr>
+</table>
+
+`woff`, `gz`, and `br` were not sampled (no source on hand) and are kept on first principles: WOFF
+stores deflate-compressed font tables (like woff2's brotli), and gzip / brotli are compression formats
+by definition. `zst` is always skipped so a `.zst` is never recompressed.
+
+Removing png / jpg / jpeg / ogg / aac / m4a from the blocklist raised this site's compressed count
+from 176 to 185 files and total savings from 1.18 MB to 1.28 MB, with every produced `.zst` still
+round-tripping to its source.
+
 ## Proposed implementation
 
 Not yet applied. Sketch for when it is.
