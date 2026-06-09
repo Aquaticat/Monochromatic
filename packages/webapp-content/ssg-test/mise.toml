@@ -39,8 +39,8 @@ description = "Run pagefind and content-hash assets (pagefind runs in parallel w
 run = "bun src/build/postprocess.ts"
 
 [tasks."build:compress"]
-description = "Compress dist/ with zstd"
-run = "zstd -z -f --no-check -T0 --exclude-compressed --no-content-size -r --adapt dist"
+description = "Compress dist/ with zstd via node:zlib (worker_threads)"
+run = "node src/build/compress.ts"
 
 [tasks.dev]
 description = "Build then serve dist/ with Caddy, rebuilding on source changes"
