@@ -155,9 +155,6 @@ zig = "0.15.2"
 # slint-viewer binary. Default features match the apps, so no `features` override.
 "cargo:https://github.com/slint-ui/slint.git" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-viewer", bin = "slint-viewer" }
 
-# Compression
-"github:facebook/zstd" = "latest"
-
 # AI inference server for local development (packages/webapp-productivity/done).
 # Pinned (not "latest") because llama.cpp's release pipeline tags before the
 # Linux build finishes uploading, so any "latest" install run during that
