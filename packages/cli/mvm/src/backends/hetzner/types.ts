@@ -33,9 +33,10 @@ export type HetznerIpv4 = {
  */
 export type HetznerPublicNet = {
   /**
-   * IPv4 assignment, or `null` when the server has no public IPv4.
+   * IPv4 assignment; absent (and `null` on the wire) when the server has no
+   * public IPv4, so access it with optional chaining.
    */
-  readonly ipv4: HetznerIpv4 | null;
+  readonly ipv4?: HetznerIpv4;
 };
 
 /**
@@ -94,12 +95,13 @@ export type HetznerAction = {
    */
   readonly status: 'error' | 'running' | 'success';
   /**
-   * Error detail present when `status` is `error`.
+   * Error detail present when `status` is `error` (absent, and `null` on the
+   * wire, otherwise).
    */
   readonly error?: {
     readonly code: string;
     readonly message: string;
-  } | null;
+  };
 };
 
 //endregion Action
@@ -121,9 +123,10 @@ export type HetznerImage = {
    */
   readonly id: number;
   /**
-   * Image slug for system images (e.g. `ubuntu-24.04`); `null` for snapshots.
+   * Image slug for system images (e.g. `ubuntu-24.04`); absent (and `null` on
+   * the wire) for snapshots, so narrow with `typeof name === 'string'`.
    */
-  readonly name: string | null;
+  readonly name?: string;
   /**
    * OS family used to match a shorthand (e.g. `ubuntu`, `fedora`).
    */
@@ -133,9 +136,10 @@ export type HetznerImage = {
    */
   readonly type: string;
   /**
-   * ISO 8601 deprecation timestamp, or `null` when not deprecated.
+   * ISO 8601 deprecation timestamp; absent (and `null` on the wire) when not
+   * deprecated, so test with `typeof deprecated === 'string'`.
    */
-  readonly deprecated: string | null;
+  readonly deprecated?: string;
   /**
    * ISO 8601 creation timestamp, used to pick the newest matching image.
    */

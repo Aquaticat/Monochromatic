@@ -3,16 +3,14 @@
  * @module
  */
 import {
-  clone,
-  create,
-  destroy,
-  destroyAll,
-} from '@monochromatic-dev/cli-mvm/ts';
-import {
   defineTool,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import {
+  BACKEND_PROPERTY,
+  backendFromArgs,
+} from './backend.ts';
 import {
   errorResponse,
   textResponse,
@@ -27,13 +25,13 @@ export const createTool: ToolEntry = defineTool({
   name: 'create_vm',
   entry: {
     description:
-      'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, windows, or a custom template name via the `image` parameter. Windows VMs use a Windows Server 2025 evaluation ISO with unattended install (first creation takes 15-30 minutes). When `from` is provided, clones from that existing VM instead of creating fresh.',
+      'Creates and starts a new VM on the selected backend. libvirt supports ubuntu (default), fedora, alpine, windows, or a custom template name; hetzner supports ubuntu/debian/fedora/rocky/centos/alma or a literal Hetzner image slug. Windows libvirt VMs take 15-30 minutes on first creation. When `from` is provided, clones from that existing VM instead. `server_type` and `location` apply to the hetzner backend only.',
     inputSchema: {
       type: 'object',
       properties: {
         name: {
           type: 'string',
-          description: 'VM name (alphanumeric, hyphens, underscores)',
+          description: 'VM name (alphanumeric, hyphens, underscores; hetzner additionally forbids underscores)',
         },
         from: {
           type: 'string',
@@ -42,14 +40,24 @@ export const createTool: ToolEntry = defineTool({
         image: {
           type: 'string',
           description:
-            'Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name',
+            'Image to use (backend-specific): e.g. ubuntu (default), fedora, alpine, windows, or a custom/literal image name',
         },
+        server_type: {
+          type: 'string',
+          description: 'Hetzner server type (e.g. cx22); ignored by the libvirt backend',
+        },
+        location: {
+          type: 'string',
+          description:
+            'Hetzner location or comma-separated fallback series (e.g. fsn1,nbg1); ignored by the libvirt backend',
+        },
+        backend: BACKEND_PROPERTY,
       },
       required: ['name',],
     },
     handler: async function handleCreateVm(args,) {
       /**
-       * New VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding.
+       * New VM name coerced to string so the backend receives a stable type regardless of MCP client encoding.
        */
       const name = String(args.name,);
       /**
@@ -57,18 +65,32 @@ export const createTool: ToolEntry = defineTool({
        */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       /**
-       * Optional image template; absence falls back to the default in {@link create}.
+       * Optional image template; absence falls back to the backend default.
        */
       const image = ((typeof args.image) === 'string') ? args.image : undefined;
+      /**
+       * Optional Hetzner server type; ignored by the libvirt backend.
+       */
+      const serverType = ((typeof args.server_type) === 'string') ? args.server_type : undefined;
+      /**
+       * Optional Hetzner location series; ignored by the libvirt backend.
+       */
+      const location = ((typeof args.location) === 'string') ? args.location : undefined;
       try {
+        /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
         await (from !== undefined
-          ? clone({
+          ? backend.clone({
             destination: name,
             source: from,
           },)
-          : create({
+          : backend.create({
             name,
             ...(image !== undefined ? { image, } : {}),
+            ...(serverType !== undefined ? { serverType, } : {}),
+            ...(location !== undefined ? { location, } : {}),
           },));
         /**
          * Trailing fragment appended to the success message to disclose clone provenance when applicable.
@@ -95,7 +117,7 @@ export const destroyTool: ToolEntry = defineTool({
   name: 'destroy_vm',
   entry: {
     description:
-      'Force-stops and deletes a VM by name, or all managed VMs when `all` is true. Provide exactly one of `name` or `all`.',
+      'Force-stops and deletes a VM by name, or all managed VMs when `all` is true. Provide exactly one of `name` or `all`. Operates on the selected backend only.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -107,6 +129,7 @@ export const destroyTool: ToolEntry = defineTool({
           type: 'boolean',
           description: 'Destroy every managed VM (mutually exclusive with name)',
         },
+        backend: BACKEND_PROPERTY,
       },
     },
     handler: async function handleDestroyVm(args,) {
@@ -119,12 +142,16 @@ export const destroyTool: ToolEntry = defineTool({
        */
       const all = ((typeof args.all) === 'boolean') ? args.all : undefined;
       try {
+        /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
         if (all === true) {
-          await destroyAll();
+          await backend.destroyAll();
           return textResponse('All VMs destroyed.',);
         }
         if (name !== undefined) {
-          await destroy({ name, },);
+          await backend.destroy({ name, },);
           return textResponse(`VM ${name} destroyed.`,);
         }
         return {

@@ -18,16 +18,18 @@ import {
   tagged,
 } from '../../log.ts';
 import {
+  HetznerApiError,
+  waitForAction,
+} from './api.ts';
+import {
   createImage,
   createServer,
   deleteImage,
   deleteServer,
   getMvmServerByName,
-  HetznerApiError,
   listImages,
   listMvmServers,
-  waitForAction,
-} from './api.ts';
+} from './api-resources.ts';
 import {
   DEFAULT_IMAGE,
   MVM_LABEL_KEY,
@@ -104,7 +106,9 @@ function ipv4OrThrow(server: HetznerServer,): string {
   /**
    * Public IPv4 of the server, when one is attached.
    */
-  const ip = server.public_net.ipv4?.ip;
+  const ip = server.public_net
+    .ipv4
+    ?.ip;
   if ((ip === undefined) || (ip === '')) {
     throw new Error(`server ${server.name} has no public IPv4`,);
   }
@@ -153,10 +157,6 @@ async function createWithFallback(
     readonly sshKeyId: number;
   },
 ): Promise<Provisioned> {
-  /**
-   * Last out-of-stock error, surfaced in the exhausted-list message.
-   */
-  let lastError: HetznerApiError | undefined;
   for (const location of locations) {
     rl.info(`creating ${fullName} (${serverType}, image ${String(image,)}) in ${location}`,);
     try {
@@ -173,16 +173,13 @@ async function createWithFallback(
     catch (error: unknown) {
       if ((error instanceof HetznerApiError) && (error.code === OUT_OF_STOCK_CODE)) {
         rl.info(`${location} unavailable (${error.code}), trying next location`,);
-        lastError = error;
         continue;
       }
       throw error;
     }
   }
   throw new Error(
-    `no capacity for ${serverType} in any of: ${locations.join(', ',)}${
-      lastError === undefined ? '' : ` (last error: ${lastError.message})`
-    }`,
+    `no capacity for ${serverType} in any of: ${locations.join(', ',)} (all out of stock)`,
   );
 }
 
@@ -249,7 +246,8 @@ export async function hetznerCreate(
     serverType: resolveServerType(serverType,),
     sshKeyId,
   },);
-  await waitForAction({ id: created.action.id, },);
+  await waitForAction({ id: created.action
+    .id, },);
   /**
    * Public IPv4 to probe for SSH readiness.
    */
@@ -358,7 +356,8 @@ async function provisionFromSnapshot(
     serverType: resolveServerType(),
     sshKeyId,
   },);
-  await waitForAction({ id: created.action.id, },);
+  await waitForAction({ id: created.action
+    .id, },);
   return created;
 }
 
@@ -414,9 +413,11 @@ export async function hetznerClone(
    */
   const created = await provisionFromSnapshot({
     fullName: `${VM_PREFIX}${destination}`,
-    imageId: snapshot.image.id,
+    imageId: snapshot.image
+      .id,
     rl,
-    snapshotActionId: snapshot.action.id,
+    snapshotActionId: snapshot.action
+      .id,
   },);
   /**
    * Public IPv4 to probe for SSH readiness.
@@ -523,8 +524,10 @@ export async function hetznerDestroyAll(): Promise<void> {
 export async function hetznerList(): Promise<readonly VmInfo[]> {
   return (await listMvmServers()).map(function toVmInfo(server,) {
     return {
-      name: server.name.startsWith(VM_PREFIX,)
-        ? server.name.slice(VM_PREFIX.length,)
+      name: server.name
+        .startsWith(VM_PREFIX,)
+        ? server.name
+          .slice(VM_PREFIX.length,)
         : server.name,
       state: server.status,
     };

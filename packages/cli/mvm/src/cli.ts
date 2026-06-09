@@ -2,29 +2,18 @@
 import { message, } from '@optique/core/message';
 import { runSync, } from '@optique/run';
 
-import { clone, } from './clone.ts';
-import { create, } from './create.ts';
 import {
-  destroy,
-  destroyAll,
-} from './destroy.ts';
-import { exec, } from './exec.ts';
-import {
-  pullFile,
-  pushFile,
-} from './file-transfer.ts';
+  resolveBackendKind,
+  selectBackend,
+} from './backends/registry.ts';
 import { parser, } from './index-parsers.ts';
-import { list, } from './list.ts';
-import { run, } from './run.ts';
-import { shell, } from './shell.ts';
-import { update, } from './update.ts';
 
 export {};
 
-//region Verbose flag: stripped before parsing; logger detects it from raw process.argv at import time
+//region Infra flags: stripped before parsing (logger reads --verbose from raw argv; --backend selects the backend)
 
 /**
- * Flags consumed by infrastructure (logger) rather than the argument parser.
+ * Valueless flags consumed by infrastructure rather than the argument parser.
  * Only stripped from tokens before `--` so that VM commands like
  * `mvm exec myvm -- --verbose cmd` preserve `--verbose` for the guest.
  *
@@ -34,6 +23,16 @@ export {};
  * ```
  */
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
+
+/**
+ * Long flag selecting the backend; consumes the following token as its value.
+ */
+const BACKEND_FLAG = '--backend';
+
+/**
+ * Inline form `--backend=value`.
+ */
+const BACKEND_FLAG_EQ = `${BACKEND_FLAG}=`;
 
 /**
  * Raw args after the script name.
@@ -53,20 +52,70 @@ const doubleDashIndex = rawArgs.indexOf('--',);
 const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
- * Process argv with infrastructure flags removed only from the mvm-owned prefix.
- * The logger caches its own `process.argv` check at module load time
- * (before this runs), so stripping here only affects the \@optique parser.
+ * Captured backend value (`''` when `--backend` is absent) and the args handed
+ * to the optique parser, after stripping infrastructure flags from the
+ * mvm-owned prefix. Tokens at or past the `--` boundary are preserved verbatim.
+ * The scan runs in a named IIFE so its cursor/accumulator `let`s do not leak to
+ * the module body.
  */
-const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
-  arg,
-  i,
-) {
-  return (i >= boundary) || (!INFRA_FLAGS.has(arg,));
-},);
+const {
+  backendValue,
+  filteredArgs,
+} = (function extractInfra(): {
+  readonly backendValue: string;
+  readonly filteredArgs: readonly string[];
+} {
+  /**
+   * Backend value captured from `--backend`, empty until found.
+   */
+  let captured = '';
+  /**
+   * Args surviving the infra strip, handed to the optique parser.
+   */
+  const kept: string[] = [];
+  /**
+   * Scan cursor; advances by two when consuming `--backend value`.
+   */
+  let idx = 0;
+  while (idx < rawArgs.length) {
+    /**
+     * Current token; guarded for the indexed-access undefined case.
+     */
+    const arg = rawArgs[idx];
+    if (arg === undefined) {
+      break;
+    }
+    if (idx >= boundary) {
+      kept.push(arg,);
+      idx += 1;
+      continue;
+    }
+    if (INFRA_FLAGS.has(arg,)) {
+      idx += 1;
+      continue;
+    }
+    if (arg === BACKEND_FLAG) {
+      captured = rawArgs[idx + 1] ?? '';
+      idx += 2;
+      continue;
+    }
+    if (arg.startsWith(BACKEND_FLAG_EQ,)) {
+      captured = arg.slice(BACKEND_FLAG_EQ.length,);
+      idx += 1;
+      continue;
+    }
+    kept.push(arg,);
+    idx += 1;
+  }
+  return {
+    backendValue: captured,
+    filteredArgs: kept,
+  };
+})();
 
-//endregion Verbose flag
+//endregion Infra flags
 
-//region Dispatch: parse argv and route to the appropriate handler
+//region Dispatch: parse argv, select the backend, and route to the operation
 
 /**
  * Parsed CLI result from process.argv
@@ -75,36 +124,45 @@ const args = runSync(
   parser,
   {
     programName: 'mvm',
-    args: filteredArgs,
+    args: [...filteredArgs,],
     help: 'option',
     aboveError: 'help',
     brief: message`mvm - ephemeral VM manager`,
-    footer: message`Pass --verbose before the subcommand to enable debug logging.`,
+    footer:
+      message`Pass --verbose before the subcommand to enable debug logging. Pass --backend <libvirt|hetzner> (or set MVM_BACKEND) to choose the backend; defaults to libvirt.`,
   },
 );
+
+/**
+ * Selected backend, resolved from `--backend`/`MVM_BACKEND` (default libvirt)
+ * and guarded against the current platform before any work runs.
+ */
+const backend = await selectBackend(resolveBackendKind(backendValue,),);
 
 if (args.cmd
   === 'create') {
   await (args.from
     !== undefined
-    ? clone({
+    ? backend.clone({
       destination: args.name,
       source: args.from,
     },)
-    : create({
+    : backend.create({
       name: args.name,
       ...(args.image !== undefined ? { image: args.image, } : {}),
+      ...(args.serverType !== undefined ? { serverType: args.serverType, } : {}),
+      ...(args.location !== undefined ? { location: args.location, } : {}),
     },));
 }
 else if (args.cmd
   === 'shell')
-  await shell({ name: args.name, },);
+  await backend.shell({ name: args.name, },);
 else if (args.cmd
   === 'list') {
   /**
-   * All managed VMs queried from libvirt.
+   * All managed VMs queried from the selected backend.
    */
-  const vms = await list();
+  const vms = await backend.list();
   if (vms.length
     === 0)
     console.error('no VMs found',);
@@ -121,14 +179,14 @@ else if (args.cmd
 }
 else if (args.cmd
   === 'update')
-  await update();
+  await backend.update();
 else if (args.cmd
   === 'destroy') {
   if (args.all)
-    await destroyAll();
+    await backend.destroyAll();
   else if (args.name
     !== undefined)
-    await destroy({ name: args.name, },);
+    await backend.destroy({ name: args.name, },);
   else
     throw new Error('usage: mvm destroy <name> | --all',);
 }
@@ -137,7 +195,7 @@ else if (args.cmd
   /**
    * Execution result with stdout, stderr, and exit code.
    */
-  const result = await exec({
+  const result = await backend.exec({
     command: args.command,
     name: args.name,
   },);
@@ -160,7 +218,7 @@ else if (args.cmd
   /**
    * Guest path where the file is accessible inside the VM.
    */
-  const guestFilePath = await pushFile({
+  const guestFilePath = await backend.pushFile({
     name: args.name,
     hostPath: args.hostPath,
     guestPath: args.guestPath,
@@ -172,7 +230,7 @@ else if (args.cmd
   /**
    * File content retrieved from the guest.
    */
-  const content = await pullFile({
+  const content = await backend.pullFile({
     name: args.name,
     guestPath: args.guestPath,
   },);
@@ -190,7 +248,7 @@ else {
   /**
    * Execution result from the ephemeral VM.
    */
-  const result = await run({
+  const result = await backend.run({
     command: args.command,
     ...(args.from !== undefined ? { from: args.from, } : {}),
   },);

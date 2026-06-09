@@ -11,7 +11,7 @@
 
 import { ephemeralRun, } from '../ephemeral-run.ts';
 import type { ExecResult, } from '../../exec.ts';
-import { getMvmServerByName, } from './api.ts';
+import { getMvmServerByName, } from './api-resources.ts';
 import { validateHetznerName, } from './config.ts';
 import {
   hetznerClone,
@@ -50,7 +50,9 @@ async function resolveIp(name: string,): Promise<string> {
   /**
    * Public IPv4 of the server, when one is attached.
    */
-  const ip = server.public_net.ipv4?.ip;
+  const ip = server.public_net
+    .ipv4
+    ?.ip;
   if ((ip === undefined) || (ip === '')) {
     throw new Error(`VM ${name} has no public IPv4`,);
   }
@@ -181,7 +183,7 @@ export async function hetznerPull(
  * const result = await hetznerRun({ command: 'uname -a' });
  * ```
  */
-export async function hetznerRun(
+export function hetznerRun(
   {
     command,
     from,

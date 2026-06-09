@@ -25,7 +25,7 @@ import { spawn, } from '../../spawn.ts';
 import {
   createSshKey,
   listSshKeys,
-} from './api.ts';
+} from './api-resources.ts';
 import { HETZNER_DATA_DIR, } from './config.ts';
 
 //region Key paths
@@ -157,9 +157,15 @@ function isAlphaNum(c: string,): boolean {
  */
 function uniqueKeyName(material: string,): string {
   /**
-   * Alphanumeric-only characters of the material, in order.
+   * Alphanumeric-only characters of the material, in order; built with a
+   * for...of loop to avoid spreading a string into an array.
    */
-  const alnum = [...material,].filter(isAlphaNum,);
+  const alnum: string[] = [];
+  for (const c of material) {
+    if (isAlphaNum(c,)) {
+      alnum.push(c,);
+    }
+  }
   /**
    * Trailing slice used as the suffix, or a constant fallback when empty.
    */

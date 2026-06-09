@@ -121,9 +121,12 @@ export function isKnownBackendKind(value: string,): value is BackendKind {
  */
 export function resolveBackendKind(raw?: string,): BackendKind {
   /**
-   * Explicit flag wins over env; env wins over the built-in default.
+   * Explicit flag wins over env; env wins over the built-in default. An empty
+   * `raw` (no flag passed) falls through to the env rather than forcing default.
    */
-  const candidate = raw ?? process.env[BACKEND_ENV_VAR];
+  const candidate = ((raw === undefined) || (raw === ''))
+    ? process.env[BACKEND_ENV_VAR]
+    : raw;
   if ((candidate === undefined) || (candidate === '')) {
     return DEFAULT_BACKEND_KIND;
   }
@@ -161,13 +164,19 @@ export function resolveBackendKind(raw?: string,): BackendKind {
  * ```
  */
 export function isBackendAvailable(
-  kind: BackendKind,
-  platform: NodeJS.Platform,
+  {
+    kind,
+    platform,
+  }: {
+    readonly kind: BackendKind;
+    readonly platform: NodeJS.Platform;
+  },
 ): boolean {
   /**
    * Supported-platform descriptor for `kind`; `'all'` short-circuits the check.
    */
-  const { platforms, } = BACKENDS[kind].meta;
+  const { platforms, } = BACKENDS[kind]
+    .meta;
   return (platforms === 'all') || platforms.includes(platform,);
 }
 
@@ -187,15 +196,16 @@ export function isBackendAvailable(
  * await backend.list();
  * ```
  */
-export async function selectBackend(kind: BackendKind,): Promise<Backend> {
-  if (!isBackendAvailable(
+export function selectBackend(kind: BackendKind,): Promise<Backend> {
+  if (!isBackendAvailable({
     kind,
-    process.platform,
-  )) {
+    platform: process.platform,
+  },)) {
     /**
      * Human-readable supported-platform list for the error message.
      */
-    const { platforms, } = BACKENDS[kind].meta;
+    const { platforms, } = BACKENDS[kind]
+      .meta;
     /**
      * Rendered platform set; `'all'` never reaches here, so it is always a list.
      */
@@ -204,7 +214,8 @@ export async function selectBackend(kind: BackendKind,): Promise<Backend> {
       `backend "${kind}" is not available on ${process.platform} (supported: ${supported})`,
     );
   }
-  return BACKENDS[kind].load();
+  return BACKENDS[kind]
+    .load();
 }
 
 //endregion Selection and platform guard

@@ -9,7 +9,7 @@
  * @module
  */
 
-import { listImages, } from './api.ts';
+import { listImages, } from './api-resources.ts';
 
 //region Flavor sets
 
@@ -75,8 +75,8 @@ export async function resolveHetznerImage(
   const matching = (await listImages({ type: 'system', },)).filter(
     function isUsable(image,) {
       return (image.os_flavor === shorthand)
-        && (image.deprecated === null)
-        && (image.name !== null);
+        && ((typeof image.deprecated) !== 'string')
+        && ((typeof image.name) === 'string');
     },
   );
   /**
@@ -93,12 +93,15 @@ export async function resolveHetznerImage(
    * chronological for same-format timestamps).
    */
   const newest = others.reduce(
-    function pickNewer(best, image,) {
+    function pickNewer(
+      best,
+      image,
+    ) {
       return (image.created > best.created) ? image : best;
     },
     first,
   );
-  if (newest.name === null) {
+  if ((typeof newest.name) !== 'string') {
     throw new Error(`resolved Hetzner image for "${shorthand}" has no slug`,);
   }
   return newest.name;

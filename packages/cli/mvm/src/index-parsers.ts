@@ -32,6 +32,8 @@ export type MvmArgs =
     image?: string;
     name: string;
     from?: string;
+    serverType?: string;
+    location?: string;
   }
   | {
     cmd: 'shell';

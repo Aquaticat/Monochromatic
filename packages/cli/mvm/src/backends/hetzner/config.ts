@@ -139,29 +139,25 @@ export function resolveServerType(override?: string,): string {
  *
  * @param raw - comma-separated locations, or `undefined`
  *
- * @returns ordered list of non-empty location codes, or `undefined` when none parse
+ * @returns ordered list of non-empty location codes (empty when none parse)
  *
  * @example
  * ```ts
  * parseLocations('fsn1, nbg1'); // ['fsn1', 'nbg1']
- * parseLocations('');           // undefined
+ * parseLocations('');           // []
  * ```
  */
-function parseLocations(raw: string | undefined,): readonly string[] | undefined {
+function parseLocations(raw?: string,): readonly string[] {
   if ((raw === undefined) || (raw === '')) {
-    return undefined;
+    return [];
   }
-  /**
-   * Trimmed, non-empty location codes in the order given.
-   */
-  const parsed = raw.split(',',)
+  return raw.split(',',)
     .map(function trimLocation(part,) {
       return part.trim();
     },)
     .filter(function keepNonEmpty(part,) {
       return part !== '';
     },);
-  return (parsed.length === 0) ? undefined : parsed;
 }
 
 /**
@@ -179,9 +175,18 @@ function parseLocations(raw: string | undefined,): readonly string[] | undefined
  * ```
  */
 export function resolveLocations(override?: string,): readonly string[] {
-  return parseLocations(override,)
-    ?? parseLocations(process.env[LOCATIONS_ENV],)
-    ?? DEFAULT_LOCATIONS;
+  /**
+   * Locations from the explicit per-invocation override, when any.
+   */
+  const fromOverride = parseLocations(override,);
+  if (fromOverride.length > 0) {
+    return fromOverride;
+  }
+  /**
+   * Locations from the environment, when the override was empty.
+   */
+  const fromEnv = parseLocations(process.env[LOCATIONS_ENV],);
+  return (fromEnv.length > 0) ? fromEnv : DEFAULT_LOCATIONS;
 }
 
 //endregion Defaults and labels

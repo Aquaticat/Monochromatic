@@ -3,14 +3,14 @@
  * @module
  */
 import {
-  pullFile,
-  pushFile,
-} from '@monochromatic-dev/cli-mvm/ts';
-import {
   defineTool,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import {
+  BACKEND_PROPERTY,
+  backendFromArgs,
+} from './backend.ts';
 import {
   errorResponse,
   textResponse,
@@ -25,7 +25,7 @@ export const pushTool: ToolEntry = defineTool({
   name: 'push_to_vm',
   entry: {
     description:
-      'Pushes a file from the host filesystem into a running VM via the QEMU guest agent. The file is written to the specified guest path, creating or overwriting as needed.',
+      'Pushes a file from the host filesystem into a running VM. libvirt writes via the virtiofs shared mount; hetzner copies to the given absolute remote path over SCP.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -41,6 +41,7 @@ export const pushTool: ToolEntry = defineTool({
           type: 'string',
           description: 'Absolute path inside the guest to write to',
         },
+        backend: BACKEND_PROPERTY,
       },
       required: [
         'name',
@@ -62,7 +63,11 @@ export const pushTool: ToolEntry = defineTool({
        */
       const guestPath = String(args.guestPath,);
       try {
-        await pushFile({
+        /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
+        await backend.pushFile({
           name,
           hostPath,
           guestPath,
@@ -86,7 +91,7 @@ export const pullTool: ToolEntry = defineTool({
   name: 'pull_from_vm',
   entry: {
     description:
-      'Pulls a file from a running VM to the host filesystem via the QEMU guest agent. The file is read from the specified guest path and written to the host path.',
+      'Pulls a file from a running VM to the host filesystem. libvirt reads via the virtiofs shared mount; hetzner copies from the given absolute remote path over SCP.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -102,6 +107,7 @@ export const pullTool: ToolEntry = defineTool({
           type: 'string',
           description: 'Absolute or relative path on the host to write to',
         },
+        backend: BACKEND_PROPERTY,
       },
       required: [
         'name',
@@ -124,9 +130,13 @@ export const pullTool: ToolEntry = defineTool({
       const hostPath = String(args.hostPath,);
       try {
         /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
+        /**
          * Raw file bytes pulled from the guest, written to the host below.
          */
-        const content = await pullFile({
+        const content = await backend.pullFile({
           name,
           guestPath,
         },);

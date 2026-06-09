@@ -33,7 +33,7 @@ import {
  * // Clones from dev-01, runs the command, destroys the clone
  * ```
  */
-export async function run(
+export function run(
   {
     command,
     from,

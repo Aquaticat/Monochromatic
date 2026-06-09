@@ -3,14 +3,14 @@
  * @module
  */
 import {
-  exec,
-  run,
-} from '@monochromatic-dev/cli-mvm/ts';
-import {
   defineTool,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import {
+  BACKEND_PROPERTY,
+  backendFromArgs,
+} from './backend.ts';
 import {
   errorResponse,
   formatExecResult,
@@ -26,7 +26,7 @@ export const execTool: ToolEntry = defineTool({
   name: 'exec_in_vm',
   entry: {
     description:
-      'Runs a shell command inside a named VM via the QEMU guest agent and returns stdout, stderr, and exit code. Linux VMs use bash; Windows VMs use PowerShell.',
+      'Runs a shell command inside a named VM and returns stdout, stderr, and exit code. libvirt uses the QEMU guest agent (bash for Linux, PowerShell for Windows); hetzner runs it in the remote login shell over SSH.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -37,8 +37,9 @@ export const execTool: ToolEntry = defineTool({
         command: {
           type: 'string',
           description:
-            'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)',
+            'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
         },
+        backend: BACKEND_PROPERTY,
       },
       required: [
         'name',
@@ -47,7 +48,7 @@ export const execTool: ToolEntry = defineTool({
     },
     handler: async function handleExecInVm(args,) {
       /**
-       * Target VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding.
+       * Target VM name coerced to string so the backend receives a stable type regardless of MCP client encoding.
        */
       const name = String(args.name,);
       /**
@@ -56,9 +57,13 @@ export const execTool: ToolEntry = defineTool({
       const command = String(args.command,);
       try {
         /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
+        /**
          * Execution result holding stdout, stderr, and exit code; formatted into the response below.
          */
-        const result = await exec({
+        const result = await backend.exec({
           command,
           name,
         },);
@@ -81,20 +86,21 @@ export const runTool: ToolEntry = defineTool({
   name: 'run_in_vm',
   entry: {
     description:
-      'Creates an ephemeral VM, runs a shell command inside it via the QEMU guest agent, then destroys the VM. Returns stdout, stderr, and exit code. Optionally clones from an existing VM instead of creating fresh. Linux VMs use bash; Windows VMs use PowerShell.',
+      'Creates an ephemeral VM, runs a shell command inside it, then destroys the VM. Returns stdout, stderr, and exit code. Optionally clones from an existing VM instead of creating fresh. Runs on the selected backend.',
     inputSchema: {
       type: 'object',
       properties: {
         command: {
           type: 'string',
           description:
-            'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)',
+            'Shell command to run inside the VM (libvirt: bash/PowerShell via guest agent; hetzner: remote login shell)',
         },
         from: {
           type: 'string',
           description:
             'Clone from this existing VM name instead of creating fresh. Use list_vms to see available names (e.g. "win-01", not "windows").',
         },
+        backend: BACKEND_PROPERTY,
       },
       required: ['command',],
     },
@@ -104,14 +110,18 @@ export const runTool: ToolEntry = defineTool({
        */
       const command = String(args.command,);
       /**
-       * Optional source VM to clone from; absence selects the create-fresh path inside {@link run}.
+       * Optional source VM to clone from; absence selects the create-fresh path inside the backend run.
        */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       try {
         /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
+        /**
          * Execution result holding stdout, stderr, and exit code; formatted into the response below.
          */
-        const result = await run({
+        const result = await backend.run({
           command,
           ...(from !== undefined ? { from, } : {}),
         },);

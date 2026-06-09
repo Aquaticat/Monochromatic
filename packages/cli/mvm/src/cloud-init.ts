@@ -26,7 +26,9 @@ import type {
  * if (seed !== NO_SEED_ISO) attachSeedIso(seed);
  * ```
  */
-export const NO_SEED_ISO: unique symbol = Symbol('no-seed-iso',);
+export const NO_SEED_ISO: unique symbol = Symbol(
+  'returned when a guest needs no cloud-init seed ISO',
+);
 
 /**
  * Narrows a {@link GuestConfig} to {@link LinuxGuestConfig} after the caller

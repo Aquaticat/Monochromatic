@@ -17,7 +17,9 @@ export type VmInfo = {
  * Sentinel returned by {@link parseVirshRow} for header, separator, and other
  * non-data rows. A unique symbol models "not a row" without a nullish union.
  */
-const NOT_A_DATA_ROW: unique symbol = Symbol('not-a-data-row',);
+const NOT_A_DATA_ROW: unique symbol = Symbol(
+  'returned for a virsh table line that is not a VM data row',
+);
 
 /**
  * Checks whether `c` is a single ASCII whitespace character.

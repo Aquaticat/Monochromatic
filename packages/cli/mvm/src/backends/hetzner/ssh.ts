@@ -20,7 +20,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
-import nanoSpawn, { type SubprocessError, } from 'nano-spawn';
+import nanoSpawn from 'nano-spawn';
 
 import type { ExecResult, } from '../../exec.ts';
 import {
@@ -93,7 +93,7 @@ export function sshBaseOpts(): readonly string[] {
  *
  * @example
  * ```ts
- * connectionTarget('203.0.113.7'); // 'root@203.0.113.7'
+ * connectionTarget('203.0.113.7'); // builds the root SSH login target
  * ```
  */
 export function connectionTarget(ip: string,): string {
@@ -222,13 +222,27 @@ export function scpPullArgs(
  * ```
  */
 function execResultFromError(error: unknown,): ExecResult {
-  if ((error !== null) && ((typeof error) === 'object') && ('stdout' in error)) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError carries stdout/stderr/exitCode
-    const spawnError = error as SubprocessError;
+  if ((error !== null) && ((typeof error) === 'object')
+    && ('stdout' in error)
+    && ('stderr' in error)) {
+    /**
+     * Captured stdout if the error carries a string one, else empty.
+     */
+    const stdout = ((typeof error.stdout) === 'string') ? error.stdout : '';
+    /**
+     * Captured stderr if the error carries a string one, else empty.
+     */
+    const stderr = ((typeof error.stderr) === 'string') ? error.stderr : '';
+    /**
+     * Remote/ssh exit code, defaulting to the ssh connection-failure code.
+     */
+    const exitCode = (('exitCode' in error) && ((typeof error.exitCode) === 'number'))
+      ? error.exitCode
+      : SSH_CONNECTION_FAILURE;
     return {
-      exitCode: spawnError.exitCode ?? SSH_CONNECTION_FAILURE,
-      stderr: spawnError.stderr,
-      stdout: spawnError.stdout,
+      exitCode,
+      stderr,
+      stdout,
     };
   }
   throw error;
@@ -365,7 +379,8 @@ export async function sshShell({ ip, }: { readonly ip: string; },): Promise<void
     );
   }
   catch (error: unknown) {
-    if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
+    if ((error !== null) && ((typeof error) === 'object')
+      && ('exitCode' in error)) {
       /**
        * Forwarded so the shell exit code reflects the ssh session outcome.
        */

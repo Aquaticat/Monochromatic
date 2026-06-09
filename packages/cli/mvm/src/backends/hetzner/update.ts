@@ -12,7 +12,7 @@ import {
   l,
   tagged,
 } from '../../log.ts';
-import { listImages, } from './api.ts';
+import { listImages, } from './api-resources.ts';
 import { requireToken, } from './config.ts';
 
 /**
@@ -40,7 +40,7 @@ export async function hetznerUpdate(): Promise<void> {
    */
   const active = (await listImages({ type: 'system', },)).filter(
     function isActive(image,) {
-      return (image.deprecated === null) && (image.name !== null);
+      return ((typeof image.deprecated) !== 'string') && ((typeof image.name) === 'string');
     },
   );
   rl.info(

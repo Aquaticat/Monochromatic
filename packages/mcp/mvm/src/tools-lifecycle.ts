@@ -3,14 +3,14 @@
  * @module
  */
 import {
-  list,
-  update,
-} from '@monochromatic-dev/cli-mvm/ts';
-import {
   defineTool,
   type ToolEntry,
 } from '@monochromatic-dev/mcp-stdio/ts';
 
+import {
+  BACKEND_PROPERTY,
+  backendFromArgs,
+} from './backend.ts';
 import {
   errorResponse,
   textResponse,
@@ -25,13 +25,23 @@ export const listTool: ToolEntry = defineTool({
   name: 'list_vms',
   entry: {
     description:
-      'Lists all managed VMs with their current state (running, shut off, etc.).',
-    handler: async function handleListVms() {
+      'Lists all managed VMs on the selected backend with their current state (running, shut off, etc.).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        backend: BACKEND_PROPERTY,
+      },
+    },
+    handler: async function handleListVms(args,) {
       try {
         /**
-         * All managed VMs queried from libvirt.
+         * Backend resolved from the optional `backend` arg, env, or default.
          */
-        const vms = await list();
+        const backend = await backendFromArgs(args,);
+        /**
+         * All managed VMs queried from the selected backend.
+         */
+        const vms = await backend.list();
         if (vms.length
           === 0)
           return textResponse('No VMs found.',);
@@ -54,17 +64,27 @@ export const listTool: ToolEntry = defineTool({
 },);
 
 /**
- * MCP tool: re-download and rebuild all template images.
+ * MCP tool: refresh provider-managed images or templates.
  */
 export const updateTool: ToolEntry = defineTool({
   name: 'update_templates',
   entry: {
     description:
-      'Re-downloads all base images and rebuilds all templates unconditionally. Use to refresh Windows evaluation ISOs (180-day expiry), pick up new Linux cloud image releases, or update virtio-win drivers. Builds templates for all registered images, even those never previously used. Windows template rebuild takes 15-30 minutes.',
-    handler: async function handleUpdateTemplates() {
+      'Refreshes provider-managed images. libvirt re-downloads base images and rebuilds all templates (Windows rebuild takes 15-30 minutes); hetzner validates the token and reports available system images (nothing is built locally).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        backend: BACKEND_PROPERTY,
+      },
+    },
+    handler: async function handleUpdateTemplates(args,) {
       try {
-        await update();
-        return textResponse('All template images updated successfully.',);
+        /**
+         * Backend resolved from the optional `backend` arg, env, or default.
+         */
+        const backend = await backendFromArgs(args,);
+        await backend.update();
+        return textResponse('Templates updated successfully.',);
       }
       catch (err: unknown) {
         return errorResponse({

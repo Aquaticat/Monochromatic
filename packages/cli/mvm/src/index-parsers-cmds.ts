@@ -71,6 +71,35 @@ const imageOption = optional(
 );
 
 /**
+ * Option parser for `--server-type TYPE`, used by cloud backends (Hetzner).
+ */
+const serverTypeOption = optional(
+  option(
+    '--server-type',
+    string({ metavar: 'TYPE', },),
+    {
+      description:
+        message`Hetzner server type (e.g. cx22); ignored by the libvirt backend`,
+    },
+  ),
+);
+
+/**
+ * Option parser for `--location LOCATION`, used by cloud backends (Hetzner).
+ * Accepts a single location or a comma-separated fallback series.
+ */
+const locationOption = optional(
+  option(
+    '--location',
+    string({ metavar: 'LOCATION', },),
+    {
+      description:
+        message`Hetzner location or comma-separated fallback series (e.g. fsn1,nbg1); ignored by the libvirt backend`,
+    },
+  ),
+);
+
+/**
  * Value parser for individual command tokens after `--`, displayed as COMMAND in help
  */
 const commandToken = string({ metavar: 'COMMAND', },);
@@ -89,6 +118,8 @@ export const createCmd: SubcommandParser = command(
       name: argument(name,),
       from: fromOption,
       image: imageOption,
+      serverType: serverTypeOption,
+      location: locationOption,
     },),
     function toCreateArgs(v,): MvmArgs {
       return {
@@ -96,6 +127,8 @@ export const createCmd: SubcommandParser = command(
         name: v.name,
         ...(v.from !== undefined ? { from: v.from, } : {}),
         ...(v.image !== undefined ? { image: v.image, } : {}),
+        ...(v.serverType !== undefined ? { serverType: v.serverType, } : {}),
+        ...(v.location !== undefined ? { location: v.location, } : {}),
       };
     },
   ),

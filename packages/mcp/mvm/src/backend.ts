@@ -1,0 +1,58 @@
+/**
+ * Shared backend resolution for MCP tool handlers.
+ *
+ * Routes through the same `resolveBackendKind` + `selectBackend` path the CLI
+ * uses, so the default, `MVM_BACKEND` env, and unknown-kind handling are
+ * identical and never bypassed.
+ *
+ * @module
+ */
+
+import {
+  type Backend,
+  resolveBackendKind,
+  selectBackend,
+} from '@monochromatic-dev/cli-mvm/ts';
+
+/**
+ * Reusable `backend` input-schema property shared by every mvm tool so the
+ * per-invocation contract reads identically to clients.
+ *
+ * @example
+ * ```ts
+ * inputSchema: { type: 'object', properties: { backend: BACKEND_PROPERTY } };
+ * ```
+ */
+export const BACKEND_PROPERTY: {
+  readonly type: 'string';
+  readonly description: string;
+} = {
+  type: 'string',
+  description:
+    'Backend to target: libvirt (default, local KVM, Linux only) or hetzner (Hetzner Cloud; requires HCLOUD_TOKEN). There is no record of which backend a VM lives on, so pass the same backend used at create to every follow-up call.',
+};
+
+/**
+ * Resolves the backend from a tool's `backend` argument.
+ *
+ * @param args - raw tool arguments; the optional `backend` string is read
+ *
+ * @returns selected backend implementation
+ *
+ * @throws Error when `backend` names an unknown kind or is unavailable on this platform
+ *
+ * @example
+ * ```ts
+ * const backend = await backendFromArgs(args);
+ * await backend.list();
+ * ```
+ */
+export function backendFromArgs(
+  args: Readonly<Record<string, unknown>>,
+): Promise<Backend> {
+  /**
+   * Optional per-invocation backend selector; absence falls back to env/default.
+   */
+  const raw = ((typeof args.backend) === 'string') ? args.backend : undefined;
+  return selectBackend(resolveBackendKind(raw,),);
+}
