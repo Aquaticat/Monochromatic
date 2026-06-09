@@ -799,9 +799,7 @@ Skip filter for one command:
  `> file`.
 
 WCD:
- In git worktree,
- prepend `cd <worktree-abs-path> &&` to every Bash command;
- Bash tool cwd resets to primary checkout between commands.
+ Pin target dir explicitly for every shell command.
 
 ### Long-form flags
 
