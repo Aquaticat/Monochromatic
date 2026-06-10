@@ -199,37 +199,43 @@ task.monorepo_depth = 3
 # Avoids two-pass parsing quirks and will be the default after Tera arguments are removed in 2026.11.0.
 task.disable_spec_from_run_scripts = true
 
-# Nushell for all task execution ensures consistent behavior across platforms.
-unix_default_file_shell_args = "nu"
-windows_default_file_shell_args = "nu"
-unix_default_inline_shell_args = "nu -c"
-windows_default_inline_shell_args = "nu -c"
+# No global shell override: mise uses its platform defaults (sh -c -o errexit on
+# unix, cmd /c on Windows). Trivial single-command bodies and array `run` runners
+# work under both. Bodies needing logic, structured data, or non-portable syntax
+# declare `shell = "node -e"` per task (node -e strips TS, runs ESM imports, and
+# supports top-level await). See docs/migration/mise-nushell-to-node.md.
 
 [hooks]
-# `mise install` only installs missing tools; it does not re-resolve "latest"
-# for core backends (bun, node, etc.) that cache the resolution via symlink.
-# `mise upgrade` re-resolves "latest" and installs newer versions.
-# Nushell `;` always runs both commands (no fail-fast like bash `&&`).
-enter = """
-let quiet_lines = ["mise all tools are installed" "mise All tools are up to date"]
-for result in [(mise install | complete) (mise upgrade | complete)] {
-  let out = ($result.stdout | str trim)
-  if $out != '' { print $out }
-  let err_lines = ($result.stderr | str trim | lines | where {|line| ($line | str trim) not-in $quiet_lines })
-  if ($err_lines | is-not-empty) { print -e ($err_lines | str join "\n") }
-}
-"""
+# Runs at first `cd` before any tool is installed, so it must be cross-platform
+# and depend only on mise itself (the one guaranteed prerequisite). It delegates
+# to the `bootstrap` task: `mise install` installs missing tools, `mise upgrade`
+# re-resolves "latest" and installs newer versions. Hooks require a string body,
+# so the array `run` (which mise sequences and fails fast on) lives on the task.
+enter = { task = "bootstrap" }
 
 [vars]
 # Monorepo root for task templates that need to reference root-level config files.
 monorepo_root = "{{config_root}}"
-# Nushell fanout script: discovers direct child tasks (one `:` level deeper) and runs them in parallel.
-# Replaces native `[{ tasks = ["prefix:*"] }]` which matches all descendants due to mise treating `:` as a regular character in `*` globs.
+# node -e fanout script: discovers direct child tasks (one `:` level deeper) and
+# runs each as a plain `mise run <child>` subprocess, all in parallel, then fails
+# if any child failed. No `:::` separator or other mise-specific inline sugar:
+# each child is an ordinary shelled `mise run`, and Node owns the concurrency.
+# Interpolated into the fanout task templates, each of which sets
+# `shell = "node -e"`. Runtime depth filtering is still required because the
+# native `[{ tasks = ["prefix:*"] }]` glob matches all descendants, since mise
+# treats `:` as a regular character in `*` globs.
 fanout = """
-let p = $env.MISE_TASK_NAME + ":"
-let d = ($p | split row ":" | length)
-let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) })
-if ($c | is-empty) { error make { msg: $"no child tasks for ($env.MISE_TASK_NAME)" } } else { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
+const { execFileSync, spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const prefix = `${process.env.MISE_TASK_NAME}:`
+const depth = prefix.split(':').length
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8' }))
+const children = tasks.map((task) => task.name).filter((name) => name.startsWith(prefix) && name.split(':').length === depth)
+if (children.length === 0) { throw new Error(`no child tasks for ${process.env.MISE_TASK_NAME}`) }
+const processes = children.map((name) => spawn('mise', ['run', name], { stdio: 'inherit' }))
+const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
+const failed = children.filter((name, index) => exits[index][0] !== 0)
+if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.join(', ')}`) }
 """
 # Resolve the monorepo root from either root or package-local mise tasks.
 monorepo_root_setup = """
@@ -262,9 +268,11 @@ if not ($oxlint_config | path exists) {
 """
 
 [task_templates.build]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."build:js"]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."build:js:browser"]
@@ -277,9 +285,11 @@ run = "tsdown --config tsdown.client.config.ts"
 run = "tsdown --config tsdown.node.config.ts"
 
 [task_templates."watch:build"]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js"]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js:browser"]
@@ -292,6 +302,7 @@ run = "tsdown --watch --config tsdown.client.config.ts"
 run = "tsdown --watch --config tsdown.node.config.ts"
 
 [task_templates.test]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."test:unit"]
@@ -320,9 +331,11 @@ $files | par-each { |file| bun $file }
 """
 
 [task_templates."watch:test"]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates.lint]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."lint:oxlint"]
@@ -347,6 +360,7 @@ description = "Type check in watch mode"
 run = "tsgo --watch"
 
 [task_templates.prepare]
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 #region tasks
@@ -616,6 +630,15 @@ mise run format && mise run build && mise run test
 
 #region Preparation Tasks
 
+# Invoked by the `enter` hook on first `cd`, before any tool is installed. The
+# array `run` lets mise sequence the two commands and stop on the first failure,
+# with no shell-specific chaining, so it works under both `sh` and `cmd`. mise
+# itself is the only prerequisite, so this runs on a fresh clone with no manual
+# step (replacing the former "run `mise install` manually once" instruction).
+[tasks.bootstrap]
+description = "Install and upgrade mise-managed tools (runs on directory entry)"
+run = ["mise install", "mise upgrade"]
+
 [tasks.prepare]
 description = "Prepare environment (install Playwright browsers, etc.)"
 run = """
@@ -667,6 +690,7 @@ mise run try -- build
 
 [tasks.start]
 description = "Start development servers"
+shell = "node -e"
 run = "{{vars.fanout}}"
 
 # TODO: Add package-specific start tasks here
