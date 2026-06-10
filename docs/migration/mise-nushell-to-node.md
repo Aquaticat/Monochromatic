@@ -1,11 +1,25 @@
 # Migrating mise task execution from nushell to Node
 
 Status:
- approved.
-The open questions were resolved in a grilling session on 2026-06-10 (issue #246).
-This document now records the decided design,
- not a menu of options.
-Implementation has not started.
+ implemented (2026-06-10).
+The open questions were resolved in a grilling session on 2026-06-10 (issue #246),
+and the migration landed the same day.
+The global nushell shell default was removed up front (the team chose to migrate
+straight through rather than keep the default until last),
+ so every task body is now node -e,
+ a bare command,
+ or an array `run`.
+No nushell code remains in any mise task;
+ the `aqua:nushell/nushell` tool pin is removed.
+Unverified in this environment:
+ the desktop-app native build/container paths and the macOS/Windows code signing
+ (no toolchain,
+ container image,
+ or non-Linux host here);
+ a Windows CI smoke job is tracked in issue #249.
+This document now records the decided design as built;
+ per AGENTS.
+md DL4 it may be deleted once readers no longer need the rationale.
 
 ## Why
 
