@@ -1,7 +1,7 @@
 # Cargo work runs on the HOST when the native dev libraries are present, and
 # falls back to the Fedora build container otherwise (see Containerfile).
 # On non-Linux targets (macOS, Windows) every task takes a NATIVE cargo branch
-# first (`$nu.os-info.name != "linux"`): no pkg-config/PipeWire probe, no podman
+# first (process.platform !== 'linux'): no pkg-config/PipeWire probe, no podman
 # fallback (a Linux container cannot produce a macOS or Windows binary), and the
 # audio backend is cpal (src/output_cpal.rs: CoreAudio on macOS, WASAPI on
 # Windows). Prereqs:
@@ -20,12 +20,12 @@
 # plus rustup/cargo and libclang already on PATH; cmake comes from the repo's mise
 # `aqua:Kitware/CMake` tool (opusic-sys vendors and cmake-builds libopus 1.6.1, so
 # no system opus-devel is needed) and the host's system `make` is its generator.
-# The {{vars.host_ok}} predicate probes pkg-config for those libraries; when any
-# is missing the {{vars.container_cargo}} prefix runs the same cargo command in
-# podman instead (package dir bind-mounted at /work, cargo registry in a named
-# volume, `label=disable` to skip SELinux relabeling of the host tree).
-# The *:container tasks force the podman path regardless of host libraries so the
-# container build stays asserted; verify:container is the umbrella assertion.
+# The cargo_dispatch var (node -e) probes pkg-config for those libraries; when any
+# is missing containerCargo runs the same cargo command in podman instead (package
+# dir bind-mounted at /work, cargo registry in a named volume, `label=disable` to
+# skip SELinux relabeling of the host tree). The *:container tasks call
+# containerCargo directly to force the podman path regardless of host libraries;
+# verify:container is the umbrella assertion.
 # Why podman and not mise-managed deps (conda route rejected):
 # see ../../../docs/decisions/desktop-app-podman-build.md
 
@@ -38,31 +38,50 @@
 # since the same UI markup is compiled there.
 SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 # NOTE: LIBCLANG_PATH was a process-wide env here but is now set inside the Linux
-# host_env var below, NOT globally. On macOS it must stay UNSET so bindgen finds
-# the Command Line Tools' libclang automatically; a global Linux path
-# (/usr/lib64) would point bindgen at a nonexistent directory there.
+# hostEnv() of cargo_dispatch below, NOT globally. On macOS it must stay UNSET so
+# bindgen finds the Command Line Tools' libclang automatically; a global Linux
+# path (/usr/lib64) would point bindgen at a nonexistent directory there.
 
 [vars]
-# True when the host can build natively: cargo on PATH and the native libraries
-# Slint/PipeWire link against (pipewire + fontconfig/freetype) resolvable through
-# pkg-config (fontconfig also validates its freetype2 Requires). libopus is NOT
-# probed: the opus crate is pinned to the opusic-sys backend, which compiles
-# libopus 1.6.1 from source via cmake (the mise `aqua:Kitware/CMake` tool), so no
-# system libopus is required.
-host_ok = '((which cargo | is-not-empty) and ((^pkg-config --exists libpipewire-0.3 fontconfig freetype2 | complete | get exit_code) == 0))'
-# Host-only env for the native LINUX cargo branch (interpolated into the same
-# nushell block as `cargo`, so these $env mutations reach it). LIBCLANG_PATH:
-# host libclang ships only versioned (libclang.so.NN, no unversioned symlink), so
-# point bindgen (libspa-sys) at the lib dir explicitly. The clang
-# resource headers (stdbool.h and friends) live under /usr/lib/clang/<v>, but
-# libclang.so sits in /usr/lib64 and looks for them beside itself, so bindgen
-# cannot find them without an explicit -resource-dir. Glob the major-version dir
-# so an LLVM bump does not need a manual edit. macOS uses NEITHER of these (its
-# build path skips host_env entirely; CLT clang is found automatically).
-host_env = '$env.LIBCLANG_PATH = "/usr/lib64"; let _rd = (glob "/usr/lib/clang/*" | sort | last); $env.BINDGEN_EXTRA_CLANG_ARGS = $"-resource-dir=($_rd)"'
-# Forced-container cargo prefix: build the image when it is missing, then run
-# the cargo subcommand appended by the caller inside podman.
-container_cargo = '(if ((^podman image exists localhost/monochromatic/music-player | complete | get exit_code) != 0) { ^podman build -t localhost/monochromatic/music-player -f Containerfile . }); ^podman run --rm --security-opt label=disable -v $"(pwd):/work" -v music-player-cargo:/cargo -w /work localhost/monochromatic/music-player cargo'
+# Bootstrap-safe cargo dispatch for this package. Interpolated into the cargo
+# tasks, each of which sets `shell = "node -e"`.
+# - On macOS/Windows (process.platform !== 'linux') runCargo builds natively with
+#   no host env and no container (a Linux container cannot produce those binaries;
+#   cpal is the audio backend there).
+# - hostOk (Linux): cargo on PATH and pkg-config resolves the PipeWire + Slint font
+#   libraries (fontconfig also validates its freetype2 Requires). libopus is NOT
+#   probed; the opus crate's opusic-sys backend cmake-builds libopus 1.6.1.
+# - hostEnv() (Linux host branch only): LIBCLANG_PATH points bindgen (libspa-sys)
+#   at the versioned host libclang, and BINDGEN_EXTRA_CLANG_ARGS supplies the clang
+#   resource dir (globbed so an LLVM bump needs no edit) since libclang in
+#   /usr/lib64 looks beside itself for stdbool.h under /usr/lib/clang/<v>.
+# - containerCargo(args): build the image when missing, then run cargo in podman.
+# - runCargo(args): native off Linux, else host when hostOk, else container.
+# Its imported bindings (execFileSync, globSync) are reused by inline follow-ups,
+# so those must not reimport them.
+cargo_dispatch = """
+const { execFileSync } = await import('node:child_process')
+const { globSync } = await import('node:fs')
+const onPath = (command) => { try { execFileSync('which', [command], { stdio: 'ignore' }); return true } catch { return false } }
+const pkgConfigOk = () => { try { execFileSync('pkg-config', ['--exists', 'libpipewire-0.3', 'fontconfig', 'freetype2'], { stdio: 'ignore' }); return true } catch { return false } }
+const hostOk = onPath('cargo') && pkgConfigOk()
+const hostEnv = () => {
+  const clangDirs = globSync('/usr/lib/clang/*').sort()
+  const resourceDir = clangDirs[clangDirs.length - 1]
+  return { ...process.env, LIBCLANG_PATH: '/usr/lib64', BINDGEN_EXTRA_CLANG_ARGS: `-resource-dir=${resourceDir}` }
+}
+const containerCargo = (cargoArgs) => {
+  let imageExists = true
+  try { execFileSync('podman', ['image', 'exists', 'localhost/monochromatic/music-player'], { stdio: 'ignore' }) } catch { imageExists = false }
+  if (!imageExists) { execFileSync('podman', ['build', '-t', 'localhost/monochromatic/music-player', '-f', 'Containerfile', '.'], { stdio: 'inherit' }) }
+  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
+}
+const runCargo = (cargoArgs) => {
+  if (process.platform !== 'linux') { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) }
+  else if (hostOk) { execFileSync('cargo', cargoArgs, { stdio: 'inherit', env: hostEnv() }) }
+  else { containerCargo(cargoArgs) }
+}
+"""
 
 [tasks.image]
 description = "Build the Fedora build/run container image"
@@ -70,26 +89,46 @@ run = "podman build -t localhost/monochromatic/music-player -f Containerfile ."
 
 [tasks.build]
 description = "Release build (macOS/Windows native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name != "linux") { cargo build --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['build', '--release'])
+"""
 
 [tasks."build:debug"]
 description = "Debug build (macOS/Windows native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name != "linux") { cargo build } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['build'])
+"""
 
 [tasks.lint]
 description = "cargo check, no codegen (macOS/Windows native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name != "linux") { cargo check } else if {{vars.host_ok}} { {{vars.host_env}}; cargo check } else { {{vars.container_cargo}} check }'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['check'])
+"""
 
 [tasks."lint:clippy"]
 description = "Run clippy with warnings denied (macOS/Windows native, else Linux host if dev libs present, else container)"
-run = 'if ($nu.os-info.name != "linux") { cargo clippy --release -- -D warnings } else if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --release -- -D warnings } else { {{vars.container_cargo}} clippy --release -- -D warnings }'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['clippy', '--release', '--', '-D', 'warnings'])
+"""
 
 [tasks."format:clippy"]
 description = "Apply clippy's machine-applicable suggestions in place (host if dev libs present, else container)"
 # --allow-no-vcs is harmless on the host (the repo .git is visible) and required
 # in the container, where only the package dir is bind-mounted at /work so the
 # repo-root .git is not visible and cargo fix would otherwise refuse to run.
-run = 'if ($nu.os-info.name != "linux") { cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else if {{vars.host_ok}} { {{vars.host_env}}; cargo clippy --fix --allow-dirty --allow-staged --allow-no-vcs } else { {{vars.container_cargo}} clippy --fix --allow-dirty --allow-staged --allow-no-vcs }'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs'])
+"""
 
 [tasks."lint:max-lines"]
 description = "Enforce the 300 code-line budget on .rs files (monochromatic-rust-linter)"
@@ -103,33 +142,48 @@ description = "cargo nextest run (macOS/Windows native, else Linux host if dev l
 # The native (non-Linux) branch needs cargo-nextest on PATH (`cargo install
 # cargo-nextest`, or `brew install cargo-nextest` on macOS); the tests are pure
 # logic with no audio backend, so they run identically on macOS and Windows.
-run = 'if ($nu.os-info.name != "linux") { cargo nextest run --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo nextest run --release } else { {{vars.container_cargo}} nextest run --release }'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+runCargo(['nextest', 'run', '--release'])
+"""
 
 [tasks."build:container"]
 description = "Release build forced inside the container (asserts the container path)"
-run = '{{vars.container_cargo}} build --release'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+containerCargo(['build', '--release'])
+"""
 
 [tasks."lint:clippy:container"]
 description = "clippy with warnings denied forced inside the container"
-run = '{{vars.container_cargo}} clippy --release -- -D warnings'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
+"""
 
 [tasks."test:container"]
 description = "cargo nextest run forced inside the container"
-run = '{{vars.container_cargo}} nextest run --release'
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+containerCargo(['nextest', 'run', '--release'])
+"""
 
 [tasks."verify:container"]
 description = "Assert the container build/clippy/test path works even when the host has the dev libs"
-# Aborts on the first failing step so a broken container path fails the task
-# rather than being masked by a later passing step (nushell `;` is not fail-fast).
-run = '''
-mise run image
-{{vars.container_cargo}} build --release
-if $env.LAST_EXIT_CODE != 0 { error make { msg: "container release build failed" } }
-{{vars.container_cargo}} clippy --release -- -D warnings
-if $env.LAST_EXIT_CODE != 0 { error make { msg: "container clippy failed" } }
-{{vars.container_cargo}} nextest run --release
-if $env.LAST_EXIT_CODE != 0 { error make { msg: "container tests failed" } }
-'''
+# Aborts on the first failing step (execFileSync throws) so a broken container
+# path fails the task rather than being masked by a later passing step.
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+execFileSync('mise', ['run', 'image'], { stdio: 'inherit' })
+containerCargo(['build', '--release'])
+containerCargo(['clippy', '--release', '--', '-D', 'warnings'])
+containerCargo(['nextest', 'run', '--release'])
+"""
 
 [tasks.run]
 description = "Build (host if dev libs present, else container), then run the music-player GUI on the host (pass file/folder paths after --)"
@@ -149,128 +203,114 @@ arg "[args]" var=#true help="File or folder paths to enqueue"
 # D-Bus session bus, PipeWire, and the XDG user dirs, so the empty-launch auto-load
 # finds the music directory, GPU GL uses /dev/dri directly, and the session file
 # lands in the real ~/.config/music-player. SLINT_BACKEND is read from the host env
-# if set (to force the software renderer).
-run = '''
-let home = ($env.HOME? | default '')
-# Build the release binary: macOS/Windows build natively with cargo; on Linux it
-# is host-first, and the container fallback surfaces it on the host at
-# target/release/music-player via the bind-mounted target/.
-if ($nu.os-info.name != "linux") { cargo build --release } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build --release } else { {{vars.container_cargo}} build --release }
-# Install onto the host so the KDE .desktop launcher and `mise run` exercise the
-# SAME binary. The .desktop uses a bare `Exec=music-player`, which KDE resolves on
-# the systemd user PATH: that PATH includes ~/.local/bin (verified via
-# `systemctl --user show-environment`) but NOT this package's target/release, so the
-# binary must be copied to ~/.local/bin or the launcher fails with "binary not
-# found". The .desktop is installed alongside so the shell can resolve
-# application://monochromatic.music-player.desktop and attach taskbar progress to the
-# window (matched by Wayland app id == StartupWMClass). Best-effort: when $HOME is
-# unset, both installs are skipped and the freshly built target/release copy is run
-# instead. KDE picks up a new .desktop file on next login if it does not appear
-# immediately.
-let bin = if ($nu.os-info.name != "linux") {
-  # macOS/Windows: the KDE .desktop launcher and ~/.local/bin install are
-  # Linux-only, so just run the freshly built release binary directly. Windows
-  # needs the .exe extension; macOS has none.
-  if ($nu.os-info.name == "windows") { './target/release/music-player.exe' } else { './target/release/music-player' }
-} else if ($home != '') {
-  let apps_dir = ($home | path join '.local/share/applications')
-  mkdir $apps_dir
-  cp --force share/applications/monochromatic.music-player.desktop $apps_dir
-  let bin_dir = ($home | path join '.local/bin')
-  mkdir $bin_dir
-  cp --force target/release/music-player $bin_dir
-  ($bin_dir | path join 'music-player')
+# if set (to force the software renderer). The KDE .desktop uses a bare
+# `Exec=music-player`, resolved on the systemd user PATH which includes ~/.local/bin
+# (verified via `systemctl --user show-environment`) but NOT this package's
+# target/release, so the binary is copied to ~/.local/bin to exercise the SAME
+# binary the launcher resolves. When HOME is unset, both installs are skipped and
+# the freshly built target/release copy is run instead.
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+{{vars.parse_usage_args}}
+const { mkdirSync, copyFileSync } = await import('node:fs')
+const { join } = await import('node:path')
+const home = process.env.HOME ?? ''
+runCargo(['build', '--release'])
+let bin
+if (process.platform !== 'linux') {
+  bin = process.platform === 'win32' ? './target/release/music-player.exe' : './target/release/music-player'
+} else if (home !== '') {
+  const appsDir = join(home, '.local/share/applications')
+  mkdirSync(appsDir, { recursive: true })
+  copyFileSync('share/applications/monochromatic.music-player.desktop', join(appsDir, 'monochromatic.music-player.desktop'))
+  const binDir = join(home, '.local/bin')
+  mkdirSync(binDir, { recursive: true })
+  copyFileSync('target/release/music-player', join(binDir, 'music-player'))
+  bin = join(binDir, 'music-player')
 } else {
-  './target/release/music-player'
+  bin = './target/release/music-player'
 }
-let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
-# Run the installed binary directly on the host (same path KDE launches).
-^$bin ...$extras
-'''
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync(bin, extras, { stdio: 'inherit' })
+"""
 
 [tasks."run-debug"]
 description = "Debug build (host if dev libs present, else container), then run it on the host for fast iteration (pass file/folder paths after --)"
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue"
 '''
-# Fast-iteration sibling of `run`. `run` builds the optimised release binary
-# (fat LTO, ~1-2 min) and installs it to ~/.local/bin so the KDE .desktop
-# launcher and `mise run` exercise the SAME binary. This task skips all of that:
-# it builds the unoptimised DEBUG binary (~10s incremental, no LTO/strip) and
-# runs target/debug/music-player directly. It deliberately does NOT copy into
-# ~/.local/bin or install the .desktop, so the installed release binary the
-# launcher resolves is left untouched. The host session still supplies
-# WAYLAND_DISPLAY, XDG_RUNTIME_DIR, the D-Bus bus, PipeWire, and the XDG user
-# dirs, so the GUI, audio, and auto-load behave exactly as under `run`.
-run = '''
-# Build the debug binary: macOS/Windows build natively with cargo; on Linux it is
-# host-first, and the container fallback surfaces it at target/debug/music-player
-# via the bind-mounted target/.
-if ($nu.os-info.name != "linux") { cargo build } else if {{vars.host_ok}} { {{vars.host_env}}; cargo build } else { {{vars.container_cargo}} build }
-let extras = ($env.usage_args? | default '' | str trim | split row "' '" | each {|p| $p | str trim --char "'" } | where {|p| $p != '' })
-# Run the freshly built debug binary directly. Windows needs the .exe extension.
-let bin = if ($nu.os-info.name == "windows") { './target/debug/music-player.exe' } else { './target/debug/music-player' }
-^$bin ...$extras
-'''
+# Fast-iteration sibling of `run`: builds the unoptimised DEBUG binary (~10s
+# incremental, no LTO/strip) and runs target/debug/music-player directly. It does
+# NOT copy into ~/.local/bin or install the .desktop, so the installed release
+# binary the launcher resolves is left untouched.
+shell = "node -e"
+run = """
+{{vars.cargo_dispatch}}
+{{vars.parse_usage_args}}
+runCargo(['build'])
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+const bin = process.platform === 'win32' ? './target/debug/music-player.exe' : './target/debug/music-player'
+execFileSync(bin, extras, { stdio: 'inherit' })
+"""
 
 [tasks."gen:fixtures"]
 description = "Generate tiny per-codec audio fixtures with host ffmpeg (run once, commit results)"
 # Runs on the host: ffmpeg is present there. 0.3s 440Hz stereo sine per codec.
-# All dash-leading codec args are quoted strings so nushell treats them as
-# data, not flags. 48000 Hz is used because libopus only accepts a fixed set
-# of input rates (8000/12000/16000/24000/48000); 48000 is the safe common rate.
-run = '''
-let specs = [
-  [ext, args];
-  ["wav" []]
-  ["flac" []]
-  ["mp3" ["-c:a" "libmp3lame"]]
-  ["ogg" ["-c:a" "libvorbis"]]
-  ["opus" ["-c:a" "libopus"]]
-  ["aac.m4a" ["-c:a" "aac"]]
-  ["alac.m4a" ["-c:a" "alac"]]
+# 48000 Hz is used because libopus only accepts a fixed set of input rates
+# (8000/12000/16000/24000/48000); 48000 is the safe common rate.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const specs = [
+  { ext: 'wav', args: [] },
+  { ext: 'flac', args: [] },
+  { ext: 'mp3', args: ['-c:a', 'libmp3lame'] },
+  { ext: 'ogg', args: ['-c:a', 'libvorbis'] },
+  { ext: 'opus', args: ['-c:a', 'libopus'] },
+  { ext: 'aac.m4a', args: ['-c:a', 'aac'] },
+  { ext: 'alac.m4a', args: ['-c:a', 'alac'] },
 ]
-for s in $specs {
-  let out = $"fixtures/tone.($s.ext)"
-  print $"generating ($out)"
-  ffmpeg -y -f lavfi -i "sine=frequency=440:duration=0.3" -ac 2 -ar 48000 ...$s.args $out
+for (const spec of specs) {
+  const out = `fixtures/tone.${spec.ext}`
+  console.log(`generating ${out}`)
+  execFileSync('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=0.3', '-ac', '2', '-ar', '48000', ...spec.args, out], { stdio: 'inherit' })
 }
-# offset.opus: a remux of tone.opus with a +0.5s timestamp offset, so its first
-# audio frame is NOT frame 0 (track start_ts becomes non-zero). This reproduces
-# the real-world Ogg/Opus seek-to-start bug (seeking to second 0 mapped to frame
-# 0, which the demuxer rejects as out-of-range). The seek_to_start_of_offset_opus
-# regression test depends on this fixture.
-print "generating fixtures/offset.opus"
-ffmpeg -y -i fixtures/tone.opus -c copy -output_ts_offset 0.5 fixtures/offset.opus
-'''
+// offset.opus: a remux of tone.opus with a +0.5s timestamp offset so its first
+// audio frame is NOT frame 0, reproducing the Ogg/Opus seek-to-start bug that the
+// seek_to_start_of_offset_opus regression test depends on.
+console.log('generating fixtures/offset.opus')
+execFileSync('ffmpeg', ['-y', '-i', 'fixtures/tone.opus', '-c', 'copy', '-output_ts_offset', '0.5', 'fixtures/offset.opus'], { stdio: 'inherit' })
+"""
 
 [tasks."gen:icons"]
 description = "Regenerate the macOS .icns + Windows .ico from assets/icon.svg (run once, commit results)"
 # The host (immutable Fedora) carries none of the icon tools, so generation runs
 # in the Containerfile.icons image (built first; layer-cached after the first
-# run). rsvg-convert renders the SVG to PNG at each size; png2icns packs the
-# macOS set (16/32/48/128/256/512/1024 are the icns-valid sizes), icotool packs
-# the Windows set (16/32/48/64/128/256). The PNGs are throwaway (under dist/,
-# gitignored); the committed outputs are assets/music-player.{icns,ico}, which
-# the bundle:macos task and the Windows build.rs consume, so neither needs this
-# image. Rerun only when assets/icon.svg changes.
-run = '''
-podman build -t localhost/monochromatic/icon-tools -f Containerfile.icons .
-let img = "localhost/monochromatic/icon-tools"
-let mount = $"(pwd):/work"
-mkdir dist/icons
-for s in [16 32 48 64 128 256 512 1024] {
-  podman run --rm --security-opt label=disable -v $mount -w /work $img rsvg-convert -w $s -h $s assets/icon.svg -o $"dist/icons/icon-($s).png"
+# run). rsvg-convert renders the SVG to PNG at each size; png2icns packs the macOS
+# set, icotool packs the Windows set. The PNGs are throwaway (under dist/,
+# gitignored); the committed outputs are assets/music-player.{icns,ico}.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { mkdirSync } = await import('node:fs')
+execFileSync('podman', ['build', '-t', 'localhost/monochromatic/icon-tools', '-f', 'Containerfile.icons', '.'], { stdio: 'inherit' })
+const img = 'localhost/monochromatic/icon-tools'
+const mount = `${process.cwd()}:/work`
+const inContainer = (toolArgs) => execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', '-v', mount, '-w', '/work', img, ...toolArgs], { stdio: 'inherit' })
+mkdirSync('dist/icons', { recursive: true })
+for (const size of [16, 32, 48, 64, 128, 256, 512, 1024]) {
+  inContainer(['rsvg-convert', '-w', String(size), '-h', String(size), 'assets/icon.svg', '-o', `dist/icons/icon-${size}.png`])
 }
-podman run --rm --security-opt label=disable -v $mount -w /work $img png2icns assets/music-player.icns dist/icons/icon-16.png dist/icons/icon-32.png dist/icons/icon-48.png dist/icons/icon-128.png dist/icons/icon-256.png dist/icons/icon-512.png dist/icons/icon-1024.png
-podman run --rm --security-opt label=disable -v $mount -w /work $img icotool -c -o assets/music-player.ico dist/icons/icon-16.png dist/icons/icon-32.png dist/icons/icon-48.png dist/icons/icon-64.png dist/icons/icon-128.png dist/icons/icon-256.png
-print "regenerated assets/music-player.icns and assets/music-player.ico; commit them"
-'''
+inContainer(['png2icns', 'assets/music-player.icns', 'dist/icons/icon-16.png', 'dist/icons/icon-32.png', 'dist/icons/icon-48.png', 'dist/icons/icon-128.png', 'dist/icons/icon-256.png', 'dist/icons/icon-512.png', 'dist/icons/icon-1024.png'])
+inContainer(['icotool', '-c', '-o', 'assets/music-player.ico', 'dist/icons/icon-16.png', 'dist/icons/icon-32.png', 'dist/icons/icon-48.png', 'dist/icons/icon-64.png', 'dist/icons/icon-128.png', 'dist/icons/icon-256.png'])
+console.log('regenerated assets/music-player.icns and assets/music-player.ico; commit them')
+"""
 
 # Distribution / code signing.
-# The per-OS binaries are still BUILT on their own OS (the Mach-O on the Mac via
-# `build`, the .exe on Windows via `build`), because cross-compiling a Slint+cpal
-# GUI from Linux is out of scope. Only the bundling + signing + notarization is
+# The per-OS binaries are still BUILT on their own OS (the Mach-O on the Mac, the
+# .exe on Windows, both via `build`), because cross-compiling a Slint+cpal GUI
+# from Linux is out of scope. Only the bundling + signing + notarization is
 # cross-platform and centralized here on Linux: rcodesign (a repo-wide mise tool)
 # for macOS, osslsigncode (in Containerfile.sign) for Windows. Each task assumes
 # the freshly built binary has been synced into dist/. Real credentials are read
@@ -284,111 +324,116 @@ description = "Assemble dist/Music Player.app around the macOS Mach-O (synced fr
 # Runs on Linux. MP_MACOS_BINARY (default dist/music-player) is the Mach-O built
 # on the Mac. Info.plist is a template: __MP_VERSION__ is replaced with the
 # Cargo.toml version; assets/music-player.icns is the committed bundle icon.
-run = '''
-let bin = ($env.MP_MACOS_BINARY? | default 'dist/music-player')
-if not ($bin | path exists) {
-  error make { msg: $"macOS binary not found at ($bin). Build on the Mac then copy target/release/music-player to ($bin). Build task: //packages/desktop-app/music-player:build" }
-}
-let ver = (open Cargo.toml | get package.version)
-let app = 'dist/Music Player.app'
-rm --recursive --force $app
-mkdir $"($app)/Contents/MacOS"
-mkdir $"($app)/Contents/Resources"
-cp $bin $"($app)/Contents/MacOS/music-player"
-^chmod +x $"($app)/Contents/MacOS/music-player"
-open --raw macos/Info.plist | str replace --all '__MP_VERSION__' $ver | save --force $"($app)/Contents/Info.plist"
-cp assets/music-player.icns $"($app)/Contents/Resources/music-player.icns"
-print $"assembled ($app) version ($ver)"
-'''
+shell = "node -e"
+run = """
+const { existsSync, rmSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, chmodSync } = await import('node:fs')
+const bin = process.env.MP_MACOS_BINARY ?? 'dist/music-player'
+if (!existsSync(bin)) { throw new Error(`macOS binary not found at ${bin}. Build on the Mac then copy target/release/music-player to ${bin}. Build task: //packages/desktop-app/music-player:build`) }
+const versionLine = readFileSync('Cargo.toml', 'utf8').split('\\n').find((line) => line.trimStart().startsWith('version'))
+const ver = versionLine.slice(versionLine.indexOf('"') + 1, versionLine.lastIndexOf('"'))
+const app = 'dist/Music Player.app'
+rmSync(app, { recursive: true, force: true })
+mkdirSync(`${app}/Contents/MacOS`, { recursive: true })
+mkdirSync(`${app}/Contents/Resources`, { recursive: true })
+copyFileSync(bin, `${app}/Contents/MacOS/music-player`)
+chmodSync(`${app}/Contents/MacOS/music-player`, 0o755)
+const plist = readFileSync('macos/Info.plist', 'utf8').split('__MP_VERSION__').join(ver)
+writeFileSync(`${app}/Contents/Info.plist`, plist)
+copyFileSync('assets/music-player.icns', `${app}/Contents/Resources/music-player.icns`)
+console.log(`assembled ${app} version ${ver}`)
+"""
 
 [tasks."sign:macos"]
 description = "Sign dist/Music Player.app with rcodesign (Developer ID from env, else throwaway self-signed)"
 # Real path: a Developer ID Application .p12 + password file (MP_MACOS_P12 /
 # MP_MACOS_P12_PASSWORD_FILE), signed --for-notarization (hardened runtime +
 # secure timestamp). Test path (env unset): a throwaway self-signed cert under
-# dist/selfsign, neutral subject so no real name leaks; such a build will NOT
-# pass Gatekeeper and cannot be notarized.
-run = '''
-let app = 'dist/Music Player.app'
-if not ($app | path exists) { error make { msg: $"($app) not found; run bundle:macos first" } }
-if 'MP_MACOS_P12' in $env {
-  let pwfile = ($env.MP_MACOS_P12_PASSWORD_FILE? | default '')
-  if ($pwfile | is-empty) { error make { msg: "MP_MACOS_P12 is set but MP_MACOS_P12_PASSWORD_FILE is not" } }
-  print "signing with Developer ID (.p12) for notarization"
-  rcodesign sign --p12-file $env.MP_MACOS_P12 --p12-password-file $pwfile --for-notarization --entitlements-xml-file macos/entitlements.plist $app
+# dist/selfsign, neutral subject; such a build will NOT pass Gatekeeper.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { existsSync, mkdirSync } = await import('node:fs')
+const app = 'dist/Music Player.app'
+if (!existsSync(app)) { throw new Error(`${app} not found; run bundle:macos first`) }
+if (process.env.MP_MACOS_P12 !== undefined) {
+  const pwfile = process.env.MP_MACOS_P12_PASSWORD_FILE ?? ''
+  if (pwfile === '') { throw new Error('MP_MACOS_P12 is set but MP_MACOS_P12_PASSWORD_FILE is not') }
+  console.log('signing with Developer ID (.p12) for notarization')
+  execFileSync('rcodesign', ['sign', '--p12-file', process.env.MP_MACOS_P12, '--p12-password-file', pwfile, '--for-notarization', '--entitlements-xml-file', 'macos/entitlements.plist', app], { stdio: 'inherit' })
 } else {
-  print -e "MP_MACOS_P12 unset: signing with a THROWAWAY self-signed cert (not distributable, cannot notarize)"
-  mkdir dist/selfsign
-  if not ('dist/selfsign/macos-test.crt' | path exists) {
-    rcodesign generate-self-signed-certificate --profile developer-id-application --person-name 'Monochromatic Test (self-signed, not for distribution)' --pem-filename dist/selfsign/macos-test
+  console.error('MP_MACOS_P12 unset: signing with a THROWAWAY self-signed cert (not distributable, cannot notarize)')
+  mkdirSync('dist/selfsign', { recursive: true })
+  if (!existsSync('dist/selfsign/macos-test.crt')) {
+    execFileSync('rcodesign', ['generate-self-signed-certificate', '--profile', 'developer-id-application', '--person-name', 'Monochromatic Test (self-signed, not for distribution)', '--pem-filename', 'dist/selfsign/macos-test'], { stdio: 'inherit' })
   }
-  rcodesign sign --pem-file dist/selfsign/macos-test.crt --pem-file dist/selfsign/macos-test.key --code-signature-flags runtime --entitlements-xml-file macos/entitlements.plist $app
+  execFileSync('rcodesign', ['sign', '--pem-file', 'dist/selfsign/macos-test.crt', '--pem-file', 'dist/selfsign/macos-test.key', '--code-signature-flags', 'runtime', '--entitlements-xml-file', 'macos/entitlements.plist', app], { stdio: 'inherit' })
 }
-rcodesign verify $"($app)/Contents/MacOS/music-player"
-print $"signed ($app)"
-'''
+execFileSync('rcodesign', ['verify', `${app}/Contents/MacOS/music-player`], { stdio: 'inherit' })
+console.log(`signed ${app}`)
+"""
 
 [tasks."notarize:macos"]
 description = "Submit dist/Music Player.app to Apple notary and staple the ticket (needs real Apple creds)"
 # Requires MP_ASC_API_KEY_JSON (an App Store Connect API key encoded by
 # `rcodesign encode-app-store-connect-api-key`). The .app must already be signed
-# with a real Developer ID (sign:macos with MP_MACOS_P12). Contacts Apple's
-# servers; a self-signed build is rejected.
-run = '''
-let app = 'dist/Music Player.app'
-if not ($app | path exists) { error make { msg: $"($app) not found; run bundle:macos + sign:macos first" } }
-if not ('MP_ASC_API_KEY_JSON' in $env) {
-  error make { msg: "MP_ASC_API_KEY_JSON unset. Create an App Store Connect API key, encode it with `rcodesign encode-app-store-connect-api-key -o key.json <issuer-id> <key-id> AuthKey_<key-id>.p8`, then set MP_ASC_API_KEY_JSON=key.json. See HANDOVER.macos-signing-credentials.md." }
-}
-rcodesign notary-submit --api-key-file $env.MP_ASC_API_KEY_JSON --staple $app
-print $"notarized + stapled ($app)"
-'''
+# with a real Developer ID (sign:macos with MP_MACOS_P12).
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { existsSync } = await import('node:fs')
+const app = 'dist/Music Player.app'
+if (!existsSync(app)) { throw new Error(`${app} not found; run bundle:macos + sign:macos first`) }
+if (process.env.MP_ASC_API_KEY_JSON === undefined) { throw new Error('MP_ASC_API_KEY_JSON unset. Create an App Store Connect API key, encode it with `rcodesign encode-app-store-connect-api-key -o key.json <issuer-id> <key-id> AuthKey_<key-id>.p8`, then set MP_ASC_API_KEY_JSON=key.json. See HANDOVER.macos-signing-credentials.md.') }
+execFileSync('rcodesign', ['notary-submit', '--api-key-file', process.env.MP_ASC_API_KEY_JSON, '--staple', app], { stdio: 'inherit' })
+console.log(`notarized + stapled ${app}`)
+"""
 
 [tasks."sign:windows"]
 description = "Authenticode-sign dist/music-player.exe in the sign container (org cert from env, else self-signed)"
 # Runs osslsigncode in Containerfile.sign. MP_WIN_EXE (default
-# dist/music-player.exe) is the .exe built on Windows. Real path: an
-# organization OV cert over PKCS#11 (MP_WIN_PKCS11_MODULE / _CERT / _KEY, e.g.
-# Certum SimplySign cloud) with an RFC3161 timestamp (MP_WIN_TIMESTAMP_URL,
-# default Certum). Test path: a throwaway self-signed .pfx under dist/selfsign,
-# neutral subject; SmartScreen will not trust it. See
-# HANDOVER.windows-signing-credentials.md.
-run = '''
-podman build -t localhost/monochromatic/sign -f Containerfile.sign .
-let exe = ($env.MP_WIN_EXE? | default 'dist/music-player.exe')
-if not ($exe | path exists) {
-  error make { msg: $"Windows exe not found at ($exe). Build on x13-win then copy target/release/music-player.exe to ($exe). Build task: //packages/desktop-app/music-player:build" }
-}
-let out = 'dist/music-player-signed.exe'
-let ts = ($env.MP_WIN_TIMESTAMP_URL? | default 'http://time.certum.pl')
-let pre = ['run' '--rm' '--security-opt' 'label=disable' '-v' $"(pwd):/work" '-w' '/work' 'localhost/monochromatic/sign']
-if 'MP_WIN_PKCS11_MODULE' in $env {
-  print "signing with organization OV cert via PKCS#11"
-  ^podman ...$pre osslsigncode sign -pkcs11module $env.MP_WIN_PKCS11_MODULE -pkcs11cert $env.MP_WIN_PKCS11_CERT -key $env.MP_WIN_PKCS11_KEY -n 'Music Player' -ts $ts -in $exe -out $out
-  ^podman ...$pre osslsigncode verify -in $out
+# dist/music-player.exe) is the .exe built on Windows. Real path: an organization
+# OV cert over PKCS#11 (MP_WIN_PKCS11_MODULE / _CERT / _KEY) with an RFC3161
+# timestamp (MP_WIN_TIMESTAMP_URL, default Certum). Test path: a throwaway
+# self-signed .pfx under dist/selfsign; SmartScreen will not trust it.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { existsSync, mkdirSync } = await import('node:fs')
+execFileSync('podman', ['build', '-t', 'localhost/monochromatic/sign', '-f', 'Containerfile.sign', '.'], { stdio: 'inherit' })
+const exe = process.env.MP_WIN_EXE ?? 'dist/music-player.exe'
+if (!existsSync(exe)) { throw new Error(`Windows exe not found at ${exe}. Build on x13-win then copy target/release/music-player.exe to ${exe}. Build task: //packages/desktop-app/music-player:build`) }
+const out = 'dist/music-player-signed.exe'
+const ts = process.env.MP_WIN_TIMESTAMP_URL ?? 'http://time.certum.pl'
+const pre = ['run', '--rm', '--security-opt', 'label=disable', '-v', `${process.cwd()}:/work`, '-w', '/work', 'localhost/monochromatic/sign']
+if (process.env.MP_WIN_PKCS11_MODULE !== undefined) {
+  console.log('signing with organization OV cert via PKCS#11')
+  execFileSync('podman', [...pre, 'osslsigncode', 'sign', '-pkcs11module', process.env.MP_WIN_PKCS11_MODULE, '-pkcs11cert', process.env.MP_WIN_PKCS11_CERT, '-key', process.env.MP_WIN_PKCS11_KEY, '-n', 'Music Player', '-ts', ts, '-in', exe, '-out', out], { stdio: 'inherit' })
+  execFileSync('podman', [...pre, 'osslsigncode', 'verify', '-in', out], { stdio: 'inherit' })
 } else {
-  print -e "MP_WIN_PKCS11_MODULE unset: signing with a THROWAWAY self-signed cert (SmartScreen will warn)"
-  mkdir dist/selfsign
-  if not ('dist/selfsign/win-test.pfx' | path exists) {
-    ^podman ...$pre openssl req -x509 -newkey rsa:2048 -nodes -keyout dist/selfsign/win-test.key -out dist/selfsign/win-test.crt -days 825 -subj '/O=Monochromatic Test/CN=Monochromatic Test (self-signed, not for distribution)'
-    ^podman ...$pre openssl pkcs12 -export -out dist/selfsign/win-test.pfx -inkey dist/selfsign/win-test.key -in dist/selfsign/win-test.crt -passout pass:test
+  console.error('MP_WIN_PKCS11_MODULE unset: signing with a THROWAWAY self-signed cert (SmartScreen will warn)')
+  mkdirSync('dist/selfsign', { recursive: true })
+  if (!existsSync('dist/selfsign/win-test.pfx')) {
+    execFileSync('podman', [...pre, 'openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', 'dist/selfsign/win-test.key', '-out', 'dist/selfsign/win-test.crt', '-days', '825', '-subj', '/O=Monochromatic Test/CN=Monochromatic Test (self-signed, not for distribution)'], { stdio: 'inherit' })
+    execFileSync('podman', [...pre, 'openssl', 'pkcs12', '-export', '-out', 'dist/selfsign/win-test.pfx', '-inkey', 'dist/selfsign/win-test.key', '-in', 'dist/selfsign/win-test.crt', '-passout', 'pass:test'], { stdio: 'inherit' })
   }
-  ^podman ...$pre osslsigncode sign -pkcs12 dist/selfsign/win-test.pfx -pass test -n 'Music Player' -in $exe -out $out
-  ^podman ...$pre osslsigncode verify -CAfile dist/selfsign/win-test.crt -in $out
+  execFileSync('podman', [...pre, 'osslsigncode', 'sign', '-pkcs12', 'dist/selfsign/win-test.pfx', '-pass', 'test', '-n', 'Music Player', '-in', exe, '-out', out], { stdio: 'inherit' })
+  execFileSync('podman', [...pre, 'osslsigncode', 'verify', '-CAfile', 'dist/selfsign/win-test.crt', '-in', out], { stdio: 'inherit' })
 }
-print $"signed ($out)"
-'''
+console.log(`signed ${out}`)
+"""
 
 [tasks."verify:signing"]
 description = "Self-signed end-to-end check of the signing pipeline (needs dist/ binaries synced from the Mac/Windows boxes)"
-# Exercises bundle:macos + sign:macos (self-signed) and sign:windows
-# (self-signed) so the mechanics are proven on Linux without any real
-# credentials. The artifacts produced are NOT distributable.
-run = '''
-print "== macOS: bundle + self-signed sign + verify =="
-mise run bundle:macos
-mise run sign:macos
-print "== Windows: self-signed sign + verify =="
-mise run sign:windows
-print "self-signed signing pipeline OK (artifacts are NOT distributable)"
-'''
+# Exercises bundle:macos + sign:macos (self-signed) and sign:windows (self-signed)
+# so the mechanics are proven on Linux without any real credentials. The artifacts
+# produced are NOT distributable.
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+console.log('== macOS: bundle + self-signed sign + verify ==')
+execFileSync('mise', ['run', 'bundle:macos'], { stdio: 'inherit' })
+execFileSync('mise', ['run', 'sign:macos'], { stdio: 'inherit' })
+console.log('== Windows: self-signed sign + verify ==')
+execFileSync('mise', ['run', 'sign:windows'], { stdio: 'inherit' })
+console.log('self-signed signing pipeline OK (artifacts are NOT distributable)')
+"""
