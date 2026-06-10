@@ -237,33 +237,57 @@ const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
 const failed = children.filter((name, index) => exits[index][0] !== 0)
 if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.join(', ')}`) }
 """
-# Resolve the monorepo root from either root or package-local mise tasks.
-monorepo_root_setup = """
-let config_root = ($env.MISE_CONFIG_ROOT? | default (pwd))
-let root = ($env.MISE_MONOREPO_ROOT? | default (if ([$config_root mise.no-env.toml] | path join | path exists) { $config_root } else { ([$config_root '..' '..' '..'] | path join | path expand) }))
-"""
-# Bootstrap-safe inline Nushell dispatch. Prefer built dist when present, otherwise run TypeScript source through Node.
-workspace_node_dispatch = """
-def --wrapped run_workspace_node [root: string, package_path: string, entry_name: string, ...entry_args: string] {
-  let package_root = ([$root $package_path] | path join)
-  let built = ([$package_root dist final node $"($entry_name).mjs"] | path join)
-  let src = ([$package_root src $"($entry_name).ts"] | path join)
-  if ($built | path exists) {
-    node $built ...$entry_args
-  } else {
-    if ($src | path exists) {
-      node $src ...$entry_args
-    } else {
-      error make { msg: $"missing built or source entry: ($package_path)/($entry_name)" }
-    }
-  }
+# Bootstrap-safe dispatch to a packages/dev-script/task-util entry. Resolves the
+# monorepo root (mise sets MISE_MONOREPO_ROOT in monorepo mode; the fallback
+# covers non-monorepo invocations), then runs the entry's built dist when present,
+# else its TS source through node. Interpolated into the task-util dispatcher
+# tasks, each of which sets `shell = "node -e"`. The bindings it imports
+# (existsSync, join, execFileSync) are reused by any inline follow-up in those
+# bodies, so the follow-up must not reimport them.
+dispatch_task_util = """
+const { existsSync } = await import('node:fs')
+const { join, resolve } = await import('node:path')
+const { execFileSync } = await import('node:child_process')
+const configRoot = process.env.MISE_CONFIG_ROOT ?? process.cwd()
+const monorepoRoot = process.env.MISE_MONOREPO_ROOT ?? (existsSync(join(configRoot, 'mise.no-env.toml')) ? configRoot : resolve(configRoot, '..', '..', '..'))
+const runTaskUtil = (entryName, entryArgs) => {
+  const packageRoot = join(monorepoRoot, 'packages', 'dev-script', 'task-util')
+  const built = join(packageRoot, 'dist', 'final', 'node', `${entryName}.mjs`)
+  const source = join(packageRoot, 'src', `${entryName}.ts`)
+  const entry = existsSync(built) ? built : existsSync(source) ? source : null
+  if (entry === null) { throw new Error(`missing built or source entry: task-util/${entryName}`) }
+  execFileSync('node', [entry, ...entryArgs], { stdio: 'inherit' })
 }
 """
-# Root oxlint config imports a built workspace package, so build it once on fresh trees before oxlint runs.
-ensure_oxlint_config = """
-let oxlint_config = ([$root packages config oxlint dist final node index.mjs] | path join)
-if not ($oxlint_config | path exists) {
-  mise run //packages/config/oxlint:build:js:node
+# Shell-word parser for mise's usage_args, which arrives as a single shell-escaped
+# string (e.g. a path with a space becomes `'weird name.ts'`). Recovers the
+# original argument vector: bare tokens split on spaces, single/double-quoted
+# spans kept whole, backslash escapes honoured. Subsumes the former `nu -c echo`
+# unescape trick. Interpolated into tasks that take positional file-path args.
+parse_usage_args = """
+const parseUsageArgs = (raw) => {
+  const argv = []
+  let current = null
+  let index = 0
+  while (index < raw.length) {
+    const char = raw[index]
+    if (current === null) {
+      if (char === ' ') { index += 1; continue }
+      current = ''
+    }
+    if (char === '\\\\') { current += raw[index + 1] ?? ''; index += 2; continue }
+    if (char === "'" || char === '"') {
+      index += 1
+      while (index < raw.length && raw[index] !== char) { current += raw[index]; index += 1 }
+      index += 1
+      continue
+    }
+    if (char === ' ') { argv.push(current); current = null; index += 1; continue }
+    current += char
+    index += 1
+  }
+  if (current !== null) { argv.push(current) }
+  return argv
 }
 """
 
@@ -340,19 +364,20 @@ run = "{{vars.fanout}}"
 
 [task_templates."lint:oxlint"]
 description = "Lint with Oxlint"
+shell = "node -e"
 run = """
-{{vars.monorepo_root_setup}}
-{{vars.ensure_oxlint_config}}
-{{vars.workspace_node_dispatch}}
-run_workspace_node $root packages/dev-script/task-util oxlint-wrapper --type-aware
+{{vars.dispatch_task_util}}
+const oxlintConfig = join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs')
+if (!existsSync(oxlintConfig)) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
+runTaskUtil('oxlint-wrapper', ['--type-aware'])
 """
 
 [task_templates."lint:types"]
 description = "TypeScript"
+shell = "node -e"
 run = """
-{{vars.monorepo_root_setup}}
-{{vars.workspace_node_dispatch}}
-run_workspace_node $root packages/dev-script/task-util tsgo-filter --build
+{{vars.dispatch_task_util}}
+runTaskUtil('tsgo-filter', ['--build'])
 """
 
 [task_templates."watch:lint:types"]
@@ -593,11 +618,12 @@ hide = true
 # A proper fix would require per-package fan-out like lint:oxlint,
 # but the format task is not the right place for that complexity.
 description = "Auto-fix with Oxlint (non-type-aware only)"
+shell = "node -e"
 run = """
-{{vars.monorepo_root_setup}}
-{{vars.ensure_oxlint_config}}
-{{vars.workspace_node_dispatch}}
-run_workspace_node $root packages/dev-script/task-util oxlint-wrapper --fix
+{{vars.dispatch_task_util}}
+const oxlintConfig = join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs')
+if (!existsSync(oxlintConfig)) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
+runTaskUtil('oxlint-wrapper', ['--fix'])
 """
 
 # Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
@@ -667,10 +693,10 @@ run = "bun file-enforcer.config.ts"
 
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
+shell = "node -e"
 run = """
-{{vars.monorepo_root_setup}}
-{{vars.workspace_node_dispatch}}
-run_workspace_node $root packages/dev-script/task-util depends --sources "sh:echo Infinity" --outputs "sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity" -- podman build -t monochromatic-playwright -f playwright.Dockerfile .
+{{vars.dispatch_task_util}}
+runTaskUtil('depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
 """
 
 [tasks.prepareAndBuild]
