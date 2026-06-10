@@ -290,6 +290,32 @@ const parseUsageArgs = (raw) => {
   return argv
 }
 """
+# Runs a list of test files as `bun [bunArgs] <file>` subprocesses, bounded to
+# availableParallelism() at a time (the same cap nushell's par-each used), and
+# throws listing any that exited non-zero. Interpolated into the test tasks; each
+# sets `shell = "node -e"`. Replaces `$files | par-each { bun $file }`.
+run_test_files = """
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { availableParallelism } = await import('node:os')
+const runTestFiles = async (files, bunArgs) => {
+  if (files.length === 0) { return }
+  const limit = Math.max(1, Math.min(availableParallelism(), files.length))
+  const failures = []
+  let next = 0
+  const worker = async () => {
+    while (next < files.length) {
+      const file = files[next]
+      next += 1
+      const proc = spawn('bun', [...bunArgs, file], { stdio: 'inherit' })
+      const [code] = await once(proc, 'exit')
+      if (code !== 0) { failures.push(file) }
+    }
+  }
+  await Promise.all(Array.from({ length: limit }, worker))
+  if (failures.length > 0) { throw new Error(`test files failed: ${failures.join(', ')}`) }
+}
+"""
 
 [task_templates.build]
 shell = "node -e"
@@ -335,23 +361,30 @@ usage = """
 flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
 arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
 """
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
-let all = ($env.usage_all? | default '' | str trim) == 'true'
-if $all and (not ($args | is-empty)) {
-  error make { msg: "--all cannot be combined with file paths" }
-}
-let files = if ($args | is-empty) {
-  let g = (glob "**/*.unit.test.ts")
-  if $all { $g } else { $g | where { not ($in | str contains "/deprecated/") } | where { not ($in | str contains ".expensive.") } }
+{{vars.parse_usage_args}}
+{{vars.run_test_files}}
+const { existsSync } = await import('node:fs')
+const { glob } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+const all = (process.env.usage_all ?? '').trim() === 'true'
+if (all && args.length > 0) { throw new Error('--all cannot be combined with file paths') }
+let files
+if (args.length === 0) {
+  files = []
+  for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
+    if (all || (!file.includes('/deprecated/') && !file.includes('.expensive.'))) { files.push(file) }
+  }
 } else {
-  # Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
-  # path passed verbatim resolves under the package and fails with "Module not found". Resolve each
-  # arg against the monorepo root (modern mise), then the mise invocation dir, then cwd.
-  let base = ($env.MISE_MONOREPO_ROOT? | default ($env.MISE_ORIGINAL_CWD? | default (pwd)))
-  $args | each {|f| if ($f | path exists) { $f } else { [$base $f] | path join } }
+  // Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
+  // path passed verbatim resolves under the package. Resolve each arg against the monorepo root
+  // (modern mise), then the mise invocation dir, then cwd.
+  const base = process.env.MISE_MONOREPO_ROOT ?? process.env.MISE_ORIGINAL_CWD ?? process.cwd()
+  files = args.map((file) => existsSync(file) ? file : join(base, file))
 }
-$files | par-each { |file| bun $file }
+await runTestFiles(files, [])
 """
 
 [task_templates."watch:test"]
@@ -398,7 +431,13 @@ run = "{{vars.fanout}}"
 [tasks.try]
 description = "Run a task, tolerating failures"
 usage = 'arg "task" help="Task name to run with failure tolerance"'
-run = "try { mise run $env.usage_task } catch { |e| print -e $e.rendered }"
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+// Deliberately tolerant: the child's stderr is inherited (so its failure is
+// visible), and try only stops the non-zero exit from propagating.
+try { execFileSync('mise', ['run', process.env.usage_task], { stdio: 'inherit' }) } catch { /* tolerated */ }
+"""
 
 #endregion Utility Tasks
 
@@ -425,14 +464,19 @@ run = "mise '//packages/...:watch:build'"
 description = "Run all tests, or pass args to filter unit tests"
 alias = "t"
 usage = 'arg "[args]" var=#true help="Test file paths (when provided, only unit tests run)"'
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim)
-if $args == '' {
-  mise run test:unit ::: test:browser ::: test:e2e
+{{vars.parse_usage_args}}
+{{vars.run_test_files}}
+const args = parseUsageArgs(process.env.usage_args ?? '')
+if (args.length === 0) {
+  const suites = ['test:unit', 'test:browser', 'test:e2e']
+  const processes = suites.map((suite) => spawn('mise', ['run', suite], { stdio: 'inherit' }))
+  const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
+  const failed = suites.filter((suite, index) => exits[index][0] !== 0)
+  if (failed.length > 0) { throw new Error(`test suites failed: ${failed.join(', ')}`) }
 } else {
-  # usage_args shell-escapes values; evaluate to recover the original
-  let files = (nu -c $"echo ($args)")
-  $files | split row ' ' | where {|f| $f != '' } | par-each { |file| bun $file }
+  await runTestFiles(args, [])
 }
 """
 
@@ -443,53 +487,77 @@ extends = "test:unit"
 hide = true
 description = "Run browser tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+shell = "node -e"
 run = """
-mise run prepare:playwright
-let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
-podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts ...$args
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
+const args = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', ...args], { stdio: 'inherit' })
 """
 
 [tasks."test:e2e"]
 hide = true
 description = "Run e2e tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+shell = "node -e"
 run = """
-mise run prepare:playwright
-let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
-podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.e2e.config.ts ...$args
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
+const args = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.e2e.config.ts', ...args], { stdio: 'inherit' })
 """
 
 [tasks."test:browser:chromium"]
 hide = true
 description = "Run browser tests in Chromium"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+shell = "node -e"
 run = """
-mise run prepare:playwright
-let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
-podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=chromium ...$args
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
+const args = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=chromium', ...args], { stdio: 'inherit' })
 """
 
 [tasks."test:browser:firefox"]
 hide = true
 description = "Run browser tests in Firefox"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+shell = "node -e"
 run = """
-mise run prepare:playwright
-let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
-podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=firefox ...$args
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
+const args = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=firefox', ...args], { stdio: 'inherit' })
 """
 
 [tasks."watch:test:unit"]
 hide = true
 description = "Run unit tests in watch mode"
 usage = 'arg "[args]" var=#true help="Test file paths to watch"'
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
-if ($args | is-empty) {
-  glob "**/*.unit.test.ts" | where { not ($in | str contains "/deprecated/") } | par-each { |file| bun --watch $file }
+{{vars.parse_usage_args}}
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { glob } = await import('node:fs/promises')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+let files
+if (args.length === 0) {
+  files = []
+  for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
+    if (!file.includes('/deprecated/')) { files.push(file) }
+  }
 } else {
-  $args | par-each { |file| bun --watch $file }
+  files = args
 }
+// bun --watch runs until interrupted; spawn every watcher and stay alive until they all exit.
+const watchers = files.map((file) => spawn('bun', ['--watch', file], { stdio: 'inherit' }))
+await Promise.all(watchers.map((proc) => once(proc, 'exit')))
 """
 
 [tasks."watch:test"]
@@ -504,28 +572,29 @@ run = "docker build --progress=plain ."
 description = "Build then test; with args, builds only the containing package instead of the entire monorepo"
 alias = "bt"
 usage = 'arg "[args]" var=#true help="Test file paths"'
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim)
-if $args == '' {
-  mise run try -- build
-  mise run test
+{{vars.parse_usage_args}}
+{{vars.run_test_files}}
+const { execFileSync } = await import('node:child_process')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+if (args.length === 0) {
+  execFileSync('mise', ['run', 'try', '--', 'build'], { stdio: 'inherit' })
+  execFileSync('mise', ['run', 'test'], { stdio: 'inherit' })
 } else {
-  # usage_args shell-escapes values (wraps spaces in quotes); evaluate to recover the original
-  let files = (nu -c $"echo ($args)")
-  # Build only the package containing the test file, not every package in the monorepo
-  let clean_path = ($files | str replace --regex '^\\./' '')
-  let parts = ($clean_path | split row '/')
-  if ($parts | length) >= 3 and ($parts | first) == 'packages' {
-    let pkg_path = ($parts | first 3 | str join '/')
-    let build_task = $"//($pkg_path):build"
-    let has_build = (mise tasks ls --all --json | from json | any {|t| $t.name == $build_task })
-    if $has_build {
-      try { mise run $build_task } catch { |e| print -e $e.rendered }
+  // Build only the package containing the first test file, not every package in the monorepo.
+  const first = args[0].startsWith('./') ? args[0].slice(2) : args[0]
+  const parts = first.split('/')
+  if (parts.length >= 3 && parts[0] === 'packages') {
+    const buildTask = `//${parts.slice(0, 3).join('/')}:build`
+    const allTasks = JSON.parse(execFileSync('mise', ['tasks', 'ls', '--all', '--json'], { encoding: 'utf8' }))
+    if (allTasks.some((task) => task.name === buildTask)) {
+      try { execFileSync('mise', ['run', buildTask], { stdio: 'inherit' }) } catch { /* tolerate build failure, still run tests */ }
     }
   } else {
-    mise run try -- build
+    execFileSync('mise', ['run', 'try', '--', 'build'], { stdio: 'inherit' })
   }
-  $files | split row ' ' | where {|f| $f != '' } | par-each { |file| bun $file }
+  await runTestFiles(args, [])
 }
 """
 
@@ -555,13 +624,13 @@ run = "dprint check --list-different"
 hide = true
 description = "Lint CSS with Stylelint, optionally restricted to specific files or globs"
 usage = 'arg "[args]" var=#true help="File paths or globs (when provided, only those are linted)"'
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
-if ($args | is-empty) {
-  stylelint --ignore-path .gitignore "**/*.{css,astro,html}"
-} else {
-  stylelint --ignore-path .gitignore ...$args
-}
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+const stylelintArgs = ['--ignore-path', '.gitignore', ...(args.length === 0 ? ['**/*.{css,astro,html}'] : args)]
+execFileSync('stylelint', stylelintArgs, { stdio: 'inherit' })
 """
 
 # Lints Markdown and MDX with @monochromatic-dev/cli-markdown-lint, run from
@@ -572,13 +641,13 @@ if ($args | is-empty) {
 hide = true
 description = "Lint Markdown and MDX with cli-markdown-lint, optionally restricted to specific files"
 usage = 'arg "[args]" var=#true help="File paths (when provided, only those are linted)"'
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
-if ($args | is-empty) {
-  bun packages/cli/markdown-lint/src/cli.ts .
-} else {
-  bun packages/cli/markdown-lint/src/cli.ts ...$args
-}
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+const targets = args.length === 0 ? ['.'] : args
+execFileSync('bun', ['packages/cli/markdown-lint/src/cli.ts', ...targets], { stdio: 'inherit' })
 """
 
 [tasks."lint:rust"]
@@ -635,22 +704,20 @@ runTaskUtil('oxlint-wrapper', ['--fix'])
 hide = true
 description = "Apply cli-markdown-lint autofixes, optionally restricted to specific files"
 usage = 'arg "[args]" var=#true help="File paths (when provided, only those are fixed)"'
+shell = "node -e"
 run = """
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
-if ($args | is-empty) {
-  bun packages/cli/markdown-lint/src/cli.ts --fix .
-} else {
-  bun packages/cli/markdown-lint/src/cli.ts --fix ...$args
-}
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+const targets = args.length === 0 ? ['.'] : args
+execFileSync('bun', ['packages/cli/markdown-lint/src/cli.ts', '--fix', ...targets], { stdio: 'inherit' })
 """
 
 #region Validation and Check Tasks
 
 [tasks.validate]
 description = "Comprehensive validation: format, build, test (runs sequentially)"
-run = """
-mise run format && mise run build && mise run test
-"""
+run = ["mise run format", "mise run build", "mise run test"]
 
 #endregion Validation and Check Tasks
 
@@ -667,13 +734,20 @@ run = ["mise install", "mise upgrade"]
 
 [tasks.prepare]
 description = "Prepare environment (install Playwright browsers, etc.)"
+shell = "node -e"
 run = """
-mise run prepare:pnpm
-let p = $env.MISE_TASK_NAME + ":"
-let pnpm_task = $p + "pnpm"
-let d = ($p | split row ":" | length)
-let c = (mise tasks --all --hidden --json | from json | get name | where { |n| ($n | str starts-with $p) and (($n | split row ":" | length) == $d) and ($n != $pnpm_task) })
-if ($c | is-not-empty) { mise run ...($c | reduce -f [] { |it, acc| if ($acc | is-empty) { [$it] } else { ($acc | append ":::" | append $it) } }) }
+const { execFileSync, spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+execFileSync('mise', ['run', 'prepare:pnpm'], { stdio: 'inherit' })
+const prefix = `${process.env.MISE_TASK_NAME}:`
+const depth = prefix.split(':').length
+const pnpmTask = `${prefix}pnpm`
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8' }))
+const children = tasks.map((task) => task.name).filter((name) => name.startsWith(prefix) && name.split(':').length === depth && name !== pnpmTask)
+const processes = children.map((name) => spawn('mise', ['run', name], { stdio: 'inherit' }))
+const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
+const failed = children.filter((name, index) => exits[index][0] !== 0)
+if (failed.length > 0) { throw new Error(`prepare child tasks failed: ${failed.join(', ')}`) }
 """
 
 [tasks."prepare:pnpm"]
@@ -705,10 +779,7 @@ run = [{ tasks = ["prepare"] }, { tasks = ["build"] }]
 
 [tasks.prepareAndBuild--allowFailure]
 description = "Complete setup: prepare and build, allowing failures"
-run = """
-mise run try -- prepare
-mise run try -- build
-"""
+run = ["mise run try -- prepare", "mise run try -- build"]
 
 #endregion Preparation Tasks
 
@@ -753,9 +824,11 @@ run = "bun packages/dev-script/file-enforcer/src/cli.ts --watch"
 [tasks."catalog:tighten"]
 description = "Tighten catalog >=x.y.z ranges to match installed node_modules versions"
 usage = 'flag "--dry-run" help="Print what would change without writing"'
+shell = "node -e"
 run = """
-let args = if ($env.usage_dry__run? | default '' | str trim) == 'true' { ['--dry-run'] } else { [] }
-bun packages/dev-script/catalog-tighten/src/index.ts ...$args
+const { execFileSync } = await import('node:child_process')
+const args = (process.env.usage_dry__run ?? '').trim() === 'true' ? ['--dry-run'] : []
+execFileSync('bun', ['packages/dev-script/catalog-tighten/src/index.ts', ...args], { stdio: 'inherit' })
 """
 
 #endregion Catalog Tighten
@@ -765,7 +838,11 @@ bun packages/dev-script/catalog-tighten/src/index.ts ...$args
 [tasks."page:weight"]
 description = "Report per-page transfer size (min, max, mean, median) for a dist directory"
 usage = 'arg "<dist>" help="Path to the dist directory containing HTML files"'
-run = "bun packages/dev-script/page-weight/src/index.ts $env.usage_dist"
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+execFileSync('bun', ['packages/dev-script/page-weight/src/index.ts', process.env.usage_dist], { stdio: 'inherit' })
+"""
 
 #endregion Page Weight
 
@@ -773,7 +850,13 @@ run = "bun packages/dev-script/page-weight/src/index.ts $env.usage_dist"
 
 [tasks."fix:reinstall"]
 description = "Clean reinstall to work around registry or resolution issues"
-run = "rm --recursive --force node_modules; pnpm install"
+shell = "node -e"
+run = """
+const { rmSync } = await import('node:fs')
+const { execFileSync } = await import('node:child_process')
+rmSync('node_modules', { recursive: true, force: true })
+execFileSync('pnpm', ['install'], { stdio: 'inherit' })
+"""
 
 #endregion Fix Tasks
 
