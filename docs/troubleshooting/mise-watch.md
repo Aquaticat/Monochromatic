@@ -518,14 +518,14 @@ When the inner command is `mise run start:server`,
 process tree is:
 
 ```text
-watchexec → mise → nu (nushell) → bun src/server/index.ts
+watchexec → mise → sh → bun src/server/index.ts
 ```
 
 watchexec sends SIGTERM to its direct child (`mise`) on
 restart.
  mise exits,
  but the signal does not propagate
-through nushell to `bun`.
+through the task shell to `bun`.
  The bun process orphans and keeps
 the port bound.
 
@@ -560,21 +560,21 @@ rather than by careful argv composition.
 ### What does not work
 
 - `watchexec -r -- mise run start:server` -- SIGTERM does not propagate
-  through the `mise → nushell → bun` chain,
+  through the `mise → sh → bun` chain,
    leaving orphaned bun processes
 
 ### Why we do not file this upstream
 
 1. **Is it really upstream's fault?
    ** Borderline.
-    Nushell
+    The task shell
    does not propagate signals to child processes by default;
    mise inherits that behaviour.
     Both are documented.
 2. **Can upstream fix it?
    ** mise could opt to spawn child
    processes that forward signals;
-    nushell could change its
+    the task shell could change its
    default.
     Both are large behaviour changes.
 3. **Are they supporting this use case?
@@ -607,14 +607,14 @@ terminal indefinitely:
 
 ```text
 mise run //packages/desktop-daemon/editord:dev
-└── nu -c watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- bun src/server/index.ts
+└── sh -c watchexec -w src/server --no-meta -j @src/server/content-changed.jaq -r -- bun src/server/index.ts
     └── watchexec ...
 ```
 
 `bun` and the other two parallel tasks (`watch:build:js:client`,
 `watch:build:css`) exit cleanly.
  `watchexec` does not.
- The wrapping `nu` and
+ The wrapping shell and
 the parent `mise` wait on it,
  so the terminal cannot be released.
 

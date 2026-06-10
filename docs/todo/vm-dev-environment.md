@@ -184,7 +184,6 @@ Infrastructure:
        passwordless sudo
 - [x] Dotfiles baked into image from `packages/config/dotfiles/` (ghostty,
        mise configs)
-- [x] Nushell installed via mise at image build time (required for monorepo task runner)
 - [x] bootc install config:
        btrfs root filesystem (`/usr/lib/bootc/install/00-ucore-dev.toml`)
 
@@ -283,8 +282,7 @@ Only two configs needed:
 
 - [x] Create `packages/config/dotfiles/` with:
   - `ghostty/config`
-  - `mise/config.toml` (global mise config,
-     declares nushell)
+  - `mise/config.toml` (global mise config)
 - [x] ~~Archive `Aquaticat/nvim`~~:
    nvim is deprecated by editord in the monorepo
 - [x] ~~Decide which `~/.config/` directories to include~~:
@@ -297,7 +295,7 @@ Runs as user after first login.
 
 - [x] ~~Copy dotfiles~~:
    baked into image at build time via Containerfile COPY
-- [x] Run image-time `mise install` for baked global config tools (currently Nushell) in `Containerfile`
+- [x] Run image-time `mise install` for baked global config tools in `Containerfile`
 - [ ] Decide whether a future first-login provisioner should run monorepo `mise install` after clone
 - [ ] Install flatpaks via `flatpak install --user -y`:
       Flatseal,

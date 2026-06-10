@@ -20,14 +20,13 @@ await describe({
       },
     },),
     it({
-      name: 'builds a node command without tsx or nushell',
+      name: 'builds a node command without tsx',
       fn: async () => {
         const command = buildNodeCommand();
 
         expect(command,).toContain('node -e',);
         expect(command,).toContain('MUTATION_TEST_FILES_JSON',);
         expect(command,).not.toContain('tsx',);
-        expect(command,).not.toContain('nu -c',);
       },
     },),
     it({
