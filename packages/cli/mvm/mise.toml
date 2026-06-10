@@ -47,9 +47,13 @@ run = ["mise run build", "mise run test:unit"]
 # you do not have to export it. Provisions and then destroys real, billed servers.
 [tasks.'test:hetzner']
 description = "Run the live, BILLED Hetzner provisioning test (token auto-read from packages/config/tofu/hetzner.auto.tfvars)"
-run = '''
-let tfvars = '../../config/tofu/hetzner.auto.tfvars'
-let rows = (open --raw $tfvars | lines | parse --regex '^\s*hcloud_token\s*=\s*"(?<v>[^"]*)"')
-if ($rows | is-empty) { error make { msg: $"hcloud_token not found in ($tfvars)" } }
-with-env { HCLOUD_TOKEN: ($rows | get v | first) } { bun src/backends/hetzner/provision.expensive.unit.test.ts }
-'''
+shell = "node -e"
+run = """
+const { readFileSync } = await import('node:fs')
+const { execFileSync } = await import('node:child_process')
+const tfvars = '../../config/tofu/hetzner.auto.tfvars'
+const tokenLine = readFileSync(tfvars, 'utf8').split('\\n').find((line) => line.trimStart().startsWith('hcloud_token'))
+if (tokenLine === undefined) { throw new Error(`hcloud_token not found in ${tfvars}`) }
+const token = tokenLine.slice(tokenLine.indexOf('"') + 1, tokenLine.lastIndexOf('"'))
+execFileSync('bun', ['src/backends/hetzner/provision.expensive.unit.test.ts'], { stdio: 'inherit', env: { ...process.env, HCLOUD_TOKEN: token } })
+"""

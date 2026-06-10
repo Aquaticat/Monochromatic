@@ -16,23 +16,35 @@ run = "bun src/run-constrained.ts"
 
 [tasks.'perf:teardown']
 description = "Remove performance benchmark fixture files"
-run = "rm -rf ($env.TMPDIR? | default '/tmp' | path join 'file-enforcer-perf')"
+shell = "node -e"
+run = """
+const { rmSync } = await import('node:fs')
+const { join } = await import('node:path')
+rmSync(join(process.env.TMPDIR ?? '/tmp', 'file-enforcer-perf'), { recursive: true, force: true })
+"""
 
+# CAP_PERFMON / setcap are Linux-only, so this task is intentionally non-portable.
 [tasks.'perf:enable-counters']
 description = "Grant CAP_PERFMON to the bun binary so mitata surfaces hardware counters in perf:micro (system-wide; re-run after a bun upgrade)"
-run = '''
-let bun = (which bun | get path | first | path expand)
-^sudo setcap cap_perfmon+ep $bun
-^getcap $bun
-'''
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { realpathSync } = await import('node:fs')
+const bun = realpathSync(execFileSync('which', ['bun'], { encoding: 'utf8' }).trim())
+execFileSync('sudo', ['setcap', 'cap_perfmon+ep', bun], { stdio: 'inherit' })
+execFileSync('getcap', [bun], { stdio: 'inherit' })
+"""
 
 [tasks.'perf:disable-counters']
 description = "Remove the CAP_PERFMON file capability that perf:enable-counters granted to bun"
-run = '''
-let bun = (which bun | get path | first | path expand)
-^sudo setcap -r $bun
-print $"removed file capabilities from ($bun)"
-'''
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { realpathSync } = await import('node:fs')
+const bun = realpathSync(execFileSync('which', ['bun'], { encoding: 'utf8' }).trim())
+execFileSync('sudo', ['setcap', '-r', bun], { stdio: 'inherit' })
+console.log(`removed file capabilities from ${bun}`)
+"""
 
 # lint:oxlint omitted -- see docs/troubleshooting/oxlint.md
 

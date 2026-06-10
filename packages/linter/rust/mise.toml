@@ -27,17 +27,11 @@ description = "Run the linter (pass paths and flags like --max after --)"
 usage = '''
 arg "[args]" var=#true help="Paths to lint and flags such as --max 300"
 '''
-# `usage_args` arrives shell-quoted as `'a' 'b'`; split on the inter-arg
-# separator `"' '"` then trim the lone outer quotes, mirroring the
-# packages/fuzz/forbidden-strings run task.
-run = '''
-let extras = (
-  $env.usage_args?
-  | default ''
-  | str trim
-  | split row "' '"
-  | each {|p| $p | str trim --char "'" }
-  | where {|p| $p != '' }
-)
-cargo run --release -- ...$extras
-'''
+# usage_args arrives shell-escaped; parseUsageArgs recovers the argument vector.
+shell = "node -e"
+run = """
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync('cargo', ['run', '--release', '--', ...extras], { stdio: 'inherit' })
+"""

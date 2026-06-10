@@ -37,22 +37,26 @@ description = "Run the property tests as a time-budgeted fuzz campaign under nod
 usage = '''
 flag "--budget <ms>" help="Per-property time budget in milliseconds (default 60000)"
 '''
-run = '''
-let budget = ($env.usage_budget? | default "60000" | str trim)
-let files = (glob src/**/*.property.unit.test.ts)
-print $"Fuzz campaign over ($files | length) property files at ($budget)ms each"
-$files | each {|file|
-  print $"fuzzing ($file)"
-  with-env { FILE_ENFORCER_FUZZ_BUDGET_MS: $budget } { ^node $file }
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const { glob } = await import('node:fs/promises')
+const budget = (process.env.usage_budget ?? '60000').trim()
+const files = []
+for await (const file of glob('src/**/*.property.unit.test.ts')) { files.push(file) }
+console.log(`Fuzz campaign over ${files.length} property files at ${budget}ms each`)
+for (const file of files) {
+  console.log(`fuzzing ${file}`)
+  execFileSync('node', [file], { stdio: 'inherit', env: { ...process.env, FILE_ENFORCER_FUZZ_BUDGET_MS: budget } })
 }
-'''
+"""
 
 [tasks."test:mutation"]
 description = "Run container-isolated Stryker mutation tests"
 usage = 'arg "[args]" var=#true help="Optional mutation-test flags and package-relative source files"'
-run = '''
-{{vars.monorepo_root_setup}}
-{{vars.workspace_node_dispatch}}
-let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|arg| $arg != '' })
-run_workspace_node $root packages/dev-script/mutation-test index --package packages/dev-script/file-enforcer ...$args
-'''
+shell = "node -e"
+run = """
+{{vars.dispatch_workspace_node}}
+const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
+runWorkspaceNode('packages/dev-script/mutation-test', 'index', ['--package', 'packages/dev-script/file-enforcer', ...args])
+"""

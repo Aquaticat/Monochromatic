@@ -40,11 +40,13 @@ run = "cargo fuzz build --fuzz-dir . --sanitizer address --target x86_64-unknown
 [tasks.smoke]
 description = "Run every fuzz target for 30s with the dictionary as a smoke test (AddressSanitizer instrumented)"
 # `--target x86_64-unknown-linux-gnu` and `--sanitizer address` rationale: see build.
+shell = "node -e"
 run = """
-let targets = (cargo fuzz list --fuzz-dir . | lines | where {|t| ($t | str trim) != "" })
-for target in $targets {
-  print $"--- ($target) ---"
-  cargo fuzz run --fuzz-dir . $target --sanitizer address --target x86_64-unknown-linux-gnu -- -max_total_time=30 -rss_limit_mb=2048 -dict=dictionaries/forbidden-strings.dict
+const { execFileSync } = await import('node:child_process')
+const targets = execFileSync('cargo', ['fuzz', 'list', '--fuzz-dir', '.'], { encoding: 'utf8' }).split('\\n').map((line) => line.trim()).filter(Boolean)
+for (const target of targets) {
+  console.log(`--- ${target} ---`)
+  execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', '--', '-max_total_time=30', '-rss_limit_mb=2048', '-dict=dictionaries/forbidden-strings.dict'], { stdio: 'inherit' })
 }
 """
 
@@ -56,21 +58,11 @@ arg "[args]" var=#true help="libFuzzer flags (-flag=v) and/or input paths to rep
 """
 # `--target x86_64-unknown-linux-gnu` rationale: see build.
 #
-# `usage_args` arrives shell-quoted: mise/usage formats the variadic
-# `[args]` collection as `'-flag1=v1' '-flag2=v2'` so a downstream shell
-# can re-split safely. Nushell's `split row ' '` splits on every space
-# and keeps the surrounding quotes as part of each element, so cargo
-# then forwards them to libfuzzer as `'-max_total_time=10'` (literal
-# quote chars). libfuzzer treats anything not starting with `-` as a
-# corpus directory, so the run fails with
-# "The required directory '-max_total_time=10' does not exist".
+# usage_args arrives shell-escaped; parseUsageArgs recovers the argument
+# vector (single-quoted spans kept whole, outer quotes stripped), so cargo
+# forwards clean flags/paths to libfuzzer rather than literal-quoted tokens.
 #
-# Fix part 1: split on the inter-arg separator `"' '"` (quote space quote)
-# and then trim the lone outer quotes off each element.
-# Limitation: libfuzzer flags must not contain literal single quotes;
-# they never do in practice (numbers and flag names only).
-#
-# Fix part 2 (artifact replay): partition the extras into FLAG args
+# Partition (artifact replay): split the extras into FLAG args
 # (leading `-`, e.g. `-max_total_time=30`) and INPUT paths (no leading
 # `-`, e.g. `artifacts/<target>/crash-...`). cargo-fuzz appends the
 # default `corpus/<target>` positional ONLY when no input positional is
@@ -82,19 +74,15 @@ arg "[args]" var=#true help="libFuzzer flags (-flag=v) and/or input paths to rep
 # before `--` (cargo-fuzz CORPUS slot, suppressing the default corpus);
 # flags go after `--`. With no input, `...$inputs` is empty and the
 # command is unchanged (continuous fuzzing over the default corpus).
+shell = "node -e"
 run = """
-let target = $env.usage_target
-let extras = (
-  $env.usage_args?
-  | default ''
-  | str trim
-  | split row "' '"
-  | each {|p| $p | str trim --char "'" }
-  | where {|p| $p != '' }
-)
-let flags = ($extras | where {|p| $p | str starts-with '-' })
-let inputs = ($extras | where {|p| not ($p | str starts-with '-') })
-cargo fuzz run --fuzz-dir . $target --sanitizer address --target x86_64-unknown-linux-gnu ...$inputs -- -dict=dictionaries/forbidden-strings.dict ...$flags
+{{vars.parse_usage_args}}
+const { execFileSync } = await import('node:child_process')
+const target = process.env.usage_target
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+const flags = extras.filter((part) => part.startsWith('-'))
+const inputs = extras.filter((part) => !part.startsWith('-'))
+execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', ...inputs, '--', '-dict=dictionaries/forbidden-strings.dict', ...flags], { stdio: 'inherit' })
 """
 
 [tasks.seed]

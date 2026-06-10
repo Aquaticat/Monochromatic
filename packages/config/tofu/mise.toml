@@ -6,41 +6,40 @@ run = [{ tasks = ["test:storagebox-resolver", "test:external-caches"] }]
 
 [tasks."test:storagebox-resolver"]
 description = "Smoke-test Storage Box hostname resolver without network access"
+shell = "node -e"
 run = """
-let result = ('{\"hostnames\":\"\"}' | bun run resolve_storagebox_hosts.ts | from json)
-if $result.ips != '' {
-  error make { msg: $'expected empty ips, got ($result.ips)' }
-}
-let wildcard = ('{\"hostnames\":\"*.your-storagebox.de\"}' | bun run resolve_storagebox_hosts.ts | complete)
-if $wildcard.exit_code == 0 {
-  error make { msg: 'expected wildcard hostname resolution to fail' }
-}
+const { execFileSync } = await import('node:child_process')
+const result = JSON.parse(execFileSync('bun', ['run', 'resolve_storagebox_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
+if (result.ips !== '') { throw new Error(`expected empty ips, got ${result.ips}`) }
+let wildcardFailed = false
+try { execFileSync('bun', ['run', 'resolve_storagebox_hosts.ts'], { input: '{"hostnames":"*.your-storagebox.de"}', encoding: 'utf8' }) } catch { wildcardFailed = true }
+if (!wildcardFailed) { throw new Error('expected wildcard hostname resolution to fail') }
 """
 
 [tasks."test:storagebox-resolver:network"]
 description = "Resolve a real Storage Box hostname through DNS"
 usage = 'arg "host" help="Concrete your-storagebox.de hostname to resolve"'
+shell = "node -e"
 run = """
-let result = ($'{\"hostnames\":\"($env.usage_host)\"}' | bun run resolve_storagebox_hosts.ts | from json)
-if $result.ips == '' {
-  error make { msg: $'expected resolved ips for ($env.usage_host)' }
-}
+const { execFileSync } = await import('node:child_process')
+const host = process.env.usage_host
+const result = JSON.parse(execFileSync('bun', ['run', 'resolve_storagebox_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
+if (result.ips === '') { throw new Error(`expected resolved ips for ${host}`) }
 """
 
 [tasks."test:external-caches"]
 description = "Smoke-test OpenTofu external helpers against local cache files when present"
+shell = "node -e"
 run = """
-if ('cache_AS41231.json' | path exists) {
-  let asn = ('{\"asn\":\"AS41231\"}' | bun run fetch_ips.ts | from json)
-  if $asn.ips == '' {
-    error make { msg: 'expected cached AS41231 ips' }
-  }
+const { execFileSync } = await import('node:child_process')
+const { existsSync } = await import('node:fs')
+if (existsSync('cache_AS41231.json')) {
+  const asn = JSON.parse(execFileSync('bun', ['run', 'fetch_ips.ts'], { input: '{"asn":"AS41231"}', encoding: 'utf8' }))
+  if (asn.ips === '') { throw new Error('expected cached AS41231 ips') }
 }
-if ('cache_tor_relays.json' | path exists) {
-  let tor = ('{}' | bun run fetch_tor_relays.ts | from json)
-  if $tor.ips == '' {
-    error make { msg: 'expected cached Tor relay ips' }
-  }
+if (existsSync('cache_tor_relays.json')) {
+  const tor = JSON.parse(execFileSync('bun', ['run', 'fetch_tor_relays.ts'], { input: '{}', encoding: 'utf8' }))
+  if (tor.ips === '') { throw new Error('expected cached Tor relay ips') }
 }
 """
 
