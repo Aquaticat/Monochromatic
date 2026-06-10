@@ -66,9 +66,6 @@ caddy = "latest"
 # Required by `mise watch`
 watchexec = "latest"
 
-# For executing tasks cross-platform
-"aqua:nushell/nushell" = "latest"
-
 # For reliable timeout
 # Rust toolchain, managed repo-wide here (no per-package override).
 # Pinned to nightly because cargo-fuzz (coverage-guided fuzzing under
