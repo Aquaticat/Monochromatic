@@ -57,9 +57,11 @@ export function requireToken(): string {
 export const SERVER_TYPE_ENV = 'MVM_HCLOUD_SERVER_TYPE';
 
 /**
- * Default server type when none is supplied (small shared-vCPU x86 plan).
+ * Default server type when none is supplied: the cheapest current shared-vCPU
+ * x86 plan. Server-type slugs are deprecated over time (cx22 -> cx23), so this
+ * may need bumping; override per invocation with `--server-type` or the env.
  */
-export const DEFAULT_SERVER_TYPE = 'cx22';
+export const DEFAULT_SERVER_TYPE = 'cx23';
 
 /**
  * Environment variable overriding the default location fallback list.

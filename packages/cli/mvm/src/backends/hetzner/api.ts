@@ -36,9 +36,10 @@ const PER_PAGE = 50;
 const POLL_INTERVAL_MS = 1_000;
 
 /**
- * Maximum time to wait for an action to leave the `running` state.
+ * Maximum time to wait for an action to leave the `running` state. Generous
+ * because snapshot (create_image) actions for a clone can take a few minutes.
  */
-const ACTION_TIMEOUT_MS = 120_000;
+const ACTION_TIMEOUT_MS = 300_000;
 
 /**
  * HTTP status for an empty (no-body) response, returned by DELETE.

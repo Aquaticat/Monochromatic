@@ -77,7 +77,7 @@ await describe({
       fn: async () => {
         using _env = withEnv('MVM_HCLOUD_SERVER_TYPE', undefined,);
         expect(resolveServerType('cpx41',),).toBe('cpx41',);
-        expect(resolveServerType(),).toBe('cx22',);
+        expect(resolveServerType(),).toBe('cx23',);
       },
     },),
     it({
