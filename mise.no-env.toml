@@ -66,7 +66,7 @@ caddy = "latest"
 watchexec = "latest"
 
 # For executing tasks cross-platform
-"aqua:nushell/nushell" = "latest"
+nushell = "latest"
 
 # For reliable timeout
 # Rust toolchain, managed repo-wide here (no per-package override).
@@ -163,7 +163,6 @@ opentofu = "latest"
 hcloud = "latest"
 "npm:typescript-language-server" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
-deno = "latest"
 "npm:socket" = "latest"
 "aqua:betterleaks/betterleaks" = "latest"
 
