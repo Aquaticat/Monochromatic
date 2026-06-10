@@ -66,12 +66,69 @@ export type HetznerServer = {
    */
   readonly public_net: HetznerPublicNet;
   /**
+   * Server type the instance runs on; its architecture must match a snapshot
+   * image when cloning.
+   */
+  readonly server_type: { readonly architecture: string; };
+  /**
    * User-defined labels, including the mvm ownership label.
    */
   readonly labels: Readonly<Record<string, string>>;
 };
 
 //endregion Server
+
+//region Server type
+
+/**
+ * Hourly price of a server type in one location.
+ *
+ * @example
+ * ```ts
+ * const price: HetznerServerPrice = { location: 'fsn1', price_hourly: { gross: '0.0080' } };
+ * ```
+ */
+export type HetznerServerPrice = {
+  /**
+   * Location code the price applies to (e.g. `fsn1`).
+   */
+  readonly location: string;
+  /**
+   * Hourly gross price as a decimal string.
+   */
+  readonly price_hourly: { readonly gross: string; };
+};
+
+/**
+ * Server type (plan) as returned by `GET /server_types`.
+ *
+ * @example
+ * ```ts
+ * const type: HetznerServerType = types[0];
+ * if (type.deprecation === null) { useIt(type.name); }
+ * ```
+ */
+export type HetznerServerType = {
+  /**
+   * Type slug (e.g. `cx23`, `cax11`) passed to server creation.
+   */
+  readonly name: string;
+  /**
+   * CPU architecture, e.g. `x86` or `arm`.
+   */
+  readonly architecture: string;
+  /**
+   * Deprecation marker: `null` when current, an object when deprecated. Typed
+   * `unknown` so it can be compared to `null` without a banned nullish union.
+   */
+  readonly deprecation?: unknown;
+  /**
+   * Per-location prices; a type is offered in a location when it has an entry.
+   */
+  readonly prices: readonly HetznerServerPrice[];
+};
+
+//endregion Server type
 
 //region Action
 

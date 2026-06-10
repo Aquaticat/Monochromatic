@@ -36,10 +36,11 @@ import {
   MVM_LABEL_SELECTOR,
   MVM_LABEL_VALUE,
   resolveLocations,
-  resolveServerType,
+  serverTypeOverride,
   validateHetznerName,
 } from './config.ts';
 import { resolveHetznerImage, } from './images.ts';
+import { resolveCheapestServerType, } from './server-types.ts';
 import { ensureSshKeyId, } from './ssh-key.ts';
 import { waitForSsh, } from './ssh.ts';
 import type {
@@ -236,14 +237,30 @@ export async function hetznerCreate(
    */
   const imageSlug = await resolveHetznerImage({ shorthand: image ?? DEFAULT_IMAGE, },);
   /**
+   * Locations to try, in fallback order.
+   */
+  const locations = resolveLocations(location,);
+  /**
+   * Explicit server-type override, or `''` to pick the cheapest type.
+   */
+  const explicitType = serverTypeOverride(serverType,);
+  /**
+   * Server type to provision: the override, or the cheapest non-deprecated type
+   * offered in the target locations (the image is by name, so any architecture
+   * matches).
+   */
+  const serverTypeName = (explicitType !== '')
+    ? explicitType
+    : await resolveCheapestServerType({ locations, },);
+  /**
    * Created server plus boot action, after location fallback.
    */
   const created = await createWithFallback({
     fullName: `${VM_PREFIX}${name}`,
     image: imageSlug,
-    locations: resolveLocations(location,),
+    locations,
     rl,
-    serverType: resolveServerType(serverType,),
+    serverType: serverTypeName,
     sshKeyId,
   },);
   await waitForAction({ id: created.action
@@ -300,6 +317,8 @@ async function safeDeleteImage(
  * Provisions the destination server from a snapshot, reaping the snapshot on
  * scope exit (success or failure) before the caller waits on SSH.
  *
+ * @param architecture - source architecture the snapshot requires the type to match
+ *
  * @param fullName - full destination server name
  *
  * @param imageId - snapshot image id to boot from and then delete
@@ -312,16 +331,18 @@ async function safeDeleteImage(
  *
  * @example
  * ```ts
- * const created = await provisionFromSnapshot({ fullName: 'mvm-dev-02', imageId: 9, snapshotActionId: 7, rl });
+ * const created = await provisionFromSnapshot({ architecture: 'x86', fullName: 'mvm-dev-02', imageId: 9, snapshotActionId: 7, rl });
  * ```
  */
 async function provisionFromSnapshot(
   {
+    architecture,
     fullName,
     imageId,
     rl,
     snapshotActionId,
   }: {
+    readonly architecture: string;
     readonly fullName: string;
     readonly imageId: number;
     readonly rl: RunLogger;
@@ -346,14 +367,32 @@ async function provisionFromSnapshot(
    */
   const sshKeyId = await ensureSshKeyId();
   /**
+   * Locations to try, in fallback order.
+   */
+  const locations = resolveLocations();
+  /**
+   * Explicit server-type override, or `''` to pick the cheapest type.
+   */
+  const explicitType = serverTypeOverride();
+  /**
+   * Server type for the clone: the override, or the cheapest non-deprecated
+   * type of the snapshot's architecture (the snapshot image is arch-specific).
+   */
+  const serverTypeName = (explicitType !== '')
+    ? explicitType
+    : await resolveCheapestServerType({
+      architecture,
+      locations,
+    },);
+  /**
    * Destination server provisioned from the snapshot image.
    */
   const created = await createWithFallback({
     fullName,
     image: imageId,
-    locations: resolveLocations(),
+    locations,
     rl,
-    serverType: resolveServerType(),
+    serverType: serverTypeName,
     sshKeyId,
   },);
   await waitForAction({ id: created.action
@@ -409,9 +448,12 @@ export async function hetznerClone(
     serverId: src.id,
   },);
   /**
-   * Destination server, created from the snapshot which is then deleted.
+   * Destination server, created from the snapshot which is then deleted. The
+   * server type must match the source architecture the snapshot carries.
    */
   const created = await provisionFromSnapshot({
+    architecture: src.server_type
+      .architecture,
     fullName: `${VM_PREFIX}${destination}`,
     imageId: snapshot.image
       .id,

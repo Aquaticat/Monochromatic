@@ -56,12 +56,6 @@ export function requireToken(): string {
  */
 export const SERVER_TYPE_ENV = 'MVM_HCLOUD_SERVER_TYPE';
 
-/**
- * Default server type when none is supplied: the cheapest current shared-vCPU
- * x86 plan. Server-type slugs are deprecated over time (cx22 -> cx23), so this
- * may need bumping; override per invocation with `--server-type` or the env.
- */
-export const DEFAULT_SERVER_TYPE = 'cx23';
 
 /**
  * Environment variable overriding the default location fallback list.
@@ -113,27 +107,27 @@ export const MVM_LABEL_SELECTOR: string = `${MVM_LABEL_KEY}=${MVM_LABEL_VALUE}`;
 export const SSH_USER = 'root';
 
 /**
- * Resolves the server type from an explicit override, the environment, or the
- * built-in default.
+ * Resolves an explicit server-type override from the per-invocation value or
+ * the environment. Returns `''` when neither is set, signalling the caller to
+ * pick the cheapest non-deprecated type dynamically (there is no hardcoded
+ * default, since type slugs are deprecated over time).
  *
  * @param override - per-invocation server type, or `undefined`
  *
- * @returns resolved server type slug
+ * @returns the explicit server type slug, or `''` for "auto (cheapest)"
  *
  * @example
  * ```ts
- * resolveServerType('cpx21'); // 'cpx21'
- * resolveServerType(undefined); // 'cx22' (or MVM_HCLOUD_SERVER_TYPE)
+ * serverTypeOverride('cpx21'); // 'cpx21'
+ * serverTypeOverride(undefined); // '' (auto) unless MVM_HCLOUD_SERVER_TYPE is set
  * ```
  */
-export function resolveServerType(override?: string,): string {
+export function serverTypeOverride(override?: string,): string {
   /**
-   * Explicit override wins over env, which wins over the built-in default.
+   * Explicit override wins over env; absence yields `''` (auto).
    */
   const candidate = override ?? process.env[SERVER_TYPE_ENV];
-  return ((candidate === undefined) || (candidate === ''))
-    ? DEFAULT_SERVER_TYPE
-    : candidate;
+  return ((candidate === undefined) || (candidate === '')) ? '' : candidate;
 }
 
 /**

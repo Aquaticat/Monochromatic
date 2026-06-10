@@ -14,7 +14,7 @@ import {
 import {
   requireToken,
   resolveLocations,
-  resolveServerType,
+  serverTypeOverride,
   validateHetznerName,
 } from '@monochromatic-dev/cli-mvm/ts/backends/hetzner/config.ts';
 
@@ -73,18 +73,18 @@ await describe({
       },
     },),
     it({
-      name: 'resolveServerType prefers override, then env, then the default',
+      name: 'serverTypeOverride returns the override, or empty for auto (cheapest)',
       fn: async () => {
         using _env = withEnv('MVM_HCLOUD_SERVER_TYPE', undefined,);
-        expect(resolveServerType('cpx41',),).toBe('cpx41',);
-        expect(resolveServerType(),).toBe('cx23',);
+        expect(serverTypeOverride('cpx41',),).toBe('cpx41',);
+        expect(serverTypeOverride(),).toBe('',);
       },
     },),
     it({
-      name: 'resolveServerType reads the env when no override is given',
+      name: 'serverTypeOverride reads the env when no override is given',
       fn: async () => {
         using _env = withEnv('MVM_HCLOUD_SERVER_TYPE', 'ccx13',);
-        expect(resolveServerType(),).toBe('ccx13',);
+        expect(serverTypeOverride(),).toBe('ccx13',);
       },
     },),
     it({

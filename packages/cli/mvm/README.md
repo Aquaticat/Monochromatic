@@ -116,7 +116,7 @@ It provisions real,
 ```sh
 export HCLOUD_TOKEN=...   # a Hetzner Cloud API token with read/write access
 
-# Create a server (defaults: server type cx23, locations fsn1,nbg1,hel1)
+# Create a server (defaults: cheapest non-deprecated type, locations fsn1,nbg1,hel1)
 bun packages/cli/mvm/src/index.ts --backend hetzner create dev-01
 
 # Pick a server type and location series (first available wins)

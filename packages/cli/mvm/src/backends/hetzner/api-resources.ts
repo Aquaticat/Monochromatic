@@ -18,6 +18,7 @@ import type {
   HetznerAction,
   HetznerImage,
   HetznerServer,
+  HetznerServerType,
   HetznerSshKey,
 } from './types.ts';
 
@@ -167,6 +168,23 @@ export async function deleteServer({ id, }: { readonly id: number; },): Promise<
   await hcloud<unknown>({
     method: 'DELETE',
     path: `/servers/${String(id,)}`,
+  },);
+}
+
+/**
+ * Lists every server type (plan), including deprecated ones.
+ *
+ * @returns all server types
+ *
+ * @example
+ * ```ts
+ * const types = await listServerTypes();
+ * ```
+ */
+export function listServerTypes(): Promise<readonly HetznerServerType[]> {
+  return fetchAllPages<HetznerServerType>({
+    key: 'server_types',
+    path: '/server_types',
   },);
 }
 

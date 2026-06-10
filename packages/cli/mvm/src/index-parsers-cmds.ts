@@ -79,7 +79,7 @@ const serverTypeOption = optional(
     string({ metavar: 'TYPE', },),
     {
       description:
-        message`Hetzner server type (e.g. cx22); ignored by the libvirt backend`,
+        message`Hetzner server type (e.g. cx23); defaults to the cheapest non-deprecated type; ignored by the libvirt backend`,
     },
   ),
 );

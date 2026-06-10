@@ -44,7 +44,7 @@ export const createTool: ToolEntry = defineTool({
         },
         server_type: {
           type: 'string',
-          description: 'Hetzner server type (e.g. cx22); ignored by the libvirt backend',
+          description: 'Hetzner server type (e.g. cx23); defaults to the cheapest non-deprecated type; ignored by the libvirt backend',
         },
         location: {
           type: 'string',
