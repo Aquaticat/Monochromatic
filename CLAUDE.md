@@ -918,7 +918,7 @@ XRT:
  Prefer cross-runtime patterns instead of Bun-specific implementations.
 
 SCR:
- Never write bash/powershell scripts or nushell.
+ Never write bash/powershell scripts.
  Put mise task logic inline in a `node -e` body (set `shell = "node -e"` on the task;
  `node -e` strips TS annotations,
  runs ESM dynamic imports,
