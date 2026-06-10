@@ -351,6 +351,13 @@ not this session.
 - No `.ts` task helper files;
    logic inline as `node -e`,
    with a per-body escape valve.
+- File-task interpreter policy (the issue's second open decision):
+   moot.
+   With no `.ts` task files,
+   there is no file-task interpreter to choose
+   (no shebang,
+   `use_file_shell_for_executable_tasks`,
+   or non-executable policy is needed).
 - prefix-dev/shell:
    dropped (array `run` removes its advantage;
    alpha and from-source cost remain).
