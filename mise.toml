@@ -107,7 +107,7 @@ cargo-binstall = "latest"
 # generator is also required: the host and macOS fall back to system `make` (Unix
 # Makefiles), Windows uses the Visual Studio generator, and the containers install
 # ninja. See docs/troubleshooting/audiopus-cmake4-libopus-min-version.md.
-"aqua:Kitware/CMake" = "latest"
+cmake = "latest"
 
 # rcodesign (the `apple-codesign` crate) signs, notarizes, and staples the
 # packages/desktop-app/music-player macOS .app from Linux (the Mach-O is still
@@ -164,14 +164,13 @@ opentofu = "latest"
 hcloud = "latest"
 "npm:typescript-language-server" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
-deno = "latest"
 "npm:socket" = "latest"
-"aqua:betterleaks/betterleaks" = "latest"
+betterleaks = "latest"
 
-# Git hook runner (forbidden-strings enforcement, see docs/todo/forbidden-strings.md)
-"aqua:jdx/hk" = "latest"
+# Git hook runner
+hk = "latest"
 # Pkl: hk's config language
-"aqua:apple/pkl" = "latest"
+pkl = "latest"
 
 [settings]
 env_shell_expand = false
