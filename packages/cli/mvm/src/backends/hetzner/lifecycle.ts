@@ -140,7 +140,7 @@ function ipv4OrThrow(server: HetznerServer,): string {
  * const created = await createWithFallback({ fullName: 'mvm-dev', image: 'ubuntu-24.04', serverType: 'cx22', sshKeyId: 1, locations: ['fsn1', 'nbg1'], rl });
  * ```
  */
-async function createWithFallback(
+export async function createWithFallback(
   {
     image,
     fullName,

@@ -24,13 +24,19 @@ const BIN_PATH = 'packages/cli/mvm/dist/final/node/cli.mjs';
  * // result.exitCode === 0
  * ```
  */
-async function runMvm({ args, }: { args: readonly string[]; },): Promise<{
+async function runMvm({ args, env, }: {
+  args: readonly string[];
+  env?: NodeJS.ProcessEnv;
+},): Promise<{
   stdout: string;
   stderr: string;
   exitCode: number;
 }> {
   try {
-    const result = await spawn('bun', [BIN_PATH, ...args,], { cwd: REPO_ROOT, },);
+    const result = await spawn('bun', [BIN_PATH, ...args,], {
+      cwd: REPO_ROOT,
+      ...(env !== undefined ? { env, } : {}),
+    },);
     return {
       exitCode: 0,
       stderr: result.stderr,
@@ -64,6 +70,37 @@ await describe({
       },
     },),
 
+    it({
+      name: 'documents the --backend flag in help (it is stripped before optique)',
+      fn: async () => {
+        const result = await runMvm({ args: ['--help',], },);
+        expect(result.stdout,).toContain('--backend',);
+      },
+    },),
+
     //endregion Help
+
+    //region Backend selection: non-billable boundary (errors before any network call)
+
+    it({
+      name: 'errors clearly when the hetzner backend is selected without a token',
+      fn: async () => {
+        const result = await runMvm({
+          args: [
+            '--backend',
+            'hetzner',
+            'list',
+          ],
+          env: {
+            ...process.env,
+            HCLOUD_TOKEN: '',
+          },
+        },);
+        expect(result.exitCode,).not.toBe(0,);
+        expect(`${result.stdout}${result.stderr}`,).toContain('HCLOUD_TOKEN',);
+      },
+    },),
+
+    //endregion Backend selection
   ],
 },);
