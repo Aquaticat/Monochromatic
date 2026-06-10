@@ -2,6 +2,6 @@
 # Open src/index.html directly in a browser (all assets are embedded).
 
 [tasks.lint]
-run = "print 'No lintable TypeScript sources.'"
+run = "echo No lintable TypeScript sources."
 
 # No lint:oxlint or lint:types -- this package has no TypeScript source files.

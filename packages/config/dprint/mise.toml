@@ -1,2 +1,2 @@
 [tasks.lint]
-run = "print 'No lintable TypeScript sources.'"
+run = "echo No lintable TypeScript sources."

@@ -1,7 +1,12 @@
 [tasks.run]
 description = "Run git wrapper CLI"
 usage = 'arg "[args]" var=#true help="Git subcommand and arguments"'
-run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+shell = "node -e"
+run = """
+const { execFileSync } = await import('node:child_process')
+const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
+execFileSync('bun', ['src/index.ts', ...args], { stdio: 'inherit' })
+"""
 
 [tasks.build]
 extends = "build"
