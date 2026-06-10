@@ -31,10 +31,7 @@ config_roots = [
 bun = "1.3.14"
 
 # Package manager
-# Pinned to major 11 instead of "latest" because pnpm has not promoted v11 to the npm `latest` dist-tag
-# (latest = 10.33.4, latest-11 = 11.0.6). Using "latest" can also briefly resolve to a pre-release if
-# upstream tags one as latest, after which mise refuses to walk back since 11.0.0-rc.1 > 10.33.4 by semver.
-"npm:pnpm" = "11"
+pnpm = "11"
 
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
