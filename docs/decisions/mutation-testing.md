@@ -3,7 +3,6 @@
 ## Status
 
 Accepted.
-Plan: `docs/planning/mutation-testing-file-enforcer.md`.
 First consumer: `packages/dev-script/file-enforcer`.
 Reusable package: `packages/dev-script/mutation-test`.
 
