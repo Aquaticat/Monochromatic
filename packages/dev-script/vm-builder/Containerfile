@@ -78,12 +78,11 @@ USER root
 
 # Bake dotfiles from packages/config/dotfiles/ into the user's ~/.config/.
 # Build context is the monorepo root, so paths are relative to that.
-# Nushell in mise config is required because this monorepo's mise tasks use nushell.
+# Seed the baked dotfiles (mise + ghostty config) into the user's ~/.config.
 COPY --chown=user:user packages/config/dotfiles/ghostty/ /home/user/.config/ghostty/
 COPY --chown=user:user packages/config/dotfiles/mise/ /home/user/.config/mise/
 
-# Install mise tools (nushell) declared in the baked global config.
-# Without nushell, `mise install` in the monorepo fails before it can install anything.
+# Install any mise tools declared in the baked global config.
 USER user
 RUN ~/.local/bin/mise install
 USER root
