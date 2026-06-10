@@ -30,4 +30,4 @@ extends = "test:unit"
 
 [tasks.buildAndTest]
 description = "Build the harness, then run every *.unit.test.ts in its own bun process"
-run = "mise run build; mise run test:unit"
+run = ["mise run build", "mise run test:unit"]

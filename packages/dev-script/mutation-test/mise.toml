@@ -30,4 +30,4 @@ extends = "test:unit"
 
 [tasks.buildAndTest]
 description = "Build mutation-test, then run unit tests against built output"
-run = "mise run build; mise run test:unit"
+run = ["mise run build", "mise run test:unit"]

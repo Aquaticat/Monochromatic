@@ -30,7 +30,7 @@ extends = "test:unit"
 
 [tasks.buildAndTest]
 description = "Build the node lib + bin, then run unit tests; cli.unit.test.ts spawns the built cli.mjs"
-run = "mise run build; mise run test:unit"
+run = ["mise run build", "mise run test:unit"]
 
 [tasks.count]
 description = "Count tokens in files"

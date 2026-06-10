@@ -35,7 +35,7 @@ extends = "test:unit"
 
 [tasks.buildAndTest]
 description = "Build the node lib + bin, then run unit tests; cli.unit.test.ts spawns the built cli.mjs"
-run = "mise run build; mise run test:unit"
+run = ["mise run build", "mise run test:unit"]
 
 # Live, BILLED Hetzner provisioning test. Excluded from test:unit (the .expensive.
 # marker); run deliberately. Auto-extracts HCLOUD_TOKEN from the tofu tfvars so

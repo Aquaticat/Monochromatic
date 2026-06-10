@@ -11,7 +11,7 @@ run_workspace_node $root packages/build-tool/css cli ./src/client/styles.css ./d
 
 [tasks."build:js"]
 description = "Build CSS then bundle client JS"
-run = "mise run build:css; mise run build:js:client"
+run = ["mise run build:css", "mise run build:js:client"]
 
 [tasks."build:js:client"]
 extends = "build:js:client"

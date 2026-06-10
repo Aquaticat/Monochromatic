@@ -29,4 +29,4 @@ extends = "lint:oxlint"
 extends = "test:unit"
 
 [tasks.buildAndTest]
-run = "mise run build; mise run test:unit"
+run = ["mise run build", "mise run test:unit"]
