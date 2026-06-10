@@ -238,26 +238,33 @@ const exits = await Promise.all(processes.map((proc) => once(proc, 'exit')))
 const failed = children.filter((name, index) => exits[index][0] !== 0)
 if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.join(', ')}`) }
 """
-# Bootstrap-safe dispatch to a packages/dev-script/task-util entry. Resolves the
+# Bootstrap-safe dispatch to any workspace package's node entry. Resolves the
 # monorepo root (mise sets MISE_MONOREPO_ROOT in monorepo mode; the fallback
 # covers non-monorepo invocations), then runs the entry's built dist when present,
-# else its TS source through node. Interpolated into the task-util dispatcher
-# tasks, each of which sets `shell = "node -e"`. The bindings it imports
-# (existsSync, join, execFileSync) are reused by any inline follow-up in those
-# bodies, so the follow-up must not reimport them.
-dispatch_task_util = """
+# else its TS source through node. runWorkspaceNode(packagePath, entryName, args)
+# replaces the former nushell run_workspace_node; ensureOxlintConfig builds the
+# root oxlint config on fresh trees before an oxlint dispatch. Interpolated into
+# the dispatcher tasks (root and per-package), each of which sets
+# `shell = "node -e"`. Its imported bindings (existsSync, join, execFileSync) are
+# reused by any inline follow-up in those bodies, so the follow-up must not
+# reimport them.
+dispatch_workspace_node = """
 const { existsSync } = await import('node:fs')
 const { join, resolve } = await import('node:path')
 const { execFileSync } = await import('node:child_process')
 const configRoot = process.env.MISE_CONFIG_ROOT ?? process.cwd()
 const monorepoRoot = process.env.MISE_MONOREPO_ROOT ?? (existsSync(join(configRoot, 'mise.no-env.toml')) ? configRoot : resolve(configRoot, '..', '..', '..'))
-const runTaskUtil = (entryName, entryArgs) => {
-  const packageRoot = join(monorepoRoot, 'packages', 'dev-script', 'task-util')
+const runWorkspaceNode = (packagePath, entryName, entryArgs) => {
+  const packageRoot = join(monorepoRoot, packagePath)
   const built = join(packageRoot, 'dist', 'final', 'node', `${entryName}.mjs`)
   const source = join(packageRoot, 'src', `${entryName}.ts`)
   const entry = existsSync(built) ? built : existsSync(source) ? source : null
-  if (entry === null) { throw new Error(`missing built or source entry: task-util/${entryName}`) }
+  if (entry === null) { throw new Error(`missing built or source entry: ${packagePath}/${entryName}`) }
   execFileSync('node', [entry, ...entryArgs], { stdio: 'inherit' })
+}
+const ensureOxlintConfig = () => {
+  const oxlintConfig = join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs')
+  if (!existsSync(oxlintConfig)) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
 }
 """
 # Shell-word parser for mise's usage_args, which arrives as a single shell-escaped
@@ -400,18 +407,17 @@ run = "{{vars.fanout}}"
 description = "Lint with Oxlint"
 shell = "node -e"
 run = """
-{{vars.dispatch_task_util}}
-const oxlintConfig = join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs')
-if (!existsSync(oxlintConfig)) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
-runTaskUtil('oxlint-wrapper', ['--type-aware'])
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
 """
 
 [task_templates."lint:types"]
 description = "TypeScript"
 shell = "node -e"
 run = """
-{{vars.dispatch_task_util}}
-runTaskUtil('tsgo-filter', ['--build'])
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('packages/dev-script/task-util', 'tsgo-filter', ['--build'])
 """
 
 [task_templates."watch:lint:types"]
@@ -690,10 +696,9 @@ hide = true
 description = "Auto-fix with Oxlint (non-type-aware only)"
 shell = "node -e"
 run = """
-{{vars.dispatch_task_util}}
-const oxlintConfig = join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs')
-if (!existsSync(oxlintConfig)) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
-runTaskUtil('oxlint-wrapper', ['--fix'])
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--fix'])
 """
 
 # Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
@@ -770,8 +775,8 @@ run = "bun file-enforcer.config.ts"
 description = "Build Playwright container image via podman"
 shell = "node -e"
 run = """
-{{vars.dispatch_task_util}}
-runTaskUtil('depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:echo Infinity', '--outputs', 'sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity', '--', 'podman', 'build', '-t', 'monochromatic-playwright', '-f', 'playwright.Dockerfile', '.'])
 """
 
 [tasks.prepareAndBuild]
