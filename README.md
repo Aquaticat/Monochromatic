@@ -112,16 +112,10 @@ cd Monochromatic
 ```
 
 On first entry,
- Mise will warn about missing tools and an `enter` hook error
-because nushell is not installed yet.
- This is expected.
- Run manually once:
-
-```sh
-mise install
-```
-
-Then trust the configuration so Mise evaluates environment variables and templates:
+ Mise warns about missing tools.
+Trust the configuration so Mise evaluates environment variables,
+ templates,
+ and the `enter` hook:
 
 ```sh
 mise trust
@@ -132,16 +126,16 @@ under `packages/`.
  See [mise trust docs](https://mise.jdx.dev/cli/trust.html)
 for details on what this enables and why it is required.
 
-Finally,
- install dependencies and build all packages:
+The `enter` hook is a `bootstrap` task that runs `mise install` then `mise upgrade`,
+so entering the trusted directory installs and updates the pinned tools
+automatically;
+ it is plain cross-platform Mise with no separate task-runner shell to install
+first.
+Then install dependencies and build all packages:
 
 ```sh
 mise run prepareAndBuild
 ```
-
-Subsequent directory entries trigger the `enter` hook automatically,
- which runs
-`mise install` and `mise upgrade` to keep tools current.
 
 ## Essential commands
 
@@ -219,7 +213,7 @@ packages/
 ## Technical stack
 
 - **Task runner**:
-   [Mise](https://mise.jdx.dev/) with nushell for cross-platform task execution
+   [Mise](https://mise.jdx.dev/) with Node (`shell = "node -e"`) for cross-platform task logic
 - **Runtime**:
    [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.
   js standards)

@@ -897,10 +897,13 @@ XRT:
  Prefer cross-runtime patterns instead of Bun-specific implementations.
 
 SCR:
- Never write bash/powershell scripts;
- use inline nushell or TypeScript files as `mise.<action>.ts`.
- Execute with Bun directly;
- top-level code + top-level await (no `main()` wrapper).
+ Never write bash/powershell scripts or nushell.
+ Put mise task logic inline in a `node -e` body (set `shell = "node -e"` on the task;
+ `node -e` strips TS annotations,
+ runs ESM dynamic imports,
+ supports top-level await),
+ or move it into a package's normal bin invoked as a command-runner.
+ Never create `mise.<action>.ts` files.
 
 PIN:
  Pin tool versions only with clear justification + comment explaining why.
@@ -1719,10 +1722,13 @@ CM1:
  never reflexively use repo-root `mise run test` for narrow package work.
 
 CM2:
- Mise task `run` commands use nushell,
- not bash.
- Chain sequentially with `;` (`mise run foo; mise run bar`),
- not `&&`.
+ Mise tasks use mise's platform default shell (`sh -c -o errexit` on unix,
+ `cmd /c` on Windows) for single bare commands.
+ Sequence with the array `run` form (`run = ["a", "b"]`),
+ which mise runs in order and fails fast;
+ never `;`-chaining (sh-only),
+ nor `mise run a ::: b` inline sugar.
+ Override `shell = "node -e"` only for logic or non-portable bodies.
 
 CM3:
  All builds + tasks use `mise run`.

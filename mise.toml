@@ -47,7 +47,8 @@ ripgrep = "latest"
 # version is what was verified locally for the rollout.
 "cargo:cargo-fuzz" = "0.13.1"
 
-# Needed by some packages that depend on Node APIs
+# Runs mise task logic (tasks set shell = "node -e") and the packages that
+# depend on Node APIs.
 node = "latest"
 
 # Non-JS-based linters and formatters
