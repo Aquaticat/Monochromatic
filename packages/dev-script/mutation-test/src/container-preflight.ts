@@ -18,9 +18,9 @@ import { join, } from 'node:path';
 import spawn from 'nano-spawn';
 
 import {
-  INLINE_NU_SCRIPT,
+  INLINE_NODE_SCRIPT,
   TEST_FILES_ENV,
-} from './inline-nu.ts';
+} from './inline-node.ts';
 
 /**
  * Directory where temporary smoke-test files are written inside the work tree.
@@ -170,18 +170,18 @@ export async function relativeImportSmoke(packageCwd: string,): Promise<void> {
 }
 
 /**
- * Proves inline Nushell executes every selected test file and preserves exit status.
+ * Proves the inline Node sequencer executes every selected test file and preserves exit status.
  *
  * @param packageCwd - Target package cwd inside `/work`.
  *
  * @example
  * ```ts
- * await inlineNuTwoFileSmoke('/work/packages/dev-script/file-enforcer');
+ * await inlineNodeTwoFileSmoke('/work/packages/dev-script/file-enforcer');
  * ```
  */
-export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
+export async function inlineNodeTwoFileSmoke(packageCwd: string,): Promise<void> {
   /**
-   * First package-relative marker test for inline Nu sequencing.
+   * First package-relative marker test for inline sequencing.
    */
   const first = await writeSmokeFile({
     packageCwd,
@@ -189,7 +189,7 @@ export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
     content: 'console.log("inline-first-marker");\n',
   },);
   /**
-   * Second package-relative marker test for inline Nu sequencing.
+   * Second package-relative marker test for inline sequencing.
    */
   const second = await writeSmokeFile({
     packageCwd,
@@ -197,13 +197,13 @@ export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
     content: 'console.log("inline-second-marker");\n',
   },);
   /**
-   * Nushell sequencer result containing both marker outputs.
+   * Node sequencer result containing both marker outputs.
    */
   const result = await spawn(
-    'nu',
+    'node',
     [
-      '-c',
-      INLINE_NU_SCRIPT,
+      '-e',
+      INLINE_NODE_SCRIPT,
     ],
     {
       cwd: packageCwd,
@@ -221,7 +221,7 @@ export async function inlineNuTwoFileSmoke(packageCwd: string,): Promise<void> {
     .includes('inline-first-marker',))
     || (!result.stdout
       .includes('inline-second-marker',)))
-    throw new Error(`Inline Nu smoke did not execute both files: ${result.stdout}`,);
+    throw new Error(`Inline node smoke did not execute both files: ${result.stdout}`,);
 }
 
 /**
@@ -238,5 +238,5 @@ export async function runPreflights(packageCwd: string,): Promise<void> {
   await nativeTypeScriptSmoke();
   await workspaceImportSmoke(packageCwd,);
   await relativeImportSmoke(packageCwd,);
-  await inlineNuTwoFileSmoke(packageCwd,);
+  await inlineNodeTwoFileSmoke(packageCwd,);
 }

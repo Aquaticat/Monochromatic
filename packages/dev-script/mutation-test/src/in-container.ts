@@ -33,7 +33,7 @@ export {
   rsyncSourceToWorkTree,
 } from './container-worktree.ts';
 export {
-  inlineNuTwoFileSmoke,
+  inlineNodeTwoFileSmoke,
   nativeTypeScriptSmoke,
   relativeImportSmoke,
   runPreflights,

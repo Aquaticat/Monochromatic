@@ -36,11 +36,11 @@ export {
   runMutation,
 } from './host-runner.ts';
 export {
-  INLINE_NU_SCRIPT,
+  INLINE_NODE_SCRIPT,
   TEST_FILES_ENV,
-  buildNuCommand,
+  buildNodeCommand,
   quotePosixShellToken,
-} from './inline-nu.ts';
+} from './inline-node.ts';
 export {
   MUTATION_TSCONFIG_NAME,
   mutationTsconfig,

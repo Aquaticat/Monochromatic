@@ -5,13 +5,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  INLINE_NU_SCRIPT,
-  buildNuCommand,
+  INLINE_NODE_SCRIPT,
+  buildNodeCommand,
   quotePosixShellToken,
 } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: 'inline Nu command',
+  name: 'inline node command',
   children: [
     it({
       name: 'quotes embedded single quotes as one POSIX shell token',
@@ -20,22 +20,22 @@ await describe({
       },
     },),
     it({
-      name: 'builds a nu command without tsx or checked-in script path',
+      name: 'builds a node command without tsx or nushell',
       fn: async () => {
-        const command = buildNuCommand();
+        const command = buildNodeCommand();
 
-        expect(command,).toContain('nu -c',);
+        expect(command,).toContain('node -e',);
         expect(command,).toContain('MUTATION_TEST_FILES_JSON',);
         expect(command,).not.toContain('tsx',);
-        expect(command,).not.toContain('.nu',);
+        expect(command,).not.toContain('nu -c',);
       },
     },),
     it({
       name: 'sequences tests from environment JSON',
       fn: async () => {
-        expect(INLINE_NU_SCRIPT,).toContain('from json',);
-        expect(INLINE_NU_SCRIPT,).toContain('^node $test',);
-        expect(INLINE_NU_SCRIPT,).toContain('exit $result.exit_code',);
+        expect(INLINE_NODE_SCRIPT,).toContain('process.env.MUTATION_TEST_FILES_JSON',);
+        expect(INLINE_NODE_SCRIPT,).toContain("execFileSync('node', [test]",);
+        expect(INLINE_NODE_SCRIPT,).toContain('process.exit(',);
       },
     },),
   ],

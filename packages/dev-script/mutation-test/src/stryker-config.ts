@@ -14,7 +14,7 @@
  * ```
  */
 
-import { buildNuCommand, } from './inline-nu.ts';
+import { buildNodeCommand, } from './inline-node.ts';
 import type { StrykerConfigOptions, } from './types.ts';
 
 /**
@@ -82,7 +82,7 @@ export function buildStrykerConfig(options: StrykerConfigOptions,): StrykerJsonC
   return {
     testRunner: 'command',
     commandRunner: {
-      command: buildNuCommand(),
+      command: buildNodeCommand(),
     },
     mutate: [options.mutateFile,],
     coverageAnalysis: 'off',

@@ -26,7 +26,7 @@ import {
   REPORT_MOUNT,
   SELECTED_TESTS_ENV,
 } from './container-args.ts';
-import { TEST_FILES_ENV, } from './inline-nu.ts';
+import { TEST_FILES_ENV, } from './inline-node.ts';
 import type { InContainerOptions, } from './in-container-options.ts';
 import { sanitizeTagFragment, } from './path-utils.ts';
 import { buildStrykerConfig, } from './stryker-config.ts';

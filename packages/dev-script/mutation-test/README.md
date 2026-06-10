@@ -20,7 +20,7 @@ locations.
 
 - Podman only, with no Docker fallback.
 - No `tsx`; the repo-pinned latest Node runs erasable TypeScript directly.
-- No checked-in `.nu` file; the test sequencer is an inline Nushell program.
+- No checked-in script file; the test sequencer is an inline Node program.
 - Stryker runs with `inPlace: true` inside a writable `/work` copy.
 - Stryker's TypeScript checker is enabled by default for accurate
   `CompileError` classification.

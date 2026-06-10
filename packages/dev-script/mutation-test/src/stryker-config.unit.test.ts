@@ -32,7 +32,7 @@ await describe({
         expect(config.reporters,).toEqual(['clear-text', 'json',],);
         expect(config.jsonReporter.fileName,).toBe('/out/glob.json',);
         expect(config.concurrency,).toBe(1,);
-        expect(config.commandRunner.command,).toContain('nu -c',);
+        expect(config.commandRunner.command,).toContain('node -e',);
       },
     },),
     it({
