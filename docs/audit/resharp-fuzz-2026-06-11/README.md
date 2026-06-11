@@ -14,7 +14,7 @@ banner). Nothing here depends on it.
 
 ## Headline
 
-Eight distinct root causes were found and reproduced on v0.6.12, five of them
+Nine distinct root causes were found and reproduced on v0.6.12, five of them
 soundness bugs. The "all fixed" claim does not hold: the 2026-06-04 re-entrancy
 compile panic (BUG-1) and the `find_anchored` leading-assertion bug (BUG-20) are
 both still live, only narrowed; the default-vs-hardened `find_all` disagreement
@@ -66,6 +66,12 @@ with reproducers).
 - `bug-08` (soundness): `is_match` disagrees with `find_all`.
   `[0-9]{2}~(\z{1,3}|^{2}\W{0})+` in the flags config on `"00"` returns
   `is_match = false` while `find_all = [0:2]`. The 06-04 BUG-3 family, still live.
+- `bug-09` (performance / compile DoS): a dot-and-literal concatenation hangs
+  compile 40s+ (71s for the fuzzer's full unit) under full and javascript mode,
+  instant under default/ascii/hardened. `.n.................  n.` is a 23-char
+  trigger with no unbounded quantifier. A threshold blowup of the wide
+  full/javascript `.` minterm in the derivative construction, distinct from
+  bug-06's `\w`-repeat cost.
 
 ## Method
 
