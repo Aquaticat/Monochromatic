@@ -34,9 +34,13 @@ M1 (NEON). The decision-relevant conclusions, in order of weight:
    1.51 s and **503 MiB** to compile; `\w{26}` costs 176 ms and 49 MiB. The cliff tracks
    class byte-width, not `\w` (it appears for `\p{L}`, `[\w\s]`, `\W`; not for `\d`, `\s`,
    `[a-f0-9]`), and it is **entirely absent in `UnicodeMode::Ascii`** (`\w{24}` Ascii: 160 µs).
-4. At real-tree scale, a 259-rule secret scanner's **startup goes from 10 ms (regex) to 4.2 s
-   (resharp as sole engine)**, and a Linux-kernel `--all` scan from 1.9 s / 0.44 GB to 12.3 s /
-   **4.95 GB**. Behind a literal prefilter the engine is invisible at scan time but dominates load.
+4. At real-tree scale, a 259-rule secret scanner's startup goes from 10 ms (regex) to 4.2 s under
+   **resharp's default config** (`UnicodeMode::Default`), but **that gap is mostly the Unicode mode,
+   not the engine**: resharp in `UnicodeMode::Ascii` (correct for ASCII secret tokens) starts in
+   86 ms (~6x regex) and scans the Linux kernel in 6.0 s / 0.40 GB, vs Default's 12.3 s / **4.95 GB**.
+   The engine's true sole-use cost is ~6x at load and ~3x at scan; the rest is Default mode making
+   `\w` a wide 2-byte class. Behind a literal prefilter the engine is invisible at scan time and only
+   load differs.
 5. The concrete budget answer is in [the recommendation](#the-answer-how-long-of-a-compile-time-is-acceptable):
    **a ~200 ms per-pattern ceiling, enforced structurally**, plus the observation that any compile
    budget is meaningless unless first-match determinization is budgeted too.
@@ -363,30 +367,50 @@ under regex; neither engine handles that family well.
 
 ## End-to-end scanner: A / B / C over Monochromatic and the Linux kernel
 
-Three `forbidden-strings` variants on the same 259-rule ported ruleset, isolating engine choice at
+Four `forbidden-strings` variants on the same 259-rule ported ruleset, isolating engine choice at
 real-tree scale. A = production mixed routing (regex crate for plain rules, resharp only for the 4
 `BASE&~(E)` set-algebra rules). B = regex crate as sole engine, with those 4 rules decomposed in
-user space (find base spans, drop any matching an excluded placeholder shape). C = resharp as sole
-engine, single-pattern set algebra. **Findings are identical across A/B/C** at full scale,
-including correct placeholder exclusion (verified by diff).
+user space (find base spans, drop any matching an excluded placeholder shape). C-Default = resharp
+as sole engine in its **default `UnicodeMode::Default`** (2-byte `\w`). C-Ascii = resharp as sole
+engine in `UnicodeMode::Ascii` (1-byte `\w`), the semantically correct mode for ASCII secret
+tokens. **Findings are identical across A / B / C-Ascii** at full scale, exactly (both ASCII `\w`);
+C-Default differs only in that its 2-byte `\w` would match non-Latin word characters the ASCII
+corpora never contain.
 
 <table>
-  <thead><tr><th>Workload</th><th>A (mixed, prod)</th><th>B (all-regex + decomp)</th><th>C (all-resharp)</th></tr></thead>
+  <thead><tr><th>Workload</th><th>A (mixed, prod)</th><th>B (all-regex)</th><th>C-Ascii (resharp, Ascii)</th><th>C-Default (resharp, default config)</th></tr></thead>
   <tbody>
-    <tr><td>cold start (ruleset load)</td><td>10.1 ms</td><td>13.6 ms</td><td><b>4 234 ms</b> (420x)</td></tr>
-    <tr><td>Monochromatic <code>--all</code></td><td>76.8 ms</td><td>76.5 ms</td><td>5 441 ms (71x)</td></tr>
-    <tr><td>Linux kernel <code>--all</code> (88 k files)</td><td>1.88 s</td><td>2.03 s</td><td>12.31 s (6.5x)</td></tr>
-    <tr><td>kernel peak RSS</td><td>439 MiB</td><td>428 MiB</td><td><b>4 951 MiB</b> (11x)</td></tr>
-    <tr><td>ruleset coverage (rules compiled)</td><td>259/259</td><td>259/259</td><td>258/259</td></tr>
+    <tr><td>cold start (ruleset load)</td><td>10.1 ms</td><td>13.6 ms</td><td>85.6 ms</td><td><b>4 234 ms</b></td></tr>
+    <tr><td>Monochromatic <code>--all</code></td><td>76.8 ms</td><td>76.5 ms</td><td>187 ms</td><td>5 441 ms</td></tr>
+    <tr><td>Linux kernel <code>--all</code> (88 k files)</td><td>1.88 s</td><td>2.03 s</td><td>5.95 s</td><td>12.31 s</td></tr>
+    <tr><td>kernel peak RSS</td><td>439 MiB</td><td>428 MiB</td><td>397 MiB</td><td><b>4 951 MiB</b></td></tr>
+    <tr><td>ruleset coverage (rules compiled)</td><td>259/259</td><td>259/259</td><td>258/259</td><td>258/259</td></tr>
+  </tbody>
+</table>
+
+**The headline gap is mostly Unicode mode, not engine.** Decomposing the cold start with the same
+binary, env-forced, on the identical 259-rule ruleset:
+
+<table>
+  <thead><tr><th>Config</th><th>cold start</th><th>factor</th><th>what it isolates</th></tr></thead>
+  <tbody>
+    <tr><td>regex crate (ASCII-first, = A/B path)</td><td>14.2 ms</td><td>baseline</td><td>-</td></tr>
+    <tr><td>resharp Ascii</td><td>85.6 ms</td><td>6x</td><td>the engine cost (same ASCII semantics)</td></tr>
+    <tr><td>resharp Default (default config)</td><td>4 140 ms</td><td>48x more</td><td>the Unicode-mode cost (2-byte <code>\w</code> hits the wide-class compile cliff)</td></tr>
   </tbody>
 </table>
 
 - **Engine choice is invisible at scan time behind the literal prefilter** (A == B on Monochromatic,
-  76.8 vs 76.5 ms); it dominates **load** time (10 ms to 4.2 s) and residual non-prefilterable
-  matching. The kernel ratio is smaller (6.5x) only because per-file scan work there dilutes the
-  fixed 4.2 s load.
-- **C's 4.95 GiB peak** on the kernel is resharp's lazy-DFA construction over the kernel's varied,
-  partly non-ASCII content, the per-file face of the multilingual cold cliff.
+  76.8 vs 76.5 ms); the engine's true sole-use cost is ~6x at load and ~3x at scan (C-Ascii vs
+  A/B), which is real but not prohibitive.
+- **C-Default's 4.2 s startup and 4.95 GiB kernel peak are the Unicode mode, not the engine.**
+  Switching to Ascii mode (correct for ASCII secret tokens) brings startup to 86 ms and kernel RSS
+  to 397 MiB, in line with regex. The betterleaks rules trip Default mode because they carry `\w`
+  repeats (`[\w=\.-]{32,64}`, `\w{82}`, ...) that become wide 2-byte classes; in Ascii mode those
+  are 1-byte and the compile cliff disappears. This is exactly ieviev's lever: whether
+  `UnicodeMode::Default` should pay the wide-class compile eagerly, and whether Default (rather than
+  Ascii) is the right library default for the common ASCII case. The 4.2 s legitimately answers his
+  literal "default config" question, but reads as a mode choice, not engine overhead.
 - **B is viable but lossy in expressiveness**: routing the `BASE&~(E)` rules verbatim to the regex
   crate compiles (it reads `&~(` as literal bytes) but silently changes semantics and loses the
   detection; a correct B must decompose those rules into base-find + host-side exclusion, exactly
@@ -468,7 +492,11 @@ on NEON.
    accelerator and its expensive proof stop being load-bearing. Until then, the single highest-value
    change for resharp's own consumers is documenting `UnicodeMode::Ascii`/`Javascript` as the
    default for ASCII-token workloads, where the entire problem disappears (160 µs compile, no cold
-   cliff).
+   cliff). The end-to-end scanner makes this concrete: the same sole-engine scanner goes from a
+   4.2 s startup and 4.95 GiB kernel scan under `UnicodeMode::Default` to 86 ms and 0.40 GiB under
+   `UnicodeMode::Ascii` (~48x of the gap is the mode). So the most consequential default-config
+   decision is arguably the **default `UnicodeMode` itself**: `Default` (2-byte `\w`) silently opts
+   every `\w`-bearing rule into the wide-class compile, while the common consumer wants ASCII.
 
 ## Caveats and threats to validity
 
@@ -500,7 +528,9 @@ features = ["diag"] }` at `c1b3b87`, `regex = "1"` (1.12.4). Fix-option measurem
 clone's `resharp-engine/src/lib.rs` (P1: `bounded_safe_find_all = false`; P2: `max_len <= 200`),
 each reverted after measuring. The A/B/C scanner variants are git worktrees under
 `.cache/agent-worktrees/fs-{enhanced,B,C}` on branches `bench/fs-{enhanced-ruleset,B,C}`, differing
-by the `FS_FORCE_ENGINE` knob and a baked engine default; the betterleaks corpus regenerates from
+by the `FS_FORCE_ENGINE` knob (`regex` / `resharp` / `resharp-ascii`) and a baked engine default;
+C-Default and C-Ascii are the same C binary under `FS_FORCE_ENGINE=resharp` vs `resharp-ascii`. The
+betterleaks corpus regenerates from
 `packages/cli/forbidden-strings/data/betterleaks-default-config.toml`. Linux kernel: depth-1 clone
 of torvalds/linux (88 k indexed files). Twain corpus: Gutenberg #74 + #76 doubled to 8 MiB. Every
 timing is tab-separated under the rig's `results/` (x86) and `m1-results/` (ARM).
