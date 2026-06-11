@@ -315,7 +315,153 @@ fn expand_unicode_whitespace(src: &str) -> String {
 //   return compilePlainToCompiled(src);
 // }
 // ```
+// What:     `FS_FORCE_ENGINE` overrides the per-rule engine routing for
+//           the A/B/C benchmark variants. Unset (production): each rule
+//           routes by `requires_resharp` (regex crate unless it needs
+//           set-algebra/lookaround). `regex`: force every rule through the
+//           regex crate; rules that genuinely need resharp features fail
+//           closed (the consumer must decompose them in user space, the
+//           "B" variant). `resharp`: force every rule through resharp's
+//           engine (the "C" variant), so the regex crate is never used.
+// Why:      Lets one binary measure resharp-as-sole-engine vs
+//           regex-as-sole-engine over real file trees without forking the
+//           whole pipeline. Read once per process via a `OnceLock`.
+// TS map:   `const FORCE = process.env.FS_FORCE_ENGINE;`
+fn forced_engine() -> Option<&'static str> {
+    use std::sync::OnceLock;
+    static FORCE: OnceLock<Option<String>> = OnceLock::new();
+    FORCE
+        .get_or_init(|| std::env::var("FS_FORCE_ENGINE").ok())
+        .as_deref()
+}
+
+fn compile_forced_resharp(src: &str) -> Result<CompiledRegex, String> {
+    let caught = catch_unwind(AssertUnwindSafe(|| Regex::new(src)));
+    match caught {
+        Ok(Ok(re)) => Ok(CompiledRegex::Resharp(re)),
+        Ok(Err(e)) => Err(format!("(resharp-forced): {:?}", e)),
+        Err(_) => Err("(resharp-forced): panic during compile".to_string()),
+    }
+}
+
+// What:     Split a top-level `BASE&~(E1)&~(E2)...` rule into its base
+//           pattern and the list of complement-excluded shapes, scanning
+//           outside character classes and respecting `\` escapes and
+//           paren depth. Returns None when the rule is not exactly that
+//           shape (any other resharp feature: bare `&` without `~(`, a
+//           leading `~(`, lookaround, bare `_`), so the caller can report
+//           it as "the regex crate cannot express this rule".
+// Why:      The only resharp feature the shipped ruleset uses is
+//           intersection-with-complement for placeholder exclusion; this
+//           is the user-space decomposition of exactly that shape.
+fn split_intersection_complement(src: &str) -> Option<(String, Vec<String>)> {
+    let bytes = src.as_bytes();
+    let mut base_end = None;
+    let mut exclusions: Vec<String> = Vec::new();
+    let mut i = 0usize;
+    let mut in_class = false;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'\\' {
+            i += 2;
+            continue;
+        }
+        if c == b'[' && !in_class {
+            in_class = true;
+        } else if c == b']' && in_class {
+            in_class = false;
+        } else if c == b'&' && !in_class {
+            // Must be `&~(` and everything after this point is exclusions.
+            if bytes.get(i + 1) != Some(&b'~') || bytes.get(i + 2) != Some(&b'(') {
+                return None;
+            }
+            if base_end.is_none() {
+                base_end = Some(i);
+            }
+            // Capture the balanced `(...)` body following `~`.
+            let mut depth = 0usize;
+            let mut j = i + 2;
+            let body_start = i + 3;
+            let mut local_class = false;
+            while j < bytes.len() {
+                let d = bytes[j];
+                if d == b'\\' {
+                    j += 2;
+                    continue;
+                }
+                if d == b'[' && !local_class {
+                    local_class = true;
+                } else if d == b']' && local_class {
+                    local_class = false;
+                } else if !local_class && d == b'(' {
+                    depth += 1;
+                } else if !local_class && d == b')' {
+                    depth -= 1;
+                    if depth == 0 {
+                        break;
+                    }
+                }
+                j += 1;
+            }
+            if depth != 0 {
+                return None;
+            }
+            exclusions.push(src[body_start..j].to_string());
+            i = j + 1;
+            continue;
+        }
+        i += 1;
+    }
+    match base_end {
+        Some(end) if !exclusions.is_empty() => Some((src[..end].to_string(), exclusions)),
+        _ => None,
+    }
+}
+
+fn compile_forced_regex(src: &str) -> Result<CompiledRegex, String> {
+    if requires_resharp(src) {
+        // The rule uses a resharp-only feature; express it under the regex
+        // crate if it is the supported intersection-with-complement shape,
+        // otherwise report it as inexpressible (the B-variant coverage gap).
+        if let Some((base, exclusions)) = split_intersection_complement(src) {
+            let base_re = regex::bytes::RegexBuilder::new(&expand_unicode_whitespace(&base))
+                .unicode(true)
+                .size_limit(256 * 1024 * 1024)
+                .dfa_size_limit(256 * 1024 * 1024)
+                .build()
+                .map_err(|e| format!("(regex-decomposed base): {:?}", e))?;
+            let ex_res: Result<Vec<_>, String> = exclusions
+                .iter()
+                .map(|ex| {
+                    regex::bytes::RegexBuilder::new(&format!("^(?:{})$", expand_unicode_whitespace(ex)))
+                        .unicode(true)
+                        .size_limit(256 * 1024 * 1024)
+                        .build()
+                        .map_err(|e| format!("(regex-decomposed exclusion): {:?}", e))
+                })
+                .collect();
+            return Ok(CompiledRegex::Decomposed {
+                base: base_re,
+                exclusions: ex_res?,
+            });
+        }
+        return Err(format!(
+            "(regex-forced): rule uses a resharp-only feature the regex crate cannot express: {:?}",
+            src
+        ));
+    }
+    compile_plain_rule_to_compiled(src)
+}
+
 pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
+    if let Some(force) = forced_engine() {
+        if force == "resharp" {
+            return compile_forced_resharp(src);
+        }
+        if force == "regex" {
+            return compile_forced_regex(src);
+        }
+    }
     // What:     `if let Some(reason) = stacked_quantifier(src)` runs
     //           the structural pre-validator first. The detector flags
     //           two regex quantifier suffixes appearing back-to-back

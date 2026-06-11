@@ -333,6 +333,28 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
         }
     }
 
+    // FS_FORCE_ENGINE benchmark mode (A/B/C variants): a rule the pinned
+    // engine cannot express must not abort the whole load. Pre-filter
+    // regex_specs to only the rules that compile under the forced engine,
+    // BEFORE the prefix/shard structures are derived from it (those couple
+    // by position, so filtering must happen here, not after compile). The
+    // dropped count is the measurement: "this engine cannot express N of
+    // the ruleset's rules". Production (no override) keeps fail-fast.
+    if std::env::var("FS_FORCE_ENGINE").is_ok() {
+        let before = regex_specs.len();
+        let verdicts: Vec<bool> = regex_specs
+            .par_iter()
+            .map(|(_, src)| compile_rule_src(src).is_ok())
+            .collect();
+        let mut keep = verdicts.into_iter();
+        regex_specs.retain(|_| keep.next().unwrap_or(false));
+        eprintln!(
+            "forbidden-strings[force]: {} regex rules compiled, {} dropped (engine cannot express)",
+            regex_specs.len(),
+            before - regex_specs.len()
+        );
+    }
+
     if literal_specs.is_empty() && regex_specs.is_empty() {
         // What:     `Err("no rules loaded".to_string())`. `Err(...)` is
         //           the failure variant of `Result`; the literal

@@ -138,6 +138,25 @@ use regex::bytes::Regex as PlainRegex;
 pub enum CompiledRegex {
     Resharp(Regex),
     Plain(PlainRegex),
+    // What:     User-space decomposition of a resharp `BASE&~(E1)&~(E2)...`
+    //           intersection-with-complement rule, using only the regex
+    //           crate: `base` finds candidate spans, and a span is kept
+    //           only when it does not fully match any `exclusions[i]`
+    //           (each compiled with `^...$` anchors so "fully matches"
+    //           means the whole span equals an excluded shape). This is
+    //           the "B" benchmark variant's faithful expression of a rule
+    //           the regex crate cannot state in one pattern.
+    // Why:      Routing the raw `BASE&~(E)` string to the regex crate
+    //           compiles (the crate reads `&~(` as literal bytes) but
+    //           silently changes semantics: it then demands a literal
+    //           `&~(` in the text and loses the real detection. The
+    //           decomposition reproduces resharp's set-algebra result
+    //           with host-side filtering, the way betterleaks/gitleaks do.
+    // TS map:   `{ kind: "decomposed"; base: RegExp; exclusions: RegExp[] }`.
+    Decomposed {
+        base: PlainRegex,
+        exclusions: Vec<PlainRegex>,
+    },
 }
 
 // What:     `pub struct ScanMatch { pub start: usize, pub end: usize }`
@@ -247,6 +266,14 @@ impl CompiledRegex {
                 .find_iter(content)
                 .map(|m| ScanMatch { start: m.start(), end: m.end() })
                 .collect()),
+            CompiledRegex::Decomposed { base, exclusions } => Ok(base
+                .find_iter(content)
+                .filter(|m| {
+                    let span = &content[m.start()..m.end()];
+                    !exclusions.iter().any(|ex| ex.is_match(span))
+                })
+                .map(|m| ScanMatch { start: m.start(), end: m.end() })
+                .collect()),
         }
     }
 
@@ -310,6 +337,12 @@ impl CompiledRegex {
                 }
             }
             CompiledRegex::Plain(re) => Ok(re.is_match(content)),
+            // Gate path: a decomposed rule "matches" iff at least one base
+            // span survives the exclusions. Falls back to find_all's logic.
+            CompiledRegex::Decomposed { base, exclusions } => Ok(base.find_iter(content).any(|m| {
+                let span = &content[m.start()..m.end()];
+                !exclusions.iter().any(|ex| ex.is_match(span))
+            })),
         }
     }
 }
