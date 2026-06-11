@@ -12,9 +12,16 @@ import { string, } from '@optique/core/valueparser';
 //region Status pre-subcommand and post-subcommand parsers
 
 /**
- * Config key prefix that callers can set via `-c <key>=<value>` to override the wrapper's status advice.
+ * Config key that callers can set via `-c` to override the wrapper's status
+ * advice. Compared case-insensitively because git treats section and key
+ * names case-insensitively.
  */
-const ADVICE_KEY_PREFIX = 'advice.statusHints=';
+const ADVICE_KEY = 'advice.statushints';
+
+/**
+ * Config key prefix matching the valued form `-c advice.statusHints=<value>`.
+ */
+const ADVICE_KEY_PREFIX = `${ADVICE_KEY}=`;
 
 /**
  * Pre-subcommand option parser scoped to the facts the status-hints rule needs.
@@ -104,7 +111,14 @@ export function parseStatusPreRegion(
     hasStatusHintsOverride: parseResult.value
       .configValues
       .some(function isAdviceKey(v,) {
-      return v.startsWith(ADVICE_KEY_PREFIX,);
+      /**
+       * Config token lowered for git's case-insensitive key matching.
+       */
+      const lowered = v.toLowerCase();
+      // The bare form `-c advice.statusHints` (no `=`) is git's boolean-true
+      // spelling and is just as much an explicit user choice as the valued form.
+      return lowered.startsWith(ADVICE_KEY_PREFIX,)
+        || (lowered === ADVICE_KEY);
     },),
   };
 }

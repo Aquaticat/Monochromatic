@@ -11,6 +11,10 @@ import {
   type CheckIndexDiffersFromHead,
   indexDiffersFromHead,
 } from './commit-index-check.ts';
+import {
+  type CheckSequencerInProgress,
+  sequencerInProgress,
+} from './commit-sequencer-check.ts';
 
 //region Commit-only rule
 
@@ -26,7 +30,8 @@ const ESCAPE_HATCH = COMMIT_ESCAPE_HATCH;
 const NO_PATHSPEC_MESSAGE =
   'cli-git: git commit requires an explicit pathspec when commit-only enforcement is active. '
   + 'Name the paths in the commit command (for example, git commit -m <msg> <path>), '
-    + 'pass --pathspec-from-file, or pass --no-enforce-only to bypass for this invocation.';
+    + 'pass --pathspec-from-file, pass --no-only to commit the entire index, '
+    + 'or pass --no-enforce-only to bypass for this invocation.';
 
 /**
  * Diagnostic emitted when commit-only enforcement sees `-a`/`--all`, which
@@ -79,6 +84,12 @@ type CommitOnlyDependencies = {
    * defers to real git.
    */
   readonly checkIndexDiffersFromHead: CheckIndexDiffersFromHead;
+  /**
+   * Reports whether a merge/cherry-pick/revert awaits its concluding commit
+   * in the repository the commit targets; `'none'` also covers query
+   * failures, restoring normal enforcement.
+   */
+  readonly checkSequencerInProgress: CheckSequencerInProgress;
 };
 
 /**
@@ -111,20 +122,37 @@ type CommitOnlyDependencies = {
  * `--no-only`); when the index matches HEAD, or git cannot answer (for
  * example before the first commit), injection proceeds as before.
  *
+ * Injection is also skipped when `-i`/`--include` (any accepted
+ * abbreviation) is present, because git forbids combining include mode with
+ * `--only`; the user already chose how paths combine with the index.
+ *
+ * Pathless commits during a merge, cherry-pick, or revert conclusion pass
+ * through without injection: git forbids partial commits in those states,
+ * so the pathless form is the documented way to record the resolution and
+ * the rule's usual advice (name the paths) would dead-end on git's
+ * `cannot do a partial commit during a merge` fatal.
+ *
  * @param checkIndexDiffersFromHead - Index-vs-HEAD checker the returned rule consults.
  *
- * @returns Commit-only rule bound to given checker.
+ * @param checkSequencerInProgress - Merge/cherry-pick/revert state checker
+ *   consulted before rejecting pathless commits.
+ *
+ * @returns Commit-only rule bound to given checkers.
  *
  * @example
  * ```ts
  * const rule = makeCommitOnly({
- *   checkIndexDiffersFromHead: async function fake() { return 'matches'; },
+ *   checkIndexDiffersFromHead: async function fakeIndex() { return 'matches'; },
+ *   checkSequencerInProgress: async function fakeSequencer() { return 'none'; },
  * });
  * await rule(['commit', '-m', 'msg', 'file.ts']);
  * // => ['commit', '-o', '-m', 'msg', 'file.ts']
  * ```
  */
-export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDependencies,): CommitOnlyRule {
+export function makeCommitOnly({
+  checkIndexDiffersFromHead,
+  checkSequencerInProgress,
+}: CommitOnlyDependencies,): CommitOnlyRule {
   /**
    * Applies commit-only enforcement to one git argv.
    *
@@ -134,9 +162,10 @@ export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDepende
    *   `--no-enforce-only` stripped, or unmodified args when the user has
    *   already chosen.
    *
-   * @throws When argv is pathless without a pathless-allowed mode, uses
-   *   `-a`/`--all`, or is a pathless `--amend`/`--allow-empty` commit whose
-   *   injected `--only` would ignore a dirty index.
+   * @throws When argv is pathless without a pathless-allowed mode (outside a
+   *   merge/cherry-pick/revert conclusion), uses `-a`/`--all`, or is a
+   *   pathless `--amend`/`--allow-empty` commit whose injected `--only`
+   *   would ignore a dirty index.
    *
    * @example
    * ```ts
@@ -210,12 +239,39 @@ export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDepende
         || region
         .hasPathlessAllowedFlag;
 
-      if (!hasPathspecSource)
+      if (!hasPathspecSource) {
+        /**
+         * Sequencer state consulted before rejecting: pathless commit is the
+         * documented conclusion of a merge/cherry-pick/revert, where git
+         * forbids partial commits entirely.
+         */
+        const sequencerState = await checkSequencerInProgress({
+          preSubcommandArgs: args.slice(
+            0,
+            subcommandIndex,
+          ),
+        },);
+
+        if (sequencerState === 'in-progress') {
+          rl.debug(
+            'merge/cherry-pick/revert awaiting conclusion; passing pathless commit through without -o',
+          );
+          return args;
+        }
+
         throw new Error(NO_PATHSPEC_MESSAGE,);
+      }
     }
 
     if (region.hasExplicitOnlyFlag) {
       rl.debug('-o, --only, or --no-only already present, skipping injection',);
+      return args;
+    }
+
+    if (region.hasIncludeFlag) {
+      rl.debug(
+        '-i/--include present; git forbids combining it with --only, skipping injection',
+      );
       return args;
     }
 
@@ -268,11 +324,13 @@ export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDepende
 }
 
 /**
- * Commit-only rule wired to the real git index-vs-HEAD checker; the variant
- * the rule pipeline runs. Behavior is documented on {@link makeCommitOnly}.
+ * Commit-only rule wired to the real git index-vs-HEAD and sequencer-state
+ * checkers; the variant the rule pipeline runs. Behavior is documented on
+ * {@link makeCommitOnly}.
  */
 export const commitOnly: CommitOnlyRule = makeCommitOnly({
   checkIndexDiffersFromHead: indexDiffersFromHead,
+  checkSequencerInProgress: sequencerInProgress,
 },);
 
 //endregion Commit-only rule

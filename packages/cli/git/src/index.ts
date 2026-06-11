@@ -7,6 +7,7 @@ import {
 } from './log.ts';
 import { autoPush, } from './auto-push.ts';
 import { parseGlobalOptions, } from './parse-global-options.ts';
+import { parseCommitRegion, } from './parsers/commit.ts';
 import { resolveGit, } from './resolve-git.ts';
 import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
@@ -175,12 +176,17 @@ try {
   const postSubcommand = processedArgs.slice(subcommandIndex + 1,);
 
   /**
-   * True when a real commit just landed (the spawn above succeeded and this was
-   * not a `--dry-run` preview), so the new commit should be backed up to origin.
-   * A failed commit throws out of the spawn and never reaches here.
+   * True when a real commit just landed (the spawn above succeeded and this
+   * was not a dry-run preview), so the new commit should be backed up.
+   * Dry-run detection uses the parsed commit region, which covers
+   * `--dry-run` plus the output-format flags git documents as implying it
+   * (`--short`, `--porcelain`, `--long`, `-z`/`--null`) in any accepted
+   * abbreviation. A failed commit throws out of the spawn above and never
+   * reaches here.
    */
   const committed = (subcommand === 'commit')
-    && (!postSubcommand.includes('--dry-run',));
+    && (!parseCommitRegion(postSubcommand,)
+      .isDryRun);
 
   if (committed)
     await autoPush({

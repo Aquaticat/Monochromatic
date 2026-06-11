@@ -15,9 +15,11 @@ import {
 const REMOTE_LINE_PREFIX = 'remote: ';
 
 /**
- * Push argv used to back up the just-created commit. `--set-upstream origin
- * HEAD` creates the upstream branch on first push and only re-points the
- * already-correct upstream on later pushes, so one command serves both.
+ * Push argv used when the current branch has no upstream yet:
+ * `--set-upstream origin HEAD` creates the branch on origin and records it
+ * as the upstream. Branches that already have an upstream are pushed with
+ * {@link UPSTREAM_PUSH_ARGS} instead, so an upstream pointing at another
+ * remote is never silently re-pointed to origin.
  */
 const AUTO_PUSH_ARGS: readonly string[] = [
   'push',
@@ -25,6 +27,13 @@ const AUTO_PUSH_ARGS: readonly string[] = [
   'origin',
   'HEAD',
 ];
+
+/**
+ * Push argv used when the current branch already has an upstream: a plain
+ * push follows the configured upstream (whatever remote it lives on) and
+ * leaves the branch's tracking configuration untouched.
+ */
+const UPSTREAM_PUSH_ARGS: readonly string[] = ['push',];
 
 /**
  * Argv that prints the `origin` remote URL, used only to detect whether an
@@ -35,6 +44,35 @@ const ORIGIN_URL_ARGS: readonly string[] = [
   'get-url',
   'origin',
 ];
+
+/**
+ * Argv that resolves the current branch's configured upstream; a non-zero
+ * exit means no upstream is configured (or HEAD is detached).
+ */
+const UPSTREAM_NAME_ARGS: readonly string[] = [
+  'rev-parse',
+  '--abbrev-ref',
+  '--symbolic-full-name',
+  '@{upstream}',
+];
+
+/**
+ * Argv that resolves HEAD as a symbolic ref; a non-zero exit means HEAD is
+ * detached (mid-rebase, mid-bisect, or a detached checkout).
+ */
+const SYMBOLIC_HEAD_ARGS: readonly string[] = [
+  'symbolic-ref',
+  '--quiet',
+  'HEAD',
+];
+
+/**
+ * Note surfaced when auto-push is skipped because HEAD is detached: pushing
+ * `HEAD` requires a branch, and detached commits (rebase or cherry-pick
+ * conflict resolution, detached experiments) have no upstream to back up to.
+ */
+const DETACHED_HEAD_NOTE =
+  'cli-git: HEAD is detached (mid-rebase/cherry-pick or a detached checkout); skipping auto-push.';
 
 /**
  * Selects which push output to surface: on a clean push only the GitHub
@@ -76,8 +114,9 @@ export function filterPushOutput({
 //region Auto-push orchestration
 
 /**
- * Outcome of one auto-push attempt: `skipped` when no origin exists, `pushed`
- * on a clean push, `failed` when git rejected or could not reach the remote.
+ * Outcome of one auto-push attempt: `skipped` when there is nowhere to back
+ * up to (no upstream and no origin) or HEAD is detached, `pushed` on a clean
+ * push, `failed` when git rejected or could not reach the remote.
  */
 export type AutoPushOutcome = 'skipped' | 'pushed' | 'failed';
 
@@ -101,31 +140,41 @@ export type AutoPushResult = {
 };
 
 /**
- * Reports whether the repository has an `origin` remote to back up to.
+ * Reports whether a read-only git query exits zero in given directory. Used
+ * for the yes/no probes auto-push needs: does origin exist, is an upstream
+ * configured, is HEAD on a branch.
  *
  * @param gitPath - Absolute path to real git binary.
  *
  * @param cwd - Directory query runs in, matching where commit landed.
  *
- * @returns `true` when `git remote get-url origin` exits zero.
+ * @param args - Read-only git argv to probe with.
+ *
+ * @returns `true` when query exits zero.
  *
  * @example
  * ```ts
- * await originExists({ gitPath: '/usr/bin/git', cwd: '/repo' });
+ * await gitQuerySucceeds({
+ *   gitPath: '/usr/bin/git',
+ *   cwd: '/repo',
+ *   args: ['remote', 'get-url', 'origin'],
+ * });
  * // => true
  * ```
  */
-async function originExists({
+async function gitQuerySucceeds({
   gitPath,
   cwd,
+  args,
 }: {
   readonly gitPath: string;
   readonly cwd: string;
+  readonly args: readonly string[];
 },): Promise<boolean> {
   try {
     await nanoSpawn(
       gitPath,
-      [...ORIGIN_URL_ARGS,],
+      [...args,],
       { cwd, },
     );
     return true;
@@ -144,8 +193,14 @@ async function originExists({
  * failure. Always invoked with the real git binary, so it does not re-enter the
  * cli-git wrapper, yet the push still fires git's native pre-push hook.
  *
- * Auto-push is skipped when no `origin` exists, since there is nowhere to back
- * up to. The commit has already happened by the time this runs, and git ignores
+ * A branch with a configured upstream is pushed plainly, following that
+ * upstream wherever it lives; `--set-upstream origin HEAD` is used only when
+ * no upstream exists yet, so a branch tracking another remote never has its
+ * tracking configuration silently re-pointed to origin. Auto-push is skipped
+ * silently when there is nowhere to back up to (no upstream and no `origin`),
+ * and skipped with a printed note when HEAD is detached (mid-rebase,
+ * mid-cherry-pick, or a detached checkout), where pushing `HEAD` cannot work.
+ * The commit has already happened by the time this runs, and git ignores
  * a post-commit hook's exit status, so a failed backup push is surfaced in the
  * output but never changes the commit command's exit code; the caller leaves
  * `process.exitCode` untouched on a failed push.
@@ -182,11 +237,22 @@ export async function autoPush({
     l,
   },);
 
-  if (!(await originExists({
+  /**
+   * Whether the current branch already has a configured upstream; `false`
+   * also covers detached HEAD, where `@{upstream}` cannot resolve.
+   */
+  const hasUpstream = await gitQuerySucceeds({
     gitPath,
     cwd,
-  },))) {
-    rl.debug('no origin remote; skipping auto-push',);
+    args: UPSTREAM_NAME_ARGS,
+  },);
+
+  if ((!hasUpstream) && (!(await gitQuerySucceeds({
+    gitPath,
+    cwd,
+    args: ORIGIN_URL_ARGS,
+  },)))) {
+    rl.debug('no upstream and no origin remote; skipping auto-push',);
     return {
       outcome: 'skipped',
       exitCode: 0,
@@ -194,7 +260,32 @@ export async function autoPush({
     };
   }
 
-  rl.debug('auto-pushing committed work to origin HEAD',);
+  if (!(await gitQuerySucceeds({
+    gitPath,
+    cwd,
+    args: SYMBOLIC_HEAD_ARGS,
+  },))) {
+    console.error(DETACHED_HEAD_NOTE,);
+    return {
+      outcome: 'skipped',
+      exitCode: 0,
+      shown: DETACHED_HEAD_NOTE,
+    };
+  }
+
+  /**
+   * Push argv chosen by upstream state: plain push follows an existing
+   * upstream, first push creates the branch on origin.
+   */
+  const pushArgs = hasUpstream
+    ? UPSTREAM_PUSH_ARGS
+    : AUTO_PUSH_ARGS;
+
+  rl.debug(
+    hasUpstream
+      ? 'auto-pushing committed work to its configured upstream'
+      : 'auto-pushing committed work to origin HEAD with --set-upstream',
+  );
 
   try {
     /**
@@ -202,7 +293,7 @@ export async function autoPush({
      */
     const result = await nanoSpawn(
       gitPath,
-      [...AUTO_PUSH_ARGS,],
+      [...pushArgs,],
       { cwd, },
     );
     /**
