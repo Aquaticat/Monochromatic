@@ -17,11 +17,11 @@ experimental_monorepo_root = true
 [monorepo]
 # Each packages/*/* directory with a mise.toml becomes its own config root,
 # giving it its own tools, env, and tasks while inheriting from the root.
-# packages-deprecated/*/* mirrors the active layout for archived packages that
-# remain installable (e.g. via npm) but are no longer actively maintained.
+# packages-deprecated/*/* is intentionally excluded: archived packages remain
+# installable (e.g. via npm) but should not be discovered as task config roots,
+# so their tasks stay out of the active task graph.
 config_roots = [
   "packages/*/*",
-  "packages-deprecated/*/*",
 ]
 
 [tools]
@@ -916,7 +916,9 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
+  "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/webapp-content/ssg-test/node_modules/.bin",
+  "packages/webapp-content/messages-demo/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
@@ -929,9 +931,18 @@ _.path = [
   "packages/pi/auto-mode/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
+  "packages/mcp/mvm/node_modules/.bin",
   "packages/dev-script/mutation-test/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
+  "packages/claude-code-plugins/terminal-title/node_modules/.bin",
+  "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
+  "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
+  "packages/claude-code-plugins/prompt-time/node_modules/.bin",
+  "packages/claude-code-plugins/guardrail/node_modules/.bin",
+  "packages/claude-code-plugins/correction-reminder/node_modules/.bin",
+  "packages/claude-code-plugins/claude-spawn/node_modules/.bin",
+  "packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
 ]
 
 # Enables Slint's experimental builtins (e.g. FlexboxLayout) in slint-lsp when it

@@ -16,11 +16,11 @@ experimental_monorepo_root = true
 [monorepo]
 # Each packages/*/* directory with a mise.toml becomes its own config root,
 # giving it its own tools, env, and tasks while inheriting from the root.
-# packages-deprecated/*/* mirrors the active layout for archived packages that
-# remain installable (e.g. via npm) but are no longer actively maintained.
+# packages-deprecated/*/* is intentionally excluded: archived packages remain
+# installable (e.g. via npm) but should not be discovered as task config roots,
+# so their tasks stay out of the active task graph.
 config_roots = [
   "packages/*/*",
-  "packages-deprecated/*/*",
 ]
 
 [tools]
