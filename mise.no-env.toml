@@ -241,14 +241,13 @@ if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.jo
 # monorepo root (mise sets MISE_MONOREPO_ROOT in monorepo mode; the fallback
 # covers non-monorepo invocations), then runs the entry's built dist when present,
 # else its TS source through node. runWorkspaceNode(packagePath, entryName, args)
-# dispatches a package entry; ensureOxlintConfig builds the
-# root oxlint config on fresh trees before an oxlint dispatch. Interpolated into
-# the dispatcher tasks (root and per-package), each of which sets
-# `shell = "node -e"`. Its imported bindings (existsSync, join, execFileSync) are
-# reused by any inline follow-up in those bodies, so the follow-up must not
-# reimport them.
+# dispatches a package entry; ensureOxlintConfig builds the root oxlint config on
+# fresh trees and rebuilds it when bundled plugin sources are newer than the
+# sidecar outputs. Interpolated into the dispatcher tasks (root and per-package),
+# each of which sets `shell = "node -e"`. Its imported bindings are reused by any
+# inline follow-up in those bodies, so the follow-up must not reimport them.
 dispatch_workspace_node = """
-const { existsSync } = await import('node:fs')
+const { existsSync, readdirSync, statSync } = await import('node:fs')
 const { join, resolve } = await import('node:path')
 const { execFileSync } = await import('node:child_process')
 const configRoot = process.env.MISE_CONFIG_ROOT ?? process.cwd()
@@ -261,9 +260,37 @@ const runWorkspaceNode = (packagePath, entryName, entryArgs) => {
   if (entry === null) { throw new Error(`missing built or source entry: ${packagePath}/${entryName}`) }
   execFileSync('node', [entry, ...entryArgs], { stdio: 'inherit' })
 }
+const newestMtime = (path) => {
+  const stats = statSync(path)
+  if (!stats.isDirectory()) { return stats.mtimeMs }
+  return readdirSync(path, { withFileTypes: true }).reduce((newest, entry) => {
+    const entryPath = join(path, entry.name)
+    if (entry.isDirectory()) { return Math.max(newest, newestMtime(entryPath)) }
+    if (entry.isFile()) { return Math.max(newest, statSync(entryPath).mtimeMs) }
+    return newest
+  }, stats.mtimeMs)
+}
+const shouldBuildOxlintConfig = () => {
+  const outputPaths = [
+    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs'),
+    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'plugin-no-restricted-syntax.mjs'),
+    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'plugin-stylistic.mjs'),
+    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'plugin-tsdoc.mjs'),
+  ]
+  if (outputPaths.some((outputPath) => !existsSync(outputPath))) { return true }
+  const sourcePaths = [
+    join(monorepoRoot, 'packages', 'config', 'oxlint', 'src'),
+    join(monorepoRoot, 'packages', 'config', 'oxlint', 'tsdown.node.config.ts'),
+    join(monorepoRoot, 'packages', 'oxlint-plugins', 'no-restricted-syntax', 'src'),
+    join(monorepoRoot, 'packages', 'oxlint-plugins', 'stylistic', 'src'),
+    join(monorepoRoot, 'packages', 'oxlint-plugins', 'tsdoc', 'src'),
+  ]
+  const oldestOutputMtime = Math.min(...outputPaths.map((outputPath) => statSync(outputPath).mtimeMs))
+  const newestSourceMtime = Math.max(...sourcePaths.map(newestMtime))
+  return newestSourceMtime > oldestOutputMtime
+}
 const ensureOxlintConfig = () => {
-  const oxlintConfig = join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs')
-  if (!existsSync(oxlintConfig)) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
+  if (shouldBuildOxlintConfig()) { execFileSync('mise', ['run', '//packages/config/oxlint:build:js:node'], { stdio: 'inherit' }) }
 }
 """
 # Shell-word parser for mise's usage_args, which arrives as a single shell-escaped

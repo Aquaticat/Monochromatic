@@ -164,7 +164,7 @@ export function isPathUnder({
  * (it does not exist on this machine). A real `Symbol` rather than `undefined`
  * so absence is a distinct, intentional value the membership check filters on.
  */
-const REALPATH_ABSENT = Symbol('realpath-absent',);
+const REALPATH_ABSENT = Symbol('worktree allowlist directory missing on disk',);
 
 /**
  * Options for the worktree allowlist membership test.

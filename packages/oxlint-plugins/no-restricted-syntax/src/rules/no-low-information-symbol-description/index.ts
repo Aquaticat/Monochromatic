@@ -13,6 +13,19 @@ import {
 import { classifySymbolDescription, } from './classify.ts';
 
 /**
+ * Shared final sentence for every low-information Symbol diagnostic.
+ *
+ * Keeping the hint in one constant makes it hard for future branches to omit
+ * the reader-context requirement that descriptions must stand on their own.
+ *
+ * @example
+ * ```ts
+ * `${tooFewWordsMessage} ${IMMEDIATE_UNDERSTANDABILITY_HINT}`;
+ * ```
+ */
+const IMMEDIATE_UNDERSTANDABILITY_HINT = 'Every Symbol description should be immediately understandable by anyone, even if they have never seen this repo before.';
+
+/**
  * Requires static Symbol descriptions to carry enough debugging information.
  *
  * Sentinel Symbols stand in for nullish unions, so their descriptions are the
@@ -52,21 +65,21 @@ export const noLowInformationSymbolDescription: CreateOnceRule = {
     },
     messages: {
       tooFewWords:
-        'Symbol description has fewer than 3 distinct words, so it carries little debugging signal. Name what is absent and why, for example "config file missing on disk". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description has fewer than 3 distinct words, so it carries little debugging signal. Name what is absent and why, for example "config file missing on disk". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       allUppercase:
-        'Symbol description is entirely uppercase words, which reads like a constant name. Use a descriptive lowercase phrase, for example "github token expired". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description is entirely uppercase words, which reads like a constant name. Use a descriptive lowercase phrase, for example "github token expired". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       bareCamelIdentifier:
-        'Symbol description is a bare camelCase or PascalCase identifier with no separators, which reads like a function name. Describe the condition as a phrase, for example "run completed without a context". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description is a bare camelCase or PascalCase identifier with no separators, which reads like a function name. Describe the condition as a phrase, for example "run completed without a context". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       repeatedMeaningfulWord:
-        'Symbol description repeats a meaningful word, which adds no information. Replace the repetition with concrete detail about the condition. A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description repeats a meaningful word, which adds no information. Replace the repetition with concrete detail about the condition. ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       shortNamespacedTail:
-        'Symbol description has a namespace prefix but a tail shorter than 3 words. A namespace does not rescue a generic tail; expand it, for example "penpot/figma-input-has-no-counterpart". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description has a namespace prefix but a tail shorter than 3 words. A namespace does not rescue a generic tail; expand it, for example "penpot/figma-input-has-no-counterpart". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       startsWithNoWithoutMarker:
-        'Symbol description starts with "no" but has no specificity marker (uppercase, digit, dot, underscore, or a consonant-dense token). Name the specific thing that is absent, for example "no upstream branch for HEAD". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description starts with "no" but has no specificity marker (uppercase, digit, dot, underscore, or a consonant-dense token). Name the specific thing that is absent, for example "no upstream branch for HEAD". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       startsWithNotWithoutMarker:
-        'Symbol description starts with "not" but has no specificity marker. Name the specific condition, for example "not inside a Git worktree". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description starts with "not" but has no specificity marker. Name the specific condition, for example "not inside a Git worktree". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
       shortPhraseLacksSpecificityMarker:
-        'Symbol description is a 3-word phrase with no specificity marker and no past-tense or continuous verb. Add a concrete technical token or describe the action, for example "average divisor is zero". A good description reads as a self-contained explanation that is immediately clear to a developer who has never seen this repo.',
+        `Symbol description is a 3-word phrase with no specificity marker and no past-tense or continuous verb. Add a concrete technical token or describe the action, for example "average divisor is zero". ${IMMEDIATE_UNDERSTANDABILITY_HINT}`,
     },
   },
   createOnce(context: Context,): VisitorWithHooks {

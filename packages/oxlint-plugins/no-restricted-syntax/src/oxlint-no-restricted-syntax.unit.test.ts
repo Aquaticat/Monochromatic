@@ -163,6 +163,9 @@ const LOW_INFO_RULE = 'no-low-information-symbol-description';
 /** Diagnostic `code` emitted by the low-information Symbol description rule. */
 const LOW_INFO_RULE_CODE = `no-restricted-syntax(${LOW_INFO_RULE})`;
 
+/** User-facing hint every low-information Symbol diagnostic must carry. */
+const LOW_INFO_IMMEDIATE_UNDERSTANDABILITY_HINT = 'Every Symbol description should be immediately understandable by anyone, even if they have never seen this repo before.';
+
 /** Disposable temp TypeScript source generated from calibration rows. */
 type GeneratedSource = {
   /** Absolute path to the generated source file. */
@@ -601,6 +604,13 @@ await describe({
               },);
             },);
             expect(missing,).toEqual([],);
+            /**
+             * Messages emitted by a failure branch without the reader-context hint.
+             */
+            const missingHint = messages.filter(function lacksHint(message,): boolean {
+              return !message.includes(LOW_INFO_IMMEDIATE_UNDERSTANDABILITY_HINT,);
+            },);
+            expect(missingHint,).toEqual([],);
           },
         },),
         it({

@@ -110,7 +110,7 @@ function stripTrailingLineBreak(output: string,): string {
  * real `Symbol` rather than `undefined` so absence is a distinct domain value
  * the classifier maps to `'outside-worktree'`.
  */
-const OUTSIDE_WORKTREE = Symbol('outside-worktree',);
+const OUTSIDE_WORKTREE = Symbol('git metadata query found no worktree',);
 
 /**
  * Options for the read-only worktree metadata query.

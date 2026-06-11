@@ -131,7 +131,7 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
  * "no error captured" case is a distinct value {@link requireSubprocessError}
  * rejects.
  */
-const WRAPPER_SUCCEEDED = Symbol('wrapper-succeeded',);
+const WRAPPER_SUCCEEDED = Symbol('git wrapper command unexpectedly succeeded',);
 
 /**
  * Captures cli-git subprocess failure.
