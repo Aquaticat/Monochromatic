@@ -10,22 +10,22 @@ import type { RemoteSource, } from './source.ts';
 /**
  * Sentinel returned by {@link lsRemote} when the ref listing fails.
  */
-export const NO_REFS: unique symbol = Symbol('NO_REFS',);
+export const NO_REFS: unique symbol = Symbol('git-clone-size/ls-remote-ref-listing-failed',);
 
 /**
  * Sentinel returned by {@link hostStorageBytes} when no storage proxy is available.
  */
-export const NO_STORAGE: unique symbol = Symbol('NO_STORAGE',);
+export const NO_STORAGE: unique symbol = Symbol('git-clone-size/host-storage-proxy-unavailable',);
 
 /**
  * Sentinel returned by {@link hostCommitCount} when the host commit count is unavailable.
  */
-export const NO_HOST_COMMITS: unique symbol = Symbol('NO_HOST_COMMITS',);
+export const NO_HOST_COMMITS: unique symbol = Symbol('git-clone-size/host-commit-count-unavailable',);
 
 /**
  * Sentinel returned by {@link parseLastPage} when no `rel="last"` page exists.
  */
-const NO_LAST_PAGE: unique symbol = Symbol('NO_LAST_PAGE',);
+const NO_LAST_PAGE: unique symbol = Symbol('git-clone-size/github-link-last-page-absent',);
 
 /**
  * Ref inventory from `git ls-remote`, used for the branch-coverage correction

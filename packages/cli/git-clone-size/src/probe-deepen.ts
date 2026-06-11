@@ -30,7 +30,7 @@ export type DeepenResult = {
 /**
  * Sentinel returned by {@link probeDeepen} when no usable commit delta is observed.
  */
-export const NO_DEEPEN: unique symbol = Symbol('NO_DEEPEN',);
+export const NO_DEEPEN: unique symbol = Symbol('git-clone-size/deepen-commit-delta-absent',);
 
 /**
  * Lower clamp on the repack pack-layout bias factor; a single full pack is never

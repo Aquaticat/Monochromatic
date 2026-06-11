@@ -10,12 +10,12 @@ import { spawnResult, } from './spawn.ts';
 /**
  * Sentinel returned by {@link partialCommitCount} when tree:0 cloning is unsupported.
  */
-export const NO_TREE0: unique symbol = Symbol('NO_TREE0',);
+export const NO_TREE0: unique symbol = Symbol('git-clone-size/tree-zero-partial-clone-unsupported',);
 
 /**
  * Sentinel returned by {@link partialChurn} when blobless cloning is unsupported.
  */
-export const NO_CHURN: unique symbol = Symbol('NO_CHURN',);
+export const NO_CHURN: unique symbol = Symbol('git-clone-size/blobless-partial-clone-churn-unavailable',);
 
 /**
  * Commit count from a commits-only partial clone, with a lower-bound flag.

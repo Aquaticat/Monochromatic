@@ -21,7 +21,7 @@
  * if (bytes === UNMEASURED) return NO_DEEPEN;
  * ```
  */
-export const UNMEASURED: unique symbol = Symbol('UNMEASURED',);
+export const UNMEASURED: unique symbol = Symbol('git-clone-size/byte-measurement-unavailable',);
 
 /**
  * A byte measurement, or {@link UNMEASURED} when sizing failed. Callers narrow

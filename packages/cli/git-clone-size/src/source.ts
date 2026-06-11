@@ -10,7 +10,7 @@ import { spawnResult, } from './spawn.ts';
 /**
  * Sentinel returned by {@link originUrl} when the repo has no `origin` remote.
  */
-export const NO_ORIGIN: unique symbol = Symbol('NO_ORIGIN',);
+export const NO_ORIGIN: unique symbol = Symbol('git-clone-size/origin-remote-url-absent',);
 
 /**
  * Recognised hosts with a metadata/storage API the estimator can query.
