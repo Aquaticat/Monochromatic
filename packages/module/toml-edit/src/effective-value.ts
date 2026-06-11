@@ -57,7 +57,7 @@ export type EffectiveResult =
  * "absent" arm, and an `EffectiveResult` is always a tagged object so the
  * symbol never collides with a real result.
  */
-const NO_PROJECTION = Symbol('toml-edit/no-projection',);
+const NO_PROJECTION = Symbol('toml-edit/no-covering-pending-state',);
 
 /**
  * Sentinel for "no pending insertion contributes to the synthesised subtree".
@@ -65,7 +65,7 @@ const NO_PROJECTION = Symbol('toml-edit/no-projection',);
  * A unique `Symbol` rather than `null`: `no-nullish-union` bans a nullish
  * arm, and an empty object would be ambiguous with a real empty subtree.
  */
-const SUBTREE_ABSENT = Symbol('toml-edit/subtree-absent',);
+const SUBTREE_ABSENT = Symbol('toml-edit/no-pending-insertion-subtree',);
 
 /**
  * Resolve a path against the AST plus pending deltas.
