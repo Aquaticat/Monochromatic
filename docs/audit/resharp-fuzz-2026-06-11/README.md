@@ -14,7 +14,7 @@ banner). Nothing here depends on it.
 
 ## Headline
 
-Twelve distinct root causes were found and reproduced on v0.6.12, eight of them
+Thirteen distinct root causes were found and reproduced on v0.6.12, nine of them
 soundness bugs and three of them crashes (the algebra reentrant-union panic =
 bug-04, the `rev_trivial` dead branch = bug-05, and the `find_all` forward-scan
 fault at `ldfa.rs:833/878/906` = bug-11). bug-11 and bug-12 are sibling defects
@@ -113,6 +113,16 @@ with reproducers).
   real match, but the forward scan returns `NO_MATCH` for it and panics). Found by
   the Lean position lane (seed-1001 R2280). See
   `bug-12-findall-silent-leftmost-drop.md`.
+- `bug-13` (soundness, silent): intersection with an optional lookahead leaks the
+  consuming width, so `find_all` and `find_anchored` return a span too LONG (the
+  opposite direction from bug-11/12). `a?&(?=a)?` on `"ab"` returns
+  `[(0,1),(1,1),(2,2)]` and `find_anchored=Some((0,1))`, but the language is
+  zero-width-only (`a?`'s width-1 cannot equal the lookahead's zero-width span),
+  so the leftmost is `0:0` (Lean). Needs both `&` operands nullable and the
+  lookahead satisfied at the position (`a?&(?=c)?`, false lookahead, is correct).
+  Same lookahead-width-leak theme as 2026-06-04 BUG-13 but a distinct, live
+  intersection trigger. Found by the Lean position lane (seed-4004 R48). See
+  `bug-13-intersection-optional-lookahead-width-leak.md`.
 
 ## Method
 
@@ -170,9 +180,11 @@ faithful) or trust1 (`^`/`$`/`\b`/lookbehind-of-anchor, the documented-unfaithfu
 shapes, which need the dotnet adjudicator). On the first 1954-case run (1392
 agree, 559 rust-rejected) the only trust0 disagreement was bug-11; the two trust1
 disagreements were nested lookbehind-of-`\A`, i.e. translator artifacts, not rust
-bugs. A deeper multi-seed round (depth<=5) added bug-12 (trust0 R2280) and
-re-derived bug-05 on a new `_*(?!_)` trigger; its other disagreements were trust1
-anchor shapes. The Lean toolchain runs on the M1 (elan + cached mathlib oleans);
+bugs. A deeper multi-seed round (depth<=5, seeds 1001/2002/3003/4004) added bug-12
+(trust0 R2280) and bug-13 (trust0 R48), and re-derived bug-05 on new `_*(?!_)` /
+`((_)*)+(?!b)` triggers; its other disagreements were trust1 anchor shapes or
+lookbehind-of-lookaround (the documented-unfaithful shape, which `trust()` now
+flags so they are routed to adjudication rather than mistaken for bugs). The Lean toolchain runs on the M1 (elan + cached mathlib oleans);
 tooling under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`, `leanrust`,
 `relprobe`, `nullsprobe`).
 
@@ -197,12 +209,13 @@ All under `/tmp/agent` on the x86 host and mirrored to
 
 The Lean formalization (`~/Downloads/extended-regexes`) is the position-level
 ground-truth reference; the dotnet engine is a secondary cross-check only. Ten of
-the twelve bugs rest on a same-engine internal inconsistency (SIMD on vs off,
+the thirteen bugs rest on a same-engine internal inconsistency (SIMD on vs off,
 is_match vs find_all vs find_anchored vs stream, default vs hardened) or a panic,
-so they need no external oracle. bug-11 and bug-12 are the exceptions by design:
-bug-11's crash is engine-internal (a `debug_assert_ne!` the engine trips on
-itself) with only its release-mode soundness read off Lean; bug-12 has no crash
-at all, so its silent `find_all` soundness is established purely against the Lean
-ground truth, on trust0 anchor-free patterns where the translation is faithful.
-Both were confirmed independently with the `nulls`-slice instrument, which is
-engine-internal evidence of the reverse-pass fault.
+so they need no external oracle. bug-11, bug-12, and bug-13 are the exceptions by
+design: bug-11's crash is engine-internal (a `debug_assert_ne!` the engine trips
+on itself) with only its release-mode soundness read off Lean; bug-12 and bug-13
+have no crash at all, so their silent `find_all` soundness (a dropped match and a
+too-long match respectively) is established purely against the Lean ground truth,
+on trust0 anchor-free patterns where the translation is faithful. bug-11 and
+bug-12 were additionally confirmed with the `nulls`-slice instrument, which is
+engine-internal evidence of which pass (forward vs reverse) is at fault.
