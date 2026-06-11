@@ -231,6 +231,23 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 05:50 -- bug-11 HARDENED + fuzzer harvest. CORRECTION: `is_match` ALSO panics
+  (ldfa.rs:906 on `"abca"`, :833 on `"ca"`) -- it routes through `scan_fwd_all`
+  for this intersection class, so the crash is NOT find_all-only (broader DoS).
+  Release `is_match` stays correct (a match still exists); only release `find_all`
+  has the soundness drop. Fixed the writeup + README, committed (193476df). Family
+  shape sharpened: `(?!x)` as one branch of an ALTERNATION, `&` complement `~(y)`
+  with `y` in haystack and `y != x`; drop the alternation / use positive-or-
+  optional branch / make `y==x` or absent -> no fire. x86 OVERNIGHT FUZZER
+  HARVEST: diff_regex 711 crashes ALL bug-04 (algebra:2724); match_invariants 1
+  crash = bug-05 (lib.rs:1824); compile 0 crashes (52 slow/timeout = bug-06/09
+  perf). NO new crash site from random fuzzing -- ldfa.rs/bug-11 was never sampled
+  (the random corpora don't produce the precise intersection+complement+neg-
+  lookahead shape; the Lean AST generator does by construction). Seeded the
+  match_invariants corpus with 3 bug-11-family inputs so the mutator can explore
+  siblings. Multi-seed deeper Lean round (seeds 1001/2002/3003/4004, depth<=5,
+  ~6000 each) RUNNING on the Mac (bkrl3ybcf).
+
 - 05:25 -- 11TH ROOT CAUSE (bug-11), found by the Lean lane on its FIRST run, a
   THIRD distinct crash site. 1954-case differential: 1392 agree, 559 rust-reject,
   3 disagreements. Two were nested lookbehind-of-`\A` (trust1, the documented-
