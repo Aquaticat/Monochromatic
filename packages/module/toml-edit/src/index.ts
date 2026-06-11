@@ -90,3 +90,38 @@ export {
   getStaticTOMLValue,
   parseTOML,
 } from 'toml-eslint-parser';
+
+//region Unstable fuzzing seams
+
+/**
+ * Unstable internal seam exported for observability and fuzzing only.
+ *
+ * The `_`-prefixed exports below carry no compatibility promise: they exist so
+ * the property-based fuzz suite can exercise internal encoders and emitters
+ * through the built package artifact rather than sibling source imports. Their
+ * signatures may change without a major version bump. Do not depend on them
+ * from application code. See `docs/decisions/toml-edit-fuzzing.md`.
+ */
+export { encodeKey as _encodeKey, } from './keys.ts';
+
+/**
+ * {@inheritDoc _encodeKey}
+ */
+export { jsValueToTomlText as _jsValueToTomlText, } from './values.ts';
+
+/**
+ * {@inheritDoc _encodeKey}
+ */
+export { emitContentNode as _emitContentNode, } from './emit-value.ts';
+
+/**
+ * {@inheritDoc _encodeKey}
+ */
+export { emitStringValue as _emitStringValue, } from './emit-value-string.ts';
+
+/**
+ * {@inheritDoc _encodeKey}
+ */
+export { spliceEmit as _spliceEmit, } from './splice.ts';
+
+//endregion Unstable fuzzing seams
