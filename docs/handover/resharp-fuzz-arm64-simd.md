@@ -229,6 +229,17 @@ doc); do not re-file those.
   artifacts `tools/resharp-instr/fuzz/artifacts/simd_diff/`). All crashes so far
   are arm-bug-01; a non-`^`-prefixed divergence would be a new SIMD root cause.
 
+## Campaign log (newest first; update >= every 10 min while running)
+
+- 01:45 -- 8 root causes committed (README, 8 bug files, verification, code-quality,
+  test-coverage, handover). Overnight fuzzers relaunched on both machines (4h).
+  Tried a BUG-1-tolerant `diff_regex2` libFuzzer target to unmask is_match
+  divergences, but libfuzzer-sys's panic hook `abort()`s at the panic point so
+  `catch_unwind` can't catch the bug-04 panic; pivoting the is_match-vs-regex
+  differential into `repro` (where catch_unwind works) over a shared-subset
+  corpus. simd_diff (M1) still only finds arm-bug-01 variants. No new crash site
+  beyond `algebra:2724` (bug-04) and `engine:1824` (bug-05) so far.
+
 ## Next avenues for more yield
 
 - A BUG-1-tolerant `diff_regex` (wrap resharp compile in `catch_unwind`, compare
