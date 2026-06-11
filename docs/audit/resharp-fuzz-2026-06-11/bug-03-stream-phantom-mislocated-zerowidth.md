@@ -56,6 +56,18 @@ repro --show 283f215c4129 6162 0  # (?!\A) on "ab": stream=0:0,2:2, find_all=1:1
 In each case `stream` advances past the relevant byte before recognising the
 zero-width assertion, mis-locating the match by one position at the leading edge.
 
+## Related manifestation: stream returns empty while a match exists
+
+The same stream defect also drops every match (not just mislocates) on
+assertion-heavy patterns. `((?<=b+){2}&(\n{2,}\w{1,3}){0}^{0})` on `"b"` (and
+`"bb"`, `"ba"`, ...) has `is_match = true` and `find_all = [1:1]` (and friends)
+but `stream = []` (the STREAMINCONSIST oracle, 3 distinct patterns of this shape
+in the 40k corpus). These patterns also trip bug-02 (`find_anchored = Some(0:0)`
+while `is_match = true` here but the anchored span is wrong). This is the 06-04
+BUG-9 (stream drops matches) shape, verified fixed for `\A\z?` but live again on
+the lookbehind-intersection family; it is the empty-result face of the same
+stream zero-width / assertion mishandling, not a separate root cause.
+
 ## Relationship to other findings
 
 Distinct path from arm-bug-01 (the SIMD `find_all` driver) and bug-07 (the
