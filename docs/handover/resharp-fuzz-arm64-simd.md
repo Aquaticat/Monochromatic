@@ -231,6 +231,33 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 04:55 -- LEAN POSITION LANE STOOD UP on the Mac (the major unexplored lane).
+  Installed elan via `brew install elan-init` (4.2.3; also pulled coreutils, so
+  `gtimeout` now exists on the Mac). Lean toolchain v4.24.0-rc1 fetched. The
+  extended-regexes formalization requires mathlib: `lake exe cache get` pulled
+  6892 prebuilt mathlib oleans (5.4G) in minutes, then `lake build
+  Regex.MatchingAlgorithm` built the Regex lib (NOT `lake build Regex` -- there
+  is no `Regex.lean` root aggregator, that errors). `lanval.lean` has a
+  pre-existing invalid-escape (`\A` in a DISPLAY string) and does not compile,
+  but that never blocked the real runs. Reconstructed the 06-04 pipeline
+  AST-FIRST to kill parser-precedence risk: `/tmp/agent/lean/gen_lean_ast.py`
+  builds random RE ASTs and serializes each to BOTH a fully-parenthesized RE#
+  string (rust) and a Lean `RE (BA Char)` term (Lean), so both engines get the
+  same structure by construction. Predicate/anchor encodings fixed from the Lean
+  source (`.`=`(.atom '\n')ᶜ`, `_`=⊤, `\w`/`\d` as named `def wc/dc`, `\b`/`\B`
+  as `def bnd/nbnd`, `^`=`\A|(?<=\n)`, `$`=`\z|(?=\n)`). Each case tagged trust0
+  (no anchor/\b, translator faithful) or trust1 (anchor/\b -> needs dotnet
+  adjudication, the documented-unfaithful shapes). `llmatch` = leftmost-longest
+  first match = resharp default `find_all(w)[0]`. SMOKE TEST PASSED: 12-case file
+  evaluated in Lean and 10/11 agreed with rust find_all first span; the 1 diff
+  was a rust `builderr` (pattern rejected, not a real disagreement). Rust side
+  = `/tmp/agent/lean/leanrust` (default cfg, prints first span, panic/err tokens
+  distinct). Diff = `/tmp/agent/lean/diff_lean.py` (buckets SPANDIFF /
+  RUST_PHANTOM / RUST_MISS / RUST_PANIC, split by trust). NOW RUNNING: 1954-case
+  corpus (seed 20260611), Lean eval in 7 gtimeout-bounded chunks on the Mac,
+  rust side done (1954 lines). This catches the self-consistent-but-WRONG-span
+  class the internal oracles structurally cannot see.
+
 - 04:20 -- HARDENING the headline (stronger-reviewer checkpoint flagged that the
   five oracle-only bugs had only ever run through the INSTRUMENTED engine, so the
   "instrumentation is neutral at override=0" assumption was untested -- the exact
