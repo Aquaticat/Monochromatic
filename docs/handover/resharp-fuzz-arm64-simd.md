@@ -231,6 +231,18 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 03:10 -- FOOTGUN: the `repro-fixtest` binary (the arm-bug-01 fix copy) has NO
+  per-pattern timeout, and its `--patbatch < adv_pats.hex` regression run hung 50
+  min on a pathological pattern, leaving a stuck repro proc that blocked every
+  `until [ repro==0 ]` waiter chain. Fixed by killing PIDs 699417/699687 and the
+  blocked waiters (exit 144). LESSON: always wrap `repro --patbatch`/`--oraclebatch`
+  with `timeout` (mac has none; chunk + GNU `timeout` on x86), and never leave a
+  no-timeout batch backgrounded. Relaunched the FANSPANDIFF oracle cleanly over
+  the 79,419-pattern combined corpus (big + big2), 16-way, `timeout 600`/chunk.
+  FANSPANDIFF = find_anchored-vs-find_all SPAN disagreement at offset 0 (the
+  06-04 bug-13/14 width-leak/gate-drop family); if it fires on a fresh trigger it
+  is a clean 10th root cause. Awaiting results.
+
 - 02:50 -- big2 oracle reconfirms the same families (FANDIFF/FANINCONSIST =
   bug-02, PANIC = bug-04). STREAMINCONSIST (stream empty while is_match true, the
   06-04 BUG-9 shape) is only 3 distinct patterns, all the complex
