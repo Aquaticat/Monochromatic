@@ -367,109 +367,6 @@ const runTestFiles = async (files, nodeArgs) => {
 }
 """
 
-[task_templates.build]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates."build:js"]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates."build:js:browser"]
-run = "tsdown --config tsdown.browser.config.ts"
-
-[task_templates."build:js:client"]
-run = "tsdown --config tsdown.client.config.ts"
-
-[task_templates."build:js:node"]
-run = "tsdown --config tsdown.node.config.ts"
-
-[task_templates."watch:build"]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates."watch:build:js"]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates."watch:build:js:browser"]
-run = "tsdown --watch --config tsdown.browser.config.ts"
-
-[task_templates."watch:build:js:client"]
-run = "tsdown --watch --config tsdown.client.config.ts"
-
-[task_templates."watch:build:js:node"]
-run = "tsdown --watch --config tsdown.node.config.ts"
-
-[task_templates.test]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates."test:unit"]
-description = "Run *.unit.test.ts in parallel via node (excludes /deprecated/ and *.expensive.* unless --all); pass file paths to filter"
-usage = """
-flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
-arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
-"""
-shell = "node -e"
-run = """
-{{vars.parse_usage_args}}
-{{vars.run_test_files}}
-const { existsSync } = await import('node:fs')
-const { glob } = await import('node:fs/promises')
-const { join } = await import('node:path')
-const args = parseUsageArgs(process.env.usage_args ?? '')
-const all = (process.env.usage_all ?? '').trim() === 'true'
-if (all && args.length > 0) { throw new Error('--all cannot be combined with file paths') }
-let files
-if (args.length === 0) {
-  files = []
-  for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
-    if (all || (!file.includes('/deprecated/') && !file.includes('.expensive.'))) { files.push(file) }
-  }
-} else {
-  // Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
-  // path passed verbatim resolves under the package. Resolve each arg against the monorepo root
-  // (modern mise), then the mise invocation dir, then cwd.
-  const base = process.env.MISE_MONOREPO_ROOT ?? process.env.MISE_ORIGINAL_CWD ?? process.cwd()
-  files = args.map((file) => existsSync(file) ? file : join(base, file))
-}
-await runTestFiles(files, [])
-"""
-
-[task_templates."watch:test"]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates.lint]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
-[task_templates."lint:oxlint"]
-description = "Lint with Oxlint"
-shell = "node -e"
-run = """
-{{vars.dispatch_workspace_node}}
-ensureOxlintConfig()
-runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
-"""
-
-[task_templates."lint:types"]
-description = "TypeScript"
-shell = "node -e"
-run = """
-{{vars.dispatch_workspace_node}}
-runWorkspaceNode('packages/dev-script/task-util', 'tsgo-filter', ['--build'])
-"""
-
-[task_templates."watch:lint:types"]
-description = "Type check in watch mode"
-run = "tsgo --watch"
-
-[task_templates.prepare]
-shell = "node -e"
-run = "{{vars.fanout}}"
-
 #region tasks
 #
 # Task naming follows `${category}${optional(`--${modifier}`)}:${child}`
@@ -530,7 +427,36 @@ if (args.length === 0) {
 """
 
 [tasks."test:unit"]
-extends = "test:unit"
+description = "Run *.unit.test.ts in parallel via node (excludes /deprecated/ and *.expensive.* unless --all); pass file paths to filter"
+usage = """
+flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
+arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
+"""
+shell = "node -e"
+run = """
+{{vars.parse_usage_args}}
+{{vars.run_test_files}}
+const { existsSync } = await import('node:fs')
+const { glob } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+const all = (process.env.usage_all ?? '').trim() === 'true'
+if (all && args.length > 0) { throw new Error('--all cannot be combined with file paths') }
+let files
+if (args.length === 0) {
+  files = []
+  for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
+    if (all || (!file.includes('/deprecated/') && !file.includes('.expensive.'))) { files.push(file) }
+  }
+} else {
+  // Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
+  // path passed verbatim resolves under the package. Resolve each arg against the monorepo root
+  // (modern mise), then the mise invocation dir, then cwd.
+  const base = process.env.MISE_MONOREPO_ROOT ?? process.env.MISE_ORIGINAL_CWD ?? process.cwd()
+  files = args.map((file) => existsSync(file) ? file : join(base, file))
+}
+await runTestFiles(files, [])
+"""
 
 [tasks."test:browser"]
 hide = true
@@ -611,7 +537,8 @@ await Promise.all(watchers.map((proc) => once(proc, 'exit')))
 
 [tasks."watch:test"]
 description = "Run all tests in watch mode"
-extends = "watch:test"
+shell = "node -e"
+run = "{{vars.fanout}}"
 alias = "tW"
 
 [tasks."testDockerImage"]
