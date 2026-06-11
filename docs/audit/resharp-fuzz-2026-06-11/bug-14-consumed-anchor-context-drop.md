@@ -61,8 +61,13 @@ is the oracle class that catches this family.
 During adjudication, dotnet `^$` over `"\n\n"` returned
 `[(0,0), (1,1), (1,1), (2,2)]`, duplicating `(1,1)`. That is a
 resharp-DOTNET bug (same duplicate-null family as the rust-side fix in
-upstream PR #14), out of scope for the rust campaign but worth reporting to
-ieviev/resharp-dotnet separately.
+upstream PR #14). Working assumption (user directive, 2026-06-11): the
+dotnet repo is abandoned, so this is not filed anywhere; it is recorded here
+because it means the dotnet reference must be used with per-probe controls
+(as done above) rather than trusted blindly, and its own bugs will not be
+fixed under us. It does not affect the bug-14 verdict: the dropped-match
+question is about which positions appear at all, and the controls agree
+exactly.
 
 ## Adjudication environment
 
