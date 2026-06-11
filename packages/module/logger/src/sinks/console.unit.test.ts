@@ -241,7 +241,13 @@ await describe({
       fn: async ({ sinon, },) => {
         __resetForTests();
         process.env.DEBUG = 'true';
-        const traceSpy = sinon.spy(
+        // Stub (not spy) console.trace: Node's Console.prototype.trace
+        // internally calls this.error(stack), so a spied trace would delegate
+        // into the spied console.error and inflate the error count by one.
+        // The stub still records the routing call (callCount) without that
+        // delegation, isolating the sink's level->method mapping from Node's
+        // console internals.
+        const traceSpy = sinon.stub(
           console,
           'trace',
         );
@@ -293,17 +299,25 @@ await describe({
         },),);
         await waitForFlush();
 
-        expect(traceSpy.callCount,)
-          .toBe(1,);
-        expect(debugSpy.callCount,)
-          .toBe(1,);
-        expect(infoSpy.callCount,)
-          .toBe(1,);
-        expect(warnSpy.callCount,)
-          .toBe(1,);
-        // fatal routes to console.error, so error spy fires twice (error + fatal)
-        expect(errorSpy.callCount,)
-          .toBe(2,);
+        // Assert the whole count map at once: a future drift reports which
+        // method's count changed (e.g. {error: 3} vs {error: 2}) instead of a
+        // bare "expected 3 to equal 2". error is 2 because console.error backs
+        // both 'error' and 'fatal' (fatal shares the error method). Keys are
+        // alphabetized to satisfy oxlint sort-keys.
+        expect({
+          debug: debugSpy.callCount,
+          error: errorSpy.callCount,
+          info: infoSpy.callCount,
+          trace: traceSpy.callCount,
+          warn: warnSpy.callCount,
+        },)
+          .toEqual({
+            debug: 1,
+            error: 2,
+            info: 1,
+            trace: 1,
+            warn: 1,
+          },);
       },
     },),
 
