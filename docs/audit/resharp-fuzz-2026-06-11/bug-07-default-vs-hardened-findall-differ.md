@@ -1,5 +1,12 @@
 # BUG-7 default and hardened find_all return different results
 
+> Secondary class for the PATTERN (see `dotnet-adjudication.md`): the dotnet
+> reference rejects `~(\A|\n+){2}` ("anchors inside complement"), so rust should
+> reject it too. But the BUG is a rust-internal self-inconsistency (default vs
+> hardened `find_all` disagree on the same input), demonstrable with no external
+> reference -- hardening only swaps the scan algorithm, not the language, so one
+> side is wrong by construction.
+
 - Type: correctness, soundness. The two `find_all` algorithms disagree, so one is
   wrong (hardening swaps the scan algorithm, not the language).
 - Phase: match time, the hardened forward scan versus the default driver.

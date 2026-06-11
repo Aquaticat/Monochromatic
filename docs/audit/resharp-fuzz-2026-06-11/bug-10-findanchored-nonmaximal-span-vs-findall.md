@@ -1,5 +1,11 @@
 # BUG-10 find_anchored returns a shorter-than-longest span, disagreeing with find_all
 
+> Secondary class for the PATTERN (see `dotnet-adjudication.md`): the dotnet
+> reference rejects `~(.{1,3}\z){2,4}` ("anchors inside complement"), so rust
+> should reject it too. But the BUG is a rust-internal self-inconsistency
+> (`find_anchored` returns a strictly shorter span than `find_all`'s longest match
+> at the same offset), demonstrable with no external reference.
+
 - Type: correctness, soundness. `find_anchored` and `find_all` disagree on the
   span of the match at offset 0.
 - Phase: match time, the `find_anchored` longest-end computation versus the

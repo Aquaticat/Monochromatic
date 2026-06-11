@@ -1,5 +1,11 @@
 # bug-11: find_all reverse pass proposes a null start the forward pass rejects
 
+> Secondary class (see `dotnet-adjudication.md`): the dotnet reference REJECTS
+> this pattern at compile ("lookarounds inside union not supported"). rust's own
+> `ensure_supported_rec` guard accepts it instead, then panics. The crash is a
+> defect regardless of subset (a compile-accepted pattern must never panic; rust
+> should reject it as the reference does, or handle it), but it is out-of-subset.
+
 Severity: crash (debug builds) / soundness (release builds). Found by the Lean
 position-level differential (the lane the internal oracles cannot reach), case
 R1612, trust0 (anchor-free, translator-faithful). Confirmed on the unmodified

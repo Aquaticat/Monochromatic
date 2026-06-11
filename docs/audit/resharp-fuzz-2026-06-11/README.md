@@ -14,31 +14,68 @@ banner). Nothing here depends on it.
 
 ## Headline
 
-Thirteen distinct root causes were found and reproduced on v0.6.12, nine of them
-soundness bugs and three of them crashes (the algebra reentrant-union panic =
-bug-04, the `rev_trivial` dead branch = bug-05, and the `find_all` forward-scan
-fault at `ldfa.rs:833/878/906` = bug-11). bug-11 and bug-12 are sibling defects
-in the `find_all` reverse-null-collection / forward-confirmation subsystem, found
-by the reconstructed Lean position-level lane (the lane the internal oracles
-cannot reach). Printing the `nulls` slice and Lean-confirming each disputed start
-shows two faults in two different passes, not one seen twice: bug-11 is a
-FORWARD-pass fault (the reverse pass proposes a legitimate start, Lean confirms a
-match there, and the forward scan returns `NO_MATCH` for it -> crash in debug,
-drop in release); bug-12 is a REVERSE-pass fault (the reverse pass never proposes
-the legitimate leftmost start -> silent wrong `find_all` in every build). The
-five oracle-only soundness bugs (bug-02/03/07/08/10) were
-re-confirmed byte-identical on the *unmodified* stock crate (not just the
-instrumented harness), and shown to survive the arm-bug-01 driver fix, so the
-ten-distinct count is defensible; see `pristine-confirmation.md`. The "all
-fixed" claim does not hold: the 2026-06-04 re-entrancy
-compile panic (BUG-1) and the `find_anchored` leading-assertion bug (BUG-20) are
-both still live, only narrowed; the default-vs-hardened `find_all` disagreement
-(BUG-8) and the `is_match`-vs-`find_all` inconsistency (BUG-3) still occur on new
-triggers. The full 06-04 fixed-versus-live verdict is in
-`verification-2026-06-04.md` (most are genuinely fixed; the live ones are flagged
-with reproducers).
+Thirteen findings on v0.6.12, but they are not all the same weight, and the
+honest split (established by cross-checking every minimal against the dotnet
+`resharp` reference, which is ieviev's other implementation of RE#) is the main
+result. See `dotnet-adjudication.md` for the full table.
+
+### The load-bearing core (within the reference's supported subset)
+
+These hold without any external ground truth; the reference accepts the same
+pattern and either crashes-where-rust-crashes-not or agrees with rust's own
+contradicting query:
+
+- `bug-04` (crash): `(.*.+)*.+` panics in rust (`resharp-algebra:2724`); the
+  dotnet reference matches it cleanly (`[(0,3)]`). Reachable from ~165 fuzzer
+  inputs. A compile-accepted pattern must never panic.
+- `bug-05` (crash): `_*(?!_)` / `_*$` panics in rust (`resharp-engine:1824`); the
+  reference matches it cleanly (`[(0,2),(2,2)]`).
+- `bug-02` (soundness): `(?<=a)` on `"b"` -- rust `find_anchored=Some(0:0)` while
+  rust `is_match=false`/`find_all=[]`, AND the reference agrees there is no match
+  (`im=false`). A phantom anchored match, confirmed by both the engine's own
+  contradiction and the reference.
+- `bug-03` (soundness): `(?=c)` on `"c"` -- rust `find_all=[(0,0)]` (the reference
+  agrees) but rust `stream` reports `1:1`. A clean internal `stream`-vs-`find_all`
+  inconsistency.
+- `bug-06`, `bug-09` (perf): compile-time blowups the reference does not share.
+- `arm-bug-01` (SIMD soundness): a rust-internal NEON-on-vs-off `find_all`
+  divergence on `^$`; independent of any reference.
+
+### The secondary class (rust accepts patterns the reference rejects, then mishandles)
+
+The dotnet reference REJECTS these construct classes at compile
+(lookaround-in-union, nested lookarounds, anchor-in-complement, `\b`/`\B` away
+from word boundaries). rust is deliberately more permissive: its own
+`ensure_supported_rec` / `Compatibility::LookaroundUnion` guard
+(`resharp-engine/src/lib.rs:762,772`) accepts them, then the engine fails:
+
+- `bug-11` (crash): a lookaround-in-union pattern rust's guard accepts, then
+  panics at `ldfa.rs:833/878/906`. A crash is a defect regardless of subset; rust
+  should reject (as the reference does) or not crash.
+- `bug-12`, `bug-13`, `bug-07`, `bug-08`, `bug-10` (soundness): rust accepts and
+  returns a wrong span / drops a match / leaks width for patterns the reference
+  rejects. These are implementation divergences (the Lean value corroborates that
+  rust's result is wrong, but the reference's rejection means the right fix is
+  most likely to reject the pattern, not to bless a particular span).
+
+The `nulls`-slice analysis still cleanly separates bug-11 (forward-pass fault:
+reverse proposes a start the forward scan then refuses) from bug-12 (reverse-pass
+fault: the leftmost start is never proposed); that distinction is real, it just
+sits inside the secondary class.
+
+The 06-04 re-verification stands on its own (`verification-2026-06-04.md`): the
+"all fixed" claim does not hold -- the re-entrancy compile panic (BUG-1 -> bug-04)
+and the `find_anchored` leading-assertion bug (BUG-20 -> bug-02) are still live,
+only narrowed. bug-02/03 (oracle-found) were also re-confirmed byte-identical on
+the unmodified stock crate (`pristine-confirmation.md`).
 
 ## Root causes (this campaign)
+
+This is the detailed catalog; read it with the tier split in the Headline and in
+`dotnet-adjudication.md`. Load-bearing (within the dotnet reference's supported
+subset): arm-bug-01, bug-02, bug-03, bug-04, bug-05, bug-06, bug-09. Secondary
+(the reference rejects the pattern at compile; rust accepts and crashes or
+miscomputes): bug-07, bug-08, bug-10, bug-11, bug-12, bug-13.
 
 - `arm-bug-01` (soundness, SIMD path): the prefilter-accelerated `find_all`
   driver `fwd_lb_prefix_impl` drops the match at offset 1 immediately after a

@@ -1,5 +1,12 @@
 # bug-12: find_all silently drops the leftmost match (no panic, debug and release)
 
+> Secondary class (see `dotnet-adjudication.md`): the dotnet reference REJECTS
+> this pattern at compile ("lookarounds inside union not supported"). rust's
+> `ensure_supported_rec` guard accepts it, then returns a wrong span. This is an
+> implementation divergence: rust should reject the pattern (as the reference
+> does) or return the correct span. The Lean value below corroborates that rust's
+> result is wrong; it is not relied on as the sole authority.
+
 Severity: soundness (silent, both debug and release). Found by the Lean
 position-level differential (seed-1001 run, case R2280, trust0, anchor-free,
 translator-faithful). Confirmed on the unmodified v0.6.12 stock crate and against

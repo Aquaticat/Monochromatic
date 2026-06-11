@@ -1,5 +1,11 @@
 # bug-13: intersection with an optional lookahead leaks the consuming width
 
+> Secondary class (see `dotnet-adjudication.md`): the dotnet reference REJECTS
+> this pattern at compile ("nested lookarounds"). rust's `ensure_supported_rec`
+> guard accepts it, then leaks the width. Implementation divergence: rust should
+> reject (as the reference does) or compute the zero-width result. The Lean value
+> corroborates that rust's span is wrong; it is not the sole authority.
+
 Severity: soundness (silent, both debug and release; find_all AND find_anchored).
 Found by the Lean position-level differential (seed-4004 run, case R48, trust0,
 anchor-free, translator-faithful). Confirmed on the unmodified v0.6.12 stock

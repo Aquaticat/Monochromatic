@@ -1,5 +1,11 @@
 # BUG-8 is_match returns false while find_all returns a match
 
+> Secondary class for the PATTERN (see `dotnet-adjudication.md`): the dotnet
+> reference rejects this lookaround-in-union / anchor-in-complement pattern, so
+> rust should reject it too. But the BUG is a rust-internal self-inconsistency
+> (`is_match=false` while `find_all` returns a match), demonstrable with no
+> external reference -- the engine flatly contradicts itself.
+
 - Type: correctness, soundness. `is_match` and `find_all` disagree on
   match existence.
 - Phase: match time.
