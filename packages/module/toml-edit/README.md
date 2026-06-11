@@ -17,7 +17,7 @@ Mutating functions return a fresh state.
 
 ## Examples
 
-Round-trip a file (splice mode, byte-identical when no edits applied):
+Round-trip a file (splice mode, byte-identical for LF input when no edits applied):
 
 ```ts
 import {
@@ -28,8 +28,16 @@ import {
 const source = await Bun.file('mise.toml',).text();
 const edit = parseTomlEdit({ source, },);
 const text = tomlStringify({ edit, },);
-// text === source
+// text === source (for LF input; CRLF input round-trips as LF, see Newlines)
 ```
+
+## Newlines
+
+`parseTomlEdit` normalizes `CRLF` line endings to `LF` before parsing and warns
+that it did (suppressible with `WARN=false`), so editing, splicing, and emission
+only ever deal with single-byte `LF` newlines. A `CRLF` document therefore
+round-trips as `LF`, not byte-for-byte. A bare carriage return (a lone `CR` not
+part of `CRLF`) is invalid TOML and is rejected with `TomlEditError`.
 
 Edit a key while preserving comments and original formatting:
 

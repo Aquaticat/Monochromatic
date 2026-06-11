@@ -6,17 +6,22 @@ criteria for each layer.
 
 ## Implementation status
 
-Updated 2026-06-11. Phases 1 to 5 and the phase 9 CI smoke are landed; phases 6,
-7, and 8 remain, and issue #198 is not yet closed. Most work lives under
-`packages/module/toml-edit/src/fuzz/`, plus two package-source fixes
-(`src/parse-toml-edit.ts`, `src/emit-value-string.ts`), the seam exports in
-`src/index.ts`, the decision doc `docs/decisions/toml-edit-fuzzing.md`, and the
+Updated 2026-06-11. Phases 1 to 6 and the phase 9 CI smoke are landed; phases 7
+and 8 remain, and issue #198 is not yet closed. Most work lives under
+`packages/module/toml-edit/src/fuzz/` and `src/conformance/`, plus package-source
+fixes (`src/parse-toml-edit.ts`, `src/emit-value-string.ts`, the shared
+`src/basic-escape.ts`, `src/value-encoders.ts`, `src/keys.ts`), the seam exports
+in `src/index.ts`, the decision doc `docs/decisions/toml-edit-fuzzing.md`, and the
 workflow `.github/workflows/toml-edit-fuzz.yml`.
 
-Four real bugs found: two fixed in scope (the `RangeError` parse contract and the
-basic-string control-character escaping), and two deeper edit-machinery defects
-deferred to #252 (repeated path-create duplicate key, implicit-parent delete
-read/byte mismatch).
+Six real bugs found: four fixed in scope (the `RangeError` parse contract, the
+parsed-node basic-string control-character escaping, the same gap on the
+from-scratch value and key encoders, and the bare carriage-return parser
+laxity), and two deeper edit-machinery defects deferred to #252 (repeated
+path-create duplicate key, implicit-parent delete read/byte mismatch). Phase 6
+also changed the newline policy: `CRLF` normalizes to `LF` on parse with a
+warning (suppressible via `WARN=false`, a mechanism added to
+`@monochromatic-dev/module-logger`), and a bare `CR` is rejected.
 
 Network and Go are available in this environment (`mise ls-remote
 github:toml-lang/toml-test` lists releases; `go version` is 1.26.4), so phases 6
@@ -96,6 +101,22 @@ Phase 5 (commit 974207b9), stateful edit model:
   path-create duplicate key, implicit-parent delete read/byte mismatch). The
   property stays on single top-level segments to avoid those edges.
 
+Phase 6 (commits da1d3f7c, 2f42cf02, bd94b330, 5e8ae6d9, 36b18731, plus
+`@monochromatic-dev/module-logger` fa785bfb), toml-test conformance:
+
+- `src/conformance/`: decode and encode node adapters satisfying the upstream
+  runner's interfaces, with the kind-aware tagged-JSON model deferred from
+  phase 2 (`decode-leaf.ts`, `decode-to-tagged.ts`, `encode-from-tagged.ts`).
+- `test:conformance` task: follows the latest `toml-test` through mise's
+  `github:` backend (attestation and SLSA provenance verified on install,
+  version logged), runs decoder and encoder for TOML 1.0 and 1.1 under
+  `WARN=false`, and fails on any non-zero runner exit. Both versions pass every
+  valid, encoder, and invalid case with no allow-list.
+- Surfaced and fixed two more real bugs (the from-scratch value and key encoders
+  emitted control scalars raw; the parser accepted a bare carriage return) and
+  changed the newline policy (`CRLF` normalizes to `LF` with a warning, bare `CR`
+  rejected). See the decision doc.
+
 Phase 9 CI smoke (commit 7c5abf2a):
 
 - `.github/workflows/toml-edit-fuzz.yml`: path-filtered to the package, its
@@ -135,11 +156,6 @@ Phase 9 CI smoke (commit 7c5abf2a):
 
 ### Remaining
 
-- Phase 6 (toml-test conformance): build a kind-aware tagged-JSON decoder and
-  encoder (node adapter commands), acquire the `toml-test` runner through mise's
-  `github:` backend (feasible; see status above), and add a `test:conformance`
-  task for TOML 1.0 and 1.1. The kind-aware tagged model deferred from phase 2
-  belongs here.
 - Phase 7 (differential oracle): acquire Go plus the BurntSushi `toml-test`
   decoder and encoder tools through mise (feasible), normalize both outputs, and
   classify disagreements with a stable allow-list. No npm dependency, so no
@@ -149,10 +165,11 @@ Phase 9 CI smoke (commit 7c5abf2a):
   target files, commit a baseline, and gate on no regression.
 - Phase 9 closure: prove the CI path filtering with a real PR run, then close
   issue #198 explicitly with `gh issue close 198`. The CI smoke step itself is
-  already wired. Issue #198's original acceptance criteria (bounded fuzz task,
-  committed seed corpus, CI on relevant changes, bug-finding) are already met by
-  phases 1 to 5 plus the CI smoke; closing now versus completing phases 6 to 8
-  first is a scope decision for the owner.
+  already wired; the conformance task is not yet in CI. Issue #198's original
+  acceptance criteria (bounded fuzz task, committed seed corpus, CI on relevant
+  changes, bug-finding) are already met by phases 1 to 6 plus the CI smoke;
+  closing now versus completing phases 7 to 8 first is a scope decision for the
+  owner.
 
 ## Evidence checked
 
