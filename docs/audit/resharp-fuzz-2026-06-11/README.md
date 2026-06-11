@@ -15,7 +15,11 @@ banner). Nothing here depends on it.
 ## Headline
 
 Ten distinct root causes were found and reproduced on v0.6.12, six of them
-soundness bugs. The "all fixed" claim does not hold: the 2026-06-04 re-entrancy
+soundness bugs. The five oracle-only soundness bugs (bug-02/03/07/08/10) were
+re-confirmed byte-identical on the *unmodified* stock crate (not just the
+instrumented harness), and shown to survive the arm-bug-01 driver fix, so the
+ten-distinct count is defensible; see `pristine-confirmation.md`. The "all
+fixed" claim does not hold: the 2026-06-04 re-entrancy
 compile panic (BUG-1) and the `find_anchored` leading-assertion bug (BUG-20) are
 both still live, only narrowed; the default-vs-hardened `find_all` disagreement
 (BUG-8) and the `is_match`-vs-`find_all` inconsistency (BUG-3) still occur on new
