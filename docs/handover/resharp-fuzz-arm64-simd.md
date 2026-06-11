@@ -231,6 +231,25 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 06:25 -- 12TH ROOT CAUSE (bug-12), Lean multi-seed round (seed 1001). R2280
+  (trust0) = `find_all` SILENTLY drops the leftmost match, NO panic in debug or
+  release. Minimal `((?!b)|ba)&(aa)?`: `"ab"` -> rust `[(2,2)]` (Lean leftmost
+  `0:0`), `"abab"` -> `[(4,4)]` (Lean `0:0`). is_match stays correct. Stronger-
+  reviewer flagged the distinct-vs-fold-into-bug-11 call (one-token `?`->`*`
+  toggles silent-drop vs bug-11 panic, so suspiciously adjacent) and prescribed
+  the decider: PRINT the `nulls` slice `scan_fwd_all` receives. Did it (one-line
+  instrument in the engine copy, then reverted): bug-12 `(aa)?` -> `nulls=[4]` on
+  abab (reverse NEVER proposes 0/2 = UNDER-collect -> silent drop); bug-11 `(aa)*`
+  -> `nulls=[4,2,0]` (0 proposed, forward REJECTS -> panic). Two verified-distinct
+  reverse-pass faults (under-collect vs over-propose), not one seen twice ->
+  counted distinct (12), framed as siblings in the find_all reverse-null
+  subsystem that may share a fix. Replaced the earlier INFERRED "under-collects"
+  with this evidence. R2513 (`_*(?!_)`) was bug-05 on a new trigger (lib.rs:1824),
+  not new. Committed bug-12.md + README->12 (415fe6d6) + nullsprobe tool. Lean
+  lane now has TWO root causes (bug-11, bug-12), both find_all reverse-null faults
+  the internal oracles structurally cannot see. Multi-seed round still finishing
+  (seeds 3003/4004); will harvest remaining trust0 diffs.
+
 - 05:50 -- bug-11 HARDENED + fuzzer harvest. CORRECTION: `is_match` ALSO panics
   (ldfa.rs:906 on `"abca"`, :833 on `"ca"`) -- it routes through `scan_fwd_all`
   for this intersection class, so the crash is NOT find_all-only (broader DoS).
