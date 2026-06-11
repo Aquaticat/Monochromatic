@@ -20,7 +20,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
  * concurrency flows down as inheritance context. Symbol-keyed to keep
  * out of the public type surface; consumers only see `then`.
  */
-export const RUN_WITH_CONTEXT: unique symbol = Symbol('runWithContext',);
+export const RUN_WITH_CONTEXT: unique symbol = Symbol('run child with inherited concurrency context',);
 
 /**
  * Inherited execution context. The parent suite computes its own
