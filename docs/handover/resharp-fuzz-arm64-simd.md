@@ -231,6 +231,25 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 06:50 -- bug-11 REFRAMED (forward-pass fault) + trust() gap fixed. Stronger
+  reviewer caught a fresh unverified claim: I wrote bug-11 "over-proposes" but the
+  `nulls` print only shows reverse PROPOSED the start, not that proposing was the
+  error. Lean-confirmed `((?!b)|ba)&(aa)*` gives `0:0` (offset 0 IS a real match),
+  so reverse proposed CORRECTLY and the FORWARD scan is at fault (returns NO_MATCH
+  for a legit start = exactly the engine's own assert message). So: bug-11 =
+  FORWARD-pass fault, bug-12 = REVERSE-pass fault. Different passes -> cleaner,
+  harder-to-wave-off distinctness. Reworded all three files, dropped
+  "over-proposes" (912056c5). TRUST GAP: seed-2002 R3641
+  `((?<!(~(((?<!\d))))))` came up trust0 but is lookbehind-of-(complement-of-
+  lookbehind) = lookbehind-of-lookaround = the 06-04 documented-unfaithful shape;
+  my trust() only flagged anchors, not nested lookbehind. Fixed trust() to flag
+  lookbehind/neglookbehind whose body contains any lookaround. R3641 reclassifies
+  trust1 -> translator artifact, NOT a bug. bug-11/bug-12 are lookAHEAD-only (no
+  lookbehind) so the gap never touched them. Multi-seed harvest: seed 1001 =
+  bug-12 + bug-05-retrigger; seed 2002 = only R3641 (artifact); seed 3003 = no
+  trust0 diffs; seed 4004 running. Lean lane total: 2 new root causes (bug-11,
+  bug-12).
+
 - 06:25 -- 12TH ROOT CAUSE (bug-12), Lean multi-seed round (seed 1001). R2280
   (trust0) = `find_all` SILENTLY drops the leftmost match, NO panic in debug or
   release. Minimal `((?!b)|ba)&(aa)?`: `"ab"` -> rust `[(2,2)]` (Lean leftmost
