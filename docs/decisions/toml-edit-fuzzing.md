@@ -60,6 +60,20 @@ README.
   single-line and multiline basic strings; the emitter property pins the
   regression.
 
+## Bugs found and deferred
+
+The stateful edit-model property surfaced two deeper edit-machinery defects that
+need resolver-level changes (making set and delete aware of pending insertions),
+so they are tracked as a follow-up in #252 rather than fixed in this scope:
+
+- Repeated path-create set at the same parse-time-absent path emits a duplicate
+  key (invalid TOML), because the resolver reads only the parse-time AST.
+- Delete of an implicit dotted-key parent removes it from delta-aware reads but
+  not from the serialized bytes.
+
+The stateful property reparses between operations and stays on single top-level
+segments, so it does not exercise these edges.
+
 ## Deferred
 
 - A kind-aware tagged-JSON value model, the `toml-test` conformance harness, and
