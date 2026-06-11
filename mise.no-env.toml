@@ -242,10 +242,11 @@ if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.jo
 # covers non-monorepo invocations), then runs the entry's built dist when present,
 # else its TS source through node. runWorkspaceNode(packagePath, entryName, args)
 # dispatches a package entry; ensureOxlintConfig builds the root oxlint config on
-# fresh trees and rebuilds it when bundled plugin sources are newer than the
-# sidecar outputs. Interpolated into the dispatcher tasks (root and per-package),
-# each of which sets `shell = "node -e"`. Its imported bindings are reused by any
-# inline follow-up in those bodies, so the follow-up must not reimport them.
+# fresh trees and rebuilds it when any bundled oxlint config or plugin package is
+# newer than the sidecar outputs. Interpolated into the dispatcher tasks (root and
+# per-package), each of which sets `shell = "node -e"`. Its imported bindings are
+# reused by any inline follow-up in those bodies, so the follow-up must not
+# reimport them.
 dispatch_workspace_node = """
 const { existsSync, readdirSync, statSync } = await import('node:fs')
 const { join, resolve } = await import('node:path')
@@ -260,6 +261,7 @@ const runWorkspaceNode = (packagePath, entryName, entryArgs) => {
   if (entry === null) { throw new Error(`missing built or source entry: ${packagePath}/${entryName}`) }
   execFileSync('node', [entry, ...entryArgs], { stdio: 'inherit' })
 }
+const existingPaths = (paths) => paths.filter((path) => existsSync(path))
 const newestMtime = (path) => {
   const stats = statSync(path)
   if (!stats.isDirectory()) { return stats.mtimeMs }
@@ -270,21 +272,36 @@ const newestMtime = (path) => {
     return newest
   }, stats.mtimeMs)
 }
+const oxlintConfigPackageDir = join(monorepoRoot, 'packages', 'config', 'oxlint')
+const oxlintPluginPackagesDir = join(monorepoRoot, 'packages', 'oxlint-plugins')
+const oxlintPluginPackageDirs = existsSync(oxlintPluginPackagesDir)
+  ? readdirSync(oxlintPluginPackagesDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(oxlintPluginPackagesDir, entry.name))
+      .filter((packageDir) => existsSync(join(packageDir, 'package.json')))
+  : []
+const oxlintPackageDirs = [oxlintConfigPackageDir, ...oxlintPluginPackageDirs]
+const oxlintConfigDistDir = join(oxlintConfigPackageDir, 'dist', 'final', 'node')
+const oxlintConfigSrcDir = join(oxlintConfigPackageDir, 'src')
+const oxlintSidecarOutputPaths = readdirSync(oxlintConfigSrcDir, { withFileTypes: true })
+  .filter((entry) => entry.isFile() && entry.name.startsWith('plugin-') && entry.name.endsWith('.ts'))
+  .map((entry) => join(oxlintConfigDistDir, `${entry.name.slice(0, -3)}.mjs`))
 const shouldBuildOxlintConfig = () => {
   const outputPaths = [
-    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'index.mjs'),
-    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'plugin-no-restricted-syntax.mjs'),
-    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'plugin-stylistic.mjs'),
-    join(monorepoRoot, 'packages', 'config', 'oxlint', 'dist', 'final', 'node', 'plugin-tsdoc.mjs'),
+    join(oxlintConfigDistDir, 'index.mjs'),
+    ...oxlintSidecarOutputPaths,
   ]
   if (outputPaths.some((outputPath) => !existsSync(outputPath))) { return true }
-  const sourcePaths = [
-    join(monorepoRoot, 'packages', 'config', 'oxlint', 'src'),
-    join(monorepoRoot, 'packages', 'config', 'oxlint', 'tsdown.node.config.ts'),
-    join(monorepoRoot, 'packages', 'oxlint-plugins', 'no-restricted-syntax', 'src'),
-    join(monorepoRoot, 'packages', 'oxlint-plugins', 'stylistic', 'src'),
-    join(monorepoRoot, 'packages', 'oxlint-plugins', 'tsdoc', 'src'),
-  ]
+  const sourcePaths = existingPaths([
+    ...oxlintPackageDirs.flatMap((packageDir) => [
+      join(packageDir, 'src'),
+      join(packageDir, 'package.json'),
+      join(packageDir, 'tsconfig.json'),
+      join(packageDir, 'tsdown.node.config.ts'),
+    ]),
+    join(monorepoRoot, 'pnpm-lock.yaml'),
+    join(monorepoRoot, 'pnpm-workspace.yaml'),
+  ])
   const oldestOutputMtime = Math.min(...outputPaths.map((outputPath) => statSync(outputPath).mtimeMs))
   const newestSourceMtime = Math.max(...sourcePaths.map(newestMtime))
   return newestSourceMtime > oldestOutputMtime
