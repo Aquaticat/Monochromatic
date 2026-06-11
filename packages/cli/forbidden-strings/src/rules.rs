@@ -68,6 +68,7 @@ mod nesting_tests;
 // export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
 // ```
 pub use compile::compile_rule_src;
+use compile::engine_is_forced;
 pub use engine::{
     complement_intersection_quantified_group,
     intersection_with_lookbehind,
@@ -340,7 +341,7 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // by position, so filtering must happen here, not after compile). The
     // dropped count is the measurement: "this engine cannot express N of
     // the ruleset's rules". Production (no override) keeps fail-fast.
-    if std::env::var("FS_FORCE_ENGINE").is_ok() {
+    if engine_is_forced() {
         let before = regex_specs.len();
         let verdicts: Vec<bool> = regex_specs
             .par_iter()

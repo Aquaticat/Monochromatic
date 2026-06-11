@@ -335,6 +335,16 @@ fn forced_engine() -> Option<&'static str> {
         .as_deref()
 }
 
+// What:     Whether a single engine is pinned (env override, or a baked
+//           default in the B/C worktree variants). Drives the load path's
+//           skip-and-count behavior in `rules.rs`.
+// Why:      The skip-and-count gate must agree with `forced_engine()`, not
+//           read the env var independently, so a baked default still gets
+//           the coverage-gap-tolerant load instead of fail-fast.
+pub fn engine_is_forced() -> bool {
+    forced_engine().is_some()
+}
+
 fn compile_forced_resharp(src: &str) -> Result<CompiledRegex, String> {
     let caught = catch_unwind(AssertUnwindSafe(|| Regex::new(src)));
     match caught {
