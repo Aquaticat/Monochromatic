@@ -329,6 +329,161 @@ await describe({
       },
     },),
     it({
+      name: 'skips with a note when HEAD is detached',
+      fn: async function testSkipsWhenDetached(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Working repository committed to while detached. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Bare origin remote that must stay untouched. */
+        const remotePath = join(
+          tempDirectory.path,
+          'remote.git',
+        );
+
+        await initBareRemoteWithHook({ remotePath, },);
+        await initRepoWithCommit({ repoPath, },);
+        await runGit({
+          cwd: repoPath,
+          args: [
+            'remote',
+            'add',
+            'origin',
+            remotePath,
+          ],
+        },);
+        await runGit({
+          cwd: repoPath,
+          args: [
+            'checkout',
+            '--quiet',
+            '--detach',
+            'HEAD',
+          ],
+        },);
+
+        /** Auto-push result for a repository with detached HEAD. */
+        const result = await autoPush({
+          gitPath: realGitPath,
+          cwd: repoPath,
+        },);
+
+        expect(result.outcome,).toBe('skipped',);
+        expect(result.exitCode,).toBe(0,);
+        expect(result.shown,).toContain('HEAD is detached',);
+      },
+    },),
+    it({
+      name: 'pushes to an existing upstream without re-pointing it to origin',
+      fn: async function testRespectsExistingUpstream(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Working repository whose branch tracks a non-origin remote. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Bare remote the branch upstream points at. */
+        const upstreamRemotePath = join(
+          tempDirectory.path,
+          'alt.git',
+        );
+
+        await initBareRemoteWithHook({ remotePath: upstreamRemotePath, },);
+        await initRepoWithCommit({ repoPath, },);
+        // Deliberately no origin remote: the upstream alone must be enough.
+        await runGit({
+          cwd: repoPath,
+          args: [
+            'remote',
+            'add',
+            'alt',
+            upstreamRemotePath,
+          ],
+        },);
+        await runGit({
+          cwd: repoPath,
+          args: [
+            'push',
+            '--quiet',
+            '--set-upstream',
+            'alt',
+            'HEAD',
+          ],
+        },);
+        await writeFile(
+          join(
+            repoPath,
+            'tracked.txt',
+          ),
+          'second\n',
+        );
+        await runGit({
+          cwd: repoPath,
+          args: [
+            'commit',
+            '--quiet',
+            '-m',
+            'second',
+            'tracked.txt',
+          ],
+        },);
+
+        /** Auto-push result for a branch tracking the alt remote. */
+        const result = await autoPush({
+          gitPath: realGitPath,
+          cwd: repoPath,
+        },);
+
+        expect(result.outcome,).toBe('pushed',);
+
+        /** Branch the repository is on, whose tracking config must be untouched. */
+        const branchName = (await nanoSpawn(
+          realGitPath,
+          [
+            'branch',
+            '--show-current',
+          ],
+          { cwd: repoPath, },
+        )).stdout;
+        /** Remote the branch tracks after auto-push; must still be alt. */
+        const trackedRemote = (await nanoSpawn(
+          realGitPath,
+          [
+            'config',
+            `branch.${branchName}.remote`,
+          ],
+          { cwd: repoPath, },
+        )).stdout;
+
+        expect(trackedRemote,).toBe('alt',);
+
+        /** Local HEAD that the plain push must have delivered to the upstream remote. */
+        const localHead = (await nanoSpawn(
+          realGitPath,
+          [
+            'rev-parse',
+            'HEAD',
+          ],
+          { cwd: repoPath, },
+        )).stdout;
+        /** Tip of the tracked branch on the upstream remote. */
+        const upstreamHead = (await nanoSpawn(
+          realGitPath,
+          [
+            'rev-parse',
+            branchName,
+          ],
+          { cwd: upstreamRemotePath, },
+        )).stdout;
+
+        expect(upstreamHead,).toBe(localHead,);
+      },
+    },),
+    it({
       name: 'reports failure and surfaces full output when the push is rejected',
       fn: async function testReportsFailure(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { IndexVsHeadState, } from './commit-index-check.ts';
+import type { SequencerState, } from './commit-sequencer-check.ts';
 import {
   commitOnly,
   type CommitOnlyRule,
@@ -73,24 +74,88 @@ async function forbiddenIndexChecker(): Promise<IndexVsHeadState> {
   throw new Error('index checker must not be consulted for this argv',);
 }
 
+/**
+ * Sequencer checker stub reporting a merge/cherry-pick/revert awaiting its
+ * concluding commit.
+ *
+ * @returns `'in-progress'` always.
+ *
+ * @example
+ * ```ts
+ * await sequencerActiveChecker();
+ * // => 'in-progress'
+ * ```
+ */
+async function sequencerActiveChecker(): Promise<SequencerState> {
+  return 'in-progress';
+}
+
+/**
+ * Sequencer checker stub reporting no merge/cherry-pick/revert in progress.
+ *
+ * @returns `'none'` always.
+ *
+ * @example
+ * ```ts
+ * await sequencerNoneChecker();
+ * // => 'none'
+ * ```
+ */
+async function sequencerNoneChecker(): Promise<SequencerState> {
+  return 'none';
+}
+
+/**
+ * Sequencer checker stub that fails the test when consulted.
+ *
+ * @returns Never resolves.
+ *
+ * @throws Always, so argv shapes decided without repository state fail loudly when they consult the checker.
+ *
+ * @example
+ * ```ts
+ * await forbiddenSequencerChecker();
+ * // throws
+ * ```
+ */
+async function forbiddenSequencerChecker(): Promise<SequencerState> {
+  throw new Error('sequencer checker must not be consulted for this argv',);
+}
+
 /** Rule whose decision must come from argv alone, never repository state. */
 const commitOnlyStateless = makeCommitOnly({
   checkIndexDiffersFromHead: forbiddenIndexChecker,
+  checkSequencerInProgress: forbiddenSequencerChecker,
+},);
+
+/** Rule for pathless argv outside any merge/cherry-pick/revert; index checker stays forbidden. */
+const commitOnlyNoSequencer = makeCommitOnly({
+  checkIndexDiffersFromHead: forbiddenIndexChecker,
+  checkSequencerInProgress: sequencerNoneChecker,
+},);
+
+/** Rule observing a merge/cherry-pick/revert awaiting conclusion. */
+const commitOnlySequencerActive = makeCommitOnly({
+  checkIndexDiffersFromHead: forbiddenIndexChecker,
+  checkSequencerInProgress: sequencerActiveChecker,
 },);
 
 /** Rule observing staged changes. */
 const commitOnlyDirtyIndex = makeCommitOnly({
   checkIndexDiffersFromHead: dirtyIndexChecker,
+  checkSequencerInProgress: forbiddenSequencerChecker,
 },);
 
 /** Rule observing an index matching HEAD. */
 const commitOnlyCleanIndex = makeCommitOnly({
   checkIndexDiffersFromHead: cleanIndexChecker,
+  checkSequencerInProgress: forbiddenSequencerChecker,
 },);
 
 /** Rule whose index checker cannot determine state. */
 const commitOnlyUnknownIndex = makeCommitOnly({
   checkIndexDiffersFromHead: unknownIndexChecker,
+  checkSequencerInProgress: forbiddenSequencerChecker,
 },);
 
 /** Commit argv forms that git permits without positional pathspecs in only mode. */
@@ -368,6 +433,8 @@ const VALUE_OPTION_PATHSPEC_CASES: readonly {
 const REJECTED_CASES: readonly {
   /** Human-readable case name shown in test output. */
   readonly name: string;
+  /** Rule variant exercising this case; pathless rejections consult the sequencer checker, `-a` rejections must not. */
+  readonly rule: CommitOnlyRule;
   /** Git argv passed to commit-only rule. */
   readonly args: readonly string[];
   /** Message fragment expected on thrown error. */
@@ -375,6 +442,7 @@ const REJECTED_CASES: readonly {
 }[] = [
   {
     name: 'pathless normal commit',
+    rule: commitOnlyNoSequencer,
     args: [
       'commit',
       '-m',
@@ -384,6 +452,7 @@ const REJECTED_CASES: readonly {
   },
   {
     name: 'short all flag',
+    rule: commitOnlyStateless,
     args: [
       'commit',
       '-a',
@@ -394,6 +463,7 @@ const REJECTED_CASES: readonly {
   },
   {
     name: 'long all flag',
+    rule: commitOnlyStateless,
     args: [
       'commit',
       '--all',
@@ -404,6 +474,7 @@ const REJECTED_CASES: readonly {
   },
   {
     name: 'clustered all and message flags',
+    rule: commitOnlyStateless,
     args: [
       'commit',
       '-am',
@@ -413,6 +484,7 @@ const REJECTED_CASES: readonly {
   },
   {
     name: 'pathless separated author option',
+    rule: commitOnlyNoSequencer,
     args: [
       'commit',
       '--author',
@@ -762,6 +834,122 @@ await describe({
 
     //endregion Pathless amend/allow-empty dirty-index guard
 
+    //region Include mode skips injection (git forbids -i with --only)
+
+    it({
+      name: 'skips injection when short include flag is present',
+      fn: async function testShortIncludeFlag(): Promise<void> {
+        /** Commit argv where user chose include mode with -i. */
+        const args = [
+          'commit',
+          '-i',
+          '-m',
+          'message',
+          'file.ts',
+        ] as const;
+
+        expect(await commitOnlyStateless(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'skips injection when long include flag is present',
+      fn: async function testLongIncludeFlag(): Promise<void> {
+        /** Commit argv where user chose include mode with --include. */
+        const args = [
+          'commit',
+          '--include',
+          '-m',
+          'message',
+          'file.ts',
+        ] as const;
+
+        expect(await commitOnlyStateless(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'skips injection when abbreviated include flag is present',
+      fn: async function testAbbreviatedIncludeFlag(): Promise<void> {
+        /** Commit argv using git's accepted --inc abbreviation of --include. */
+        const args = [
+          'commit',
+          '--inc',
+          '-m',
+          'message',
+          'file.ts',
+        ] as const;
+
+        expect(await commitOnlyStateless(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'skips injection when include flag leads a short cluster',
+      fn: async function testClusteredIncludeFlag(): Promise<void> {
+        /** Commit argv with include and message flags clustered. */
+        const args = [
+          'commit',
+          '-im',
+          'message',
+          'file.ts',
+        ] as const;
+
+        expect(await commitOnlyStateless(args,),).toBe(args,);
+      },
+    },),
+
+    //endregion Include mode skips injection
+
+    //region Merge/cherry-pick/revert conclusion passthrough
+
+    it({
+      name: 'passes pathless commit through unchanged during sequencer conclusion',
+      fn: async function testSequencerConclusionPassthrough(): Promise<void> {
+        /** Pathless commit argv that concludes a merge/cherry-pick/revert. */
+        const args = [
+          'commit',
+          '-m',
+          'merge main into feature',
+        ] as const;
+
+        expect(await commitOnlySequencerActive(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'still rejects -a during sequencer conclusion',
+      fn: async function testAllFlagDuringSequencer(): Promise<void> {
+        /** Error thrown before the sequencer checker could be consulted. */
+        const caught = await catchCommitOnlyError({
+          rule: commitOnlySequencerActive,
+          args: [
+            'commit',
+            '-am',
+            'message',
+          ],
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('rejects -a/--all',);
+      },
+    },),
+    it({
+      name: 'pathless rejection names --no-only as an explicit choice',
+      fn: async function testPathlessRejectionNamesNoOnly(): Promise<void> {
+        /** Error thrown for a pathless commit outside any sequencer state. */
+        const caught = await catchCommitOnlyError({
+          rule: commitOnlyNoSequencer,
+          args: [
+            'commit',
+            '-m',
+            'message',
+          ],
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('--no-only',);
+      },
+    },),
+
+    //endregion Merge/cherry-pick/revert conclusion passthrough
+
     ...NO_VALUE_FLAG_PATHSPEC_CASES.map(function mapNoValueFlagPathspecCase(pathspecCase,) {
       return it({
         name: `detects pathspec after no-value flag ${pathspecCase.name}`,
@@ -792,7 +980,7 @@ await describe({
         fn: async function testRejectedCase(): Promise<void> {
           /** Error thrown for this rejected commit argv. */
           const caught = await catchCommitOnlyError({
-            rule: commitOnlyStateless,
+            rule: rejectedCase.rule,
             args: rejectedCase.args,
           },);
 

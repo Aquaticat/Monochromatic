@@ -27,6 +27,28 @@ await describe({
           },
         },),
         it({
+          name: 'detects bare boolean-true advice.statusHints override',
+          fn: async function testBareBooleanOverride(): Promise<void> {
+            expect(hasExplicitStatusHintsOverride([
+              '-c',
+              'advice.statusHints',
+              'status',
+            ],),)
+              .toBe(true,);
+          },
+        },),
+        it({
+          name: 'detects advice.statusHints override regardless of key casing',
+          fn: async function testCaseInsensitiveOverride(): Promise<void> {
+            expect(hasExplicitStatusHintsOverride([
+              '-c',
+              'Advice.StatusHints=true',
+              'status',
+            ],),)
+              .toBe(true,);
+          },
+        },),
+        it({
           name: 'ignores post-subcommand advice.statusHints token',
           fn: async function testPostSubcommandOverrideIgnored(): Promise<void> {
             expect(hasExplicitStatusHintsOverride([
@@ -104,6 +126,19 @@ await describe({
             const args = [
               '-c',
               'advice.statusHints=true',
+              'status',
+            ] as const;
+
+            expect(statusHintsOff(args,),).toBe(args,);
+          },
+        },),
+        it({
+          name: 'skips injection when user set bare advice.statusHints',
+          fn: async function testUserBareOverride(): Promise<void> {
+            /** Status argv with git's boolean-true config spelling. */
+            const args = [
+              '-c',
+              'advice.statusHints',
               'status',
             ] as const;
 

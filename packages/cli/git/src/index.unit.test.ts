@@ -583,6 +583,320 @@ await describe({
       },
     },),
     it({
+      name: 'commits include-mode path without manufacturing an only conflict',
+      fn: async function testIncludeModeCommit(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'tracked.txt',
+          content: 'include mode\n',
+        },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '-i',
+            '-m',
+            'include mode',
+            'tracked.txt',
+          ],
+        },);
+
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'include mode',
+        );
+      },
+    },),
+    it({
+      name: 'passes pathless commit through to conclude a merge',
+      fn: async function testMergeConclusionCommit(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        /** Branch the repository started on; merged back into below. */
+        const initialBranch = (await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'branch',
+            '--show-current',
+          ],
+        },)).stdout;
+
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'checkout',
+            '--quiet',
+            '-b',
+            'side',
+          ],
+        },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'tracked.txt',
+          content: 'side version\n',
+        },);
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '--quiet',
+            '-m',
+            'side',
+            'tracked.txt',
+          ],
+        },);
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'checkout',
+            '--quiet',
+            initialBranch,
+          ],
+        },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'tracked.txt',
+          content: 'main version\n',
+        },);
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '--quiet',
+            '-m',
+            'mainline',
+            'tracked.txt',
+          ],
+        },);
+
+        try {
+          await runRealGit({
+            cwd: tempDirectory.path,
+            args: [
+              'merge',
+              'side',
+            ],
+          },);
+        }
+        catch (error) {
+          // The conflicting merge is expected to exit non-zero; the conflict
+          // is the fixture state the wrapper commit must conclude.
+          if (!(error instanceof SubprocessError))
+            throw error;
+        }
+
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'tracked.txt',
+          content: 'resolved\n',
+        },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '-m',
+            'merge resolved',
+          ],
+        },);
+
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'merge resolved',
+        );
+
+        /** Second parent of HEAD, present only when the merge truly concluded. */
+        const secondParent = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'rev-parse',
+            '--verify',
+            'HEAD^2',
+          ],
+        },);
+
+        expect(secondParent.stdout
+          .length,).toBeGreaterThan(0,);
+      },
+    },),
+    it({
+      name: 'auto-pushes real commits but not implied dry runs',
+      fn: async function testDryRunSkipsAutoPush(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Working repository whose commits should be backed up. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Bare origin remote observing which pushes actually happen. */
+        const remotePath = join(
+          tempDirectory.path,
+          'origin.git',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'init',
+            '--bare',
+            '--quiet',
+            remotePath,
+          ],
+        },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'remote',
+            'add',
+            'origin',
+            remotePath,
+          ],
+        },);
+        await writeAndStageFile({
+          repoPath,
+          fileName: 'tracked.txt',
+          content: 'staged update\n',
+        },);
+
+        await runWrapper({
+          cwd: repoPath,
+          args: [
+            'commit',
+            '--short',
+            '-m',
+            'dry run',
+            'tracked.txt',
+          ],
+        },);
+
+        /** Remote refs after the implied dry run, which must not have pushed. */
+        const remoteRefsAfterDryRun = await runRealGit({
+          cwd: repoPath,
+          args: [
+            'ls-remote',
+            'origin',
+          ],
+        },);
+
+        expect(remoteRefsAfterDryRun.stdout,).toBe('',);
+
+        await runWrapper({
+          cwd: repoPath,
+          args: [
+            'commit',
+            '-m',
+            'real commit',
+            'tracked.txt',
+          ],
+        },);
+
+        /** Local HEAD that the auto-push must have backed up to origin. */
+        const localHead = await runRealGit({
+          cwd: repoPath,
+          args: [
+            'rev-parse',
+            'HEAD',
+          ],
+        },);
+        /** Remote refs after the real commit, which must include HEAD. */
+        const remoteRefsAfterCommit = await runRealGit({
+          cwd: repoPath,
+          args: [
+            'ls-remote',
+            'origin',
+          ],
+        },);
+
+        expect(remoteRefsAfterCommit.stdout,).toContain(localHead.stdout,);
+      },
+    },),
+    it({
+      name: 'skips auto-push with a note when HEAD is detached',
+      fn: async function testDetachedHeadSkipsAutoPush(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Working repository committed to while detached. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Bare origin remote that must stay empty. */
+        const remotePath = join(
+          tempDirectory.path,
+          'origin.git',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'init',
+            '--bare',
+            '--quiet',
+            remotePath,
+          ],
+        },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'remote',
+            'add',
+            'origin',
+            remotePath,
+          ],
+        },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'checkout',
+            '--quiet',
+            '--detach',
+            'HEAD',
+          ],
+        },);
+        await writeAndStageFile({
+          repoPath,
+          fileName: 'tracked.txt',
+          content: 'detached update\n',
+        },);
+
+        /** Wrapper result whose stderr must carry the detached-HEAD note. */
+        const result = await runWrapper({
+          cwd: repoPath,
+          args: [
+            'commit',
+            '-m',
+            'detached commit',
+            'tracked.txt',
+          ],
+        },);
+
+        expect(result.stderr,).toContain('HEAD is detached',);
+        expect(await readLatestSubject({ repoPath, },),).toBe('detached commit',);
+
+        /** Remote refs after the detached commit, which must not have pushed. */
+        const remoteRefs = await runRealGit({
+          cwd: repoPath,
+          args: [
+            'ls-remote',
+            'origin',
+          ],
+        },);
+
+        expect(remoteRefs.stdout,).toBe('',);
+      },
+    },),
+    it({
       name: 'rejects stash list at main worktree root',
       fn: async function testStashListAtMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
