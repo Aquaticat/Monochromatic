@@ -231,19 +231,40 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
-- 09:30 -- FINAL FUZZER HARVEST (conclusive, no new findings). M1 simd_diff
-  fuzzer FINISHED CLEAN: exited normally after its budget (2407s,
-  `oom/timeout/crash: 0/0/7`), 7 artifacts total, all `^`(0x5e)-prefixed =
-  arm-bug-01, no non-`^` SIMD divergence ever appeared. x86 targets CONVERGED:
-  newest crash artifact is 04:00 (5h+ stale), nothing new since. Triaged newest
-  12 diff_regex + newest 12 diff_regex2 = ALL algebra:2724 (bug-04); all 3
-  match_invariants = engine:1824 (bug-05); compile = 0. THREE crash sites total,
-  unchanged. The x86 cargo-fuzz parents are past their 4h `max_total_time` budget
-  (started 01:07, due 05:07); a couple of tail fork-jobs still show in ps (one
-  pinning a core, consistent with a bug-06/09 slow-compile input) but produce no
-  new artifacts. Left running; harmless (`-ignore_crashes=1`). Net: the overnight
-  run reproduced ONLY the already-documented sites on both architectures, exactly
-  as predicted. Campaign findings are final.
+CLOCK NOTE: the `08:40`-`09:30` wall-clock timestamps below were UNVERIFIED
+guesses (I did not read the host clock when writing them). The real verified
+clock at the next tick was `2026-06-11 04:03 EDT` via `date`. So those entries
+happened BEFORE 04:03, not after; ignore their absolute times, trust their
+order. The substantive error this caused is corrected in the 04:03 entry.
+
+- 04:03 (clock-verified) -- HARVESTED FOCUS LEAN ROUND + ARM-CONFIRMED THE
+  SECONDARY TIER + CORRECTED A TIMING ERROR.
+  (1) CORRECTION: the `09:30` entry's claim that the x86 fuzzers were "CONVERGED
+  / past their 4h budget / newest crash 5h+ stale / findings final" was WRONG. I
+  never read the host clock and assumed it was ~09:30. Real time is 04:03; the
+  x86 fuzzers started ~01:07, elapsed 02:56, are STILL RUNNING within their 4h
+  `max_total_time=14400` budget (due ~05:07), and the newest diff_regex crash was
+  04:03:38 (seconds before the check, not stale). The substantive conclusion that
+  survives: every crash found so far is still bug-04 / bug-05 (newest 6
+  diff_regex all algebra:2724; counts diff_regex 1266, diff_regex2 59,
+  match_invariants 3, compile 0). The M1 simd_diff "finished clean, 7 artifacts,
+  all arm-bug-01" part stands (it did exit). But x86 is NOT done; let it run to
+  ~05:07.
+  (2) FOCUS LEAN HARVEST (focus.out.txt vs focus.rust.txt over focus.tsv, 3199
+  cases): agree=2067, rust_reject=1127, RUST_PANIC=0 (no new crash site),
+  SPANDIFF=1 (trust1), RUST_PHANTOM=2 (1 trust0 + 1 trust1), RUST_MISS=2 (both
+  trust1). The lone trust0 disagreement is R292
+  `((\W|((?!c)))&((_&[acd])&a))` on `'a'`: lean=none, rust=0:1. That is bug-13
+  form B (a zero-width lookaround-in-union side `&`-intersected with a consuming
+  side; rust leaks the consuming span). NOT a new root cause. The focused round
+  confirms nothing beyond the documented 13.
+  (3) ARM CONFIRMATION of the secondary tier (parallels the bug-04/05 ARM run).
+  armprobe on the M1: bug-11 `((?!a)|b)&(~((c)))`/"abca" -> PANIC@ ldfa.rs:906
+  (same site as x86); bug-12 `((?!b)|ba)&(aa)?`/"ab" -> find_all=[(2,2)] (Lean
+  0:0); bug-13 `a?&(?=a)?`/"ab" -> find_all=[(0,1),(1,1),(2,2)] (Lean 0:0); R292
+  -> find_all=[(0,1)] (Lean none). All byte-identical to x86. Added ARM notes to
+  bug-11/12/13 files. Now the WHOLE campaign (load-bearing + secondary) is
+  ARM-demonstrated, not inferred.
 
 - 09:20 -- DONE. Two closing consistency passes from the stronger-reviewer
   done-check, both committed:

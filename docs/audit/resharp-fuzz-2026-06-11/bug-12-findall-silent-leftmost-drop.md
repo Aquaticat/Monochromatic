@@ -15,6 +15,12 @@ reverse/forward null subsystem) but a distinct manifestation: bug-11 panics in
 debug builds; this returns a wrong answer with NO assertion, even under
 `debug-assertions`, so a consumer's test suite sees no crash.
 
+Architecture: confirmed byte-identical on aarch64 (Apple M1) and x86-64.
+`armprobe "((?!b)|ba)&(aa)?" "ab"` on the M1 returns `find_all=[(2,2)]` (Lean
+ground truth is `0:0`; rust silently drops the leftmost match), the same wrong
+result as x86. The ARM run makes "ARM-confirmed" demonstrated rather than
+inferred.
+
 ## Minimal reproducer
 
 ```rust

@@ -13,6 +13,12 @@ v0.6.12 stock crate. This is a THIRD distinct crash site, separate from bug-04
 (`resharp-algebra/src/lib.rs:2724`) and bug-05
 (`resharp-engine/src/lib.rs:1824`).
 
+Architecture: confirmed byte-identical on aarch64 (Apple M1) and x86-64.
+`armprobe "((?!a)|b)&(~((c)))" "abca"` on the M1 panics at the same
+`resharp-engine/src/ldfa.rs:906` site (the reverse/forward null mismatch is in
+the scalar ldfa path, not a SIMD path; the ARM run makes "ARM-confirmed"
+demonstrated rather than inferred).
+
 ## Minimal reproducer
 
 ```rust

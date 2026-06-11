@@ -14,6 +14,16 @@ span returned TOO LONG), the opposite direction from bug-11/bug-12 (which drop
 matches), and it lives in the forward match-extension path, not the null-start
 collection.
 
+Architecture: confirmed byte-identical on aarch64 (Apple M1) and x86-64.
+`armprobe "a?&(?=a)?" "ab"` on the M1 returns `find_all=[(0,1),(1,1),(2,2)]`
+(Lean ground truth is `0:0`; the leading `0:1` over-extends the zero-width
+result), the same wrong result as x86. A later focused Lean round independently
+re-found this family on ARM via form B: `armprobe
+"((\W|((?!c)))&((_&[acd])&a))" "a"` returns `find_all=[(0,1)]` where Lean says no
+match (a zero-width lookaround-in-union side `&`-intersected with a consuming
+side leaks the consuming span). The ARM runs make "ARM-confirmed" demonstrated
+rather than inferred.
+
 ## Minimal reproducer
 
 ```rust
