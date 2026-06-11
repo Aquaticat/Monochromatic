@@ -82,9 +82,7 @@ await describe({
           findPackageRootCached({ dir: import.meta.dirname, name: OWN_PACKAGE_NAME, },),
           findPackageRootCached({ dir: import.meta.dirname, name: OWN_PACKAGE_NAME, },),
         ],);
-        expect(a,).toBe(b,);
-        expect(b,).toBe(c,);
-        expect(c,).toBe(d,);
+        expect([a, b, c, d,],).toAllBe();
       },
     },),
     it({
@@ -102,8 +100,7 @@ await describe({
           dir: import.meta.dirname,
           name: OWN_PACKAGE_NAME,
         },);
-        expect(first,).toBe(second,);
-        expect(second,).toBe(third,);
+        expect([first, second, third,],).toAllBe();
       },
     },),
     it({

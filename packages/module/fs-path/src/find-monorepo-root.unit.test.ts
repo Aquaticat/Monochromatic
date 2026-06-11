@@ -229,8 +229,7 @@ await describe({
         const second = await findMiseMonorepoRootCached();
         /** Third cached mise root call. */
         const third = await findMiseMonorepoRootCached();
-        expect(first,).toBe(second,);
-        expect(second,).toBe(third,);
+        expect([first, second, third,],).toAllBe();
       },
     },),
     it({
@@ -243,9 +242,7 @@ await describe({
           findMiseMonorepoRootCached(),
           findMiseMonorepoRootCached(),
         ],);
-        expect(rootOne,).toBe(rootTwo,);
-        expect(rootTwo,).toBe(rootThree,);
-        expect(rootThree,).toBe(rootFour,);
+        expect([rootOne, rootTwo, rootThree, rootFour,],).toAllBe();
       },
     },),
     it({
@@ -334,8 +331,7 @@ await describe({
         const second = await findGitRepoRootCached();
         /** Third cached Git root call. */
         const third = await findGitRepoRootCached();
-        expect(first,).toBe(second,);
-        expect(second,).toBe(third,);
+        expect([first, second, third,],).toAllBe();
       },
     },),
     it({
@@ -348,9 +344,7 @@ await describe({
           findGitRepoRootCached(),
           findGitRepoRootCached(),
         ],);
-        expect(rootOne,).toBe(rootTwo,);
-        expect(rootTwo,).toBe(rootThree,);
-        expect(rootThree,).toBe(rootFour,);
+        expect([rootOne, rootTwo, rootThree, rootFour,],).toAllBe();
       },
     },),
     it({
@@ -429,8 +423,7 @@ await describe({
         const second = await findPnpmWorkspaceRootCached();
         /** Third cached pnpm workspace root call. */
         const third = await findPnpmWorkspaceRootCached();
-        expect(first,).toBe(second,);
-        expect(second,).toBe(third,);
+        expect([first, second, third,],).toAllBe();
       },
     },),
     it({
@@ -443,9 +436,7 @@ await describe({
           findPnpmWorkspaceRootCached(),
           findPnpmWorkspaceRootCached(),
         ],);
-        expect(rootOne,).toBe(rootTwo,);
-        expect(rootTwo,).toBe(rootThree,);
-        expect(rootThree,).toBe(rootFour,);
+        expect([rootOne, rootTwo, rootThree, rootFour,],).toAllBe();
       },
     },),
     it({
@@ -476,8 +467,7 @@ await describe({
         const pnpmRoot = await findPnpmWorkspaceRoot({
           cwd: import.meta.dirname,
         },);
-        expect(miseRoot,).toBe(gitRoot,);
-        expect(gitRoot,).toBe(pnpmRoot,);
+        expect([miseRoot, gitRoot, pnpmRoot,],).toAllBe();
       },
     },),
   ],
