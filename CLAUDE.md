@@ -903,9 +903,13 @@ VRB:
  "triage",
  "look at",
  "analyze",
- "investigate") request deliberation.
+ "investigate",
+ "propose",
+ "spot-check",
+ "estimate") request deliberation.
 Deliverable is answer;
- don't also apply fixes answer implies.
+ don't also apply fixes answer implies,
+ nor touch main worktree to investigate (see IWT).
 Action verbs ("fix",
  "implement",
  "apply",
@@ -915,6 +919,43 @@ Action verbs ("fix",
  "remove",
  "update",
  "refactor") authorize action.
+
+IWT:
+ Decision/investigation verbs (VRB) forbid every change to main worktree,
+ not only the fixes answer implies:
+ no scratch files,
+ no instrumentation/debug edits to real source,
+ no throwaway tests dropped beside real code,
+ no dep installs, builds, or formatter/lint autofixes there.
+Reproducing,
+ experimenting,
+ or running anything that writes files happens in a forked worktree:
+ `git worktree add <path> HEAD`,
+ then install deps,
+ build,
+ edit,
+ run freely inside it,
+ remove it after (`git worktree remove`).
+That fork + its dep installs + its builds/runs are local-only work needing no permission (PX3),
+ even when the parent task is investigate-only.
+This is stricter than THR (which governs where mutating verification runs):
+ under a decision verb the main worktree stays byte-for-byte unchanged,
+ destructive or not.
+Cue:
+ about to write,
+ edit,
+ instrument,
+ or `pnpm install` into the main worktree while the task verb only asked you to investigate,
+ evaluate,
+ assess,
+ review,
+ audit,
+ triage,
+ analyze,
+ spot-check,
+ estimate,
+ or propose;
+ fork a worktree instead.
 
 AUT:
  Holds in Auto Mode:
