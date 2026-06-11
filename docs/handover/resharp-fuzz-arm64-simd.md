@@ -231,6 +231,19 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 02:50 -- big2 oracle reconfirms the same families (FANDIFF/FANINCONSIST =
+  bug-02, PANIC = bug-04). STREAMINCONSIST (stream empty while is_match true, the
+  06-04 BUG-9 shape) is only 3 distinct patterns, all the complex
+  `((?<=b+){2}&...)` shape that ALSO triggers bug-02; folded into bug-03 (same
+  stream-zero-width defect), not a new root cause. Pinned bug-02's exact source
+  (find_anchored `lib.rs:1901-1908`: the v0.6.12 leading-lookbehind guard is
+  gated on `has_lb && !rev_trivial && !always_nullable`, nullable lookbehinds
+  slip to the context-free `scan_fwd_slow(0)` fallback). Added a FANSPANDIFF
+  oracle (find_anchored vs find_all SPAN at offset 0, the 06-04 bug-13/14
+  width-leak/gate-drop family) and rebuilt; running it next as a shot at a 10th
+  distinct root cause. STILL 9 confirmed root causes; the reachable surface is
+  well-characterized (DIVERGE null, only 2 panic sites, SIMD = arm-bug-01 only).
+
 - 02:30 -- 9 root causes committed (bug-09 added: full/js dot-literal concat
   compile blowup, >40s, fragile/non-monotonic, distinct from bug-06). Verified
   bug-05 is debug-build-only: `_*$` in a release (no-debug-assertions) build
