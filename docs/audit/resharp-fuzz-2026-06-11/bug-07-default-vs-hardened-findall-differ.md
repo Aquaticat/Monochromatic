@@ -40,6 +40,12 @@ Other distinct HARDDIFF triggers in the corpus: `^{3}([\w]{2,}0{3}|_?)`,
 involve a zero-width / anchor-laden sub-expression where the hardened scan and the
 default driver disagree on a zero-width match near a line boundary.
 
+The disagreement also reaches existence (`is_match`), the strongest form:
+`1?a~(~((1?){2,}\z+){2}){2}` on `"a"` is `is_match = false` (default) versus
+`is_match = true` with `find_all = [0:0]` (hardened). When the two engines
+disagree on whether the input matches at all, they are accepting different
+languages, which a scan-algorithm swap must never do.
+
 ## Relationship to 2026-06-04 BUG-8 / BUG-10
 
 This is the BUG-8 / BUG-10 family (default vs hardened `find_all` disagreement),

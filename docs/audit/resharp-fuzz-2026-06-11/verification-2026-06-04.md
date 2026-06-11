@@ -54,6 +54,14 @@ up as bug-02 / bug-04 / bug-07 / bug-08 and arm-bug-01).
 - BUG-3 (is_match vs find_all), second face: LIVE on a new trigger.
   `[0-9]{2}~(\z{1,3}|^{2}\W{0})+` in the flags config on `"00"` gives
   `is_match=false` but `find_all=[0:2]`. Written up as bug-08.
+- BUG-13 / BUG-14 (find_anchored vs find_all span): LIVE. The 06-04 triggers
+  (`(?=(?=c)c{1,3})`, `(|(?<=[a-z])b)`) are correct now, but
+  `~(.{1,3}\z){2,4}` on `"ab"` gives `find_all=[0:2,2:2]` while
+  `find_anchored=Some(0:1)` (shorter than the longest at 0). 30 complement-with-
+  end-anchor triggers. Written up as bug-10.
+- BUG-8 (default vs hardened), existence face: LIVE and stronger.
+  `1?a~(~((1?){2,}\z+){2}){2}` on `"a"` gives default `is_match=false` vs
+  hardened `is_match=true`. Folded into bug-07.
 
 ## Avoided by parser rejection (behaviour change, not an engine fix)
 

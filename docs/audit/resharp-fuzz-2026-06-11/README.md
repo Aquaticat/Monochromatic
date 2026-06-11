@@ -14,7 +14,7 @@ banner). Nothing here depends on it.
 
 ## Headline
 
-Nine distinct root causes were found and reproduced on v0.6.12, five of them
+Ten distinct root causes were found and reproduced on v0.6.12, six of them
 soundness bugs. The "all fixed" claim does not hold: the 2026-06-04 re-entrancy
 compile panic (BUG-1) and the `find_anchored` leading-assertion bug (BUG-20) are
 both still live, only narrowed; the default-vs-hardened `find_all` disagreement
@@ -72,6 +72,12 @@ with reproducers).
   trigger with no unbounded quantifier. A threshold blowup of the wide
   full/javascript `.` minterm in the derivative construction, distinct from
   bug-06's `\w`-repeat cost.
+- `bug-10` (soundness): `find_anchored` returns a strictly shorter span than
+  `find_all`'s longest match at offset 0. `~(.{1,3}\z){2,4}` on `"ab"` gives
+  `find_all = [0:2, 2:2]` but `find_anchored = Some(0:1)`. The 06-04 BUG-13/14
+  span-disagreement family, still live on complement-with-end-anchor patterns (30
+  triggers). Distinct from bug-02 (existence) -- here a match exists, the start
+  agrees, only the length disagrees.
 
 ## Method
 
