@@ -231,6 +231,24 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 09:20 -- DONE. Two closing consistency passes from the stronger-reviewer
+  done-check, both committed:
+  (1) Tier-split propagation to the supporting docs (2457bdba). verification-
+  2026-06-04.md and code-quality.md predated the dotnet tier split and
+  contradicted the narrowed README headline (they listed bug-07/08/10 as flatly
+  "live" with no out-of-subset caveat, handing ieviev the rebuttal "those fire on
+  patterns my engine rejects"). Each still-live family is now tagged IN-SUBSET
+  (bug-04, bug-02: dotnet accepts, refute all-fixed alone) vs OUT-OF-SUBSET
+  (bug-07/08/10: dotnet rejects at compile, rust accepts and miscomputes;
+  compile-rejection noted as the alternative remedy).
+  (2) Airtight ARM confirmation for the two in-subset crashes (a1d7ff7e). Re-ran
+  `armprobe "(.*.+)*.+" "aaa"` and `armprobe "_*(?!_)" "aa"` on the M1 (aarch64,
+  debug-assertions on): both panic at the SAME sites as x86 (algebra:2724,
+  engine:1824). These are arch-independent algebra/reverse-pass faults (not SIMD),
+  so the campaign's "ARM-confirmed" claim is now demonstrated, not inferred, for
+  the load-bearing crashes. The done-check confirmed no further passes needed:
+  ship it, do not reopen the tier analysis or hunt a 14th bug.
+
 - 08:55 -- CONSOLIDATION POINT. bug-06/09 perf confirmed rust-specific: dotnet
   compiles `\w{24}` in 6ms and the bug-09 `.n...n.n` unit in 21ms vs rust's ~3.3s
   / ~40-71s (1000x+); committed (bc480603). Final overnight fuzzer harvest: NO new
