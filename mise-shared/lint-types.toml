@@ -1,0 +1,5 @@
+# Shared mise task body included via [task_config] includes. See ./README.md.
+"lint:types" = { description = "TypeScript", shell = "node -e", run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('packages/dev-script/task-util', 'tsgo-filter', ['--build'])
+""" }

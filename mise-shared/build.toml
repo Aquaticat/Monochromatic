@@ -1,0 +1,2 @@
+# Shared mise task body included via [task_config] includes. See ./README.md.
+"build" = { shell = "node -e", run = "{{vars.fanout}}" }

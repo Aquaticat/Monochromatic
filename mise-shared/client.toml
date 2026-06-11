@@ -1,0 +1,2 @@
+# Shared mise task body included via [task_config] includes. See ./README.md.
+"build:js:client" = "tsdown --config tsdown.client.config.ts"

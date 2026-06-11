@@ -1,0 +1,3 @@
+# Shared mise task bodies included via [task_config] includes. See ./README.md.
+"watch:build" = { shell = "node -e", run = "{{vars.fanout}}" }
+"watch:build:js" = { shell = "node -e", run = "{{vars.fanout}}" }

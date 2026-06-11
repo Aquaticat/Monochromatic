@@ -1,0 +1,2 @@
+# Shared mise task body included via [task_config] includes. See ./README.md.
+"watch:lint:types" = { description = "Type check in watch mode", run = "tsgo --watch" }

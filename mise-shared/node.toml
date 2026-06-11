@@ -1,0 +1,3 @@
+# Shared mise task bodies included via [task_config] includes. See ./README.md.
+"build:js:node" = "tsdown --config tsdown.node.config.ts"
+"watch:build:js:node" = "tsdown --watch --config tsdown.node.config.ts"

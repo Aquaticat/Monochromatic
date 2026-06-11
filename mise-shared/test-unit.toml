@@ -1,0 +1,28 @@
+# Shared mise task body included via [task_config] includes. See ./README.md.
+"test:unit" = { description = "Run *.unit.test.ts in parallel via node (excludes /deprecated/ and *.expensive.* unless --all); pass file paths to filter", usage = """
+flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
+arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
+""", shell = "node -e", run = """
+{{vars.parse_usage_args}}
+{{vars.run_test_files}}
+const { existsSync } = await import('node:fs')
+const { glob } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const args = parseUsageArgs(process.env.usage_args ?? '')
+const all = (process.env.usage_all ?? '').trim() === 'true'
+if (all && args.length > 0) { throw new Error('--all cannot be combined with file paths') }
+let files
+if (args.length === 0) {
+  files = []
+  for await (const file of glob('**/*.unit.test.ts', { exclude: (name) => name.includes('node_modules') })) {
+    if (all || (!file.includes('/deprecated/') && !file.includes('.expensive.'))) { files.push(file) }
+  }
+} else {
+  // Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
+  // path passed verbatim resolves under the package. Resolve each arg against the monorepo root
+  // (modern mise), then the mise invocation dir, then cwd.
+  const base = process.env.MISE_MONOREPO_ROOT ?? process.env.MISE_ORIGINAL_CWD ?? process.cwd()
+  files = args.map((file) => existsSync(file) ? file : join(base, file))
+}
+await runTestFiles(files, [])
+""" }

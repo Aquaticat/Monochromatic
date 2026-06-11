@@ -1,0 +1,6 @@
+# Shared mise task body included via [task_config] includes. See ./README.md.
+"lint:oxlint" = { description = "Lint with Oxlint", shell = "node -e", run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware'])
+""" }
