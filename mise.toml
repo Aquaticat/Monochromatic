@@ -646,15 +646,10 @@ execFileSync('stylelint', stylelintArgs, { stdio: 'inherit' })
 [tasks."lint:markdown"]
 hide = true
 description = "Lint Markdown and MDX with cli-markdown-lint, optionally restricted to specific files"
-usage = 'arg "[args]" var=#true help="File paths (when provided, only those are linted)"'
-shell = "node -e"
-run = """
-{{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-const args = parseUsageArgs(process.env.usage_args ?? '')
-const targets = args.length === 0 ? ['.'] : args
-execFileSync('node', ['packages/cli/markdown-lint/src/cli.ts', ...targets], { stdio: 'inherit' })
-"""
+# No usage spec: mise appends post-`--` args to the command as a real argv vector
+# (preserving spaces). The cli defaults to walking `.` when no paths are given
+# (see packages/cli/markdown-lint/src/run.ts).
+run = "node packages/cli/markdown-lint/src/cli.ts"
 
 [tasks."lint:rust"]
 description = "Enforce the per-file code-line budget on .rs under packages/ (monochromatic-rust-linter)"
@@ -708,15 +703,10 @@ runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--fix'])
 [tasks."format:markdown"]
 hide = true
 description = "Apply cli-markdown-lint autofixes, optionally restricted to specific files"
-usage = 'arg "[args]" var=#true help="File paths (when provided, only those are fixed)"'
-shell = "node -e"
-run = """
-{{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-const args = parseUsageArgs(process.env.usage_args ?? '')
-const targets = args.length === 0 ? ['.'] : args
-execFileSync('node', ['packages/cli/markdown-lint/src/cli.ts', '--fix', ...targets], { stdio: 'inherit' })
-"""
+# No usage spec: mise appends post-`--` args after `--fix` as a real argv vector.
+# The cli defaults to walking `.` when no paths are given
+# (see packages/cli/markdown-lint/src/run.ts).
+run = "node packages/cli/markdown-lint/src/cli.ts --fix"
 
 #region Validation and Check Tasks
 
@@ -841,12 +831,9 @@ execFileSync('node', ['packages/dev-script/catalog-tighten/src/index.ts', ...arg
 
 [tasks."page:weight"]
 description = "Report per-page transfer size (min, max, mean, median) for a dist directory"
-usage = 'arg "<dist>" help="Path to the dist directory containing HTML files"'
-shell = "node -e"
-run = """
-const { execFileSync } = await import('node:child_process')
-execFileSync('node', ['packages/dev-script/page-weight/src/index.ts', process.env.usage_dist], { stdio: 'inherit' })
-"""
+# No usage spec: mise appends the post-`--` dist path as a real argv vector. The
+# entry validates a missing dist arg itself (EXIT_USAGE in src/index.ts).
+run = "node packages/dev-script/page-weight/src/index.ts"
 
 #endregion Page Weight
 
