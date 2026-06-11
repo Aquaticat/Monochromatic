@@ -58,7 +58,9 @@ const repoRootDir = fileURLToPath(new URL(
 
 /**
  * Path fragments that disqualify a discovered file: dependencies, build output,
- * VCS internals, caches, and anything that looks like a secret.
+ * VCS internals, caches, curated TOML fixture sets (which deliberately include
+ * invalid and version-specific inputs, so they are loaded explicitly rather
+ * than swept up as "real" config), and anything that looks like a secret.
  */
 const EXCLUDED_FRAGMENTS: readonly string[] = [
   'node_modules',
@@ -68,6 +70,9 @@ const EXCLUDED_FRAGMENTS: readonly string[] = [
   '/coverage/',
   '/.cache/',
   '/.out-of-scope/',
+  'test-fixture',
+  'toml-test',
+  '/fixtures/',
   'secret',
   'credential',
   'password',

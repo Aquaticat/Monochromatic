@@ -44,7 +44,15 @@ function safeParse(
         { cause: e, },
       );
     }
-    throw e;
+    // `parseTOML` is a pure parse function, so any non-`ParseError` throw is
+    // still input-induced and must surface as `TomlEditError` to honor the
+    // documented parse contract. The known case is a `RangeError` from stack
+    // overflow on pathologically deep `[`/`{` nesting; wrapping it (rather than
+    // leaking the raw exception) keeps `parseTomlEdit` total over arbitrary text.
+    throw new TomlEditError(
+      `Failed to parse TOML: ${e instanceof Error ? e.message : String(e,)}`,
+      { cause: e, },
+    );
   }
 }
 

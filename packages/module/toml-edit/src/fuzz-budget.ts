@@ -95,6 +95,23 @@ function campaignBudgetMs(): number {
 }
 
 /**
+ * Whether the campaign budget is active.
+ *
+ * Properties use this to widen corpus loading (live repository discovery) only
+ * during a campaign, keeping the bounded unit suite deterministic.
+ *
+ * @returns Whether a positive campaign budget is set.
+ *
+ * @example
+ * ```ts
+ * const corpus = await discoverRepoToml({ campaign: isCampaignMode(), limit: 300, },);
+ * ```
+ */
+export function isCampaignMode(): boolean {
+  return campaignBudgetMs() !== BOUNDED_BUDGET;
+}
+
+/**
  * Resolve the run plan from the environment. Call once per file and reuse
  * across that file's properties.
  *
