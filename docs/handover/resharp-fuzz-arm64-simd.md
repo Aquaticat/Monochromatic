@@ -231,6 +231,20 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 09:30 -- FINAL FUZZER HARVEST (conclusive, no new findings). M1 simd_diff
+  fuzzer FINISHED CLEAN: exited normally after its budget (2407s,
+  `oom/timeout/crash: 0/0/7`), 7 artifacts total, all `^`(0x5e)-prefixed =
+  arm-bug-01, no non-`^` SIMD divergence ever appeared. x86 targets CONVERGED:
+  newest crash artifact is 04:00 (5h+ stale), nothing new since. Triaged newest
+  12 diff_regex + newest 12 diff_regex2 = ALL algebra:2724 (bug-04); all 3
+  match_invariants = engine:1824 (bug-05); compile = 0. THREE crash sites total,
+  unchanged. The x86 cargo-fuzz parents are past their 4h `max_total_time` budget
+  (started 01:07, due 05:07); a couple of tail fork-jobs still show in ps (one
+  pinning a core, consistent with a bug-06/09 slow-compile input) but produce no
+  new artifacts. Left running; harmless (`-ignore_crashes=1`). Net: the overnight
+  run reproduced ONLY the already-documented sites on both architectures, exactly
+  as predicted. Campaign findings are final.
+
 - 09:20 -- DONE. Two closing consistency passes from the stronger-reviewer
   done-check, both committed:
   (1) Tier-split propagation to the supporting docs (2457bdba). verification-
