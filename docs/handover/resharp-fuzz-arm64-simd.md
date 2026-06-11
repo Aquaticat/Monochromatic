@@ -231,6 +231,31 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 05:25 -- 11TH ROOT CAUSE (bug-11), found by the Lean lane on its FIRST run, a
+  THIRD distinct crash site. 1954-case differential: 1392 agree, 559 rust-reject,
+  3 disagreements. Two were nested lookbehind-of-`\A` (trust1, the documented-
+  unfaithful translator shape -> discarded). The third (R1612, trust0,
+  anchor-free, faithful) is a rust crash: `find_all`'s reverse pass proposes a
+  null match start the forward pass rejects, tripping `debug_assert_ne!(NO_MATCH,
+  l_max_end, "find_all: forward scan found no end for reverse-proposed start")` at
+  `ldfa.rs:833/878/906`. Minimal `((?!a)|b)&(~((c)))` (zero-width-nullable
+  alternation & complement; all three ingredients required -- `(?!a)` alone or
+  `()`/`(?=a)` in its place do not fire). On `"abca"` -> panic at 906; on `"ca"`
+  -> panic at 833. RELEASE (debug-assertions off, what ships): no panic but
+  `find_all` DROPS the reverse-proposed match -- `"ca"` returns `[(2,2)]` missing
+  the leftmost `(0,0)` (Lean ground truth `0:0`), `"c"` returns `[(1,1)]` missing
+  `(0,0)`. So: crash in debug/test builds, find_all soundness (dropped leftmost
+  match) in release. Confirmed on the STOCK crate (probe + relprobe link
+  `resharp-v0612`). Distinct from bug-04 (algebra:2724), bug-05 (lib.rs:1824),
+  arm-bug-01 (fwd.rs prefilter). Written up (bug-11-...md), README updated to 11
+  root causes / 3 crash sites, committed (68b65494). The internal oracles cannot
+  reach this: `find_all`-only path, release result self-consistent but
+  incomplete, so only the position reference exposes the soundness half (the
+  crash half is engine-internal). NEXT: more Lean rounds (deeper ASTs, more
+  seeds) to harvest further trust0 panics/span-diffs; consider a full-match-set
+  Lean comparator (spAll) for silent completeness drops that do not hit the
+  assert.
+
 - 04:55 -- LEAN POSITION LANE STOOD UP on the Mac (the major unexplored lane).
   Installed elan via `brew install elan-init` (4.2.3; also pulled coreutils, so
   `gtimeout` now exists on the Mac). Lean toolchain v4.24.0-rc1 fetched. The
