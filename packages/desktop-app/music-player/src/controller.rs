@@ -255,7 +255,9 @@ impl Controller {
                     let ok = self.load_current();
                     // What:     `self.set_playing(play && ok);`. Play only if asked AND a
                     //           track loaded. `&&` short-circuits.
-                    // Why:      Auto-load loads paused; a user open starts playback.
+                    // Why:      `play` is true only for a `--start-playing` command-line
+                    //           launch; the folder picker, auto-load, and restore pass
+                    //           false, so they load paused.
                     // TS map:   `this.setPlaying(play && ok);`
                     self.set_playing(play && ok);
                 } else {

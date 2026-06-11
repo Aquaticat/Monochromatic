@@ -116,8 +116,10 @@ pub enum Command {
     //           replace the queue with these files/folders (folders are expanded
     //           recursively to their files), then either start playing
     //           (`play: true`) or just load the first track PAUSED (`play: false`).
-    // Why:      A user-initiated open should play; the launch-time auto-load of the
-    //           music directory should populate the queue without blasting audio.
+    // Why:      Only a command-line launch with `--start-playing` sets `play: true`;
+    //           every other open (the folder picker, the launch-time auto-load of the
+    //           music directory, a session restore) populates the queue PAUSED so the
+    //           app never blasts audio just from being opened.
     // TS map:   `{ kind: "openPaths"; paths: string[]; play: boolean }`
     OpenPaths {
         // What:     `paths: Vec<PathBuf>` files/folders to open (owned paths).
@@ -125,7 +127,8 @@ pub enum Command {
         // TS map:   `paths: string[]`.
         paths: Vec<PathBuf>,
         // What:     `play: bool` whether to start playing once loaded.
-        // Why:      Distinguishes a user open (play) from the auto-load (paused).
+        // Why:      Set only by a `--start-playing` command-line launch; the folder
+        //           picker, auto-load, and restore all pass `false` (load paused).
         // TS map:   `play: boolean`.
         play: bool,
     },

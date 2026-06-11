@@ -9,6 +9,14 @@
 // TS map:   `export * as command from "./command";`
 pub mod command;
 
+// What:     `pub mod cli;` declares and re-exports the `cli` module
+//           (the file `src/cli.rs`). `pub` makes the `Cli` parser visible to the
+//           binary (`main.rs` calls `Cli::parse()`) and to its sibling tests.
+// Why:      Command-line parsing is pure logic, so it lives in the library where it
+//           can be unit-tested without the GUI or an audio backend.
+// TS map:   `export * as cli from "./cli";`
+pub mod cli;
+
 // What:     `pub mod identity;` the platform identity-string module
 //           (`src/identity.rs`).
 // Why:      One home for the Wayland app id, the macOS bundle id, and the config-

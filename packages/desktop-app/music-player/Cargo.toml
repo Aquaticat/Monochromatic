@@ -26,6 +26,11 @@ path = "src/main.rs"
 # below MUST track the same rev. Revert both to a crates.io `version` once a
 # release including #11338 ships.
 directories = "5"
+# Command-line argument parsing (src/cli.rs). The `derive` feature lets the `Cli`
+# struct declare the `--start-playing` flag and the file/folder positionals via
+# `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating
+# `--help` / `--version` for free. 4.x is the current major line.
+clap = { version = "4", features = ["derive"] }
 # Same Slint rev as above: the winit backend is constructed explicitly (not via
 # the default backend selector) so a window-attributes hook can set the Wayland
 # app_id, which KDE needs to attach taskbar progress to the running window. Its

@@ -755,11 +755,17 @@ mise run //packages/desktop-app/music-player:gen:fixtures
 ```
 
 The binary also accepts file and folder paths as command-line arguments,
- which are enqueued and played on launch.
+ which are enqueued on launch and loaded paused.
+Pass `--start-playing` to begin playback immediately instead;
+ it is the only way to make the player auto-play on launch,
+ so without it (and on every launch with no paths) the app opens paused and waits for the play button.
 The Open button uses the XDG desktop portal folder picker,
- and a chosen folder is scanned recursively.
+ and a chosen folder is scanned recursively;
+ a folder opened this way also loads paused.
  Individual
 files can be enqueued through command-line arguments (the portal cannot offer files and folders in one dialog).
+Argument parsing uses the `clap` crate,
+ so `--help` and `--version` are available.
 
 ## Distribution and signing
 

@@ -70,6 +70,12 @@ use std::time::Instant;
 // TS map:   `import { Command, ShuffleMode, Update } from "music-player/command";`
 use music_player::command::{Command, ShuffleMode, Update};
 
+// What:     `use music_player::cli::Cli;`. The clap-derived argument-parser struct
+//           from our library crate (its fields are `start_playing` and `paths`).
+// Why:      `main` calls `Cli::parse()` to turn the command line into that struct.
+// TS map:   `import { Cli } from "music-player/cli";`
+use music_player::cli::Cli;
+
 // What:     `use music_player::engine::Engine;`. The controller handle.
 // Why:      We spawn it and send commands.
 // TS map:   `import { Engine } from "music-player/engine";`
@@ -101,6 +107,14 @@ use music_player::pagination;
 // Why:      `main` installs the hook and pushes progress from each update tick.
 // TS map:   `import { Launcher, setWindowAppId } from "music-player/launcher";`
 use music_player::launcher::{self, Launcher};
+
+// What:     `use clap::Parser;`. The `Parser` TRAIT whose `parse()` method reads the
+//           process arguments into a `Cli`. The matching `#[derive(Parser)]` MACRO
+//           lives beside the struct in `cli.rs`; here we import only the trait so we
+//           can CALL `Cli::parse()` (a trait method needs its trait in scope).
+// Why:      Without the trait in scope, `Cli::parse()` would not resolve.
+// TS map:   `import { parseArgs } from "some-cli-parser";`
+use clap::Parser;
 
 // What:     `use i_slint_backend_winit::Backend;`. Slint's winit backend, built
 //           explicitly so a window-attributes hook can run.
@@ -597,6 +611,22 @@ fn music_dir() -> Option<PathBuf> {
 // Why:      Propagate window/backend failure as the exit status.
 // TS map:   `async function main(): Promise<void>` that may throw.
 fn main() -> Result<(), slint::PlatformError> {
+    // What:     `let cli = Cli::parse();`. Read and validate the command-line
+    //           arguments FIRST, before any backend, window, or GPU setup.
+    //           `Cli::parse()` (from the `clap::Parser` trait) reads the real process
+    //           arguments; on `--help` / `--version` / a bad argument it prints and
+    //           EXITS the process right here, by clap's design.
+    // Why:      Parsing up front means `--help`, `--version`, and argument errors
+    //           return instantly without first constructing a Slint backend and
+    //           window; the parsed `cli` is consumed near the end to seed the queue.
+    // TS map:   `const cli = parseArgs(process.argv);`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const cli = parseArgs(process.argv); // prints help / exits on bad args
+    // ```
+    let cli = Cli::parse();
+
     // What:     Install Slint's winit backend explicitly, with a window-attributes
     //           hook that stamps the Wayland app id. This MUST happen before the
     //           first window is created (which would lock in the default platform).
@@ -889,44 +919,44 @@ fn main() -> Result<(), slint::PlatformError> {
                 // Why:      Let the user enqueue a whole folder.
                 // TS map:   `const dir = await showOpenDialog({ directory: true }); if (dir) { ... }`
                 if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                    // What:     `tx.send(Command::OpenPaths { paths: vec![dir], play: true });`.
+                    // What:     `tx.send(Command::OpenPaths { paths: vec![dir], play: false });`.
                     //           Wrap the single folder in a one-element vector
-                    //           (`vec![...]`) and send it with `play: true` (a user
-                    //           open should start playback); the engine expands it
-                    //           recursively. `CommandSender::send` returns nothing and
-                    //           swallows a send error (engine gone) internally, then
-                    //           wakes the worker.
-                    // Why:      Replace the queue with the folder's tracks and play.
-                    // TS map:   `tx.send(Command.OpenPaths({ paths: [dir], play: true }));`
+                    //           (`vec![...]`) and send it with `play: false` (a folder
+                    //           picked from the UI loads PAUSED; only CLI arguments
+                    //           auto-play); the engine expands it recursively.
+                    //           `CommandSender::send` returns nothing and swallows a send
+                    //           error (engine gone) internally, then wakes the worker.
+                    // Why:      Replace the queue with the folder's tracks without
+                    //           surprise playback; the user presses play.
+                    // TS map:   `tx.send(Command.OpenPaths({ paths: [dir], play: false }));`
                     tx.send(Command::OpenPaths {
                         paths: vec![dir],
-                        play: true,
+                        play: false,
                     });
                 }
             });
         }
     });
 
-    // What:     `let cli_paths: Vec<PathBuf> = std::env::args().skip(1).map(PathBuf::from).collect();`.
-    //           Collect command-line arguments after the program name into paths.
-    //           `skip(1)` drops `argv[0]`; `.map(PathBuf::from)` converts each.
-    // Why:      Allow `music-player file1 dir2 ...` to enqueue on launch.
-    // TS map:   `const cliPaths = process.argv.slice(2);`
-    let cli_paths: Vec<PathBuf> = std::env::args().skip(1).map(PathBuf::from).collect();
-    // What:     `if !cli_paths.is_empty() { ... } else { ... }`. CLI paths take
-    //           precedence over a saved session; with no paths, restore the
-    //           last session instead.
+    // What:     `if !cli.paths.is_empty() { ... } else { ... }`. The arguments were
+    //           already parsed into `cli` at the top of `main`. CLI paths take
+    //           precedence over a saved session; with no paths, restore the last
+    //           session instead. `.is_empty()` is `true` for a zero-length `Vec`.
     // Why:      Opening files explicitly should override resuming.
-    // TS map:   `if (cliPaths.length) { ... } else { ... }`
-    if !cli_paths.is_empty() {
-        // What:     `engine.send(Command::OpenPaths { paths: cli_paths, play: true });`.
-        //           Enqueue and play. `play: true` because explicit arguments mean
-        //           the user wants playback.
-        // Why:      Honour CLI arguments.
-        // TS map:   `engine.send(Command.OpenPaths({ paths: cliPaths, play: true }));`
+    // TS map:   `if (cli.paths.length) { ... } else { ... }`
+    if !cli.paths.is_empty() {
+        // What:     `engine.send(Command::OpenPaths { paths: cli.paths, play: cli.start_playing });`.
+        //           Enqueue the parsed paths. `play` is `cli.start_playing`, so the
+        //           queue auto-plays ONLY when `--start-playing` was passed. This
+        //           struct literal MOVES `cli.paths` (a `Vec`, owned) out of `cli`
+        //           and COPIES `cli.start_playing` (a `bool`, `Copy`); a partial move
+        //           plus a copy in one expression is allowed.
+        // Why:      Honour CLI paths while keeping the "never auto-play unless
+        //           --start-playing" rule: paths alone load PAUSED.
+        // TS map:   `engine.send(Command.OpenPaths({ paths: cli.paths, play: cli.start_playing }));`
         engine.send(Command::OpenPaths {
-            paths: cli_paths,
-            play: true,
+            paths: cli.paths,
+            play: cli.start_playing,
         });
     } else {
         // What:     `let session = Session::load();`. Read the saved session
