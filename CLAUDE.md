@@ -265,6 +265,29 @@ Cue:
 Skip prompt,
  do step.
 
+PX3:
+ Self-identified work (not derived from current request) also needs no permission
+when it cannot disturb anyone outside this machine + your own fork namespaces:
+ local builds,
+ scratch fixtures,
+ throwaway crates,
+ branches + pushes to own fork,
+ CI runs on own fork,
+ drafts,
+ verification runs all qualify.
+Do it,
+ then report what was done + why it was needed.
+Boundary unchanged from PX2:
+ outward-facing publishing (upstream issues/PRs/review comments,
+ emails,
+ anything notifying a third party),
+ destructive cleanup,
+ shared/real state still need explicit authorization.
+Cue:
+ about to ask "should I also fix/build/verify X?" where X touches only local or own-fork state;
+ do X instead,
+ surface result.
+
 TSK:
  Broad requests spanning multiple evidence areas:
  split into separate task-list items per major area,
