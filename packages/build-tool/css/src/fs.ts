@@ -28,7 +28,7 @@ const nodeFsSpecifier = `node:fs`;
  * A unique Symbol keeps {@link nodeFs} free of a banned nullish union while
  * still encoding genuine absence; identity comparison narrows back to the module.
  */
-const NO_NODE_FS = Symbol('no-node-fs',);
+const NO_NODE_FS = Symbol('runtime node:fs import unavailable',);
 
 /**
  * Eagerly loaded `node:fs` module, or {@link NO_NODE_FS} in browser.

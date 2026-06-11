@@ -23,21 +23,21 @@ import { splitPackageSpecifier, } from './specifier.ts';
  * A unique Symbol encodes genuine absence without a banned nullish union;
  * identity comparison narrows the result back to `string`.
  */
-const PACKAGE_NOT_FOUND: unique symbol = Symbol('package-not-found',);
+const PACKAGE_NOT_FOUND: unique symbol = Symbol('node_modules package directory not found',);
 
 /**
  * Sentinel returned by {@link readPackageJson} when no readable package.json exists.
  * A unique Symbol encodes genuine absence without a banned nullish union;
  * identity comparison narrows the result back to the parsed record.
  */
-const PACKAGE_JSON_ABSENT: unique symbol = Symbol('package-json-absent',);
+const PACKAGE_JSON_ABSENT: unique symbol = Symbol('package.json manifest unreadable or absent',);
 
 /**
  * Sentinel returned by {@link resolveExports} when no `exports` entry matches.
  * A unique Symbol encodes genuine absence without a banned nullish union;
  * identity comparison narrows the result back to `string`.
  */
-const NO_EXPORT_MATCH: unique symbol = Symbol('no-export-match',);
+const NO_EXPORT_MATCH: unique symbol = Symbol('package.json exports entry not matched',);
 
 /**
  * Walks up from `startDir` looking for a `node_modules/<packageName>` directory.
