@@ -1,5 +1,15 @@
-[tasks.build]
-extends = "build"
+[task_config]
+includes = [
+  "../../../mise-shared/build.toml",
+  "../../../mise-shared/client.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+  "../../../mise-shared/test-unit.toml",
+  "../../../mise-shared/test.toml",
+  "../../../mise-shared/watch-build.toml",
+  "../../../mise-shared/watch-client.toml",
+]
 
 [tasks."build:css"]
 description = "Compile global CSS (resolves @apply rules)"
@@ -12,18 +22,6 @@ runWorkspaceNode('packages/build-tool/css', 'cli', ['./src/client/styles.css', '
 [tasks."build:js"]
 description = "Build CSS then bundle client JS"
 run = ["mise run build:css", "mise run build:js:client"]
-
-[tasks."build:js:client"]
-extends = "build:js:client"
-
-[tasks."watch:build"]
-extends = "watch:build"
-
-[tasks."watch:build:js"]
-extends = "watch:build:js"
-
-[tasks."watch:build:js:client"]
-extends = "watch:build:js:client"
 
 [tasks."start:server"]
 hide = true
@@ -42,18 +40,5 @@ run = "node src/lib/seed.ts --count=10000"
 description = "Seed one synthetic huge message (default 1 GB; pass --huge=N for N GB)"
 run = "node src/lib/seed.ts --huge=1"
 
-[tasks.test]
-extends = "test"
-
-[tasks."test:unit"]
-extends = "test:unit"
-
-[tasks.lint]
-extends = "lint"
-
 [tasks."lint:types"]
-extends = "lint:types"
 hide = true
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"

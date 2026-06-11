@@ -1,14 +1,8 @@
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"
-
-[tasks.test]
-extends = "test"
-
-[tasks."test:unit"]
-extends = "test:unit"
+[task_config]
+includes = [
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+  "../../../mise-shared/test-unit.toml",
+  "../../../mise-shared/test.toml",
+]

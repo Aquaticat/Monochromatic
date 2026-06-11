@@ -1,12 +1,10 @@
+[task_config]
+includes = [
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+]
+
 [tasks."build:font"]
 description = "Build Aquaticat font from SVG glyphs"
 run = "node src/build-font.ts"
-
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"

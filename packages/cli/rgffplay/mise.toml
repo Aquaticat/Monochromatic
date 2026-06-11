@@ -1,36 +1,18 @@
+[task_config]
+includes = [
+  "../../../mise-shared/build-js.toml",
+  "../../../mise-shared/build.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/node.toml",
+  "../../../mise-shared/oxlint.toml",
+  "../../../mise-shared/test-unit.toml",
+  "../../../mise-shared/watch-build.toml",
+]
+
 [tasks.run]
 description = "Run rgffplay"
 run = "node src/index.ts"
-
-[tasks.build]
-extends = "build"
-
-[tasks.'build:js']
-extends = "build:js"
-
-[tasks.'build:js:node']
-extends = "build:js:node"
-
-[tasks.'watch:build']
-extends = "watch:build"
-
-[tasks.'watch:build:js']
-extends = "watch:build:js"
-
-[tasks.'watch:build:js:node']
-extends = "watch:build:js:node"
-
-[tasks.lint]
-extends = "lint"
-
-[tasks.'lint:types']
-extends = "lint:types"
-
-[tasks.'lint:oxlint']
-extends = "lint:oxlint"
-
-[tasks.'test:unit']
-extends = "test:unit"
 
 [tasks.buildAndTest]
 description = "Build the node bin, then run unit tests; index.unit.test.ts spawns the built bin"

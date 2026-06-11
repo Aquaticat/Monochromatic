@@ -1,15 +1,11 @@
+[task_config]
+includes = [
+  "../../../mise-shared/client.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+]
+
 [tasks.build]
 description = "Bundle client JS then generate self-contained HTML"
 run = ["mise run build:js:client", "node src/build.ts"]
-
-[tasks."build:js:client"]
-extends = "build:js:client"
-
-[tasks.lint]
-extends = "lint"
-
-[tasks.'lint:types']
-extends = "lint:types"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"

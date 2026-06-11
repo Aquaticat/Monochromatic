@@ -1,5 +1,10 @@
-[tools]
-"npm:pagefind" = "latest"
+[task_config]
+includes = [
+  "../../../mise-shared/client.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+]
 
 [tasks.build]
 description = "Build SSG pipeline: clean, i18n + client JS, then site, then postprocess (pagefind + fingerprint), compress"
@@ -18,9 +23,6 @@ run = "rm -rf dist"
 [tasks."build:i18n"]
 description = "Generate typesafe-i18n types from locale files"
 run = "typesafe-i18n --no-watch"
-
-[tasks."build:js:client"]
-extends = "build:js:client"
 
 [tasks."build:site"]
 description = "Build static site from MDX content"
@@ -83,12 +85,5 @@ description = "Report per-page transfer size (min, max, mean, median) for dist/"
 dir = "{{config_root}}"
 run = "mise run //:page:weight -- {{config_root}}/dist"
 
-[tasks.lint]
-extends = "lint"
-
 [tasks."lint:types"]
-extends = "lint:types"
 hide = true
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"

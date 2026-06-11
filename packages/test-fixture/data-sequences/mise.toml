@@ -1,5 +1,5 @@
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:types"]
-extends = "lint:types"
+[task_config]
+includes = [
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+]

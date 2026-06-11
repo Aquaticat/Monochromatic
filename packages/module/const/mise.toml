@@ -1,29 +1,14 @@
-[tasks.build]
-extends = "build"
-
-[tasks."build:js"]
-extends = "build:js"
-
-[tasks."build:js:browser"]
-extends = "build:js:browser"
-
-[tasks."watch:build"]
-extends = "watch:build"
-
-[tasks."watch:build:js"]
-extends = "watch:build:js"
-
-[tasks."watch:build:js:browser"]
-extends = "watch:build:js:browser"
-
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"
+[task_config]
+includes = [
+  "../../../mise-shared/browser.toml",
+  "../../../mise-shared/build-js.toml",
+  "../../../mise-shared/build.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+  "../../../mise-shared/watch-browser.toml",
+  "../../../mise-shared/watch-build.toml",
+]
 
 [tasks.test]
 description = "Run unit tests for every const category"

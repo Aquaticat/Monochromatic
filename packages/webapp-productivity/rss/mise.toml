@@ -1,30 +1,15 @@
-[tasks.build]
-extends = "build"
-
-[tasks."build:js"]
-extends = "build:js"
-
-[tasks."build:js:client"]
-extends = "build:js:client"
-
-[tasks."watch:build"]
-extends = "watch:build"
-
-[tasks."watch:build:js"]
-extends = "watch:build:js"
-
-[tasks."watch:build:js:client"]
-extends = "watch:build:js:client"
+[task_config]
+includes = [
+  "../../../mise-shared/build-js.toml",
+  "../../../mise-shared/build.toml",
+  "../../../mise-shared/client.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/oxlint.toml",
+  "../../../mise-shared/watch-build.toml",
+  "../../../mise-shared/watch-client.toml",
+]
 
 [tasks.dev]
 description = "Start RSS reader in watch mode"
 run = "mise watch -w src -r -- node src/index.ts"
-
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"

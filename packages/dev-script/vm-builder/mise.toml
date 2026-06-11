@@ -1,3 +1,15 @@
+[task_config]
+includes = [
+  "../../../mise-shared/build-js.toml",
+  "../../../mise-shared/build.toml",
+  "../../../mise-shared/lint-types.toml",
+  "../../../mise-shared/lint.toml",
+  "../../../mise-shared/node.toml",
+  "../../../mise-shared/oxlint.toml",
+  "../../../mise-shared/test-unit.toml",
+  "../../../mise-shared/watch-build.toml",
+]
+
 [tasks.run]
 description = "Build container image and import as libvirt VM"
 run = "node src/build-and-import.ts"
@@ -9,36 +21,6 @@ run = "node src/import.ts"
 [tasks.push]
 description = "Push image to GHCR and sign with cosign"
 run = "node src/sign-and-push.ts"
-
-[tasks.build]
-extends = "build"
-
-[tasks.'build:js']
-extends = "build:js"
-
-[tasks.'build:js:node']
-extends = "build:js:node"
-
-[tasks.'watch:build']
-extends = "watch:build"
-
-[tasks.'watch:build:js']
-extends = "watch:build:js"
-
-[tasks.'watch:build:js:node']
-extends = "watch:build:js:node"
-
-[tasks.lint]
-extends = "lint"
-
-[tasks.'lint:types']
-extends = "lint:types"
-
-[tasks.'lint:oxlint']
-extends = "lint:oxlint"
-
-[tasks.'test:unit']
-extends = "test:unit"
 
 [tasks.buildAndTest]
 description = "Build the node bin (verification is the build + dts emit; the bin has no inert invocation to smoke-run)"
