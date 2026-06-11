@@ -25,7 +25,7 @@ const MAX_PATTERN_LENGTH = 30;
  * (`=== FIELD_ABSENT`) to choose the tense fallback, keeping the extracted
  * value free of a nullish union.
  */
-const FIELD_ABSENT: unique symbol = Symbol('terminal-title/field-absent',);
+const FIELD_ABSENT: unique symbol = Symbol('terminal-title/display-field-string-absent',);
 
 /**
  * Tense-specific labels for a tool title. `pre` is shown during execution

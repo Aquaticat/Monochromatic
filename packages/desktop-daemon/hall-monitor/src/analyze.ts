@@ -66,7 +66,7 @@ const VERDICT_PREFIX = 'VERDICT:';
 /**
  * Sentinel returned by {@link findVerdictToken} when no canonical verdict line is present.
  */
-const NO_VERDICT: unique symbol = Symbol('no-verdict',);
+const NO_VERDICT: unique symbol = Symbol('hall-monitor/verdict-line-token-absent',);
 
 /**
  * Returns the position just after any horizontal whitespace starting at `from`.

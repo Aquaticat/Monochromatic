@@ -52,7 +52,7 @@ type QuestionMatch = {
  * A unique symbol rather than `undefined`: each detector narrows on identity
  * (`=== NO_MATCH`), keeping the match payload free of a nullish union.
  */
-const NO_MATCH: unique symbol = Symbol('stop-reminders/no-match',);
+const NO_MATCH: unique symbol = Symbol('stop-reminders/prose-detector-match-absent',);
 
 //endregion
 
