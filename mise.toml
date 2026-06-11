@@ -817,13 +817,10 @@ run = "node packages/dev-script/file-enforcer/src/cli.ts --watch"
 
 [tasks."catalog:tighten"]
 description = "Tighten catalog >=x.y.z ranges to match installed node_modules versions"
-usage = 'flag "--dry-run" help="Print what would change without writing"'
-shell = "node -e"
-run = """
-const { execFileSync } = await import('node:child_process')
-const args = (process.env.usage_dry__run ?? '').trim() === 'true' ? ['--dry-run'] : []
-execFileSync('node', ['packages/dev-script/catalog-tighten/src/index.ts', ...args], { stdio: 'inherit' })
-"""
+# No usage spec: mise appends post-`--` args as a real argv vector. The entry
+# reads `--dry-run` from argv itself (src/index.ts), matching the README's
+# documented `mise run catalog:tighten -- --dry-run`.
+run = "node packages/dev-script/catalog-tighten/src/index.ts"
 
 #endregion Catalog Tighten
 
