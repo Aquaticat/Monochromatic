@@ -25,6 +25,16 @@ match logic) would collapse this class. The `find_anchored` path (bug-02) and th
 `is_match` fast path (bug-08) are two more independent re-derivations of the same
 semantics.
 
+The driver-disagreement defect is rust-internal and holds regardless of the
+reference: two of rust's own drivers return different answers for the same input,
+so one is wrong by construction. That said, the patterns split by subset (see
+`dotnet-adjudication.md`): arm-bug-01, bug-02, bug-03 fire on patterns the dotnet
+reference accepts, while bug-07, bug-08, bug-10 fire on patterns the reference
+rejects at compile (anchor-in-complement, lookaround-in-union). For the
+out-of-subset group, collapsing the drivers and rejecting the pattern at compile
+are both valid remedies; for the in-subset group, only the unification fix
+applies.
+
 ## Panics on user input in shipped code
 
 - `resharp-algebra/src/lib.rs:2724`: `panic!("reentrant union rewrite ... this is
@@ -67,7 +77,10 @@ or split into `next_body_pos` and `next_candidate_pos`.
 - Funnel every "enumerate matches" path through one core that takes a candidate
   position and decides match / no-match / longest-end, so the prefilter, hardened
   scan, and stream only differ in how they propose candidates, not in the match
-  semantics. This directly addresses arm-bug-01, bug-03, bug-07, bug-08.
+  semantics. This directly addresses arm-bug-01 and bug-03 (in-subset); it would
+  also fix the internal disagreement behind bug-07, bug-08, bug-10, though for
+  those out-of-subset patterns rejecting at compile (as the dotnet reference does)
+  is the alternative the engine already has machinery for.
 - Replace the two reachable panics with typed errors or completed logic.
 - Add the SIMD-on-vs-off differential and the find_all / find_anchored / stream /
   is_match cross-consistency checks (this campaign's oracles) to the test suite.

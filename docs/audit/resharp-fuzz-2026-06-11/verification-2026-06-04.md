@@ -4,8 +4,12 @@ Every 2026-06-04 reproducer was rerun against v0.6.12 (`3d4ddde`) with the
 `repro` harness (release, debug-assertions and overflow-checks on, matching the
 cargo-fuzz profile). Nothing is assumed fixed; each verdict cites the actual
 v0.6.12 output. The developer's "all fixed, and some more" claim holds for most,
-but four families are still live on new triggers (see the LIVE entries, written
-up as bug-02 / bug-04 / bug-07 / bug-08 and arm-bug-01).
+but several families are still live on new triggers. Two of those (bug-04 the
+crash, bug-02 the phantom `find_anchored` match) reproduce on patterns the dotnet
+reference accepts, so they alone refute "all fixed". The other live families
+(bug-07 / bug-08 / bug-10) reproduce only on patterns the dotnet reference
+rejects at compile; they are real rust-internal self-inconsistencies but out of
+the supported subset (see `dotnet-adjudication.md` for the two-tier split).
 
 ## Fixed (verified correct on v0.6.12)
 
@@ -41,27 +45,47 @@ up as bug-02 / bug-04 / bug-07 / bug-08 and arm-bug-01).
 
 ## Still live (reproduced on v0.6.12 with new triggers)
 
-- BUG-1 (re-entrancy guard panic): LIVE. The exact 06-04 minimal `.*(.+)*.+` now
-  compiles, but `(.*.+)*.+` and ~165 other nested-quantifier patterns still panic
-  at `resharp-algebra/src/lib.rs:2724`. Written up as bug-04.
-- BUG-20 (find_anchored ignores a leading assertion): LIVE. The `\B0` instance is
-  fixed, but leading lookbehind `(?<=a)` and `\B`-before-word-char (`\BU`) still
-  return a phantom `find_anchored` match while `is_match=false`. 122 triggers.
-  Written up as bug-02.
-- BUG-8 / BUG-10 (default vs hardened find_all): LIVE. The 06-04 triggers are
-  consistent now, but `~(\A|\n+){2}` on `"\n\n"` gives default `[1:1,2:2]` vs
-  hardened `[2:2]`. Written up as bug-07.
-- BUG-3 (is_match vs find_all), second face: LIVE on a new trigger.
-  `[0-9]{2}~(\z{1,3}|^{2}\W{0})+` in the flags config on `"00"` gives
-  `is_match=false` but `find_all=[0:2]`. Written up as bug-08.
-- BUG-13 / BUG-14 (find_anchored vs find_all span): LIVE. The 06-04 triggers
-  (`(?=(?=c)c{1,3})`, `(|(?<=[a-z])b)`) are correct now, but
+Two tiers, matching `dotnet-adjudication.md`. The IN-SUBSET entries reproduce on
+patterns the dotnet reference accepts; they refute "all 27 fixed" by themselves.
+The OUT-OF-SUBSET entries reproduce only on patterns the dotnet reference rejects
+at compile (lookaround-in-union, anchor-in-complement); rust accepts and then
+miscomputes them, so they are genuine rust-internal self-inconsistencies but the
+cleaner fix is to reject at compile (as dotnet does). Do not cite the
+out-of-subset entries as evidence that an in-subset fix regressed.
+
+- BUG-1 (re-entrancy guard panic): LIVE, IN-SUBSET. The exact 06-04 minimal
+  `.*(.+)*.+` now compiles, but `(.*.+)*.+` and ~165 other nested-quantifier
+  patterns still panic at `resharp-algebra/src/lib.rs:2724`. dotnet compiles
+  `(.*.+)*.+` and returns `[(0,3)]` with no crash. Written up as bug-04.
+- BUG-20 (find_anchored ignores a leading assertion): LIVE, IN-SUBSET. The `\B0`
+  instance is fixed, but leading lookbehind `(?<=a)` still returns a phantom
+  `find_anchored` match while `is_match=false`; dotnet and Lean agree no match
+  exists. (The `\BU` trigger is out-of-subset, dotnet rejects `\B` away from word
+  chars, so the `(?<=a)` trigger carries this finding.) 122 triggers. Written up
+  as bug-02.
+- BUG-8 / BUG-10 (default vs hardened find_all): LIVE, OUT-OF-SUBSET. The 06-04
+  triggers are consistent now, but `~(\A|\n+){2}` on `"\n\n"` gives default
+  `[1:1,2:2]` vs hardened `[2:2]`. dotnet REJECTS `~(\A|\n+){2}` ("anchors inside
+  complement"). The disagreement is a genuine rust-internal self-inconsistency
+  (hardening swaps the scan, not the language) on a pattern rust should reject.
+  Written up as bug-07.
+- BUG-3 (is_match vs find_all), second face: LIVE, OUT-OF-SUBSET, on a new
+  trigger. `[0-9]{2}~(\z{1,3}|^{2}\W{0})+` in the flags config on `"00"` gives
+  `is_match=false` but `find_all=[0:2]`. dotnet REJECTS this
+  lookaround-in-union / anchor-in-complement pattern. The is_match-vs-find_all
+  contradiction is rust-internal; the pattern is out of subset. Written up as
+  bug-08.
+- BUG-13 / BUG-14 (find_anchored vs find_all span): LIVE, OUT-OF-SUBSET. The
+  06-04 triggers (`(?=(?=c)c{1,3})`, `(|(?<=[a-z])b)`) are correct now, but
   `~(.{1,3}\z){2,4}` on `"ab"` gives `find_all=[0:2,2:2]` while
-  `find_anchored=Some(0:1)` (shorter than the longest at 0). 30 complement-with-
-  end-anchor triggers. Written up as bug-10.
-- BUG-8 (default vs hardened), existence face: LIVE and stronger.
+  `find_anchored=Some(0:1)` (shorter than the longest at 0). dotnet REJECTS
+  `~(.{1,3}\z){2,4}` ("anchors inside complement"). The find_anchored-vs-find_all
+  span contradiction is rust-internal; the pattern is out of subset. 30
+  complement-with-end-anchor triggers. Written up as bug-10.
+- BUG-8 (default vs hardened), existence face: LIVE, OUT-OF-SUBSET, and stronger.
   `1?a~(~((1?){2,}\z+){2}){2}` on `"a"` gives default `is_match=false` vs
-  hardened `is_match=true`. Folded into bug-07.
+  hardened `is_match=true`. Same out-of-subset anchor-in-complement shape; the
+  default-vs-hardened existence split is rust-internal. Folded into bug-07.
 
 ## Avoided by parser rejection (behaviour change, not an engine fix)
 
