@@ -19,6 +19,15 @@ await describe({
       name: isAllowedCycleWarning.name,
       children: [
         it({
+          name: 'returns true for the known build/test utility cycle',
+          fn: async () => {
+            expect(isAllowedCycleWarning(
+              `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/config/tsdown, /var/home/user/Monochromatic/packages/module/test, /var/home/user/Monochromatic/packages/module/numeric-format, /var/home/user/Monochromatic/packages/module/or-throw`,
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
           name: 'returns true for the known module/async-time + module/test cycle',
           fn: async () => {
             expect(isAllowedCycleWarning(
@@ -78,7 +87,7 @@ await describe({
           name: 'removes the allowed cycle warning while keeping other lines',
           fn: async () => {
             const output = [
-              `${WARN} There are cyclic workspace dependencies: /abs/packages/module/async-time, /abs/packages/module/test`,
+              `${WARN} There are cyclic workspace dependencies: /abs/packages/config/tsdown, /abs/packages/module/test, /abs/packages/module/numeric-format, /abs/packages/module/or-throw`,
               `${WARN} deprecated package: old-pkg@1.0.0`,
               '',
             ]

@@ -1,10 +1,10 @@
 /**
  * Pure filtering functions for pnpm output.
  *
- * The monorepo has an intentional cyclic workspace dependency between
- * `packages/module/async-time` and `packages/module/test`:
- * async-time depends on `module-test` for its test harness,
- * while `module-test` depends on async-time in production code.
+ * The monorepo has intentional cyclic workspace dependencies among the shared
+ * build config, test harness, and small utility modules used by that harness.
+ * Utility packages depend on `module-test` or `config-tsdown` for development,
+ * while `module-test` depends on some of those utilities in production code.
  * pnpm lacks a per-package allowlist for cycle warnings:
  * the only built-in options are `ignoreWorkspaceCycles` (all or nothing)
  * and `disallowWorkspaceCycles`.
@@ -25,12 +25,15 @@
  *
  * @example
  * ```ts
- * ALLOWED_CYCLE_PACKAGES.has('packages/module/async-time');
+ * ALLOWED_CYCLE_PACKAGES.has('packages/config/tsdown');
  * // true
  * ```
  */
 const ALLOWED_CYCLE_PACKAGES: ReadonlySet<string> = new Set([
+  'packages/config/tsdown',
   'packages/module/async-time',
+  'packages/module/numeric-format',
+  'packages/module/or-throw',
   'packages/module/test',
 ],);
 
@@ -61,7 +64,7 @@ const CYCLE_WARNING_PREFIX = '\u2009WARN\u2009 There are cyclic workspace depend
  *
  * @example
  * ```ts
- * isAllowedCycleWarning(' WARN  There are cyclic workspace dependencies: /home/user/Monochromatic/packages/module/async-time, /home/user/Monochromatic/packages/module/test');
+ * isAllowedCycleWarning(' WARN  There are cyclic workspace dependencies: /home/user/Monochromatic/packages/config/tsdown, /home/user/Monochromatic/packages/module/test');
  * // true
  * isAllowedCycleWarning(' WARN  There are cyclic workspace dependencies: /home/user/Monochromatic/packages/foo, /home/user/Monochromatic/packages/bar');
  * // false
@@ -118,7 +121,7 @@ export function isAllowedCycleWarning(line: string,): boolean {
  *
  * @example
  * ```ts
- * filterPnpmOutput(' WARN  There are cyclic workspace dependencies: /abs/packages/module/async-time, /abs/packages/module/test\nother warning\n');
+ * filterPnpmOutput(' WARN  There are cyclic workspace dependencies: /abs/packages/config/tsdown, /abs/packages/module/test\nother warning\n');
  * // 'other warning\n'
  * ```
  */
