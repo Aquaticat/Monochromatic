@@ -4,6 +4,111 @@ This is the source-of-truth plan for the toml-edit fuzzing work. It replaces the
 brief-only version with resolved sequencing, explicit oracle design, and pass
 criteria for each layer.
 
+## Implementation status
+
+Updated 2026-06-11. Phases 1 to 3 plus an oracle-sharpening follow-up are landed;
+phases 4 to 9 remain. All new work lives under
+`packages/module/toml-edit/src/fuzz/`, except one package-source fix in
+`packages/module/toml-edit/src/parse-toml-edit.ts`.
+
+### Landed
+
+Phase 1 (commit cd727e97), campaign scaffold:
+
+- `src/fuzz-budget.ts`: `TOML_EDIT_FUZZ_BUDGET_MS`, `fuzzRunPlan`, and
+  `isCampaignMode`.
+- `fuzz` task in `mise.toml`: builds the bundle first, then runs every
+  `src/**/*.property.unit.test.ts` under node at a per-property budget (default
+  60000), so a stale dist never hides a fix.
+- `src/fuzz/smoke.property.unit.test.ts`: imports the built package entry point
+  and proves both bounded and campaign mode run.
+- Also fixed two pre-existing low-information symbol descriptions in
+  `src/effective-value.ts` so the package lints clean.
+
+Phase 2 (commit 05a039d6), generators and oracle:
+
+- `src/fuzz/equality.ts`: `semanticModel` (the `getStaticTOMLValue` projection)
+  and `semanticEquals` (an iterative work-stack deep-equal handling nan, signed
+  infinities, minus zero, `Date` by instant, and key order).
+- `src/fuzz/escape.ts`: an independent basic-string and literal-string escaper,
+  so generator string encoding never reuses the emitter under test.
+- `src/fuzz/arb-*.ts`: grammar arbitraries for every scalar, key, compound, and
+  document shape, split across files to stay under max-lines.
+- `src/fuzz/mutators.ts`: structure-aware corruption mutators plus
+  `corruptedDocumentArbitrary`.
+- `src/fuzz/corpus.ts`: committed-fixture loaders plus campaign-only live
+  repository discovery.
+- `src/fuzz/generators.property.unit.test.ts`: proves every generator parses and
+  means what it predicts. It caught a real generator bug, where a bare key
+  emitted after a table header is captured by that table; the fix emits all
+  key-value blocks before any sectioned block.
+
+Phase 3 (commits 3a298325 and da3a8c59), parser and round-trip:
+
+- `src/fuzz/parse-toml-edit.property.unit.test.ts`: totality, valid acceptance,
+  invalid rejection, the TOML 1.0 versus 1.1 inline-table-newline split, and a
+  pinned deep-nesting regression.
+- `src/fuzz/round-trip.property.unit.test.ts`: splice byte identity, canonical
+  semantic round-trip, and metamorphic comment and blank-line invariance.
+- Real bug found and fixed in `src/parse-toml-edit.ts`: pathologically deep `[`
+  or `{` nesting made the underlying parser throw a raw `RangeError` (stack
+  overflow) that escaped the `ParseError`-only catch, breaking the documented
+  `@throws TomlEditError` contract. `safeParse` now wraps every non-`ParseError`
+  throw, preserving the cause. The totality oracle was then sharpened to assert
+  the wrapped cause is a `ParseError` or a `RangeError`, so a future input that
+  makes the parser throw a different class still surfaces rather than being
+  silently wrapped.
+
+### Decisions and deviations from the original plan
+
+- The semantic oracle is `getStaticTOMLValue`-based, not the toml-test
+  tagged-JSON model the plan placed in phase 2. Both sides of every comparison
+  pass through the same projection, so its lossiness (datetime kinds collapse to
+  a host-zone `Date`, integers past 2^53 lose precision) is symmetric and safe
+  for round-trip and metamorphic equality. The kind-aware tagged-JSON converter
+  is deferred to phase 6, where the toml-test decoder needs it and an external
+  oracle makes the datetime-kind distinction necessary.
+- Property files import the built package entry point
+  (`@monochromatic-dev/module-toml-edit`), per the plan's import-boundary
+  section, so the `fuzz` task and any campaign build first.
+- Live corpus discovery excludes curated fixture sets (`test-fixture`,
+  `toml-test`, `/fixtures/`), which deliberately hold invalid and
+  version-specific inputs. The round-trip oracles additionally keep only sources
+  the package parses, so a parse failure classifies corpus rather than failing a
+  valid-requiring property.
+
+### Carry-forward for phase 4 and later
+
+- The `getStaticTOMLValue` oracle is blind to an emitter that changes a
+  datetime's kind or spelling (a local date and an offset datetime can project
+  to the same instant). Phase 4's `emitContentNode` spelling-preservation
+  property must therefore assert datetime spelling directly; it is load-bearing,
+  not redundant with the round-trip oracle.
+- The round-trip valid-corpus filter (`parsesUnderDefault`) excludes TOML
+  1.1-only constructs (unicode bare keys and similar) from canonical
+  round-tripping. Phases 4 and 5 should parameterize `tomlVersion` so 1.1 shapes
+  round-trip too. The 1.0 versus 1.1 difference itself is already asserted in the
+  parser property.
+
+### Remaining
+
+- Phase 4 (emitter and seam properties): expose internal seams via underscored
+  `_` exports from `src/index.ts` where needed, documented in TSDoc, the README,
+  and the decision doc.
+- Phase 5 (stateful edit model).
+- Phase 6 (toml-test conformance): probe feasibility cheaply first. Confirm the
+  mise `github:` backend can fetch the `toml-test` binary (and Go) in this
+  sandbox before writing adapter code; if network is blocked, scaffold the task,
+  document the limitation, and defer to a follow-up issue.
+- Phase 7 (differential oracle): the plan's default is BurntSushi via the Go
+  `toml-test` decoder and encoder tools, which is not an npm dependency, so the
+  choosing-technology source audit and user-decision gate are not triggered
+  unless network forces a deviation to a JS parser.
+- Phase 8 (V8 coverage gate and the reusable checklist).
+- Phase 9 (CI path-filtered smoke and `gh issue close 198`).
+- `docs/decisions/toml-edit-fuzzing.md` does not exist yet; it is created in
+  phases 4 and 8.
+
 ## Evidence checked
 
 This plan was sharpened against current repository state, not written from memory:
