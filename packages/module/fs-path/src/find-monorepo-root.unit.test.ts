@@ -1,9 +1,10 @@
 /**
  * Tests for repository and workspace root discovery.
  *
- * Runs from inside the Monochromatic monorepo, so real-root tests must resolve
- * to the directory containing root markers. Temp fixture tests verify marker
- * semantics without depending on this checkout layout.
+ * Runs from inside this monorepo checkout. Real-checkout tests assert the three
+ * finders converge on one directory rather than pinning its name, so they pass
+ * in worktrees whose directory is not named after the repository. Temp fixture
+ * tests verify marker semantics without depending on this checkout layout.
  *
  * @module
  */
@@ -196,15 +197,6 @@ await describe({
       },
     },),
     it({
-      name:
-        'returns the monorepo directory (Monochromatic) when called from this package',
-      fn: async () => {
-        /** Root discovered from this test file directory. */
-        const root = await findMiseMonorepoRoot({ cwd: import.meta.dirname, },);
-        expect(root.endsWith('/Monochromatic',),).toBe(true,);
-      },
-    },),
-    it({
       name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
       fn: async () => {
         /** Root discovered from current process directory. */
@@ -270,14 +262,6 @@ await describe({
 await describe({
   name: findGitRepoRoot.name,
   children: [
-    it({
-      name: 'returns the repository directory (Monochromatic) from this package',
-      fn: async () => {
-        /** Git root discovered from this test file directory. */
-        const root = await findGitRepoRoot({ cwd: import.meta.dirname, },);
-        expect(root.endsWith('/Monochromatic',),).toBe(true,);
-      },
-    },),
     it({
       name: 'returns an absolute path when called from inside the repository',
       fn: async () => {
@@ -384,14 +368,6 @@ await describe({
   name: findPnpmWorkspaceRoot.name,
   children: [
     it({
-      name: 'returns the workspace directory (Monochromatic) from this package',
-      fn: async () => {
-        /** pnpm workspace root discovered from this test file directory. */
-        const root = await findPnpmWorkspaceRoot({ cwd: import.meta.dirname, },);
-        expect(root.endsWith('/Monochromatic',),).toBe(true,);
-      },
-    },),
-    it({
       name: 'returns an absolute path when called from inside the workspace',
       fn: async () => {
         /** pnpm workspace root discovered from current process directory. */
@@ -478,6 +454,30 @@ await describe({
         /** Cached pnpm workspace root from process cwd. */
         const root = await findPnpmWorkspaceRootCached();
         expect(isAbsolute(root,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'monorepo root finder agreement',
+  children: [
+    it({
+      name:
+        'mise, git, and pnpm roots all resolve to the same directory from this package',
+      fn: async () => {
+        /** Mise monorepo root walked up from this test file directory. */
+        const miseRoot = await findMiseMonorepoRoot({
+          cwd: import.meta.dirname,
+        },);
+        /** Git repository root walked up from this test file directory. */
+        const gitRoot = await findGitRepoRoot({ cwd: import.meta.dirname, },);
+        /** pnpm workspace root walked up from this test file directory. */
+        const pnpmRoot = await findPnpmWorkspaceRoot({
+          cwd: import.meta.dirname,
+        },);
+        expect(miseRoot,).toBe(gitRoot,);
+        expect(gitRoot,).toBe(pnpmRoot,);
       },
     },),
   ],
