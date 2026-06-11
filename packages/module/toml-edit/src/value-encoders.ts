@@ -7,6 +7,10 @@
  * @module
  */
 
+import {
+  escapeBasicMultiline,
+  escapeBasicSingleLine,
+} from './basic-escape.ts';
 import type { TomlWrappedInput, } from './types.ts';
 
 /**
@@ -79,51 +83,9 @@ export function encodeStringWithStyle(
       return `'''\n${value}'''`;
     return `'${value}'`;
   }
-  /**
-   * Backslash and control-char escapes shared by single- and multi-line basic strings.
-   */
-  const escaped = value
-    .replaceAll(
-      '\\',
-      String.raw`\\`,
-    )
-    .replaceAll(
-      '"',
-      String.raw`\"`,
-    )
-    .replaceAll(
-      '\t',
-      String.raw`\t`,
-    )
-    .replaceAll(
-      '\b',
-      String.raw`\b`,
-    )
-    .replaceAll(
-      '\f',
-      String.raw`\f`,
-    );
-  if (multiline) {
-    /**
-     * Newlines stay literal so the multi-line string preserves layout.
-     */
-    const escapedKeepNewlines = escaped.replaceAll(
-      '\r',
-      String.raw`\r`,
-    );
-    return `"""\n${escapedKeepNewlines}"""`;
-  }
-  return `"${
-    escaped
-      .replaceAll(
-        '\n',
-        String.raw`\n`,
-      )
-      .replaceAll(
-        '\r',
-        String.raw`\r`,
-      )
-  }"`;
+  if (multiline)
+    return `"""\n${escapeBasicMultiline({ value, },)}"""`;
+  return `"${escapeBasicSingleLine({ value, },)}"`;
 }
 
 /**

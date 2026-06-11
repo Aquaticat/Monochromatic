@@ -4,6 +4,8 @@
  * @module
  */
 
+import { escapeBasicSingleLine, } from './basic-escape.ts';
+
 //region Key encoding
 
 /**
@@ -57,17 +59,10 @@ function isBareKey(key: string,): boolean {
 export function encodeKey({ key, }: { readonly key: string; },): string {
   if (isBareKey(key,))
     return key;
-  return `"${
-    key
-      .replaceAll(
-        '\\',
-        String.raw`\\`,
-      )
-      .replaceAll(
-        '"',
-        String.raw`\"`,
-      )
-  }"`;
+  // A quoted key is a basic string, so it must escape control scalars the same
+  // way a basic-string value does; emitting a raw control character (newline,
+  // NUL, backspace) here produces invalid TOML.
+  return `"${escapeBasicSingleLine({ value: key, },)}"`;
 }
 
 //endregion Key encoding

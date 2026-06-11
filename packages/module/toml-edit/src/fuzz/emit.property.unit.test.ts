@@ -211,6 +211,42 @@ await describe({
     },),
 
     it({
+      // Regression: the from-scratch key encoder (encodeKey) and value encoder
+      // (encodeStringWithStyle) emitted control scalars raw, producing invalid
+      // TOML the runner rejected (toml-test encoder/key and encoder/string cases).
+      // These seams differ from the parsed-node _emitStringValue path above.
+      name: 'control scalars escape through _encodeKey and _jsValueToTomlText',
+      timeout: RUN.timeout,
+      fn: async () => {
+        for (const [sample,] of CONTROL_EXAMPLES) {
+          /**
+           * Control scalar drawn from a pinned example.
+           */
+          const control = sample.value;
+          if ((typeof control) !== 'string') continue;
+          /**
+           * Quoted-key round-trip: the encoded key must reparse to the same name.
+           */
+          const keyName = `a${control}b`;
+          const keys = tomlKeys({ edit: parseTomlEdit({ source: `${_encodeKey({ key: keyName, },)} = 1\n`, },), },);
+          expect(keys.includes(keyName,),).toBe(true,);
+          /**
+           * Value round-trip: the encoded string must reparse to the same value.
+           */
+          const result = encodeOrSkip(`x${control}y`,);
+          expect('text' in result,).toBe(true,);
+          if ('text' in result)
+            expect(
+              semanticEquals({
+                left: projectProbe(`probe = ${result.text}\n`,) as never,
+                right: `x${control}y` as never,
+              },),
+            ).toBe(true,);
+        }
+      },
+    },),
+
+    it({
       name: '_jsValueToTomlText re-emits a JSON value to an equal value or rejects null',
       timeout: RUN.timeout,
       fn: async () => {
