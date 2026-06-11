@@ -231,6 +231,24 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 08:55 -- CONSOLIDATION POINT. bug-06/09 perf confirmed rust-specific: dotnet
+  compiles `\w{24}` in 6ms and the bug-09 `.n...n.n` unit in 21ms vs rust's ~3.3s
+  / ~40-71s (1000x+); committed (bc480603). Final overnight fuzzer harvest: NO new
+  crash site -- diff_regex 1184 crashes ALL bug-04 (algebra:2724), match_invariants
+  3 ALL bug-05 (lib.rs:1824), compile 0. THREE crash sites total across the whole
+  campaign: bug-04, bug-05 (both in-subset, dotnet-confirmed rust-specific),
+  bug-11 (ldfa.rs, out-of-subset, Lean-found). The bug-11 corpus seeding did not
+  yield a fuzzer-found ldfa crash (the libFuzzer arbitrary encoding doesn't easily
+  reach the precise shape; the Lean AST generator does). CAMPAIGN STATE: 13
+  findings, honestly two-tiered; load-bearing core = bug-04/05 crashes + bug-02/03
+  (dotnet+self-confirmed) + bug-06/09 perf + arm-bug-01 SIMD; secondary =
+  bug-07/08/10 (self-inconsistent, out-of-subset pattern) + bug-11 (crash, out-of-
+  subset) + bug-12/13 (Lean-corroborated, out-of-subset). Full doc set committed:
+  README (tiered), 13 bug files (+banners), verification-2026-06-04, pristine-
+  confirmation, dotnet-adjudication, code-quality, test-coverage. Active mining
+  DONE per the stronger-reviewer steer. Overnight fuzzers left running on both
+  machines for completeness; harvest periodically (only bug-04/05 expected).
+
 - 08:40 -- MAJOR HONEST REFRAME via the dotnet reference (the integrity moment).
   Installed dotnet on Mac (`brew install dotnet`), built `resharp-dotnet`
   (ieviev's OTHER RE# impl), wrote an fsi adjudicator, ran EVERY bug minimal. The
