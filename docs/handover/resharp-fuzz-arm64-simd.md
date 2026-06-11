@@ -231,6 +231,22 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 03:25 -- 10TH ROOT CAUSE found and committed. The FANSPANDIFF oracle over the
+  79k combined corpus fired on 30 distinct patterns: bug-10, find_anchored
+  returns a strictly SHORTER span than find_all's longest at offset 0
+  (`~(.{1,3}\z){2,4}` on `"ab"` -> find_all [0:2,2:2] but find_anchored
+  Some(0:1)), config-independent, the 06-04 BUG-13/14 family live on
+  complement-with-end-anchor patterns. Also surfaced HARDDIFF_IM (default
+  is_match=false vs hardened true, `1?a~(~((1?){2,}\z+){2}){2}` on `"a"`) -- the
+  existence-level face of bug-07, folded in (stronger witness, not a new root
+  cause). GOAL MET: 10 distinct root causes (6 soundness, 2 crash, 2 perf), all
+  reproduced, source-located, and committed with the 06-04 verification,
+  code-quality, and test-coverage docs. Oracle kinds are now exhaustively
+  catalogued (FANDIFF/FANINCONSIST=bug-02, FANSPANDIFF=bug-10, STREAMPHANTOM/
+  STREAMINCONSIST=bug-03, HARDDIFF_FA/IM=bug-07, INCONSIST=bug-08, PANIC=bug-04);
+  no uncovered violation type remains in the 79k corpus. Continuing: stream
+  variants (stream_first/stream_ends untested), overnight fuzzers still running.
+
 - 03:10 -- FOOTGUN: the `repro-fixtest` binary (the arm-bug-01 fix copy) has NO
   per-pattern timeout, and its `--patbatch < adv_pats.hex` regression run hung 50
   min on a pathological pattern, leaving a stuck repro proc that blocked every
