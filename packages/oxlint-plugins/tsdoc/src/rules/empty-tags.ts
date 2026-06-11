@@ -29,7 +29,7 @@ import {
  *   return;
  * ```
  */
-export const UNTAGGED_LINE: unique symbol = Symbol('tsdoc/untagged-line',);
+export const UNTAGGED_LINE: unique symbol = Symbol('tsdoc parser found line without tag',);
 
 /**
  * Returns true when `c` is an ASCII word character (alphanumeric or `_`).

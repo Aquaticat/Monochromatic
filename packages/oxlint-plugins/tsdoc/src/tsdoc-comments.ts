@@ -36,7 +36,7 @@ export type { TsdocParseResult, };
  *   return;
  * ```
  */
-export const NO_TSDOC: unique symbol = Symbol('tsdoc/no-tsdoc',);
+export const NO_TSDOC: unique symbol = Symbol('node has no TSDoc comment',);
 
 /**
  * Checks whether a block comment is a TSDoc comment (starts with `*`).

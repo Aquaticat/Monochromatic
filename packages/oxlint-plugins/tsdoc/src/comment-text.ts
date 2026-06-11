@@ -298,7 +298,7 @@ export function tokenEnd({
  * `no-nullish-union` rule is satisfied and callers narrow with `typeof` or an
  * identity check.
  */
-export const NO_TAG: unique symbol = Symbol('tsdoc/no-tag',);
+export const NO_TAG: unique symbol = Symbol('tsdoc line has no leading tag',);
 
 /**
  * Returns the leading block/inline tag of a normalized line, including the
