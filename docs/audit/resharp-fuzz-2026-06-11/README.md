@@ -118,11 +118,14 @@ with reproducers).
   opposite direction from bug-11/12). `a?&(?=a)?` on `"ab"` returns
   `[(0,1),(1,1),(2,2)]` and `find_anchored=Some((0,1))`, but the language is
   zero-width-only (`a?`'s width-1 cannot equal the lookahead's zero-width span),
-  so the leftmost is `0:0` (Lean). Needs both `&` operands nullable and the
-  lookahead satisfied at the position (`a?&(?=c)?`, false lookahead, is correct).
-  Same lookahead-width-leak theme as 2026-06-04 BUG-13 but a distinct, live
-  intersection trigger. Found by the Lean position lane (seed-4004 R48). See
-  `bug-13-intersection-optional-lookahead-width-leak.md`.
+  so the leftmost is `0:0` (Lean). General fault: in `X & Y`, a satisfied
+  zero-width lookahead on one side paired with a consumed char on the other leaks
+  the width; two confirmed forms, `a?&(?=a)?` (nullable consuming) and
+  `(\W|(?!c))&a` (lookahead as an alternation branch, consuming side not
+  nullable). Unsatisfied lookahead is correct (`a?&(?=c)?`). Same
+  lookahead-width-leak theme as 2026-06-04 BUG-13 but a distinct, live
+  intersection trigger. Found by the Lean position lane (seed-4004 R48, seed-5005
+  R292). See `bug-13-intersection-optional-lookahead-width-leak.md`.
 
 ## Method
 

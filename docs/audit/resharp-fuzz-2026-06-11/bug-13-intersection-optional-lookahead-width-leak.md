@@ -56,26 +56,38 @@ Since the leftmost match is at offset 0, `llmatch`'s `0:0` is also the
 longest-anchored-at-0 span that `find_anchored` must return; rust's `Some((0,1))`
 is longer than the true match, confirming the leak in `find_anchored` too.
 
-## Trigger shape
+## Trigger shape (general): zero-width on one side, consuming on the other
 
-Both operands of `&` must be nullable, and the lookahead's assertion must HOLD at
-the position:
+The general fault: in `X & Y`, when one side can match ZERO-WIDTH at position `p`
+(via a lookahead whose assertion holds) and the other side CONSUMES a char at `p`,
+the engine pairs the zero-width match with the consuming match instead of
+requiring both sides to span the same length, so the consumed width leaks. Two
+distinct surface forms both reduce to this and were each Lean-confirmed:
 
 ```txt
+# form A: nullable-consuming  &  satisfied-optional-lookahead
 a?&(?=a)?   ab -> [(0,1),...]   leak  ((?=a) holds: next is 'a')
 a?&(?!b)?   ab -> [(0,1),...]   leak  ((?!b) holds: next is not 'b')
-a?&(?=c)?   ab -> [(0,0),...]   ok    ((?=c) false at 0)
-a?&(?=b)?   ab -> [(0,0),...]   ok    ((?=b) false at 0)
-a&(?=a)?    ab -> []            ok    (consuming side not nullable -> empty, correct)
-a&(?=a)     ab -> []            ok
+a?&(?=c)?   ab -> [(0,0),...]   ok    ((?=c) false at 0 -> falls back to zero-width)
+a&(?=a)?    ab -> []            ok    (in this form the consuming side must be nullable)
+
+# form B: (consuming-class | satisfied-lookahead)  &  consuming
+(\W|(?!c))&a   a -> [(0,1)]     leak  (\W cannot match 'a'; (?!c) holds zero-width;
+                                        the right-hand consuming 'a' leaks through)
+(\d|(?!c))&a   a -> [(0,1)]     leak
+(\W|(?=a))&a   a -> [(0,1)]     leak
+(?!c)&a        a -> []          ok    (no consuming-class branch to mask the leak)
 ```
 
-Removing the `?` from the consuming side (`a&(?=a)?`) makes the language empty and
-the engine correctly returns no match, so the leak needs the nullable consuming
-operand `a?`. When the optional lookahead is unsatisfied, the engine correctly
-falls back to the zero-width `ε` branch. The fault is specifically: nullable
-consuming pattern `&` nullable lookahead whose assertion is satisfied -> the
-consuming width survives the intersection.
+Both forms share the essential pair: a satisfied zero-width lookahead on one side
+of `&` and a consumed character on the other. Form A needs the consuming side
+nullable so the zero-width branch exists there; form B puts the zero-width branch
+in an alternation on the opposite side, so the consuming operand need NOT be
+nullable. The earlier "both operands must be nullable" reading was too narrow:
+`(\W|(?!c))&a` leaks with a non-nullable consuming `a`. When the lookahead is
+unsatisfied the engine correctly produces no leak (`a?&(?=c)?`). Form B was found
+by the focused Lean round (seed-5005 R292, minimized to `(\W|(?!c))&a`); Lean
+gives `none` for all three form-B leakers.
 
 ## Distinctness
 
