@@ -43,12 +43,81 @@ function floatToPayload(value: number,): string {
 }
 
 /**
+ * Segment count of a colon-split time that has hours and minutes but no seconds.
+ */
+const TIME_SEGMENTS_WITHOUT_SECONDS = 2;
+
+/**
+ * Length of a `YYYY-MM-DD` date plus its one `T`-or-space separator.
+ */
+const DATE_PREFIX_LENGTH = 11;
+
+/**
+ * Ensure a `HH:MM[:SS]` time string carries seconds.
+ *
+ * TOML 1.1 makes seconds optional, but the toml-test runner compares times with
+ * an RFC 3339 layout that requires `HH:MM:SS`, so a seconds-less time is padded
+ * with `:00`. A time that already has seconds (and any fractional part) is left
+ * untouched.
+ *
+ * @param time - Time component, with or without seconds.
+ *
+ * @returns Time guaranteed to include a seconds field.
+ *
+ * @example
+ * ```ts
+ * withSeconds('13:37'); // '13:37:00'
+ * ```
+ */
+function withSeconds(time: string,): string {
+  return (time.split(':',)
+    .length
+    === TIME_SEGMENTS_WITHOUT_SECONDS) ? `${time}:00` : time;
+}
+
+/**
+ * Normalize a local datetime / date / time spelling to a seconds-bearing form.
+ *
+ * Dates have no time component and pass through; times pad their seconds; local
+ * datetimes pad the seconds of the time that follows the date separator.
+ *
+ * @param kind - Local datetime kind of the node.
+ *
+ * @param datetime - Source spelling of the value.
+ *
+ * @returns Spelling whose time component, if any, includes seconds.
+ *
+ * @example
+ * ```ts
+ * localValueWithSeconds({ kind: 'local-time', datetime: '07:32' }); // '07:32:00'
+ * ```
+ */
+function localValueWithSeconds(
+  {
+    kind,
+    datetime,
+  }: {
+    readonly kind: 'local-date-time' | 'local-date' | 'local-time';
+    readonly datetime: string;
+  },
+): string {
+  if (kind === 'local-date')
+    return datetime;
+  if (kind === 'local-time')
+    return withSeconds(datetime,);
+  return `${datetime.slice(
+    0,
+    DATE_PREFIX_LENGTH,
+  )}${withSeconds(datetime.slice(DATE_PREFIX_LENGTH,),)}`;
+}
+
+/**
  * Convert one parsed scalar node into a tagged value.
  *
  * Integers use the node's exact `bigint` so 64-bit values survive; offset
  * datetimes normalize to RFC 3339 UTC via the parsed instant (the runner
- * compares instants); local datetimes keep their source spelling, which the
- * runner normalizes for its wall-clock comparison.
+ * compares instants); local datetimes keep their source spelling but pad in a
+ * seconds field, which the runner's RFC 3339 wall-clock layout requires.
  *
  * @param node - Parsed scalar value node.
  *
@@ -94,7 +163,10 @@ export function leafToTagged({ node, }: { readonly node: AST.TOMLValue; },): Tag
     || (node.kind === 'local-time'))
     return {
       type: KIND_TO_TAG[node.kind],
-      value: node.datetime,
+      value: localValueWithSeconds({
+        kind: node.kind,
+        datetime: node.datetime,
+      },),
     };
   throw new Error(`Unhandled TOML value kind: ${String((node as { kind: unknown; }).kind,)}`,);
 }
