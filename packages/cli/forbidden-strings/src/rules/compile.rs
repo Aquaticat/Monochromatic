@@ -346,7 +346,23 @@ pub fn engine_is_forced() -> bool {
 }
 
 fn compile_forced_resharp(src: &str) -> Result<CompiledRegex, String> {
-    let caught = catch_unwind(AssertUnwindSafe(|| Regex::new(src)));
+    // `resharp` / `resharp-default` use Regex::new (UnicodeMode::Default,
+    // 2-byte `\w`). `resharp-ascii` pins UnicodeMode::Ascii so `\w`/`\d`/`\s`
+    // are 1-byte, isolating the engine's cost from the Unicode-mode cost: the
+    // betterleaks secret rules are ASCII tokens, so Ascii mode is the
+    // semantically correct sole-engine config to compare against the regex
+    // crate's ASCII-first path.
+    let ascii = forced_engine() == Some("resharp-ascii");
+    let caught = catch_unwind(AssertUnwindSafe(|| {
+        if ascii {
+            resharp::Regex::with_options(
+                src,
+                resharp::RegexOptions::default().unicode(resharp::UnicodeMode::Ascii),
+            )
+        } else {
+            Regex::new(src)
+        }
+    }));
     match caught {
         Ok(Ok(re)) => Ok(CompiledRegex::Resharp(re)),
         Ok(Err(e)) => Err(format!("(resharp-forced): {:?}", e)),
@@ -465,7 +481,7 @@ fn compile_forced_regex(src: &str) -> Result<CompiledRegex, String> {
 
 pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     if let Some(force) = forced_engine() {
-        if force == "resharp" {
+        if force == "resharp" || force == "resharp-ascii" {
             return compile_forced_resharp(src);
         }
         if force == "regex" {
