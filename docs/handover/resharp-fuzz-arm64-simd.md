@@ -156,12 +156,86 @@ than fixing the engine; note that distinction when re-testing.
 - Scratch lives under `/tmp/agent` (`mkdir -p /tmp/agent; chmod 700` if
   missing). The user cleans up; do not delete audit artifacts.
 
-## Current status (2026-06-11 00:05)
+## Toolchain resolved (2026-06-11)
 
-Orientation done. Found and read the four `has_simd()` dispatch sites and
-confirmed the differential-oracle design. Read `neon_movemask`. Toolchain on the
-host is missing (open footgun above). Renamed glm's dir to `bad-glm-...` and
-flagged it. NEXT: stand up a rust toolchain reachable from the M1 host (or a
-controlled container), build the in-process SIMD-differential repro against a
-`has_simd()`-overridable engine copy, seed boundary-targeted haystacks, and
-start mining `SIMDDIFF`. No bugs filed yet.
+The M1 host now has a working PATH: `~/.zshenv` was created (it is sourced by
+non-interactive ssh; `~/.zprofile` is not) prepending `~/.cargo/bin`, the
+`nightly-aarch64-apple-darwin` toolchain bin, `/opt/homebrew/bin`, and the mise
+shims. `cargo`, `rustc`, and `cargo-fuzz` (installed via `cargo install`) are
+reachable over `ssh m1`. macOS has no GNU `timeout` (use chunking, not a timeout
+wrapper). The x86 box (where this repo lives) is `x86_64` (AVX2) with its own
+nightly + cargo-fuzz + cargo-miri; the SIMD differential reproduces on AVX2 too,
+so x86 is a valid second SIMD lane and runs the correctness/fuzz lanes.
+
+## Findings (2026-06-11 01:30) -- 8 root causes, committed
+
+All in `docs/audit/resharp-fuzz-2026-06-11/` (README + one file per bug +
+`verification-2026-06-04.md` + `code-quality.md` + `test-coverage.md`). The
+developer's "all 27 fixed, plus more" claim is FALSE in part: BUG-1, BUG-20,
+BUG-8, BUG-3 are all still live on new triggers.
+
+- arm-bug-01 (SIMD soundness, fix-verified): `fwd_lb_prefix_impl` `fwd.rs:123`
+  drops the offset-1 match after a leading zero-width match. `^$` on `"\n\n"` =>
+  `[0:0,2:2]` SIMD-on, `[0:0,1:1,2:2]` SIMD-off. Identical NEON and AVX2 (defect
+  is in the arch-independent driver). Found by `simd_diff` fuzzer + the on/off
+  differential. Fix `{1}`->`{0}` verified.
+- bug-02 (soundness): `find_anchored` phantom on leading zero-width assertion
+  (`(?<=a)` on `"b"`, `\BU` on `"U"`): `fan=Some` while `im=false`. 122 triggers.
+  BUG-20 partial-fix-still-live.
+- bug-03 (soundness): `stream` phantom/mislocated zero-width (`(?=c)`->1:1,
+  `\b`->shifted, `(?!\A)`->0:0).
+- bug-04 (crash): reentrant union rewrite panic `algebra/lib.rs:2724` LIVE,
+  minimal `(.*.+)*.+`, ~165 fuzzer triggers. BUG-1 narrowed not killed.
+- bug-05 (crash): reachable `debug_assert!(false,"this path should be
+  eliminated")` `engine/lib.rs:1824`, pattern `_*$` (`rev_trivial`).
+- bug-06 (perf): full-mode `\w{n}` compile ~0.14s/repeat (`\w{24}`=3.3s).
+- bug-07 (soundness): default vs hardened `find_all` differ, `~(\A|\n+){2}` on
+  `"\n\n"`. BUG-8 family live.
+- bug-08 (soundness): `is_match` vs `find_all`, `[0-9]{2}~(\z{1,3}|^{2}\W{0})+`
+  flags cfg on `"00"` (`im=false`, `fa=[0:2]`). BUG-3 family live.
+
+The single SIMD root cause is arm-bug-01; the rest are arch-independent. The
+SIMD differential harness is solid (99.2% prefilter-active coverage, zero false
+positives over 58k cases). Most 06-04 bugs ARE genuinely fixed (see verification
+doc); do not re-file those.
+
+## Harness (rebuilt, both machines)
+
+- `tools/resharp-instr`: v0.6.12 engine + `has_simd()` atomic override
+  (`instr_set_override` 0/1/2) + prefilter-built counters (`instr_counters`).
+  ONLY change vs stock. `simd` stays `pub(crate)`; hooks re-exported at crate
+  root (avoids `deny(missing_docs)`).
+- `tools/repro-simd` (binary `repro`): modes `--pair`/`--probe`/`--show`/
+  `--reuse`/`--compile`/`--benchrep`/`--benchcyc`/`--patbatch`/`--oraclebatch`/
+  `--batch`. The verification + differential + oracle workhorse.
+- `tools/resharp-instr/fuzz`: `simd_diff` libFuzzer target (on/off differential
+  with `catch_unwind`, `panic=unwind`). Build with `--target` default on mac.
+- Local x86 mirror: `/tmp/agent/{resharp-instr,repro-simd,resharp-v0612}`.
+  `resharp-fixtest` is the engine copy with the arm-bug-01 fix applied (for the
+  fix verification). Generators: `gen_simd_corpus.py`, `gen_adversarial.py`,
+  `gen_big.py`; `verify_0604.py`.
+- KNOWN HARNESS GAP: `repro --oraclebatch` swallows MATCH-TIME panics into
+  `fa=Err` (only build-time panics print `PANIC|`). So bug-05-style match panics
+  do not show as `PANIC` in oracle output; the libFuzzer `match_invariants` target
+  is the one that surfaced it.
+
+## Running jobs (overnight, both machines)
+
+- x86: `compile`, `match_invariants`, `diff_regex` in-tree fuzzers, `-fork=3
+  -ignore_crashes=1 -max_total_time=14400` (logs `/tmp/agent/fz2_*.log`,
+  artifacts under `resharp-v0612/fuzz/artifacts/<tgt>/`). diff_regex crashes are
+  dominated by bug-04 (BUG-1); look for NON-`lib.rs:2724` crashes for new bugs.
+- M1: `simd_diff` `-fork=3 -ignore_crashes=1` (logs `tools/simd_diff_fuzz2.log`,
+  artifacts `tools/resharp-instr/fuzz/artifacts/simd_diff/`). All crashes so far
+  are arm-bug-01; a non-`^`-prefixed divergence would be a new SIMD root cause.
+
+## Next avenues for more yield
+
+- A BUG-1-tolerant `diff_regex` (wrap resharp compile in `catch_unwind`, compare
+  `is_match` only when both compile) to find resharp-vs-`regex`-crate is_match
+  divergences currently masked by the bug-04 panic.
+- Lean position-level correctness lane (the 06-04 pipeline; `~/Downloads/
+  extended-regexes`, elan needed; not yet set up this campaign) for correctness
+  bugs the self-consistency oracles miss.
+- Per-mode oracle rounds (flags config produced bug-08; ascii/full may differ).
+- Harvest the running fuzzers; minimize any new distinct crash site.
