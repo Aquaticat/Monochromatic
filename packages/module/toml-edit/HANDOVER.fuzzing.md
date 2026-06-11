@@ -6,10 +6,24 @@ criteria for each layer.
 
 ## Implementation status
 
-Updated 2026-06-11. Phases 1 to 3 plus an oracle-sharpening follow-up are landed;
-phases 4 to 9 remain. All new work lives under
-`packages/module/toml-edit/src/fuzz/`, except one package-source fix in
-`packages/module/toml-edit/src/parse-toml-edit.ts`.
+Updated 2026-06-11. Phases 1 to 5 and the phase 9 CI smoke are landed; phases 6,
+7, and 8 remain, and issue #198 is not yet closed. Most work lives under
+`packages/module/toml-edit/src/fuzz/`, plus two package-source fixes
+(`src/parse-toml-edit.ts`, `src/emit-value-string.ts`), the seam exports in
+`src/index.ts`, the decision doc `docs/decisions/toml-edit-fuzzing.md`, and the
+workflow `.github/workflows/toml-edit-fuzz.yml`.
+
+Four real bugs found: two fixed in scope (the `RangeError` parse contract and the
+basic-string control-character escaping), and two deeper edit-machinery defects
+deferred to #252 (repeated path-create duplicate key, implicit-parent delete
+read/byte mismatch).
+
+Network and Go are available in this environment (`mise ls-remote
+github:toml-lang/toml-test` lists releases; `go version` is 1.26.4), so phases 6
+and 7 are feasible and not blocked. The phase 7 differential oracle uses the Go
+`toml-test` decoder and encoder tools (BurntSushi), not an npm dependency, so the
+choosing-technology source-audit gate is not triggered unless that path is
+abandoned for a JS parser.
 
 ### Landed
 
@@ -59,6 +73,35 @@ Phase 3 (commits 3a298325 and da3a8c59), parser and round-trip:
   makes the parser throw a different class still surfaces rather than being
   silently wrapped.
 
+Phase 4 (commits 363945e5 and 98443361), emitter and seams:
+
+- Internal encoders and emitters re-exported from `src/index.ts` as unstable
+  `_`-prefixed seams (`_encodeKey`, `_jsValueToTomlText`, `_emitContentNode`,
+  `_emitStringValue`, `_spliceEmit`), documented in TSDoc, the README, and the
+  decision doc.
+- `src/fuzz/emit.property.unit.test.ts`: key round-trip, value round-trip,
+  value-kind preservation across re-emission (the load-bearing datetime check),
+  string re-emission, and splice byte identity.
+- Second real bug found and fixed in `src/emit-value-string.ts`: the basic-string
+  escaper emitted control scalars (NUL, U+001F, U+007F) raw, producing invalid
+  TOML; now every control scalar below U+0020 plus U+007F is escaped as `\uXXXX`,
+  single-line and multiline.
+
+Phase 5 (commit 974207b9), stateful edit model:
+
+- `src/fuzz/stateful.property.unit.test.ts`: random `tomlSet` / `tomlDelete`
+  sequences over `emptyTomlEdit`, materialized by reparsing between operations,
+  checked against an in-memory model; plus idempotence on the reparsed result.
+- Surfaced two deeper edit-machinery defects now tracked in #252 (repeated
+  path-create duplicate key, implicit-parent delete read/byte mismatch). The
+  property stays on single top-level segments to avoid those edges.
+
+Phase 9 CI smoke (commit 7c5abf2a):
+
+- `.github/workflows/toml-edit-fuzz.yml`: path-filtered to the package, its
+  fixtures, and the decision doc; type-check, build, the bounded unit suite, then
+  a short per-property fuzz campaign. Not yet proven by a real PR run.
+
 ### Decisions and deviations from the original plan
 
 - The semantic oracle is `getStaticTOMLValue`-based, not the toml-test
@@ -92,22 +135,24 @@ Phase 3 (commits 3a298325 and da3a8c59), parser and round-trip:
 
 ### Remaining
 
-- Phase 4 (emitter and seam properties): expose internal seams via underscored
-  `_` exports from `src/index.ts` where needed, documented in TSDoc, the README,
-  and the decision doc.
-- Phase 5 (stateful edit model).
-- Phase 6 (toml-test conformance): probe feasibility cheaply first. Confirm the
-  mise `github:` backend can fetch the `toml-test` binary (and Go) in this
-  sandbox before writing adapter code; if network is blocked, scaffold the task,
-  document the limitation, and defer to a follow-up issue.
-- Phase 7 (differential oracle): the plan's default is BurntSushi via the Go
-  `toml-test` decoder and encoder tools, which is not an npm dependency, so the
-  choosing-technology source audit and user-decision gate are not triggered
-  unless network forces a deviation to a JS parser.
-- Phase 8 (V8 coverage gate and the reusable checklist).
-- Phase 9 (CI path-filtered smoke and `gh issue close 198`).
-- `docs/decisions/toml-edit-fuzzing.md` does not exist yet; it is created in
-  phases 4 and 8.
+- Phase 6 (toml-test conformance): build a kind-aware tagged-JSON decoder and
+  encoder (node adapter commands), acquire the `toml-test` runner through mise's
+  `github:` backend (feasible; see status above), and add a `test:conformance`
+  task for TOML 1.0 and 1.1. The kind-aware tagged model deferred from phase 2
+  belongs here.
+- Phase 7 (differential oracle): acquire Go plus the BurntSushi `toml-test`
+  decoder and encoder tools through mise (feasible), normalize both outputs, and
+  classify disagreements with a stable allow-list. No npm dependency, so no
+  choosing-technology gate unless that path is abandoned.
+- Phase 8 (V8 coverage gate and the reusable five-question checklist in the
+  decision doc): run the property files under `NODE_V8_COVERAGE`, summarize the
+  target files, commit a baseline, and gate on no regression.
+- Phase 9 closure: prove the CI path filtering with a real PR run, then close
+  issue #198 explicitly with `gh issue close 198`. The CI smoke step itself is
+  already wired. Issue #198's original acceptance criteria (bounded fuzz task,
+  committed seed corpus, CI on relevant changes, bug-finding) are already met by
+  phases 1 to 5 plus the CI smoke; closing now versus completing phases 6 to 8
+  first is a scope decision for the owner.
 
 ## Evidence checked
 
