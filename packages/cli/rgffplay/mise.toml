@@ -1,12 +1,6 @@
 [tasks.run]
 description = "Run rgffplay"
-usage = 'arg "[args]" var=#true help="Name words to search for"'
-shell = "node -e"
-run = """
-const { execFileSync } = await import('node:child_process')
-const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
-execFileSync('node', ['src/index.ts', ...args], { stdio: 'inherit' })
-"""
+run = "node src/index.ts"
 
 [tasks.build]
 extends = "build"
