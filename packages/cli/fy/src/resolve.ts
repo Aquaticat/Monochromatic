@@ -17,7 +17,7 @@ import {
  * helper signal absence without a `string | undefined` return type, and callers test identity
  * against it instead of a nullish check.
  */
-const NOT_FOUND = Symbol('NOT_FOUND',);
+const NOT_FOUND = Symbol('module specifier resolution candidate not found',);
 
 /**
  * Attempts to resolve a bare specifier from a given base directory.
