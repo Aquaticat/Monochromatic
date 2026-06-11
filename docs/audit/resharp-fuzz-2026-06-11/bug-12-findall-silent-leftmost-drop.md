@@ -59,7 +59,7 @@ pass and confirms each with a forward scan in `scan_fwd_all` (`ldfa.rs`). bug-11
 is a FORWARD-pass fault: the reverse pass proposes a legitimate start (a match
 really exists there), and the forward scan fails to confirm it, returning
 `NO_MATCH` and tripping `debug_assert_ne!(NO_MATCH, l_max_end)` at
-`ldfa.rs:833/878/906` (panic in debug, drop in release).
+`ldfa.rs:833/887/906` (panic in debug, drop in release).
 
 bug-12 is a REVERSE-pass fault: for `(nullable-alternation) & (nullable
 right-operand)` the reverse pass itself UNDER-collects, never proposing the

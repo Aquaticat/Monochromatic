@@ -50,7 +50,7 @@ from word boundaries). rust is deliberately more permissive: its own
 (`resharp-engine/src/lib.rs:762,772`) accepts them, then the engine fails:
 
 - `bug-11` (crash): a lookaround-in-union pattern rust's guard accepts, then
-  panics at `ldfa.rs:833/878/906`. A crash is a defect regardless of subset; rust
+  panics at `ldfa.rs:833/887/906`. A crash is a defect regardless of subset; rust
   should reject (as the reference does) or not crash.
 - `bug-12`, `bug-13`, `bug-07`, `bug-08`, `bug-10` (soundness): rust accepts and
   returns a wrong span / drops a match / leaks width for patterns the reference
@@ -132,8 +132,8 @@ miscomputes): bug-07, bug-08, bug-10, bug-11, bug-12, bug-13.
   agrees, only the length disagrees.
 - `bug-11` (crash / soundness): `find_all`'s reverse pass proposes a null match
   start the forward pass then rejects, violating the coupling invariant asserted
-  at `resharp-engine/src/ldfa.rs:833/878/906`. `((?!a)|b)&(~((c)))` on `"abca"`
-  panics in any debug-assertions build (`assert_ne!(NO_MATCH, l_max_end)`); in
+  at `resharp-engine/src/ldfa.rs:833/887/906`. `((?!a)|b)&(~((c)))` on `"abca"`
+  panics in any debug-assertions build (`debug_assert_ne!(NO_MATCH, l_max_end)`); in
   release the guard drops the unconfirmed start, so `find_all` silently omits a
   real match (`"ca"` -> `[(2,2)]`, dropping the leftmost `(0,0)`; Lean ground
   truth `0:0`). Needs a zero-width-nullable alternation intersected with a

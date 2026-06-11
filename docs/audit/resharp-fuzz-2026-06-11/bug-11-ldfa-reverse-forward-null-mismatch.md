@@ -62,7 +62,7 @@ from each proposed start to find the match end. Three sites assert the coupling
 invariant "a reverse-proposed start must have a forward end":
 
 - `ldfa.rs:833` (the `nulls.last() == 0` start-at-0 path),
-- `ldfa.rs:878` (the in-loop cache-miss path),
+- `ldfa.rs:887` (the in-loop cache-miss path),
 - `ldfa.rs:906` (the in-loop non-cache-miss path),
 
 each `debug_assert_ne!(NO_MATCH, l_max_end, "find_all: forward scan found no end
