@@ -9,7 +9,7 @@ import type {
  * than `null`: the `no-nullish-union` rule bans a nullish "absent" arm, and
  * a real `boolean` value is the computed state this must stay distinct from.
  */
-const VERBOSE_UNCOMPUTED = Symbol('logger:verbose-uncomputed',);
+const VERBOSE_UNCOMPUTED = Symbol('logger:verbose-detection-uncomputed',);
 
 /**
  * Module-local mutable state grouped in a `const` container so module-root
@@ -130,6 +130,35 @@ function getVerbose(): boolean {
   const computed = detectVerbose();
   state.verboseCache = computed;
   return computed;
+}
+
+/**
+ * Detects explicit warn suppression via the `WARN` environment variable.
+ *
+ * Setting `WARN=false` drops `warn`-level records, for machine-protocol
+ * consumers (such as a stdin/stdout codec) whose output streams must stay clean
+ * on success. Only the exact string `'false'` suppresses; any other value, or an
+ * absent variable, leaves `warn` enabled. Read on each call (not memoized) so a
+ * host can toggle it between logs.
+ *
+ * @returns Whether `warn`-level records are suppressed.
+ *
+ * @example
+ * ```ts
+ * // With WARN=false in environment
+ * isWarnSuppressed(); // true
+ * ```
+ */
+function isWarnSuppressed(): boolean {
+  try {
+    return ((typeof process) !== 'undefined') && (process.env
+      .WARN
+      === 'false');
+  }
+  catch {
+    // process may be restricted or unavailable - leave warn enabled.
+    return false;
+  }
 }
 
 /**
@@ -387,6 +416,9 @@ function write(record: LogRecord,): Promise<void> {
 
   if ((!getVerbose()) && SILENT_LEVELS
     .has(record.level,))
+    return Promise.resolve();
+
+  if ((record.level === 'warn') && isWarnSuppressed())
     return Promise.resolve();
 
   buffer.push(record,);

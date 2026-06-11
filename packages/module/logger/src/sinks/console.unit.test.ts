@@ -87,6 +87,57 @@ await describe({
     },),
 
     it({
+      // Regression: WARN=false drops warn records so machine-protocol consumers
+      // (such as the toml-edit conformance codec) keep their output clean.
+      name: 'WARN=false suppresses warn records',
+      fn: async ({ sinon, },) => {
+        __resetForTests();
+        process.env.WARN = 'false';
+        const spy = sinon.spy(
+          console,
+          'warn',
+        );
+
+        void consoleSink.write(record({
+          level: 'warn',
+          message: 'hushed',
+        },),);
+
+        await waitForFlush();
+        expect(spy.callCount,)
+          .toBe(0,);
+        Reflect.deleteProperty(
+          process.env,
+          'WARN',
+        );
+      },
+    },),
+
+    it({
+      name: 'warn records emit when WARN is unset',
+      fn: async ({ sinon, },) => {
+        __resetForTests();
+        Reflect.deleteProperty(
+          process.env,
+          'WARN',
+        );
+        const spy = sinon.spy(
+          console,
+          'warn',
+        );
+
+        void consoleSink.write(record({
+          level: 'warn',
+          message: 'audible',
+        },),);
+
+        await waitForFlush();
+        expect(spy.callCount,)
+          .toBe(1,);
+      },
+    },),
+
+    it({
       name: 'contiguous same-level runs collapse to one console call',
       fn: async ({ sinon, },) => {
         __resetForTests();
