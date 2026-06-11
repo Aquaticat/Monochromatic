@@ -231,6 +231,22 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 02:05 -- DIVERGE lane (is_match resharp-ascii vs regex-crate over 20k
+  shared-subset patterns x22 haystacks, panic-tolerant in `repro --divergebatch`)
+  is a CLEAN NULL: resharp's basic is_match agrees with the regex crate, so the
+  core is correct and the bugs live in the advanced features. M1 simd_diff (7
+  crashes) are ALL arm-bug-01 (leading-`^` zero-width: `^$`,`^\0?`,`^\n`,
+  `^\u{1}?`); one SIMD root cause, well-confirmed. NEW candidate root cause
+  (bug-09, perf): a long `.`-and-literal concatenation blows up COMPILE in
+  javascript/full mode -- the fuzzer's `compile` timeout
+  `.n.................  n...  n` (hexpat 2e6e...20206e) takes ~71s. Bisection by
+  prefix length is NON-MONOTONIC (len 22 = 16.8s, len 23 = >30s, len 24+ =
+  0.001s), so it is a specific minterm/derivative product blowup, distinct from
+  bug-06's `\w` repeat cost. Characterizing modes/minimal now. Two crash sites
+  total across all in-tree artifacts: `algebra:2724` (bug-04, x230) and
+  `engine:1824` (bug-05, x1). diff_regex2 catch_unwind is defeated by
+  libfuzzer-sys's abort-at-panic hook (use repro for the is_match diff, done).
+
 - 01:45 -- 8 root causes committed (README, 8 bug files, verification, code-quality,
   test-coverage, handover). Overnight fuzzers relaunched on both machines (4h).
   Tried a BUG-1-tolerant `diff_regex2` libFuzzer target to unmask is_match
