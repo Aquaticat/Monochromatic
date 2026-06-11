@@ -160,7 +160,22 @@ through with `-o` injected as before.
  Skipped when `-o`,
  `--only`,
  or
-`--no-only` is already present (the user has made an explicit choice).
+`--no-only` is already present (the user has made an explicit choice),
+ and
+when `-i`/`--include` (any accepted abbreviation) is present,
+ because git
+forbids combining include mode with `--only` and the user already chose how
+paths combine with the index.
+ Pathless commits during a merge,
+ cherry-pick,
+or revert conclusion pass through without `-o`:
+ git forbids partial commits
+in those states ("cannot do a partial commit during a merge"),
+ so the
+pathless `git commit` that records the resolution works unchanged instead of
+being rejected with advice that would dead-end.
+ The pathless rejection
+message also names `--no-only` as the commit-the-entire-index choice.
  Escape
 hatch for a single invocation:
  pass `--no-enforce-only`,
@@ -182,15 +197,37 @@ so git suppresses its stock hints,
 `-o`).
  A cli-git note prints after the status output describing the wrapper's
 constraints.
- Skipped when the user has already set `advice.statusHints=...` via
-`-c` (the user's explicit choice wins).
+ Skipped when the user has already set `advice.statusHints` via
+`-c` (the user's explicit choice wins);
+ both the valued form
+(`-c advice.statusHints=true`) and git's bare boolean-true form
+(`-c advice.statusHints`) count,
+ matched case-insensitively the way git
+matches config keys.
 
 ## Post-commit auto-push
 
-After a successful `git commit` (anything except a `--dry-run` preview),
- the
-wrapper backs up the new commit by pushing it to its upstream with
-`git push --set-upstream origin HEAD`.
+After a successful `git commit`,
+ the wrapper backs up the new commit by
+pushing it.
+ Dry runs do not push:
+ besides `--dry-run` itself,
+ git documents
+`--short`,
+ `--porcelain`,
+ `--long`,
+ and `-z`/`--null` as implying a dry run,
+and the wrapper recognises all of them (in any accepted long-option
+abbreviation) via the same parsed commit region the commit-only rule uses.
+ A
+branch that already has a configured upstream is pushed with a plain
+`git push`,
+ following that upstream wherever it lives;
+ only a branch with no
+upstream yet is pushed with `git push --set-upstream origin HEAD`,
+ so a
+branch tracking another remote never has its tracking configuration silently
+re-pointed to origin.
  The push runs against the real git binary
 in the same directory the commit landed in (respecting pre-subcommand
 `-C <path>`),
@@ -204,9 +241,14 @@ shown;
  a pre-push
 block,
  or an offline error stays diagnosable.
- Auto-push is skipped when the
-repository has no `origin` remote,
- since there is nowhere to back up to.
+ Auto-push is skipped silently
+when there is nowhere to back up to (no upstream and no `origin` remote),
+ and
+skipped with a printed note when HEAD is detached (mid-rebase,
+mid-cherry-pick,
+ or a detached checkout),
+ where pushing `HEAD` cannot name a
+branch and previously produced a confusing guaranteed failure.
 
 Because git ignores a post-commit hook's exit status,
  a failed backup push is
