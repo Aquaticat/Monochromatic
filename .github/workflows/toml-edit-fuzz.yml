@@ -1,0 +1,59 @@
+name: toml-edit-fuzz
+
+# Runs the property-based fuzz smoke for @monochromatic-dev/module-toml-edit on
+# changes that touch the package, its shared fixtures, or the fuzzing decision
+# doc. The same *.property.unit.test.ts files run bounded in test:unit and as a
+# short per-property campaign through the package fuzz task. See
+# packages/module/toml-edit/HANDOVER.fuzzing.md and
+# docs/decisions/toml-edit-fuzzing.md.
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+    - 'packages/module/toml-edit/**'
+    - 'packages/test-fixture/toml-edit/**'
+    - 'docs/decisions/toml-edit-fuzzing.md'
+    - '.github/workflows/toml-edit-fuzz.yml'
+  merge_group:
+    branches: ['main']
+  push:
+    branches: ['main']
+    paths:
+    - 'packages/module/toml-edit/**'
+    - 'packages/test-fixture/toml-edit/**'
+    - 'docs/decisions/toml-edit-fuzzing.md'
+    - '.github/workflows/toml-edit-fuzz.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+    - name: Set up mise (skip auto-install of all tools)
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+
+    - name: Install pnpm and node
+      run: mise install 'npm:pnpm' node
+
+    - name: Install dependencies
+      run: mise exec -- pnpm install --frozen-lockfile
+
+    - name: Type-check
+      run: mise run //packages/module/toml-edit:lint:types
+
+    - name: Build the bundle
+      run: mise run //packages/module/toml-edit:build
+
+    - name: Unit suite (bounded property runs plus fixtures)
+      run: mise run //packages/module/toml-edit:test:unit
+
+    - name: Fuzz smoke (short per-property campaign)
+      # A short per-property budget, not the 60s local default, keeps the smoke
+      # bounded while still exploring well past the bounded-mode run count.
+      run: mise run //packages/module/toml-edit:fuzz --budget 3000
