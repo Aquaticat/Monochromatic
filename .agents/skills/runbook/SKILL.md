@@ -132,6 +132,24 @@ when their eyes scan the output.
 - Expect `editord listening on port 4400`, not "the daemon should start".
 - Expect `{ "zeroSize": 0, "zeroMatch": 0 }`, not "the size check passes".
 
+## Pull-request-opening steps
+
+Any runbook step (or direct action) that opens a PR follows this lifecycle:
+
+1. Open the PR as a draft (`gh pr create --draft ...`).
+   Never open ready-for-review directly.
+2. Wait a few minutes for auto reviewers (e.g. Copilot) to post their comments.
+3. Address every reviewer comment:
+   fix what is right (follow-up commits, no amend or force-push),
+   reply with verified reasoning where a change is not warranted,
+   and resolve each thread.
+4. Only then convert the PR to ready for review (`gh pr ready <number>`).
+
+A runbook whose Steps section opens PRs must encode all four stages,
+including the expected outcome of the draft state
+(`gh pr view <number> --json isDraft` prints `{"isDraft":true}`)
+and the final conversion.
+
 ## File placement
 
 A runbook or handover that spans the whole repo lives in `docs/handover/<topic>.md`,
