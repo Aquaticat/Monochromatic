@@ -19,8 +19,9 @@ soundness bugs and three of them crashes (`find_all` reverse/forward null
 mismatch at `ldfa.rs:833/878/906` = bug-11, the algebra reentrant-union panic =
 bug-04, the `rev_trivial` dead branch = bug-05). bug-11 was found by the
 reconstructed Lean position-level lane and is the one finding the internal
-oracles structurally cannot reach (a `find_all`-only path that crashes in
-debug-assertions builds and silently drops the leftmost match in release). The
+oracles structurally cannot reach: `find_all` and `is_match` both crash in
+debug-assertions builds, and in release `find_all` silently drops the leftmost
+match (an internally-consistent-but-wrong result the position reference exposes). The
 five oracle-only soundness bugs (bug-02/03/07/08/10) were
 re-confirmed byte-identical on the *unmodified* stock crate (not just the
 instrumented harness), and shown to survive the arm-bug-01 driver fix, so the

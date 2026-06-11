@@ -62,11 +62,16 @@ but the forward derivative of the same intersection is non-nullable there, so
 `fwd_update` returns `NO_MATCH`. The invariant is violated:
 
 - Debug-assertions builds (cargo-fuzz, any `debug_assertions` consumer, `cargo
-  test`, dev builds): the `debug_assert_ne!` fires, a hard panic. Any caller of
-  `find_all` on such a pattern crashes the process (DoS).
+  test`, dev builds): the `debug_assert_ne!` fires, a hard panic. This reaches
+  BOTH `find_all` AND `is_match` (`is_match` routes through `scan_fwd_all` for
+  this intersection class): `is_match(b"abca")` panics at `ldfa.rs:906`,
+  `is_match(b"ca")` at `ldfa.rs:833`. Any caller on such a pattern crashes the
+  process (DoS), not just `find_all` callers.
 - Release builds (default `debug-assertions = false`): the assert is compiled
-  out and the `if l_max_end != NO_MATCH` guard drops the unconfirmed start, so
-  `find_all` silently omits a real match.
+  out and the `if l_max_end != NO_MATCH` guard drops the unconfirmed start.
+  `find_all` then silently omits a real match (soundness; see below). `is_match`
+  is unaffected in release because some other match still exists, so the existence
+  answer stays correct (`true`); the release soundness impact is `find_all`-only.
 
 ## Soundness (release), against the Lean ground truth
 
@@ -88,11 +93,23 @@ On `"ca"` and `"c"` the engine drops the leftmost match entirely, so even
 Surfaced by the reconstructed Lean position-level lane: the AST corpus case
 R1612 (`((((?!a))|b)&(~((.&[cd]))))` on `"abca"`) was the only trust0
 disagreement in a 1954-case run (the other two disagreements were nested
-lookbehind-of-`\A`, the documented-unfaithful translator shape). The internal
-self-consistency / SIMD oracles cannot reach this: it is a `find_all`-only path
-(`is_match` uses a different driver and does not panic), and in release the
-result is internally self-consistent, just incomplete, so only an external
-position reference exposes it.
+lookbehind-of-`\A`, the documented-unfaithful translator shape). The earlier
+oracle and libFuzzer runs saw only two panic sites (`algebra:2724` = bug-04,
+`engine/lib.rs:1824` = bug-05); the `ldfa.rs` site did not appear because the
+random/adversarial pattern corpora did not sample this exact shape (a NEGATIVE
+lookahead in an alternation, intersected with a complement of a char that occurs
+in the haystack and differs from the lookahead char). The Lean AST generator,
+which mixes `Intersection`/`Negation`/`NegLookahead` nodes explicitly, did. The
+release-mode soundness half (`find_all` dropping a match while staying internally
+self-consistent) is additionally invisible to the internal oracles and needs the
+external position reference; the crash half is engine-internal (the engine trips
+its own assert).
+
+Trigger shape (all required): a negative lookahead `(?!x)` as one branch of an
+alternation `(?!x)|...`, intersected `&` with a complement `~(y)` where `y`
+occurs in the haystack and `y != x`. Removing the alternation
+(`(?!x)&~(y)`), using a positive/optional branch instead of negative lookahead,
+or making `y == x` or absent from the haystack, all suppress it.
 
 Distinct from:
 
