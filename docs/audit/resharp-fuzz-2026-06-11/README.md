@@ -191,6 +191,19 @@ flags so they are routed to adjudication rather than mistaken for bugs). The Lea
 tooling under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`, `leanrust`,
 `relprobe`, `nullsprobe`).
 
+### ARM / x86 parity
+
+The Lean lane ran the rust side on x86, but every Lean-found bug lives in
+arch-independent code. bug-11/bug-12/bug-13 were rebuilt from pristine source on
+the Apple M1 (aarch64) and reproduce byte-identically: bug-11 panics at
+`ldfa.rs:906`, bug-12 returns `[(2,2)]` for `((?!b)|ba)&(aa)?` on `"ab"`, bug-13
+returns `[(0,1),(1,1),(2,2)]` for `a?&(?=a)?` on `"ab"` -- the same as x86. This
+is expected: they are in the lazy-DFA `ldfa.rs` driver, not the SIMD intrinsics.
+arm-bug-01 remains the ONLY arch-specific finding (a SIMD-prefilter bug, and even
+it is identical on NEON and AVX2, so the defect is in the arch-independent driver
+that gates the prefilter). Net: the engine's correctness bugs are shared across
+arches; the NEON vs AVX2 split surfaced one accelerator-gating bug, not a family.
+
 ### 2026-06-04 re-verification
 
 Every 06-04 reproducer was rerun against v0.6.12 and classified fixed / live /

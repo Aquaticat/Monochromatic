@@ -231,6 +231,21 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 07:40 -- FOCUSED round + ARM parity. Focused Lean round (FOCUS flag,
+  inter/neg/lookaround heavy, single-file eval = 466s/3199 cases, no hang, no
+  per-chunk import reload) found 1 trust0: R292 `(\W|(?!c))&a` on "a" -> rust
+  `[(0,1)]` phantom, Lean `none`. SAME mechanism as bug-13 (zero-width lookahead
+  on one side of `&` paired with consuming on the other leaks width), but with the
+  consuming side NOT nullable (lookahead is an alternation branch on the opposite
+  side). Folded into bug-13 as "form B"; corrected bug-13's too-narrow "both
+  operands nullable" claim. NOT a new count (like R2513->bug-05). Committed
+  (950be7fb). ARM PARITY CLOSED: rebuilt the pristine engine from source on the M1
+  (aarch64) and ran bug-11/12/13 minimals -> byte-IDENTICAL to x86 (bug-11 panic
+  ldfa.rs:906, bug-12 `[(2,2)]`, bug-13 `[(0,1),...]`). Confirms they're in the
+  arch-independent ldfa.rs driver; arm-bug-01 stays the ONLY arch-specific
+  (SIMD) finding. README parity note added. Campaign: 13 root causes, all
+  stock-confirmed, bug-11/12/13 also ARM-confirmed.
+
 - 07:15 -- 13TH ROOT CAUSE (bug-13), seed-4004 R48. `a?&(?=a)?` -> find_all
   `[(0,1),(1,1),(2,2)]` and find_anchored `Some((0,1))`, but the intersection is
   zero-width-only (`a?`'s width-1 span cannot equal the lookahead's zero-width
