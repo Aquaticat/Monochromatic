@@ -24,7 +24,7 @@ extends = "build:js:client"
 
 [tasks."build:site"]
 description = "Build static site from MDX content"
-run = "bun src/build.ts"
+run = "node src/build.ts"
 
 [tasks."build:site:clean"]
 description = "Build static site from scratch (no cache)"
@@ -33,7 +33,7 @@ run = """
 const { rmSync } = await import('node:fs')
 const { execFileSync } = await import('node:child_process')
 rmSync('.cache', { recursive: true, force: true })
-execFileSync('bun', ['src/build.ts'], { stdio: 'inherit' })
+execFileSync('node', ['src/build.ts'], { stdio: 'inherit' })
 """
 
 [tasks."build:search"]
@@ -42,7 +42,7 @@ run = "pagefind --site dist"
 
 [tasks."build:postprocess"]
 description = "Run pagefind and content-hash assets (pagefind runs in parallel with phases 1+2 of fingerprinting)"
-run = "bun src/build/postprocess.ts"
+run = "node src/build/postprocess.ts"
 
 [tasks."build:compress"]
 description = "Compress dist/ with zstd via node:zlib (worker_threads)"
@@ -64,7 +64,7 @@ run = "caddy run --config Caddyfile"
 
 [tasks."generate:favicons"]
 description = "Generate favicon files from SVG source if missing"
-run = "bun src/build/favicon.ts"
+run = "node src/build/favicon.ts"
 
 [tasks.format]
 description = "Run all format tasks: fonts, images. Run manually when source changes affect either."
@@ -72,11 +72,11 @@ run = [{ tasks = ["format:fonts", "format:images"] }]
 
 [tasks."format:fonts"]
 description = "Subset fonts-source/*.woff2 to public/*.woff2 based on glyph usage in src/. Slow (~5s); run manually."
-run = "bun src/build/subset-fonts.ts"
+run = "node src/build/subset-fonts.ts"
 
 [tasks."format:images"]
 description = "Convert non-AVIF raster images to AVIF counterparts"
-run = "bun src/images/format.ts"
+run = "node src/images/format.ts"
 
 [tasks."audit:weight"]
 description = "Report per-page transfer size (min, max, mean, median) for dist/"

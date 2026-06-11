@@ -9,10 +9,10 @@ description = "Smoke-test Storage Box hostname resolver without network access"
 shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
-const result = JSON.parse(execFileSync('bun', ['run', 'resolve_storagebox_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
+const result = JSON.parse(execFileSync('node', ['resolve_storagebox_hosts.ts'], { input: '{"hostnames":""}', encoding: 'utf8' }))
 if (result.ips !== '') { throw new Error(`expected empty ips, got ${result.ips}`) }
 let wildcardFailed = false
-try { execFileSync('bun', ['run', 'resolve_storagebox_hosts.ts'], { input: '{"hostnames":"*.your-storagebox.de"}', encoding: 'utf8' }) } catch { wildcardFailed = true }
+try { execFileSync('node', ['resolve_storagebox_hosts.ts'], { input: '{"hostnames":"*.your-storagebox.de"}', encoding: 'utf8' }) } catch { wildcardFailed = true }
 if (!wildcardFailed) { throw new Error('expected wildcard hostname resolution to fail') }
 """
 
@@ -23,7 +23,7 @@ shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const host = process.env.usage_host
-const result = JSON.parse(execFileSync('bun', ['run', 'resolve_storagebox_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
+const result = JSON.parse(execFileSync('node', ['resolve_storagebox_hosts.ts'], { input: JSON.stringify({ hostnames: host }), encoding: 'utf8' }))
 if (result.ips === '') { throw new Error(`expected resolved ips for ${host}`) }
 """
 
@@ -34,11 +34,11 @@ run = """
 const { execFileSync } = await import('node:child_process')
 const { existsSync } = await import('node:fs')
 if (existsSync('cache_AS41231.json')) {
-  const asn = JSON.parse(execFileSync('bun', ['run', 'fetch_ips.ts'], { input: '{"asn":"AS41231"}', encoding: 'utf8' }))
+  const asn = JSON.parse(execFileSync('node', ['fetch_ips.ts'], { input: '{"asn":"AS41231"}', encoding: 'utf8' }))
   if (asn.ips === '') { throw new Error('expected cached AS41231 ips') }
 }
 if (existsSync('cache_tor_relays.json')) {
-  const tor = JSON.parse(execFileSync('bun', ['run', 'fetch_tor_relays.ts'], { input: '{}', encoding: 'utf8' }))
+  const tor = JSON.parse(execFileSync('node', ['fetch_tor_relays.ts'], { input: '{}', encoding: 'utf8' }))
   if (tor.ips === '') { throw new Error('expected cached Tor relay ips') }
 }
 """

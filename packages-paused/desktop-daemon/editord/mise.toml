@@ -10,7 +10,7 @@ extends = "build:js:client"
 
 [tasks."build:css"]
 description = "Build global CSS from h-css style modules"
-run = "bun src/client/styles/build.ts"
+run = "node src/client/styles/build.ts"
 
 [tasks."watch:build"]
 extends = "watch:build"
@@ -37,16 +37,16 @@ hide = true
 description = "Start editord server with file-watch auto-restart"
 # Driven by @monochromatic-dev/dev-script-watch-restart: TS-first watcher
 # with an in-process content-hash cache (so external editors' byte-identical
-# format-on-save writes do not trigger a restart), spawning the bun child
+# format-on-save writes do not trigger a restart), spawning the node child
 # directly via node:child_process so SIGTERM reaches it through one process
 # layer. See docs/troubleshooting/mise-watch.md for the failure modes that
 # motivated this migration.
-run = "watch-restart -w src/server -- bun src/server/index.ts"
+run = "watch-restart -w src/server -- node src/server/index.ts"
 
 [tasks."start:server"]
 hide = true
 description = "Start editord server (single run)"
-run = "bun src/server/index.ts"
+run = "node src/server/index.ts"
 
 [tasks.lint]
 extends = "lint"

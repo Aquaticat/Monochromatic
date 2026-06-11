@@ -5,7 +5,7 @@ shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const args = (process.env.usage_args ?? '').trim().split(' ').filter(Boolean)
-execFileSync('bun', ['src/cli.ts', ...args], { stdio: 'inherit' })
+execFileSync('node', ['src/cli.ts', ...args], { stdio: 'inherit' })
 """
 
 [tasks.build]
@@ -55,5 +55,5 @@ const tfvars = '../../config/tofu/hetzner.auto.tfvars'
 const tokenLine = readFileSync(tfvars, 'utf8').split('\\n').find((line) => line.trimStart().startsWith('hcloud_token'))
 if (tokenLine === undefined) { throw new Error(`hcloud_token not found in ${tfvars}`) }
 const token = tokenLine.slice(tokenLine.indexOf('"') + 1, tokenLine.lastIndexOf('"'))
-execFileSync('bun', ['src/backends/hetzner/provision.expensive.unit.test.ts'], { stdio: 'inherit', env: { ...process.env, HCLOUD_TOKEN: token } })
+execFileSync('node', ['src/backends/hetzner/provision.expensive.unit.test.ts'], { stdio: 'inherit', env: { ...process.env, HCLOUD_TOKEN: token } })
 """

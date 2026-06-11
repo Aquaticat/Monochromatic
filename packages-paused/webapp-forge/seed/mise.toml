@@ -3,7 +3,7 @@ description = "Seed a synthetic forge dataset; --repos=N --users=N --seed=N --ou
 usage = 'arg "[args]" var=#true help="Forwarded to seed CLI"'
 run = """
 let args = ($env.usage_args? | default '' | split row ' ' | where {|p| $p != ''})
-bun src/cli.ts ...$args
+node src/cli.ts ...$args
 """
 
 [tasks.test]

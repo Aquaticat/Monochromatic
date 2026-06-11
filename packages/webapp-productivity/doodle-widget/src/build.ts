@@ -17,9 +17,6 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import pageSvg1 from './assets/output_1.svg' with { type: 'text', };
-import pageSvg2 from './assets/output_2.svg' with { type: 'text', };
-
 import { renderPage, } from './page.ts';
 import { resolveSourceUrl, } from './source-url.ts';
 import { renderStyles, } from './styles.ts';
@@ -53,8 +50,24 @@ console.error('[doodle-widget] building...',);
  * which uses size-based detection to target actual backgrounds.
  */
 const svgBackgrounds = [
-  pageSvg1,
-  pageSvg2,
+  await readFile(
+    join(
+      PACKAGE_DIR,
+      'src',
+      'assets',
+      'output_1.svg',
+    ),
+    'utf8',
+  ),
+  await readFile(
+    join(
+      PACKAGE_DIR,
+      'src',
+      'assets',
+      'output_2.svg',
+    ),
+    'utf8',
+  ),
 ];
 
 /**

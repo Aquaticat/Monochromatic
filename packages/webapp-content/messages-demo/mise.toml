@@ -28,7 +28,7 @@ extends = "watch:build:js:client"
 [tasks."start:server"]
 hide = true
 description = "Run the h3 server (used by dev:site under mise watch)"
-run = "bun src/server.ts"
+run = "node src/server.ts"
 
 [tasks."dev:site"]
 description = "Start the messages-demo server in watch mode"
@@ -36,11 +36,11 @@ run = "mise watch -w src -r -- start:server"
 
 [tasks."seed:demo"]
 description = "Seed 10 000 mixed-size messages for pagination + feed verification"
-run = "bun src/lib/seed.ts --count=10000"
+run = "node src/lib/seed.ts --count=10000"
 
 [tasks."seed:stress"]
 description = "Seed one synthetic huge message (default 1 GB; pass --huge=N for N GB)"
-run = "bun src/lib/seed.ts --huge=1"
+run = "node src/lib/seed.ts --huge=1"
 
 [tasks.test]
 extends = "test"

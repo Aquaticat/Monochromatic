@@ -4,11 +4,11 @@ run = "bun build src/index.ts --compile --minify --bytecode --sourcemap --outfil
 
 [tasks.run]
 description = "Run hall-monitor directly"
-run = "bun src/index.ts"
+run = "node src/index.ts"
 
 [tasks.'run:dev']
 description = "Run hall-monitor with file-watch auto-restart"
-run = "mise watch -w src -r -- bun src/index.ts"
+run = "mise watch -w src -r -- node src/index.ts"
 
 [tasks.lint]
 extends = "lint"

@@ -1,14 +1,14 @@
 [tasks.run]
 description = "Build container image and import as libvirt VM"
-run = "bun src/build-and-import.ts"
+run = "node src/build-and-import.ts"
 
 [tasks.import]
 description = "Import already-built qcow2 into libvirt (skips build+convert)"
-run = "bun src/import.ts"
+run = "node src/import.ts"
 
 [tasks.push]
 description = "Push image to GHCR and sign with cosign"
-run = "bun src/sign-and-push.ts"
+run = "node src/sign-and-push.ts"
 
 [tasks.build]
 extends = "build"

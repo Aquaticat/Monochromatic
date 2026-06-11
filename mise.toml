@@ -25,9 +25,10 @@ config_roots = [
 ]
 
 [tools]
-# Primary runtime
-# Migration note: this repo is moving from Bun to Node. Keep this pin only for
-# remaining Bun-dependent tasks during transition.
+# Migration note: task execution has moved from Bun to Node. Pin retained only
+# for tasks still using Bun-specific features that have no Node equivalent:
+# hall-monitor's `bun build --compile --bytecode` standalone binary and the
+# runtime-error/bun error-output fixtures.
 # Pinned to 1.3.14 because the Rust rewrite's robustness invites serious doubts.
 bun = "1.3.14"
 
@@ -47,6 +48,7 @@ ripgrep = "latest"
 # version is what was verified locally for the rollout.
 "cargo:cargo-fuzz" = "0.13.1"
 
+# Primary runtime
 # Runs mise task logic (tasks set shell = "node -e") and the packages that
 # depend on Node APIs.
 node = "latest"
@@ -296,14 +298,14 @@ const parseUsageArgs = (raw) => {
   return argv
 }
 """
-# Runs a list of test files as `bun [bunArgs] <file>` subprocesses, bounded to
+# Runs a list of test files as `node [nodeArgs] <file>` subprocesses, bounded to
 # availableParallelism() at a time, and throws listing any that exited non-zero.
 # Interpolated into the test tasks; each sets `shell = "node -e"`.
 run_test_files = """
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
 const { availableParallelism } = await import('node:os')
-const runTestFiles = async (files, bunArgs) => {
+const runTestFiles = async (files, nodeArgs) => {
   if (files.length === 0) { return }
   const limit = Math.max(1, Math.min(availableParallelism(), files.length))
   const failures = []
@@ -312,7 +314,7 @@ const runTestFiles = async (files, bunArgs) => {
     while (next < files.length) {
       const file = files[next]
       next += 1
-      const proc = spawn('bun', [...bunArgs, file], { stdio: 'inherit' })
+      const proc = spawn('node', [...nodeArgs, file], { stdio: 'inherit' })
       const [code] = await once(proc, 'exit')
       if (code !== 0) { failures.push(file) }
     }
@@ -361,7 +363,7 @@ shell = "node -e"
 run = "{{vars.fanout}}"
 
 [task_templates."test:unit"]
-description = "Run *.unit.test.ts in parallel via bun (excludes /deprecated/ and *.expensive.* unless --all); pass file paths to filter"
+description = "Run *.unit.test.ts in parallel via node (excludes /deprecated/ and *.expensive.* unless --all); pass file paths to filter"
 usage = """
 flag "--all" help="Include /deprecated/ and *.expensive.* files; cannot be combined with file paths"
 arg "[args]" var=#true help="Test file paths to run (when provided, only those files run); cannot be combined with --all"
@@ -497,7 +499,7 @@ run = """
 const { execFileSync } = await import('node:child_process')
 execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
 const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', ...args], { stdio: 'inherit' })
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', ...args], { stdio: 'inherit' })
 """
 
 [tasks."test:e2e"]
@@ -510,7 +512,7 @@ run = """
 const { execFileSync } = await import('node:child_process')
 execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
 const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.e2e.config.ts', ...args], { stdio: 'inherit' })
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.e2e.config.ts', ...args], { stdio: 'inherit' })
 """
 
 [tasks."test:browser:chromium"]
@@ -523,7 +525,7 @@ run = """
 const { execFileSync } = await import('node:child_process')
 execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
 const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=chromium', ...args], { stdio: 'inherit' })
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=chromium', ...args], { stdio: 'inherit' })
 """
 
 [tasks."test:browser:firefox"]
@@ -536,7 +538,7 @@ run = """
 const { execFileSync } = await import('node:child_process')
 execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
 const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'bunx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=firefox', ...args], { stdio: 'inherit' })
+execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=firefox', ...args], { stdio: 'inherit' })
 """
 
 [tasks."watch:test:unit"]
@@ -559,8 +561,8 @@ if (args.length === 0) {
 } else {
   files = args
 }
-// bun --watch runs until interrupted; spawn every watcher and stay alive until they all exit.
-const watchers = files.map((file) => spawn('bun', ['--watch', file], { stdio: 'inherit' }))
+// node --watch runs until interrupted; spawn every watcher and stay alive until they all exit.
+const watchers = files.map((file) => spawn('node', ['--watch', file], { stdio: 'inherit' }))
 await Promise.all(watchers.map((proc) => once(proc, 'exit')))
 """
 
@@ -651,7 +653,7 @@ run = """
 const { execFileSync } = await import('node:child_process')
 const args = parseUsageArgs(process.env.usage_args ?? '')
 const targets = args.length === 0 ? ['.'] : args
-execFileSync('bun', ['packages/cli/markdown-lint/src/cli.ts', ...targets], { stdio: 'inherit' })
+execFileSync('node', ['packages/cli/markdown-lint/src/cli.ts', ...targets], { stdio: 'inherit' })
 """
 
 [tasks."lint:rust"]
@@ -713,7 +715,7 @@ run = """
 const { execFileSync } = await import('node:child_process')
 const args = parseUsageArgs(process.env.usage_args ?? '')
 const targets = args.length === 0 ? ['.'] : args
-execFileSync('bun', ['packages/cli/markdown-lint/src/cli.ts', '--fix', ...targets], { stdio: 'inherit' })
+execFileSync('node', ['packages/cli/markdown-lint/src/cli.ts', '--fix', ...targets], { stdio: 'inherit' })
 """
 
 #region Validation and Check Tasks
@@ -766,7 +768,7 @@ run = "pnpm approve-builds sharp"
 
 [tasks."prepare:pnpm:others:files"]
 description = "Sync file-enforcer managed files"
-run = "bun file-enforcer.config.ts"
+run = "node file-enforcer.config.ts"
 
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
@@ -813,11 +815,11 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 [tasks."sync:files"]
 alias = "file-enforcer"
 description = "Sync derived files (CLAUDE.md, oxlint config, etc.) via file-enforcer"
-run = "bun packages/dev-script/file-enforcer/src/cli.ts"
+run = "node packages/dev-script/file-enforcer/src/cli.ts"
 
 [tasks."watch:sync:files"]
 description = "Watch source files and re-sync on changes"
-run = "bun packages/dev-script/file-enforcer/src/cli.ts --watch"
+run = "node packages/dev-script/file-enforcer/src/cli.ts --watch"
 
 #endregion File Enforcer
 
@@ -830,7 +832,7 @@ shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
 const args = (process.env.usage_dry__run ?? '').trim() === 'true' ? ['--dry-run'] : []
-execFileSync('bun', ['packages/dev-script/catalog-tighten/src/index.ts', ...args], { stdio: 'inherit' })
+execFileSync('node', ['packages/dev-script/catalog-tighten/src/index.ts', ...args], { stdio: 'inherit' })
 """
 
 #endregion Catalog Tighten
@@ -843,7 +845,7 @@ usage = 'arg "<dist>" help="Path to the dist directory containing HTML files"'
 shell = "node -e"
 run = """
 const { execFileSync } = await import('node:child_process')
-execFileSync('bun', ['packages/dev-script/page-weight/src/index.ts', process.env.usage_dist], { stdio: 'inherit' })
+execFileSync('node', ['packages/dev-script/page-weight/src/index.ts', process.env.usage_dist], { stdio: 'inherit' })
 """
 
 #endregion Page Weight
@@ -876,33 +878,33 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
+  "packages/webapp-productivity/done-postcss/node_modules/.bin",
+  "packages/webapp-content/ssg-test/node_modules/.bin",
+  "packages/webapp-content/messages-demo/node_modules/.bin",
+  "packages/typeface/aquaticat/node_modules/.bin",
+  "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
+  "packages/pi/thinking-defaults/node_modules/.bin",
+  "packages/pi/terminal-title/node_modules/.bin",
   "packages/pi/statusline/node_modules/.bin",
   "packages/pi/spawn/node_modules/.bin",
-  "packages/pi/advisor/node_modules/.bin",
-  "packages/pi/current-time-context/node_modules/.bin",
-  "packages/pi/thinking-defaults/node_modules/.bin",
-  "packages/pi/auto-mode/node_modules/.bin",
-  "packages/pi/terminal-title/node_modules/.bin",
   "packages/pi/morph-compact/node_modules/.bin",
-  "packages/rolldown-plugins/import-attributes/node_modules/.bin",
-  "packages/claude-code-plugins/correction-reminder/node_modules/.bin",
-  "packages/claude-code-plugins/prompt-time/node_modules/.bin",
+  "packages/pi/current-time-context/node_modules/.bin",
+  "packages/pi/auto-mode/node_modules/.bin",
+  "packages/pi/advisor/node_modules/.bin",
+  "packages/module/token-count/node_modules/.bin",
+  "packages/mcp/mvm/node_modules/.bin",
+  "packages/dev-script/mutation-test/node_modules/.bin",
+  "packages/dev-script/file-enforcer/node_modules/.bin",
+  "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/claude-code-plugins/terminal-title/node_modules/.bin",
   "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
   "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
+  "packages/claude-code-plugins/prompt-time/node_modules/.bin",
+  "packages/claude-code-plugins/guardrail/node_modules/.bin",
+  "packages/claude-code-plugins/correction-reminder/node_modules/.bin",
   "packages/claude-code-plugins/claude-spawn/node_modules/.bin",
   "packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
-  "packages/claude-code-plugins/guardrail/node_modules/.bin",
-  "packages/typeface/aquaticat/node_modules/.bin",
-  "packages/webapp-productivity/done-postcss/node_modules/.bin",
-  "packages/webapp-content/messages-demo/node_modules/.bin",
-  "packages/webapp-content/ssg-test/node_modules/.bin",
-  "packages/mcp/mvm/node_modules/.bin",
-  "packages/dev-script/mutation-test/node_modules/.bin",
-  "packages/dev-script/deps-cube/node_modules/.bin",
-  "packages/dev-script/file-enforcer/node_modules/.bin",
-  "packages/module/token-count/node_modules/.bin",
 ]
 
 # Enables Slint's experimental builtins (e.g. FlexboxLayout) in slint-lsp when it

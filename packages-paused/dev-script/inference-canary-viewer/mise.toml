@@ -7,7 +7,7 @@ description = "Generate static dashboard from canary history and artifacts"
 run = """
 task-depends -s "../inference-canary/src/*.ts" -s "../inference-canary/src/codegen/**/*" -s "../inference-canary/src/simulation/**/*" -s "../inference-canary/src/stak/**/*" -o "../inference-canary/src/canary-lint/**/*" -- mise run //packages/dev-script/inference-canary:run
 mise run //packages/dev-script/inference-canary-viewer:build:js:client
-bun src/build.ts
+node src/build.ts
 """
 
 [tasks.'dev:watch']

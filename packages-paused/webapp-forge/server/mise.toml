@@ -1,7 +1,7 @@
 [tasks."start:server"]
 hide = true
 description = "Run the h3 forge server (used by dev:server under mise watch)"
-run = "bun src/index.ts"
+run = "node src/index.ts"
 
 [tasks."dev:server"]
 description = "Start the forge server in watch mode"

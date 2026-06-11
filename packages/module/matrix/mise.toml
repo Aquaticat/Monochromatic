@@ -28,4 +28,4 @@ extends = "lint:types"
 [tasks.test]
 description = "Self-test matrix (builds first)"
 depends = ["build"]
-run = "bun src/self.unit.test.ts"
+run = "node src/self.unit.test.ts"

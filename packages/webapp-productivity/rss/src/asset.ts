@@ -1,18 +1,23 @@
 import { readFile, } from 'node:fs/promises';
 
-import clientCss from './client.css' with { type: 'text', };
 import { l, } from './log.ts';
 
 l.debug(`asset module loading`,);
 
 /**
  * CSS source for the RSS reader interface.
- * Imported at build time via static asset import.
+ * Read from `src/client.css` at startup; inlined into served HTML.
  * Also used by `itemToFeed` in html.ts for iframe content styling.
  *
  * @see `indexHtmlStart` for where it is inlined into the page
  */
-export const css: string = clientCss;
+export const css: string = await readFile(
+  new URL(
+    './client.css',
+    import.meta.url,
+  ),
+  'utf8',
+);
 
 /**
  * Bundled client-side JavaScript for the RSS reader interface.

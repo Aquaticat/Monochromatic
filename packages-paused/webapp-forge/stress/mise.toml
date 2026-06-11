@@ -3,16 +3,16 @@ description = "Run a stress scenario; --scenario=hot-repo|bursty-comment (or all
 usage = 'arg "[args]" var=#true help="Forwarded to stress CLI"'
 run = """
 let args = ($env.usage_args? | default '' | split row ' ' | where {|p| $p != ''})
-bun src/cli.ts ...$args
+node src/cli.ts ...$args
 """
 
 [tasks."stress:hot-repo"]
 description = "Run the hot-repo stress scenario"
-run = "bun src/cli.ts --scenario=hot-repo"
+run = "node src/cli.ts --scenario=hot-repo"
 
 [tasks."stress:bursty-comment"]
 description = "Run the bursty-comment stress scenario"
-run = "bun src/cli.ts --scenario=bursty-comment"
+run = "node src/cli.ts --scenario=bursty-comment"
 
 [tasks.test]
 extends = "test"

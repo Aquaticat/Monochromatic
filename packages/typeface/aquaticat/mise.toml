@@ -1,6 +1,6 @@
 [tasks."build:font"]
 description = "Build Aquaticat font from SVG glyphs"
-run = "bun src/build-font.ts"
+run = "node src/build-font.ts"
 
 [tasks.lint]
 extends = "lint"
