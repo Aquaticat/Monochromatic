@@ -84,6 +84,14 @@ policy stays spec-correct: only valid `CRLF` is rewritten. The trade-off is that
 `CRLF` document no longer round-trips byte-identically; it round-trips as `LF` by
 design.
 
+The policy is symmetric on output: the canonical builder's `lineBreak` option
+(formerly `'\n' | '\r\n'`) was dropped, so canonical emission only ever writes
+`LF`. No caller requested `CRLF` output, and keeping an opt-in knob that
+re-introduces the line ending the parser refuses to round-trip was the asymmetry
+the normalization set out to remove. The package is now `LF`-only end to end,
+which is what lets `splice.ts` and `comments.ts` reason about a single-byte
+newline without any `CR` branch.
+
 ## Conformance (phase 6)
 
 Package-local node adapters under `packages/module/toml-edit/src/conformance/`

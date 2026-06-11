@@ -75,10 +75,8 @@ function canonicalFromEmpty({ edit, }: { readonly edit: TomlEditState; },): stri
     const lines = edit.headerComment
       .split('\n',);
     for (const line of lines)
-      parts.push(`# ${line}${edit.canonical
-        .lineBreak}`,);
-    parts.push(edit.canonical
-      .lineBreak,);
+      parts.push(`# ${line}\n`,);
+    parts.push('\n',);
   }
   /**
    * Pending insertions become the body when there is no parsed source.
@@ -98,8 +96,7 @@ function canonicalFromEmpty({ edit, }: { readonly edit: TomlEditState; },): stri
       && (result !== '')
       && (!result.endsWith('\n',))
   ) {
-    return `${result}${edit.canonical
-      .lineBreak}`;
+    return `${result}\n`;
   }
   return result;
 }

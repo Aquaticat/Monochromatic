@@ -74,7 +74,6 @@ export type TomlComment = {
  */
 export type CanonicalOptions = {
   readonly indent: number;
-  readonly lineBreak: '\n' | '\r\n';
   readonly arrayInlineThreshold: number;
   readonly arrayInlineMaxColumns: number;
   readonly preferDottedKeysForCreate: boolean;
@@ -94,7 +93,6 @@ export type CanonicalOptions = {
  */
 export type CanonicalOptionsOverride = {
   readonly indent?: number;
-  readonly lineBreak?: '\n' | '\r\n';
   readonly arrayInlineThreshold?: number;
   readonly arrayInlineMaxColumns?: number;
   readonly preferDottedKeysForCreate?: boolean;
@@ -232,7 +230,6 @@ export type TomlValueInput = unknown;
  */
 export const DEFAULT_CANONICAL_OPTIONS: CanonicalOptions = Object.freeze({
   indent: 2,
-  lineBreak: '\n',
   arrayInlineThreshold: 4,
   arrayInlineMaxColumns: 80,
   preferDottedKeysForCreate: false,
