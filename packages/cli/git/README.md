@@ -131,6 +131,32 @@ implicitly.
  Pathless commits remain valid when git permits them with `--amend`,
 `--allow-empty`,
  or `--pathspec-from-file`.
+ Because a pathless only-mode commit reuses HEAD's existing tree (git documents
+that `git commit --only` with no pathspec ignores the index),
+ pathless `--amend`
+and `--allow-empty` forms get one more check before `-o` is injected:
+ when the
+index differs from HEAD,
+ the wrapper rejects the command instead of letting an
+injected `-o` silently ignore the staged changes,
+ which would otherwise turn
+`git add <path>` followed by `git commit --amend --no-edit` into a silent no-op
+(new commit hash,
+ old tree,
+ change left staged,
+ no warning).
+ The rejection
+message names the explicit choices:
+ pass pathspecs to include those paths
+(`git commit --amend <path>`),
+ pass `--only` to proceed without them,
+ or pass
+`--no-only` to commit the entire index.
+ When the index matches HEAD,
+ or git
+cannot answer (for example before the first commit),
+ the pathless form passes
+through with `-o` injected as before.
  Skipped when `-o`,
  `--only`,
  or
