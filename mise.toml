@@ -367,6 +367,19 @@ const runTestFiles = async (files, nodeArgs) => {
   if (failures.length > 0) { throw new Error(`test files failed: ${failures.join(', ')}`) }
 }
 """
+# Shared Playwright-in-podman runner for the test:browser / test:e2e family. Owns
+# the execFileSync import and the parseUsageArgs() call (so the interpolating task
+# must put {{vars.parse_usage_args}} BEFORE {{vars.run_playwright}} and must not
+# re-import execFileSync). Each task body shrinks to one runPlaywright(config, flags)
+# call; the four tasks differ only in config file and --project flag.
+run_playwright = """
+const { execFileSync } = await import('node:child_process')
+const runPlaywright = (config, extraFlags = []) => {
+  execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
+  const args = parseUsageArgs(process.env.usage_args ?? '')
+  execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', config, ...extraFlags, ...args], { stdio: 'inherit' })
+}
+"""
 
 [task_templates.build]
 shell = "node -e"
@@ -540,10 +553,8 @@ usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"
 shell = "node -e"
 run = """
 {{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
-const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', ...args], { stdio: 'inherit' })
+{{vars.run_playwright}}
+runPlaywright('playwright.browser.config.ts')
 """
 
 [tasks."test:e2e"]
@@ -553,10 +564,8 @@ usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"
 shell = "node -e"
 run = """
 {{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
-const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.e2e.config.ts', ...args], { stdio: 'inherit' })
+{{vars.run_playwright}}
+runPlaywright('playwright.e2e.config.ts')
 """
 
 [tasks."test:browser:chromium"]
@@ -566,10 +575,8 @@ usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"
 shell = "node -e"
 run = """
 {{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
-const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=chromium', ...args], { stdio: 'inherit' })
+{{vars.run_playwright}}
+runPlaywright('playwright.browser.config.ts', ['--project=chromium'])
 """
 
 [tasks."test:browser:firefox"]
@@ -579,10 +586,8 @@ usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"
 shell = "node -e"
 run = """
 {{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-execFileSync('mise', ['run', 'prepare:playwright'], { stdio: 'inherit' })
-const args = parseUsageArgs(process.env.usage_args ?? '')
-execFileSync('podman', ['run', '--rm', '-v', `${process.cwd()}:/work:Z`, '-w', '/work', 'monochromatic-playwright', 'npx', 'playwright', 'test', '--config', 'playwright.browser.config.ts', '--project=firefox', ...args], { stdio: 'inherit' })
+{{vars.run_playwright}}
+runPlaywright('playwright.browser.config.ts', ['--project=firefox'])
 """
 
 [tasks."watch:test:unit"]
@@ -774,6 +779,11 @@ run = ["mise install", "mise upgrade"]
 [tasks.prepare]
 description = "Prepare environment (install Playwright browsers, etc.)"
 shell = "node -e"
+# Deliberate variant of the vars.fanout pattern, NOT a reuse: prepare:pnpm must run
+# first and complete (children need node_modules) before the remaining prepare:*
+# children fan out in parallel, and pnpm is excluded from that parallel set. The
+# shared fanout var has no sequential-first/exclude parameter; adding one for this
+# single consumer would complicate ~9 other fanout callers, so this stays inline.
 run = """
 const { execFileSync, spawn } = await import('node:child_process')
 const { once } = await import('node:events')
@@ -906,9 +916,7 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
-  "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/webapp-content/ssg-test/node_modules/.bin",
-  "packages/webapp-content/messages-demo/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
   "packages/rolldown-plugins/import-attributes/node_modules/.bin",
   "packages/pi-shared/model-selection/node_modules/.bin",
@@ -921,18 +929,9 @@ _.path = [
   "packages/pi/auto-mode/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/module/token-count/node_modules/.bin",
-  "packages/mcp/mvm/node_modules/.bin",
   "packages/dev-script/mutation-test/node_modules/.bin",
   "packages/dev-script/file-enforcer/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
-  "packages/claude-code-plugins/terminal-title/node_modules/.bin",
-  "packages/claude-code-plugins/stop-reminders/node_modules/.bin",
-  "packages/claude-code-plugins/session-start-housekeeping/node_modules/.bin",
-  "packages/claude-code-plugins/prompt-time/node_modules/.bin",
-  "packages/claude-code-plugins/guardrail/node_modules/.bin",
-  "packages/claude-code-plugins/correction-reminder/node_modules/.bin",
-  "packages/claude-code-plugins/claude-spawn/node_modules/.bin",
-  "packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
 ]
 
 # Enables Slint's experimental builtins (e.g. FlexboxLayout) in slint-lsp when it
