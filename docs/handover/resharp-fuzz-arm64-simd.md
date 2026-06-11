@@ -231,6 +231,36 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 08:40 -- MAJOR HONEST REFRAME via the dotnet reference (the integrity moment).
+  Installed dotnet on Mac (`brew install dotnet`), built `resharp-dotnet`
+  (ieviev's OTHER RE# impl), wrote an fsi adjudicator, ran EVERY bug minimal. The
+  dotnet reference REJECTS at compile several construct classes the rust crate
+  ACCEPTS: "lookarounds inside union", "nested lookarounds", "anchors inside
+  complement", `\b`/`\B` away from word chars. Decisive guard check: rust HAS the
+  same machinery (`ensure_supported_rec`/`Compatibility::LookaroundUnion`,
+  lib.rs:762/772) but DELIBERATELY accepts a SUPERSET ("to unlock some patterns
+  outside RE# fragment", lib.rs:803) -- so the Tier-2 defect is rust failing on
+  patterns its OWN guard blessed, not just diverging from a stricter peer.
+  TWO TIERS (dotnet-adjudication.md):
+   * LOAD-BEARING (in-subset / self-evident): bug-04 & bug-05 CRASHES (dotnet
+     matches the patterns cleanly -> `[(0,3)]` / `[(0,2),(2,2)]`, rust panics --
+     CLEAN rust-specific crashes, lead with these); bug-02 `(?<=a)` (dotnet im=
+     false [] confirms rust find_anchored=Some(0:0) is a phantom); bug-03 `(?=c)`
+     (dotnet find_all=[(0,0)] confirms rust stream=1:1 is the wrong side);
+     bug-06/09 perf; arm-bug-01 SIMD (rust-internal).
+   * SECONDARY (reference rejects pattern; rust accepts+fails): bug-11 crash
+     (out-of-subset but a panic is a defect regardless); bug-07/08/10 rust-
+     INTERNAL self-inconsistencies (default-vs-hardened, im-vs-find_all, find_anch-
+     vs-find_all -- demonstrable w/o any reference, only caveat is rust should
+     reject the pattern); bug-12/13 Lean-corroborated wrong spans (weakest --
+     stopped treating Lean as sole authority for these out-of-subset patterns).
+  Headline restructured around tiers (NOT "13 distinct"); per-file banners added;
+  committed (19c2d76a + 38615332). Advisor steer owned: the Lean lane's yield
+  (bug-11/12/13) landed mostly Tier-2; the strong core is the fuzzer crashes +
+  dotnet-confirmable consistency bugs. The complement-of-anchor "suspects"
+  (a(~(\z))) are RESOLVED: dotnet rejects them too -> rust-accepts-mishandles,
+  same secondary class, NOT a clean bug-14. STOPPING active mining; consolidating.
+
 - 08:05 -- trust0 region EXHAUSTED + complement-of-anchor frontier opened.
   Refined `trust()` to context-aware (anchor inside complement/lookbehind ->
   trust1; bare `\A`/`\z` -> trust0; lookbehind-of-lookaround -> trust1), then
