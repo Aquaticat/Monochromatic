@@ -438,6 +438,14 @@ export type CommitRegion = {
    */
   readonly hasPathlessAllowedFlag: boolean;
   /**
+   * Whether argv amends the previous commit (`--amend`).
+   */
+  readonly hasAmendFlag: boolean;
+  /**
+   * Whether argv permits a commit recording no change (`--allow-empty`).
+   */
+  readonly hasAllowEmptyFlag: boolean;
+  /**
    * Whether argv asks git to read pathspecs from file or stdin.
    */
   readonly hasPathspecFromFile: boolean;
@@ -508,6 +516,8 @@ export function parseCommitRegion(
       hasExplicitOnlyFlag: false,
       hasNoOnlyFlag: false,
       hasPathlessAllowedFlag: false,
+      hasAmendFlag: false,
+      hasAllowEmptyFlag: false,
       hasPathspecFromFile: false,
       hasPathspec: false,
       hasEscapeHatch: false,
@@ -544,6 +554,12 @@ export function parseCommitRegion(
       .length
       > 0,
     hasPathlessAllowedFlag: pathlessAllowedCount > 0,
+    hasAmendFlag: value.amendFlags
+      .length
+      > 0,
+    hasAllowEmptyFlag: value.allowEmptyFlags
+      .length
+      > 0,
     hasPathspecFromFile: value.pathspecFromFile
       !== undefined,
     hasPathspec,
