@@ -158,10 +158,18 @@ Jest-style matchers backed by chai:
 - **Errors**: `toThrow` (bare, message, regex, or class)
 - **Types**: `toBeInstanceOf`, `toBeTypeOf` (native `typeof` check)
 - **Predicates**: `toSatisfy` (custom predicate function)
+- **All-equal collections**: `toAllBe` (every array element strictly equals the first, mirrors `toBe`), `toAllEqual` (deep, mirrors `toEqual`), `toSatisfyAll` (predicate holds for every element)
 - **Negation**: `expect(x).not.toBe(y)`
 - **Async errors**: await first, then assert on the caught error (see "Async error assertions")
 - **Promise rejection** (legacy): `await expect(promise).rejects.toBeInstanceOf(Error)`
 - **Promise resolution** (legacy): `await expect(promise).resolves.toBe(42)`
+
+The all-equal matchers take an array actual and anchor on its first element, so
+they assert mutual equality across the whole array (`expect([a, b, c]).toAllBe()`
+replaces a transitive `toBe` chain). `toAllBe` and `toAllEqual` throw on a
+non-array actual or fewer than two values, since comparing zero or one value is a
+test-author mistake; `toSatisfyAll` passes vacuously on an empty array, mirroring
+`Array.prototype.every`.
 
 Sinon-chai matchers for stubs and spies:
 
