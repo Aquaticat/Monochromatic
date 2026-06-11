@@ -7,6 +7,11 @@
 //           and to tests.
 // Why:      Shared command/update message types live there.
 // TS map:   `export * as command from "./command";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as command from "./command";
+// ```
 pub mod command;
 
 // What:     `pub mod cli;` declares and re-exports the `cli` module
@@ -15,6 +20,11 @@ pub mod command;
 // Why:      Command-line parsing is pure logic, so it lives in the library where it
 //           can be unit-tested without the GUI or an audio backend.
 // TS map:   `export * as cli from "./cli";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as cli from "./cli";
+// ```
 pub mod cli;
 
 // What:     `pub mod identity;` the platform identity-string module
@@ -22,31 +32,61 @@ pub mod cli;
 // Why:      One home for the Wayland app id, the macOS bundle id, and the config-
 //           dir reverse-DNS triple, so the three platforms' names never drift.
 // TS map:   `export * as identity from "./identity";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as identity from "./identity";
+// ```
 pub mod identity;
 
 // What:     `pub mod queue;` the play-queue model module.
 // Why:      Pure traversal/shuffle/repeat logic, unit-tested.
 // TS map:   `export * as queue from "./queue";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as queue from "./queue";
+// ```
 pub mod queue;
 
 // What:     `pub mod session;` the save/restore module.
 // Why:      Persists the last session to disk.
 // TS map:   `export * as session from "./session";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as session from "./session";
+// ```
 pub mod session;
 
 // What:     `pub mod error;` the shared error type module.
 // Why:      `PlayerError` is the one error all fallible functions return.
 // TS map:   `export * as error from "./error";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as error from "./error";
+// ```
 pub mod error;
 
 // What:     `pub mod decode;` the decoding module (`src/decode.rs`).
 // Why:      Probes files and yields interleaved f32 PCM via the `Source` trait.
 // TS map:   `export * as decode from "./decode";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as decode from "./decode";
+// ```
 pub mod decode;
 
 // What:     `pub mod opus;` the Opus decode path (`src/opus.rs`).
 // Why:      libopus-backed `Source` for Opus, which symphonia cannot decode.
 // TS map:   `export * as opus from "./opus";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as opus from "./opus";
+// ```
 pub mod opus;
 
 // What:     `#[cfg(target_os = "linux")]` is a CONDITIONAL-COMPILATION attribute:
@@ -95,56 +135,106 @@ pub mod output;
 //           expansion.
 // Why:      Pure logic kept apart so it is unit-tested and the files stay small.
 // TS map:   `export * as playback from "./playback";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as playback from "./playback";
+// ```
 pub mod playback;
 
 // What:     `pub mod progress;` the progress-surface debounce helper module.
 // Why:      The binary uses this pure, unit-tested timing gate for the Slint seek
 //           bar and KDE taskbar progress.
 // TS map:   `export * as progress from "./progress";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as progress from "./progress";
+// ```
 pub mod progress;
 
 // What:     `pub mod truepeak;` the true-peak measurement module (`src/truepeak.rs`).
 // Why:      Oversampled inter-sample peak measurement + the normalization gain.
 // TS map:   `export * as truepeak from "./truepeak";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as truepeak from "./truepeak";
+// ```
 pub mod truepeak;
 
 // What:     `pub mod peakcache;` the persistent peak cache (`src/peakcache.rs`).
 // Why:      Memoizes measured peaks on disk, keyed by an opaque fingerprint.
 // TS map:   `export * as peakcache from "./peakcache";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as peakcache from "./peakcache";
+// ```
 pub mod peakcache;
 
 // What:     `pub mod measure;` the measurement orchestration (`src/measure.rs`).
 // Why:      Per-track gain resolution + the background queue-measurement sweep.
 // TS map:   `export * as measure from "./measure";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as measure from "./measure";
+// ```
 pub mod measure;
 
 // What:     `pub mod controller;` the playback state machine (`src/controller.rs`),
 //           with its loading/audio half in `src/controller_audio.rs`.
 // Why:      Owns the queue + decoder + output; turns commands into playback.
 // TS map:   `export * as controller from "./controller";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as controller from "./controller";
+// ```
 pub mod controller;
 
 // What:     `pub mod controller_audio;` the second `impl Controller` block
 //           (`src/controller_audio.rs`): loading and audio pumping.
 // Why:      Split out so each controller file stays within the line budget.
 // TS map:   part of the same `controller` class, in another file.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // more methods of the same `controller` class, in another file
+// ```
 pub mod controller_audio;
 
 // What:     `pub mod engine;` the worker-thread front door (`src/engine.rs`).
 // Why:      Spawns the worker and drives a `Controller` from the command channel.
 // TS map:   `export * as engine from "./engine";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as engine from "./engine";
+// ```
 pub mod engine;
 
 // What:     `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
 // Why:      Pure grouping of display paths into folder pages (subfolder tracks) and
 //           A-Z + `#` letter pages (root-level tracks), unit-tested.
 // TS map:   `export * as pagination from "./pagination";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as pagination from "./pagination";
+// ```
 pub mod pagination;
 
 // What:     `pub mod relpath;` the relative-path display module (`src/relpath.rs`).
 // Why:      Pure stripping of the queue's common directory prefix, so the UI shows
 //           each track's path relative to the loaded root; unit-tested.
 // TS map:   `export * as relpath from "./relpath";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as relpath from "./relpath";
+// ```
 pub mod relpath;
 
 // What:     `pub mod launcher;` the desktop-shell integration module
@@ -152,4 +242,9 @@ pub mod relpath;
 //           progress signal.
 // Why:      Stamps the window app id and emits LauncherEntry progress over D-Bus.
 // TS map:   `export * as launcher from "./launcher";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as launcher from "./launcher";
+// ```
 pub mod launcher;

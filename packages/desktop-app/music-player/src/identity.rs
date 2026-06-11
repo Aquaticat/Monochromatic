@@ -97,6 +97,11 @@ pub const CONFIG_APPLICATION: &str = "music-player";
 //           it (sibling `*_tests.rs` files are exempt from the max-lines linter),
 //           matching the convention in session.rs / peakcache.rs / etc.
 // TS map:   the `identity.unit.test.ts` file beside `identity.ts`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // identity.unit.test.ts beside identity.ts; the test runner picks it up
+// ```
 #[cfg(test)]
 #[path = "identity_tests.rs"]
 mod tests;
