@@ -14,14 +14,16 @@ banner). Nothing here depends on it.
 
 ## Headline
 
-Eleven distinct root causes were found and reproduced on v0.6.12, seven of them
-soundness bugs and three of them crashes (`find_all` reverse/forward null
-mismatch at `ldfa.rs:833/878/906` = bug-11, the algebra reentrant-union panic =
-bug-04, the `rev_trivial` dead branch = bug-05). bug-11 was found by the
-reconstructed Lean position-level lane and is the one finding the internal
-oracles structurally cannot reach: `find_all` and `is_match` both crash in
-debug-assertions builds, and in release `find_all` silently drops the leftmost
-match (an internally-consistent-but-wrong result the position reference exposes). The
+Twelve distinct root causes were found and reproduced on v0.6.12, eight of them
+soundness bugs and three of them crashes (the algebra reentrant-union panic =
+bug-04, the `rev_trivial` dead branch = bug-05, and the `find_all` reverse-pass
+over-proposal at `ldfa.rs:833/878/906` = bug-11). bug-11 and bug-12 are sibling
+defects in the `find_all` reverse null-collection subsystem, found by the
+reconstructed Lean position-level lane (the lane the internal oracles cannot
+reach): printing the `nulls` slice shows two different reverse-pass faults, not
+one seen twice (bug-11 over-proposes a start the forward pass rejects -> crash in
+debug, drop in release; bug-12 under-collects, never proposing the leftmost
+starts -> silent wrong `find_all` in every build). The
 five oracle-only soundness bugs (bug-02/03/07/08/10) were
 re-confirmed byte-identical on the *unmodified* stock crate (not just the
 instrumented harness), and shown to survive the arm-bug-01 driver fix, so the
@@ -98,6 +100,15 @@ with reproducers).
   truth `0:0`). Needs a zero-width-nullable alternation intersected with a
   complement. Found by the Lean position lane (case R1612); the third distinct
   crash site. See `bug-11-ldfa-reverse-forward-null-mismatch.md`.
+- `bug-12` (soundness, silent): `find_all` silently drops the leftmost match,
+  with NO panic in any build (debug or release), the worse-for-consumers sibling
+  of bug-11. `((?!b)|ba)&(aa)?` on `"abab"` returns `[(4,4)]` but the Lean
+  ground-truth leftmost is `0:0`; on `"ab"` it returns `[(2,2)]`, dropping
+  `(0,0)`. Verified cause: the reverse pass under-collects, handing
+  `scan_fwd_all` `nulls=[4]` (offsets 0 and 2 never proposed), so no forward
+  check and no assert. Toggling `(aa)?` to `(aa)*` flips it to bug-11's panic
+  (`nulls=[4,2,0]`, 0 proposed then rejected). Found by the Lean position lane
+  (seed-1001 R2280). See `bug-12-findall-silent-leftmost-drop.md`.
 
 ## Method
 
@@ -152,11 +163,14 @@ random RE ASTs and serializes each to BOTH a fully-parenthesized RE# string
 construction. `llmatch` (leftmost-longest first match) is compared against rust
 default-config `find_all(w)[0]`. Cases are tagged trust0 (anchor-free, translator
 faithful) or trust1 (`^`/`$`/`\b`/lookbehind-of-anchor, the documented-unfaithful
-shapes, which need the dotnet adjudicator). On a 1954-case run (1392 agree, 559
-rust-rejected) the only trust0 disagreement was bug-11; the two trust1
+shapes, which need the dotnet adjudicator). On the first 1954-case run (1392
+agree, 559 rust-rejected) the only trust0 disagreement was bug-11; the two trust1
 disagreements were nested lookbehind-of-`\A`, i.e. translator artifacts, not rust
-bugs. The Lean toolchain runs on the M1 (elan + cached mathlib oleans); tooling
-under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`, `leanrust`, `relprobe`).
+bugs. A deeper multi-seed round (depth<=5) added bug-12 (trust0 R2280) and
+re-derived bug-05 on a new `_*(?!_)` trigger; its other disagreements were trust1
+anchor shapes. The Lean toolchain runs on the M1 (elan + cached mathlib oleans);
+tooling under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`, `leanrust`,
+`relprobe`, `nullsprobe`).
 
 ### 2026-06-04 re-verification
 
@@ -179,9 +193,12 @@ All under `/tmp/agent` on the x86 host and mirrored to
 
 The Lean formalization (`~/Downloads/extended-regexes`) is the position-level
 ground-truth reference; the dotnet engine is a secondary cross-check only. Ten of
-the eleven bugs rest on a same-engine internal inconsistency (SIMD on vs off,
+the twelve bugs rest on a same-engine internal inconsistency (SIMD on vs off,
 is_match vs find_all vs find_anchored vs stream, default vs hardened) or a panic,
-so they need no external oracle. bug-11 is the exception by design: its crash is
-engine-internal (a `debug_assert_ne!` the engine trips on itself), and only its
-release-mode soundness severity (which match it drops) is read off the Lean
-ground truth, on a trust0 anchor-free pattern where the translation is faithful.
+so they need no external oracle. bug-11 and bug-12 are the exceptions by design:
+bug-11's crash is engine-internal (a `debug_assert_ne!` the engine trips on
+itself) with only its release-mode soundness read off Lean; bug-12 has no crash
+at all, so its silent `find_all` soundness is established purely against the Lean
+ground truth, on trust0 anchor-free patterns where the translation is faithful.
+Both were confirmed independently with the `nulls`-slice instrument, which is
+engine-internal evidence of the reverse-pass fault.

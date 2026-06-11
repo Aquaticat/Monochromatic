@@ -49,12 +49,25 @@ pass then rejects, tripping `debug_assert_ne!(NO_MATCH, l_max_end)` at
 
 bug-12 is the opposite direction: for `(nullable-alternation) & (nullable
 right-operand)` the reverse pass UNDER-collects, never proposing the leftmost
-null starts (offsets 0 and 2 here), so `scan_fwd_all` is never asked about them,
-no assert fires, and `find_all` silently omits them. The two are the same
-subsystem (reverse null-collection vs forward confirmation for nullable
-intersections) failing in opposite directions, and the trigger sits right next to
-bug-11's: keeping the alternation and swapping the right operand toggles between
-them on the same haystack `"abab"`:
+null starts, so `scan_fwd_all` is never asked about them, no assert fires, and
+`find_all` silently omits them.
+
+This was verified, not inferred, by printing the `nulls` slice that
+`scan_fwd_all` receives (a one-line instrument in the engine copy), on `"abab"`:
+
+```txt
+((?!b)|ba)&(aa)?   nulls = [4]        <- reverse never proposes 0 or 2 (UNDER-collect) -> silent drop
+((?!b)|ba)&(aa)*   nulls = [4, 2, 0]  <- reverse DOES propose 0; forward rejects -> panic (bug-11)
+((?!a)|b)&(~((c))) nulls = [4, 2, 1]  <- reverse proposes 1; forward rejects -> panic (bug-11)
+```
+
+So the same `((?!b)|ba)&X` skeleton produces genuinely different reverse output:
+`X = (aa)?` yields `nulls = [4]` (the leftmost starts are absent), while `X =
+(aa)*` yields `nulls = [4,2,0]` (0 is present but the forward pass refuses it).
+Under-collection and over-proposal are different defects in the reverse
+null-collection, not one defect seen twice; a fix that teaches the forward pass to
+accept bug-11's proposed starts would leave bug-12's missing-from-`nulls` starts
+missing. The two are siblings in one subsystem, toggled by `?` vs `*`:
 
 ```txt
 ((?!b)|ba)&(aa)?   -> [(4,4)]                       bug-12 (silent drop)
@@ -62,13 +75,16 @@ them on the same haystack `"abab"`:
 ((?!a)|b)&(~((c))) -> panic at ldfa.rs:833/906      bug-11 (over-proposal)
 ```
 
-They are filed separately because the observable failure, the severity profile,
-and the likely fix differ: bug-11 is a loud crash in any debug/test build (and a
-release drop); bug-12 is a silent wrong `find_all` in EVERY build, which no panic
-ever surfaces. A fix that only repairs the forward/reverse assert (bug-11) would
-leave bug-12's under-collection untouched. If the maintainer determines a single
-reverse-null-collection fix covers both, they should be merged; this file records
-the distinct silent-soundness manifestation so it is not lost.
+They are counted as distinct because the `nulls` evidence above shows two
+different reverse-pass faults (under-collection vs over-proposal), not one fault
+seen twice, and the observable failure and severity differ: bug-11 is a loud
+crash in any debug/test build (plus a release drop); bug-12 is a silent wrong
+`find_all` in EVERY build, which no panic ever surfaces. Both live in the reverse
+null-collection / forward-confirmation subsystem, so a single rewrite of that
+subsystem could plausibly fix both at once; if the maintainer confirms one fix
+covers both, treat them as one. The split is deliberately conservative about the
+shared subsystem while preserving the distinct silent-soundness fault, which is
+materially worse for consumers than a crash they would notice.
 
 ## Provenance
 
