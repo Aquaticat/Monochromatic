@@ -8,6 +8,11 @@
   through a path the author intended to remove, with no guarantee the following
   code's invariants hold.
 - Affected: non-hardened configs (the assertion is gated on `!self.hardened`).
+- Architecture: confirmed byte-identical on aarch64 (Apple M1) and x86-64.
+  `armprobe "_*(?!_)" "aa"` on the M1 panics at the same
+  `resharp-engine/src/lib.rs:1824` site (the dotnet reference accepts `_*(?!_)`
+  and returns `[(0,2),(2,2)]`, so this in-subset trigger reaches the dead branch;
+  the site is arch-independent, the ARM run only makes "ARM-confirmed" airtight).
 - Discovery: the `match_invariants` libFuzzer target.
 
 ## Reproducer

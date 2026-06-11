@@ -7,6 +7,10 @@
   it unwinds through the `inner` mutex, can poison a shared `Regex`, cf. 06-04
   BUG-25). The panic message itself says "this is a bug, please file an issue".
 - Affected: all configs (shown in ascii / default).
+- Architecture: confirmed byte-identical on aarch64 (Apple M1) and x86-64.
+  `armprobe "(.*.+)*.+" "aaa"` on the M1 panics at the same
+  `resharp-algebra/src/lib.rs:2724` site (this is the arch-independent algebra
+  rewrite, not a SIMD path; the ARM run only makes "ARM-confirmed" airtight).
 - Discovery: the `diff_regex` libFuzzer target (~120 distinct inputs, all this
   site) and the self-consistency oracle (45 more).
 
