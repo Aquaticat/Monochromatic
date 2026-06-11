@@ -1,0 +1,3 @@
+[tasks.build]
+description = "Bundle client JS then generate self-contained HTML"
+run = ["mise run build:js:client", "node src/build.ts"]

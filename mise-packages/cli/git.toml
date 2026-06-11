@@ -1,0 +1,3 @@
+[tasks.run]
+description = "Run git wrapper CLI"
+run = "node src/index.ts"

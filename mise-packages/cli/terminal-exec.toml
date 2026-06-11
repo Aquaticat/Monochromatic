@@ -1,0 +1,7 @@
+[tasks.run]
+description = "Run terminal-exec"
+run = "node src/index.ts"
+
+[tasks.buildAndTest]
+description = "Build the node lib + bin, then run unit tests (the bin opens a terminal and is NOT executed by any test)"
+run = ["mise run build", "mise run test:unit"]

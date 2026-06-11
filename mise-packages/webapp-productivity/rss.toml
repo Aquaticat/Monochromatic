@@ -1,0 +1,3 @@
+[tasks.dev]
+description = "Start RSS reader in watch mode"
+run = "mise watch -w src -r -- node src/index.ts"

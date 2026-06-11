@@ -1,0 +1,81 @@
+[tools]
+"npm:pagefind" = "latest"
+
+[tasks.build]
+description = "Build SSG pipeline: clean, i18n + client JS, then site, then postprocess (pagefind + fingerprint), compress"
+run = [
+  { tasks = ["build:clean"] },
+  { tasks = ["build:i18n", "build:js:client"] },
+  { tasks = ["build:site"] },
+  { tasks = ["build:postprocess"] },
+  { tasks = ["build:compress"] },
+]
+
+[tasks."build:clean"]
+description = "Remove dist/ before rebuild so stale artifacts (e.g. logs or editor state accidentally written with cwd=dist) never get packaged by build:compress"
+run = "rm -rf dist"
+
+[tasks."build:i18n"]
+description = "Generate typesafe-i18n types from locale files"
+run = "typesafe-i18n --no-watch"
+
+[tasks."build:site"]
+description = "Build static site from MDX content"
+run = "node src/build.ts"
+
+[tasks."build:site:clean"]
+description = "Build static site from scratch (no cache)"
+shell = "node -e"
+run = """
+const { rmSync } = await import('node:fs')
+const { execFileSync } = await import('node:child_process')
+rmSync('.cache', { recursive: true, force: true })
+execFileSync('node', ['src/build.ts'], { stdio: 'inherit' })
+"""
+
+[tasks."build:search"]
+description = "Generate Pagefind search index from built HTML"
+run = "pagefind --site dist"
+
+[tasks."build:postprocess"]
+description = "Run pagefind and content-hash assets (pagefind runs in parallel with phases 1+2 of fingerprinting)"
+run = "node src/build/postprocess.ts"
+
+[tasks."build:compress"]
+description = "Compress dist/ with zstd via node:zlib (worker_threads)"
+run = "node src/build/compress.ts"
+
+[tasks.dev]
+description = "Build then serve dist/ with Caddy, rebuilding on source changes"
+run = [{ tasks = ["build"] }, { tasks = ["dev:watch", "dev:serve"] }]
+
+[tasks."dev:watch"]
+hide = true
+description = "Rebuild on source changes"
+run = "mise watch -w src -r build"
+
+[tasks."dev:serve"]
+hide = true
+description = "Serve dist/ with Caddy (clean URLs via try_files)"
+run = "caddy run --config Caddyfile"
+
+[tasks."generate:favicons"]
+description = "Generate favicon files from SVG source if missing"
+run = "node src/build/favicon.ts"
+
+[tasks.format]
+description = "Run all format tasks: fonts, images. Run manually when source changes affect either."
+run = [{ tasks = ["format:fonts", "format:images"] }]
+
+[tasks."format:fonts"]
+description = "Subset fonts-source/*.woff2 to public/*.woff2 based on glyph usage in src/. Slow (~5s); run manually."
+run = "node src/build/subset-fonts.ts"
+
+[tasks."format:images"]
+description = "Convert non-AVIF raster images to AVIF counterparts"
+run = "node src/images/format.ts"
+
+[tasks."audit:weight"]
+description = "Report per-page transfer size (min, max, mean, median) for dist/"
+dir = "{{config_root}}"
+run = "mise run //:page:weight -- {{config_root}}/dist"

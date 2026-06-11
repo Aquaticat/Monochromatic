@@ -11,6 +11,8 @@ import {
 
 import type browserslist from 'browserslist';
 
+import { generatePackageMiseTasks, } from './mise-packages.render.config.ts';
+
 /**
  * Resolver function exported by the `browserslist` package.
  *
@@ -322,6 +324,8 @@ ${await cat(['./AGENTS.md',],)}`,
   },),
 
   generateMiseToml(),
+
+  generatePackageMiseTasks(),
 
   generateForbiddenStringsRules(),
 

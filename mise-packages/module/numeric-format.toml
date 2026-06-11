@@ -1,0 +1,7 @@
+[tasks.test]
+description = "Run unit tests for every numeric-format category"
+run = "node src/self.unit.test.ts"
+
+[tasks.buildAndTest]
+description = "Build the neutral bundle, then run unit tests against the built dist"
+run = ["mise run build", "mise run test"]

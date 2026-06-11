@@ -1,0 +1,31 @@
+[tasks."build:css"]
+description = "Compile global CSS (resolves @apply rules)"
+shell = "node -e"
+run = """
+{{vars.dispatch_workspace_node}}
+runWorkspaceNode('packages/build-tool/css', 'cli', ['./src/client/styles.css', './dist/css/styles.css'])
+"""
+
+[tasks."build:js"]
+description = "Build CSS then bundle client JS"
+run = ["mise run build:css", "mise run build:js:client"]
+
+[tasks."start:server"]
+hide = true
+description = "Run the h3 server (used by dev:site under mise watch)"
+run = "node src/server.ts"
+
+[tasks."dev:site"]
+description = "Start the messages-demo server in watch mode"
+run = "mise watch -w src -r -- start:server"
+
+[tasks."seed:demo"]
+description = "Seed 10 000 mixed-size messages for pagination + feed verification"
+run = "node src/lib/seed.ts --count=10000"
+
+[tasks."seed:stress"]
+description = "Seed one synthetic huge message (default 1 GB; pass --huge=N for N GB)"
+run = "node src/lib/seed.ts --huge=1"
+
+[tasks.test]
+extends = "test"

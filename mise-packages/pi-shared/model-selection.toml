@@ -1,0 +1,2 @@
+[tasks.buildAndTest]
+run = ["mise run build", "mise run test:unit"]

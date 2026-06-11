@@ -1,0 +1,3 @@
+[tasks.buildAndTest]
+description = "Build the node lib + bin, then run unit tests; build.unit.test.ts imports the `.` bundle and cli.unit.test.ts spawns cli.mjs"
+run = ["mise run build", "mise run test:unit"]

@@ -1,0 +1,7 @@
+[tasks.test]
+description = "Run unit tests for fs-path"
+run = "node src/self.unit.test.ts"
+
+[tasks.buildAndTest]
+description = "Build the neutral dist, then run the aggregator (path-ops imports the built `.` bundle as the smoke test)"
+run = ["mise run build", "mise run test"]

@@ -1,0 +1,3 @@
+[tasks.buildAndTest]
+description = "Build the node MCP-server bin, then run unit tests; index.unit.test.ts spawns the built bin"
+run = ["mise run build", "mise run test:unit"]

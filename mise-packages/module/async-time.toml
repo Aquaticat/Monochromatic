@@ -1,0 +1,3 @@
+[tasks.buildAndTest]
+description = "Build the neutral bundle, then run every *.unit.test.ts against the built dist"
+run = ["mise run build", "mise run test:unit"]

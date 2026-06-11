@@ -1,0 +1,12 @@
+[tasks.build]
+description = "Bundle client JS then generate self-contained HTML"
+run = ["mise run build:js:client", "node src/build.ts"]
+
+[tasks."format:oxlint"]
+description = "Auto-fix lint issues with Oxlint (type-aware), scoped to this package"
+shell = "node -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware', '--fix'])
+"""

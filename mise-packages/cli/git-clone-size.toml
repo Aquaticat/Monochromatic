@@ -1,0 +1,20 @@
+[tasks.run]
+description = "Run git-clone-size"
+run = "node src/index.ts"
+
+[tasks.'format:oxlint']
+description = "Auto-fix this package with Oxlint (non-type-aware)"
+shell = "node -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--fix'])
+"""
+
+[tasks.'format:dprint']
+description = "Format this package's files with dprint"
+run = "dprint fmt src"
+
+[tasks.buildAndTest]
+description = "Build the node bin, then run unit tests; cli.unit.test.ts spawns the built bin"
+run = ["mise run build", "mise run test:unit"]

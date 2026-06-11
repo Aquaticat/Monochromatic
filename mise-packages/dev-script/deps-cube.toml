@@ -1,0 +1,3 @@
+[tasks.run]
+description = "Generate the catalog dependency audit 3D scatter report (runs source via node for fast iteration; `mise run build` then `pnpm exec deps-cube` to exercise the built bin)"
+run = "node src/cli.ts"

@@ -1,0 +1,4 @@
+[tasks.test]
+description = "Self-test matrix (builds first)"
+depends = ["build"]
+run = "node src/self.unit.test.ts"

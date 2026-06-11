@@ -1,0 +1,8 @@
+[tasks."format:oxlint"]
+description = "Auto-fix with Oxlint (type-aware)"
+shell = "node -e"
+run = """
+{{vars.dispatch_workspace_node}}
+ensureOxlintConfig()
+runWorkspaceNode('packages/dev-script/task-util', 'oxlint-wrapper', ['--type-aware', '--fix'])
+"""

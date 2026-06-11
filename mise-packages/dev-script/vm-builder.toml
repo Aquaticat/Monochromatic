@@ -1,0 +1,15 @@
+[tasks.run]
+description = "Build container image and import as libvirt VM"
+run = "node src/build-and-import.ts"
+
+[tasks.import]
+description = "Import already-built qcow2 into libvirt (skips build+convert)"
+run = "node src/import.ts"
+
+[tasks.push]
+description = "Push image to GHCR and sign with cosign"
+run = "node src/sign-and-push.ts"
+
+[tasks.buildAndTest]
+description = "Build the node bin (verification is the build + dts emit; the bin has no inert invocation to smoke-run)"
+run = ["mise run build", "mise run test:unit"]

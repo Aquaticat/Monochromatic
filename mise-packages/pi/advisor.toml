@@ -1,0 +1,3 @@
+[tasks."verify:extension"]
+depends = ["build"]
+run = "node src/mise.verify-extension.ts"

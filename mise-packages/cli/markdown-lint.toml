@@ -1,0 +1,7 @@
+[tasks.run]
+description = "Run the markdown-lint CLI"
+run = "node src/cli.ts"
+
+[tasks.buildAndTest]
+description = "Build the CLI, then run *.unit.test.ts"
+run = ["mise run build", "mise run test:unit"]

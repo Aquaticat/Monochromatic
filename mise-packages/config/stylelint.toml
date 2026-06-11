@@ -1,0 +1,4 @@
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+# No lint:types -- this package has no TypeScript source files.
