@@ -4,12 +4,101 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { commitOnly, } from './commit-only.ts';
+import type { IndexVsHeadState, } from './commit-index-check.ts';
+import {
+  commitOnly,
+  type CommitOnlyRule,
+  makeCommitOnly,
+} from './commit-only.ts';
+
+/**
+ * Index checker stub reporting staged changes (index differs from HEAD).
+ *
+ * @returns `'differs'` always.
+ *
+ * @example
+ * ```ts
+ * await dirtyIndexChecker();
+ * // => 'differs'
+ * ```
+ */
+async function dirtyIndexChecker(): Promise<IndexVsHeadState> {
+  return 'differs';
+}
+
+/**
+ * Index checker stub reporting an index matching HEAD.
+ *
+ * @returns `'matches'` always.
+ *
+ * @example
+ * ```ts
+ * await cleanIndexChecker();
+ * // => 'matches'
+ * ```
+ */
+async function cleanIndexChecker(): Promise<IndexVsHeadState> {
+  return 'matches';
+}
+
+/**
+ * Index checker stub reporting git could not answer (e.g. unborn HEAD).
+ *
+ * @returns `'unknown'` always.
+ *
+ * @example
+ * ```ts
+ * await unknownIndexChecker();
+ * // => 'unknown'
+ * ```
+ */
+async function unknownIndexChecker(): Promise<IndexVsHeadState> {
+  return 'unknown';
+}
+
+/**
+ * Index checker stub that fails the test when consulted.
+ *
+ * @returns Never resolves.
+ *
+ * @throws Always, so argv shapes decided without repository state fail loudly when they consult the checker.
+ *
+ * @example
+ * ```ts
+ * await forbiddenIndexChecker();
+ * // throws
+ * ```
+ */
+async function forbiddenIndexChecker(): Promise<IndexVsHeadState> {
+  throw new Error('index checker must not be consulted for this argv',);
+}
+
+/** Rule whose decision must come from argv alone, never repository state. */
+const commitOnlyStateless = makeCommitOnly({
+  checkIndexDiffersFromHead: forbiddenIndexChecker,
+},);
+
+/** Rule observing staged changes. */
+const commitOnlyDirtyIndex = makeCommitOnly({
+  checkIndexDiffersFromHead: dirtyIndexChecker,
+},);
+
+/** Rule observing an index matching HEAD. */
+const commitOnlyCleanIndex = makeCommitOnly({
+  checkIndexDiffersFromHead: cleanIndexChecker,
+},);
+
+/** Rule whose index checker cannot determine state. */
+const commitOnlyUnknownIndex = makeCommitOnly({
+  checkIndexDiffersFromHead: unknownIndexChecker,
+},);
 
 /** Commit argv forms that git permits without positional pathspecs in only mode. */
 const PATHLESS_ALLOWED_CASES: readonly {
   /** Human-readable case name shown in test output. */
   readonly name: string;
+  /** Rule variant exercising this case; pathless amend/allow-empty consult the index checker, pathspec-file forms must not. */
+  readonly rule: CommitOnlyRule;
   /** Git argv passed to commit-only rule. */
   readonly args: readonly string[];
   /** Expected argv after commit-only injection. */
@@ -17,6 +106,7 @@ const PATHLESS_ALLOWED_CASES: readonly {
 }[] = [
   {
     name: '--amend',
+    rule: commitOnlyCleanIndex,
     args: [
       'commit',
       '--amend',
@@ -33,6 +123,7 @@ const PATHLESS_ALLOWED_CASES: readonly {
   },
   {
     name: '--allow-empty',
+    rule: commitOnlyCleanIndex,
     args: [
       'commit',
       '--allow-empty',
@@ -49,6 +140,7 @@ const PATHLESS_ALLOWED_CASES: readonly {
   },
   {
     name: '--pathspec-from-file separated value',
+    rule: commitOnlyStateless,
     args: [
       'commit',
       '--pathspec-from-file',
@@ -67,6 +159,7 @@ const PATHLESS_ALLOWED_CASES: readonly {
   },
   {
     name: '--pathspec-from-file inline value',
+    rule: commitOnlyStateless,
     args: [
       'commit',
       '--pathspec-from-file=paths.txt',
@@ -332,21 +425,32 @@ const REJECTED_CASES: readonly {
 ];
 
 /**
- * Captures synchronous error from commit-only invocation.
+ * Captures error from commit-only invocation.
  *
- * @param args - Git argv to pass through commit-only rule.
+ * @param options - Rule variant and git argv to pass through it.
  *
  * @returns Error thrown by rule, or `undefined` when rule passes.
  *
  * @example
  * ```ts
- * const caught = catchCommitOnlyError(['commit', '-m', 'message']);
+ * const caught = await catchCommitOnlyError({
+ *   rule: commitOnlyStateless,
+ *   args: ['commit', '-m', 'message'],
+ * });
  * expect(caught).toBeInstanceOf(Error);
  * ```
  */
-function catchCommitOnlyError(args: readonly string[],): unknown {
+async function catchCommitOnlyError({
+  rule,
+  args,
+}: {
+  /** Commit-only rule variant under test. */
+  readonly rule: CommitOnlyRule;
+  /** Git argv to pass through commit-only rule. */
+  readonly args: readonly string[];
+},): Promise<unknown> {
   try {
-    commitOnly(args,);
+    await rule(args,);
   }
   catch (error) {
     return error;
@@ -366,13 +470,13 @@ await describe({
           '--short',
         ] as const;
 
-        expect(commitOnly(args,),).toBe(args,);
+        expect(await commitOnly(args,),).toBe(args,);
       },
     },),
     it({
       name: 'injects -o immediately after commit when pathspec is present',
       fn: async function testInjectsOnly(): Promise<void> {
-        expect(commitOnly([
+        expect(await commitOnlyStateless([
           'commit',
           '-m',
           'message',
@@ -390,7 +494,7 @@ await describe({
     it({
       name: 'preserves global options before commit',
       fn: async function testGlobalOptions(): Promise<void> {
-        expect(commitOnly([
+        expect(await commitOnlyStateless([
           '-C',
           '/tmp/repo',
           'commit',
@@ -412,7 +516,7 @@ await describe({
     it({
       name: 'strips escape hatch and skips validation',
       fn: async function testEscapeHatch(): Promise<void> {
-        expect(commitOnly([
+        expect(await commitOnlyStateless([
           'commit',
           '--no-enforce-only',
           '-am',
@@ -437,7 +541,7 @@ await describe({
           'file.ts',
         ] as const;
 
-        expect(commitOnly(args,),).toBe(args,);
+        expect(await commitOnlyStateless(args,),).toBe(args,);
       },
     },),
     it({
@@ -451,7 +555,7 @@ await describe({
           'file.ts',
         ] as const;
 
-        expect(commitOnly(args,),).toBe(args,);
+        expect(await commitOnlyStateless(args,),).toBe(args,);
       },
     },),
     it({
@@ -465,13 +569,13 @@ await describe({
           'message',
         ] as const;
 
-        expect(commitOnly(args,),).toBe(args,);
+        expect(await commitOnlyStateless(args,),).toBe(args,);
       },
     },),
     it({
       name: 'does not mistake message text for -a flag',
       fn: async function testMessageLooksLikeAllFlag(): Promise<void> {
-        expect(commitOnly([
+        expect(await commitOnlyStateless([
           'commit',
           '-m',
           '-a',
@@ -489,7 +593,7 @@ await describe({
     it({
       name: 'treats dash-leading tokens after -- as pathspecs',
       fn: async function testDashLeadingPathspec(): Promise<void> {
-        expect(commitOnly([
+        expect(await commitOnlyStateless([
           'commit',
           '-m',
           'message',
@@ -509,7 +613,7 @@ await describe({
     it({
       name: 'treats lone dash before -- as pathspec',
       fn: async function testLoneDashPathspec(): Promise<void> {
-        expect(commitOnly([
+        expect(await commitOnlyStateless([
           'commit',
           '-m',
           'message',
@@ -524,11 +628,145 @@ await describe({
           ],);
       },
     },),
+
+    //region Pathless amend/allow-empty dirty-index guard
+
+    it({
+      name: 'rejects pathless --amend when index differs from HEAD',
+      fn: async function testPathlessAmendDirtyIndex(): Promise<void> {
+        /** Error thrown for the exact argv shape from the observed silent no-op incident. */
+        const caught = await catchCommitOnlyError({
+          rule: commitOnlyDirtyIndex,
+          args: [
+            'commit',
+            '--amend',
+            '--no-edit',
+          ],
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'git commit --amend without pathspecs would silently ignore your staged changes',
+        );
+        expect((caught as Error).message,).toContain('--no-only',);
+      },
+    },),
+    it({
+      name: 'rejects pathless --allow-empty when index differs from HEAD',
+      fn: async function testPathlessAllowEmptyDirtyIndex(): Promise<void> {
+        /** Error thrown for pathless allow-empty commit over a dirty index. */
+        const caught = await catchCommitOnlyError({
+          rule: commitOnlyDirtyIndex,
+          args: [
+            'commit',
+            '--allow-empty',
+            '-m',
+            'message',
+          ],
+        },);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'git commit --allow-empty without pathspecs would silently ignore your staged changes',
+        );
+      },
+    },),
+    it({
+      name: 'injects -o for pathless --amend when index state is undeterminable',
+      fn: async function testPathlessAmendUnknownIndex(): Promise<void> {
+        expect(await commitOnlyUnknownIndex([
+          'commit',
+          '--amend',
+          '-m',
+          'message',
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '--amend',
+            '-m',
+            'message',
+          ],);
+      },
+    },),
+    it({
+      name: 'skips index check when --amend has pathspec',
+      fn: async function testAmendWithPathspec(): Promise<void> {
+        expect(await commitOnlyStateless([
+          'commit',
+          '--amend',
+          '--no-edit',
+          'file.ts',
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '--amend',
+            '--no-edit',
+            'file.ts',
+          ],);
+      },
+    },),
+    it({
+      name: 'skips index check when --amend pairs with --pathspec-from-file',
+      fn: async function testAmendWithPathspecFromFile(): Promise<void> {
+        expect(await commitOnlyStateless([
+          'commit',
+          '--amend',
+          '--pathspec-from-file',
+          'paths.txt',
+          '-m',
+          'message',
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '--amend',
+            '--pathspec-from-file',
+            'paths.txt',
+            '-m',
+            'message',
+          ],);
+      },
+    },),
+    it({
+      name: 'skips index check for pathless --amend --no-only',
+      fn: async function testAmendNoOnly(): Promise<void> {
+        /** Commit argv where user explicitly chose to commit the whole index. */
+        const args = [
+          'commit',
+          '--amend',
+          '--no-only',
+          '-m',
+          'message',
+        ] as const;
+
+        expect(await commitOnlyStateless(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'skips index check for pathless --amend with explicit -o',
+      fn: async function testAmendExplicitOnly(): Promise<void> {
+        /** Commit argv where user explicitly chose only mode for amend. */
+        const args = [
+          'commit',
+          '-o',
+          '--amend',
+          '-m',
+          'message',
+        ] as const;
+
+        expect(await commitOnlyStateless(args,),).toBe(args,);
+      },
+    },),
+
+    //endregion Pathless amend/allow-empty dirty-index guard
+
     ...NO_VALUE_FLAG_PATHSPEC_CASES.map(function mapNoValueFlagPathspecCase(pathspecCase,) {
       return it({
         name: `detects pathspec after no-value flag ${pathspecCase.name}`,
         fn: async function testNoValueFlagPathspecCase(): Promise<void> {
-          expect(commitOnly(pathspecCase.args,),).toEqual(pathspecCase.expected,);
+          expect(await commitOnlyStateless(pathspecCase.args,),).toEqual(pathspecCase.expected,);
         },
       },);
     },),
@@ -536,7 +774,7 @@ await describe({
       return it({
         name: `detects pathspec after value option ${pathspecCase.name}`,
         fn: async function testValueOptionPathspecCase(): Promise<void> {
-          expect(commitOnly(pathspecCase.args,),).toEqual(pathspecCase.expected,);
+          expect(await commitOnlyStateless(pathspecCase.args,),).toEqual(pathspecCase.expected,);
         },
       },);
     },),
@@ -544,7 +782,7 @@ await describe({
       return it({
         name: `allows pathless ${pathlessCase.name}`,
         fn: async function testPathlessAllowedCase(): Promise<void> {
-          expect(commitOnly(pathlessCase.args,),).toEqual(pathlessCase.expected,);
+          expect(await pathlessCase.rule(pathlessCase.args,),).toEqual(pathlessCase.expected,);
         },
       },);
     },),
@@ -553,7 +791,10 @@ await describe({
         name: `rejects ${rejectedCase.name}`,
         fn: async function testRejectedCase(): Promise<void> {
           /** Error thrown for this rejected commit argv. */
-          const caught = catchCommitOnlyError(rejectedCase.args,);
+          const caught = await catchCommitOnlyError({
+            rule: commitOnlyStateless,
+            args: rejectedCase.args,
+          },);
 
           expect(caught,).toBeInstanceOf(Error,);
           expect((caught as Error).message,).toContain(rejectedCase.message,);

@@ -463,6 +463,126 @@ await describe({
       },
     },),
     it({
+      name: 'rejects pathless amend that would silently ignore staged changes',
+      fn: async function testPathlessAmendWithStagedChanges(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'tracked.txt',
+          content: 'staged update\n',
+        },);
+
+        /** Commit hash before the rejected amend. */
+        const headBefore = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'rev-parse',
+            'HEAD',
+          ],
+        },);
+
+        /** cli-git failure for pathless amend over a dirty index. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '--amend',
+            '--no-edit',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'git commit --amend without pathspecs would silently ignore your staged changes',
+        );
+
+        /** Commit hash after the rejected amend, proving no commit was rewritten. */
+        const headAfter = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'rev-parse',
+            'HEAD',
+          ],
+        },);
+
+        expect(headAfter.stdout,).toBe(headBefore.stdout,);
+
+        /** Repository status after rejected amend, proving change is still staged. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toContain('M  tracked.txt',);
+      },
+    },),
+    it({
+      name: 'amends message pathlessly when index matches HEAD',
+      fn: async function testPathlessAmendWithCleanIndex(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '--amend',
+            '-m',
+            'reworded',
+          ],
+        },);
+
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'reworded',
+        );
+      },
+    },),
+    it({
+      name: 'amends staged path into previous commit when pathspec names it',
+      fn: async function testAmendWithPathspec(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'tracked.txt',
+          content: 'staged update\n',
+        },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '--amend',
+            '--no-edit',
+            'tracked.txt',
+          ],
+        },);
+
+        /** Repository status after amend, proving change landed in the commit. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toBe('',);
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'initial',
+        );
+      },
+    },),
+    it({
       name: 'rejects stash list at main worktree root',
       fn: async function testStashListAtMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

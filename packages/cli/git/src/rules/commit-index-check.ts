@@ -9,6 +9,13 @@ import { resolveGit, } from '../resolve-git.ts';
 //region Index-vs-HEAD check
 
 /**
+ * Comparison of staged content against HEAD. `unknown` means git could not
+ * answer (unborn HEAD, missing repository); callers defer to real git to
+ * surface those failures.
+ */
+export type IndexVsHeadState = 'differs' | 'matches' | 'unknown';
+
+/**
  * Options for asking whether staged content differs from HEAD.
  */
 export type CheckIndexDiffersFromHeadOptions = {
@@ -23,14 +30,10 @@ export type CheckIndexDiffersFromHeadOptions = {
 /**
  * Signature of the index-vs-HEAD checker consumed by the commit-only rule;
  * tests substitute fakes through `makeCommitOnly`.
- *
- * Resolves `true` when the index differs from HEAD, `false` when they match,
- * and `undefined` when git cannot answer (unborn HEAD, missing repository);
- * callers defer to real git to surface those failures.
  */
 export type CheckIndexDiffersFromHead = (
   options: CheckIndexDiffersFromHeadOptions,
-) => Promise<boolean | undefined>;
+) => Promise<IndexVsHeadState>;
 
 /**
  * Asks real git whether staged content differs from HEAD via
@@ -39,25 +42,25 @@ export type CheckIndexDiffersFromHead = (
  * itself fails (for example before the first commit). Spawns the resolved
  * real git binary so the check does not re-enter the wrapper.
  *
- * @param options - Pre-subcommand global options forwarded to git.
+ * @param preSubcommandArgs - Pre-subcommand global options forwarded to git.
  *
- * @returns `true` when staged changes exist, `false` when index matches
- *   HEAD, `undefined` when git cannot answer.
+ * @returns `'differs'` when staged changes exist, `'matches'` when index
+ *   equals HEAD, `'unknown'` when git cannot answer.
  *
  * @example
  * ```ts
  * await indexDiffersFromHead({ preSubcommandArgs: ['-C', '/repo'] });
- * // => true when /repo has staged changes
+ * // => 'differs' when /repo has staged changes
  * ```
  */
-export const indexDiffersFromHead: CheckIndexDiffersFromHead = async function indexDiffersFromHead({
+export async function indexDiffersFromHead({
   preSubcommandArgs,
-},) {
+}: CheckIndexDiffersFromHeadOptions,): Promise<IndexVsHeadState> {
   /**
    * Tagged logger for the index-vs-HEAD check.
    */
   const rl = tagged({
-    tag: 'indexDiffersFromHead',
+    tag: indexDiffersFromHead.name,
     l,
   },);
   /**
@@ -78,21 +81,21 @@ export const indexDiffersFromHead: CheckIndexDiffersFromHead = async function in
       ],
     );
     rl.debug('index matches HEAD',);
-    return false;
+    return 'matches';
   }
   catch (error) {
     if (error instanceof SubprocessError) {
       if (error.exitCode === 1) {
         rl.debug('index differs from HEAD',);
-        return true;
+        return 'differs';
       }
       rl.debug(
         `cannot determine index state (exit code ${String(error.exitCode,)}); deferring to real git`,
       );
-      return undefined;
+      return 'unknown';
     }
     throw error;
   }
-};
+}
 
 //endregion Index-vs-HEAD check

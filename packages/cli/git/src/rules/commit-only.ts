@@ -63,12 +63,19 @@ function ignoredIndexMessage(flagText: string,): string {
 }
 
 /**
+ * Commit-only rule signature consumed by the cli-git rule pipeline.
+ */
+export type CommitOnlyRule = (
+  args: readonly string[],
+) => Promise<readonly string[]>;
+
+/**
  * Dependencies of the commit-only rule.
  */
 type CommitOnlyDependencies = {
   /**
    * Reports whether staged content differs from HEAD in the repository the
-   * commit targets; `undefined` means git could not answer and the rule
+   * commit targets; `'unknown'` means git could not answer and the rule
    * defers to real git.
    */
   readonly checkIndexDiffersFromHead: CheckIndexDiffersFromHead;
@@ -104,20 +111,20 @@ type CommitOnlyDependencies = {
  * `--no-only`); when the index matches HEAD, or git cannot answer (for
  * example before the first commit), injection proceeds as before.
  *
- * @param dependencies - Index-vs-HEAD checker the returned rule consults.
+ * @param checkIndexDiffersFromHead - Index-vs-HEAD checker the returned rule consults.
  *
  * @returns Commit-only rule bound to given checker.
  *
  * @example
  * ```ts
  * const rule = makeCommitOnly({
- *   checkIndexDiffersFromHead: async function fake() { return false; },
+ *   checkIndexDiffersFromHead: async function fake() { return 'matches'; },
  * });
  * await rule(['commit', '-m', 'msg', 'file.ts']);
  * // => ['commit', '-o', '-m', 'msg', 'file.ts']
  * ```
  */
-export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDependencies,) {
+export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDependencies,): CommitOnlyRule {
   /**
    * Applies commit-only enforcement to one git argv.
    *
@@ -225,16 +232,16 @@ export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDepende
     if (injectionIgnoresIndex) {
       rl.debug('pathless amend/allow-empty commit, checking index against HEAD',);
       /**
-       * Whether staged content differs from HEAD; `undefined` defers to real git.
+       * Comparison of staged content against HEAD; `'unknown'` defers to real git.
        */
-      const indexDiffers = await checkIndexDiffersFromHead({
+      const indexState = await checkIndexDiffersFromHead({
         preSubcommandArgs: args.slice(
           0,
           subcommandIndex,
         ),
       },);
 
-      if (indexDiffers === true) {
+      if (indexState === 'differs') {
         /**
          * Pathless-allowed flags present on argv, echoed in the diagnostic.
          */
@@ -264,7 +271,7 @@ export function makeCommitOnly({ checkIndexDiffersFromHead, }: CommitOnlyDepende
  * Commit-only rule wired to the real git index-vs-HEAD checker; the variant
  * the rule pipeline runs. Behavior is documented on {@link makeCommitOnly}.
  */
-export const commitOnly = makeCommitOnly({
+export const commitOnly: CommitOnlyRule = makeCommitOnly({
   checkIndexDiffersFromHead: indexDiffersFromHead,
 },);
 
