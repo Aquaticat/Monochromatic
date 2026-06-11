@@ -59,6 +59,16 @@ import { corruptedDocumentArbitrary, } from './mutators.ts';
 const RUN = fuzzRunPlan();
 
 /**
+ * Carriage-return code unit (U+000D), used to build CRLF inputs off the source.
+ */
+const CARRIAGE_RETURN_CODE = 0x0D;
+
+/**
+ * Line-feed code unit (U+000A), used to build newline inputs off the source.
+ */
+const LINE_FEED_CODE = 0x0A;
+
+/**
  * Upper bound on live repository TOML files pulled into the campaign corpus.
  */
 const REPO_CORPUS_LIMIT = 300;
@@ -165,11 +175,13 @@ function caughtFrom(source: string,): unknown {
  * Assert `parseTomlEdit` is total over `source`.
  *
  * Totality is two claims, not one: every throw is a `TomlEditError`, and its
- * `cause` is a legitimate parser rejection (`ParseError`) or recursion overflow
- * (`RangeError`). The second claim keeps the oracle sharp after the broad catch
- * in `safeParse`: a future input that made the parser throw some other class
- * (a genuine parser defect) would still fail here rather than be silently
- * wrapped and pass.
+ * `cause` is a legitimate parser rejection (`ParseError`), recursion overflow
+ * (`RangeError`), or absent for toml-edit's own pre-parse validation (the bare
+ * carriage-return guard throws with no cause). The cause claim keeps the oracle
+ * sharp after the broad catch in `safeParse`: a future input that made the
+ * parser throw some other class (a genuine parser defect) is wrapped with that
+ * class as cause and would still fail here rather than be silently wrapped and
+ * pass; an absent cause never masks that, since the wrapper always sets one.
  *
  * @returns Nothing; throws via `expect` on a contract violation.
  */
@@ -186,10 +198,13 @@ function assertTotalParse(source: string,): void {
     expect(caught,).toBeInstanceOf(TomlEditError,);
     if (caught instanceof TomlEditError) {
       /**
-       * Underlying cause; only a parser rejection or recursion overflow is legitimate.
+       * Underlying cause; a parser rejection, recursion overflow, or absent for
+       * toml-edit's own pre-parse validation.
        */
       const { cause, } = caught;
-      expect((cause instanceof ParseError) || (cause instanceof RangeError),).toBe(true,);
+      expect(
+        (cause === undefined) || (cause instanceof ParseError) || (cause instanceof RangeError),
+      ).toBe(true,);
     }
   }
 }
@@ -256,6 +271,35 @@ await describe({
             parseTomlEdit({ source: fixture.source, },);
           },).toThrow(TomlEditError,);
         }
+      },
+    },),
+
+    it({
+      // Regression: toml-eslint-parser accepts a bare CR (a lone carriage return
+      // not part of CRLF), which TOML forbids everywhere, including inside
+      // multiline strings (toml-test invalid/control/bare-cr, multi-cr,
+      // rawmulti-cr). CRLF is a legal newline but is normalized to LF (warned),
+      // so the state, splice, and emit paths never see a CR.
+      name: 'rejects a bare carriage return and normalizes CRLF to LF',
+      fn: async () => {
+        /**
+         * Carriage-return and line-feed characters, built off-line to avoid raw bytes.
+         */
+        const cr = String.fromCodePoint(CARRIAGE_RETURN_CODE,);
+        const lf = String.fromCodePoint(LINE_FEED_CODE,);
+        expect(function parseBareCr() {
+          parseTomlEdit({ source: `a = 1${cr}b = 2${lf}`, },);
+        },).toThrow(TomlEditError,);
+        expect(function parseBareCrInMultiline() {
+          parseTomlEdit({ source: `a = """x${cr}y"""${lf}`, },);
+        },).toThrow(TomlEditError,);
+        /**
+         * State for a CRLF document; its source must be the LF-normalized form.
+         */
+        const state = parseTomlEdit({ source: `a = 1${cr}${lf}b = 2${cr}${lf}`, },);
+        expect(state.source,).toBe(`a = 1${lf}b = 2${lf}`,);
+        expect(state.source
+          .includes(cr,),).toBe(false,);
       },
     },),
 

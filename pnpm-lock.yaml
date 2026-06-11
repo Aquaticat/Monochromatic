@@ -1999,6 +1999,9 @@ importers:
 
   packages/module/toml-edit:
     dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../or-throw

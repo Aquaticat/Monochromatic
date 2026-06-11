@@ -4,6 +4,7 @@
  * @module
  */
 
+import { tagged, } from '@monochromatic-dev/module-logger';
 import {
   type AST,
   ParseError,
@@ -16,6 +17,80 @@ import {
   type TomlEditOptions,
   type TomlEditState,
 } from './types.ts';
+
+/**
+ * Carriage-return code unit (U+000D).
+ */
+const CARRIAGE_RETURN = 0x0D;
+
+/**
+ * Line-feed code unit (U+000A).
+ */
+const LINE_FEED = 0x0A;
+
+/**
+ * Reject a bare carriage return: a `CR` not immediately followed by `LF`.
+ *
+ * TOML permits `CR` only as part of a `CRLF` newline; a lone `CR` (anywhere,
+ * including inside a multiline string) is invalid, but `toml-eslint-parser`
+ * accepts it. This pre-parse scan closes that gap so `parseTomlEdit` rejects the
+ * input the way the spec requires. A trailing `CR` is rejected too, since
+ * `codePointAt` past the end yields `undefined`, which is not `LF`.
+ *
+ * @param source - Raw TOML source.
+ *
+ * @throws TomlEditError when a bare carriage return is present.
+ *
+ * @example
+ * ```ts
+ * assertNoBareCarriageReturn({ source: 'a = 1\r\n', }); // ok (CRLF)
+ * ```
+ */
+function assertNoBareCarriageReturn({ source, }: { readonly source: string; },): void {
+  for (let index = 0; index < source.length; index += 1) {
+    if ((source.codePointAt(index,) === CARRIAGE_RETURN) && (source.codePointAt(index + 1,) !== LINE_FEED))
+      throw new TomlEditError('Failed to parse TOML: a bare carriage return is not allowed; CR must be part of CRLF',);
+  }
+}
+
+/**
+ * Normalize newlines to LF, warning when a CRLF document is converted.
+ *
+ * A bare carriage return is rejected first. Any surviving CR is therefore part
+ * of a CRLF, which is converted to LF so the splice, comment-range, and emit
+ * paths only ever reason about single-byte LF newlines. The returned source,
+ * not the caller's original, is what the edit state holds, so a CRLF input
+ * round-trips as LF by design; the warning makes that conversion visible.
+ *
+ * @param source - Raw TOML source.
+ *
+ * @returns Source with every CRLF converted to LF.
+ *
+ * @throws TomlEditError when a bare carriage return is present.
+ *
+ * @example
+ * ```ts
+ * normalizeNewlines({ source: crlfText, }); // LF text, warns once
+ * ```
+ */
+function normalizeNewlines({ source, }: { readonly source: string; },): string {
+  assertNoBareCarriageReturn({ source, },);
+  /**
+   * Carriage-return character, built from its code unit to avoid a raw byte.
+   */
+  const carriageReturn = String.fromCodePoint(CARRIAGE_RETURN,);
+  if (!source.includes(carriageReturn,)) return source;
+  /**
+   * Line-feed character, the normalization target.
+   */
+  const lineFeed = String.fromCodePoint(LINE_FEED,);
+  tagged({ tag: normalizeNewlines.name, },)
+    .warn('CRLF line endings detected; the document is normalized to LF',);
+  return source.replaceAll(
+    `${carriageReturn}${lineFeed}`,
+    lineFeed,
+  );
+}
 
 /**
  * Parse `source` and wrap `ParseError` in a `TomlEditError`.
@@ -59,12 +134,14 @@ function safeParse(
 /**
  * Parse a TOML source string and produce a fresh `TomlEditState`.
  *
- * The returned state holds the source verbatim and the parse-time AST.
- * Both are shared by reference with every state derived from this one
- * via mutating functions; the type system marks every other field as
+ * The returned state holds the newline-normalized source and the parse-time
+ * AST. CRLF input is converted to LF (with a warning) before parsing, so the
+ * state, splice output, and emission use LF newlines; a bare carriage return is
+ * rejected. Source and AST are shared by reference with every state derived from
+ * this one via mutating functions; the type system marks every other field as
  * immutable.
  *
- * @param source - TOML text to parse
+ * @param source - TOML text to parse; CRLF is normalized to LF, a bare CR rejected
  *
  * @param mode - `'splice'` (default) preserves unmutated regions byte-for-byte
  *               at `tomlStringify`; `'canonical'` rebuilds text from the AST
@@ -99,15 +176,20 @@ export function parseTomlEdit(
   }: TomlEditOptions,
 ): TomlEditState {
   /**
+   * Source with CRLF normalized to LF; held by the state so every byte range,
+   * splice, and re-emission reasons about LF newlines only.
+   */
+  const normalizedSource = normalizeNewlines({ source, },);
+  /**
    * Single parse so the AST is captured once and shared across the state's lifetime.
    */
   const program = safeParse({
-    source,
+    source: normalizedSource,
     tomlVersion,
   },);
 
   return {
-    source,
+    source: normalizedSource,
     program,
     edits: new Map(),
     insertions: [],
