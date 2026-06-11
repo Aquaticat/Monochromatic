@@ -231,6 +231,20 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 02:30 -- 9 root causes committed (bug-09 added: full/js dot-literal concat
+  compile blowup, >40s, fragile/non-monotonic, distinct from bug-06). Verified
+  bug-05 is debug-build-only: `_*$` in a release (no-debug-assertions) build
+  returns the CORRECT `find_all` (`[0:6,6:6]`), so it is a debug/test/fuzz crash
+  not a release soundness bug (writeup already says so). DIVERGE null reconfirmed.
+  Lean position-level lane: ABANDONED this box -- `curl|sh` elan install denied
+  by the auto-mode classifier (external code exec; install authz was Mac-only),
+  too heavy to reroute. Mining instead with a fresh differently-structured
+  corpus (`gen_big2.py`, seed 7777, heavier nested lookarounds / counted repeats
+  / deep complement+intersection / case-shifting classes): 16-way `--oraclebatch`
+  running on big2 to surface violation types not yet filed (a non-zero-width
+  HARDDIFF, a distinct OVERLAP/BOUNDS, etc.). Overnight fuzzers still running on
+  both machines.
+
 - 02:05 -- DIVERGE lane (is_match resharp-ascii vs regex-crate over 20k
   shared-subset patterns x22 haystacks, panic-tolerant in `repro --divergebatch`)
   is a CLEAN NULL: resharp's basic is_match agrees with the regex crate, so the
