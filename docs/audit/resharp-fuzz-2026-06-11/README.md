@@ -178,18 +178,32 @@ positionally wrong. The 2026-06-04 Lean ground-truth pipeline (re2lean / gen_lea
 random RE ASTs and serializes each to BOTH a fully-parenthesized RE# string
 (rust) and a Lean `RE (BA Char)` term (Lean), removing parser-precedence risk by
 construction. `llmatch` (leftmost-longest first match) is compared against rust
-default-config `find_all(w)[0]`. Cases are tagged trust0 (anchor-free, translator
-faithful) or trust1 (`^`/`$`/`\b`/lookbehind-of-anchor, the documented-unfaithful
-shapes, which need the dotnet adjudicator). On the first 1954-case run (1392
-agree, 559 rust-rejected) the only trust0 disagreement was bug-11; the two trust1
-disagreements were nested lookbehind-of-`\A`, i.e. translator artifacts, not rust
-bugs. A deeper multi-seed round (depth<=5, seeds 1001/2002/3003/4004) added bug-12
-(trust0 R2280) and bug-13 (trust0 R48), and re-derived bug-05 on new `_*(?!_)` /
-`((_)*)+(?!b)` triggers; its other disagreements were trust1 anchor shapes or
-lookbehind-of-lookaround (the documented-unfaithful shape, which `trust()` now
-flags so they are routed to adjudication rather than mistaken for bugs). The Lean toolchain runs on the M1 (elan + cached mathlib oleans);
-tooling under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`, `leanrust`,
-`relprobe`, `nullsprobe`).
+default-config `find_all(w)[0]`. Cases are tagged trust0 (faithful) or trust1
+(needs the dotnet adjudicator). `trust()` is context-aware: trust1 is assigned
+for `^`/`$`/`\b`/`\B` anywhere, for `\A`/`\z` that appear INSIDE a complement or
+lookbehind (anchor-in-negative-context / lookbehind-of-anchor), and for any
+lookbehind whose body contains a lookaround. `\A`/`\z` as bare positive
+assertions are faithful (`(?<!T)` / `(?!T)`) and stay trust0. This context rule
+matters: an earlier flat "all anchors are trust1" missed
+`((?<!(~(((?<!\d)))))))` (lookbehind-of-lookaround) as trust0, and a too-eager
+"all `\A`/`\z` are trust0" mis-promoted `a(~(\z))` (complement-of-anchor).
+
+Across the runs (first 1954-case run, then seeds 1001/2002/3003/4004 at depth<=5,
+then a focused intersection/lookaround round), EVERY trust0 disagreement reduces
+to a known root cause: bug-11 (R1612), bug-12 (R2280), bug-13 (R48, R292, R2739),
+or bug-05 panics on new `_*(?!_)` / `((_)*)+(?!b)` / `\z`-in-complement triggers.
+The faithful region is exhausted in that sense; the systemic finding is that
+intersection with a zero-width operand (bug-13) is broad, recurring under many
+surface forms.
+
+Open frontier (NOT adjudicated): the trust1 complement-of-anchor cases
+(`a(~(\z))` -> rust `[(0,1)]`, `b(~((c|\z)))` -> rust `1:2`) look like over-matches
+of the 2026-06-04 BUG-4 family (complement-of-end-anchor), but complement-of-anchor
+is exactly where the Lean translation faithfulness is unestablished, so they need
+the dotnet engine as a tie-breaker before being claimed as bugs; recorded here as
+suspects, not findings. The Lean toolchain runs on the M1 (elan + cached mathlib
+oleans); tooling under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`,
+`leanrust`, `relprobe`, `nullsprobe`).
 
 ### ARM / x86 parity
 

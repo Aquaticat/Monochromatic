@@ -231,6 +231,25 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 08:05 -- trust0 region EXHAUSTED + complement-of-anchor frontier opened.
+  Refined `trust()` to context-aware (anchor inside complement/lookbehind ->
+  trust1; bare `\A`/`\z` -> trust0; lookbehind-of-lookaround -> trust1), then
+  re-diffed ALL harvested rounds (no new Mac evals -- reused saved outputs). Every
+  trust0 disagreement reduces to a KNOWN bug: R1612=bug-11, R2280=bug-12,
+  R48/R292/R2739=bug-13 (R2739 `((c[ab])|(?=a))?&.` = form B again -- nullable LHS
+  matching only zero-width/width-2, intersected with width-1 `.`, leaks `.`'s
+  width), R2513/R833/R2864=bug-05 (wider trigger family incl `\z`-in-complement).
+  So the FAITHFUL region holds no 14th root cause; bug-13 (intersection with a
+  zero-width operand) is the dominant systemic issue, recurring under many forms.
+  NEW FRONTIER (trust1, unadjudicated): complement-of-anchor over-matches --
+  `a(~(\z))` -> rust `[(0,1)]`, `b(~((c|\z)))` -> rust `1:2`, where Lean says none.
+  These look like the live 06-04 BUG-4 family (`~(_*$)` sentinel leak, which is
+  now parser-rejected but survives as `~(\z)`), BUT complement-of-anchor is a
+  translation-faithfulness-suspect zone, so they need the dotnet engine as
+  tie-breaker before being claimed. Documented as SUSPECTS in README, not
+  findings. NEXT: attempt dotnet adjudication on the Mac (authorized) to resolve
+  the complement-of-anchor suspects -> possible bug-14; timeboxed.
+
 - 07:40 -- FOCUSED round + ARM parity. Focused Lean round (FOCUS flag,
   inter/neg/lookaround heavy, single-file eval = 466s/3199 cases, no hang, no
   per-chunk import reload) found 1 trust0: R292 `(\W|(?!c))&a` on "a" -> rust
