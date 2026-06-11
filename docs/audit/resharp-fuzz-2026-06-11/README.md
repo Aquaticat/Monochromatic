@@ -14,8 +14,14 @@ banner). Nothing here depends on it.
 
 ## Headline
 
-Ten distinct root causes were found and reproduced on v0.6.12, six of them
-soundness bugs. The five oracle-only soundness bugs (bug-02/03/07/08/10) were
+Eleven distinct root causes were found and reproduced on v0.6.12, seven of them
+soundness bugs and three of them crashes (`find_all` reverse/forward null
+mismatch at `ldfa.rs:833/878/906` = bug-11, the algebra reentrant-union panic =
+bug-04, the `rev_trivial` dead branch = bug-05). bug-11 was found by the
+reconstructed Lean position-level lane and is the one finding the internal
+oracles structurally cannot reach (a `find_all`-only path that crashes in
+debug-assertions builds and silently drops the leftmost match in release). The
+five oracle-only soundness bugs (bug-02/03/07/08/10) were
 re-confirmed byte-identical on the *unmodified* stock crate (not just the
 instrumented harness), and shown to survive the arm-bug-01 driver fix, so the
 ten-distinct count is defensible; see `pristine-confirmation.md`. The "all
@@ -82,6 +88,15 @@ with reproducers).
   span-disagreement family, still live on complement-with-end-anchor patterns (30
   triggers). Distinct from bug-02 (existence) -- here a match exists, the start
   agrees, only the length disagrees.
+- `bug-11` (crash / soundness): `find_all`'s reverse pass proposes a null match
+  start the forward pass then rejects, violating the coupling invariant asserted
+  at `resharp-engine/src/ldfa.rs:833/878/906`. `((?!a)|b)&(~((c)))` on `"abca"`
+  panics in any debug-assertions build (`assert_ne!(NO_MATCH, l_max_end)`); in
+  release the guard drops the unconfirmed start, so `find_all` silently omits a
+  real match (`"ca"` -> `[(2,2)]`, dropping the leftmost `(0,0)`; Lean ground
+  truth `0:0`). Needs a zero-width-nullable alternation intersected with a
+  complement. Found by the Lean position lane (case R1612); the third distinct
+  crash site. See `bug-11-ldfa-reverse-forward-null-mismatch.md`.
 
 ## Method
 
@@ -126,6 +141,22 @@ AddressSanitizer. `diff_regex` produced ~120 inputs all hitting bug-04;
 `match_invariants` produced bug-05; `compile` produced the bug-06 timeouts;
 `simd_diff` produced arm-bug-01 on the M1.
 
+### Lean position-level differential (the external-reference lane)
+
+The internal oracles above cannot catch a result that is self-consistent but
+positionally wrong. The 2026-06-04 Lean ground-truth pipeline (re2lean / gen_lean
+/ diff_lean) was reconstructed AST-first: `tools/lean/gen_lean_ast.py` builds
+random RE ASTs and serializes each to BOTH a fully-parenthesized RE# string
+(rust) and a Lean `RE (BA Char)` term (Lean), removing parser-precedence risk by
+construction. `llmatch` (leftmost-longest first match) is compared against rust
+default-config `find_all(w)[0]`. Cases are tagged trust0 (anchor-free, translator
+faithful) or trust1 (`^`/`$`/`\b`/lookbehind-of-anchor, the documented-unfaithful
+shapes, which need the dotnet adjudicator). On a 1954-case run (1392 agree, 559
+rust-rejected) the only trust0 disagreement was bug-11; the two trust1
+disagreements were nested lookbehind-of-`\A`, i.e. translator artifacts, not rust
+bugs. The Lean toolchain runs on the M1 (elan + cached mathlib oleans); tooling
+under `tools/lean/` (`gen_lean_ast.py`, `diff_lean.py`, `leanrust`, `relprobe`).
+
 ### 2026-06-04 re-verification
 
 Every 06-04 reproducer was rerun against v0.6.12 and classified fixed / live /
@@ -146,7 +177,10 @@ All under `/tmp/agent` on the x86 host and mirrored to
   the verification driver and corpus generators.
 
 The Lean formalization (`~/Downloads/extended-regexes`) is the position-level
-ground-truth reference; the dotnet engine is a secondary cross-check only. Every
-bug here rests on a same-engine internal inconsistency (SIMD on vs off, is_match
-vs find_all vs find_anchored vs stream, default vs hardened) or a panic, so none
-depends on an external oracle.
+ground-truth reference; the dotnet engine is a secondary cross-check only. Ten of
+the eleven bugs rest on a same-engine internal inconsistency (SIMD on vs off,
+is_match vs find_all vs find_anchored vs stream, default vs hardened) or a panic,
+so they need no external oracle. bug-11 is the exception by design: its crash is
+engine-internal (a `debug_assert_ne!` the engine trips on itself), and only its
+release-mode soundness severity (which match it drops) is read off the Lean
+ground truth, on a trust0 anchor-free pattern where the translation is faithful.
