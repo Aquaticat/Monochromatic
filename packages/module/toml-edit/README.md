@@ -103,3 +103,13 @@ Both bypass pending deltas. After `tomlSet({ edit, path, value: 'new' })`:
 - `tomlGetRaw({ edit, path })` returns the parse-time source slice (the pre-edit bytes).
 
 For paths created by `tomlSet` that did not exist at parse time, neither function can return a node or bytes; `tomlStringify` and reparse first.
+
+## Unstable seam exports
+
+The package re-exports a few internal encoders and emitters with an underscore prefix:
+`_encodeKey`, `_jsValueToTomlText`, `_emitContentNode`, `_emitStringValue`, and `_spliceEmit`.
+
+These carry no compatibility promise.
+They exist for observability and the property-based fuzz suite, which exercises them through the built artifact.
+Their signatures may change without a major version bump, so application code must not depend on them.
+See `docs/decisions/toml-edit-fuzzing.md`.
