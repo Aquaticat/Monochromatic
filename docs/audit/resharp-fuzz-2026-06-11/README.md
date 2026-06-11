@@ -231,7 +231,10 @@ to a known root cause: bug-11 (R1612), bug-12 (R2280), bug-13 (R48, R292, R2739)
 or bug-05 panics on new `_*(?!_)` / `((_)*)+(?!b)` / `\z`-in-complement triggers.
 The faithful region is exhausted in that sense; the systemic finding is that
 intersection with a zero-width operand (bug-13) is broad, recurring under many
-surface forms.
+surface forms. The focused round (3199 cases, the generation pass most biased
+toward a 14th root cause) closed with `RUST_PANIC=0`, one trust0 phantom (R292,
+bug-13 form B), and nothing new. Full method, trust-class definition, and the
+focus-round table are in `lean-differential.md`.
 
 Open frontier (NOT adjudicated): the trust1 complement-of-anchor cases
 (`a(~(\z))` -> rust `[(0,1)]`, `b(~((c|\z)))` -> rust `1:2`) look like over-matches
