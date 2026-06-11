@@ -17,10 +17,15 @@ import chaiAsPromised from 'chai-as-promised';
 import type { SinonSpy, } from 'sinon';
 import sinonChai from 'sinon-chai';
 
+import {
+  buildCollectionMatchers,
+  collectionMatchersPlugin,
+} from './expect-matchers-collection.ts';
 import { buildCoreMatchers, } from './expect-matchers-core.ts';
 
 use(chaiAsPromised,);
 use(sinonChai,);
+use(collectionMatchersPlugin,);
 
 //region Matcher set builder
 
@@ -29,6 +34,9 @@ use(sinonChai,);
  * Each method delegates to the corresponding chai assertion.
  */
 export type MatcherSet = {
+  toAllBe: () => void;
+  toAllEqual: () => void;
+  toSatisfyAll: (predicate: (value: unknown,) => boolean,) => void;
   toBe: (expected: unknown,) => void;
   toBeCloseTo: (
     expected: number,
@@ -115,6 +123,10 @@ export function buildMatchers(
     // Core value matchers live in a sibling module to keep this file
     // under the line-count limit; merged in here so the set is whole.
     ...buildCoreMatchers({ a, },),
+
+    // Collection matchers (`toAllBe`, `toAllEqual`, `toSatisfyAll`) compare
+    // every element of an array actual; also a sibling module for line count.
+    ...buildCollectionMatchers({ a, },),
 
     //region sinon-chai matchers
 

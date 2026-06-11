@@ -38,6 +38,9 @@ export type AsyncMatcherSet = {
  * ```
  */
 const MATCHER_KEYS = [
+  'toAllBe',
+  'toAllEqual',
+  'toSatisfyAll',
   'toBe',
   'toEqual',
   'toStrictEqual',

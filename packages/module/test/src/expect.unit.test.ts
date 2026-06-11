@@ -12,6 +12,27 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+/**
+ * Predicate fixture for `toSatisfyAll` tests: true only for odd numbers. Uses an
+ * early return so the type guard and the modulo check never mix operators in one
+ * expression.
+ *
+ * @param value - candidate array element of unknown type
+ *
+ * @returns whether value is an odd number
+ *
+ * @example
+ * ```ts
+ * expect([1, 3, 5]).toSatisfyAll(isOddNumber);
+ * ```
+ */
+function isOddNumber(value: unknown,): boolean {
+  if ((typeof value) !== 'number') {
+    return false;
+  }
+  return (value % 2) === 1;
+}
+
 await describe({
   // oxlint-disable-next-line no-restricted-syntax/prefer-describe-function-ref-name -- harness self-test; the function under test IS the local binding, so `expect.name` is circular
   name: 'expect',
@@ -443,3 +464,163 @@ await describe({
 },);
 
 /* oxlint-enable no-restricted-syntax/no-regex */
+
+await describe({
+  name: 'collection matchers',
+  children: [
+    //region toAllBe (strict, all equal)
+
+    it({
+      name: 'toAllBe passes when every element strictly equals the first',
+      fn: async () => {
+        expect(['/repo', '/repo', '/repo',],).toAllBe();
+        expect([1, 1, 1, 1,],).toAllBe();
+      },
+    },),
+
+    it({
+      name: 'toAllBe fails when one element diverges',
+      fails: true,
+      fn: async () => {
+        expect(['/repo', '/repo', '/other',],).toAllBe();
+      },
+    },),
+
+    it({
+      name: 'toAllBe fails for NaN like toBe (=== semantics)',
+      fails: true,
+      fn: async () => {
+        expect([Number.NaN, Number.NaN,],).toAllBe();
+      },
+    },),
+
+    it({
+      name: 'toAllBe fails for structurally-equal distinct object references',
+      fails: true,
+      fn: async () => {
+        expect([{ x: 1, }, { x: 1, },],).toAllBe();
+      },
+    },),
+
+    it({
+      name: 'not.toAllBe passes when an element diverges',
+      fn: async () => {
+        expect(['/repo', '/repo', '/other',],).not.toAllBe();
+      },
+    },),
+
+    it({
+      name: 'not.toAllBe fails when every element is equal',
+      fails: true,
+      fn: async () => {
+        expect(['/repo', '/repo',],).not.toAllBe();
+      },
+    },),
+
+    it({
+      name: 'toAllBe throws on a non-array actual',
+      fails: true,
+      fn: async () => {
+        expect('/repo',).toAllBe();
+      },
+    },),
+
+    it({
+      name: 'toAllBe throws on fewer than two values',
+      fails: true,
+      fn: async () => {
+        expect(['/repo',],).toAllBe();
+      },
+    },),
+
+    //endregion toAllBe (strict, all equal)
+
+    //region toAllEqual (deep, all equal)
+
+    it({
+      name: 'toAllEqual passes for structurally-equal distinct references',
+      fn: async () => {
+        expect([{ x: 1, }, { x: 1, }, { x: 1, },],).toAllEqual();
+        expect([[1, 2,], [1, 2,],],).toAllEqual();
+      },
+    },),
+
+    it({
+      name: 'toAllEqual fails when one element differs deeply',
+      fails: true,
+      fn: async () => {
+        expect([{ x: 1, }, { x: 2, },],).toAllEqual();
+      },
+    },),
+
+    it({
+      name: 'not.toAllEqual passes when an element differs deeply',
+      fn: async () => {
+        expect([{ x: 1, }, { x: 2, },],).not.toAllEqual();
+      },
+    },),
+
+    it({
+      name: 'toAllEqual throws on fewer than two values',
+      fails: true,
+      fn: async () => {
+        expect([{ x: 1, },],).toAllEqual();
+      },
+    },),
+
+    //endregion toAllEqual (deep, all equal)
+
+    //region toSatisfyAll (predicate over every element)
+
+    it({
+      name: 'toSatisfyAll passes when the predicate holds for every element',
+      fn: async () => {
+        expect([1, 3, 5, 7,],).toSatisfyAll(isOddNumber,);
+      },
+    },),
+
+    it({
+      name: 'toSatisfyAll passes vacuously for an empty array',
+      fn: async () => {
+        expect([],).toSatisfyAll(() => false,);
+      },
+    },),
+
+    it({
+      name: 'toSatisfyAll fails when one element breaks the predicate',
+      fails: true,
+      fn: async () => {
+        expect([1, 3, 4, 7,],).toSatisfyAll(isOddNumber,);
+      },
+    },),
+
+    it({
+      name: 'not.toSatisfyAll passes when one element breaks the predicate',
+      fn: async () => {
+        expect([1, 3, 4, 7,],).not.toSatisfyAll(isOddNumber,);
+      },
+    },),
+
+    it({
+      name: 'toSatisfyAll throws on a non-function predicate',
+      fails: true,
+      fn: async () => {
+        expect([1, 2,],)
+          .toSatisfyAll('not a function' as unknown as (value: unknown,) => boolean,);
+      },
+    },),
+
+    //endregion toSatisfyAll (predicate over every element)
+
+    //region async wrapping
+
+    it({
+      name: 'resolves.toAllBe works for a resolved array',
+      fn: async () => {
+        await expect(Promise.resolve(['/repo', '/repo',],),).resolves.toAllBe();
+      },
+    },),
+
+    //endregion async wrapping
+  ],
+},);
