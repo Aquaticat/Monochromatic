@@ -231,6 +231,29 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 04:20 -- HARDENING the headline (stronger-reviewer checkpoint flagged that the
+  five oracle-only bugs had only ever run through the INSTRUMENTED engine, so the
+  "instrumentation is neutral at override=0" assumption was untested -- the exact
+  assumption this campaign rejects). Closed it: built `tools/pristine-repro`
+  (depends on the STOCK `resharp-v0612/resharp-engine`, no override/counters) and
+  re-ran the documented minimal reproducers for bug-02/03/07/08/10. ALL FIVE
+  reproduce byte-identical on the unmodified crate. Then `tools/pristine-repro-
+  fixtest` (same five against `resharp-fixtest` = v0.6.12 + only the arm-bug-01
+  `fwd.rs:123 {1}->{0}` fix): all five STILL fire -> the arm-bug-01 fix is
+  orthogonal, proving the five are separately fixable, not one defect in five
+  drivers. Wrote `pristine-confirmation.md`, updated README headline, committed
+  (8fb0c80b). Stream-variant oracle (stream_first vs stream().first, stream_ends
+  vs stream() ends) over the 79k corpus: CLEAN NULL (0 STREAMFIRSTDIFF, 0
+  STREAMENDSDIFF), verified non-vacuous (stream_first/stream_ends return real
+  values that mirror stream() on `a`/`\b`/`(?=c)`). The variant methods faithfully
+  derive from stream(), so no 11th bug there (stream() itself is still wrong on
+  zero-width = bug-03, but the variants don't add a defect). Multibyte/invalid-
+  UTF-8 full-mode probe (.,.+,.{2},\w,[^a],\b,~(a) over é/中/😀/lone-cont/overlong/
+  truncated): CLEAN NULL (no panic, no BOUNDS). NEXT: Lean position-level lane on
+  the MAC (installs authorized there; the curl|sh elan install was denied only on
+  THIS x86 box) -- the one major unexplored lane, catches self-consistent-but-
+  wrong-span correctness bugs the oracles structurally cannot.
+
 - 03:25 -- 10TH ROOT CAUSE found and committed. The FANSPANDIFF oracle over the
   79k combined corpus fired on 30 distinct patterns: bug-10, find_anchored
   returns a strictly SHORTER span than find_all's longest at offset 0
