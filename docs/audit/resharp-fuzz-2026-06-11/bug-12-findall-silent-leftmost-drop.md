@@ -43,45 +43,48 @@ the last match (`2:2`), dropping `0:0` entirely.
 
 `find_all` (`find_all_dfa`) collects candidate match-START positions in a reverse
 pass and confirms each with a forward scan in `scan_fwd_all` (`ldfa.rs`). bug-11
-is the case where the reverse pass OVER-proposes a null start that the forward
-pass then rejects, tripping `debug_assert_ne!(NO_MATCH, l_max_end)` at
+is a FORWARD-pass fault: the reverse pass proposes a legitimate start (a match
+really exists there), and the forward scan fails to confirm it, returning
+`NO_MATCH` and tripping `debug_assert_ne!(NO_MATCH, l_max_end)` at
 `ldfa.rs:833/878/906` (panic in debug, drop in release).
 
-bug-12 is the opposite direction: for `(nullable-alternation) & (nullable
-right-operand)` the reverse pass UNDER-collects, never proposing the leftmost
-null starts, so `scan_fwd_all` is never asked about them, no assert fires, and
-`find_all` silently omits them.
+bug-12 is a REVERSE-pass fault: for `(nullable-alternation) & (nullable
+right-operand)` the reverse pass itself UNDER-collects, never proposing the
+leftmost null starts, so `scan_fwd_all` is never asked about them, no assert
+fires, and `find_all` silently omits them. Different passes are at fault, not the
+same pass in two directions.
 
 This was verified, not inferred, by printing the `nulls` slice that
-`scan_fwd_all` receives (a one-line instrument in the engine copy), on `"abab"`:
+`scan_fwd_all` receives (a one-line instrument in the engine copy) and confirming
+each disputed start against Lean, on `"abab"`:
 
 ```txt
-((?!b)|ba)&(aa)?   nulls = [4]        <- reverse never proposes 0 or 2 (UNDER-collect) -> silent drop
-((?!b)|ba)&(aa)*   nulls = [4, 2, 0]  <- reverse DOES propose 0; forward rejects -> panic (bug-11)
-((?!a)|b)&(~((c))) nulls = [4, 2, 1]  <- reverse proposes 1; forward rejects -> panic (bug-11)
+((?!b)|ba)&(aa)?   nulls = [4]        leftmost starts 0,2 ABSENT; Lean says 0:0 is a match -> reverse fault (silent drop)
+((?!b)|ba)&(aa)*   nulls = [4, 2, 0]  0 IS proposed; Lean says 0:0 is a match; forward returns NO_MATCH for it -> forward fault (panic)
+((?!a)|b)&(~((c))) nulls = [4, 2, 1]  reverse proposes 1/2; the dropped 2:2 is a real match; forward refuses it -> forward fault (panic)
 ```
 
-So the same `((?!b)|ba)&X` skeleton produces genuinely different reverse output:
-`X = (aa)?` yields `nulls = [4]` (the leftmost starts are absent), while `X =
-(aa)*` yields `nulls = [4,2,0]` (0 is present but the forward pass refuses it).
-Under-collection and over-proposal are different defects in the reverse
-null-collection, not one defect seen twice; a fix that teaches the forward pass to
-accept bug-11's proposed starts would leave bug-12's missing-from-`nulls` starts
-missing. The two are siblings in one subsystem, toggled by `?` vs `*`:
+The discriminator is which pass mishandles a start that is GENUINELY a match
+(Lean-confirmed): for `(aa)?` the reverse pass never offers offsets 0/2 at all;
+for `(aa)*` the reverse pass offers 0 and the forward pass refuses it. Same
+`((?!b)|ba)&X` skeleton, identical match set, but `X = (aa)?` breaks the reverse
+pass while `X = (aa)*` breaks the forward pass. A fix to the forward derivative
+(bug-11) would not make the reverse pass start proposing the offsets it omits
+(bug-12), and vice versa:
 
 ```txt
-((?!b)|ba)&(aa)?   -> [(4,4)]                       bug-12 (silent drop)
-((?!b)|ba)&(aa)*   -> panic at ldfa.rs:833          bug-11 (over-proposal)
-((?!a)|b)&(~((c))) -> panic at ldfa.rs:833/906      bug-11 (over-proposal)
+((?!b)|ba)&(aa)?   -> [(4,4)]                       bug-12 (reverse omits 0,2)
+((?!b)|ba)&(aa)*   -> panic at ldfa.rs:837          bug-11 (forward refuses proposed 0)
+((?!a)|b)&(~((c))) -> panic at ldfa.rs:906          bug-11 (forward refuses proposed start)
 ```
 
-They are counted as distinct because the `nulls` evidence above shows two
-different reverse-pass faults (under-collection vs over-proposal), not one fault
-seen twice, and the observable failure and severity differ: bug-11 is a loud
-crash in any debug/test build (plus a release drop); bug-12 is a silent wrong
-`find_all` in EVERY build, which no panic ever surfaces. Both live in the reverse
-null-collection / forward-confirmation subsystem, so a single rewrite of that
-subsystem could plausibly fix both at once; if the maintainer confirms one fix
+They are counted as distinct because the `nulls` evidence above shows two faults
+in two different passes, not one fault seen twice, and the observable failure and
+severity differ: bug-11 is a loud crash in any debug/test build (plus a release
+drop); bug-12 is a silent wrong `find_all` in EVERY build, which no panic ever
+surfaces. Both live in the reverse-null-collection / forward-confirmation
+subsystem, so a single rewrite of that subsystem could plausibly fix both at
+once; if the maintainer confirms one fix
 covers both, treat them as one. The split is deliberately conservative about the
 shared subsystem while preserving the distinct silent-soundness fault, which is
 materially worse for consumers than a crash they would notice.

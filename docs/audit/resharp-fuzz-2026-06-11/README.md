@@ -16,14 +16,16 @@ banner). Nothing here depends on it.
 
 Twelve distinct root causes were found and reproduced on v0.6.12, eight of them
 soundness bugs and three of them crashes (the algebra reentrant-union panic =
-bug-04, the `rev_trivial` dead branch = bug-05, and the `find_all` reverse-pass
-over-proposal at `ldfa.rs:833/878/906` = bug-11). bug-11 and bug-12 are sibling
-defects in the `find_all` reverse null-collection subsystem, found by the
-reconstructed Lean position-level lane (the lane the internal oracles cannot
-reach): printing the `nulls` slice shows two different reverse-pass faults, not
-one seen twice (bug-11 over-proposes a start the forward pass rejects -> crash in
-debug, drop in release; bug-12 under-collects, never proposing the leftmost
-starts -> silent wrong `find_all` in every build). The
+bug-04, the `rev_trivial` dead branch = bug-05, and the `find_all` forward-scan
+fault at `ldfa.rs:833/878/906` = bug-11). bug-11 and bug-12 are sibling defects
+in the `find_all` reverse-null-collection / forward-confirmation subsystem, found
+by the reconstructed Lean position-level lane (the lane the internal oracles
+cannot reach). Printing the `nulls` slice and Lean-confirming each disputed start
+shows two faults in two different passes, not one seen twice: bug-11 is a
+FORWARD-pass fault (the reverse pass proposes a legitimate start, Lean confirms a
+match there, and the forward scan returns `NO_MATCH` for it -> crash in debug,
+drop in release); bug-12 is a REVERSE-pass fault (the reverse pass never proposes
+the legitimate leftmost start -> silent wrong `find_all` in every build). The
 five oracle-only soundness bugs (bug-02/03/07/08/10) were
 re-confirmed byte-identical on the *unmodified* stock crate (not just the
 instrumented harness), and shown to survive the arm-bug-01 driver fix, so the
@@ -104,11 +106,13 @@ with reproducers).
   with NO panic in any build (debug or release), the worse-for-consumers sibling
   of bug-11. `((?!b)|ba)&(aa)?` on `"abab"` returns `[(4,4)]` but the Lean
   ground-truth leftmost is `0:0`; on `"ab"` it returns `[(2,2)]`, dropping
-  `(0,0)`. Verified cause: the reverse pass under-collects, handing
-  `scan_fwd_all` `nulls=[4]` (offsets 0 and 2 never proposed), so no forward
-  check and no assert. Toggling `(aa)?` to `(aa)*` flips it to bug-11's panic
-  (`nulls=[4,2,0]`, 0 proposed then rejected). Found by the Lean position lane
-  (seed-1001 R2280). See `bug-12-findall-silent-leftmost-drop.md`.
+  `(0,0)`. Verified cause (reverse-pass fault): the reverse pass under-collects,
+  handing `scan_fwd_all` `nulls=[4]` (offsets 0 and 2, both real matches per Lean,
+  never proposed), so no forward check and no assert. Toggling `(aa)?` to `(aa)*`
+  flips it to bug-11's forward-pass fault (`nulls=[4,2,0]`: 0 is proposed and is a
+  real match, but the forward scan returns `NO_MATCH` for it and panics). Found by
+  the Lean position lane (seed-1001 R2280). See
+  `bug-12-findall-silent-leftmost-drop.md`.
 
 ## Method
 

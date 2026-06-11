@@ -56,10 +56,17 @@ invariant "a reverse-proposed start must have a forward end":
 each `debug_assert_ne!(NO_MATCH, l_max_end, "find_all: forward scan found no end
 for reverse-proposed start")`, guarded by `if l_max_end != NO_MATCH { push }`.
 
-For `(nullable-alternation) & (complement)` the reverse and forward nullability
-determinations diverge: the reverse pass marks a position as a null match start,
-but the forward derivative of the same intersection is non-nullable there, so
-`fwd_update` returns `NO_MATCH`. The invariant is violated:
+For `(nullable-alternation) & (complement)` this is a FORWARD-pass fault: the
+reverse pass proposes a LEGITIMATE start (a real match exists there, confirmed by
+the Lean ground truth below), but the forward derivative of the same intersection
+is computed non-nullable at that position, so `fwd_update` returns `NO_MATCH` and
+the forward scan fails to confirm a start that should match. The assert message
+("forward scan found no end for reverse-proposed start") states exactly this. The
+`nulls` slice handed to `scan_fwd_all` confirms the reverse pass is correct here:
+for `((?!b)|ba)&(aa)*` on `"abab"` it is `[4, 2, 0]` (offset 0 included, and Lean
+gives `0:0`), and the forward scan then rejects offset 0 at `ldfa.rs:837`. (This
+is the mirror image of bug-12, where the reverse pass is the one at fault and
+never proposes the legitimate start.) The invariant is violated:
 
 - Debug-assertions builds (cargo-fuzz, any `debug_assertions` consumer, `cargo
   test`, dev builds): the `debug_assert_ne!` fires, a hard panic. This reaches
@@ -123,9 +130,11 @@ Distinct from:
 ## Suggested fix direction
 
 The reverse null-collection and the forward derivative must agree on nullability
-for `Intersection`/`Negation` nodes. Either the reverse pass over-proposes null
-starts for intersections-with-complement (it should not propose a start the
-forward automaton cannot accept), or the forward `fwd_update` under-reports a
-null end for the same node. The assert message ("this should be eliminated"-style
-invariant) shows the author already expected exact agreement; the
-intersection-with-complement nullability path is where it breaks.
+for `Intersection`/`Negation` nodes. Here the reverse pass is correct (it
+proposes a start where Lean confirms a match), so the fix is on the forward side:
+`fwd_update` / the forward derivative under-reports a null end for the
+intersection-with-complement node, returning `NO_MATCH` where the reverse pass
+(and the language) say a zero-width match ends. The assert the author wrote
+("forward scan found no end for reverse-proposed start") already encodes the
+expectation that the forward pass confirm every reverse-proposed start; the
+intersection-with-complement forward-nullability path is where that breaks.
