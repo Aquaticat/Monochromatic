@@ -61,9 +61,36 @@ of input"), reported fixed. It is only partially fixed: the specific `\B0` on
 lookbehind, and `\B` before any other word char) is still live. Treating the
 narrow patch as a full fix is the documentation gap the user flagged.
 
-## Source pointer
+## Source pointer and mechanism
 
-`find_anchored` is `resharp-engine/src/lib.rs:1891`. The 06-04 root cause was that
-`find_anchored` calls the forward scan from offset 0 without seeding the
-begin-of-input / leading-assertion context that `find_all` keys on; the v0.6.12
-patch covered one assertion shape but not lookbehind or `\B`-before-word-char.
+`find_anchored` is `resharp-engine/src/lib.rs:1891`. v0.6.12 added a leading-
+lookbehind guard (the partial BUG-20 fix):
+
+```rust
+// resharp-engine/src/lib.rs:1901
+if self.has_lb && !self.rev_trivial && !self.always_nullable {
+    let first = inner.fwd_ts.scan_fwd_first_null_from(&mut inner.b,
+        ldfa::DFA_INITIAL as u32, 0, input)?;
+    if first.2 { return Ok(None); }
+}
+Ok(inner.fwd.scan_fwd_slow(&mut inner.b, 0, input)?
+    .map(|end| Match { start: 0, end }))   // line 1908: context-free fallback
+```
+
+Two ways the leading assertion is missed:
+
+- the guard excludes `always_nullable` and `rev_trivial` patterns, so a nullable
+  leading lookbehind like `(?<=a)` (always_nullable) skips the check entirely and
+  falls through to the context-free `scan_fwd_slow(0)` at line 1908, which scans
+  from offset 0 without evaluating the lookbehind, returning `Some(0:_)`;
+- for `\B`-led patterns the guard may be entered but the
+  `scan_fwd_first_null_from` null-scan check does not detect that `\B` is false
+  before a word char at the start, so `first.2` is false and it again falls
+  through to line 1908.
+
+The fix is to make the leading-assertion / begin-context evaluation
+unconditional in `find_anchored` (or to fold `find_anchored` into the same
+match-enumeration core as `find_all`, which gets these cases right), rather than
+gating it on `has_lb && !rev_trivial && !always_nullable`. This is the same
+"each driver re-derives the assertion logic" structural issue as code-quality.md
+describes.
