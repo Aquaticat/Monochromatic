@@ -66,7 +66,7 @@ export type DescribeOptions = {
   readonly concurrency?: number;
   /**
    * Logger override. When omitted, a tagged logger derived from
-   * the module-es default logger is used.
+   * module-logger's default logger is used.
    */
   readonly l?: Logger;
   /**

@@ -1301,14 +1301,7 @@ Conventions for adding property tests here:
 - **expect-type**: compile-time type assertions, re-exported as `expectTypeOf`
 - **sinon**: stubs, spies, sandboxes (exposed via `TestContext.sinon`)
 - **sinon-chai**: chai plugin for sinon matchers
-- **@monochromatic-dev/module-es**: tagged logger
+- **@monochromatic-dev/module-logger**: tagged logger
 
 fast-check is a `devDependency` used only by the property-based self-tests; it is not a runtime
 dependency and is not part of the public API.
-
-- **chai**: assertion engine
-- **chai-as-promised**: registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
-- **expect-type**: compile-time type assertions, re-exported as `expectTypeOf`
-- **sinon**: stubs, spies, sandboxes (exposed via `TestContext.sinon`)
-- **sinon-chai**: chai plugin for sinon matchers
-- **@monochromatic-dev/module-es**: tagged logger

@@ -84,7 +84,7 @@ async function makeDisposableOutbox(
 /**
  * Sleeps for `ms` milliseconds without using the canonical `wait`
  * helper; importing it here would create a cycle through the same
- * module-es entry the outbox already uses.
+ * module-async-time entry the outbox already uses.
  *
  * @param ms - delay in milliseconds
  *

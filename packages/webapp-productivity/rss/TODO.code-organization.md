@@ -109,7 +109,7 @@ Create proper error hierarchy:
 
 - [x] 2.6.1.1 Package is private in `packages/webapp-productivity/rss/package.json`.
 - [x] 2.6.1.2 No misleading application `"module"` field is present.
-- [ ] 2.6.1.3 Do not add an exports map unless this package is intended to be consumed as a library. See library example in [es package exports](packages/module/es/package.json:6).
+- [ ] 2.6.1.3 Do not add an exports map unless this package is intended to be consumed as a library. See library example in [logger package exports](../../module/logger/package.json:6).
 
 #### 2.6.2 Dependency classification
 
@@ -123,7 +123,7 @@ Create proper error hierarchy:
 
 #### 2.6.4 Monorepo conventions alignment
 
-- [ ] 2.6.4.1 For applications, avoid library-oriented metadata (exports map, module field). Use the library package as reference for when an exports map is appropriate: [es exports](packages/module/es/package.json:6).
+- [ ] 2.6.4.1 For applications, avoid library-oriented metadata (exports map, module field). Use the library package as reference for when an exports map is appropriate: [logger exports](../../module/logger/package.json:6).
 - [ ] 2.6.4.2 Ensure mise tasks reflect app vs library roles (no change required now; just confirm tasks are app-focused for apps, and dual-build for libraries).
 
 ## 3. Migration Strategy

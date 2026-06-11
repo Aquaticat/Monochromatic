@@ -78,7 +78,7 @@ Create comprehensive documentation to improve maintainability, onboarding, and u
 
 - [ ] 2.8.1 Document app vs library metadata conventions
   - Apps are marked private and do not expose exports maps.
-  - Libraries define an exports map with node/default targets (example: [exports map](packages/module/es/package.json:6)).
+  - Libraries define an exports map with node/default targets (example: [exports map](../../module/logger/package.json:6)).
   - For apps, do not set a misleading "module" field. If present, it must point to a real file; otherwise remove it.
 
 - [ ] 2.8.2 Document runtime vs devDependency classification
