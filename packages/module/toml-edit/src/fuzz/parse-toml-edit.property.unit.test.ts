@@ -27,6 +27,8 @@ import {
   string,
 } from 'fast-check';
 
+import { ParseError, } from 'toml-eslint-parser';
+
 import {
   describe,
   expect,
@@ -145,7 +147,29 @@ const DEEP_EXAMPLES: readonly (readonly [string])[] = [
 ];
 
 /**
+ * Capture whatever `parseTomlEdit` throws for `source`, or `undefined`.
+ *
+ * @returns Thrown value, or `undefined` when the parse succeeds.
+ */
+function caughtFrom(source: string,): unknown {
+  try {
+    parseTomlEdit({ source, },);
+  }
+  catch (caught: unknown) {
+    return caught;
+  }
+  return undefined;
+}
+
+/**
  * Assert `parseTomlEdit` is total over `source`.
+ *
+ * Totality is two claims, not one: every throw is a `TomlEditError`, and its
+ * `cause` is a legitimate parser rejection (`ParseError`) or recursion overflow
+ * (`RangeError`). The second claim keeps the oracle sharp after the broad catch
+ * in `safeParse`: a future input that made the parser throw some other class
+ * (a genuine parser defect) would still fail here rather than be silently
+ * wrapped and pass.
  *
  * @returns Nothing; throws via `expect` on a contract violation.
  */
@@ -160,6 +184,13 @@ function assertTotalParse(source: string,): void {
   }
   catch (caught: unknown) {
     expect(caught,).toBeInstanceOf(TomlEditError,);
+    if (caught instanceof TomlEditError) {
+      /**
+       * Underlying cause; only a parser rejection or recursion overflow is legitimate.
+       */
+      const { cause, } = caught;
+      expect((cause instanceof ParseError) || (cause instanceof RangeError),).toBe(true,);
+    }
   }
 }
 
@@ -181,6 +212,22 @@ await describe({
             examples: [...DEEP_EXAMPLES,],
           },
         );
+      },
+    },),
+
+    it({
+      name: 'deep nesting overflow surfaces as TomlEditError wrapping a RangeError',
+      fn: async () => {
+        for (const source of [deepArrayDoc(DEEP_ARRAY_DEPTH,), deepInlineDoc(DEEP_INLINE_DEPTH,),]) {
+          /**
+           * Error thrown for the pathologically deep document.
+           */
+          const caught = caughtFrom(source,);
+          expect(caught,).toBeInstanceOf(TomlEditError,);
+          if (caught instanceof TomlEditError) {
+            expect(caught.cause,).toBeInstanceOf(RangeError,);
+          }
+        }
       },
     },),
 
