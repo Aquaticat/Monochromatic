@@ -19,15 +19,6 @@ await describe({
       name: isAllowedCycleWarning.name,
       children: [
         it({
-          name: 'returns true for the known module/es + module/test cycle',
-          fn: async () => {
-            expect(isAllowedCycleWarning(
-              `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/module/es, /var/home/user/Monochromatic/packages/module/test`,
-            ),)
-              .toBe(true,);
-          },
-        },),
-        it({
           name: 'returns true for the known module/async-time + module/test cycle',
           fn: async () => {
             expect(isAllowedCycleWarning(
@@ -40,7 +31,7 @@ await describe({
           name: 'returns true regardless of monorepo root path',
           fn: async () => {
             expect(isAllowedCycleWarning(
-              `${WARN} There are cyclic workspace dependencies: /home/alice/projects/mono/packages/module/es, /home/alice/projects/mono/packages/module/test`,
+              `${WARN} There are cyclic workspace dependencies: /home/alice/projects/mono/packages/module/async-time, /home/alice/projects/mono/packages/module/test`,
             ),)
               .toBe(true,);
           },
@@ -58,7 +49,7 @@ await describe({
           name: 'returns false for a mix of known and unknown packages',
           fn: async () => {
             expect(isAllowedCycleWarning(
-              `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/module/es, /var/home/user/Monochromatic/packages/foo/bar`,
+              `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/module/async-time, /var/home/user/Monochromatic/packages/foo/bar`,
             ),)
               .toBe(false,);
           },
@@ -87,7 +78,7 @@ await describe({
           name: 'removes the allowed cycle warning while keeping other lines',
           fn: async () => {
             const output = [
-              `${WARN} There are cyclic workspace dependencies: /abs/packages/module/es, /abs/packages/module/test`,
+              `${WARN} There are cyclic workspace dependencies: /abs/packages/module/async-time, /abs/packages/module/test`,
               `${WARN} deprecated package: old-pkg@1.0.0`,
               '',
             ]

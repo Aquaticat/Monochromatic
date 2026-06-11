@@ -43,6 +43,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/module/es"
+    "directory": "packages-paused/module/es"
   }
 }

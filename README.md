@@ -157,7 +157,7 @@ mise run test
 mise run buildAndTest
 
 # Build and test a specific file
-mise run buildAndTest -- packages/module/es/src/boolean.equal.unit.test.ts
+mise run buildAndTest -- packages/module/async-time/src/wait.unit.test.ts
 
 # Format all files
 mise run format
@@ -173,7 +173,7 @@ mise run watch:test
 Run a task in a specific package with the monorepo path prefix:
 
 ```sh
-mise run //packages/module/es:test
+mise run //packages/module/async-time:test
 mise run //packages/webapp-productivity/done:build
 ```
 

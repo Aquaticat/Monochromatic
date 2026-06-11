@@ -57,20 +57,6 @@ app.all(
       );
     }
 
-    if (pathname.startsWith('/dist/',)) {
-      /**
-       * Resolved MIME type for the requested asset; falls back to a safe binary type.
-       */
-      const contentType = mimeTypes[extname(pathname,)]
-        ?? 'application/octet-stream';
-      return new Response(
-        await readFile(`packages/module/es${pathname}`,),
-        {
-          headers: { 'content-type': contentType, },
-        },
-      );
-    }
-
     return new Response(
       'Not found',
       { status: 404, },

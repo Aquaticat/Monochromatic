@@ -189,7 +189,7 @@ disable_backends = ["asdf"]
 
 status.missing_tools = "always"
 
-# Matches the packages/*/* directory depth (e.g. packages/module/es = 3 segments).
+# Matches the packages/*/* directory depth (e.g. packages/module/logger = 3 segments).
 task.monorepo_depth = 3
 
 # Skip the extra Tera template pass that collects arg()/option()/flag() from run scripts.
@@ -804,8 +804,7 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 #region TypeScript Project References
 # Moon automatically synced TypeScript project references during build.
 # With mise, this needs to be done manually via a script.
-# See: packages/module/es/src/mise.syncTsProjectReferences.ts
-# Update: deprecated. tsgo is fast enough that importing ts source w/o any special setup is acceptable.
+# Historical note: this is deprecated. tsgo is fast enough that importing ts source w/o any special setup is acceptable.
 #endregion TypeScript Project References
 
 #region File Enforcer
