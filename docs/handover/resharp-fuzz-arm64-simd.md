@@ -231,6 +231,24 @@ doc); do not re-file those.
 
 ## Campaign log (newest first; update >= every 10 min while running)
 
+- 07:15 -- 13TH ROOT CAUSE (bug-13), seed-4004 R48. `a?&(?=a)?` -> find_all
+  `[(0,1),(1,1),(2,2)]` and find_anchored `Some((0,1))`, but the intersection is
+  zero-width-only (`a?`'s width-1 span cannot equal the lookahead's zero-width
+  span), so Lean leftmost = `0:0`. The optional lookahead, when SATISFIED at the
+  position, fails to constrain the match width and the consuming `a`'s width LEAKS
+  into the span -> match too LONG (opposite of bug-11/12's drops; an END
+  over-extension in the forward match-extension path, not null-start collection).
+  Needs both `&` operands nullable + lookahead satisfied (`a?&(?=c)?` false-look
+  is correct; `a&(?=a)?` non-nullable-consuming is correctly empty). Silent in
+  debug AND release, hits find_anchored too, is_match correct. Same width-leak
+  theme as 06-04 BUG-13 (`(?=(?=c)c{1,3})`, was fixed on its trigger) but a
+  distinct LIVE intersection trigger. Lean-confirmed, pristine, committed
+  (a2f1f02b), README->13. Seed-4004 also re-derived bug-05 (`((_)*)+(?!b)`).
+  LEAN LANE TOTAL: 3 new root causes (bug-11/12/13), all intersection+lookaround
+  -- this subsystem is clearly fragile. NEXT: focused round (FOCUS flag biases
+  inter/neg/lookaround) with single-file eval (the per-chunk import reload was the
+  ~13min/seed bottleneck; one file = one import load).
+
 - 06:50 -- bug-11 REFRAMED (forward-pass fault) + trust() gap fixed. Stronger
   reviewer caught a fresh unverified claim: I wrote bug-11 "over-proposes" but the
   `nulls` print only shows reverse PROPOSED the start, not that proposing was the
