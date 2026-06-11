@@ -10,7 +10,7 @@
 
 // What:     `use super::*;`. Bring every item of the parent `cli` module into this
 //           test scope, chiefly the `Cli` struct.
-// Why:      The tests parse arguments into `Cli` and read its fields.
+// Why:      The tests parse arguments into `Cli` and compare against `Cli` literals.
 // TS map:   `import * as parent from "./cli";`
 use super::*;
 
@@ -58,27 +58,32 @@ fn parse(extra: &[&str]) -> Cli {
 
 // What:     `#[test] fn no_args_yields_no_paths_and_paused()`. The `#[test]` attribute
 //           marks a zero-argument function the test runner calls; a panic (e.g. a
-//           failed `assert!`) fails the test.
+//           failed `assert_eq!`) fails the test.
 // Why:      A bare launch (no CLI arguments beyond the program name) must produce an
 //           empty queue and must NOT auto-play.
 // TS map:   `test("no args yields no paths and paused", () => { ... })`
 #[test]
 fn no_args_yields_no_paths_and_paused() {
-    // What:     `let cli = parse(&[]);`. Parse with no extra arguments. `&[]` is a
-    //           borrowed empty slice.
-    // Why:      Reproduce the no-argument launch.
-    // TS map:   `const cli = parse([]);`
-    let cli = parse(&[]);
-    // What:     `assert!(cli.paths.is_empty());`. `assert!(cond)` panics unless `cond`
-    //           is `true`; `.is_empty()` is `true` for a zero-length `Vec`.
-    // Why:      No arguments means no paths to enqueue.
-    // TS map:   `expect(cli.paths).toHaveLength(0);`
-    assert!(cli.paths.is_empty());
-    // What:     `assert!(!cli.start_playing);`. The leading `!` negates the boolean,
-    //           so this passes only when the flag was absent.
-    // Why:      Nothing should auto-play without `--start-playing`.
-    // TS map:   `expect(cli.start_playing).toBe(false);`
-    assert!(!cli.start_playing);
+    // What:     `assert_eq!(parse(&[]), Cli { start_playing: false, paths: vec![] });`.
+    //           `assert_eq!(a, b)` panics unless `a == b` (using `Cli`'s derived
+    //           `PartialEq`) and prints both sides via its derived `Debug` on failure.
+    //           The expected `Cli { ... }` is a whole-struct literal; `vec![]` is an
+    //           empty `Vec<PathBuf>` (the field type fixes the element type).
+    // Why:      No arguments means an empty queue (`paths`) and no auto-play
+    //           (`start_playing` false); comparing the WHOLE struct catches any field.
+    // TS map:   `expect(parse([])).toEqual({ start_playing: false, paths: [] });`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(parse([])).toEqual({ start_playing: false, paths: [] });
+    // ```
+    assert_eq!(
+        parse(&[]),
+        Cli {
+            start_playing: false,
+            paths: vec![],
+        }
+    );
 }
 
 // What:     `#[test] fn paths_without_flag_load_paused()`. A launch with file/folder
@@ -88,24 +93,24 @@ fn no_args_yields_no_paths_and_paused() {
 // TS map:   `test("paths without flag load paused", () => { ... })`
 #[test]
 fn paths_without_flag_load_paused() {
-    // What:     `parse(&["/music/a.flac", "/music/folder"])`. Two plain path
-    //           arguments, no flag.
-    // Why:      The common case: `music-player <paths>`.
-    // TS map:   `const cli = parse(["/music/a.flac", "/music/folder"]);`
-    let cli = parse(&["/music/a.flac", "/music/folder"]);
-    // What:     `assert_eq!(cli.paths, vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/folder")]);`.
-    //           `assert_eq!(a, b)` panics unless `a == b`; the `vec!` macro builds the
-    //           expected `Vec<PathBuf>` and `PathBuf::from` wraps each literal.
-    // Why:      Both paths survive parsing, in order.
-    // TS map:   `expect(cli.paths).toEqual(["/music/a.flac", "/music/folder"]);`
+    // What:     `assert_eq!(parse(&["/music/a.flac", "/music/folder"]), Cli { start_playing: false, paths: vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/folder")] });`.
+    //           Parse two plain path arguments and compare the whole struct; `vec!`
+    //           builds the expected `Vec<PathBuf>` and `PathBuf::from` wraps each
+    //           literal.
+    // Why:      Both paths survive parsing, in order, and `start_playing` stays false.
+    // TS map:   `expect(parse(["/music/a.flac", "/music/folder"])).toEqual({ start_playing: false, paths: ["/music/a.flac", "/music/folder"] });`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(parse(["/music/a.flac", "/music/folder"])).toEqual({ start_playing: false, paths: ["/music/a.flac", "/music/folder"] });
+    // ```
     assert_eq!(
-        cli.paths,
-        vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/folder")]
+        parse(&["/music/a.flac", "/music/folder"]),
+        Cli {
+            start_playing: false,
+            paths: vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/folder")],
+        }
     );
-    // What:     `assert!(!cli.start_playing);`. Flag absent -> paused.
-    // Why:      Paths alone never trigger auto-play.
-    // TS map:   `expect(cli.start_playing).toBe(false);`
-    assert!(!cli.start_playing);
 }
 
 // What:     `#[test] fn flag_with_paths_enables_start_playing()`. Paths plus the flag.
@@ -113,21 +118,24 @@ fn paths_without_flag_load_paused() {
 // TS map:   `test("flag with paths enables start playing", () => { ... })`
 #[test]
 fn flag_with_paths_enables_start_playing() {
-    // What:     `parse(&["--start-playing", "/music/a.flac"])`. The flag followed by
-    //           one path.
-    // Why:      The opt-in auto-play case.
-    // TS map:   `const cli = parse(["--start-playing", "/music/a.flac"]);`
-    let cli = parse(&["--start-playing", "/music/a.flac"]);
-    // What:     `assert_eq!(cli.paths, vec![PathBuf::from("/music/a.flac")]);`. The
-    //           flag must NOT appear among the paths; only the real path remains.
-    // Why:      `--start-playing` is consumed as a flag, not treated as a file.
-    // TS map:   `expect(cli.paths).toEqual(["/music/a.flac"]);`
-    assert_eq!(cli.paths, vec![PathBuf::from("/music/a.flac")]);
-    // What:     `assert!(cli.start_playing);`. Passes only when the flag set the
-    //           boolean to `true`.
-    // Why:      The flag was present, so auto-play is requested.
-    // TS map:   `expect(cli.start_playing).toBe(true);`
-    assert!(cli.start_playing);
+    // What:     `assert_eq!(parse(&["--start-playing", "/music/a.flac"]), Cli { start_playing: true, paths: vec![PathBuf::from("/music/a.flac")] });`.
+    //           Parse the flag followed by one path; the flag must set `start_playing`
+    //           and must NOT appear among `paths`.
+    // Why:      `--start-playing` is consumed as a flag (not a file) and turns on
+    //           auto-play.
+    // TS map:   `expect(parse(["--start-playing", "/music/a.flac"])).toEqual({ start_playing: true, paths: ["/music/a.flac"] });`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(parse(["--start-playing", "/music/a.flac"])).toEqual({ start_playing: true, paths: ["/music/a.flac"] });
+    // ```
+    assert_eq!(
+        parse(&["--start-playing", "/music/a.flac"]),
+        Cli {
+            start_playing: true,
+            paths: vec![PathBuf::from("/music/a.flac")],
+        }
+    );
 }
 
 // What:     `#[test] fn flag_only_with_no_paths_is_noop()`. The flag alone, no paths.
@@ -137,21 +145,24 @@ fn flag_with_paths_enables_start_playing() {
 // TS map:   `test("flag only with no paths is noop", () => { ... })`
 #[test]
 fn flag_only_with_no_paths_is_noop() {
-    // What:     `parse(&["--start-playing"])`. Only the flag.
-    // Why:      Exercise the degenerate input.
-    // TS map:   `const cli = parse(["--start-playing"]);`
-    let cli = parse(&["--start-playing"]);
-    // What:     `assert!(cli.paths.is_empty());`. The flag is not a positional, so no
-    //           paths are collected.
-    // Why:      A flag is not a path, so the queue stays empty.
-    // TS map:   `expect(cli.paths).toHaveLength(0);`
-    assert!(cli.paths.is_empty());
-    // What:     `assert!(cli.start_playing);`. The boolean is still set even with no
-    //           paths.
-    // Why:      The launch path guards on `!paths.is_empty()` before opening, so an
-    //           empty path list means this `true` is simply never acted on.
-    // TS map:   `expect(cli.start_playing).toBe(true);`
-    assert!(cli.start_playing);
+    // What:     `assert_eq!(parse(&["--start-playing"]), Cli { start_playing: true, paths: vec![] });`.
+    //           The flag sets `start_playing` but collects no positional, so `paths`
+    //           is empty.
+    // Why:      A flag is not a path; `start_playing` is `true` but, with empty
+    //           `paths`, the launch path's `!paths.is_empty()` guard never acts on it.
+    // TS map:   `expect(parse(["--start-playing"])).toEqual({ start_playing: true, paths: [] });`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(parse(["--start-playing"])).toEqual({ start_playing: true, paths: [] });
+    // ```
+    assert_eq!(
+        parse(&["--start-playing"]),
+        Cli {
+            start_playing: true,
+            paths: vec![],
+        }
+    );
 }
 
 // What:     `#[test] fn flag_among_paths_is_filtered_out()`. The flag sitting between
@@ -161,22 +172,21 @@ fn flag_only_with_no_paths_is_noop() {
 // TS map:   `test("flag among paths is filtered out", () => { ... })`
 #[test]
 fn flag_among_paths_is_filtered_out() {
-    // What:     `parse(&["/music/a.flac", "--start-playing", "/music/b.opus"])`. The
-    //           flag is the middle argument.
-    // Why:      Prove position-independence.
-    // TS map:   `const cli = parse(["/music/a.flac", "--start-playing", "/music/b.opus"]);`
-    let cli = parse(&["/music/a.flac", "--start-playing", "/music/b.opus"]);
-    // What:     `assert_eq!(cli.paths, vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/b.opus")]);`.
-    //           Both real paths remain, in order, with the flag pulled out from between
-    //           them.
-    // Why:      Recognizing the flag must not disturb the surrounding paths.
-    // TS map:   `expect(cli.paths).toEqual(["/music/a.flac", "/music/b.opus"]);`
+    // What:     `assert_eq!(parse(&["/music/a.flac", "--start-playing", "/music/b.opus"]), Cli { start_playing: true, paths: vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/b.opus")] });`.
+    //           The flag is the middle argument; both real paths must remain in order
+    //           with the flag pulled out, and `start_playing` must be `true`.
+    // Why:      Recognizing a mid-list flag must not disturb the surrounding paths.
+    // TS map:   `expect(parse(["/music/a.flac", "--start-playing", "/music/b.opus"])).toEqual({ start_playing: true, paths: ["/music/a.flac", "/music/b.opus"] });`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(parse(["/music/a.flac", "--start-playing", "/music/b.opus"])).toEqual({ start_playing: true, paths: ["/music/a.flac", "/music/b.opus"] });
+    // ```
     assert_eq!(
-        cli.paths,
-        vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/b.opus")]
+        parse(&["/music/a.flac", "--start-playing", "/music/b.opus"]),
+        Cli {
+            start_playing: true,
+            paths: vec![PathBuf::from("/music/a.flac"), PathBuf::from("/music/b.opus")],
+        }
     );
-    // What:     `assert!(cli.start_playing);`. Flag present anywhere -> `true`.
-    // Why:      A mid-list flag still requests auto-play.
-    // TS map:   `expect(cli.start_playing).toBe(true);`
-    assert!(cli.start_playing);
 }
