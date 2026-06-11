@@ -237,6 +237,28 @@ clock at the next tick was `2026-06-11 04:03 EDT` via `date`. So those entries
 happened BEFORE 04:03, not after; ignore their absolute times, trust their
 order. The substantive error this caused is corrected in the 04:03 entry.
 
+- 05:06 (clock-verified via `date`) -- OVERNIGHT FUZZERS COMPLETE, FINAL HARVEST,
+  NO NEW CRASH SITE. The three x86 cargo-fuzz targets reached their full 4h budget
+  (`time: 14363s` / `14325s` / `14367s` against `max_total_time=14400`) and are
+  wrapping up. Final artifact counts and triage:
+  - diff_regex: 1671 artifacts, newest 05:06:09; newest 8 triaged = ALL
+    `resharp-algebra/src/lib.rs:2724` (bug-04).
+  - diff_regex2: 59 artifacts (newest 01:21, stopped finding new long ago), all
+    bug-04 (triaged last tick).
+  - match_invariants: 5 artifacts (was 3 at 04:03; +2 new at 04:24 and 04:58).
+    ALL 5 triaged = `resharp-engine/src/lib.rs:1824` (bug-05); every input is the
+    `_*$` family (`5f2a24...`). The two new ones are NOT a new site.
+  - compile: 0 artifacts.
+  - M1 simd_diff: 7 artifacts, all arm-bug-01 (finished earlier).
+  NET: across the entire overnight run on BOTH architectures, the fuzzers
+  reproduced ONLY bug-04 / bug-05 (x86) and arm-bug-01 (ARM). THREE crash sites
+  exist campaign-wide: bug-04, bug-05 (fuzzer-found), bug-11 (Lean-found; the
+  libFuzzer arbitrary encoding never reached the ldfa shape). The overnight phase
+  is genuinely DONE this time (clock-verified, fuzzers at budget); no further
+  harvest will produce anything new. Campaign findings are final: 13 root causes,
+  two-tiered, all ARM-confirmed, all documented under
+  `docs/audit/resharp-fuzz-2026-06-11/`.
+
 - 04:03 (clock-verified) -- HARVESTED FOCUS LEAN ROUND + ARM-CONFIRMED THE
   SECONDARY TIER + CORRECTED A TIMING ERROR.
   (1) CORRECTION: the `09:30` entry's claim that the x86 fuzzers were "CONVERGED
