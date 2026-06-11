@@ -1,12 +1,18 @@
-// Single source of truth for the boilerplate mise task bodies that used to live in
-// the root `[task_templates.*]` of mise.no-env.toml. The includes renderer
-// (mise-packages.render.config.ts) emits these into shared mise-shared/*.toml files
-// (bare full-body format) that each package pulls in via `[task_config].includes`,
-// and falls back to inlining a body verbatim for the few packages whose task set
-// does not line up with a whole role file. Heavy logic stays in root `[vars]`
-// (fanout, dispatch_workspace_node, parse_usage_args, run_test_files); these bodies
-// only carry the thin wrappers that interpolate those vars, so the shared files and
-// inline fallbacks reference `{{vars.fanout}}` etc. rather than duplicating the logic.
+// Source of the boilerplate mise task bodies for the includes renderer
+// (mise-packages.render.config.ts): it emits these into shared mise-shared/*.toml
+// files (bare full-body format) that each active packages/*/* mise.toml pulls in via
+// `[task_config].includes`, and falls back to inlining a body verbatim for the few
+// packages whose task set does not line up with a whole role file. Heavy logic stays
+// in root `[vars]` (fanout, dispatch_workspace_node, parse_usage_args, run_test_files);
+// these bodies only carry the thin wrappers that interpolate those vars, so the shared
+// files and inline fallbacks reference `{{vars.fanout}}` etc. rather than duplicating it.
+//
+// These bodies mirror the root `[task_templates.*]` in mise.no-env.toml, which are
+// retained (not deleted as the includes plan envisioned) because the archived
+// `packages-deprecated/*/*` config root, plus a handful of root and bespoke tasks,
+// still consume them via `extends`. Keep the two in sync; the templates are the bodies
+// mise actually resolves for those `extends` consumers, and this file the source for
+// the shared files the active packages include.
 
 /**
  * One boilerplate mise task body. Shared role files render it as bare dotted-key
