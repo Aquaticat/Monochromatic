@@ -129,9 +129,51 @@ so they are tracked as a follow-up in #252 rather than fixed in this scope:
 The stateful property reparses between operations and stays on single top-level
 segments, so it does not exercise these edges.
 
+## Phase 7 differential oracle: attempted, then dropped
+
+Phase 7 built a differential parser oracle that decoded fuzzer-generated and
+mutator-corrupted documents through both our decoder and the pinned BurntSushi
+Go reference decoder (`go:github.com/BurntSushi/toml/cmd/toml-test-decoder`,
+v1.6.0), then classified the verdict pair: agreement, we-too-lax (the gold
+signal), we-too-strict (logged), or a value divergence. A type-level comparator
+normalized spec-equivalent spellings (offset-datetime instants at millisecond
+resolution, numeric floats including `inf`/`nan`, `BigInt` integers, datetime
+separator). The adapters ran in-process for our side and subprocessed the Go
+binary for the reference; the test lived in `differential.expensive.unit.test.ts`
+so the default `test:unit` and CI never spawned the external binary.
+
+The oracle immediately surfaced a real divergence class, and on minimization it
+was a defect in the reference, not in us. The BurntSushi v1.6.0 toml-test
+decoder's tagged output loses data on an empty key (`""`) interacting with array
+structure:
+
+- `[ { "" = 1 }, "z" ]` decodes to `[ { "" = 1 } ]`: the `"z"` array element is
+  silently dropped.
+- `[ [ { "" = 1 } ] ]` decodes to `[ { "" = 1 } ]`: a nesting level collapses.
+- `"" = [ [ {} ] ]` and `"" = [ [], {} ]` diverge as well.
+
+A single-element `[ { "" = 1 } ]` and an empty key outside an array both agree,
+and our parser keeps every element and nesting level, so our output is correct by
+the TOML grammar (no reading drops `"z"`). A strip-and-recheck proof confirmed
+empty-key was the sole structural cause: renaming the empty keys in two failing
+counterexamples and re-decoding made both agree under the comparator. The fault
+is in the reference decoder's tagged output (possibly its JSON marshaling of an
+empty-string key), not in our parser.
+
+Decision: drop BurntSushi entirely rather than maintain a growing allow-list or
+input-exclusion against an oracle that has proven less stable than expected.
+Empty keys appear in roughly 60 percent of generated documents, so excluding
+them would gut the differential's coverage, and the bug has several structural
+shapes, so a precise carve-out is brittle. The differential adapters, the
+reference tool pin, and the `test:differential` task were removed. The TOML 1.0
+and 1.1 conformance suite (phase 6) already exercises our decoder and encoder
+against BurntSushi's curated corpus with zero failures and no allow-list, which
+remains the parser-correctness oracle of record. A differential oracle could be
+revisited against a different reference implementation if one proves stable.
+
 ## Deferred
 
-- A differential parser oracle (BurntSushi via the Go `toml-test` tools) is
-  tracked in the implementation plan as phase 7.
 - A V8 coverage gate and the reusable fuzz-target checklist land with phase 8.
 - Mutation testing remains a follow-up.
+- A differential parser oracle against a stable reference implementation (not
+  BurntSushi v1.6.0) remains possible future work.

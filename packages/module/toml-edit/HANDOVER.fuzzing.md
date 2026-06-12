@@ -6,13 +6,15 @@ criteria for each layer.
 
 ## Implementation status
 
-Updated 2026-06-11. Phases 1 to 6 and the phase 9 CI smoke are landed; phases 7
-and 8 remain, and issue #198 is not yet closed. Most work lives under
-`packages/module/toml-edit/src/fuzz/` and `src/conformance/`, plus package-source
-fixes (`src/parse-toml-edit.ts`, `src/emit-value-string.ts`, the shared
-`src/basic-escape.ts`, `src/value-encoders.ts`, `src/keys.ts`), the seam exports
-in `src/index.ts`, the decision doc `docs/decisions/toml-edit-fuzzing.md`, and the
-workflow `.github/workflows/toml-edit-fuzz.yml`.
+Updated 2026-06-11. Phases 1 to 6 and the phase 9 CI smoke are landed; phase 7
+(differential oracle) was attempted against the BurntSushi reference decoder and
+then dropped (see below); phase 8 remains; issue #198 is not yet closed. Most
+work lives under `packages/module/toml-edit/src/fuzz/` and `src/conformance/`,
+plus package-source fixes (`src/parse-toml-edit.ts`, `src/emit-value-string.ts`,
+the shared `src/basic-escape.ts`, `src/value-encoders.ts`, `src/keys.ts`), the
+seam exports in `src/index.ts`, the decision doc
+`docs/decisions/toml-edit-fuzzing.md`, and the workflow
+`.github/workflows/toml-edit-fuzz.yml`.
 
 Six real bugs found: four fixed in scope (the `RangeError` parse contract, the
 parsed-node basic-string control-character escaping, the same gap on the
@@ -21,14 +23,39 @@ laxity), and two deeper edit-machinery defects deferred to #252 (repeated
 path-create duplicate key, implicit-parent delete read/byte mismatch). Phase 6
 also changed the newline policy: `CRLF` normalizes to `LF` on parse with a
 warning (suppressible via `WARN=false`, a mechanism added to
-`@monochromatic-dev/module-logger`), and a bare `CR` is rejected.
+`@monochromatic-dev/module-logger`), and a bare `CR` is rejected. A follow-up
+landed full `LF` symmetry: the canonical builder's `lineBreak` output option was
+dropped, so the package is `LF`-only end to end (commit 7c915f16).
 
-Network and Go are available in this environment (`mise ls-remote
-github:toml-lang/toml-test` lists releases; `go version` is 1.26.4), so phases 6
-and 7 are feasible and not blocked. The phase 7 differential oracle uses the Go
-`toml-test` decoder and encoder tools (BurntSushi), not an npm dependency, so the
-choosing-technology source-audit gate is not triggered unless that path is
-abandoned for a JS parser.
+### Phase 7 dropped: BurntSushi proved unstable
+
+The phase 7 differential oracle (decode the same documents through our decoder
+and the BurntSushi Go `toml-test-decoder`, then compare) was built and run. It
+worked: it immediately found a real divergence, which minimized to a defect in
+the **reference**, not ours. BurntSushi v1.6.0's tagged decoder output loses data
+on an empty key (`""`) near array structure: `[ { "" = 1 }, "z" ]` drops `"z"`,
+`[ [ { "" = 1 } ] ]` collapses a nesting level, and `"" = [ [ {} ] ]` diverges.
+Our parser is correct (no TOML reading drops `"z"`); a strip-and-recheck proof
+confirmed empty-key was the sole cause. Decision (owner): drop BurntSushi
+entirely rather than fight a growing carve-out against an unstable oracle (empty
+keys appear in ~60 percent of generated docs; the bug has several shapes). The
+differential adapters, the `go:` tool pin, and the `test:differential` task were
+removed. Phase 6 conformance (both TOML versions, zero failures, no allow-list)
+remains the parser-correctness oracle. A differential oracle against a different,
+stable reference is possible future work. Full detail in the decision doc.
+
+### Convention: naming an expensive fuzz/property test
+
+A property test that is genuinely a unit test but too expensive for the default
+suite (spawns external processes, heavy I/O) must be named
+`*.expensive.unit.test.ts`. The `*.unit.test.ts` suffix gives it the test-file
+lint relaxations (arrow callbacks, `require-await`, `require-tsdoc` on locals) and
+normal harness discovery; the `.expensive.` segment excludes it from the default
+`test:unit` run (only `--all` includes it), so routine CI never pays its cost. Do
+not name such a file `*.property.ts` (it then falls under full production lint
+rules) nor plain `*.property.unit.test.ts` (it then runs in the default suite and
+CI). The everyday fuzz properties stay `*.property.unit.test.ts`; only the
+external-dependency ones take `.expensive.`.
 
 ### Landed
 
@@ -156,20 +183,19 @@ Phase 9 CI smoke (commit 7c5abf2a):
 
 ### Remaining
 
-- Phase 7 (differential oracle): acquire Go plus the BurntSushi `toml-test`
-  decoder and encoder tools through mise (feasible), normalize both outputs, and
-  classify disagreements with a stable allow-list. No npm dependency, so no
-  choosing-technology gate unless that path is abandoned.
+- Phase 7 (differential oracle): dropped. BurntSushi v1.6.0 proved unstable (the
+  empty-key data-loss bug above). Not pursued further against that reference; a
+  different stable reference could revive it later.
 - Phase 8 (V8 coverage gate and the reusable five-question checklist in the
   decision doc): run the property files under `NODE_V8_COVERAGE`, summarize the
   target files, commit a baseline, and gate on no regression.
-- Phase 9 closure: prove the CI path filtering with a real PR run, then close
-  issue #198 explicitly with `gh issue close 198`. The CI smoke step itself is
-  already wired; the conformance task is not yet in CI. Issue #198's original
-  acceptance criteria (bounded fuzz task, committed seed corpus, CI on relevant
-  changes, bug-finding) are already met by phases 1 to 6 plus the CI smoke;
-  closing now versus completing phases 7 to 8 first is a scope decision for the
-  owner.
+- Phase 9 closure: wire `test:conformance` into CI, prove the CI path filtering
+  with a real PR run, then close issue #198 explicitly with `gh issue close 198`.
+  The CI smoke step itself is already wired; the conformance task is not yet in
+  CI. Issue #198's original acceptance criteria (bounded fuzz task, committed seed
+  corpus, CI on relevant changes, bug-finding) are already met by phases 1 to 6
+  plus the CI smoke; closing now versus completing phase 8 first is a scope
+  decision for the owner.
 
 ## Evidence checked
 
