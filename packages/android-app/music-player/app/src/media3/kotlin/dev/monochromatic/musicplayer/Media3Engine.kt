@@ -2,11 +2,13 @@ package dev.monochromatic.musicplayer
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 
 /**
@@ -25,8 +27,18 @@ import androidx.media3.exoplayer.ExoPlayer
  *
  * @param context Context used to build the underlying ExoPlayer.
  */
+@OptIn(UnstableApi::class)
 class Media3Engine(context: Context) : AudioEngine {
+    /**
+     * True-peak normalization stage installed in the ExoPlayer audio pipeline (via
+     * [GainRenderersFactory]). The engine sets its per-track [GainNormalizationProcessor.gain] when a
+     * track loads; it starts at unity (passthrough) until a gain is resolved.
+     */
+    private val gainProcessor: GainNormalizationProcessor = GainNormalizationProcessor()
+
     private val player: ExoPlayer = ExoPlayer.Builder(context)
+        // Apply per-track true-peak normalization inside ExoPlayer's own audio pipeline.
+        .setRenderersFactory(GainRenderersFactory(context, gainProcessor))
         // Pause/resume around a headphone unplug; without it audio keeps blaring on the speaker.
         .setHandleAudioBecomingNoisy(true)
         .build()
