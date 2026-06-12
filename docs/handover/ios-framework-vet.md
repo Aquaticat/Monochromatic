@@ -231,9 +231,13 @@ Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experim
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
 (Rust `extern "C"` declared in a Swift bridging header, an ABI declaration not hand-written C/C++), or
 Swift glue. The gate question is unchanged (a Rust value crosses in and the UI renders), only the FFI
-mechanism is constrained. Dual-target (2026-06-12): each gate below must render on both the device and the
-latest sim, so build the Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by
-RID/SDK (proven via the .NET substrate's `RustTriple` fix); a single device archive fails the sim link.
+mechanism is constrained. ObjC clarification (owner, 2026-06-12): "no C/C++" is the language-name ban, so
+a minimal Objective-C `.m` shim is allowed purely to register/call Rust over a C ABI where there is no
+pure-Swift path (RN old-arch modules, likely NativeScript/Lynx); thin bridge only, no app logic, recorded
+as a noted deviation; `.c`/`.cpp`/`.mm` stay banned and RN New-Arch C++/JSI TurboModules are not used.
+Dual-target (2026-06-12): each gate below must render on both the device and the latest sim, so build the
+Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by RID/SDK (proven via the
+.NET substrate's `RustTriple` fix); a single device archive fails the sim link.
 
 - React Native (rank 6, expected-pass; also proves CocoaPods): Hermes `global.HermesInternal`; a Rust
   staticlib reached through a JSI/TurboModule or a Swift native module over a C ABI (no hand-written

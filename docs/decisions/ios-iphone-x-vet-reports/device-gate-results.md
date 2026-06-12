@@ -436,7 +436,12 @@ experiments. This reshapes the native-glue plans below: the Rust-crossing checks
 binding crates, a C-ABI boundary (Rust `extern "C"` declared in a Swift bridging header, which is an ABI
 declaration, not hand-written C/C++), or Swift glue, never a hand-authored `.c`/`.cpp`/`.mm` file. The
 gate question stays the same (does a Rust value cross into the framework and render), only the FFI
-mechanism is constrained. The remaining order, each confirmed by render (screenshot) and a few seconds of
+mechanism is constrained. Objective-C clarification (owner, 2026-06-12): "no C or C++" is the
+language-name ban, so a minimal Objective-C `.m` shim is allowed purely to register or call Rust over a C
+ABI where a framework has no pure-Swift path (RN old-architecture modules, and likely NativeScript/Lynx).
+The `.m` must be a thin bridge with no application logic, and each use is recorded as a noted deviation;
+`.c`, `.cpp`, and Objective-C++ `.mm` stay banned, and RN New-Architecture C++/JSI TurboModules are not
+used. The remaining order, each confirmed by render (screenshot) and a few seconds of
 no-crash runtime, not by launch success alone:
 
 - React Native (rank 6, expected-pass; also the gate that proves the CocoaPods + `.xcworkspace` path).
