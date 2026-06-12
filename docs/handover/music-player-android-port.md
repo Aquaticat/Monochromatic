@@ -40,6 +40,12 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   (`/sdcard/Android/data/<appId>/files/`) works on Android 16 / GrapheneOS and creates the dir; the skeleton reads
   that dir (no storage permission needed), which isolates "does Media3 decode" from "does SAF/MediaStore work".
   Clean-named fixtures staged at `/tmp/agent/musictest/` (test1.opus, test2.flac, test3.m4a, test4.mp3).
+- Milestone 1.5, the pure-logic Kotlin port, is DONE (a 6-agent workflow, then central verification). The
+  platform-independent `core` package now holds faithful ports of relpath, pagination, queue, true-peak, peak
+  cache, session, and the audio-extension allowlist, against a fixed contract (ShuffleMode, Page/PageEntry). 52
+  host JVM JUnit tests pass via `mise run //packages/android-app/music-player:test:unit` (no device). True-peak
+  was verified line-for-line against `truepeak.rs`. Each port was driven by the Rust module plus its `_tests.rs`
+  as the test oracle; deferrals are listed under "Integration seams left by the port" below.
 
 ## Committed work (on main)
 
@@ -139,26 +145,42 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
 
 ## Next steps (the build phase, when the user says go)
 
-Done: step 1 (toolchain), step 2 (scaffold), and the skeleton half of step 3 (Media3 plays real audio on device).
-Remaining:
+Done: step 1 (toolchain), step 2 (scaffold), the skeleton half of step 3 (Media3 plays real audio on device), and
+the pure-logic Kotlin port (the `core` package, 52 tests green). Remaining:
 
-1. Port the pure logic to Kotlin (the workflow fan-out, per the advisor design). One Rust module to one Kotlin file
-   plus its `_tests.rs` assertions ported as the test oracle, against a type contract fixed up front and handed to
-   each agent verbatim so they cannot invent divergent type names. Units: queue/scope/shuffle
-   (`queue.rs`/`command.rs`), pagination (`pagination.rs`, the A-Z + `#` routing and tie-breaks), relpath
-   (`relpath.rs`), true-peak math (`truepeak.rs`, CEILING `0.8912509`, `gain = min(CEILING/peak, 1.0)`, 4x
-   Catmull-Rom), peak cache (`peakcache.rs`, FNV-1a `path+size+mtime`), session (`session.rs`). Agents return
-   source; compile and integrate centrally (no worktree-per-agent needed for pure logic).
-2. Build out the real Media3 variant on top of the ported logic: the Compose UI per the survey's UI spec
+1. Build out the real Media3 variant on top of the ported logic: the Compose UI per the survey's UI spec
    (phone-first single column, tap-to-play, custom radio/checkbox/scrollbar); SAF tree + MediaStore sources; host
    the player in a `MediaSessionService` with ExoPlayer; true-peak as a Media3 `AudioProcessor` (the gain stage)
    plus the WorkManager charging/idle measurement sweep. Verify on device at the user boundary (transport, queue,
    background/screen-off, notification, lockscreen). Instrument metrics from the start.
-3. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
+2. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
    alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia via
    `ContentResolver.openFileDescriptor`).
-4. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
+3. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
    the user pick the winner.
+
+### Integration seams left by the port (wire these in milestone 2)
+
+The `core` modules are pure; the platform parts were deliberately deferred and injected as parameters so the wiring
+is explicit:
+
+- True-peak: `measureTruePeak(channels, chunks: Sequence<FloatArray>)` takes the decoded PCM stream; feed it from
+  the platform decoder (an offline ExoPlayer/MediaCodec decode pass for the Media3 variant, symphonia for the Rust
+  variants). The gain APPLICATION (`process_sample`, gain-then-clamp, not yet ported) becomes the Media3
+  `AudioProcessor`; port it there.
+- Peak cache: `core` has FNV-1a fingerprint + in-memory map only. JSON load/save, the atomic write, the
+  unsaved-counter batching, and the config-dir path are deferred; back them with Android app-private storage and a
+  serialization choice (no library was added). The fingerprint takes `size` + `mtime` as parameters; supply them
+  from `DocumentFile`/MediaStore. Cross-language match with the desktop cache is NOT required (Android cache is new).
+- Session: `core` has the model + `pruneUnplayable(fileExists predicate)`. `load`/`save`/`session_path` and the
+  `ShuffleMode` <-> wire-name mapping (`"Off"`/`"WithinPage"`/`"All"`) are deferred; add them with app-private
+  storage. Feed `pruneUnplayable` a SAF/MediaStore existence check.
+- Storage walk: `audioFilesSorted` is the pure per-directory filter-then-sort. The recursive depth-first traversal
+  (a folder's own sorted files before its subfolders, subfolders ascending) is deferred and documented in
+  `AudioExtensions.kt`'s KDoc; implement it over `DocumentsContract` (SAF) and `RELATIVE_PATH` (MediaStore).
+- Queue: `Queue.new()` seeds from `System.nanoTime()`; `Queue.withRngSeed(Long)` is deterministic for session
+  restore and tests. The shuffle uses `kotlin.random.Random`, not the desktop's xorshift64 (sequence not portable).
+- Not yet ported (small, port when needed): `frames_to_secs` and `file_name_of` (playback.rs utilities).
 
 GrapheneOS testing notes proven this session: `adb push` into `/sdcard/Android/data/<appId>/files/` works for
 fixtures; for the MediaStore default library expect `READ_MEDIA_AUDIO` to be revocable-off by default like INTERNET
