@@ -25,43 +25,14 @@
 
 import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 
-/**
- * Substrings identifying stack frames that belong to the harness's
- * own dispatch machinery. Any frame containing one of these is
- * dropped before joining; the failing user code is the interesting
- * frame, not the layers under it.
- *
- * Two categories are listed:
- *
- * - The harness's own bundle, under two paths because consumers
- *   resolve it either as a workspace package
- *   (`packages/module/test/dist/`) or via `node_modules`
- *   (`module-test/dist/`).
- *
- * - The vendored assertion stack. `expect()` calls land in `chai`,
- *   which dispatches through the `chai-as-promised` and `sinon-chai`
- *   plugins activated in `expect-matchers.ts`, and `sinon` spies feed
- *   the sinon-chai matchers. These four are module/test's only
- *   consumers in the monorepo (no other package depends on chai or
- *   sinon), so any frame inside them on a failure path must come
- *   from the harness's assertion dispatch.
- *
- * Fragments are matched with substring `includes`, which collapses
- * pnpm's virtual store layout
- * (`node_modules/.pnpm/chai@6.2.2/node_modules/chai/index.js`) and
- * the flat / hoisted layout (`node_modules/chai/index.js`) under one
- * entry per package. The trailing slash on each package fragment
- * prevents `chai/` matching frames inside `chai-as-promised/` and
- * prevents `sinon/` matching `sinon-chai/`.
- */
-const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
-  'packages/module/test/dist/',
-  'module-test/dist/',
-  'node_modules/chai/',
-  'node_modules/chai-as-promised/',
-  'node_modules/sinon-chai/',
-  'node_modules/sinon/',
-];
+import {
+  type AssertionSite,
+  readAssertionSites,
+} from './assertion-source.ts';
+import {
+  isHarnessInternalFrame,
+  readProperty,
+} from './harness-frames.ts';
 
 //region Workspace prefix resolution
 
@@ -137,47 +108,6 @@ function safeString(value: unknown,): string {
 }
 
 /**
- * Reads a property from an error-like object, returning `undefined`
- * when the key is absent or when accessing it throws. Error objects
- * can carry a throwing getter (or a `Proxy` `get` trap) on `.message`,
- * `.cause`, and similar; reading them directly would let the getter's
- * throw escape the formatter mid-walk. `Reflect.get` returns `undefined`
- * for an absent key, and the `try` swallows a throwing read, so the
- * formatter degrades gracefully (treats the field as missing) instead of
- * propagating the trap, matching {@link safeString}'s guard on
- * `String()`.
- *
- * @param source - object to read from
- *
- * @param key - property name to read
- *
- * @returns property value, or `undefined` when absent or unreadable
- *
- * @example
- * ```ts
- * readProperty({ source: new Error('boom'), key: 'message', }) // 'boom'
- * readProperty({ source: {}, key: 'message', })                // undefined
- * ```
- */
-function readProperty({
-  source,
-  key,
-}: {
-  readonly source: object;
-  readonly key: string;
-},): unknown {
-  try {
-    return Reflect.get(
-      source,
-      key,
-    );
-  }
-  catch {
-    return undefined;
-  }
-}
-
-/**
  * Extracts the message string from an error-like object.
  * Falls back to `<unknown message>` when the field is missing or
  * not a string.
@@ -232,22 +162,6 @@ function readErrorLabel(error: object,): string {
   if (((typeof label) === 'string') && (label !== ''))
     return label;
   return 'Error';
-}
-
-/**
- * True when the frame points into the harness's own bundle.
- * Harness frames are filtered out before joining because they add
- * noise to every failure trace; the failing user code is the
- * interesting site.
- *
- * @param frame - trimmed stack frame line
- *
- * @returns whether the frame should be dropped
- */
-function isHarnessInternalFrame(frame: string,): boolean {
-  return HARNESS_INTERNAL_FRAGMENTS.some(function frameContains(fragment,) {
-    return frame.includes(fragment,);
-  },);
 }
 
 /**
@@ -390,11 +304,13 @@ function formatNode({
   value,
   visited,
   workspacePrefix,
+  sites,
 }: {
   readonly headerPrefix: string;
   readonly value: unknown;
   readonly visited: WeakSet<object>;
   readonly workspacePrefix: string;
+  readonly sites: WeakMap<object, AssertionSite>;
 },): readonly string[] {
   if (((typeof value) !== 'object') || (value === null))
     return [`${headerPrefix}Threw non-Error value: ${safeString(value,)}`,];
@@ -430,9 +346,24 @@ function formatNode({
     ? ` ${frames.join(' ',)}`
     : '';
   /**
-   * Composed header-plus-frames string for this node, prepended to the descendants in the return list.
+   * Assertion site for this node, when its first non-harness frame
+   * resolved to a readable source line. `value` is a non-null object
+   * here (guarded above), so the map lookup is well-typed.
    */
-  const line = `${headerPrefix}${label}: ${message}${framesInline}`;
+  const site = sites.get(value,);
+  /**
+   * Rendered assertion expression spliced between message and frames,
+   * turning `expected 3 to equal 2` into a line that also shows
+   * `@console.unit.test.ts:308 expect(errorSpy.callCount,).toBe(2,)`.
+   * Empty when no source line was resolved.
+   */
+  const siteInline = site !== undefined
+    ? `  @${site.location} ${site.expression}`
+    : '';
+  /**
+   * Composed header-plus-site-plus-frames string for this node, prepended to the descendants in the return list.
+   */
+  const line = `${headerPrefix}${label}: ${message}${siteInline}${framesInline}`;
 
   /**
    * Cause value, defensively read, pulled out so the recursion only runs once when a cause exists.
@@ -450,6 +381,7 @@ function formatNode({
       value: causeValue,
       visited,
       workspacePrefix,
+      sites,
     },)
     : [];
 
@@ -473,6 +405,7 @@ function formatNode({
         value: member,
         visited,
         workspacePrefix,
+        sites,
       },);
     },)
     : [];
@@ -529,14 +462,20 @@ export async function formatErrorDeep(value: unknown,): Promise<readonly string[
    */
   const visited = new WeakSet<object>();
   /**
-   * Resolved once per top-level walk so all descendants see the same prefix.
+   * Workspace prefix (for frame stripping) and assertion sites (for the
+   * source line) resolved together: both are needed before the walk and
+   * neither depends on the other, so they run concurrently.
    */
-  const workspacePrefix = await resolveWorkspacePrefix();
+  const [workspacePrefix, sites,] = await Promise.all([
+    resolveWorkspacePrefix(),
+    readAssertionSites(value,),
+  ],);
   return formatNode({
     headerPrefix: '',
     value,
     visited,
     workspacePrefix,
+    sites,
   },);
 }
 
