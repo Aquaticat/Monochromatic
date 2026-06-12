@@ -18,6 +18,9 @@ import dev.monochromatic.musicplayer.core.ShuffleMode
  * @property repeatTrack Whether "repeat track" is on.
  * @property volume Output gain in `0.0..1.0`.
  * @property queueSize Number of tracks in the queue.
+ * @property loading Whether a library load or folder scan is in progress, so the screen can show a
+ *   loading notice rather than the empty-library message while a slow source scan runs; an empty
+ *   queue means "no music" only once this is false.
  */
 data class PlayerUiState(
     val pageLabels: List<String> = emptyList(),
@@ -29,4 +32,5 @@ data class PlayerUiState(
     val repeatTrack: Boolean = false,
     val volume: Float = 1.0f,
     val queueSize: Int = 0,
+    val loading: Boolean = false,
 )

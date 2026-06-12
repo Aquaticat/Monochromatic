@@ -26,6 +26,13 @@ class PlayerController(private val engine: AudioEngine) {
     private var isPlaying: Boolean = false
 
     /**
+     * Whether a library load or folder scan is in flight. Starts true because the owning service
+     * begins loading as soon as it creates this controller, so the screen shows a loading notice from
+     * the first frame instead of flashing the empty-library message; [openLibrary] clears it.
+     */
+    private var isLoading: Boolean = true
+
+    /**
      * Playback URIs aligned by load-order index with the display paths fed to [queue]; the queue
      * never reorders its track list (shuffle permutes a separate index list), so `uris[index]` is
      * always the URI for the track the queue reports at that load-order index.
@@ -33,7 +40,7 @@ class PlayerController(private val engine: AudioEngine) {
     private var uris: List<String> = emptyList()
 
     /** Compose-observable snapshot the screen renders; reassigned by [refresh]. */
-    var uiState: PlayerUiState by mutableStateOf(PlayerUiState())
+    var uiState: PlayerUiState by mutableStateOf(PlayerUiState(loading = true))
         private set
 
     /**
@@ -57,10 +64,20 @@ class PlayerController(private val engine: AudioEngine) {
     }
 
     /**
+     * Mark a library load as in progress so the screen shows a loading notice instead of the
+     * empty-library message while a source scan runs. The owning service calls this before launching
+     * a (possibly slow) MediaStore query or folder scan; [openLibrary] clears it on delivery.
+     */
+    fun beginLoad() {
+        isLoading = true
+        refresh()
+    }
+
+    /**
      * Replace the library with [tracks] (load order): keep their playback URIs in [uris], feed their
      * display paths to the queue (whose pagination trims the shared root and groups by folder,
      * exactly as on the desktop), repaginate, and show the first page without starting playback
-     * (Android is tap-to-play).
+     * (Android is tap-to-play). Clears the loading state, since this is a load's delivery.
      *
      * @param tracks Library entries in load order, each pairing a playback URI with a display path.
      */
@@ -69,6 +86,7 @@ class PlayerController(private val engine: AudioEngine) {
         queue.setTracks(tracks.map { it.displayPath })
         pages = paginate(queue.displayPaths())
         loadedIndex = null
+        isLoading = false
         refresh(followCurrent = true)
     }
 
@@ -281,6 +299,7 @@ class PlayerController(private val engine: AudioEngine) {
             repeatTrack = queue.repeatTrack(),
             volume = uiState.volume,
             queueSize = queue.len(),
+            loading = isLoading,
         )
         onStateChanged?.invoke()
     }

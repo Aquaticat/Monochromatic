@@ -94,6 +94,7 @@ class PlaybackService : MediaSessionService() {
             return
         }
         libraryLoaded = true
+        controller.beginLoad()
         scope.launch {
             val tracks = loadInitialTracks()
             controller.openLibrary(tracks)
@@ -109,6 +110,7 @@ class PlaybackService : MediaSessionService() {
      */
     fun reloadFromRoot(treeUri: Uri) {
         libraryLoaded = true
+        controller.beginLoad()
         scope.launch {
             val tracks = scanRoot(treeUri)
             controller.openLibrary(tracks)

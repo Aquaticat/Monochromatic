@@ -25,10 +25,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -79,12 +81,37 @@ class MainActivity : ComponentActivity() {
     /** Live binder for the post-grant library-load signal; null while unbound. */
     private var binder: PlaybackService.LocalBinder? = null
 
+    /**
+     * A folder picked while the service was unbound, waiting to be applied; [connection]'s
+     * `onServiceConnected` consumes it once the rebind completes. The picker round-trip stops this
+     * activity, which unbinds the service, so the binder is often null at the moment the pick arrives.
+     */
+    private var pendingRoot: Uri? = null
+
+    /**
+     * Activity-scoped folder picker, registered on the activity rather than inside the composition.
+     * Stopping the activity to show the picker nulls [boundController], which disposes the player
+     * screen; a launcher hosted there would be unregistered before its own result arrived, silently
+     * dropping the pick. Registering on the activity ties the launcher to the activity lifecycle, so
+     * it survives the screen leaving composition and still receives the granted tree.
+     */
+    private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        if (tree != null) {
+            onFolderChosen(tree)
+        }
+    }
+
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val local = service as PlaybackService.LocalBinder
             binder = local
             boundController.value = local.controller
             Log.i(LOG_TAG, "bound to PlaybackService")
+            // A folder picked while unbound is applied now that the service is connected.
+            pendingRoot?.let { root ->
+                local.reloadFromRoot(root)
+                pendingRoot = null
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -111,7 +138,7 @@ class MainActivity : ComponentActivity() {
                         AppRoot(
                             controller = controller,
                             onAudioGranted = { binder?.ensureLibraryLoaded() },
-                            onFolderChosen = ::onFolderChosen,
+                            onChooseFolder = { folderPicker.launch(null) },
                         )
                     }
                 }
@@ -146,7 +173,14 @@ class MainActivity : ComponentActivity() {
     private fun onFolderChosen(treeUri: Uri) {
         contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         LibraryRoot.save(this, treeUri)
-        binder?.reloadFromRoot(treeUri)
+        val bound = binder
+        if (bound != null) {
+            bound.reloadFromRoot(treeUri)
+        } else {
+            // The picker stopped this activity, which unbound the service; the pick is applied when
+            // the rebind connects (see [connection]).
+            pendingRoot = treeUri
+        }
         Log.i(LOG_TAG, "folder chosen: $treeUri")
     }
 }
@@ -158,10 +192,10 @@ class MainActivity : ComponentActivity() {
  *
  * @param controller Service-owned brain to render and drive.
  * @param onAudioGranted Invoked when audio access is (re)confirmed, to trigger the service-side load.
- * @param onFolderChosen Invoked with a picked tree URI to persist it and rescan from that folder.
+ * @param onChooseFolder Invoked to launch the folder picker when the user wants to set a library folder.
  */
 @Composable
-private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onFolderChosen: (Uri) -> Unit) {
+private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onChooseFolder: () -> Unit) {
     val context = LocalContext.current
     var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -183,7 +217,7 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, on
         }
     }
     if (hasAudioAccess) {
-        PlayerScreen(controller = controller, onFolderChosen = onFolderChosen)
+        PlayerScreen(controller = controller, onChooseFolder = onChooseFolder)
     } else {
         PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
     }
@@ -209,20 +243,14 @@ private fun StartingGate() {
  * track list. Tap a track to play it; tap the playing track to pause or resume.
  *
  * @param controller Drives the queue, pagination, and playback; its `uiState` is observed here.
- * @param onFolderChosen Invoked with a picked tree URI when the user chooses a library folder.
+ * @param onChooseFolder Invoked when the user taps the folder action, to launch the picker.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun PlayerScreen(controller: PlayerController, onFolderChosen: (Uri) -> Unit) {
+fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     val state = controller.uiState
     var position by remember { mutableDoubleStateOf(0.0) }
     var duration by remember { mutableDoubleStateOf(0.0) }
-    // Folder picker: a non-null result is a granted tree the activity persists and rescans.
-    val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
-        if (tree != null) {
-            onFolderChosen(tree)
-        }
-    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -237,7 +265,7 @@ fun PlayerScreen(controller: PlayerController, onFolderChosen: (Uri) -> Unit) {
             TopAppBar(
                 title = { Text("Music Player") },
                 actions = {
-                    TextButton(onClick = { folderLauncher.launch(null) }) { Text("Folder") }
+                    TextButton(onClick = onChooseFolder) { Text("Folder") }
                 },
             )
         },
@@ -353,7 +381,13 @@ private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
 @Composable
 private fun ColumnScope.TrackList(state: PlayerUiState, controller: PlayerController) {
     if (state.queueSize == 0) {
-        Text("No music found in your audio library.")
+        // An empty queue means "no music" only once loading has finished; during a scan (a chosen
+        // folder can take seconds) show a loading notice instead of the failure-sounding message.
+        if (state.loading) {
+            LoadingNotice()
+        } else {
+            Text("No music found in your audio library.")
+        }
         return
     }
     LazyColumn(
@@ -388,6 +422,19 @@ private fun ColumnScope.TrackList(state: PlayerUiState, controller: PlayerContro
                     .padding(horizontal = 8.dp, vertical = 8.dp),
             )
         }
+    }
+}
+
+/** Shown while a library load or folder scan runs: a spinner and a short loading line. */
+@Composable
+private fun LoadingNotice() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(vertical = 12.dp),
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(20.dp))
+        Text("Loading your library…")
     }
 }
 
