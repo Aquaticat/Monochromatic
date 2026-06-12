@@ -11,10 +11,11 @@ handover adds the working state, measured facts, and exact next steps.
 - Identity unified to `dev.monochromatic.musicplayer` and committed.
 - The user said "Go": the build phase has started. The derisking milestone (toolchain + scaffold + Media3
   skeleton playing real audio on the Pixel 6) is DONE and committed. See "Build progress" below.
-- The real Media3 variant is well underway: the pure logic is ported to Kotlin (52 tests), the real Compose UI is
-  built, and the library now reads the device's real MediaStore audio library (verified on device). Remaining for
-  this variant: a SAF chosen-root source (the desktop's "point at one folder" model), a `MediaSessionService` for
-  background/lockscreen, and true-peak as a Media3 `AudioProcessor`. See "Build progress" and "Next steps".
+- The real Media3 variant is well underway: the pure logic is ported to Kotlin (56 tests), the real Compose UI is
+  built, the library reads the device's real MediaStore audio library, and the player is now hosted in a
+  `MediaSessionService` for background/lockscreen/notification, all verified on device. Remaining for this variant:
+  a SAF chosen-root source (the desktop's "point at one folder" model) and true-peak as a Media3 `AudioProcessor`.
+  See "Build progress" and "Next steps".
 
 ## Build progress (this session)
 
@@ -78,12 +79,48 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   `RELATIVE_PATH` carries the documented trailing slash). Honest divergence (advisor-flagged): MediaStore is the
   device-wide library behind the `IS_MUSIC` heuristic, NOT the desktop's single chosen root; the SAF chosen-root
   source (next) is what restores that semantic.
-- Device state to resume from: the latest `media3` debug APK (commit `f22f97d0`) is installed on the Pixel 6
-  (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` granted; it reads the phone's real MediaStore
-  library (3617 `IS_MUSIC` tracks under `relative_path=Plain/Music/` and `2025MAR26/...`), NOT the old files-dir
-  fixtures. Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
+- Milestone 3, the `MediaSessionService`, is DONE and verified at the user boundary on device. The engine + queue
+  brain moved off the activity into `PlaybackService : MediaSessionService`, so audio outlives the activity. The
+  brain (`PlayerController`) stays the single source of truth, projected to a `MediaSession` through a
+  `SimpleBasePlayer` subclass (`BrainPlayer`): `getState()` reports the queue's current scope in playback order so
+  the framework's final Next/Previous matches the queue, and the `handle*` commands route back into the brain. The
+  service registers the session with the notification manager itself (`addSession` in `onCreate`), so the system
+  notification, lockscreen, and foreground-on-play work with NO app-side `MediaController`. The in-app Compose UI
+  binds the service via a private `LocalBinder` (single process) for a direct handle to the same brain: it reads
+  `uiState` and drives actions as before, while the session projects the very same brain to the system (one source
+  of truth, two views). The activity no longer creates or releases the controller (releasing on compose-dispose
+  would have killed the background playback this milestone enables); the service owns it. `media3-session` moved to
+  a flavor-agnostic `implementation` (the session layer is engine-independent; it carries `SimpleBasePlayer` via
+  `media3-common` transitively), `media3-exoplayer` stays media3-only. Manifest gained the `mediaPlayback`
+  foreground-service declaration + `FOREGROUND_SERVICE`/`FOREGROUND_SERVICE_MEDIA_PLAYBACK`/`POST_NOTIFICATIONS`.
+  `Queue` gained `playbackOrder`/`cursorPosition`/`moveCursorTo` (4 new tests, 56 total) so the wrapper maps a
+  timeline window index back into the scope; core semantics unchanged. Verified on device (API 36): activity bind ->
+  service auto-create -> self-load 3617 tracks; tap-to-play through the service-owned brain (`content://` load,
+  session PLAYING with the right active item); foreground service active as `mediaPlayback`; notification posted
+  (prev/play/next + title); backgrounded (HOME) playback continues; screen-off continuity (device Dozing, position
+  advanced 0 -> 33.8s); media-button Next/Prev advance the queue foreground, backgrounded, and from the lockscreen;
+  prev-goback (<3s) and prev-restart (>3s) both correct; the lockscreen media widget renders + its pause toggled
+  PLAYING -> PAUSED; the in-app UI stayed in sync after lockscreen/media-key actions (Pause button + highlighted row
+  matched the session); and a natural-end auto-advance fired (`track ended; advancing` -> loaded the next track,
+  kept playing). An audio-focus correctness fix landed alongside (`Media3Engine` now enables `handleAudioFocus` +
+  `handleAudioBecomingNoisy`; it was missing, so a phone call would not have ducked and a headphone unplug would not
+  have paused). An adversarial review workflow then found and fixed three real defects: `BrainPlayer` omitted
+  `COMMAND_RELEASE` (so `SimpleBasePlayer.release()` early-returned and the inner ExoPlayer leaked on every destroy);
+  `getState()` reported actual `isPlaying` (false during the buffering window) as `playWhenReady`, flickering the
+  notification icon on every track change (now reports the engine's play intent via `AudioEngine.playWhenReady()`);
+  and `handleSeek` discarded `positionMs` for `COMMAND_SEEK_TO_MEDIA_ITEM` (external controllers only). Two review
+  findings were deferred (see "Deferred from the MediaSessionService review" below).
+- Device state to resume from: the latest `media3` debug APK (commit `c287dc42`, the MediaSessionService + review
+  fixes) is installed on the Pixel 6 (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` and
+  `POST_NOTIFICATIONS` granted; it reads the phone's real MediaStore library (3617 `IS_MUSIC` tracks under
+  `relative_path=Plain/Music/` and `2025MAR26/...`), NOT the old files-dir fixtures, and now hosts playback in
+  `PlaybackService`. Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
   `adb -s 1C171FDF600KWW install -r app/build/outputs/apk/media3/debug/app-media3-debug.apk`; re-grant with
-  `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`.
+  `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`
+  (and `... android.permission.POST_NOTIFICATIONS`). The seek-bar slider responds to `input tap` at device y=305
+  (NOT 292; y=292 lands in dead space above it); track rows respond around y=1180 + ~140px pitch; media-button
+  Next/Prev/PlayPause are `adb shell input keyevent 87/88/85` and drive the session. Note: many on-device tracks
+  under `2025MAR26/` are 30-minute field recordings, so a natural-end test needs a near-end seek, not a wait.
   `uiautomator dump` fails on this Compose surface, so drive taps by coordinate (screen is 1080x2400) and read back
   via `screencap` + logcat (`MusicPlayer:I MediaStoreSource:I`). SDK is `local.properties` -> `/var/tmp/vet-jc/android-sdk`.
   adb is flock-guarded on `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
@@ -105,6 +142,9 @@ Android package (`packages/android-app/music-player/`), in order:
 - `c87fa94d` real player UI on the ported queue/pagination (narrow layout, tap-to-play), verified on device.
 - `c90cd858` docs: real UI milestone + remaining storage/service work.
 - `f22f97d0` read the real library from MediaStore (`Track` split, `IS_MUSIC` query, permission gate); verified on device.
+- `bca34483` fix: enable audio focus + becoming-noisy on the ExoPlayer (was missing).
+- `99fb7b88` host the player in a `MediaSessionService` (`PlaybackService` + `BrainPlayer`/`SimpleBasePlayer`, `LocalBinder` UI channel, flavor-agnostic `media3-session`, FGS manifest, `Queue` cursor accessors + 4 tests); verified on device.
+- `c287dc42` fix: release engine on destroy (`COMMAND_RELEASE`), notification play-state via `playWhenReady` intent, `handleSeek` honors `positionMs` (adversarial-review fixes).
 
 Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; those are not part of this work.
 
@@ -205,17 +245,31 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
 Done: step 1 (toolchain), step 2 (scaffold), the skeleton half of step 3 (Media3 plays real audio on device), and
 the pure-logic Kotlin port (the `core` package, 52 tests green). Remaining:
 
-1. Finish the real Media3 variant. DONE: the Compose UI (narrow layout, tap-to-play) and the MediaStore library
-   source (`openLibrary(List<Track>)`, verified on device). Remaining: (a) a SAF chosen-root source
-   (`ACTION_OPEN_DOCUMENT_TREE` + `DocumentsContract`, persisted via `takePersistableUriPermission`) for the
-   desktop's "point at one folder" model, feeding the same `openLibrary` with `Track`s whose `displayPath` is the
-   tree-relative path (MediaStore and SAF `content://` URIs play identically, per the verified research, so only the
-   enumeration differs); its picker is interactive, so it is the one spot that needs a human tap or driven UI, the
-   "stop early on a blocker" candidate. (b) Host the player in a `MediaSessionService` (move the engine into the
-   service, make the UI a `MediaController` client) for background/lockscreen/notification, fully
-   autonomously verifiable. (c) True-peak as a Media3 `AudioProcessor` (the deferred `process_sample` gain stage)
-   plus the WorkManager charging/idle sweep. Verify at the user boundary (background/screen-off, notification,
-   lockscreen). Instrument metrics from the start.
+1. Finish the real Media3 variant. DONE: the Compose UI (narrow layout, tap-to-play), the MediaStore library source
+   (`openLibrary(List<Track>)`), and the `MediaSessionService` (background/lockscreen/notification), all verified on
+   device. Remaining: (a) a SAF chosen-root source (`ACTION_OPEN_DOCUMENT_TREE` + `DocumentsContract`, persisted via
+   `takePersistableUriPermission`) for the desktop's "point at one folder" model, feeding the same `openLibrary`
+   with `Track`s whose `displayPath` is the tree-relative path (MediaStore and SAF `content://` URIs play
+   identically, per the verified research, so only the enumeration differs); its picker is interactive, so it is the
+   one spot that needs a human tap or driven UI, the "stop early on a blocker" candidate. (b) True-peak as a Media3
+   `AudioProcessor` (the deferred `process_sample` gain stage) plus the WorkManager charging/idle sweep. Instrument
+   metrics from the start.
+
+### Deferred from the MediaSessionService review
+
+The adversarial review confirmed two more real findings, deferred deliberately (not blockers for this milestone):
+
+- ALL-shuffle rebuild cost (LOW, unmeasured): in `ShuffleMode.ALL` the scope is the whole library, so
+  `BrainPlayer.getState()` rebuilds N `MediaItemData` (and `setPlaylist` runs O(N) uid-dedup + timeline build) on
+  every track transition, even though a plain advance only moves the cursor (`order` is unchanged). Fix when/if a
+  Systrace shows a real main-thread hitch on a several-thousand-track library: cache the `MediaItemData` list in
+  `BrainPlayer` keyed on the `queue.playbackOrder()` identity (or an order-generation counter bumped in
+  `rebuildScopeOrder`), rebuild only when the order changes, and overlay the current item's duration separately.
+- Hybrid/rust flavors crash on launch (pre-existing, not a regression): `createAudioEngine` throws
+  `NotImplementedError`, now from `PlaybackService.onCreate` (the activity's `BIND_AUTO_CREATE` creates the service).
+  Those flavors were never runnable; they are throwing stubs until the NDK work (per the ADR). When picking them up,
+  either return a no-op `AudioEngine` (so the cross-flavor wiring runs end to end) or gate the service on
+  `BuildConfig.FLAVOR`. Only the `media3` flavor runs today.
 2. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
    alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia via
    `ContentResolver.openFileDescriptor`).
