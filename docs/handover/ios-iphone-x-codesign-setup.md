@@ -74,10 +74,28 @@ Fallback, only if I report the CLI could not create the profile:
 10. Tick **Automatically manage signing**, then pick your team in the **Team** dropdown.
     Expected: the **Signing Certificate** line reads `Apple Development: <your name>`, with no red error.
 11. Pick **iPhone X** as the run destination at the top of the window, then press **Run** with **Cmd+R**.
-    Expected: the app installs and launches on the phone showing `iOS vet signing OK`.
-12. First free-team install only: if launch is blocked as untrusted, on the iPhone open
-    **Settings ▸ General ▸ VPN & Device Management**, tap your Apple ID under **Developer App**,
-    tap **Trust**, then reopen the app. Expected: the app launches.
+    Expected: Xcode installs the app, then the phone blocks first launch with an
+    `Untrusted Developer` dialog (a free-team certificate is not trusted until you approve it).
+12. Trust the developer certificate on the phone. On the iPhone open
+    **Settings ▸ General ▸ VPN & Device Management** (this device labels it **Device Management**),
+    tap your Apple ID under **Developer App**, then tap **Trust** and confirm.
+    Expected: reopening **HelloDevice** from the home screen now launches it showing
+    `iOS vet signing OK`. This trust is per developer certificate, so later vet apps signed with the
+    same identity launch without repeating it.
+13. Enable signing from the SSH session, so the vet can build all apps over the CLI without a
+    per-app **Cmd+R**. On the Mac, in a **local** terminal (not over SSH, so the password is never
+    typed into the agent session), run:
+
+    ```sh
+    read -rs -p "login password: " PW
+    security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$PW" \
+      "$HOME/Library/Keychains/login.keychain-db"
+    unset PW
+    ```
+
+    Expected: the command prints a `partitions:` block and exits 0. Without it, SSH-driven
+    `codesign` fails with `errSecInternalComponent`, because a non-interactive session cannot show
+    the prompt that authorizes `codesign` to use the signing key.
 
 ## What to check
 
@@ -88,6 +106,9 @@ Run on the Mac (`ssh m1`) after the steps; expected exact output:
 - `security find-identity -v -p codesigning` prints `1 valid identities found` and a line
   containing `Apple Development:`.
 - `ideviceinfo -q com.apple.security.mac.amfi -k DeveloperModeStatus` prints `true`.
+- After step 13, a device build over SSH signs without `errSecInternalComponent`: the agent runs
+  `xcodebuild ... -destination 'platform=iOS,id=<udid>' -allowProvisioningUpdates build` and it
+  ends in `** BUILD SUCCEEDED **`.
 - `ideviceinstaller -l` lists `dev.monochromatic.iosvet.hellodevice`.
 - The iPhone X home screen shows the **HelloDevice** icon and the app opens to `iOS vet signing OK`.
 
