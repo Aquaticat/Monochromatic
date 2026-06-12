@@ -1,8 +1,12 @@
 # iOS UI/app-shell framework vet for the iPhone X
 
-Status as of 2026-06-12 (second handover): signing path DONE; source-audit fan-out DONE (16 reports +
-synthesis); device gating in progress. Three of nine distinct gates are render-verified on the device:
-Capacitor PASS, Flutter PASS, Slint DISQUALIFIED (decisive finding, below). Six gates remain.
+Status as of 2026-06-12 (third handover): signing path DONE; source-audit fan-out DONE (16 reports +
+synthesis); device gating in progress. Render-verified so far: Capacitor PASS, Flutter PASS, and the
+entire .NET trio (the shared Microsoft.iOS substrate plus MAUI, Avalonia, and Uno, each gated as an
+actual framework, not just on the substrate). Slint DISQUALIFIED (decisive finding, below). The whole
+gate-and-render-verify chain also works over wireless, so no USB cable is needed. Remaining native and
+managed gates: Compose, React Native, NativeScript, Lynx, Qt; then the owner-appended set Dioxus,
+SnapKit, UIKit, SwiftUI; then the six WKWebView frameworks, deferred to the very end per owner.
 
 ## Goal and hard constraints
 
@@ -32,10 +36,14 @@ the signing details are in `docs/decisions/ios-iphone-x-vet-reports/device-gate-
 
 Installed: full Xcode 26.5; `ios-deploy`, `libimobiledevice` (idevicedebug, idevicescreenshot,
 idevicecrashreport), `ideviceinstaller`, `xcodegen` (brew); CocoaPods 1.16.2; Flutter 3.44.2 plus its
-iOS engine artifacts (`flutter precache --ios` done); the .NET `ios` workload (on dotnet 10.0.300);
-Rust iOS targets (`aarch64-apple-ios`, `-sim`). About 69 GiB free. Still to install for remaining
-gates: JDK 17+/Kotlin/KMP (Compose), React Native community CLI + Watchman/Metro, NativeScript CLI
-(`ns`) + Homebrew CMake + xcodeproj gem, Lynx (rspeedy/pnpm), Qt 6.5 LTS for iOS (qt-unified) + CMake.
+iOS engine artifacts (`flutter precache --ios` done); Rust iOS targets (`aarch64-apple-ios`, `-sim`).
+.NET fully ready (dotnet 10.0.300): the `ios` workload's runtime/AOT packs (the prior session had only
+written the manifest; `dotnet workload restore` pulled the `osx-arm64.Cross.ios-arm64` AOT cross-compiler
+and `Mono.ios-arm64` device runtime), the `maui-ios` workload, and the `Microsoft.iOS`, Avalonia, and Uno
+project templates (`dotnet new install`). Still to install for remaining gates: JDK 17+/Kotlin/KMP
+(Compose), React Native community CLI + Watchman/Metro, NativeScript CLI (`ns`) + Homebrew CMake +
+xcodeproj gem, Lynx (rspeedy/pnpm), Qt 6.5 LTS for iOS (qt-unified) + CMake; for the appended set, the
+`dx` (dioxus-cli) CLI (SnapKit/UIKit/SwiftUI need only the already-installed xcodegen + SPM).
 
 ### Source-audit fan-out
 
@@ -56,7 +64,10 @@ under lldb, before any UI draws, and `--justlaunch` then kills the app on detach
 relaunch with `idevicedebug -d run dev.monochromatic.iosvet.hellodevice` (holds the app alive),
 `idevicescreenshot` after about 15 s, and scan the app stdout plus `idevicecrashreport` for a dyld
 `Symbol not found` or a Rust panic. Pull screenshots with `scp m1:/tmp/<f>.png /tmp/` and read them.
-This step is what caught the false Slint pass; do not skip it for any remaining gate.
+This step is what caught the false Slint pass; do not skip it for any remaining gate. When the device is
+attached wirelessly (Xcode wireless debugging), add `-n`/`--network` to the libimobiledevice tools
+(`idevicedebug -n run`, `idevicescreenshot -n`, `idevicecrashreport -n`); `ios-deploy` uses wifi by
+default. The whole chain (build, install, run, screenshot, crash logs) is confirmed working over wifi.
 
 - Capacitor (rank 2, covers the six WKWebView members): PASS, renders (`Capacitor vet / WKWebView OK`).
   Capacitor 7 uses Swift Package Manager, not CocoaPods. WebKit gives native a11y. App at
@@ -66,6 +77,17 @@ This step is what caught the false Slint pass; do not skip it for any remaining 
   `ios/Runner.xcworkspace`). Note: a plugin-less Flutter app has no Podfile, so the CocoaPods path is
   still unproven (prove it via the React Native gate).
 - Slint (rank 1): DISQUALIFIED. See next section.
+- .NET trio (rank 3, MAUI/Avalonia/Uno): PASS, all four parts gated. The shared Microsoft.iOS/Mono
+  substrate renders in both Release (full AOT) and Debug (`MtouchInterpreter=all`) and P/Invokes a linked
+  Rust `.a` (a value computed in Rust, 6!=720 via a heap `Vec`, crosses `[DllImport("__Internal")]`), no
+  JIT/`EXC_BAD_ACCESS`/execmem kill (`~/ios-vet/mauigate`, with a `rust/` staticlib). Then each framework
+  rendered for real: MAUI (`~/ios-vet/mauiui`, native UIKit handlers), Avalonia (`~/ios-vet/avx`, its own
+  SkiaSharp/Metal renderer), Uno (`~/ios-vet/unogate`, Uno 6 Skia renderer). The substrate gate alone
+  would have falsely passed (it runs none of the frameworks' own UI/a11y code, exactly where Slint died),
+  so each framework was rendered, not inferred. a11y posture (matters under a11y-must): MAUI strongest
+  (native UIKit a11y); Avalonia and Uno-Skia self-draw via their own a11y bridges, fidelity is a stage-2
+  check, with Uno's native-UIKit renderer as its a11y-safe fallback. Full evidence in
+  `device-gate-results.md`.
 
 ## The Slint disqualification (decisive)
 
@@ -92,24 +114,28 @@ native iOS a11y (UIKit/WebKit) and does not hit this wall. Full evidence in `dev
 ## Scope and the music-player decision
 
 The owner confirmed (2026-06-12) that the Slint disqualification does NOT narrow the vet scope: it just
-removes Slint from contention. Continue the full funnel (all six remaining gates below), with Slint
-marked out. Do not settle on one framework or skip gates.
+removes Slint from contention. Continue the full funnel with Slint marked out; do not settle on one
+framework or skip gates. Two further owner directives the same day: (1) defer the six WKWebView
+frameworks to the very end, after every native and managed framework; (2) append Dioxus, SnapKit, UIKit,
+and SwiftUI to the queue, positioned just before that deferred web block. The current remaining order is
+in "Remaining gates" below.
 
 Separately, the music-player UI choice is an open owner decision informed by the gate results: maintain
 a downported Slint fork (keep the UI, accept the fork burden), or rewrite the UI in a device-verified
-native-a11y framework (Flutter leads) keeping the Rust audio core via FFI (symphonia/opus/cpal port
-unchanged; cpal has an iOS CoreAudio backend). Not blocking; the funnel continues regardless.
+native-a11y framework keeping the Rust audio core via FFI (symphonia/opus/cpal port unchanged; cpal has
+an iOS CoreAudio backend). Device-verified native-a11y options now include both Flutter and MAUI (MAUI
+keeps the Rust core via `[DllImport("__Internal")]`, proven above); the Dioxus result, once gated, would
+add a Rust-native UI option. Not blocking; the funnel continues regardless.
 
 ## Remaining gates (synthesis order)
 
 Each must be render-verified (not just launched), and each adds only its own SDK/CLI on the shared base
 (Xcode + signing + `rustup target add aarch64-apple-ios`).
 
-- .NET MAUI (rank 3, needs-device, covers the trio): toolchain READY (`ios` workload installed). Next
-  in line. Build Release (Mono full-AOT) and Debug (interpreter); confirm `[DllImport("__Internal")]`
-  into a linked Rust `.a` with no JIT/EXC_BAD_ACCESS/execmem kill.
+.NET trio (rank 3) is DONE (PASS, above). Remaining, in order:
+
 - Compose Multiplatform (rank 5, expected-pass): Kotlin/Native AOT; cinterop a Rust `.a`; check
-  `embeddedServer(CIO)` on iosArm64.
+  `embeddedServer(CIO)` on iosArm64. NEXT in line.
 - React Native (rank 6, expected-pass; also proves CocoaPods): Hermes `global.HermesInternal`; C++
   JSI/TurboModule linking a Rust staticlib.
 - NativeScript (rank 7, needs-device): prove jitless V8 + libffi static trampolines return a Rust value
@@ -118,6 +144,12 @@ Each must be render-verified (not just launched), and each adds only its own SDK
   `LynxModule` `.mm` linking a Rust staticlib.
 - Qt (rank 9, needs-device): pin Qt 6.5 LTS (6.11 needs iOS 17, will not install on the iPhone X);
   QML V4 interpreter renders; linked Rust value prints.
+- Owner-appended set (gate after the above, before the web block): Dioxus (Rust UI; on iOS renders via
+  `wry`/WKWebView driven by AOT Rust, the substantive one, needs `dx` CLI), SnapKit (UIKit Auto Layout
+  DSL via SPM, trivial), UIKit (pure native, trivial), SwiftUI (already render-proven by the HelloDevice
+  canary; formal re-confirm).
+- Deferred to the very end per owner: the six WKWebView frameworks (Cordova substrate plus the Ionic,
+  Framework7, Onsen, Quasar UI-render notes on the already-proven Capacitor/WKWebView substrate).
 
 After gates: stage 2 deep supporting-stack vets (the ~52-report roadmap, enumerated inside each
 `vet-*.md`), then keep the synthesis doc current.
@@ -126,8 +158,10 @@ After gates: stage 2 deep supporting-stack vets (the ~52-report roadmap, enumera
 
 `~/ios-vet/`: `vet.keychain-db` (signing), `HelloDevice/` (canary), `capgate/` (Capacitor),
 `flgate/` (Flutter), `slint-gate/` (Slint clone + the `[patch]`'d Cargo.toml), `accesskit_ios-patched/`
-(the a11y fork), `renew.log`, the renewal LaunchAgent. Screenshots and logs land in `/tmp` (ephemeral).
-The throwaway keychain password is only in the repo `.env.local` as `XCODE_IDENTITY_SSH_USABLE`.
+(the a11y fork), `mauigate/` (.NET/Microsoft.iOS substrate + the `rust/` FFI staticlib), `mauiui/`
+(MAUI), `avx/` (Avalonia xplat, iOS head `avx.iOS`), `unogate/` (Uno), `renew.log`, the renewal
+LaunchAgent. Screenshots and logs land in `/tmp` (ephemeral). The throwaway keychain password is only in
+the repo `.env.local` as `XCODE_IDENTITY_SSH_USABLE`.
 
 ## Notes / gotchas
 
