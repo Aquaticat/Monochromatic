@@ -503,6 +503,7 @@ pub(crate) fn prepare_track_gain(
     path: &Path,
     cache: &Arc<Mutex<PeakCache>>,
     generation: u64,
+    worker: thread::Thread,
 ) -> TrackGainResolution {
     // What:     `if let Some(gain) = cached_track_gain(path, cache) { ... }`. Check
     //           the cache before spawning a worker.
@@ -540,18 +541,20 @@ pub(crate) fn prepare_track_gain(
     // What:     `let pending = spawn_current_track_measurement(...)`. Start the
     //           dedicated worker. `path.to_path_buf()` clones the borrowed path into
     //           owned storage; `Arc::clone(cache)` shares the same cache.
-    // Why:      The thread outlives this function, so it needs owned inputs.
-    // TS map:   `const pending = spawnCurrentTrackMeasurement(path, cache, fingerprint, generation);`
+    // Why:      The thread outlives this function, so it needs owned inputs, and the
+    //           worker thread handle lets measurement completion wake the engine promptly.
+    // TS map:   `const pending = spawnCurrentTrackMeasurement(path, cache, fingerprint, generation, worker);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const pending = spawnCurrentTrackMeasurement(path, cache, fingerprint, generation);
+    // const pending = spawnCurrentTrackMeasurement(path, cache, fingerprint, generation, worker);
     // ```
     let pending = spawn_current_track_measurement(
         path.to_path_buf(),
         Arc::clone(cache),
         fingerprint,
         generation,
+        worker,
     );
     // What:     `TrackGainResolution::Pending(pending)`. Wrap the pending handle.
     //           Tail expression returns it.
@@ -580,6 +583,7 @@ fn spawn_current_track_measurement(
     cache: Arc<Mutex<PeakCache>>,
     fingerprint: Option<String>,
     generation: u64,
+    worker: thread::Thread,
 ) -> PendingPeakMeasurement {
     // What:     `let (sender, receiver) = mpsc::channel::<PeakGainResult>();`. Create
     //           a typed one-shot channel and split it into write/read halves.
@@ -592,8 +596,8 @@ fn spawn_current_track_measurement(
     // ```
     let (sender, receiver) = mpsc::channel::<PeakGainResult>();
     // What:     `thread::spawn(move || { ... });`. Start an OS thread. `move ||`
-    //           takes ownership of `path`, `cache`, `fingerprint`, `generation`, and
-    //           `sender` into the closure.
+    //           takes ownership of `path`, `cache`, `fingerprint`, `generation`, `worker`,
+    //           and `sender` into the closure.
     // Why:      Decode and cache the peak without tying up the controller thread.
     // TS map:   `startWorker(() => { ... });`
     //
@@ -626,6 +630,17 @@ fn spawn_current_track_measurement(
             // ```
             let _ = sender.send(PeakGainResult { generation, gain });
         }
+        // What:     `worker.unpark();`. Wake the controller/engine thread after the
+        //           measurement either sent a value or ended without one.
+        // Why:      The engine polls pending peak results immediately instead of waiting
+        //           for its fallback park timeout.
+        // TS map:   `worker.postWakeUp();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // worker.postWakeUp();
+        // ```
+        worker.unpark();
     });
     // What:     `PendingPeakMeasurement::from_receiver(receiver)`. Wrap the channel's
     //           read half. Tail expression returns the pending handle.
@@ -674,36 +689,82 @@ fn measure_and_store_gain(
     // if (fingerprint) { ... }
     // ```
     if let Some(key) = fingerprint {
-        // What:     `let mut guard = cache.lock().unwrap();`. Lock the shared cache for
-        //           mutation. `mut` is required because insert/save change it.
-        // Why:      Store and persist the measured peak.
-        // TS map:   `const guard = lock(cache);`
+        // What:     `let snapshot = { ... }`. Lock the shared cache, insert the new
+        //           peak, create a pending-save snapshot, and release the lock at the
+        //           end of the block.
+        // Why:      Disk I/O must happen without holding the cache mutex, otherwise the
+        //           engine can block behind a slow save.
+        // TS map:   `const snapshot = withLock(cache, c => { c.insert(key, peak); return c.pendingSave(); });`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const guard = lock(cache);
+        // const snapshot = withLock(cache, (c) => { c.insert(key, peak); return c.pendingSave(); });
         // ```
-        let mut guard = cache.lock().unwrap();
-        // What:     `guard.insert(key, peak);`. Insert the measured peak with the owned
-        //           fingerprint key.
-        // Why:      Warm the cache even if this result becomes stale for playback.
-        // TS map:   `guard.insert(key, peak);`
+        let snapshot = {
+            // What:     `let mut guard = cache.lock().unwrap();`. Lock the shared cache
+            //           for mutation. `mut` is required because insert changes it.
+            // Why:      Store the measured peak while holding the mutex.
+            // TS map:   `const guard = lock(cache);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const guard = lock(cache);
+            // ```
+            let mut guard = cache.lock().unwrap();
+            // What:     `guard.insert(key, peak);`. Insert the measured peak with the
+            //           owned fingerprint key.
+            // Why:      Warm the cache even if this result becomes stale for playback.
+            // TS map:   `guard.insert(key, peak);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // guard.insert(key, peak);
+            // ```
+            guard.insert(key, peak);
+            // What:     `guard.pending_save()`. Serialize a save snapshot while still
+            //           under the lock. Tail expression returns it from the block.
+            // Why:      The slow write can happen after the lock is released.
+            // TS map:   `return guard.pendingSave();`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return guard.pendingSave();
+            // ```
+            guard.pending_save()
+        };
+        // What:     `if let Some((path, json, count)) = snapshot { ... }`. Continue only
+        //           when there is a path and unsaved data to write.
+        // Why:      In-memory-only caches cannot be persisted.
+        // TS map:   `if (snapshot) { const [path, json, count] = snapshot; ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // guard.insert(key, peak);
+        // if (snapshot) { const [path, json, count] = snapshot; }
         // ```
-        guard.insert(key, peak);
-        // What:     `let _ = guard.save();`. Persist immediately and discard an IO
-        //           failure. The in-memory cache still holds the peak.
-        // Why:      Current-track work should survive process exit when saving succeeds.
-        // TS map:   `try { guard.save(); } catch {}`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // try { guard.save(); } catch {}
-        // ```
-        let _ = guard.save();
+        if let Some((path, json, count)) = snapshot {
+            // What:     `if peakcache::write_atomic(&path, &json).is_ok() { ... }`.
+            //           Write the JSON snapshot to disk without holding the cache lock.
+            // Why:      Persist the current-track measurement promptly while keeping the
+            //           shared cache available to the engine.
+            // TS map:   `if (writeAtomic(path, json).ok) { ... }`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (writeAtomic(path, json).ok) { ... }
+            // ```
+            if peakcache::write_atomic(&path, &json).is_ok() {
+                // What:     `cache.lock().unwrap().mark_saved(count);`. Re-lock briefly
+                //           and mark the snapshot entries as saved.
+                // Why:      Preserve unsaved counts for entries inserted after the snapshot.
+                // TS map:   `withLock(cache, c => c.markSaved(count));`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // withLock(cache, (c) => c.markSaved(count));
+                // ```
+                cache.lock().unwrap().mark_saved(count);
+            }
+        }
     }
     // What:     `Some(normalization_gain(peak))`. Convert the raw peak to gain and
     //           wrap it. Tail expression returns the worker's result.

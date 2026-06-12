@@ -19,6 +19,11 @@ use std::path::{Path, PathBuf};
 // TS map:   a shared locked object.
 use std::sync::{Arc, Mutex};
 
+// What:     `use std::thread;`. Rust's standard OS-thread API.
+// Why:      Tests pass the current test thread handle into the peak worker.
+// TS map:   closest equivalent is a `WorkerRef` for the current worker.
+use std::thread;
+
 // What:     `use std::time::{Duration, SystemTime, UNIX_EPOCH};`. `Duration` is a
 //           timeout span; `SystemTime` and `UNIX_EPOCH` build unique temp names.
 // Why:      Async tests wait for worker results and isolate cache files.
@@ -152,7 +157,7 @@ fn async_current_track_measurement_populates_cache_and_returns_gain() {
     //           an uncached fixture and expect the pending branch.
     // Why:      Empty cache should spawn current-track measurement.
     // TS map:   `const pending = prepareTrackGain(...).pending;`
-    let pending = match prepare_track_gain(fixture(), &cache, generation) {
+    let pending = match prepare_track_gain(fixture(), &cache, generation, thread::current()) {
         // What:     `TrackGainResolution::Pending(pending) => pending`. Extract the
         //           pending measurement handle.
         // Why:      The test waits for its result.

@@ -543,6 +543,16 @@ impl PeakCache {
     // ```ts
     // save(): void { if (!this.path) return; writeAtomic(this.path, JSON.stringify(this.map)); this.unsaved = 0; }
     // ```
+    // What:     `#[cfg(test)]` compiles the next method only for test builds.
+    // Why:      Production callers use `pending_save` plus `write_atomic` so disk I/O
+    //           happens outside the mutex; tests keep this direct helper for round-trip assertions.
+    // TS map:   no direct equivalent; closest is a test-only helper export.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // only exported in test builds
+    // ```
+    #[cfg(test)]
     pub(crate) fn save(&mut self) -> std::io::Result<()> {
         // What:     `let path = match &self.path { Some(p) => p, None => return Ok(()) };`.
         //           Borrow the target path, or quietly succeed if there is none.

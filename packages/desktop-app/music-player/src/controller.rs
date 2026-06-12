@@ -31,6 +31,17 @@ use std::path::Path;
 // ```
 use std::sync::{Arc, Mutex};
 
+// What:     `use std::thread;`. Rust's standard OS-thread API.
+// Why:      `prepare_peak_for_path` passes the current engine thread handle to the
+//           measurement worker so completion can wake the engine immediately.
+// TS map:   closest equivalent is a `WorkerRef` for the current worker.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const currentWorker = Worker.current;
+// ```
+use std::thread;
+
 // What:     `use std::time::Duration;`. A monotonic span of time.
 // Why:      Unit tests and the start path pass explicit wait windows to the peak
 //           swap helper.
@@ -415,16 +426,16 @@ impl Controller {
         // const generation = this.peakGeneration;
         // ```
         let generation = self.peak_generation;
-        // What:     `match prepare_track_gain(path, &self.peaks, generation) { ... }`.
+        // What:     `match prepare_track_gain(path, &self.peaks, generation, thread::current()) { ... }`.
         //           Ask the peak-swap module for cache-hit gain or an async pending handle.
         // Why:      Centralize cache lookup and worker spawning.
-        // TS map:   `switch (prepareTrackGain(path, this.peaks, generation)) { ... }`
+        // TS map:   `switch (prepareTrackGain(path, this.peaks, generation, currentWorker).kind) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // switch (prepareTrackGain(path, this.peaks, generation).kind) { /* ready or pending */ }
+        // switch (prepareTrackGain(path, this.peaks, generation, currentWorker).kind) { /* ready or pending */ }
         // ```
-        match prepare_track_gain(path, &self.peaks, generation) {
+        match prepare_track_gain(path, &self.peaks, generation, thread::current()) {
             // What:     `TrackGainResolution::Ready(gain) => { ... }`. Cache hit.
             // Why:      Apply the measured gain immediately and clear any old pending handle.
             // TS map:   `case "ready": this.trackGain = gain; this.pendingPeak = null;`
@@ -706,18 +717,19 @@ impl Controller {
     // setPlaying(on: boolean): void { ... }
     // ```
     fn set_playing(&mut self, on: bool) {
-        // What:     `if on { self.wait_for_pending_peak_before_start(); }`. When the
-        //           caller is starting or resuming playback, run the one-second peak
-        //           swap wait before audio output is marked playing.
-        // Why:      CLI start, the Play button, and any explicit Play command all get
-        //           the same wait-then-fallback behavior.
-        // TS map:   `if (on) this.waitForPendingPeakBeforeStart();`
+        // What:     `if on && !self.playing { self.wait_for_pending_peak_before_start(); }`.
+        //           When the caller starts playback from a paused state, run the
+        //           one-second peak swap wait before audio output is marked playing.
+        // Why:      CLI start, the Play button, and explicit Play commands get the
+        //           wait-then-fallback behavior, while track changes that are already
+        //           playing wait in `install_source` and do not wait twice.
+        // TS map:   `if (on && !this.playing) this.waitForPendingPeakBeforeStart();`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (on) this.waitForPendingPeakBeforeStart();
+        // if (on && !this.playing) this.waitForPendingPeakBeforeStart();
         // ```
-        if on {
+        if on && !self.playing {
             self.wait_for_pending_peak_before_start();
         }
         // What:     `self.playing = on;`. Update the gate.
