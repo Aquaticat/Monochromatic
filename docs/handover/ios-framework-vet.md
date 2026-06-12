@@ -7,8 +7,10 @@ actual framework, not just on the substrate). Slint DISQUALIFIED (decisive findi
 gate-and-render-verify chain also works over wireless, so no USB cable is needed. Compose Multiplatform
 also PASS (Kotlin/Native AOT, Skiko/Metal), and React Native FULL PASS (render + Hermes + dual-target +
 Rust crossing; CocoaPods proven; a legacy Obj-C `RCTBridgeModule` surfaced the Rust value even under the
-New Architecture, so no C++/JSI TurboModule was needed). Remaining native and managed gates:
-NativeScript, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI; then the six
+New Architecture, so no C++/JSI TurboModule was needed). NativeScript render half PASS on both legs too:
+jitless V8 10.3.22 runs on the iPhone X with no AMFI/execmem kill (the iOS inverse of its Android
+DENY_EXECMEM death), Rust crossing pending. Remaining native and managed gates: NativeScript Rust
+crossing, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI; then the six
 WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
@@ -247,7 +249,8 @@ Each must be render-verified (not just launched), and each adds only its own SDK
 (Xcode + signing + `rustup target add aarch64-apple-ios`).
 
 .NET trio (rank 3), Compose Multiplatform (rank 5), and React Native (rank 6, including its Rust crossing)
-are all DONE (FULL PASS, above). The next gate is NativeScript (rank 7). Remaining, in order:
+are all DONE (FULL PASS, above). NativeScript (rank 7) render half is DONE (PASS both legs, jitless V8
+survives AMFI on the device); its Rust crossing is the immediate next step. Remaining, in order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -266,9 +269,15 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   no New-Arch C++/JSI), packaged as a dual-triple XCFramework and autolinked via a local pod. The legacy
   Obj-C module surfaced under RN's New Architecture through the interop layer, so no `newArchEnabled=false`
   and no TurboModule were needed. This is the reusable Rust-crossing template for the gates below.
-- NativeScript (rank 7, needs-device): prove jitless V8 + libffi static trampolines return a Rust value
-  with no AMFI/execmem kill (iOS inverse of its Android DENY_EXECMEM death). The Rust value crosses over
-  a C ABI through NativeScript's own metadata bridge, no hand-written native glue.
+- NativeScript (rank 7, needs-device): render half DONE (PASS both legs, above). Jitless V8 10.3.22
+  initialized in 58ms on the iPhone X with no AMFI/execmem kill (iOS inverse of its Android DENY_EXECMEM
+  death), rendering "NS Gate / V8 JS: 720" (a JS reduce, proving V8 ran the bundle). App at
+  `/Volumes/MacData/ios-vet/nsgate` (NS 9.0.6, `@nativescript/ios` 9.0.3). Build path: `ns prepare ios`
+  then build the generated `platforms/ios/nsgate.xcodeproj` with the vet-keychain wrapper (not `ns build`,
+  whose signing won't thread the keychain); `gem install xcodeproj` is required first or prepare aborts
+  (exit 127). Remaining: the Rust crossing, a Rust value crossing over a C ABI through NativeScript's own
+  metadata bridge via a C-ABI header in a clang module + the dual-triple XCFramework, no hand-written
+  native glue. The view-model already calls `rust_gate_answer()` guarded by `typeof`.
 - Lynx (rank 8, expected-pass): native UIKit (`LynxView : UIView`, no WKWebView); PrimJS jitless; a Rust
   staticlib reached from a `LynxModule` written in Swift/Obj-C over a C ABI (not a `.mm`).
 - Qt (rank 9, needs-device): pin Qt 6.5 LTS (6.11 needs iOS 17, will not install on the iPhone X);

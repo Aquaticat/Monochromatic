@@ -437,6 +437,44 @@ on both targets from one codebase. Decisive facts:
     substrate, the same category as Hermes being C++; the no-C/C++ rule governs our code, and our module is
     pure Obj-C + Rust. Worth stating so the C++ in the build log is not mistaken for a rule breach.
 
+### NativeScript: PASS render (both legs), jitless V8 survives AMFI on the device; Rust crossing pending
+
+Status: render + dual-target confirmed 2026-06-12; the device leg is the load-bearing test and it passes.
+Rust crossing pending.
+
+NativeScript 9.0.6 CLI, `@nativescript/core ~9.0.0`, `@nativescript/ios` 9.0.3 runtime (V8 10.3.22),
+plain-JS Core template (`ns create nsgate --js`) at `/Volumes/MacData/ios-vet/nsgate`. The UI is a blue
+full-screen page (`app/main-page.xml`) whose JS view-model computes `[1..6].reduce((a,b)=>a*b,1) = 720`,
+so a rendered number proves V8 actually executed the bundle, not merely that the process launched.
+
+- The device leg IS the gate. The iOS Simulator does not enforce AMFI / the W^X executable-memory
+  prohibition, so a green simulator cannot answer the jitless-V8 question; only the iPhone X can. On the
+  iPhone X (iOS 16.7) the screen reads "NS Gate / V8 JS: 720 / render-only" and the runtime log reads
+  "Runtime initialization took 58ms (version 9.0.3, V8 version 10.3.22)": V8 initialized and ran the JS
+  on-device with no AMFI execmem kill and no crash report. This is the iOS inverse of NativeScript's
+  Android `DENY_EXECMEM` death (recorded in the source audit); on iOS the jitless V8 (plus
+  libffi-static-trampoline native calls) survives. Built `-configuration Debug` from the
+  NativeScript-generated `platforms/ios/nsgate.xcodeproj` with the proven vet-keychain wrapper (unlock +
+  search-list add + `DEVELOPMENT_TEAM=HWLVAKDV4F
+  PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.hellodevice`), upgrade-installed, held alive with
+  `idevicedebug -n run`.
+- Simulator leg (iPhone 17 Pro / iOS 26.5): same xcodeproj, `-sdk iphonesimulator ARCHS=arm64
+  ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO`, same "NS Gate / V8 JS: 720". Satisfies the dual-target
+  criterion only; it does not (and cannot) validate the AMFI question.
+- Build path: `ns prepare ios` generates the xcodeproj and runs webpack + metadata, then build the
+  generated project directly with the keychain wrapper (this sidesteps `ns build`'s own signing logic,
+  which would not thread the vet keychain through `OTHER_CODE_SIGN_FLAGS`; the search-list addition, not
+  the flag, is what resolves the identity). Toolchain snag: `ns prepare ios` runs a bare `ruby -e
+  "require 'xcodeproj'"` to merge xcconfig, and Homebrew's standalone `pod` bundles that gem privately, so
+  prepare aborts with `LoadError` / exit 127 until `gem install xcodeproj` (1.27.0) puts it on the system
+  ruby's gem path. `@nativescript/ios` 9.0.3 builds clean on Xcode 26 (no Kotlin/Native-style toolchain
+  bump needed, and its runtime XCFramework already ships an arm64-simulator slice).
+- a11y: NativeScript renders to native UIViews (UILabel/UIView), so a11y is native UIKit (VoiceOver owed).
+- Rust crossing (next, no hand-written native glue): expose `rust_gate_answer` as a JS global through
+  NativeScript's generated metadata via a C-ABI header in a clang module (a declaration, not C source),
+  linking the same dual-triple XCFramework. The view-model already calls `rust_gate_answer()` guarded by
+  `typeof`, so when the symbol lands the screen flips "Rust: n/a / render-only" to "Rust: 720 / CROSSING OK".
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -472,9 +510,10 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
 share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (Mono AOT and
 interpreter, Rust FFI), MAUI, Avalonia, and Uno, Compose Multiplatform (rank 5, Kotlin/Native AOT,
-Skiko/Metal), and React Native (rank 6, Hermes bytecode, native UIViews, Rust crossing PASS via a thin
-Obj-C shim + dual-triple XCFramework), all render-verified, above. Slint (rank 1) was gated and FAILED
-(disqualified, above).
+Skiko/Metal), React Native (rank 6, Hermes bytecode, native UIViews, Rust crossing PASS via a thin
+Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3.22 survives AMFI on the
+iPhone X, render both legs; Rust crossing pending), all render-verified, above. Slint (rank 1) was gated
+and FAILED (disqualified, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
@@ -506,9 +545,11 @@ no-crash runtime, not by launch success alone:
 - React Native (rank 6, expected-pass; also the gate that proves the CocoaPods + `.xcworkspace` path).
   Confirm `global.HermesInternal` truthy (Hermes AOT-bytecode interpreter live); a C++ JSI/TurboModule
   linking a Rust staticlib. Toolchain: Node, RN community CLI, CocoaPods, Watchman/Metro.
-- NativeScript (rank 7, needs-device). The iOS inverse of the Android DENY_EXECMEM death: confirm V8
-  runs jitless and a Rust value returns via `dlsym`/libffi with no AMFI/codesign/execmem kill.
-  Toolchain: Node, `ns` CLI, Homebrew CMake, CocoaPods, xcodeproj gem.
+- NativeScript (rank 7, needs-device). Render half DONE (PASS both legs, above): the iOS inverse of the
+  Android DENY_EXECMEM death is answered, jitless V8 10.3.22 runs on the iPhone X with no AMFI/execmem
+  kill. Remaining: the Rust crossing (a Rust value returns to JS via the metadata bridge + a C-ABI header,
+  no hand-written native glue). Toolchain installed: Node, `ns` CLI 9.0.6, Homebrew CMake, CocoaPods,
+  xcodeproj gem 1.27.0.
 - Lynx (rank 8, expected-pass). UI renders as native UIKit (`LynxView : UIView`, no WKWebView in the
   hierarchy); PrimJS fires jitless; a `LynxModule` `.mm` links a Rust staticlib. Toolchain: Node, pnpm
   (rspeedy/ReactLynx), CocoaPods, Ruby/Bundler.
