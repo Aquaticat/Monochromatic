@@ -11,6 +11,7 @@ import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -38,6 +39,13 @@ class PlaybackService : MediaSessionService() {
 
     /** Main-thread scope for the cursor I/O of the initial library query. */
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    /**
+     * The in-flight library load, kept so a newer load (a folder re-pick superseding the initial
+     * self-load) can cancel it first. Without this, a slow MediaStore self-load could deliver after a
+     * fast folder scan and wrongly overwrite the chosen library with the device-wide one.
+     */
+    private var loadJob: Job? = null
 
     private val localBinder: LocalBinder = LocalBinder()
 
@@ -95,7 +103,8 @@ class PlaybackService : MediaSessionService() {
         }
         libraryLoaded = true
         controller.beginLoad()
-        scope.launch {
+        loadJob?.cancel()
+        loadJob = scope.launch {
             val tracks = loadInitialTracks()
             controller.openLibrary(tracks)
             Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks")
@@ -111,7 +120,8 @@ class PlaybackService : MediaSessionService() {
     fun reloadFromRoot(treeUri: Uri) {
         libraryLoaded = true
         controller.beginLoad()
-        scope.launch {
+        loadJob?.cancel()
+        loadJob = scope.launch {
             val tracks = scanRoot(treeUri)
             controller.openLibrary(tracks)
             Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks from picked folder")
