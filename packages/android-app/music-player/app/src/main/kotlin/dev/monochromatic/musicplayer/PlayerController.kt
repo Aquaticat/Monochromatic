@@ -85,15 +85,20 @@ class PlayerController(private val engine: AudioEngine) {
     /**
      * Move to scope position [scopeIndex] (a [MediaSession] timeline window index the framework
      * computed for Next/Previous or a queue-item jump) and play it; an out-of-range index does
-     * nothing, matching the framework's no-op.
+     * nothing, matching the framework's no-op. When [positionSec] is positive the new track starts
+     * there instead of at 0 (an external controller seeking to a specific item and position).
      *
      * @param scopeIndex Target position within the current playback scope.
+     * @param positionSec Start position in seconds for the new track; 0.0 starts from the beginning.
      */
-    fun seekToScopeIndex(scopeIndex: Int) {
+    fun seekToScopeIndex(scopeIndex: Int, positionSec: Double = 0.0) {
         if (queue.moveCursorTo(scopeIndex) == null) {
             return
         }
         playCurrent()
+        if (positionSec > 0.0) {
+            engine.seekTo(positionSec)
+        }
     }
 
     /** Toggle play/pause: pause if playing, resume the loaded track, else load and play the current track. */
@@ -221,12 +226,20 @@ class PlayerController(private val engine: AudioEngine) {
         return PlaybackSnapshot(
             items = items,
             currentIndex = queue.cursorPosition(),
-            playing = isPlaying,
+            playWhenReady = engine.playWhenReady(),
             volume = uiState.volume,
             durationMs = (durationSec() * MILLIS_PER_SEC).toLong(),
             positionMs = (positionSec() * MILLIS_PER_SEC).toLong(),
         )
     }
+
+    /**
+     * Current scope position (timeline window index), cheaply, without building a [snapshot]; the
+     * [MediaSession] projection uses it to tell an in-place seek from a jump to another track.
+     *
+     * @return Position within the current scope, or null when the queue is empty.
+     */
+    fun currentScopeIndex(): Int? = queue.cursorPosition()
 
     /** Release the underlying engine. */
     fun release() {

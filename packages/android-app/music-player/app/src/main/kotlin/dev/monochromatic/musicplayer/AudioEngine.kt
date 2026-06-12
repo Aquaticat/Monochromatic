@@ -51,6 +51,17 @@ interface AudioEngine {
     fun durationSec(): Double
 
     /**
+     * Play intent, distinct from actually producing sound: true from the moment playback is requested
+     * (including while the track is still buffering) until it is paused, and false after a pause,
+     * including an audio-focus-loss pause the engine performs itself. This is what a [MediaSession]
+     * reports so the notification's play/pause icon does not flip during the buffering window; the
+     * actual sound state is the separate [setOnPlayingChanged] signal.
+     *
+     * @return True when the engine intends to play (playing or buffering), false when paused.
+     */
+    fun playWhenReady(): Boolean
+
+    /**
      * Register the play/pause-state callback.
      *
      * @param callback Invoked with true when playback is running, false when paused or stopped.

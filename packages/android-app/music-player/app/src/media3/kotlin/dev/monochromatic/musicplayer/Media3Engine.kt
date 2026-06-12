@@ -90,6 +90,8 @@ class Media3Engine(context: Context) : AudioEngine {
         return if (dur == C.TIME_UNSET || dur < 0L) 0.0 else dur / MILLIS_PER_SEC
     }
 
+    override fun playWhenReady(): Boolean = player.playWhenReady
+
     override fun setOnPlayingChanged(callback: (Boolean) -> Unit) {
         onPlayingChanged = callback
     }

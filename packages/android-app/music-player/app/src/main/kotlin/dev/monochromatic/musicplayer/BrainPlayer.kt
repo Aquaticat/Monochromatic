@@ -76,7 +76,7 @@ class BrainPlayer(
         val builder: State.Builder = State.Builder()
             .setAvailableCommands(AVAILABLE_COMMANDS)
             .setPlaylist(playlist)
-            .setPlayWhenReady(snapshot.playing, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+            .setPlayWhenReady(snapshot.playWhenReady, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
             .setPlaybackState(if (playlist.isEmpty()) Player.STATE_IDLE else Player.STATE_READY)
             .setContentPositionMs(snapshot.positionMs)
             .setVolume(snapshot.volume)
@@ -100,10 +100,19 @@ class BrainPlayer(
     }
 
     override fun handleSeek(mediaItemIndex: Int, positionMs: Long, seekCommand: Int): ListenableFuture<*> {
-        if (seekCommand == Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM && positionMs != C.TIME_UNSET) {
-            controller.seek(positionMs / MILLIS_PER_SEC)
-        } else if (mediaItemIndex != C.INDEX_UNSET) {
-            controller.seekToScopeIndex(mediaItemIndex)
+        val hasPosition: Boolean = positionMs != C.TIME_UNSET
+        val targetSec: Double = if (hasPosition) positionMs / MILLIS_PER_SEC else 0.0
+        val staysOnCurrent: Boolean = mediaItemIndex == C.INDEX_UNSET || mediaItemIndex == controller.currentScopeIndex()
+        if (staysOnCurrent) {
+            // In-place seek within the current track (the scrubber, or a seek-to-current-item with a
+            // position); never reload, so playback continues from the requested position.
+            if (hasPosition) {
+                controller.seek(targetSec)
+            }
+        } else {
+            // Jump to another scope position (Next/Previous, or a seek to a specific item), honoring
+            // a requested start position rather than always restarting at 0.
+            controller.seekToScopeIndex(mediaItemIndex, targetSec)
         }
         return Futures.immediateVoidFuture()
     }
@@ -132,6 +141,9 @@ class BrainPlayer(
             .addAll(
                 Player.COMMAND_PLAY_PAUSE,
                 Player.COMMAND_PREPARE,
+                // COMMAND_RELEASE must be advertised or SimpleBasePlayer.release() early-returns
+                // before handleRelease() runs, leaking the inner ExoPlayer on every service destroy.
+                Player.COMMAND_RELEASE,
                 Player.COMMAND_SEEK_TO_NEXT,
                 Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM,
                 Player.COMMAND_SEEK_TO_PREVIOUS,

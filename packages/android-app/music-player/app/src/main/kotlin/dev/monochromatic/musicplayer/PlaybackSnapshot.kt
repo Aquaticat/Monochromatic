@@ -23,7 +23,8 @@ data class SnapshotItem(
  *
  * @property items Current scope's tracks in playback order (timeline window order).
  * @property currentIndex Position within [items] of the current track, or null when the queue is empty.
- * @property playing Whether audio is actually playing (the notification's play/pause state).
+ * @property playWhenReady Play intent (playing or buffering, false when paused): what the session
+ *   reports so the notification icon does not flip during buffering, distinct from actual sound.
  * @property volume Output gain in `0.0..1.0`.
  * @property durationMs Current track duration in milliseconds, 0 when not yet known.
  * @property positionMs Current playback position in milliseconds.
@@ -31,7 +32,7 @@ data class SnapshotItem(
 data class PlaybackSnapshot(
     val items: List<SnapshotItem>,
     val currentIndex: Int?,
-    val playing: Boolean,
+    val playWhenReady: Boolean,
     val volume: Float,
     val durationMs: Long,
     val positionMs: Long,
