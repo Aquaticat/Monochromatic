@@ -437,10 +437,11 @@ on both targets from one codebase. Decisive facts:
     substrate, the same category as Hermes being C++; the no-C/C++ rule governs our code, and our module is
     pure Obj-C + Rust. Worth stating so the C++ in the build log is not mistaken for a rule breach.
 
-### NativeScript: PASS render (both legs), jitless V8 survives AMFI on the device; Rust crossing pending
+### NativeScript: FULL PASS (both legs), jitless V8 survives AMFI, Rust crossing with zero native code
 
-Status: render + dual-target confirmed 2026-06-12; the device leg is the load-bearing test and it passes.
-Rust crossing pending.
+Status: render + dual-target + Rust crossing all confirmed 2026-06-12; the device leg is the load-bearing
+test and it passes. Notably the Rust crossing needed no hand-written native code at all (not even the
+Obj-C `.m` shim React Native required): a C-ABI header declaration, a clang modulemap, and one linker flag.
 
 NativeScript 9.0.6 CLI, `@nativescript/core ~9.0.0`, `@nativescript/ios` 9.0.3 runtime (V8 10.3.22),
 plain-JS Core template (`ns create nsgate --js`) at `/Volumes/MacData/ios-vet/nsgate`. The UI is a blue
@@ -470,10 +471,25 @@ so a rendered number proves V8 actually executed the bundle, not merely that the
   ruby's gem path. `@nativescript/ios` 9.0.3 builds clean on Xcode 26 (no Kotlin/Native-style toolchain
   bump needed, and its runtime XCFramework already ships an arm64-simulator slice).
 - a11y: NativeScript renders to native UIViews (UILabel/UIView), so a11y is native UIKit (VoiceOver owed).
-- Rust crossing (next, no hand-written native glue): expose `rust_gate_answer` as a JS global through
-  NativeScript's generated metadata via a C-ABI header in a clang module (a declaration, not C source),
-  linking the same dual-triple XCFramework. The view-model already calls `rust_gate_answer()` guarded by
-  `typeof`, so when the symbol lands the screen flips "Rust: n/a / render-only" to "Rust: 720 / CROSSING OK".
+- Rust crossing (PASS, zero hand-written native code): `rust_gate_answer() = 720` crosses Rust -> JS and
+  the screen reads "NS Gate / V8 JS: 720 / Rust: 720 / CROSSING OK" on both the iPhone X and the iOS 26.5
+  simulator. The mechanism, and the two non-obvious snags it surfaced:
+  - Metadata exposure needs a clang module, not just a header on the include path. A default static-library
+    pod exposes `rustgate.h` via `-I` only (no modulemap), and NativeScript's `objc-metadata-generator`
+    works on clang modules, so `rust_gate_answer` was absent from the generated metadata and JS saw
+    `undefined`. Fix: a `module.modulemap` + header in `App_Resources/iOS/src/` (NativeScript's documented
+    custom-native hook; the generator already has `-I App_Resources/iOS/src` on its command line). After
+    that the generator's umbrella `#import`s the header and `rust_gate_answer` appears in `metadata-arm64.bin`.
+  - The symbol must survive the link. Only JS references the function (at runtime, via the metadata), so
+    `-dead_strip` dropped the static-lib member entirely (`nm` showed it absent), and NativeScript's
+    runtime resolved a null address and aborted (`Assertion failed ... Helpers.mm`, signal 9, before any
+    render). Fix: `OTHER_LDFLAGS = $(inherited) -u _rust_gate_answer` in `App_Resources/iOS/build.xcconfig`
+    keeps it as a dead-strip root; the runtime's `-rdynamic` then exports it so the address resolves. After
+    that `nm` shows `T _rust_gate_answer` and the call returns 720.
+  - Linking vs metadata are separate concerns: the local pod (`vendored_frameworks`) links the dual-triple
+    XCFramework (the same one RN used); the `App_Resources/iOS/src` modulemap exposes the symbol to the
+    metadata bridge. No `.m`/`.c`/`.cpp`/`.mm`, no Swift glue: only a C-ABI declaration, a modulemap, and a
+    linker flag, all config/declarations. This is the cleanest Rust crossing of any gate so far.
 
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
@@ -512,8 +528,8 @@ share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (
 interpreter, Rust FFI), MAUI, Avalonia, and Uno, Compose Multiplatform (rank 5, Kotlin/Native AOT,
 Skiko/Metal), React Native (rank 6, Hermes bytecode, native UIViews, Rust crossing PASS via a thin
 Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3.22 survives AMFI on the
-iPhone X, render both legs; Rust crossing pending), all render-verified, above. Slint (rank 1) was gated
-and FAILED (disqualified, above).
+iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), all render-verified,
+above. Slint (rank 1) was gated and FAILED (disqualified, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
@@ -545,11 +561,11 @@ no-crash runtime, not by launch success alone:
 - React Native (rank 6, expected-pass; also the gate that proves the CocoaPods + `.xcworkspace` path).
   Confirm `global.HermesInternal` truthy (Hermes AOT-bytecode interpreter live); a C++ JSI/TurboModule
   linking a Rust staticlib. Toolchain: Node, RN community CLI, CocoaPods, Watchman/Metro.
-- NativeScript (rank 7, needs-device). Render half DONE (PASS both legs, above): the iOS inverse of the
-  Android DENY_EXECMEM death is answered, jitless V8 10.3.22 runs on the iPhone X with no AMFI/execmem
-  kill. Remaining: the Rust crossing (a Rust value returns to JS via the metadata bridge + a C-ABI header,
-  no hand-written native glue). Toolchain installed: Node, `ns` CLI 9.0.6, Homebrew CMake, CocoaPods,
-  xcodeproj gem 1.27.0.
+- NativeScript (rank 7, needs-device): FULL PASS, DONE (above). The iOS inverse of the Android
+  DENY_EXECMEM death is answered (jitless V8 10.3.22 runs on the iPhone X with no AMFI/execmem kill), and
+  the Rust crossing renders "Rust: 720 / CROSSING OK" on both legs with zero hand-written native code (a
+  C-ABI header + modulemap in `App_Resources/iOS/src` + a `-u` linker flag). Toolchain installed: Node,
+  `ns` CLI 9.0.6, Homebrew CMake, CocoaPods, xcodeproj gem 1.27.0.
 - Lynx (rank 8, expected-pass). UI renders as native UIKit (`LynxView : UIView`, no WKWebView in the
   hierarchy); PrimJS fires jitless; a `LynxModule` `.mm` links a Rust staticlib. Toolchain: Node, pnpm
   (rspeedy/ReactLynx), CocoaPods, Ruby/Bundler.
