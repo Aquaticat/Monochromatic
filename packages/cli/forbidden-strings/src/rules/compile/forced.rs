@@ -76,8 +76,25 @@ use super::{compile_plain_rule_to_compiled, expand_unicode_whitespace, CompiledR
 pub(super) fn forced_engine() -> Option<&'static str> {
     use std::sync::OnceLock;
     static FORCE: OnceLock<Option<String>> = OnceLock::new();
+    // Baked default for the "B" worktree variant: this binary pins the
+    // regex engine unless FS_FORCE_ENGINE overrides it at runtime.
+    //
+    // What:     `.unwrap_or_else(|_| "regex".to_string())` substitutes the
+    //           baked engine name when the env var is absent; the closure
+    //           form defers the `String` allocation to the miss path.
+    //           `Some(...)` wraps it because the production signature
+    //           models "no override" as `None`, which this variant never
+    //           reports.
+    // Why:      The B benchmark binary must behave as all-regex without
+    //           any environment setup.
+    // TS map:   `const FORCE = process.env.FS_FORCE_ENGINE ?? "regex";`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const FORCE = process.env.FS_FORCE_ENGINE ?? "regex";
+    // ```
     FORCE
-        .get_or_init(|| std::env::var("FS_FORCE_ENGINE").ok())
+        .get_or_init(|| Some(std::env::var("FS_FORCE_ENGINE").unwrap_or_else(|_| "regex".to_string())))
         .as_deref()
 }
 
