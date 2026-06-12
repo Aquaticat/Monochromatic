@@ -49,6 +49,11 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            // Sign the release build with the debug key so it installs on the owner's device without a
+            // separate keystore. release is not debuggable, so ART optimizes the numeric DSP loops it
+            // runs (the true-peak scan), which a debuggable build does not; this is the build the
+            // owner actually runs.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

@@ -15,6 +15,11 @@ description = "Assemble the Media3 (pure-Kotlin) debug APK"
 dir = "{{config_root}}"
 run = "./gradlew :app:assembleMedia3Debug --no-daemon --console=plain"
 
+[tasks."build:media3:release"]
+description = "Assemble the optimized (non-debuggable) Media3 release APK, debug-signed so it installs"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleMedia3Release --no-daemon --console=plain"
+
 [tasks."build:hybrid"]
 description = "Assemble the hybrid (Rust true-peak + Media3) debug APK"
 dir = "{{config_root}}"

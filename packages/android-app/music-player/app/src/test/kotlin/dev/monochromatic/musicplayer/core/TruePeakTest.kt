@@ -99,4 +99,25 @@ class TruePeakTest {
         assertTrue(approxEq(processSample(1.5f, 1.0f), 1.0f))
         assertTrue(approxEq(processSample(-2.0f, 1.0f), -1.0f))
     }
+
+    /**
+     * The measured peak must not depend on how the stream is chunked: feeding a signal whole and
+     * feeding it split across several chunks yield the same peak. This pins the sliding window's
+     * persistence across `feed` calls, which the streaming decoder depends on and which the in-place
+     * window advance must preserve.
+     */
+    @Test
+    fun chunkBoundariesDoNotChangeTheMeasuredPeak() {
+        val signal = floatArrayOf(0.0f, 0.0f, 0.9f, -0.9f, 0.9f, -0.9f, 0.1f, 0.2f, -0.3f, 0.0f)
+        val whole = measureTruePeak(channels = 1, chunks = sequenceOf(signal))
+        val split = measureTruePeak(
+            channels = 1,
+            chunks = sequenceOf(
+                signal.copyOfRange(0, 3),
+                signal.copyOfRange(3, 4),
+                signal.copyOfRange(4, 10),
+            ),
+        )
+        assertTrue("whole $whole and split $split should match", approxEq(whole, split))
+    }
 }

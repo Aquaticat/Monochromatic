@@ -94,13 +94,19 @@ class Media3Engine(context: Context) : AudioEngine {
 
     override fun load(uri: String, play: Boolean) {
         Log.i(LOG_TAG, "Media3Engine.load ${uri.substringAfterLast('/')} play=$play")
-        // Reset to unity so the new track never plays at the previous track's gain; the resolved gain
-        // is applied below once it is known (a cache hit lands within the buffering window, a miss
-        // after its measurement, matching the desktop's intent without blocking playback start).
+        // Reset to unity so the new track never plays at the previous track's gain.
         gainProcessor.gain = GainNormalizationProcessor.UNITY_GAIN
         val generation: Int = ++loadGeneration
         player.setMediaItem(MediaItem.fromUri(uri))
         player.prepare()
+        // Start playback immediately (so start latency stays well under a second) and resolve the gain
+        // in parallel. ExoPlayer buffers for a few hundred milliseconds before the first audible
+        // sample, and a cache hit or fast measure resolves within that window, so a cached or fast
+        // track is already at its correct gain from the first sound, the desktop's "measure before
+        // playing" effect without delaying the start. A slow miss plays at unity until its measurement
+        // lands, then a brief one-time level correction. Delaying the start to block on the gain was
+        // tried and rejected: it pushed start past a second because ExoPlayer buffers after the
+        // deferred start.
         player.playWhenReady = play
         resolveScope.launch {
             val resolved: Float = resolveNormalizationGain(uri)

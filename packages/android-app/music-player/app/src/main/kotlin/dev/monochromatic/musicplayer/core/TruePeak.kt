@@ -42,6 +42,13 @@ internal const val CEILING: Float = 0.8912509f
 private const val WINDOW: Int = 4
 
 /**
+ * The three interior oversampling positions ([QUARTER], [HALF], [THREE_QUARTERS]) the meter samples
+ * between the two middle window points. Hoisted to a single shared array so the per-sample scan does
+ * not allocate one per sample; it is only ever read, never mutated.
+ */
+private val INTERIOR_POSITIONS: FloatArray = floatArrayOf(QUARTER, HALF, THREE_QUARTERS)
+
+/**
  * Evaluate the Catmull-Rom cubic through four equally-spaced points at position [t] on the segment
  * between [p1] and [p2], estimating the waveform where inter-sample peaks live. The literal
  * coefficients (2, 3, 4, 5) are the standard spline matrix entries; [HALF] is the 1/2 normalization.
@@ -104,15 +111,20 @@ internal class TruePeakMeter(private val channels: Int) {
      */
     private fun push(channel: Int, s: Float) {
         val w: FloatArray = win[channel]
-        // Fresh array per push: Kotlin arrays alias by reference, so mutating in place would
-        // corrupt the stored window. This matches the Rust `[f32; 4]` value-copy shift.
-        val shifted: FloatArray = floatArrayOf(w[1], w[2], w[3], s)
-        win[channel] = shifted
+        // Advance the window in place: drop the oldest sample, append s. The Rust port copies a
+        // `[f32; 4]` by value, a cheap stack move, but allocating a fresh Kotlin array per sample
+        // would heap-allocate once per PCM sample (tens of millions per track) and dominate the
+        // scan. Nothing else references this window, so the in-place shift cannot corrupt a stored
+        // copy; the interpolation below reads the just-advanced window.
+        w[0] = w[1]
+        w[1] = w[2]
+        w[2] = w[3]
+        w[3] = s
         filled[channel] = min(filled[channel] + 1, WINDOW)
         var localPeak: Float = abs(s)
         if (filled[channel] == WINDOW) {
-            for (t in floatArrayOf(QUARTER, HALF, THREE_QUARTERS)) {
-                val v: Float = abs(catmullRom(shifted[0], shifted[1], shifted[2], shifted[3], t))
+            for (t in INTERIOR_POSITIONS) {
+                val v: Float = abs(catmullRom(w[0], w[1], w[2], w[3], t))
                 localPeak = max(localPeak, v)
             }
         }

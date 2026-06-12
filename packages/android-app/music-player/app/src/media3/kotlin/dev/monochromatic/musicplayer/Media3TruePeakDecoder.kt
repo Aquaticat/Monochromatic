@@ -40,11 +40,19 @@ object Media3TruePeakDecoder {
     private const val DECODE_TAG: String = "Media3TruePeak"
 
     /**
-     * Poll timeout for the dequeue calls, small and positive so the feed/drain loop keeps cycling
-     * (a buffer freed on the other side becomes visible on the next turn) without ever blocking the
-     * IO thread indefinitely.
+     * Poll timeout for dequeuing OUTPUT buffers, small and positive so the loop waits briefly when no
+     * decoded buffer is ready yet rather than spinning the CPU, but never blocks the IO thread for
+     * long.
      */
     private const val DEQUEUE_TIMEOUT_US: Long = 10_000L
+
+    /**
+     * Non-blocking timeout for dequeuing INPUT buffers. The feed loop drains every free input slot
+     * each pass with this timeout, so the decoder is never input-starved: feeding one buffer per
+     * iteration and then waiting on output instead makes the whole decode crawl at roughly one buffer
+     * per [DEQUEUE_TIMEOUT_US], which is the difference between a sub-second scan and a 100-second one.
+     */
+    private const val NON_BLOCKING_TIMEOUT_US: Long = 0L
 
     /**
      * Divisor turning a signed 16-bit sample into a float in `-1.0..1.0`. `Short.MIN_VALUE` is
@@ -52,6 +60,9 @@ object Media3TruePeakDecoder {
      * desktop's `f32` sample domain so the measured peak is comparable.
      */
     private const val PCM_16BIT_SCALE: Float = 32768.0f
+
+    /** Nanoseconds per millisecond, for the measured-duration log. */
+    private const val NANOS_PER_MILLI: Long = 1_000_000L
 
     /**
      * Decode the whole file at [contentUri] and return its measured true peak, linear and typically
@@ -107,9 +118,20 @@ object Media3TruePeakDecoder {
             codec.start()
 
             // The sequence is consumed here, inside the try, so the codec stays alive for the whole
-            // measurement and the finally below releases it only after the pass has drained.
-            val peak: Float = measureTruePeak(channelCount, decodeChunks(extractor, codec, channelCount))
-            Log.i(DECODE_TAG, "measured true peak $peak for $contentUri ($channelCount ch, $mime)")
+            // measurement and the finally below releases it only after the pass has drained. The
+            // sample count and elapsed time are logged so the scan's throughput stays observable.
+            var sampleCount = 0L
+            val startNanos: Long = System.nanoTime()
+            val peak: Float = measureTruePeak(
+                channelCount,
+                decodeChunks(extractor, codec, channelCount).onEach { chunk -> sampleCount += chunk.size },
+            )
+            val elapsedMs: Long = (System.nanoTime() - startNanos) / NANOS_PER_MILLI
+            Log.i(
+                DECODE_TAG,
+                "measured true peak $peak for $contentUri ($channelCount ch, $mime) " +
+                    "in ${elapsedMs}ms over $sampleCount samples",
+            )
             peak
         } finally {
             // MediaCodec and MediaExtractor are final classes that do not implement AutoCloseable, so
@@ -157,23 +179,23 @@ object Media3TruePeakDecoder {
         var drainedEndOfOutput = false
 
         while (!drainedEndOfOutput) {
-            // region feed one input buffer
-            if (!queuedEndOfInput) {
-                val inputIndex: Int = codec.dequeueInputBuffer(DEQUEUE_TIMEOUT_US)
-                if (inputIndex >= 0) {
-                    val inputBuffer: ByteBuffer = codec.getInputBuffer(inputIndex)
-                        ?: error("dequeued input buffer $inputIndex was null")
-                    val sampleSize: Int = extractor.readSampleData(inputBuffer, /* offset = */ 0)
-                    if (sampleSize < 0) {
-                        // -1 signals no more samples: queue a zero-size buffer flagged end-of-stream.
-                        codec.queueInputBuffer(
-                            inputIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM,
-                        )
-                        queuedEndOfInput = true
-                    } else {
-                        codec.queueInputBuffer(inputIndex, 0, sampleSize, extractor.sampleTime, 0)
-                        extractor.advance()
-                    }
+            // region feed every free input buffer (non-blocking) so the decoder never starves
+            while (!queuedEndOfInput) {
+                val inputIndex: Int = codec.dequeueInputBuffer(NON_BLOCKING_TIMEOUT_US)
+                if (inputIndex < 0) {
+                    // No free input slot right now; go drain output and come back.
+                    break
+                }
+                val inputBuffer: ByteBuffer = codec.getInputBuffer(inputIndex)
+                    ?: error("dequeued input buffer $inputIndex was null")
+                val sampleSize: Int = extractor.readSampleData(inputBuffer, /* offset = */ 0)
+                if (sampleSize < 0) {
+                    // -1 signals no more samples: queue a zero-size buffer flagged end-of-stream.
+                    codec.queueInputBuffer(inputIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                    queuedEndOfInput = true
+                } else {
+                    codec.queueInputBuffer(inputIndex, 0, sampleSize, extractor.sampleTime, 0)
+                    extractor.advance()
                 }
             }
             // endregion
