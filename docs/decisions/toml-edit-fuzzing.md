@@ -171,9 +171,76 @@ against BurntSushi's curated corpus with zero failures and no allow-list, which
 remains the parser-correctness oracle of record. A differential oracle could be
 revisited against a different reference implementation if one proves stable.
 
+## Coverage gate (phase 8)
+
+The campaign measures its own reach with a deterministic V8 line-coverage gate,
+so a future change that silently stops exercising a parser, emitter, or editor
+branch fails the gate rather than passing green-but-weaker.
+
+A reachability driver
+(`packages/module/toml-edit/src/fuzz/coverage-driver.ts`) imports the package
+implementation from source (`../index.ts`), not the built artifact, and replays
+the shared fuzz generators and committed corpus through every public entry point
+and every `_` seam at a fixed fast-check seed and run count. Run under
+`NODE_V8_COVERAGE`, that attributes coverage to the `src` files the gate watches.
+The reader (`packages/module/toml-edit/src/fuzz/coverage-v8.ts`) projects the raw
+V8 block ranges to per-file covered-line counts: it paints a per-character bitmap
+with the innermost range's count winning (the longest range painted first), then
+counts a line covered when it holds a non-whitespace character at a covered
+offset. Node v26's type stripping is position preserving, so a V8 range offset
+indexes the on-disk `.ts` one-to-one. The gate
+(`packages/module/toml-edit/src/fuzz/coverage-report.ts`) compares per-file
+covered-line counts against a committed baseline
+(`packages/module/toml-edit/coverage-baseline.json`) and fails on any per-file
+decrease. The `fuzz:coverage` task runs it; `--write` refreezes the baseline. The
+operation spread, run-and-count harness, and edit machinery are split across
+`coverage-exercise.ts`, `coverage-harness.ts`, `coverage-edits.ts`, and
+`coverage-probes.ts` to stay under the max-lines budget.
+
+Two design points are deliberate deviations worth recording:
+
+- The gate measures `src`, not the shipped bundle. The property suite imports the
+  built artifact by design (the import-boundary deviation above), but the bundle
+  is minified, inlines its dependencies, and ships no source map, so V8 coverage
+  of it cannot summarize per-`src`-file reachability. A separate source-importing
+  driver is the only way to get the per-file reachability signal the plan asks
+  for. The driver is a reachability harness, not an oracle: it asserts nothing,
+  because the property suite owns correctness.
+- The driver is a dedicated harness rather than the property files themselves.
+  The property files use random seeds (a non-reproducible baseline) and import
+  the bundle (the wrong surface), and the repository has no `development` or
+  `source` export condition to remap them. A fixed-seed driver against source is
+  reproducible and machine-independent, so the gate is bit-for-bit stable.
+
+The driver's adequacy was validated empirically, not assumed: a one-off,
+uncommitted `--import` resolve-hook ran the real property suite against source
+under coverage, and a per-file covered-line diff confirmed the driver reaches a
+superset of the suite (zero suite-only lines) after closing six gaps the diff
+surfaced (the CRLF and overflow parse paths, the existing-node-aware encoders,
+the pending-insertion and pending-edit projection arms, and the root-delete arm).
+The covered-line set is saturated: it is identical across a second seed and a
+2.5 times run count, so the committed baseline is a true high-water mark. The
+first baseline is 5287 covered lines across 39 target files.
+
+## Reusable fuzz-target checklist
+
+Before calling a fuzz target's suite strong, answer all five. They are the
+distilled diagnosis of why the original wrapper-only suite was green-but-weak,
+and they generalize to the next target.
+
+1. Is the tested layer where the logic and the bugs live, not a thin wrapper over
+    it?
+2. Are all public entry points and internal seams covered, the seams exposed
+    through stable observability exports when needed?
+3. Is every oracle stronger than no-crash or returns-a-string (semantic equality,
+    round-trip, metamorphic, conformance, or a differential reference)?
+4. Do the generators cover the full grammar and its boundary cases, with an
+    independent encoder so the generator never reuses the code under test?
+5. Are real corpus seeds, every discovered counterexample, and coverage feedback
+    wired in, so a regression in reach fails rather than passing quietly?
+
 ## Deferred
 
-- A V8 coverage gate and the reusable fuzz-target checklist land with phase 8.
 - Mutation testing remains a follow-up.
 - A differential parser oracle against a stable reference implementation (not
   BurntSushi v1.6.0) remains possible future work.

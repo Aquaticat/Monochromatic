@@ -6,10 +6,12 @@ criteria for each layer.
 
 ## Implementation status
 
-Updated 2026-06-11. Phases 1 to 6 and the phase 9 CI smoke are landed; phase 7
-(differential oracle) was attempted against the BurntSushi reference decoder and
-then dropped (see below); phase 8 remains; issue #198 is not yet closed. Most
-work lives under `packages/module/toml-edit/src/fuzz/` and `src/conformance/`,
+Updated 2026-06-11. Phases 1 to 6, phase 8 (coverage gate), and the phase 9 CI
+smoke are landed; phase 7 (differential oracle) was attempted against the
+BurntSushi reference decoder and then dropped (see below); phase 9 closure (wire
+the conformance task and coverage gate into CI, prove path filtering, close #198)
+remains. Most work lives under `packages/module/toml-edit/src/fuzz/` and
+`src/conformance/`,
 plus package-source fixes (`src/parse-toml-edit.ts`, `src/emit-value-string.ts`,
 the shared `src/basic-escape.ts`, `src/value-encoders.ts`, `src/keys.ts`), the
 seam exports in `src/index.ts`, the decision doc
@@ -150,6 +152,23 @@ Phase 9 CI smoke (commit 7c5abf2a):
   fixtures, and the decision doc; type-check, build, the bounded unit suite, then
   a short per-property fuzz campaign. Not yet proven by a real PR run.
 
+Phase 8 (commit b376c3b6), V8 coverage gate:
+
+- A deterministic reachability driver (`src/fuzz/coverage-driver.ts`) imports the
+  package source (not the bundle), replays the generators and committed corpus
+  through every entry point and `_` seam at a fixed seed, and runs under
+  `NODE_V8_COVERAGE`. The reader (`src/fuzz/coverage-v8.ts`) projects block ranges
+  to per-file covered lines; the gate (`src/fuzz/coverage-report.ts`) fails on any
+  per-file regression from `coverage-baseline.json`. Operation spread, harness,
+  and edit machinery are split across `coverage-exercise.ts`,
+  `coverage-harness.ts`, `coverage-edits.ts`, and `coverage-probes.ts` for
+  max-lines. New `fuzz:coverage` task (`--write` refreezes); no build needed.
+- The driver was validated against the real property suite (a throwaway
+  source-remap `--import` hook): it covers a superset of the suite, and the
+  covered set is saturated across seeds and run counts (baseline 5287 lines, 39
+  files). The reusable five-question fuzz-target checklist lives in the decision
+  doc.
+
 ### Decisions and deviations from the original plan
 
 - The semantic oracle is `getStaticTOMLValue`-based, not the toml-test
@@ -186,16 +205,16 @@ Phase 9 CI smoke (commit 7c5abf2a):
 - Phase 7 (differential oracle): dropped. BurntSushi v1.6.0 proved unstable (the
   empty-key data-loss bug above). Not pursued further against that reference; a
   different stable reference could revive it later.
-- Phase 8 (V8 coverage gate and the reusable five-question checklist in the
-  decision doc): run the property files under `NODE_V8_COVERAGE`, summarize the
-  target files, commit a baseline, and gate on no regression.
-- Phase 9 closure: wire `test:conformance` into CI, prove the CI path filtering
-  with a real PR run, then close issue #198 explicitly with `gh issue close 198`.
-  The CI smoke step itself is already wired; the conformance task is not yet in
-  CI. Issue #198's original acceptance criteria (bounded fuzz task, committed seed
-  corpus, CI on relevant changes, bug-finding) are already met by phases 1 to 6
-  plus the CI smoke; closing now versus completing phase 8 first is a scope
-  decision for the owner.
+- Phase 8 (V8 coverage gate and the reusable five-question checklist): landed in
+  commit b376c3b6. See the Phase 8 entry above and the decision doc.
+- Phase 9 closure: wire `test:conformance` and `fuzz:coverage` into CI, prove the
+  CI path filtering with a real PR run, then close issue #198 explicitly with
+  `gh issue close 198`. The CI smoke step itself is already wired; the conformance
+  task and coverage gate are not yet in CI. Issue #198's original acceptance
+  criteria (bounded fuzz task, committed seed corpus, CI on relevant changes,
+  bug-finding) are already met by phases 1 to 6 plus the CI smoke; closing now
+  versus wiring the remaining tasks into CI first is a scope decision for the
+  owner.
 
 ## Evidence checked
 
