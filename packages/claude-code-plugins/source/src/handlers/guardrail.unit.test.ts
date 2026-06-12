@@ -68,22 +68,22 @@ await describe({
   name: 'guardrail handler',
   children: [
     describe({
-      name: 'Agent: general-purpose blocking',
+      name: 'Agent: general-purpose now allowed',
       children: [
         it({
-          name: 'denies when subagent_type is missing',
+          name: 'allows when subagent_type is missing',
           fn: async ({ expect: e, },) => {
             const result = guardrailHandler(makeAgentEvent({},),);
-            e(isDeny(result,),).toBe(true,);
+            e(isDeny(result,),).toBe(false,);
           },
         },),
         it({
-          name: 'denies when subagent_type is "general-purpose"',
+          name: 'allows when subagent_type is "general-purpose"',
           fn: async ({ expect: e, },) => {
             const result = guardrailHandler(
               makeAgentEvent({ subagent_type: 'general-purpose', },),
             );
-            e(isDeny(result,),).toBe(true,);
+            e(isDeny(result,),).toBe(false,);
           },
         },),
         it({

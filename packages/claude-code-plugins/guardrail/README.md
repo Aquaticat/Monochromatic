@@ -1,25 +1,33 @@
 # guardrail
 
-PreToolUse hook that guards Agent tool calls with two checks:
-general-purpose blocking and resume polling prevention.
+PreToolUse hook that guards Agent and Bash tool calls with two checks:
+resume polling prevention and `bun test` blocking.
 
 ## Problem
 
-Claude attempts general-purpose Agent calls despite CLAUDE.md banning them.
-The permission system blocks these, but the error message is generic and doesn't redirect
-to `spawn-claude`. Separately, Claude sometimes polls background agents via `resume` calls
-instead of waiting for automatic completion notifications.
+Claude sometimes polls background agents via `resume` calls instead of waiting
+for automatic completion notifications, which wastes context tokens on repeated
+error messages. Separately, `bun test` misreports under this repo's custom
+`@monochromatic-dev/module-test` harness: the harness runs tests as a side
+effect of module import, so `bun test <file>` prints `PASS` lines and then
+reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations),
+which looks like a broken run when every test passed.
+
+General-purpose Agent calls are no longer blocked here. The ban was lifted once
+the Claude Code UI let a human observe and message subagent sessions directly;
+see `docs/decisions/general-purpose-subagent-ban.md`.
 
 ## Solution
 
-This hook denies Agent calls in two cases:
+This hook denies tool calls in two cases:
 
-1. **General-purpose blocking**: when `subagent_type` is missing or `"general-purpose"`,
-   the call is denied with a message directing Claude to use `spawn-claude`.
-   Specialized agent types (Explore, Plan, etc.) pass through.
+1. **Resume blocking**: when an Agent call includes a `resume` parameter,
+   it is denied with a message explaining that background agents notify
+   automatically.
 
-2. **Resume blocking**: when the call includes a `resume` parameter,
-   it is denied with a message explaining that background agents notify automatically.
+2. **`bun test` blocking**: when a Bash call invokes `bun test`, it is denied
+   with a message directing the caller to `mise run //packages/<path>:test:unit`
+   (or `bun <file>` for ad-hoc single-file runs).
 
 ## Setup
 

@@ -422,13 +422,15 @@ await Promise.all([
   overwrite({
     dest: './CLAUDE.md',
     content: `Generated from AGENTS.md by file-enforcer.
-    
-    ### Spawning child Claude sessions
 
-General purpose agents are banned because of bugs.
+### Delegating work to subagents and child sessions
+
+Two peer mechanisms; pick by whether you need a visible, independently-running session.
+
+In-process subagents (the Agent tool, including the general-purpose type) run inside this session and return their result to you. General-purpose subagents are allowed. Caveat: you cannot enumerate how many subagents are running, and SendMessage steering is unreliable, so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI. Rationale: \`docs/decisions/general-purpose-subagent-ban.md\`.
 
 Use \`spawn-claude\` outside sandbox to launch steerable child Claude Code sessions in visible terminal windows.
-The child session runs independently; results are forwarded back to the parent automatically via hooks.
+The child session runs independently. Result forwarding back to the parent is unreliable (a Claude Code limitation), so you must monitor the child session yourself to collect its output. This is the same manual-monitoring cost the in-process path carries; neither mechanism propagates results on its own.
 
 Use \`terminal-exec -- <command> ...\` outside sandbox for arbitrary commands that need a visible terminal window, including Codex. \`spawn-claude\` is only for Claude Code child sessions.
 
@@ -440,7 +442,7 @@ terminal-exec -- codex exec --cd /some/path "investigate issue Z"
 \`\`\`
 
 The command prints \`{"spawnId":"<uuid>"}\` on success.
-Completed child results are injected into context automatically between tool calls.
+Do not assume completed child results are injected into context on their own; monitor the child session and read its output yourself.
 
 ${await cat(['./AGENTS.md',],)}`,
   },),

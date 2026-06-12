@@ -10,26 +10,6 @@ import {
 } from '../lib/text-scan.ts';
 
 /**
- * Whether the given subagent type represents a general-purpose agent.
- *
- * Claude Code defaults to `"general-purpose"` when `subagent_type` is omitted.
- *
- * @param subagentType - value of the `subagent_type` field from the Agent tool input
- *
- * @returns `true` when the agent would run as general-purpose
- *
- * @example
- * ```ts
- * isGeneralPurpose(undefined); // true
- * isGeneralPurpose('general-purpose'); // true
- * isGeneralPurpose('Explore'); // false
- * ```
- */
-function isGeneralPurpose(subagentType: unknown,): boolean {
-  return (subagentType === undefined) || (subagentType === 'general-purpose');
-}
-
-/**
  * Whether `c` is a shell command separator that introduces a new command
  * segment.
  *
@@ -198,17 +178,13 @@ type GuardrailOutput = PreToolUseOutput;
 /**
  * Guard for Agent and Bash tool calls.
  *
- * Three checks, applied in order:
+ * Two checks, applied in order:
  *
- * 1. **General-purpose blocking**: denies Agent calls where `subagent_type` is missing
- *    or `"general-purpose"`, directing Claude to use `spawn-claude` instead.
- *    General-purpose agents are banned due to bugs; specialized types pass through.
- *
- * 2. **Resume blocking**: denies Agent calls containing a `resume` parameter.
+ * 1. **Resume blocking**: denies Agent calls containing a `resume` parameter.
  *    Background agents notify automatically on completion; polling via `resume`
  *    wastes context tokens on repeated error messages.
  *
- * 3. **`bun test` blocking**: denies Bash calls that invoke `bun test`. The custom
+ * 2. **`bun test` blocking**: denies Bash calls that invoke `bun test`. The custom
  *    `@monochromatic-dev/module-test` harness runs tests as a side effect of
  *    module import, so `bun test <file>` prints `PASS` lines (from the harness)
  *    followed by `0 pass / 0 fail` (from bun's runner finding no `bun:test`
@@ -264,31 +240,6 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
   if (event.tool_name
     !== 'Agent')
     return {};
-
-  /**
-   * Agent's `subagent_type` field, fed to `isGeneralPurpose` to detect the banned default.
-   */
-  const subagentType = 'subagent_type' in event
-    .tool_input
-    ? event.tool_input
-      .subagent_type
-    : undefined;
-
-  if (isGeneralPurpose(subagentType,)) {
-    return {
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: [
-          'Blocked: general-purpose Agent calls are banned due to bugs.',
-          'Use spawn-claude outside sandbox to launch steerable child Claude Code sessions instead.',
-          'Example: spawn-claude "your task description here"',
-          'Specialized agent types (Explore, Plan, etc.) are allowed; set subagent_type explicitly.',
-        ]
-          .join(' ',),
-      },
-    };
-  }
 
   /**
    * Agent's `resume` field; presence triggers the no-polling deny path.

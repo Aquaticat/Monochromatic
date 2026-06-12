@@ -1,6 +1,6 @@
 {
   "name": "guardrail",
-  "description": "Blocks general-purpose Agent calls (redirecting to spawn-claude) and Agent resume calls (preventing polling loops).",
+  "description": "Blocks Agent resume calls (preventing polling loops) and bun test invocations (which misreport under the module-test harness).",
   "version": "0.0.1",
   "author": {
     "name": "Aquaticat"
