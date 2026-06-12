@@ -824,13 +824,13 @@ On exit the engine saves the queue (file paths),
  volume,
  shuffle mode,
  and the
-repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/music-player` on Linux,
-`~/Library/Application Support/Monochromatic/music-player` on macOS,
+repeat-track flag to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer` on Linux,
+`~/Library/Application Support/dev.monochromatic.musicplayer` on macOS,
  the roaming AppData config directory on
 Windows,
  all resolved by the `directories` crate).
 Because `run` executes on the host,
- this is the real `~/.config/music-player`,
+ this is the real `~/.config/musicplayer`,
  persisting naturally across runs.
 On launch,
  when no file

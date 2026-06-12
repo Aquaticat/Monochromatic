@@ -37,6 +37,20 @@ use std::path::{Path, PathBuf};
 // ```
 use std::time::UNIX_EPOCH;
 
+// What:     `use crate::identity;` imports the shared identity-strings module
+//           (importing the MODULE, so reads stay qualified as
+//           `identity::CONFIG_APPLICATION`, keeping the origin obvious).
+// Why:      `cache_path` builds the config dir from the same reverse-DNS triple
+//           `session.rs` uses, so the cache and the session always share a directory
+//           and the literals cannot drift.
+// TS map:   `import * as identity from "./identity";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import * as identity from "./identity";
+// ```
+use crate::identity;
+
 // What:     `const FNV_OFFSET: u64 = 14695981039346656037;`. The 64-bit FNV-1a offset
 //           basis (the hash's starting value). `u64` (sibling: `u32` for the 32-bit FNV
 //           variant) because we want a 64-bit fingerprint.
@@ -212,24 +226,30 @@ pub(crate) fn fingerprint(path: &Path) -> Option<String> {
 // In TS you'd write (pseudocode):
 // ```ts
 // function cachePath(): string | null {
-//   const dirs = projectDirs("dev", "Monochromatic", "music-player");
+//   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
 //   return dirs ? join(dirs.configDir, "peaks.json") : null;
 // }
 // ```
 fn cache_path() -> Option<PathBuf> {
-    // What:     `directories::ProjectDirs::from("dev", "Monochromatic", "music-player")`
+    // What:     `directories::ProjectDirs::from(identity::CONFIG_QUALIFIER, identity::CONFIG_ORGANIZATION, identity::CONFIG_APPLICATION)`
     //           asks for the standard per-app config dir (Linux: `$XDG_CONFIG_HOME/
-    //           music-player`); returns `Option<ProjectDirs>`. Start of a method chain
-    //           whose value is the tail.
+    //           musicplayer`) from the reverse-DNS triple, sourced from the shared
+    //           `identity` module instead of inline literals so the cache directory cannot
+    //           drift from the session file's; returns `Option<ProjectDirs>`. Start of a
+    //           method chain whose value is the tail.
     // Why:      Same directory the session uses, so the containerized run's config volume
     //           persists it and it never pollutes the source tree.
-    // TS map:   `const dirs = projectDirs("dev","Monochromatic","music-player");`
+    // TS map:   `const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const dirs = projectDirs("dev", "Monochromatic", "music-player");
+    // const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
     // ```
-    directories::ProjectDirs::from("dev", "Monochromatic", "music-player")
+    directories::ProjectDirs::from(
+        identity::CONFIG_QUALIFIER,
+        identity::CONFIG_ORGANIZATION,
+        identity::CONFIG_APPLICATION,
+    )
         // What:     `.map(|dirs| dirs.config_dir().join("peaks.json"))`. When present,
         //           join the cache filename onto the config dir. `config_dir()` is a
         //           `&Path`; `.join(...)` returns an owned `PathBuf`. Tail -> return.

@@ -576,14 +576,14 @@ impl Session {
 // In TS you'd write (pseudocode):
 // ```ts
 // function sessionPath(): string | null {
-//   const dirs = projectDirs("dev", "Monochromatic", "music-player");
+//   const dirs = projectDirs(CONFIG_QUALIFIER, CONFIG_ORGANIZATION, CONFIG_APPLICATION);
 //   return dirs ? join(dirs.configDir, "session.json") : null;
 // }
 // ```
 fn session_path() -> Option<PathBuf> {
     // What:     `directories::ProjectDirs::from(identity::CONFIG_QUALIFIER, identity::CONFIG_ORGANIZATION, identity::CONFIG_APPLICATION)`
     //           asks the `directories` crate for the standard per-app config location
-    //           (on Linux: `$XDG_CONFIG_HOME/music-player`) from the reverse-DNS triple,
+    //           (on Linux: `$XDG_CONFIG_HOME/musicplayer`) from the reverse-DNS triple,
     //           now sourced from the shared `identity` module instead of inline literals.
     //           It returns `Option<ProjectDirs>` (None if the home directory cannot be
     //           found). This is the start of a method chain whose value is the tail.

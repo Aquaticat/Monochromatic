@@ -24,7 +24,7 @@
   <key>CFBundleExecutable</key>
   <string>music-player</string>
   <key>CFBundleIdentifier</key>
-  <string>com.monochromatic.music-player</string>
+  <string>dev.monochromatic.musicplayer</string>
   <key>CFBundleShortVersionString</key>
   <string>__MP_VERSION__</string>
   <key>CFBundleVersion</key>

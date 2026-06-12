@@ -9,7 +9,7 @@
 //!   `share/applications/monochromatic.music-player.desktop` is named after it,
 //!   so changing it is a breaking change. Read only on Linux (launcher.rs).
 //! - macOS: the bundle id is `MACOS_BUNDLE_IDENTIFIER`
-//!   (`com.monochromatic.music-player`). It actually lives in `macos/Info.plist`
+//!   (`dev.monochromatic.musicplayer`). It actually lives in `macos/Info.plist`
 //!   (XML cannot share a Rust constant); it is mirrored here so the value has
 //!   one documented home and a test can assert the plist matches.
 //! - All platforms: the per-user config directory is derived from the
@@ -17,9 +17,11 @@
 //!   `CONFIG_APPLICATION`) by the `directories` crate (session.rs). Changing any
 //!   of the three moves every existing user's `session.json`, so they are fixed.
 //!
-//! The three reverse-DNS roots differ on purpose (`monochromatic.`,
-//! `com.monochromatic.`, `dev.Monochromatic.`); collecting them here makes that
-//! divergence visible rather than looking like drift.
+//! The macOS bundle id and the config triple now unify to
+//! `dev.monochromatic.musicplayer`; only the Wayland `APP_ID`
+//! (`monochromatic.music-player`) differs, because it is the `.desktop` basename
+//! and KDE `WM_CLASS`, where renaming is a breaking change. Collecting them here
+//! makes that one intentional difference visible rather than looking like drift.
 
 // What:     `pub const APP_ID: &str = "monochromatic.music-player";`. A module-
 //           level immutable string constant. `&str` is a borrowed string slice
@@ -38,19 +40,19 @@
 // ```
 pub const APP_ID: &str = "monochromatic.music-player";
 
-// What:     `pub const MACOS_BUNDLE_IDENTIFIER: &str = "com.monochromatic.music-player";`.
+// What:     `pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";`.
 //           Another `const` string slice (see `APP_ID` for the `&str` vs `String`
 //           note).
 // Why:      The macOS `CFBundleIdentifier` is authored in `macos/Info.plist`, but
 //           recording it here gives the value a single documented home and lets a
 //           unit test assert the plist still contains it, catching silent drift.
-// TS map:   `export const MACOS_BUNDLE_IDENTIFIER = "com.monochromatic.music-player";`
+// TS map:   `export const MACOS_BUNDLE_IDENTIFIER = "dev.monochromatic.musicplayer";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export const MACOS_BUNDLE_IDENTIFIER = "com.monochromatic.music-player";
+// export const MACOS_BUNDLE_IDENTIFIER = "dev.monochromatic.musicplayer";
 // ```
-pub const MACOS_BUNDLE_IDENTIFIER: &str = "com.monochromatic.music-player";
+pub const MACOS_BUNDLE_IDENTIFIER: &str = "dev.monochromatic.musicplayer";
 
 // What:     `pub const CONFIG_QUALIFIER: &str = "dev";`. The first of the three
 //           reverse-DNS parts the `directories` crate's `ProjectDirs::from`
@@ -65,28 +67,28 @@ pub const MACOS_BUNDLE_IDENTIFIER: &str = "com.monochromatic.music-player";
 // ```
 pub const CONFIG_QUALIFIER: &str = "dev";
 
-// What:     `pub const CONFIG_ORGANIZATION: &str = "Monochromatic";`. The second
+// What:     `pub const CONFIG_ORGANIZATION: &str = "monochromatic";`. The second
 //           `ProjectDirs::from` part (the organization name).
 // Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
-// TS map:   `export const CONFIG_ORGANIZATION = "Monochromatic";`
+// TS map:   `export const CONFIG_ORGANIZATION = "monochromatic";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export const CONFIG_ORGANIZATION = "Monochromatic";
+// export const CONFIG_ORGANIZATION = "monochromatic";
 // ```
-pub const CONFIG_ORGANIZATION: &str = "Monochromatic";
+pub const CONFIG_ORGANIZATION: &str = "monochromatic";
 
-// What:     `pub const CONFIG_APPLICATION: &str = "music-player";`. The third
+// What:     `pub const CONFIG_APPLICATION: &str = "musicplayer";`. The third
 //           `ProjectDirs::from` part (the application name); also the last
 //           segment of the config directory path.
 // Why:      Same single-source-of-truth reason as `CONFIG_QUALIFIER`.
-// TS map:   `export const CONFIG_APPLICATION = "music-player";`
+// TS map:   `export const CONFIG_APPLICATION = "musicplayer";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export const CONFIG_APPLICATION = "music-player";
+// export const CONFIG_APPLICATION = "musicplayer";
 // ```
-pub const CONFIG_APPLICATION: &str = "music-player";
+pub const CONFIG_APPLICATION: &str = "musicplayer";
 
 // What:     `#[cfg(test)] #[path = "identity_tests.rs"] mod tests;`. Declare the
 //           test submodule, sourced from the sibling `identity_tests.rs` file.
