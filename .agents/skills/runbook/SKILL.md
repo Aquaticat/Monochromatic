@@ -209,10 +209,10 @@ and the final conversion.
 
 ## File placement
 
-A runbook or handover that spans the whole repo lives in `docs/handover/<topic>.md`,
-kebab-case, with no `HANDOVER.` prefix (the directory names the family).
-A runbook tied to one package stays beside that package's code and keeps the
-`HANDOVER.<topic>.md` form, where the prefix still namespaces it among source files.
+A runbook (manual-step procedure) that spans the whole repo lives in `docs/runbook/<topic>.md`,
+kebab-case, with no prefix (the directory names the family). A cross-session state handover lives in
+`docs/handover/<topic>.md`. A runbook or handover tied to one package stays beside that package's code
+and keeps the `HANDOVER.<topic>.md` form, where the prefix still namespaces it among source files.
 
 ## Canonical example
 

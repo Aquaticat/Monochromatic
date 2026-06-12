@@ -655,8 +655,9 @@ empty result on narrowest query is not "no precedent.
 RBK:
  Bridges genuinely fail + user must execute:
  invoke `runbook` skill when writing any manual-action document (it encodes required sections + formatting rules).
-Repo-wide handovers live in `docs/handover/<topic>.md`;
- package-specific handovers stay beside code they document.
+Repo-wide runbooks (manual-step procedures the user executes) live in `docs/runbook/<topic>.md`;
+ repo-wide handovers (cross-session state handoffs) live in `docs/handover/<topic>.md`;
+ package-specific runbooks/handovers stay beside code they document.
 Canonical example:
  `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
@@ -1592,6 +1593,7 @@ DPL:
  `docs/philosophy/`,
  `docs/todo/`,
  `docs/handover/`,
+ `docs/runbook/`,
  etc.).
 Repo root keeps only `README.md`,
  `SECURITY.md`,
