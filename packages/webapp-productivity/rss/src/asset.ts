@@ -13,7 +13,7 @@ l.debug(`asset module loading`,);
  */
 export const css: string = await readFile(
   new URL(
-    './client.css',
+    'client.css',
     import.meta.url,
   ),
   'utf8',
