@@ -85,10 +85,12 @@ through a reflection bridge. TypeScript-friendly, which suits the repo on paper.
 Does not run on the owner's GrapheneOS device, more decisively than Slint. V8 needs executable memory to
 deserialize its startup snapshot at isolate init; GrapheneOS's memory-DCL protection denies it
 (`TSEC_FLAG_DENY_EXECMEM`), and V8 aborts before any app JS, so even a hello-world app dies. The textbook
-`--jitless` mitigation was built and run and crashes identically (V8 still allocates executable memory at
-deserialization), so no app-side flag boots it; there is no jitless performance to weigh because nothing
-starts. A second, independent GrapheneOS break stacks on top: the runtime generates dex at runtime via
-`DexFactory` to a file-based `DexClassLoader` for any native subclass the build-time Static Binding Generator
+`--jitless` mitigation was built and run and crashes identically because NativeScript applies app `v8Flags`
+after it creates the isolate (`SetFlagsFromString` at `Runtime.cpp:591` runs after `Isolate::New` at `:571`),
+so the flag never affects the crashing isolate init; no app-side flag boots it, and there is no jitless
+performance to weigh because nothing starts. A second, independent GrapheneOS break stacks on top: the
+runtime generates dex at runtime via `DexFactory` to a file-based `DexClassLoader` for any native subclass
+the build-time Static Binding Generator
 cannot statically resolve, which storage-DCL blocks. So NativeScript faces two breaks where Slint faces one.
 Separately, the gateway (the app's hard part) has no natural home: `@nativescript/core` HTTP is a buffering
 client with no server and no streaming, and the JS to Java bridge copies buffers per crossing, so the
@@ -123,8 +125,10 @@ Native Jetpack Compose > Tauri v2 > Compose Multiplatform > Slint > NativeScript
 Flip conditions: if iOS or desktop becomes a real target, Compose Multiplatform rises above native Jetpack;
 if keeping the gateway in Rust and out of the JVM is weighted highest, Tauri rises above native Jetpack; if
 the target were a device without DCL hardening (stock Android, or GrapheneOS with the memory and storage DCL
-toggles off for this app), NativeScript would boot and rise to roughly Tauri's class (TypeScript UI plus a
-native shell, gateway in Kotlin), but on the owner's hardened Pixel 6 it is last.
+toggles off for this app), NativeScript would boot and rise above Slint, but its gateway still has no Rust home
+(forced into Kotlin with no monorepo reuse) and it carries a second JS engine, so it would sit below Tauri
+(which reuses the repo's axum and reqwest crates), around the Compose Multiplatform tier; on the owner's
+hardened Pixel 6 it is last.
 
 The pick is a value judgment reserved to the owner; this document records the comparison, not a selection.
 
@@ -192,7 +196,8 @@ JUnit5.
   disqualifies Slint's UI, and is the second, latent break for any NativeScript app that subclasses a native
   type at runtime). Executable memory / app JIT is denied separately (`TSEC_FLAG_DENY_EXECMEM`), which
   disqualifies any stack embedding its own JIT engine: this is what kills NativeScript's V8 at startup, and
-  `--jitless` does not avoid it. Stacks that emit no runtime dex and embed no JIT (native Kotlin in
+  NativeScript applies its `v8Flags` too late (after `Isolate::New`) for the `--jitless` flag to avoid it.
+  Stacks that emit no runtime dex and embed no JIT (native Kotlin in
   `classes.dex`, Tauri's system WebView, Rust) clear both axes.
 - Foreground-service time cap (API 35+): about 6 hours of dataSync per 24 hours; design backups as
   chunked, resumable, onTimeout-checkpointed, and prefer a user-initiated data transfer job for bulk.

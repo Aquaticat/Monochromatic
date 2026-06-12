@@ -91,10 +91,20 @@ E v8    : # Fatal javascript OOM in MemoryChunk allocation failed during deseria
 #04 MemoryAllocator::AllocateAlignedMemory(..., Executability, ...)  ->  #17 StartupDeserializer::DeserializeIntoIsolate()
 ```
 
-So V8 requires an executable allocation during snapshot deserialization regardless of `--jitless`, and the
-kernel denial precedes any effect the flag could have. There is **no app-side V8 flag** that lets NativeScript
-boot on this device as configured. Because the app never starts, there is no jitless runtime performance to
-measure; the mitigation fails at boot, not at speed.
+The reason is NativeScript's own start-up order, not a V8 limitation, and it is source-verified
+(`Runtime.cpp` in the 9.0.4 clone). The app's flag string is read into `Constants::V8_STARTUP_FLAGS` at
+`Runtime.cpp:231-232`, but it is not pushed to V8 until `V8::SetFlagsFromString(...)` at `Runtime.cpp:591`,
+which executes *after* the isolate is created by `Isolate::New(create_params)` at `Runtime.cpp:571` (both
+calls are in the same `PrepareV8Runtime` body, top to bottom: `InitializeV8`/`V8::Initialize` at 567, then
+`Isolate::New` at 571, then `SetFlagsFromString` at 591). The crash is at isolate creation (snapshot
+deserialization, frame `StartupDeserializer::DeserializeIntoIsolate` under `Isolate::New`), so the `--jitless`
+flag is applied too late to affect it; both builds enter `Isolate::New` with V8's default JIT-enabled flags,
+which is why the crash is byte-identical. So as the runtime ships there is **no app-side V8 flag** that boots
+it on this device: the only levers would be an upstream NativeScript reorder (apply flags before
+`Isolate::New`) or a V8 built with `v8_enable_jitless`, neither available to an app developer. Because the app
+never starts there is no jitless runtime performance to measure here; and even a hypothetical reordered jitless
+runtime would still owe the separate, unproven question of whether interpreter-only V8 is fast enough for an
+app this size (its bundle is a 7.43 MiB vendor chunk), on top of the unresolved storage-DCL break.
 
 ### The only escape, and why it is worse than Slint's
 
@@ -276,8 +286,9 @@ Root cause (kernel-confirmed): GrapheneOS "Restrict dynamic code loading (from m
 memory; V8 needs an executable chunk for its code space while deserializing the startup snapshot, the kernel
 refuses, V8 aborts as OOM. This is the executable-memory/JIT mechanism, distinct from Slint's
 `InMemoryDexClassLoader` `SecurityException`. The `--jitless` mitigation was built and run and crashes
-identically (V8 still allocates executable memory at deserialization), so no app-side flag boots it; there is
-nothing to benchmark because it never starts. A second, independent break remains: NativeScript generates dex
+identically because NativeScript applies app `v8Flags` via `SetFlagsFromString` (`Runtime.cpp:591`) after it
+creates the isolate with `Isolate::New` (`Runtime.cpp:571`), so the flag never affects the crashing isolate
+init; no app-side flag boots it, and there is nothing to benchmark because it never starts. A second, independent break remains: NativeScript generates dex
 at runtime via `DexFactory → DexClassLoader` (`DexFactory.java:176,396`, issue android#1962) for native
 subclasses the build-time SBG cannot statically resolve, which GrapheneOS storage-DCL (active on this device)
 blocks. So NativeScript has two stacked breaks vs Slint's one, and its only app-side mitigation fails.
