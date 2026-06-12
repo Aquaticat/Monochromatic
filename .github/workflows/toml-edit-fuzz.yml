@@ -32,6 +32,14 @@ permissions:
 jobs:
   fuzz:
     runs-on: ubuntu-latest
+    env:
+      # The root mise config sets auto_install=true and lists heavy dev tools:
+      # cargo:slint-ui/slint (slint-lsp and slint-viewer) builds from a git rev
+      # and needs system fontconfig the runner lacks, so it fails to compile.
+      # Disabling auto-install makes every `mise run`/`mise exec` use only the
+      # tools this job installs explicitly below, instead of rebuilding slint on
+      # each command. The toml-edit tasks need only node, pnpm, and toml-test.
+      MISE_AUTO_INSTALL: 'false'
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -39,17 +47,18 @@ jobs:
     - name: Set up mise (skip auto-install of all tools)
       uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
       with:
-        # Without this, mise-action defaults to `install: true` and builds every
-        # root tool (including the cargo:slint-ui/slint git crate, which fails to
-        # compile), dying before any step runs. Matches publish.yml and
-        # cargo-publish.yml; the next step installs only what this job needs.
+        # mise-action defaults to install:true, which runs `mise install` over
+        # the whole root toolset (slint included) before any step. Matches
+        # publish.yml and cargo-publish.yml.
         install: false
 
-    - name: Install pnpm and node
-      run: mise install 'npm:pnpm' node
+    - name: Install only the tools this workflow needs
+      # toml-test feeds the conformance task (mise exec github:toml-lang/toml-test
+      # inside test:conformance); with auto-install off it must be present.
+      run: mise install 'npm:pnpm' node 'github:toml-lang/toml-test@latest'
 
     - name: Install dependencies
-      run: mise exec -- pnpm install --frozen-lockfile
+      run: mise exec npm:pnpm node -- pnpm install --frozen-lockfile
 
     - name: Type-check
       run: mise run //packages/module/toml-edit:lint:types
