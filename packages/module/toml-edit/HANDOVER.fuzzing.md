@@ -6,12 +6,13 @@ criteria for each layer.
 
 ## Implementation status
 
-Updated 2026-06-11. Phases 1 to 6, phase 8 (coverage gate), and the phase 9 CI
-smoke are landed; phase 7 (differential oracle) was attempted against the
-BurntSushi reference decoder and then dropped (see below); phase 9 closure (wire
-the conformance task and coverage gate into CI, prove path filtering, close #198)
-remains. Most work lives under `packages/module/toml-edit/src/fuzz/` and
-`src/conformance/`,
+Updated 2026-06-12. Phases 1 to 6, phase 8 (coverage gate), and the phase 9 CI
+wiring (the fuzz smoke, the conformance suite, and the coverage gate are now all
+workflow steps) are landed; phase 7 (differential oracle) was attempted against
+the BurntSushi reference decoder and then dropped (see below). Only the #198
+closure sequence remains, and both steps are owner-reserved: prove the CI path
+filtering with a real pull-request run, then `gh issue close 198`. Most work
+lives under `packages/module/toml-edit/src/fuzz/` and `src/conformance/`,
 plus package-source fixes (`src/parse-toml-edit.ts`, `src/emit-value-string.ts`,
 the shared `src/basic-escape.ts`, `src/value-encoders.ts`, `src/keys.ts`), the
 seam exports in `src/index.ts`, the decision doc
@@ -207,14 +208,16 @@ Phase 8 (commit b376c3b6), V8 coverage gate:
   different stable reference could revive it later.
 - Phase 8 (V8 coverage gate and the reusable five-question checklist): landed in
   commit b376c3b6. See the Phase 8 entry above and the decision doc.
-- Phase 9 closure: wire `test:conformance` and `fuzz:coverage` into CI, prove the
-  CI path filtering with a real PR run, then close issue #198 explicitly with
-  `gh issue close 198`. The CI smoke step itself is already wired; the conformance
-  task and coverage gate are not yet in CI. Issue #198's original acceptance
+- Phase 9 CI wiring: landed in commit e0676ba5. `test:conformance` and
+  `fuzz:coverage` are now steps in `.github/workflows/toml-edit-fuzz.yml`,
+  alongside the existing fuzz smoke, both verified green locally.
+- Phase 9 closure (owner-reserved): prove the CI path filtering with a real
+  pull-request run (the `paths:` filter covers `packages/module/toml-edit/**`,
+  `packages/test-fixture/toml-edit/**`, the decision doc, and the workflow), then
+  close issue #198 with `gh issue close 198`. Both are outward-facing or
+  irreversible, so they are left for the owner. Issue #198's original acceptance
   criteria (bounded fuzz task, committed seed corpus, CI on relevant changes,
-  bug-finding) are already met by phases 1 to 6 plus the CI smoke; closing now
-  versus wiring the remaining tasks into CI first is a scope decision for the
-  owner.
+  bug-finding) are met.
 
 ## Evidence checked
 
