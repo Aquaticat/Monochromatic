@@ -1,7 +1,11 @@
-import { glob, } from 'node:fs/promises';
+import {
+  glob,
+  lstat,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
+  addWatchedPaths,
   cat,
   manageLsp4ijServerSettings,
   overwrite,
@@ -10,6 +14,124 @@ import {
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 import type browserslist from 'browserslist';
+
+/**
+ * Root-level context summary path that must remain absent. The repo relies on
+ * source reads plus docs/agents/domain.md instead of cached context files.
+ *
+ * @example
+ * ```ts
+ * console.log(FORBIDDEN_ROOT_CONTEXT_PATH);
+ * ```
+ */
+const FORBIDDEN_ROOT_CONTEXT_PATH = './CONTEXT.md';
+
+/**
+ * Node filesystem error code for an absent path.
+ *
+ * @example
+ * ```ts
+ * console.log(ABSENT_PATH_ERROR_CODE);
+ * ```
+ */
+const ABSENT_PATH_ERROR_CODE = 'ENOENT';
+
+/**
+ * Error object shape used by Node filesystem APIs when a system code is present.
+ *
+ * @example
+ * ```ts
+ * const codedError = error as NodeErrorCodeCarrier;
+ * ```
+ */
+type NodeErrorCodeCarrier = Error & {
+  readonly code?: unknown;
+};
+
+/**
+ * Signals that root CONTEXT.md exists even though cached context files are forbidden.
+ *
+ * @example
+ * ```ts
+ * throw new ForbiddenRootContextFileError({ filePath: './CONTEXT.md' });
+ * ```
+ */
+class ForbiddenRootContextFileError extends Error {
+  /**
+   * Builds a failure with guidance toward source-driven context.
+   *
+   * @param filePath - forbidden root context path that was present.
+   *
+   * @example
+   * ```ts
+   * new ForbiddenRootContextFileError({ filePath: './CONTEXT.md' });
+   * ```
+   */
+  public constructor({ filePath, }: { readonly filePath: string; }) {
+    super([
+      `${filePath} is forbidden.`,
+      'Do not create cached context files;',
+      'read source code directly and use docs/agents/domain.md for this repo policy.',
+    ].join(' ',),);
+    this.name = ForbiddenRootContextFileError.name;
+  }
+}
+
+/**
+ * Returns whether an unknown filesystem error carries the expected Node error code.
+ *
+ * @param error - unknown error from a filesystem operation.
+ *
+ * @param code - Node error code that should be treated as expected.
+ *
+ * @returns Whether error carries code.
+ *
+ * @example
+ * ```ts
+ * const absent = errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE });
+ * ```
+ */
+function errorHasCode(
+  {
+    error,
+    code,
+  }: {
+    readonly error: unknown;
+    readonly code: string;
+  },
+): boolean {
+  return error instanceof Error
+    && 'code' in error
+    && (error as NodeErrorCodeCarrier).code === code;
+}
+
+/**
+ * Registers root CONTEXT.md with watch mode and rejects it before generated writes.
+ *
+ * @example
+ * ```ts
+ * await assertForbiddenRootContextAbsent();
+ * ```
+ */
+async function assertForbiddenRootContextAbsent(): Promise<void> {
+  addWatchedPaths([FORBIDDEN_ROOT_CONTEXT_PATH,],);
+  try {
+    await lstat(FORBIDDEN_ROOT_CONTEXT_PATH,);
+  }
+  catch (statError: unknown) {
+    if (errorHasCode({
+      error: statError,
+      code: ABSENT_PATH_ERROR_CODE,
+    },))
+      return;
+
+    throw statError;
+  }
+
+  throw new ForbiddenRootContextFileError({
+    filePath: FORBIDDEN_ROOT_CONTEXT_PATH,
+  },);
+}
 
 /**
  * Resolver function exported by the `browserslist` package.
@@ -292,6 +414,8 @@ async function manageHarperLsp4ij(): Promise<void> {
     ],
   },);
 }
+
+await assertForbiddenRootContextAbsent();
 
 await Promise.all([
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
