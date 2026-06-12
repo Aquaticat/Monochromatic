@@ -162,3 +162,32 @@ internal fun normalizationGain(truePeak: Float): Float {
     }
     return min(CEILING / truePeak, 1.0f)
 }
+
+/**
+ * Apply a combined linear gain to one PCM sample, then hard-clamp into the valid `-1.0..1.0` range.
+ * Faithful port of the desktop's `process_sample` (the per-sample output stage in `playback.rs`),
+ * kept as one tested unit so the gain-then-clamp rule lives in a single place the engine's audio
+ * processor calls per sample, rather than being re-expressed inside platform DSP code.
+ *
+ * On the desktop [gain] is the user volume times the track's true-peak [normalizationGain], applied
+ * to every sample. On Android the user-volume factor is applied downstream by the platform audio
+ * sink (ExoPlayer's `player.volume`), so the engine's gain processor passes only the track's
+ * [normalizationGain] here; the two compose to the desktop's `volume * track_gain` for every sample
+ * where the clamp does not fire, which is the designed-for case once true-peak normalization has
+ * already brought the level under the ceiling. The clamp still backstops measurement error and any
+ * source that was above full scale to begin with.
+ *
+ * The bounds `-1.0`/`1.0` are written as bare literals (the `-2..2` range is exempt from the
+ * named-constant rule), matching the desktop's `.clamp(-1.0, 1.0)`.
+ *
+ * @param sample Raw PCM sample to gain and clamp, normally already within `-1.0..1.0`.
+ * @param gain Combined linear gain to apply; `1.0` passes [sample] through unchanged before the clamp.
+ * @return [sample] scaled by [gain] and clamped to `-1.0..1.0`.
+ * @example
+ * ```kotlin
+ * processSample(0.8f, 0.5f) // 0.4f  (gain multiplies)
+ * processSample(1.5f, 1.0f) // 1.0f  (clamped to full scale)
+ * ```
+ */
+internal fun processSample(sample: Float, gain: Float): Float =
+    (sample * gain).coerceIn(-1.0f, 1.0f)

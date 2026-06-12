@@ -84,4 +84,19 @@ class TruePeakTest {
         )
         assertTrue("measured peak $measured should be a sane, finite level", measured < 4.0f)
     }
+
+    /**
+     * Ported from the Rust `process_sample_applies_gain_then_clamps`: silence stays silence at any
+     * gain, unity gain is a passthrough below full scale, the gain multiplies, and a result outside
+     * `-1.0..1.0` is clamped symmetrically to the nearest bound. Pins the gain-then-clamp output
+     * stage the engine's audio processor applies per sample.
+     */
+    @Test
+    fun processSampleAppliesGainThenClamps() {
+        assertTrue(approxEq(processSample(0.0f, 1.0f), 0.0f))
+        assertTrue(approxEq(processSample(HALF, 1.0f), HALF))
+        assertTrue(approxEq(processSample(0.8f, HALF), 0.4f))
+        assertTrue(approxEq(processSample(1.5f, 1.0f), 1.0f))
+        assertTrue(approxEq(processSample(-2.0f, 1.0f), -1.0f))
+    }
 }
