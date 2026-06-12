@@ -50,6 +50,13 @@ Two mechanics that bit during setup and will bite again:
   relaunch with `idevicedebug -d run <bundle id>` (which holds the app alive), `idevicescreenshot`
   after a few seconds, and scan the app stdout plus `idevicecrashreport` for a dyld `Symbol not found`
   or a Rust panic. The Slint result below was a launch-success this step caught as a crash.
+- The device may be attached over USB or wirelessly (Xcode wireless debugging), and the whole chain
+  works over wifi (confirmed 2026-06-12 with a wireless screenshot of a live app). `xcodebuild`,
+  `dotnet`, and `ios-deploy` use the network device by default; `ios-deploy`'s `-W` only disables wifi.
+  The libimobiledevice verify tools need the `-n`/`--network` flag to target the network device:
+  `idevicescreenshot -n`, `idevicedebug -n run`, `idevicecrashreport -n`, `ideviceinfo -n`. Large AOT
+  installs and long debug holds are slower over wifi than USB, so USB is the fallback if an install
+  stalls, but functionally wifi covers install, run, screenshot, and crash-log retrieval.
 
 ## Results
 
@@ -141,6 +148,59 @@ facts:
   app exercised CocoaPods. The CocoaPods + `.xcworkspace` signing path is still unproven and will be
   settled by the React Native gate (or a Flutter app with a plugin).
 
+### .NET (MAUI / Avalonia / Uno trio substrate): PASS (Mono AOT and interpreter, Rust FFI)
+
+Status: device-confirmed 2026-06-12.
+
+The .NET trio (MAUI, Avalonia, Uno) shares one iOS substrate: the Microsoft.iOS workload's Mono runtime,
+AOT-compiled for the device (iOS forbids JIT). This gate proves that substrate on the iPhone X with a
+minimal Microsoft.iOS UIKit app (`~/ios-vet/mauigate`, `net10.0-ios`, `dotnet new ios`, bundle id forced
+to `dev.monochromatic.iosvet.hellodevice` via `ApplicationId` plus Info.plist), built and signed over
+SSH with the vet keychain reusing profile `b08f51d5...`, in both execution models, each render-verified:
+
+- Release, full AOT (the shipping model): `dotnet build -c Release -p:RuntimeIdentifier=ios-arm64`.
+  Per-assembly `.aotdata.arm64` files in the bundle (including `System.Private.CoreLib.aotdata.arm64`
+  and `aot-instances.aotdata.arm64`) confirm full AOT. Held alive with `idevicedebug -n run` and
+  screenshotted, the app draws a native UIKit `UILabel` reading ".NET iOS gate OK / Rust FFI
+  returns: 720".
+- Debug, interpreter: `dotnet build -c Debug -p:MtouchInterpreter=all`. The app assembly `mauigate.dll`
+  ships with no `mauigate.aotdata.arm64`, confirming it runs interpreted, not AOT. Same render, same
+  `Rust FFI returns: 720`, no crash report. The Mono interpreter is a bytecode interpreter that
+  allocates no executable memory, so it is iOS-legal; this confirms even the fully-interpreted path
+  clears the execmem wall on 16.7.
+
+The `720` is decisive: it is 6! computed inside a linked Rust staticlib (`rust/`, `crate-type =
+["staticlib"]`, `rust_gate_answer`) through a heap `Vec` plus an iterator (not a folded constant), and
+returned across `[DllImport("__Internal")]`. `nm` on the signed Mach-O shows `_rust_gate_answer` linked
+into the main executable at `0000000100004000 T` (a `NativeReference` with `ForceLoad`), so `__Internal`
+resolves it. The label shows 720 only if the P/Invoke into native Rust actually ran and returned, which
+means Mono (AOT in Release, interpreter in Debug) called into a linked Rust `.a` on iOS 16.7 with no
+JIT, no `EXC_BAD_ACCESS`, and no codesign/execmem kill. This is the exact static-lib linkage the
+kopia-to-pCloud core (kopia as a gomobile c-archive, or a Rust shim) and the music-player Rust core
+need: managed UI code calling a linked native archive over FFI.
+
+- Signing: `dotnet build` auto-detected identity `1690CF17...` and profile UUID `b08f51d5...` (team
+  `HWLVAKDV4F`, app id `HWLVAKDV4F.dev.monochromatic.iosvet.hellodevice`) through the vet keychain in
+  the search list, no call to Apple, fully unattended over SSH.
+- a11y: a UIKit `UILabel` is a native accessibility element (iOS 12+). MAUI iOS and Uno iOS both render
+  through native UIKit handlers, so they inherit native a11y with no iOS-17 dependency, unlike Slint.
+
+Scope of this PASS: it gates the shared Microsoft.iOS execution substrate (Mono AOT plus interpreter,
+native FFI, UIKit render), which all of MAUI, Avalonia, and Uno sit on, exactly as the Capacitor PASS
+gated the WKWebView substrate for the six web frameworks. The remaining trio-specific work (stage 2) is
+the UI render layer: MAUI and Uno render through native UIKit (represented in spirit by this UIKit
+gate), while Avalonia draws via Skia on a Metal layer (a different surface, though Skia-on-Metal is the
+same path Flutter already passed). Each of the MAUI XAML, Avalonia, and Uno UI layers gets a render note
+in stage 2, not a fresh substrate gate.
+
+Toolchain notes for reproduction (Homebrew dotnet 10.0.300): the prior session's `dotnet workload
+install ios` had written only the iOS manifest, not the runtime/AOT packs, so the first device build
+failed `NETSDK1147: workloads must be installed: ios` even though `dotnet --info` listed the workload.
+`dotnet workload restore` in the project pulled the missing packs (the `osx-arm64.Cross.ios-arm64` AOT
+cross-compiler and the `Mono.ios-arm64` device runtime). The Microsoft.iOS project templates are also
+not registered by the workload install under Homebrew dotnet and were added with
+`dotnet new install Microsoft.iOS.Templates`.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -174,15 +234,12 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 ## Pending gates
 
 Of the nine distinct device gates the synthesis identified (the 16 frameworks collapse to nine on
-shared substrate and toolchain), two are device-verified to render: Capacitor (rank 2, covers six) and
-Flutter (rank 4). Slint (rank 1) was gated and FAILED (disqualified, above). Remaining, in the
-synthesis gate order, each to be confirmed by render (screenshot) and a few seconds of no-crash
+shared substrate and toolchain), three are device-verified to render: Capacitor (rank 2, covers six),
+Flutter (rank 4), and the .NET trio substrate (rank 3, covers MAUI/Avalonia/Uno; both Mono AOT and
+interpreter, Rust FFI, above). Slint (rank 1) was gated and FAILED (disqualified, above). Remaining, in
+the synthesis gate order, each to be confirmed by render (screenshot) and a few seconds of no-crash
 runtime, not by launch success alone:
 
-- .NET MAUI (rank 3, needs-device, covers MAUI/Avalonia/Uno). Build both Release (Mono full-AOT) and
-  Debug (interpreter); confirm `[DllImport("__Internal")]` into a linked Rust `.a` returns with no
-  JIT exception, no `EXC_BAD_ACCESS`, no codesign/execmem kill. Toolchain: `dotnet workload install
-  ios` on the present dotnet 10.0.300.
 - Compose Multiplatform (rank 5, expected-pass). Kotlin/Native LLVM-AOT static framework; a cinterop
   link of a Rust `.a`; check whether `embeddedServer(CIO)` binds on iosArm64. Toolchain: JDK 17+,
   Kotlin/Gradle, KMP (Kotlin/Native downloads its own LLVM/iOS toolchain).
