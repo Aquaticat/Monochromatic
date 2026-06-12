@@ -140,4 +140,18 @@ class PeakCache {
     fun insert(fingerprint: String, peak: Float) {
         map[fingerprint] = peak
     }
+
+    /**
+     * Immutable copy of every cached entry, for the platform persistence layer to serialize. The
+     * desktop's `PeakCache` enumerates its entries internally when saving; the pure port keeps the
+     * map private, so this returns a defensive copy rather than exposing the live map, which keeps
+     * [insert] the only mutation path.
+     *
+     * @return Snapshot of the fingerprint -> peak entries at the moment of the call.
+     * @example
+     * ```kotlin
+     * val json = JSONObject(cache.snapshot().mapValues { it.value.toDouble() }).toString()
+     * ```
+     */
+    fun snapshot(): Map<String, Float> = map.toMap()
 }

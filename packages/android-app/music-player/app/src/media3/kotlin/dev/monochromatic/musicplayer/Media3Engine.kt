@@ -3,6 +3,7 @@ package dev.monochromatic.musicplayer
 import android.content.Context
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -10,6 +11,13 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import dev.monochromatic.musicplayer.core.normalizationGain
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /**
  * The pure-Kotlin engine: a thin wrapper over ExoPlayer using its default renderers, so audio is
@@ -51,6 +59,21 @@ class Media3Engine(context: Context) : AudioEngine {
     private var onPlayingChanged: ((Boolean) -> Unit)? = null
     private var onTrackEnded: (() -> Unit)? = null
 
+    /** Application context for the off-thread gain resolution (cache + measure), held without leaking the activity. */
+    private val appContext: Context = context.applicationContext
+
+    /** Scope for the per-track gain resolution; cancelled in [release] so a pending measure cannot outlive the engine. */
+    private val resolveScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
+     * Monotonic load counter. Each [load] bumps it; a resolved gain is applied only when the load
+     * that requested it is still current, so a measure that finishes after the user skipped ahead
+     * cannot retag the new track with the old track's gain. `@Volatile` because [load] writes it on
+     * the main thread and the resolution coroutine reads it on a background thread.
+     */
+    @Volatile
+    private var loadGeneration: Int = 0
+
     init {
         player.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -71,9 +94,53 @@ class Media3Engine(context: Context) : AudioEngine {
 
     override fun load(uri: String, play: Boolean) {
         Log.i(LOG_TAG, "Media3Engine.load ${uri.substringAfterLast('/')} play=$play")
+        // Reset to unity so the new track never plays at the previous track's gain; the resolved gain
+        // is applied below once it is known (a cache hit lands within the buffering window, a miss
+        // after its measurement, matching the desktop's intent without blocking playback start).
+        gainProcessor.gain = GainNormalizationProcessor.UNITY_GAIN
+        val generation: Int = ++loadGeneration
         player.setMediaItem(MediaItem.fromUri(uri))
         player.prepare()
         player.playWhenReady = play
+        resolveScope.launch {
+            val resolved: Float = resolveNormalizationGain(uri)
+            // Apply only if this load is still current; the measurement was cached regardless, so a
+            // superseded load's work is not wasted.
+            if (generation == loadGeneration) {
+                gainProcessor.gain = resolved
+                Log.i(LOG_TAG, "normalization gain $resolved for ${uri.substringAfterLast('/')}")
+            }
+        }
+    }
+
+    /**
+     * Resolve the track's true-peak normalization gain: a [PeakCacheStore] hit returns immediately,
+     * a miss measures the track now (a full offline decode via [Media3TruePeakDecoder]), caches the
+     * peak unconditionally, and returns the gain. A track whose size cannot be fingerprinted, or whose
+     * decode fails, plays at unity gain (the downstream clamp still guards against clipping). The
+     * cancellation of a superseded load is propagated so structured cancellation still works.
+     *
+     * @param uri Track URI being loaded.
+     * @return Normalization gain in `0.0..1.0`.
+     */
+    private suspend fun resolveNormalizationGain(uri: String): Float {
+        val parsed = uri.toUri()
+        val key: String = TrackFingerprint.of(appContext, parsed)
+            ?: return GainNormalizationProcessor.UNITY_GAIN
+        PeakCacheStore.get(appContext, key)?.let { cachedPeak ->
+            return normalizationGain(cachedPeak)
+        }
+        val peak: Float = try {
+            Media3TruePeakDecoder.measure(appContext, parsed)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: Exception) {
+            Log.w(LOG_TAG, "true-peak measure failed for $uri; using unity gain", failure)
+            return GainNormalizationProcessor.UNITY_GAIN
+        }
+        PeakCacheStore.put(appContext, key, peak)
+        PeakCacheStore.flush(appContext)
+        return normalizationGain(peak)
     }
 
     override fun play() {
@@ -113,6 +180,7 @@ class Media3Engine(context: Context) : AudioEngine {
     }
 
     override fun release() {
+        resolveScope.cancel()
         player.release()
     }
 

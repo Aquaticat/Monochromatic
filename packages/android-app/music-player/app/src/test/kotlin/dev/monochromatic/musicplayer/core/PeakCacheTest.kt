@@ -70,4 +70,26 @@ class PeakCacheTest {
         // A key that was never inserted is a miss.
         assertNull(cache.get("0000000000000000"))
     }
+
+    /**
+     * [PeakCache.snapshot] returns every inserted entry (so the persistence layer can serialize the
+     * whole cache) and is a defensive copy: mutating the snapshot or inserting after taking it does
+     * not change the earlier snapshot, keeping [PeakCache.insert] the only mutation path.
+     */
+    @Test
+    fun snapshotCopiesEntries() {
+        val cache = PeakCache()
+        cache.insert("aaaaaaaaaaaaaaaa", 0.5f)
+        cache.insert("bbbbbbbbbbbbbbbb", 0.9f)
+
+        val snapshot = cache.snapshot()
+        assertEquals(2, snapshot.size)
+        assertEquals(0.5f, snapshot["aaaaaaaaaaaaaaaa"])
+        assertEquals(0.9f, snapshot["bbbbbbbbbbbbbbbb"])
+
+        // A later insert does not appear in the earlier snapshot (it is a copy, not the live map).
+        cache.insert("cccccccccccccccc", 0.7f)
+        assertEquals(2, snapshot.size)
+        assertNull(snapshot["cccccccccccccccc"])
+    }
 }
