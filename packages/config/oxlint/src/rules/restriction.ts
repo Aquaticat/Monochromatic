@@ -77,10 +77,12 @@ export const restrictionRules: DummyRuleMap = {
   // Union types containing `null` or `undefined` (`T | null`, `T | undefined`)
   // are banned. exactOptionalPropertyTypes is on; widening a slot to a nullish
   // member skirts it, and pivoting `undefined` to `null` is the same escape.
-  // Use `foo?: T` for optional members, an if-guard so the nullish value never
-  // flows into the typed slot, or a genuine `Symbol` sentinel (never
-  // null/undefined). Stays disableable with a justified scoped comment for
-  // genuine external-boundary cases.
+  // Ranked fixes: optional object property or field as `foo?: T`; local
+  // presence check with a guard and early return; boundary failure via
+  // nonNullishOrThrow; traveling absence value by minting a domain-specific
+  // `unique symbol` sentinel for this exact absence condition, or carrying a
+  // distinct non-empty domain value; genuine external mirrors use a scoped
+  // disable with justification.
   'no-restricted-syntax/no-nullish-union': 'error',
 
   // Every other statically-detectable type-level fake-optional encoding, banned

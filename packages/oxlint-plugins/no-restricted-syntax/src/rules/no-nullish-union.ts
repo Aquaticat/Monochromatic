@@ -5,6 +5,8 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+//region Constants
+
 /**
  * AST `type` names of the two banned nullish keyword members: `undefined`
  * (`TSUndefinedKeyword`) and `null` (`TSNullKeyword`). A `Set` keeps the
@@ -16,6 +18,41 @@ const NULLISH_KEYWORD_TYPES: ReadonlySet<string> = new Set([
   'TSUndefinedKeyword',
   'TSNullKeyword',
 ],);
+
+/**
+ * Ranked decision-tree diagnostic for nullish-union reports.
+ *
+ * The sentinel branch must satisfy the sibling
+ * `no-low-information-symbol-description` rule, so examples use specific
+ * multi-word Symbol descriptions rather than vague labels like `not-found`.
+ */
+const NO_NULLISH_UNION_MESSAGE: string = [
+  'Union type contains `null` or `undefined`. This repo models absence without nullish unions.',
+  'exactOptionalPropertyTypes is on: for optional object properties, `?:` already means absent-or-`T`.',
+  'Pivoting to `null`, or sliding to `| void`, tuple-as-Maybe, falsy literals, an empty object, or',
+  '`Partial<T>`, is still fake optionality (the sibling no-optional-escape rule owns those forms).',
+  'Take the first branch that fits:',
+  '(1) optional object property/field -> `foo?: T` (never `foo?: T | undefined`, never `foo: T | undefined`).',
+  '(2) value may be absent but presence is establishable here -> `if`-guard / early return so the',
+  'typed slot receives only `T`.',
+  '(3) absence should fail loud at this boundary -> throw via `nonNullishOrThrow` from',
+  '`@monochromatic-dev/module-or-throw`.',
+  '(4) absence must travel onward as a real value -> mint a domain-specific `unique symbol` sentinel',
+  'for this exact absence condition, e.g.',
+  "`const KEY_NOT_FOUND: unique symbol = Symbol('requested key not found in store')`,",
+  'or carry a distinct non-empty domain value; consumers narrow symbols with',
+  "`typeof value === 'symbol'` first, then identity (`value === KEY_NOT_FOUND`).",
+  'Heaviest ordinary fix, reach for it last.',
+  '(5) genuinely mirroring an external API typed `T | null`/`T | undefined` -> scoped',
+  '`oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- <reason naming the external',
+  'API and why the mirror is unavoidable>`.',
+  'Never use `null`, `undefined`, empty string, zero, negative one, `false`, `void`, empty tuple,',
+  'empty object, or `Partial` as a stand-in for absent.',
+].join('\n',);
+
+//endregion Constants
+
+//region Predicates
 
 /**
  * Checks whether a union member is the `undefined` or `null` type keyword.
@@ -33,6 +70,8 @@ function isNullishMember(member: ESTree.TSType,): boolean {
   return NULLISH_KEYWORD_TYPES.has(member.type,);
 }
 
+//endregion Predicates
+
 /**
  * Bans union types containing `null` or `undefined` (`T | undefined`,
  * `undefined | T`, `T | null`, `null | T`, or either nullish keyword anywhere
@@ -42,29 +81,30 @@ function isNullishMember(member: ESTree.TSType,): boolean {
  * `T | undefined` skirts that setting instead of fixing the real problem: it
  * lets `undefined` flow into a typed position the optional-property machinery
  * was meant to keep absent. Pivoting that same slot to `T | null` is not a fix;
- * it is the identical nullish escape with a different keyword. Both `null` and
- * `undefined` union members are banned. The proper fixes:
+ * it is the identical nullish escape with a different keyword.
  *
- * - Optional property or field: write `foo?: T`, never `foo?: T | undefined`
- *   and never `foo: T | undefined`. Under `exactOptionalPropertyTypes`, `?:`
- *   already means "absent or `T`"; the `| undefined` adds nothing and reopens
- *   the hole the setting closes.
- * - Value that may be missing at runtime: guard with `if` so the nullish value
- *   never flows into the typed slot, or carry a genuine sentinel value. A
- *   genuine sentinel is a unique `Symbol` (or a non-nullish domain value);
- *   `null` and `undefined` can never be sentinels, because they are the very
- *   values this rule rejects.
+ * Take the first branch that fits:
  *
- * `void` (`TSVoidKeyword`) is out of scope; only the `undefined`
- * (`TSUndefinedKeyword`) and `null` (`TSNullKeyword`) keyword members trigger
- * the rule. A standalone `type X = undefined` or `type X = null` is not a union
- * and is not flagged.
+ * - Optional object property or field: write `foo?: T`, never
+ *   `foo?: T | undefined` and never `foo: T | undefined`.
+ * - Value whose presence is establishable here: guard with `if` and return
+ *   early so the typed slot receives only `T`.
+ * - Absence that should fail loud at this boundary: throw via
+ *   `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw`.
+ * - Absence that must travel onward as a real value: mint a domain-specific
+ *   `unique symbol` sentinel for this exact absence condition, or carry a
+ *   distinct non-empty domain value when the domain has one. Consumers narrow
+ *   symbols by checking `typeof` first, then identity.
+ * - Genuine external API mirrors: use a scoped
+ *   `oxlint-disable-next-line no-restricted-syntax/no-nullish-union` comment
+ *   with a justification naming the external API and why the mirror is
+ *   unavoidable.
  *
- * Genuine external-boundary cases (a parameter or return mirroring a
- * third-party API type that is itself `T | undefined` or `T | null`) remain
- * handleable with a tightly scoped
- * `oxlint-disable-next-line no-restricted-syntax/no-nullish-union` carrying a
- * justification.
+ * This rule only matches `TSUndefinedKeyword` and `TSNullKeyword` inside
+ * `TSUnionType`; the sibling `no-optional-escape` rule owns `| void`, tuple
+ * encodings, `Partial<T>`, and other type-level fake-optionality escapes. A
+ * standalone `type X = undefined` or `type X = null` is not a union and is not
+ * flagged.
  *
  * @example
  * ```ts
@@ -85,8 +125,8 @@ function isNullishMember(member: ESTree.TSType,): boolean {
  * // value is now `T`, never `T | undefined`
  *
  * // Good; genuine Symbol sentinel instead of the union
- * const NOT_FOUND = Symbol('not-found');
- * type Result = string | typeof NOT_FOUND;
+ * const KEY_NOT_FOUND: unique symbol = Symbol('requested key not found in store');
+ * type Result = string | typeof KEY_NOT_FOUND;
  * ```
  */
 export const noNullishUnion: CreateOnceRule = {
@@ -94,12 +134,11 @@ export const noNullishUnion: CreateOnceRule = {
     type: 'suggestion',
     docs: {
       description:
-        'Disallow union types containing `null` or `undefined` (`T | null`, `T | undefined`). exactOptionalPropertyTypes is on; use `foo?: T`, an if-guard, or a genuine `Symbol` sentinel (never null/undefined) instead.',
+        'Disallow union types containing `null` or `undefined` (`T | null`, `T | undefined`). Ranked fixes: optional object property/field `foo?: T`; local `if` guard and early return; boundary `nonNullishOrThrow`; a domain-specific `unique symbol` sentinel for this exact absence condition or distinct non-empty domain value; or a justified scoped disable for genuine external API mirrors.',
       recommended: true,
     },
     messages: {
-      forbidden:
-        'Union types containing `null` or `undefined` are banned (exactOptionalPropertyTypes is on; widening to `T | null` or `T | undefined` skirts it, and pivoting `undefined` to `null` is the same nullish escape). For an optional property use `foo?: T` (not `foo?: T | undefined` and not `foo: T | undefined`). For a value that may be missing at runtime, guard with `if` so the nullish value never flows into the typed slot, or use a genuine sentinel. A genuine sentinel is a unique `Symbol` (or a non-nullish domain value); `null` and `undefined` can never be sentinels, because they are the very values this rule rejects. `void` is out of scope.',
+      forbidden: NO_NULLISH_UNION_MESSAGE,
     },
   },
   createOnce(context: Context,): VisitorWithHooks {

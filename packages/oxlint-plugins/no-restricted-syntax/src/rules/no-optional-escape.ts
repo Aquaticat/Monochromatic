@@ -375,7 +375,7 @@ function typeReferenceMessageId(node: ESTree.TSTypeReference,): string | typeof 
  *
  * // Good
  * type Opt = { foo?: string };
- * const NOT_FOUND = Symbol('not-found');
+ * const NOT_FOUND = Symbol('requested key not found in store');
  * type Result = string | typeof NOT_FOUND;
  * type Pair = [number, string];
  * ```
