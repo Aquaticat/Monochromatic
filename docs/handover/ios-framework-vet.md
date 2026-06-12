@@ -22,6 +22,11 @@ Owner-stated hard constraints (these decide outcomes):
 - The target is the iPhone X specifically: `iPhone10,3`, iOS 16.7.16, UDID
   `9057e2a8c2e70162e35b9ea8bf006f736670877b`. It is A11 silicon and never receives iOS 17, so anything
   that depends on an iOS-17 API cannot run here even if it builds.
+- The Mac's internal SSD is brittle and easily filled (about 50 GiB free in a shared APFS container). Do
+  every heavy install and build on the `MacData` volume (`/Volumes/MacData`, roughly 330 GiB free), NOT
+  the internal disk. Only files and directories at or under about 1 MB belong on the internal disk. See
+  "Mac disk layout (MacData)" under DONE for the rule, the current symlink layout, and the env vars to
+  set so each new toolchain (Gradle/Konan, Qt, Node/CocoaPods, cargo) caches onto MacData.
 
 ## DONE
 
@@ -43,7 +48,37 @@ and `Mono.ios-arm64` device runtime), the `maui-ios` workload, and the `Microsof
 project templates (`dotnet new install`). Still to install for remaining gates: JDK 17+/Kotlin/KMP
 (Compose), React Native community CLI + Watchman/Metro, NativeScript CLI (`ns`) + Homebrew CMake +
 xcodeproj gem, Lynx (rspeedy/pnpm), Qt 6.5 LTS for iOS (qt-unified) + CMake; for the appended set, the
-`dx` (dioxus-cli) CLI (SnapKit/UIKit/SwiftUI need only the already-installed xcodegen + SPM).
+`dx` (dioxus-cli) CLI (SnapKit/UIKit/SwiftUI need only the already-installed xcodegen + SPM). Install all
+of these onto MacData, not the internal SSD (see next).
+
+### Mac disk layout (MacData)
+
+The internal SSD is brittle and easily filled; MacData (`/Volumes/MacData`, APFS, read-write, about
+330 GiB free) is the work disk. Rule (owner): anything larger than about 1 MB lives on MacData; only
+small files and directories stay on the internal disk. Done 2026-06-12 and validated by a clean rebuild
+through the symlinks:
+
+- Gate app dirs moved to `/Volumes/MacData/ios-vet/<name>` with a symlink left at `~/ios-vet/<name>`, so
+  every path in these docs still resolves: `capgate`, `flgate`, `mauigate`, `mauiui`, `avx`, `unogate`,
+  `slint-gate`. New gate projects: create them directly under `/Volumes/MacData/ios-vet/` and symlink
+  into `~/ios-vet/` if a stable `~` path is wanted.
+- The .NET/NuGet caches moved to `/Volumes/MacData/dotnet-cache/` with symlinks left behind:
+  `~/.nuget/packages`, `~/.dotnet/packs`, `~/.dotnet/library-packs`, `~/.dotnet/template-packs`. A clean
+  `dotnet build` restores and AOT-compiles through these symlinks with no change.
+- Stayed on the internal disk (all at or under 1 MB, or renewal-critical): the vet keychain
+  (`~/ios-vet/vet.keychain-db`, 28 KB, the only signing secret, keep it on the reliable internal disk),
+  `accesskit_ios-patched` (128 KB), `renew.log`, and the `HelloDevice` canary (~75 MB after cleaning its
+  stale `build/`). HelloDevice is the one deliberate exception to the 1 MB rule: the daily
+  profile-renewal LaunchAgent builds it, and keeping it self-contained on the internal disk means the
+  renewal does not break if MacData is unmounted. Its renewal derived data (`build-renew/`) regenerates
+  there.
+
+Going forward, point each new toolchain's cache at MacData before installing, so nothing large lands on
+internal: Gradle `GRADLE_USER_HOME=/Volumes/MacData/gradle`; Kotlin/Native `KONAN_DATA_DIR=/Volumes/
+MacData/konan`; CocoaPods `CP_CACHE_DIR` / `CP_HOME_DIR` under MacData; npm/pnpm store and `node_modules`
+under MacData; cargo `CARGO_HOME=/Volumes/MacData/cargo` for new gate clones; Qt installed under
+`/Volumes/MacData/Qt`. Homebrew itself stays at `/opt/homebrew` (do not relocate brew), but prefer
+brew formulae that are small; large SDK/toolchain payloads go to MacData by the env vars above.
 
 ### Source-audit fan-out
 
@@ -156,12 +191,16 @@ After gates: stage 2 deep supporting-stack vets (the ~52-report roadmap, enumera
 
 ## Mac artifacts (not in the repo)
 
-`~/ios-vet/`: `vet.keychain-db` (signing), `HelloDevice/` (canary), `capgate/` (Capacitor),
-`flgate/` (Flutter), `slint-gate/` (Slint clone + the `[patch]`'d Cargo.toml), `accesskit_ios-patched/`
-(the a11y fork), `mauigate/` (.NET/Microsoft.iOS substrate + the `rust/` FFI staticlib), `mauiui/`
-(MAUI), `avx/` (Avalonia xplat, iOS head `avx.iOS`), `unogate/` (Uno), `renew.log`, the renewal
-LaunchAgent. Screenshots and logs land in `/tmp` (ephemeral). The throwaway keychain password is only in
-the repo `.env.local` as `XCODE_IDENTITY_SSH_USABLE`.
+`~/ios-vet/` holds the layout, but most entries are now symlinks to `/Volumes/MacData/ios-vet/` (see
+"Mac disk layout" above). On the internal disk: `vet.keychain-db` (signing, 28 KB), `HelloDevice/`
+(canary, renewal-critical), `accesskit_ios-patched/` (the a11y fork), `renew.log`, and the renewal
+LaunchAgent (`~/Library/LaunchAgents/dev.monochromatic.iosvet.profilerenew.plist`). Symlinked to MacData:
+`capgate/` (Capacitor), `flgate/` (Flutter), `slint-gate/` (Slint clone + the `[patch]`'d Cargo.toml),
+`mauigate/` (.NET/Microsoft.iOS substrate + the `rust/` FFI staticlib), `mauiui/` (MAUI), `avx/`
+(Avalonia xplat, iOS head `avx.iOS`), `unogate/` (Uno). The NuGet/.NET packs are symlinked from
+`~/.nuget` and `~/.dotnet` to `/Volumes/MacData/dotnet-cache/`. Screenshots and logs land in `/tmp`
+(ephemeral). The throwaway keychain password is only in the repo `.env.local` as
+`XCODE_IDENTITY_SSH_USABLE`.
 
 ## Notes / gotchas
 

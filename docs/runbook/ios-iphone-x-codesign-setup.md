@@ -34,6 +34,13 @@ Permanent artifacts on this instance, all surviving reboot:
   `dev.monochromatic.iosvet.hellodevice`, scoped to the device. Free-team profiles last 7 days; see
   auto-renew below.
 - Mac, auto-renew: `~/Library/LaunchAgents/dev.monochromatic.iosvet.profilerenew.plist`.
+- Mac, disk policy: the internal SSD is brittle and easily filled, so all heavy vet installs and builds
+  go on the `MacData` volume (`/Volumes/MacData`); only files at or under about 1 MB stay on the internal
+  disk. The signing keychain (`~/ios-vet/vet.keychain-db`, 28 KB) and the `HelloDevice` renewal canary
+  are the deliberate internal-disk residents (the keychain because it is the signing secret and small;
+  HelloDevice because the daily renewal must not depend on MacData being mounted). The full layout, the
+  symlink scheme, and the per-toolchain cache env vars are in
+  `docs/handover/ios-framework-vet.md` under "Mac disk layout (MacData)".
 - Device: Developer Mode on, this Mac trusted, the Apple Development certificate trusted
   (**Settings ▸ General ▸ Device Management**).
 
