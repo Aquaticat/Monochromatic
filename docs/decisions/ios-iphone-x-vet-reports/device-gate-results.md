@@ -70,11 +70,61 @@ What remains for those is layer-specific (the JS UI library and the plugin used 
 server, native FFI, and background), not a fresh substrate gate. Cordova still warrants its own
 substrate gate only to compare its shell against Capacitor's; the four UI layers do not.
 
+### Slint: PASS (native Rust, highest product value)
+
+Status: device-confirmed 2026-06-12.
+
+The in-tree `energy-monitor` demo, built from Slint master, launched on the iPhone X. Decisive facts:
+
+- The app is a Rust binary cross-compiled to `aarch64-apple-ios`, wrapped by an xcodegen
+  `ios-project.yml` whose `postCompileScripts` runs `scripts/build_for_ios_with_cargo.bash`
+  (`cargo build --target aarch64-apple-ios --bin`, then lipo, dSYM, and codesign). Slint renders on
+  iOS through the winit backend plus the Skia renderer on Metal (the femtovg and software renderers
+  are not the iOS path).
+- The full Slint + Skia iOS build finished in about two minutes (14:41:33 to 14:43:30), because Skia
+  resolves prebuilt iOS binaries rather than compiling from source. This is the cargo-built-executable
+  signing path (distinct from Capacitor's SwiftPM path), and it works the same way: the build script's
+  `codesign --force --sign <hash>` resolves the identity through the vet keychain in the search list,
+  and the override `PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.hellodevice` plus
+  `DEVELOPMENT_TEAM=HWLVAKDV4F CODE_SIGN_STYLE=Automatic` on the xcodebuild line let it reuse the
+  existing profile (`b08f51d5...`) with no call to Apple.
+- `xcodegen generate --spec ios-project.yml` is required because the spec is not named the default
+  `project.yml`. `** BUILD SUCCEEDED **`, then `ios-deploy ... run` printed `success`.
+
+So Slint on iOS is real and runs on this exact device today, on master. At the crates.io release it
+would not: the iOS build fix (slint-ui/slint#11741) postdates the 1.16 line.
+
+## Music-player iOS port (settled by the Slint gate plus source)
+
+The music-player (`packages/desktop-app/music-player`, Rust + Slint) can be ported to iOS. The Slint
+gate proves the UI path on this device; the audio path is confirmed from source. Required changes,
+each concrete:
+
+- Renderer: the crate pins `renderer-femtovg` and `renderer-software`; iOS needs `renderer-skia`
+  (Metal). Add it under a target cfg.
+- Slint revision: the crate pins rev `85e3eb76` (a master rev from about 2026-04-15, for the Flickable
+  wheel fix #11338). iOS support needs at least #11741 (merged 2026-05-15, "winit: fix the iOS build
+  failure") plus the May safe-area and CADisplayLink fixes. The port must bump the pin to a late-May
+  or newer master rev.
+- Backend construction: the crate constructs `i-slint-backend-winit` explicitly to set the Wayland
+  `app_id` (KDE taskbar). That code is already `cfg(target_os = "linux")`; on iOS, fall back to
+  Slint's default backend (do not hand-construct winit).
+- Audio core reuse (no AVAudioEngine rewrite): symphonia is pure Rust; opus builds its bundled libopus
+  via cmake (cross-compiles for iOS); cpal has an iOS backend (RemoteIO AudioUnit with `objc2-avf-audio`
+  AVAudioSession integration). The crate's `cfg(not(target_os = "linux"))` cpal table already includes
+  iOS. Background playback is permitted (it is media playback, not arbitrary background execution) but
+  needs the app-level `UIBackgroundModes: audio` plus an AVAudioSession playback category.
+- The `cfg(any(target_os = "linux", target_os = "macos"))` libc table (thread QoS in `measure.rs`)
+  excludes iOS; either add `target_os = "ios"` or drop the QoS lowering there for iOS.
+- Filesystem and queue model: this is the real architecture cost. The desktop "scan a folder" queue
+  does not map to the iOS sandbox. iOS needs file or folder import through UIDocumentPicker with
+  security-scoped bookmarks, or reading from the app's own Documents container (exposed via
+  `UIFileSharingEnabled` and the Files app). `rfd`'s iOS file-dialog support is limited, so this likely
+  needs a small native shim. The true-peak normalization and on-disk peak cache are plain sandboxed
+  file I/O and port unchanged.
+
 ## Pending gates
 
-- Slint (highest product value: the music-player is already Slint). Built from master, not the
-  crates.io release, because the iOS-build fix (slint-ui/slint#11741) postdates 1.16. Toolchain: Rust
-  iOS targets plus xcodegen, both present.
 - Flutter (top candidate; proves the Dart-AOT path and Flutter's own iOS integration). Toolchain:
   Flutter 3.44.2 present; needs `flutter precache --ios`.
 - React Native (proves the CocoaPods + `.xcworkspace` path and Hermes AOT bytecode).
