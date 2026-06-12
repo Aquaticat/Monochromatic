@@ -110,19 +110,25 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   notification icon on every track change (now reports the engine's play intent via `AudioEngine.playWhenReady()`);
   and `handleSeek` discarded `positionMs` for `COMMAND_SEEK_TO_MEDIA_ITEM` (external controllers only). Two review
   findings were deferred (see "Deferred from the MediaSessionService review" below).
-- Device state to resume from: the latest `media3` debug APK (commit `c287dc42`, the MediaSessionService + review
-  fixes) is installed on the Pixel 6 (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` and
-  `POST_NOTIFICATIONS` granted; it reads the phone's real MediaStore library (3617 `IS_MUSIC` tracks under
-  `relative_path=Plain/Music/` and `2025MAR26/...`), NOT the old files-dir fixtures, and now hosts playback in
-  `PlaybackService`. Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
+- Device state to resume from: the latest `media3` debug APK (the SAF feature, commits `fa647b61` + `1ef469de` +
+  `ef90fd1a`) is installed on the Pixel 6 (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` and
+  `POST_NOTIFICATIONS` granted, AND a persisted SAF read grant for
+  `content://com.android.externalstorage.documents/tree/primary:Plain/Music`. Because a held SAF root wins, the app
+  now cold-loads 3486 files from that folder via `SafTreeSource`, NOT the device-wide MediaStore (3638 `IS_MUSIC`);
+  to exercise the MediaStore path again, clear the app's storage (there is no in-UI "forget folder" yet) or revoke
+  the grant in Settings. The top-bar "Folder" action opens the picker; playback is hosted in `PlaybackService`.
+  Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
   `adb -s 1C171FDF600KWW install -r app/build/outputs/apk/media3/debug/app-media3-debug.apk`; re-grant with
   `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`
   (and `... android.permission.POST_NOTIFICATIONS`). The seek-bar slider responds to `input tap` at device y=305
   (NOT 292; y=292 lands in dead space above it); track rows respond around y=1180 + ~140px pitch; media-button
   Next/Prev/PlayPause are `adb shell input keyevent 87/88/85` and drive the session. Note: many on-device tracks
   under `2025MAR26/` are 30-minute field recordings, so a natural-end test needs a near-end seek, not a wait.
-  `uiautomator dump` fails on this Compose surface, so drive taps by coordinate (screen is 1080x2400) and read back
-  via `screencap` + logcat (`MusicPlayer:I MediaStoreSource:I`). SDK is `local.properties` -> `/var/tmp/vet-jc/android-sdk`.
+  `uiautomator dump` works intermittently on this Compose surface (some dumps return empty; retry a few times, or
+  fall back to `screencap`); it did yield the page tabs, track rows, and the "Folder" button. Drive taps by
+  coordinate (screen is 1080x2400) and read back via logcat (`MusicPlayer:I MediaStoreSource:I SafTreeSource:I
+  LibraryRoot:I PlaybackService:I`) and `dumpsys media_session` (shows `state=PLAYING`, position, and the track
+  title, the most reliable playback check). SDK is `local.properties` -> `/var/tmp/vet-jc/android-sdk`.
   adb is flock-guarded on `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
 
 ## Committed work (on main)
@@ -145,6 +151,9 @@ Android package (`packages/android-app/music-player/`), in order:
 - `bca34483` fix: enable audio focus + becoming-noisy on the ExoPlayer (was missing).
 - `99fb7b88` host the player in a `MediaSessionService` (`PlaybackService` + `BrainPlayer`/`SimpleBasePlayer`, `LocalBinder` UI channel, flavor-agnostic `media3-session`, FGS manifest, `Queue` cursor accessors + 4 tests); verified on device.
 - `c287dc42` fix: release engine on destroy (`COMMAND_RELEASE`), notification play-state via `playWhenReady` intent, `handleSeek` honors `positionMs` (adversarial-review fixes).
+- `fa647b61` add the SAF chosen-folder library source: `SafTreeSource` (iterative `DocumentsContract` walk, visited-guarded, per-directory resilient), `LibraryRoot` (persisted grant + held-check), `core.DisplayPath` boundary sanitizer + tests, source selection + `reloadFromRoot` in the service, picker in the activity.
+- `1ef469de` fix: deliver folder picks via an activity-scoped launcher (composition teardown when the picker opened was dropping the result) and show a loading notice during scans (was flashing "No music found" for the whole scan); both found on device.
+- `ef90fd1a` fix: cancel a superseded library load so a folder re-pick is not overwritten by a slow concurrent self-load.
 
 Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; those are not part of this work.
 
@@ -253,14 +262,18 @@ Done: step 1 (toolchain), step 2 (scaffold), the skeleton half of step 3 (Media3
 the pure-logic Kotlin port (the `core` package, 52 tests green). Remaining:
 
 1. Finish the real Media3 variant. DONE: the Compose UI (narrow layout, tap-to-play), the MediaStore library source
-   (`openLibrary(List<Track>)`), and the `MediaSessionService` (background/lockscreen/notification), all verified on
-   device. Remaining: (a) a SAF chosen-root source (`ACTION_OPEN_DOCUMENT_TREE` + `DocumentsContract`, persisted via
-   `takePersistableUriPermission`) for the desktop's "point at one folder" model, feeding the same `openLibrary`
-   with `Track`s whose `displayPath` is the tree-relative path (MediaStore and SAF `content://` URIs play
-   identically, per the verified research, so only the enumeration differs); its picker is interactive, so it is the
-   one spot that needs a human tap or driven UI, the "stop early on a blocker" candidate. (b) True-peak as a Media3
-   `AudioProcessor` (the deferred `process_sample` gain stage) plus the WorkManager charging/idle sweep. Instrument
-   metrics from the start.
+   (`openLibrary(List<Track>)`), the `MediaSessionService` (background/lockscreen/notification), and the SAF
+   chosen-folder source, all verified on device. The SAF source (`SafTreeSource` + `LibraryRoot`) walks an
+   `ACTION_OPEN_DOCUMENT_TREE` grant over `DocumentsContract` (iterative work-stack, visited-guarded, per-directory
+   resilient), persists it via `takePersistableUriPermission`, and feeds the same `openLibrary` with tree-relative
+   `displayPath`s codepoint-sorted to match MediaStore's contract; a held root wins over MediaStore and survives
+   process death, a revoked or moved grant is detected before scanning so it cannot crash the headless service.
+   Verified on the Pixel 6 against `Plain/Music` (3486 files): a loading notice during the multi-second scan,
+   playback from a `content://` document URI, cold-load after force-stop with no re-pick, and loose root files
+   (no-slash display paths, which MediaStore never produces) grouped without breaking. The picker is the one
+   interactive spot that needs a human tap (driven via adb to open it; the folder choice + grant is the user's).
+   Remaining: True-peak as a Media3 `AudioProcessor` (the deferred `process_sample` gain stage) plus the WorkManager
+   charging/idle sweep. Instrument metrics from the start.
 
 ### Deferred from the MediaSessionService review
 
@@ -299,11 +312,15 @@ is explicit:
 - Session: `core` has the model + `pruneUnplayable(fileExists predicate)`. `load`/`save`/`session_path` and the
   `ShuffleMode` <-> wire-name mapping (`"Off"`/`"WithinPage"`/`"All"`) are deferred; add them with app-private
   storage. Feed `pruneUnplayable` a SAF/MediaStore existence check.
-- Storage walk: `audioFilesSorted` is the pure per-directory filter-then-sort. MediaStore is DONE (`MediaStoreSource`
-  returns a flat `IS_MUSIC` query, codepoint-sorted by display path; no recursive walk needed since MediaStore is
-  already flat and supplies `RELATIVE_PATH` per row). Still deferred for SAF: the recursive depth-first traversal
-  (a folder's own sorted files before its subfolders, subfolders ascending), documented in `AudioExtensions.kt`'s
-  KDoc; implement it over `DocumentsContract`.
+- Storage walk: `audioFilesSorted` is the pure per-directory filter-then-sort. Both sources are now DONE.
+  `MediaStoreSource` returns a flat `IS_MUSIC` query, codepoint-sorted by display path. `SafTreeSource` walks a chosen
+  `DocumentsContract` tree with an iterative work-stack (visited-guarded against provider cycles, per-directory
+  try/catch so one unreadable folder does not abort the scan), filters by `core.isAudioFile`, and codepoint-sorts the
+  whole result. It deliberately does NOT reproduce the desktop's per-directory DFS order (parent files before
+  subfolder files): it collects everything then global-codepoint-sorts, matching `MediaStoreSource` so the two are
+  interchangeable through the same pagination. Provider `DISPLAY_NAME`s are clamped at the path-assembly boundary
+  (`core.joinDisplayPath`/`sanitizeComponent`: a separator inside a name cannot widen folder depth, control chars
+  collapse to spaces), since names come from a provider, not a filesystem.
 - Queue: `Queue.new()` seeds from `System.nanoTime()`; `Queue.withRngSeed(Long)` is deterministic for session
   restore and tests. The shuffle uses `kotlin.random.Random`, not the desktop's xorshift64 (sequence not portable).
 - Not yet ported (small, port when needed): `frames_to_secs` and `file_name_of` (playback.rs utilities).
