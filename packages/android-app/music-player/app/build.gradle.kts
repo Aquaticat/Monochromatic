@@ -76,6 +76,11 @@ dependencies {
     implementation("androidx.core:core-ktx:1.19.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
+    // Host JVM unit tests for the pure-logic `core` package (ported from the
+    // desktop's `_tests.rs` vectors). These run via testMedia3DebugUnitTest with
+    // no device.
+    testImplementation("junit:junit:4.13.2")
+
     // Media3 flavor only: ExoPlayer with the platform MediaCodec decoders. No
     // media3-decoder-* extension is pulled in; the Pixel 6 decodes Opus and FLAC
     // natively, which this build is meant to prove. media3-session lands the
