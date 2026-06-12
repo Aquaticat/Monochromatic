@@ -26,6 +26,11 @@ element-level rules (bold UI elements, expected outcomes, exact strings),
 the canonical example,
 and the cues that signal you are violating the rules.
 
+Recorded dances (verified multi-step procedures kept beside this skill):
+
+- `copilot-review-draft-pr.md`: getting a Copilot code review onto a PR that
+  must stay draft (Copilot skips drafts; the ready window can be seconds).
+
 ## Bridges to try before writing a runbook
 
 This skill is the fallback.
