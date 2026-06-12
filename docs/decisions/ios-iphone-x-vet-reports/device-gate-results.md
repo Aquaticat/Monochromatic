@@ -148,9 +148,10 @@ facts:
   app exercised CocoaPods. The CocoaPods + `.xcworkspace` signing path is still unproven and will be
   settled by the React Native gate (or a Flutter app with a plugin).
 
-### .NET (MAUI / Avalonia / Uno trio substrate): PASS (Mono AOT and interpreter, Rust FFI)
+### .NET / Microsoft.iOS substrate: PASS (Mono AOT and interpreter, Rust FFI); the MAUI / Avalonia / Uno UI layers are not yet gated
 
-Status: device-confirmed 2026-06-12.
+Status: substrate device-confirmed 2026-06-12; the three frameworks' own UI/a11y layers still need their
+own render gates (see "Scope" below).
 
 The .NET trio (MAUI, Avalonia, Uno) shares one iOS substrate: the Microsoft.iOS workload's Mono runtime,
 AOT-compiled for the device (iOS forbids JIT). This gate proves that substrate on the iPhone X with a
@@ -185,13 +186,18 @@ need: managed UI code calling a linked native archive over FFI.
 - a11y: a UIKit `UILabel` is a native accessibility element (iOS 12+). MAUI iOS and Uno iOS both render
   through native UIKit handlers, so they inherit native a11y with no iOS-17 dependency, unlike Slint.
 
-Scope of this PASS: it gates the shared Microsoft.iOS execution substrate (Mono AOT plus interpreter,
-native FFI, UIKit render), which all of MAUI, Avalonia, and Uno sit on, exactly as the Capacitor PASS
-gated the WKWebView substrate for the six web frameworks. The remaining trio-specific work (stage 2) is
-the UI render layer: MAUI and Uno render through native UIKit (represented in spirit by this UIKit
-gate), while Avalonia draws via Skia on a Metal layer (a different surface, though Skia-on-Metal is the
-same path Flutter already passed). Each of the MAUI XAML, Avalonia, and Uno UI layers gets a render note
-in stage 2, not a fresh substrate gate.
+Scope of this PASS, and what it does NOT cover: it gates the shared Microsoft.iOS execution substrate
+(Mono AOT plus interpreter, native FFI, a native UIKit render), which all of MAUI, Avalonia, and Uno sit
+on. It does NOT gate the three frameworks themselves, and the Capacitor analogy only goes so far. The
+six web frameworks run as JS/HTML inside the same WKWebView and ship no native iOS code, so the WKWebView
+substrate genuinely covers them; MAUI, Avalonia, and Uno each ship substantial native iOS framework code
+(handlers/renderers, theme and a11y bridges, startup) that this bare `dotnet new ios` app never runs.
+That distinction is load-bearing because of exactly where Slint failed: not in its substrate (winit,
+Skia, Metal were fine) but in its own framework code (`accesskit_ios`'s a11y symbols and
+`color_scheme.rs`'s `UITraitUserInterfaceStyle`). A bare UIKit app would have falsely passed Slint. So
+each of MAUI, Avalonia, and Uno needs its own on-device render gate, watched specifically for the Slint
+signature (a dyld `Symbol not found`, or an objc2/class-not-found panic on an iOS-17 API) before the
+screenshot. Until those land the trio is substrate-proven but UI-unproven, not passed.
 
 Toolchain notes for reproduction (Homebrew dotnet 10.0.300): the prior session's `dotnet workload
 install ios` had written only the iOS manifest, not the runtime/AOT packs, so the first device build
@@ -233,13 +239,22 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 
 ## Pending gates
 
-Of the nine distinct device gates the synthesis identified (the 16 frameworks collapse to nine on
-shared substrate and toolchain), three are device-verified to render: Capacitor (rank 2, covers six),
-Flutter (rank 4), and the .NET trio substrate (rank 3, covers MAUI/Avalonia/Uno; both Mono AOT and
-interpreter, Rust FFI, above). Slint (rank 1) was gated and FAILED (disqualified, above). Remaining, in
-the synthesis gate order, each to be confirmed by render (screenshot) and a few seconds of no-crash
-runtime, not by launch success alone:
+Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
+share its WKWebView) and Flutter (rank 4). The shared .NET/Microsoft.iOS substrate (rank 3) is
+execution-verified (Mono AOT and interpreter, Rust FFI, above) but the MAUI, Avalonia, and Uno UI layers
+are each still unproven (the substrate gate does not exercise their native framework code, where the
+Slint-style iOS-17 wall would live). Slint (rank 1) was gated and FAILED (disqualified, above).
 
+Owner directive (2026-06-12): defer the six WKWebView frameworks (the Capacitor and Cordova shells plus
+the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
+framework is gated. The remaining order, each confirmed by render (screenshot) and a few seconds of
+no-crash runtime, not by launch success alone:
+
+- .NET trio UI layers (rank 3 UI, next): render an actual MAUI app, an Avalonia app, and a Uno app on
+  device, each scanned for the Slint signature (dyld `Symbol not found` or an objc2/class-not-found
+  panic on an iOS-17 API) before the screenshot. The substrate (above) is already proven; this gates
+  each framework's own native UI/a11y code. Toolchain: `dotnet workload install maui`; Avalonia and Uno
+  templates via `dotnet new install`.
 - Compose Multiplatform (rank 5, expected-pass). Kotlin/Native LLVM-AOT static framework; a cinterop
   link of a Rust `.a`; check whether `embeddedServer(CIO)` binds on iosArm64. Toolchain: JDK 17+,
   Kotlin/Gradle, KMP (Kotlin/Native downloads its own LLVM/iOS toolchain).
@@ -256,8 +271,11 @@ runtime, not by launch success alone:
   the iPhone X (A11) caps at iOS 16.7, so a 6.11 binary will not install. Confirm a QML screen
   animates (V4 bytecode interpreter, no execmem kill) and a linked Rust value prints. Toolchain: Qt
   for iOS prebuilt static libs (qt-unified) + CMake.
-- Apache Cordova substrate (optional, comparison against Capacitor only; the four WKWebView UI layers
-  Ionic/Framework7/Onsen/Quasar need no fresh substrate gate, only UI-render notes).
+Deferred to the very end per the owner directive (the six WKWebView frameworks), after every gate above:
+
+- Apache Cordova substrate (comparison against the already-passed Capacitor shell).
+- The four WKWebView UI layers Ionic, Framework7, Onsen, and Quasar: UI-render notes on top of the
+  proven WKWebView substrate, no fresh substrate gate.
 
 Universal toolchain base every gate already shares: macOS + Xcode + signing + `rustup target add
 aarch64-apple-ios` (the Rust core staticlib is the common FFI payload on every track). Each gate adds
