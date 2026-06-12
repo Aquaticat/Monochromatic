@@ -206,6 +206,67 @@ await describe({
 
     //endregion Harness bundle filter still applies
 
+    //region Harness source-export filter
+
+    it({
+      name: 'drops harness source dispatch frames in workspace and node_modules forms',
+      fn: async () => {
+        const error = makeError({
+          message: 'expected 3 to equal 2',
+          frames: [
+            'at toBe (packages/module/test/src/expect-matchers-core.ts:70:10)',
+            USER_FRAME,
+            'at runFnOnce (packages/module/test/src/it.ts:113:19)',
+            'at expectImpl (module-test/src/expect.ts:339:5)',
+          ],
+        },);
+        const joined = (await formatErrorDeep(error,)).join('\n',);
+        // The matcher / runner frames are now the FIRST things after the
+        // message in real runs; dropping them makes the user frame lead.
+        expect(joined,).not.toContain('expect-matchers-core.ts',);
+        expect(joined,).not.toContain('module/test/src/it.ts',);
+        expect(joined,).not.toContain('module-test/src/expect.ts',);
+        expect(joined,).toContain('packages/foo/src/bar.ts',);
+      },
+    },),
+
+    it({
+      name: 'preserves the harness own test frames under module/test/src',
+      fn: async () => {
+        const error = makeError({
+          message: 'boom',
+          frames: [
+            'at fn (packages/module/test/src/format-error.unit.test.ts:42:7)',
+            'at runFnOnce (packages/module/test/src/it.ts:113:19)',
+          ],
+        },);
+        const joined = (await formatErrorDeep(error,)).join('\n',);
+        // The harness tests itself; their *.test.ts frames are user code
+        // and must survive even though they share the src/ prefix.
+        expect(joined,).toContain('format-error.unit.test.ts',);
+        expect(joined,).not.toContain('module/test/src/it.ts',);
+      },
+    },),
+
+    it({
+      name: 'drops p-limit dispatch frames',
+      fn: async () => {
+        const error = makeError({
+          message: 'boom',
+          frames: [
+            USER_FRAME,
+            'at run (node_modules/.pnpm/p-limit@7.3.0/node_modules/p-limit/index.js:34:31)',
+            'at generator (node_modules/p-limit/index.js:34:54)',
+          ],
+        },);
+        const joined = (await formatErrorDeep(error,)).join('\n',);
+        expect(joined,).not.toContain('p-limit',);
+        expect(joined,).toContain('packages/foo/src/bar.ts',);
+      },
+    },),
+
+    //endregion Harness source-export filter
+
     //region User frames preserved
 
     it({
