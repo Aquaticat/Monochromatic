@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
@@ -39,8 +38,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
@@ -240,13 +237,13 @@ private fun StartingGate() {
 
 /**
  * The player screen, the desktop's narrow (single-column) layout: a seek bar, a volume slider, a
- * wrapping control row (shuffle / transport / repeat), the page-tab grid, and the selected page's
- * track list. Tap a track to play it; tap the playing track to pause or resume.
+ * wrapping control row (open / shuffle / transport / repeat), then the page tabs and the selected
+ * page's track list. There is no title bar, matching the desktop's plain window. Tap a track to play
+ * it; tap the playing track to pause or resume.
  *
  * @param controller Drives the queue, pagination, and playback; its `uiState` is observed here.
- * @param onChooseFolder Invoked when the user taps the folder action, to launch the picker.
+ * @param onChooseFolder Invoked when the user taps Open, to launch the folder picker.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
     val state = controller.uiState
@@ -261,16 +258,7 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Music Player") },
-                actions = {
-                    TextButton(onClick = onChooseFolder) { Text("Folder") }
-                },
-            )
-        },
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -280,7 +268,7 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
         ) {
             SeekRow(position = position, duration = duration, onSeek = { controller.seek(it) })
             VolumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })
-            ControlRow(state = state, controller = controller)
+            ControlRow(state = state, controller = controller, onOpen = onChooseFolder)
             // Page tabs and the track list share one scroll area (the desktop's narrow layout): a
             // library with many folder pages would otherwise let the wrapping tab bar fill the column
             // and leave the list no room, so the tabs scroll together with the tracks as one column.
@@ -323,14 +311,22 @@ private fun VolumeRow(volume: Float, onVolume: (Float) -> Unit) {
     }
 }
 
-/** Wrapping control row: the three-state shuffle radios, the transport buttons, and repeat-track. */
+/**
+ * Wrapping control row, in the desktop's order: Open (the folder picker), the three-state shuffle
+ * radios, the transport buttons, and repeat-track.
+ *
+ * @param state UI snapshot, read for the shuffle, play, and repeat states.
+ * @param controller Brain driven by the shuffle, transport, and repeat controls.
+ * @param onOpen Invoked when the user taps Open, to launch the folder picker.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ControlRow(state: PlayerUiState, controller: PlayerController) {
+private fun ControlRow(state: PlayerUiState, controller: PlayerController, onOpen: () -> Unit) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        Button(onClick = onOpen) { Text("Open") }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Shuffle")
             ShuffleOption("Off", state.shuffle == ShuffleMode.OFF) { controller.setShuffle(ShuffleMode.OFF) }
