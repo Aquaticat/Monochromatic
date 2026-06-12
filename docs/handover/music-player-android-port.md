@@ -11,10 +11,10 @@ handover adds the working state, measured facts, and exact next steps.
 - Identity unified to `dev.monochromatic.musicplayer` and committed.
 - The user said "Go": the build phase has started. The derisking milestone (toolchain + scaffold + Media3
   skeleton playing real audio on the Pixel 6) is DONE and committed. See "Build progress" below.
-- Next is the real Media3 variant: port the pure logic to Kotlin and build the full UI/service. The user runs
-  with `ultracode` on, so the pure-logic port is the workflow fan-out (one Rust module to one Kotlin file plus its
-  ported `_tests.rs` oracle, against a fixed type contract; compile centrally). See the advisor design in the ADR
-  follow-through and "Next steps".
+- The real Media3 variant is well underway: the pure logic is ported to Kotlin (52 tests), the real Compose UI is
+  built, and the library now reads the device's real MediaStore audio library (verified on device). Remaining for
+  this variant: a SAF chosen-root source (the desktop's "point at one folder" model), a `MediaSessionService` for
+  background/lockscreen, and true-peak as a Media3 `AudioProcessor`. See "Build progress" and "Next steps".
 
 ## Build progress (this session)
 
@@ -59,12 +59,30 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   the desktop's primary flag); the custom VScrollBar is dropped in favor of LazyColumn's native scroll. Earlier
   this milestone, a real defect was fixed: the skeleton drew under the status bar (edge-to-edge with no insets),
   now handled by `enableEdgeToEdge()` + a Scaffold, plus a system-following dark/light theme.
-- Device state to resume from: the `media3` debug APK is installed on the Pixel 6
-  (`dev.monochromatic.musicplayer.media3`); four fixtures (test1.opus/test2.flac/test3.m4a/test4.mp3) sit in its
-  external files dir and in `/tmp/agent/musictest/`; playback is paused. Rebuild + reinstall with
-  `mise run //packages/android-app/music-player:build:media3` then `adb -s 1C171FDF600KWW install -r <apk>` (the SDK
-  is `local.properties` -> `/var/tmp/vet-jc/android-sdk`, may need re-pointing if reaped). adb is flock-guarded on
-  `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
+- Milestone 2 (cont.), the real library source, is DONE and verified on device. `MediaStoreSource.query` reads the
+  device audio collection filtered to `IS_MUSIC != 0` (SDK-branched collection URI; `RELATIVE_PATH` projection
+  guarded behind API 29, `DATA` fallback below; codepoint-sorted by display path via the core's `compareByCodePoint`).
+  A new `Track(uri, displayPath)` splits the playback `content://` URI from the display path: the display paths feed
+  the unchanged ported queue/pagination (so the desktop common-prefix trim and folder grouping apply as-is), and
+  `PlayerController` keeps a parallel `uris` list it plays by load-order index (`openLibrary` replaces `openTracks`).
+  `MainActivity` requests `READ_MEDIA_AUDIO` (33+) / `READ_EXTERNAL_STORAGE` (<=32) behind a permission gate, then
+  queries on grant. Verified on device (API 36): the real 3617-track library lists with two folder pages (`Plain`,
+  `2025MAR26`), Unicode display paths intact; tapping an opus row loaded the exact `content://` id and played
+  (`3LAU Emma Hewitt - Alive Again.opus`, duration 3:40, position ticking, Pause shown); a short WAV ended and
+  auto-advanced. A background research workflow corroborated every recall-prone fact against primary docs
+  (content:// plays via `ContentDataSource`, no custom DataSource; audio is all-or-nothing, no partial tier;
+  `RELATIVE_PATH` carries the documented trailing slash). Honest divergence (advisor-flagged): MediaStore is the
+  device-wide library behind the `IS_MUSIC` heuristic, NOT the desktop's single chosen root; the SAF chosen-root
+  source (next) is what restores that semantic.
+- Device state to resume from: the latest `media3` debug APK (commit `f22f97d0`) is installed on the Pixel 6
+  (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` granted; it reads the phone's real MediaStore
+  library (3617 `IS_MUSIC` tracks under `relative_path=Plain/Music/` and `2025MAR26/...`), NOT the old files-dir
+  fixtures. Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
+  `adb -s 1C171FDF600KWW install -r app/build/outputs/apk/media3/debug/app-media3-debug.apk`; re-grant with
+  `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`.
+  `uiautomator dump` fails on this Compose surface, so drive taps by coordinate (screen is 1080x2400) and read back
+  via `screencap` + logcat (`MusicPlayer:I MediaStoreSource:I`). SDK is `local.properties` -> `/var/tmp/vet-jc/android-sdk`.
+  adb is flock-guarded on `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
 
 ## Committed work (on main)
 
@@ -82,6 +100,7 @@ Android package (`packages/android-app/music-player/`), in order:
 - `d855776d` fix: edge-to-edge insets, Material3 top bar, system dark/light theme.
 - `c87fa94d` real player UI on the ported queue/pagination (narrow layout, tap-to-play), verified on device.
 - `c90cd858` docs: real UI milestone + remaining storage/service work.
+- `f22f97d0` read the real library from MediaStore (`Track` split, `IS_MUSIC` query, permission gate); verified on device.
 
 Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; those are not part of this work.
 
@@ -114,8 +133,11 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
   `1C171FDF600KWW`. The build fingerprint spoofs stock Google (GrapheneOS behavior). Other sessions may attach
   devices: guard adb with `flock /tmp/agent/adb-phone.lock` and target `-s 1C171FDF600KWW`.
 - Library (host `/home/user/Seafile/Plain/Music`, 3857 files): Opus 2584, FLAC 852, AAC 16 (m4a/mp4), MP3 13, plus
-  a few Vorbis and Opus-in-webm/mkv. No ALAC, AIFF, or ADPCM. Every file is Media3-native. The phone itself has no
-  music library yet (only a `.thumbnails` dir under `/sdcard/Music`).
+  a few Vorbis and Opus-in-webm/mkv. No ALAC, AIFF, or ADPCM. Every file is Media3-native. The phone now HAS the
+  library on-device (this was synced since the prior session): MediaStore indexes 3633 audio rows, 3617 with
+  `IS_MUSIC=1`, the real music under `relative_path=Plain/Music/` (the synced Seafile Plain/Music) plus
+  field-recording WAVs under `2025MAR26/...`; the rest is `IS_MUSIC=0` ringtone/notification clutter the source
+  filters out. So MediaStore verification runs against the real library, no pushed fixtures or scan trigger needed.
 - Media3 codec coverage (audited from the androidx/media source clone at `/tmp/agent/media3-20260612`, may be
   reaped): Opus and FLAC via bundled software decoders (`decoder_opus`, `decoder_flac`); AAC, MP3, Vorbis via the
   platform; WAV IMA-ADPCM in `WavExtractor`; ALAC demuxed by the MP4 `BoxParser` but decoding needs the FFmpeg NDK
@@ -179,13 +201,17 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
 Done: step 1 (toolchain), step 2 (scaffold), the skeleton half of step 3 (Media3 plays real audio on device), and
 the pure-logic Kotlin port (the `core` package, 52 tests green). Remaining:
 
-1. Finish the real Media3 variant. The Compose UI is DONE (narrow layout, tap-to-play, verified on device).
-   Remaining: wire SAF tree + MediaStore as the real library source (replacing the app-files-dir source in
-   `MainActivity`'s `LaunchedEffect`, feeding `PlayerController.openTracks` from `DocumentsContract`/`RELATIVE_PATH`);
-   host the player in a `MediaSessionService` with ExoPlayer (move the engine into the service, make the UI a
-   `MediaController` client) for background/lockscreen/notification; apply true-peak as a Media3 `AudioProcessor`
-   (the deferred `process_sample` gain stage) plus the WorkManager charging/idle measurement sweep. Verify on
-   device at the user boundary (background/screen-off, notification, lockscreen). Instrument metrics from the start.
+1. Finish the real Media3 variant. DONE: the Compose UI (narrow layout, tap-to-play) and the MediaStore library
+   source (`openLibrary(List<Track>)`, verified on device). Remaining: (a) a SAF chosen-root source
+   (`ACTION_OPEN_DOCUMENT_TREE` + `DocumentsContract`, persisted via `takePersistableUriPermission`) for the
+   desktop's "point at one folder" model, feeding the same `openLibrary` with `Track`s whose `displayPath` is the
+   tree-relative path (MediaStore and SAF `content://` URIs play identically, per the verified research, so only the
+   enumeration differs); its picker is interactive, so it is the one spot that needs a human tap or driven UI, the
+   "stop early on a blocker" candidate. (b) Host the player in a `MediaSessionService` (move the engine into the
+   service, make the UI a `MediaController` client) for background/lockscreen/notification, fully
+   autonomously verifiable. (c) True-peak as a Media3 `AudioProcessor` (the deferred `process_sample` gain stage)
+   plus the WorkManager charging/idle sweep. Verify at the user boundary (background/screen-off, notification,
+   lockscreen). Instrument metrics from the start.
 2. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
    alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia via
    `ContentResolver.openFileDescriptor`).
@@ -208,9 +234,11 @@ is explicit:
 - Session: `core` has the model + `pruneUnplayable(fileExists predicate)`. `load`/`save`/`session_path` and the
   `ShuffleMode` <-> wire-name mapping (`"Off"`/`"WithinPage"`/`"All"`) are deferred; add them with app-private
   storage. Feed `pruneUnplayable` a SAF/MediaStore existence check.
-- Storage walk: `audioFilesSorted` is the pure per-directory filter-then-sort. The recursive depth-first traversal
-  (a folder's own sorted files before its subfolders, subfolders ascending) is deferred and documented in
-  `AudioExtensions.kt`'s KDoc; implement it over `DocumentsContract` (SAF) and `RELATIVE_PATH` (MediaStore).
+- Storage walk: `audioFilesSorted` is the pure per-directory filter-then-sort. MediaStore is DONE (`MediaStoreSource`
+  returns a flat `IS_MUSIC` query, codepoint-sorted by display path; no recursive walk needed since MediaStore is
+  already flat and supplies `RELATIVE_PATH` per row). Still deferred for SAF: the recursive depth-first traversal
+  (a folder's own sorted files before its subfolders, subfolders ascending), documented in `AudioExtensions.kt`'s
+  KDoc; implement it over `DocumentsContract`.
 - Queue: `Queue.new()` seeds from `System.nanoTime()`; `Queue.withRngSeed(Long)` is deterministic for session
   restore and tests. The shuffle uses `kotlin.random.Random`, not the desktop's xorshift64 (sequence not portable).
 - Not yet ported (small, port when needed): `frames_to_secs` and `file_name_of` (playback.rs utilities).
