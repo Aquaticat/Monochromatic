@@ -88,10 +88,12 @@ the very end, and append Dioxus, SnapKit, UIKit, and SwiftUI just before that we
 - Lynx (rank 8): pending, expected-pass.
 - Qt (rank 9): pending, needs-device; must pin Qt 6.5 LTS because Qt 6.11 requires iOS 17, which the
   iPhone X never gets.
-- Appended (owner, gate after the above and before the deferred web block): Dioxus (Rust UI; on iOS
-  renders via `wry`/WKWebView driven by AOT Rust, the substantive one), SnapKit (UIKit Auto Layout DSL
-  via SPM), UIKit (native), SwiftUI (already render-proven by the HelloDevice canary). The first is a
-  real gate; the last three are native/trivial.
+- Appended (owner, gate after the above and before the deferred web block): Dioxus (Rust UI, the
+  substantive one; historically renders on iOS via `wry`/WKWebView driven by AOT Rust, but verify the
+  current backend at gate time, since Dioxus is moving to a native Blitz/WGPU renderer that would make
+  a11y a custom bridge rather than WebKit-native), SnapKit (UIKit Auto Layout DSL via SPM), UIKit
+  (native), SwiftUI (already render-proven by the HelloDevice canary). The first is a real gate; the
+  last three are native/trivial.
 - Deferred to the very end (owner): the six WKWebView frameworks (Cordova substrate plus the Ionic,
   Framework7, Onsen, Quasar UI-render notes on the proven Capacitor/WKWebView substrate).
 
@@ -205,9 +207,13 @@ device-support maturity is the open question; full UI rewrite; smallest tooling 
 
 Slint's disqualification removes the former top pick and the only no-UI-rewrite option, and it carries
 a method lesson: Slint was "expected-pass" on the desk audit and crashed on the device, so on-device
-verification status now weighs in the ranking. Three candidates are now device-verified to render with
-usable a11y (Flutter, the WKWebView substrate, and the .NET trio via MAUI's native UIKit handlers); the
-rest are desk "expected-pass" and unconfirmed.
+verification status now weighs in the ranking. Three candidates are now device-verified to render
+(Flutter, the WKWebView substrate, and the .NET trio); the rest are desk "expected-pass" and unconfirmed.
+A11y is the separate, still-owed criterion: on-device render is confirmed for all three, but on-device
+a11y (VoiceOver) is confirmed for none. a11y strength is so far argued by architecture, descending:
+WebKit-native (WKWebView) > native UIKit handlers (Flutter, MAUI) > self-drawn custom bridge (Avalonia,
+Uno-Skia, a11y TBD). So "render PASS" is not "a11y cleared"; under a11y-must, a stage-2 VoiceOver pass is
+owed on every track, which is exactly what disqualified Slint.
 
 Music-player port: with Slint disqualified, the port to the iPhone X is no longer a UI reuse. Either
 maintain a downported Slint fork (high, ongoing maintenance; see the Slint section) or rewrite the UI
@@ -234,6 +240,9 @@ NativeScript.
   placed the trio fifth did not bite on the device (full AOT and the interpreter both render and
   P/Invoke). WKWebView keeps its convenience edge (collapses six candidates, suits the repo's TypeScript
   strength) but that does not outweigh cleaner native integration for an app whose hard parts are native.
+  This #2 standing rests on MAUI specifically (its native UIKit a11y, still owed a VoiceOver pass);
+  Avalonia and Uno are render-PASS but a11y-TBD and would not individually sit at #2 until their custom
+  bridges are VoiceOver-confirmed.
 - WKWebView over Compose Multiplatform: WKWebView is device-verified and Compose is not, and Compose's
   in-app server story (`embeddedServer(CIO)` on `iosArm64`) is unproven. Compose's cleaner single
   cinterop hop is why it is close; it would rise above WKWebView once its gate renders and the server

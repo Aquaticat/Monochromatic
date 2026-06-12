@@ -236,6 +236,14 @@ which matters under the a11y-must rule: MAUI is strongest (native UIKit handlers
 Avalonia and Uno render fine but their default (self-drawn Skia) a11y rides a custom bridge whose iOS
 fidelity is a stage-2 check, with Uno's native renderer as its a11y-safe fallback.
 
+Hold the line on what "PASS" means here: render is device-confirmed for all three, but on-device a11y
+(VoiceOver actually reading the controls) is confirmed for none. MAUI's native a11y is a strong
+architectural inference (native UIKit handlers), not yet VoiceOver-tested; Avalonia and Uno-Skia are
+render-PASS but a11y-TBD. "Trio PASS" means "renders on iOS 16.7," not "a11y cleared." Under the
+a11y-must rule a11y is still owed on every track, and is the exact criterion that disqualified Slint, so
+no downstream summary should let a render PASS or a ranking position stand in for a11y confirmation. That
+VoiceOver pass is a stage-2 task for every surviving framework.
+
 Toolchain notes for reproduction (Homebrew dotnet 10.0.300): the prior session's `dotnet workload
 install ios` had written only the iOS manifest, not the runtime/AOT packs, so the first device build
 failed `NETSDK1147: workloads must be installed: ios` even though `dotnet --info` listed the workload.
@@ -307,11 +315,13 @@ no-crash runtime, not by launch success alone:
 Appended 2026-06-12 (owner), gated after the cross-platform set above and before the deferred web block:
 
 - Dioxus (`dioxuslabs.com`, the most substantive of these four; Rust, so directly relevant to the
-  music-player and kopia Rust cores). On iOS, Dioxus mobile renders its UI through `wry` (a WKWebView
-  wrapped via `tao`), driven by AOT-compiled Rust, so it is a Rust-driven WKWebView, not native UIKit:
-  expected-pass on the substrate (WKWebView is already gated; Rust is AOT, no JIT wall) but it must be
-  device-confirmed that the Dioxus + `wry` stack builds and renders on iOS 16.7. a11y is WebKit-native
-  (same posture as Capacitor). Toolchain: `dx` CLI (dioxus-cli) plus the `aarch64-apple-ios` Rust target
+  music-player and kopia Rust cores). Verify its current iOS rendering backend at gate time, do not
+  assume: historically Dioxus mobile renders through `wry` (a WKWebView wrapped via `tao`) driven by
+  AOT-compiled Rust, which would make a11y WebKit-native like Capacitor; but Dioxus has been moving to a
+  native renderer (Blitz/WGPU), and if the 2026 iOS path self-draws, its a11y is a custom bridge
+  (Avalonia-class), not WebKit-clean, which flips its a11y-must standing. Either way Rust is AOT (no JIT
+  wall), so the gate question is whether the actual Dioxus iOS stack builds and renders on 16.7 and what
+  its real a11y path is. Toolchain: `dx` CLI (dioxus-cli) plus the `aarch64-apple-ios` Rust target
   (already installed); build with `dx bundle --platform ios` or a cargo staticlib in an Xcode wrapper.
 - SnapKit (`github.com/SnapKit/SnapKit`): a pure-Swift Auto Layout constraint DSL over UIKit, no custom
   rendering. The gate is a UIKit Swift app that lays out with SnapKit constraints, pulling SnapKit via
