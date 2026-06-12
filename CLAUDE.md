@@ -1611,7 +1611,7 @@ Repo root keeps only `README.md`,
  `LICENSES/`,
  already-tidy doc subdirectories like `.out-of-scope/`;
  `CONTEXT.md` is explicitly forbidden at repo root.
-Repo-wide context belongs under `docs/<family>/` or existing curated docs,
+Repo-wide documentation belongs under `docs/<family>/` or existing curated docs,
  not root cache files.
  flat dotted-prefix families move under `docs/`.
 Package-specific docs stay beside code they document;

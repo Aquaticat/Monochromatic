@@ -9,19 +9,26 @@ local forbiddenStrings = new Step {
   check = "\(binPath) {{files}}"
 }
 
+local forbiddenRootContext = new Step {
+  check = "node -e \"const forbidden = process.argv.slice(1).filter((path) => path === 'CONTEXT.md' || path === './CONTEXT.md'); if (forbidden.length > 0) throw new Error('Root CONTEXT.md is forbidden; read source code directly and see docs/agents/domain.md.');\" {{files}}"
+}
+
 hooks {
   ["pre-commit"] {
     steps {
+      ["forbidden-root-context"] = forbiddenRootContext
       ["forbidden-strings"] = forbiddenStrings
     }
   }
   ["pre-push"] {
     steps {
+      ["forbidden-root-context"] = forbiddenRootContext
       ["forbidden-strings"] = forbiddenStrings
     }
   }
   ["check"] {
     steps {
+      ["forbidden-root-context"] = forbiddenRootContext
       ["forbidden-strings"] = forbiddenStrings
     }
   }
