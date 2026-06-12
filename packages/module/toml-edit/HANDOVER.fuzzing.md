@@ -6,13 +6,19 @@ criteria for each layer.
 
 ## Implementation status
 
-Updated 2026-06-12. Phases 1 to 6, phase 8 (coverage gate), and the phase 9 CI
-wiring (the fuzz smoke, the conformance suite, and the coverage gate are now all
-workflow steps) are landed; phase 7 (differential oracle) was attempted against
-the BurntSushi reference decoder and then dropped (see below). Only the #198
-closure sequence remains, and both steps are owner-reserved: prove the CI path
-filtering with a real pull-request run, then `gh issue close 198`. Most work
-lives under `packages/module/toml-edit/src/fuzz/` and `src/conformance/`,
+Updated 2026-06-12. Complete: phases 1 to 6 and 8 are landed, phase 7
+(differential oracle) was attempted against the BurntSushi reference decoder and
+then dropped (see below), and phase 9 is done. The `toml-edit-fuzz` CI workflow
+is green end to end (run 27390878270: build, type-check, unit suite, fuzz smoke,
+conformance, and the coverage gate), the path filter is proven (a push under
+`packages/module/toml-edit/**` triggered it), and issue #198 is closed. Getting
+CI green required four workflow fixes the prior session's untested workflow had
+masked: `mise-action` `install: false`, a job-level `MISE_AUTO_INSTALL=false`
+(the root config auto-installs the slint git crate, which fails on the runner)
+with node, pnpm, and toml-test installed explicitly, building the bundle before
+type-check, and importing `module-logger` via `/ts` source so no logger build is
+needed. Most work lives under `packages/module/toml-edit/src/fuzz/` and
+`src/conformance/`,
 plus package-source fixes (`src/parse-toml-edit.ts`, `src/emit-value-string.ts`,
 the shared `src/basic-escape.ts`, `src/value-encoders.ts`, `src/keys.ts`), the
 seam exports in `src/index.ts`, the decision doc
@@ -208,16 +214,12 @@ Phase 8 (commit b376c3b6), V8 coverage gate:
   different stable reference could revive it later.
 - Phase 8 (V8 coverage gate and the reusable five-question checklist): landed in
   commit b376c3b6. See the Phase 8 entry above and the decision doc.
-- Phase 9 CI wiring: landed in commit e0676ba5. `test:conformance` and
-  `fuzz:coverage` are now steps in `.github/workflows/toml-edit-fuzz.yml`,
-  alongside the existing fuzz smoke, both verified green locally.
-- Phase 9 closure (owner-reserved): prove the CI path filtering with a real
-  pull-request run (the `paths:` filter covers `packages/module/toml-edit/**`,
-  `packages/test-fixture/toml-edit/**`, the decision doc, and the workflow), then
-  close issue #198 with `gh issue close 198`. Both are outward-facing or
-  irreversible, so they are left for the owner. Issue #198's original acceptance
-  criteria (bounded fuzz task, committed seed corpus, CI on relevant changes,
-  bug-finding) are met.
+- Phase 9: done. `test:conformance` and `fuzz:coverage` are steps in
+  `.github/workflows/toml-edit-fuzz.yml` (commit e0676ba5); the workflow's mise
+  setup, build order, and the `module-logger` import were fixed (commits
+  510c1256, e6b4f25a) so the run is green; the path filter is proven; and #198 is
+  closed. The Scorecard FuzzingID alert (code-scanning/17) auto-closes on the next
+  Scorecard scan, which is the scanner's own action.
 
 ## Evidence checked
 
