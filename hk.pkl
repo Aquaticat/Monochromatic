@@ -7,10 +7,12 @@ local binPath = "packages/cli/forbidden-strings/target/release/forbidden-strings
 // so setting FORBIDDEN_STRINGS_RULES upstream (e.g. in CI) Just Works.
 local forbiddenStrings = new Step {
   check = "\(binPath) {{files}}"
+  hide = true
 }
 
 local forbiddenRootContext = new Step {
   check = "node -e \"const forbidden = process.argv.slice(1).filter((path) => path === 'CONTEXT.md' || path === './CONTEXT.md'); if (forbidden.length > 0) throw new Error('Root CONTEXT.md is forbidden; read source code directly and see docs/agents/domain.md.');\" {{files}}"
+  hide = true
 }
 
 hooks {
