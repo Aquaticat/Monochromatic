@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.monochromatic.musicplayer.core.PageEntry
 import dev.monochromatic.musicplayer.core.ShuffleMode
 import kotlinx.coroutines.delay
 
@@ -280,10 +281,10 @@ fun PlayerScreen(controller: PlayerController, onChooseFolder: () -> Unit) {
             SeekRow(position = position, duration = duration, onSeek = { controller.seek(it) })
             VolumeRow(volume = state.volume, onVolume = { controller.setVolume(it) })
             ControlRow(state = state, controller = controller)
-            if (state.pageLabels.isNotEmpty()) {
-                PageTabs(state = state, onSelectPage = { controller.selectPage(it) })
-            }
-            TrackList(state = state, controller = controller)
+            // Page tabs and the track list share one scroll area (the desktop's narrow layout): a
+            // library with many folder pages would otherwise let the wrapping tab bar fill the column
+            // and leave the list no room, so the tabs scroll together with the tracks as one column.
+            TrackPager(state = state, controller = controller)
         }
     }
 }
@@ -377,9 +378,20 @@ private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
     }
 }
 
-/** The selected page's track rows; the current track is highlighted, tap plays / toggles. */
+/**
+ * The page tabs and the selected page's track rows in one shared scroll area, matching the desktop's
+ * narrow (phone) layout: the page-tab bar scrolls together with the tracks rather than sitting fixed
+ * above them. A wrapping tab bar over a many-folder library (every top-level folder under the loaded
+ * root is its own page, so a folder-rich root makes dozens of tabs) would otherwise consume the whole
+ * column and collapse a separate weighted list to zero height, which is the "cannot scroll" failure.
+ * Folding the tabs into the same [LazyColumn] as its first item lets a long tab bar and a long track
+ * list share the available space and a single scroll gesture.
+ *
+ * @param state UI snapshot supplying the page labels, the selected page's rows, and the load state.
+ * @param controller Brain driven by tapping a tab (switch page) or a row (play / toggle).
+ */
 @Composable
-private fun ColumnScope.TrackList(state: PlayerUiState, controller: PlayerController) {
+private fun ColumnScope.TrackPager(state: PlayerUiState, controller: PlayerController) {
     if (state.queueSize == 0) {
         // An empty queue means "no music" only once loading has finished; during a scan (a chosen
         // folder can take seconds) show a loading notice instead of the failure-sounding message.
@@ -395,34 +407,54 @@ private fun ColumnScope.TrackList(state: PlayerUiState, controller: PlayerContro
             .fillMaxWidth()
             .weight(1.0f, fill = true),
     ) {
-        items(state.pageItems) { item ->
-            val isCurrent = item.index == state.currentIndex
-            val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent
-            val rowColor = if (isCurrent) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onSurface
+        if (state.pageLabels.isNotEmpty()) {
+            // The tab bar is the first scrolling item, so it scrolls away with the list (not pinned);
+            // this is the desktop's shared-scrollbar narrow behavior.
+            item {
+                PageTabs(state = state, onSelectPage = { controller.selectPage(it) })
             }
-            Text(
-                text = item.name,
-                color = rowColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(rowBackground)
-                    .clickable {
-                        Log.i(LOG_TAG, "tap row ${item.index} (current=${state.currentIndex})")
-                        if (item.index == state.currentIndex) {
-                            controller.togglePlay()
-                        } else {
-                            controller.playIndex(item.index)
-                        }
-                    }
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-            )
+        }
+        items(state.pageItems) { item ->
+            TrackRow(item = item, state = state, controller = controller)
         }
     }
+}
+
+/**
+ * One track row: its path relative to the loaded root, highlighted when it is the current track. Tap
+ * a row to play it; tap the current row to toggle play / pause.
+ *
+ * @param item Page entry to render, carrying its display name and its load-order queue index.
+ * @param state UI snapshot, read for the current-track highlight.
+ * @param controller Brain driven on tap.
+ */
+@Composable
+private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerController) {
+    val isCurrent = item.index == state.currentIndex
+    val rowBackground = if (isCurrent) MaterialTheme.colorScheme.primary else Color.Transparent
+    val rowColor = if (isCurrent) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    Text(
+        text = item.name,
+        color = rowColor,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(rowBackground)
+            .clickable {
+                Log.i(LOG_TAG, "tap row ${item.index} (current=${state.currentIndex})")
+                if (item.index == state.currentIndex) {
+                    controller.togglePlay()
+                } else {
+                    controller.playIndex(item.index)
+                }
+            }
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+    )
 }
 
 /** Shown while a library load or folder scan runs: a spinner and a short loading line. */
