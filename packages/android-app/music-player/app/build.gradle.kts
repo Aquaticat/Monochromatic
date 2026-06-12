@@ -14,10 +14,14 @@ android {
 
     defaultConfig {
         applicationId = "dev.monochromatic.musicplayer"
-        minSdk = 26
+        // minSdk 36: this is a single-target app for the owner's Pixel 6 (Android 16 / API 36); there
+        // is no need to support older releases, so modern platform APIs are used without compat guards.
+        minSdk = 36
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+        // On-device instrumented tests (the offline true-peak decoder needs a real MediaCodec).
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     // One app, three interchangeable audio engines selected at build time. Each
@@ -80,6 +84,15 @@ dependencies {
     // desktop's `_tests.rs` vectors). These run via testMedia3DebugUnitTest with
     // no device.
     testImplementation("junit:junit:4.13.2")
+
+    // On-device instrumented tests. The offline true-peak decoder drives a real
+    // MediaExtractor + MediaCodec, which only exist on a device, so its correctness
+    // is verified with connectedMedia3DebugAndroidTest, not the host JVM. runner is
+    // pinned >= 1.7.0 because the older runner crashes on Android 15/16
+    // (InputManager.getInstance removed); Espresso is deliberately NOT pulled in, so
+    // the Compose BOM's transitive Espresso 3.5.0 cannot crash here.
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.7.0")
 
     // The session layer (MediaSessionService, MediaSession, MediaController) plus
     // media3-common (SimpleBasePlayer) is flavor-agnostic: it projects whichever

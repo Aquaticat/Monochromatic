@@ -40,6 +40,16 @@ description = "Run host JVM unit tests for the pure-logic core (no device)"
 dir = "{{config_root}}"
 run = "./gradlew :app:testMedia3DebugUnitTest --no-daemon --console=plain"
 
+[tasks."test:instrumented:build"]
+description = "Assemble the Media3 debug instrumented-test APK (no device)"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleMedia3DebugAndroidTest --no-daemon --console=plain"
+
+[tasks."test:instrumented"]
+description = "Run Media3 debug instrumented tests on the connected device (pin ANDROID_SERIAL; hold the adb flock)"
+dir = "{{config_root}}"
+run = "./gradlew :app:connectedMedia3DebugAndroidTest --no-daemon --console=plain"
+
 [tasks.lint]
 description = "Run Android Lint on the Media3 debug variant"
 dir = "{{config_root}}"

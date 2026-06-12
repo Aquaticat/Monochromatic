@@ -144,8 +144,11 @@ end-to-end via `testTag`.
 - Identity: `applicationId` and namespace `dev.monochromatic.musicplayer`, unified with the desktop's macOS bundle
   id and config triple (both changed to `dev.monochromatic.musicplayer`); the Linux Wayland `APP_ID` stays
   `monochromatic.music-player` because it is the `.desktop` basename and KDE `WM_CLASS`, where renaming breaks.
-- minSdk 26, compileSdk/targetSdk 36, JDK 21 (mise temurin-21), AGP 9.x, Gradle 9.x, latest Compose BOM and Media3.
-  The Rust variants add the NDK, cargo-ndk, UniFFI, and 16 KB page alignment (`-Wl,-z,max-page-size=16384`).
+- minSdk 36, compileSdk 37, targetSdk 36, JDK 21 (mise temurin-21), AGP 9.x, Gradle 9.x, latest Compose BOM and
+  Media3. minSdk was raised from 26 to 36 on 2026-06-12 by owner directive: this is a single-target app for the
+  owner's Pixel 6 (Android 16 / API 36), so there is no need to support older releases and modern platform APIs are
+  used without compat guards (for example the two-argument `MediaFormat.getInteger(name, default)`, API 29). The
+  Rust variants add the NDK, cargo-ndk, UniFFI, and 16 KB page alignment (`-Wl,-z,max-page-size=16384`).
 
 ## Out of scope
 

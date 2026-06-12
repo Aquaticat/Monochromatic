@@ -180,8 +180,9 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
 - True-peak: keep the eager whole-library sweep but run it via WorkManager constrained to charging + idle; measure
   the loading track synchronously on a cache miss. The DSP and cache are unchanged.
 - Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
-- minSdk 26, compileSdk/targetSdk 36 (37 also fine per the kopia jetpack vet), JDK 21, AGP 9.x, Gradle 9.x, latest
-  Compose BOM and Media3.
+- minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
+  older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
+  Gradle 9.x, latest Compose BOM and Media3.
 
 ## Measured hard facts (verified this session; do not re-research)
 
@@ -225,7 +226,7 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
   `/var/tmp/tauri-vet-work/android-sdk/ndk/29.0.13846066` (the vet-jc SDK has none; point `ndk.dir` at it or
   install an NDK into the vet-jc SDK when the Rust flavors start). Rust Android targets are all installed.
 - Build matrix in use: AGP 9.2.1, Gradle 9.5.1, Kotlin 2.2.10, Compose BOM 2026.05.01, Media3 1.10.1, compileSdk
-  37, targetSdk 36, minSdk 26. Full vet recipe context in
+  37, targetSdk 36, minSdk 36. Full vet recipe context in
   `docs/decisions/kotlin-android-kopia-pcloud-vet-reports/vet-jetpack-compose.md` and `vet-android-runtime.md`.
 
 ## Reference artifacts
@@ -298,6 +299,13 @@ The adversarial review confirmed two more real findings, deferred deliberately (
    `ContentResolver.openFileDescriptor`).
 3. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
    the user pick the winner.
+4. Finalization (owner directive, 2026-06-12): once the app is genuinely finished, bisect `minSdk` downward to the
+   lowest API level that still builds and lints clean WITHOUT any source change (no new compat guards), then set
+   `minSdk` to that floor. minSdk is at 36 now only to avoid old-API contortions during development; the true floor
+   is whatever the APIs actually used permit. Method: lower `minSdk` in `app/build.gradle.kts`, run
+   `mise run //packages/android-app/music-player:build` + `:lint` (the `NewApi` lint check is the oracle: it errors
+   when a used API exceeds `minSdk`), and binary-search to the lowest value with zero `NewApi` errors and no edits.
+   Run for every flavor (each pulls in different APIs), and take the maximum of the per-flavor floors.
 
 ### Integration seams left by the port (wire these in milestone 2)
 
