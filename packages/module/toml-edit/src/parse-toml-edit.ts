@@ -4,7 +4,7 @@
  * @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type AST,
   ParseError,

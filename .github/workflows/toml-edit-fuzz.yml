@@ -60,11 +60,14 @@ jobs:
     - name: Install dependencies
       run: mise exec npm:pnpm node -- pnpm install --frozen-lockfile
 
+    - name: Build the bundle
+      # Build before type-check: the test and conformance files import the built
+      # `@monochromatic-dev/module-toml-edit`, so its dist .d.mts must exist for
+      # tsgo to resolve them on a fresh checkout.
+      run: mise run //packages/module/toml-edit:build
+
     - name: Type-check
       run: mise run //packages/module/toml-edit:lint:types
-
-    - name: Build the bundle
-      run: mise run //packages/module/toml-edit:build
 
     - name: Unit suite (bounded property runs plus fixtures)
       run: mise run //packages/module/toml-edit:test:unit
