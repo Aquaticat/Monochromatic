@@ -66,7 +66,11 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   the unchanged ported queue/pagination (so the desktop common-prefix trim and folder grouping apply as-is), and
   `PlayerController` keeps a parallel `uris` list it plays by load-order index (`openLibrary` replaces `openTracks`).
   `MainActivity` requests `READ_MEDIA_AUDIO` (33+) / `READ_EXTERNAL_STORAGE` (<=32) behind a permission gate, then
-  queries on grant. Verified on device (API 36): the real 3617-track library lists with two folder pages (`Plain`,
+  queries on grant. The full permission flow is verified on device (revoke -> relaunch -> the auto-launched system
+  dialog, which on GrapheneOS adds a "Setup Storage Scopes" option beside Allow/Don't allow -> tap Allow -> the
+  `granted=true` callback loads the library; the no-permission state renders the gate without crashing). All three
+  flavors (media3/hybrid/rust) still assemble green after this shared-`main` change. Verified on device (API 36):
+  the real 3617-track library lists with two folder pages (`Plain`,
   `2025MAR26`), Unicode display paths intact; tapping an opus row loaded the exact `content://` id and played
   (`3LAU Emma Hewitt - Alive Again.opus`, duration 3:40, position ticking, Pause shown); a short WAV ended and
   auto-advanced. A background research workflow corroborated every recall-prone fact against primary docs
