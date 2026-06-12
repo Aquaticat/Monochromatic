@@ -48,7 +48,12 @@ the same source), `xcrun simctl install <sim-udid> <App>.app`, `xcrun simctl lau
 screenshot to the external MacData volume (TCC denies it, NSPOSIXErrorDomain code 1), so write the PNG to
 the Mac's internal `/tmp` and `scp` it off. The latest simulator on this Mac is iPhone 17 Pro on iOS 26.5
 (`09D9EB9B-8036-4D23-929D-F75ADE9987FA`); the device UDID is
-`9057e2a8c2e70162e35b9ea8bf006f736670877b`.
+`9057e2a8c2e70162e35b9ea8bf006f736670877b`. Headless-Impeller caveat: a framework that presents frames
+through Impeller/Metal and relies on the display link (Flutter is the proven case) may show a black
+screenshot on a `simctl`-booted simulator with no Simulator.app GUI, even while the process is alive. The
+GUI Simulator.app (unreachable over SSH) renders it normally; the headless workaround is to force the
+Skia/software path (for Flutter, `FLTEnableImpeller=false`). Compose/Skiko-Metal and WKWebView capture
+fine headlessly, so this is renderer-specific, not a blanket headless limit.
 
 Two mechanics that bit during setup and will bite again:
 
@@ -95,7 +100,11 @@ Two mechanics that bit during setup and will bite again:
 
 ### Capacitor: PASS (substrate for the WKWebView group)
 
-Status: device-confirmed 2026-06-12.
+Status: device + latest-simulator confirmed (device 2026-06-12; simulator leg added 2026-06-12).
+
+Simulator leg (dual-target criterion): the same `App.xcodeproj` rebuilt with `-sdk iphonesimulator
+CODE_SIGNING_ALLOWED=NO`, installed and launched on iPhone 17 Pro / iOS 26.5 via `simctl`, rendered the
+WKWebView page ("Capacitor vet / WKWebView OK"). One codebase, SDK switch only.
 
 A minimal Capacitor app (`~/ios-vet/capgate`, one WKWebView page) built and launched on the iPhone X.
 Decisive facts from the build log:
@@ -159,7 +168,7 @@ which works on iOS 16.7 with no iOS-17 dependency, so none of them hit this wall
 
 ### Flutter: PASS (Dart AOT, managed-runtime family)
 
-Status: device-confirmed 2026-06-12.
+Status: device + latest-simulator confirmed (device 2026-06-12; simulator leg added 2026-06-12).
 
 A `flutter create` app built in Release configuration (Dart AOT) launched on the iPhone X. Decisive
 facts:
@@ -175,6 +184,17 @@ facts:
   UI draws (`You have pushed the button this many times: 0`, the `+` FAB), with no dyld error or crash
   report. Flutter a11y is native (its semantics tree bridges to UIKit accessibility, iOS 12+), so there
   is no iOS-17 wall.
+- Simulator leg (dual-target criterion): the same `flutter create` project, built with `flutter build
+  ios --simulator --debug` (Flutter supports only debug on the simulator, no AOT release) and launched on
+  iPhone 17 Pro / iOS 26.5, renders the same Material counter UI. One important headless-harness gotcha:
+  Flutter 3.44 is Impeller-only on iOS, and Impeller on a `simctl`-booted simulator with no Simulator.app
+  GUI never presents a frame, so the standalone `simctl launch` screenshotted pure black while the process
+  was alive (the os_log showed the app up but no first frame). The render captured only after forcing the
+  Skia fallback with `FLTEnableImpeller=false` in `Info.plist`. This is a headless-capture limitation, not
+  a Flutter one: Impeller renders fine on the real device and in the GUI Simulator.app, so Flutter works on
+  both targets from one codebase; the flag is a verification workaround and was removed afterward (the app
+  ships with Impeller). Any future Impeller/Metal-presenting framework gated headlessly may need the same
+  treatment (see the gate-mechanism note).
 - Caveat on the CocoaPods claim: a plugin-less `flutter create` generates NO `Podfile` (the log shows
   "No Podfile found"); Flutter integrates its own framework via a generated xcconfig plus a build
   phase, not CocoaPods, until a plugin pulls pods in. So neither Capacitor (SwiftPM) nor this Flutter
@@ -371,9 +391,10 @@ interpreter, Rust FFI), MAUI, Avalonia, and Uno, and Compose Multiplatform (rank
 Skiko/Metal), all render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
 
 Dual-target obligation (owner directive 2026-06-12, see the gate mechanism): a PASS now requires render
-on BOTH the device and the latest simulator from one codebase. Compose Multiplatform is confirmed on both.
-Capacitor, Flutter, and the .NET trio were verified on the device before this directive, so each owes a
-retroactive latest-simulator render check (their apps are still on the Mac); until that is done they are
+on BOTH the device and the latest simulator from one codebase. Compose Multiplatform, Capacitor, and
+Flutter are confirmed on both legs (Flutter's simulator leg needed the Impeller-off headless workaround,
+above). The .NET trio (substrate, MAUI, Avalonia, Uno) was verified on the device before this directive
+and still owes a retroactive latest-simulator render check (apps still on the Mac); until then it is
 device-confirmed, simulator-pending. Every remaining gate must clear both legs up front.
 
 Owner directives (2026-06-12): (1) defer the six WKWebView frameworks (the Capacitor and Cordova shells

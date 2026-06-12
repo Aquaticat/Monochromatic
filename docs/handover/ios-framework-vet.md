@@ -10,8 +10,8 @@ NativeScript, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, Swif
 WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
-device and the latest iOS simulator (iOS 26.5) from one codebase. Compose cleared both legs; Capacitor,
-Flutter, and the .NET trio owe a retroactive simulator check.
+device and the latest iOS simulator (iOS 26.5) from one codebase. Compose, Capacitor, and Flutter cleared
+both legs; the .NET trio still owes a retroactive simulator check.
 
 ## Goal and hard constraints
 
@@ -126,17 +126,26 @@ needs no signing: `xcrun simctl boot <sim-udid>` (headless renders offscreen), `
 iphonesimulator -destination 'platform=iOS Simulator,id=<sim-udid>' CODE_SIGNING_ALLOWED=NO build`, then
 `xcrun simctl install/launch/io <sim-udid> ... screenshot`. CoreSimulator cannot write the screenshot to
 the external MacData volume (TCC, code 1), so write to the Mac's internal `/tmp` and `scp` it off. Sim
-udid `09D9EB9B-8036-4D23-929D-F75ADE9987FA`. Capacitor, Flutter, and the .NET trio passed the device leg
-before this directive and owe a retroactive simulator render check (apps still on the Mac); every
-remaining gate clears both legs up front.
+udid `09D9EB9B-8036-4D23-929D-F75ADE9987FA`. Capacitor and Flutter have since cleared the simulator leg
+too; the .NET trio passed the device leg before this directive and still owes a retroactive simulator
+render check (apps still on the Mac); every remaining gate clears both legs up front. Headless-Impeller
+caveat: an Impeller/Metal display-link renderer (Flutter is the proven case) can screenshot black on a
+GUI-less `simctl` sim though the process is alive; force the Skia path to capture (Flutter:
+`FLTEnableImpeller=false`). Compose/Skiko-Metal and WKWebView capture fine headlessly.
 
-- Capacitor (rank 2, covers the six WKWebView members): PASS, renders (`Capacitor vet / WKWebView OK`).
-  Capacitor 7 uses Swift Package Manager, not CocoaPods. WebKit gives native a11y. App at
-  `~/ios-vet/capgate`.
-- Flutter (rank 4): PASS, renders the Dart-AOT Release counter UI. Native UIKit a11y. App at
-  `~/ios-vet/flgate` (`flutter build ios --release --config-only` then xcodebuild on
-  `ios/Runner.xcworkspace`). Note: a plugin-less Flutter app has no Podfile, so the CocoaPods path is
-  still unproven (prove it via the React Native gate).
+- Capacitor (rank 2, covers the six WKWebView members): PASS on both legs (device + sim), renders
+  (`Capacitor vet / WKWebView OK`). Capacitor 7 uses Swift Package Manager, not CocoaPods. WebKit gives
+  native a11y. App at `~/ios-vet/capgate`. Simulator: same `App.xcodeproj`, `-sdk iphonesimulator
+  CODE_SIGNING_ALLOWED=NO`, `simctl` install/launch on iPhone 17 Pro / iOS 26.5.
+- Flutter (rank 4): PASS on both legs (device + sim), renders the Dart-AOT Release counter UI on device
+  and the same counter UI on the simulator. Native UIKit a11y. App at `~/ios-vet/flgate`
+  (`flutter build ios --release --config-only` then xcodebuild on `ios/Runner.xcworkspace` for device;
+  `flutter build ios --simulator --debug` for the sim, since Flutter has no release/AOT on the simulator).
+  Headless gotcha: Flutter 3.44 is Impeller-only on iOS, and Impeller on a `simctl`-booted sim with no
+  GUI presents no frame (black screenshot, process alive); capture needed `FLTEnableImpeller=false`
+  (Skia), removed after, the app ships Impeller. Not a Flutter limit (GUI sim and device render fine).
+  Note: a plugin-less Flutter app has no Podfile, so the CocoaPods path is still unproven (prove it via
+  the React Native gate).
 - Slint (rank 1): DISQUALIFIED. See next section.
 - .NET trio (rank 3, MAUI/Avalonia/Uno): PASS, all four parts gated. The shared Microsoft.iOS/Mono
   substrate renders in both Release (full AOT) and Debug (`MtouchInterpreter=all`) and P/Invokes a linked
