@@ -1,12 +1,14 @@
 package dev.monochromatic.musicplayer
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -49,6 +51,14 @@ class PlaybackService : MediaSessionService() {
 
         /** Load the library if not already loaded; the activity calls this once it has the audio grant. */
         fun ensureLibraryLoaded() = this@PlaybackService.ensureLibraryLoaded()
+
+        /**
+         * Replace the library with the contents of a just-picked Storage Access Framework folder; the
+         * activity calls this after taking a persistable grant for [treeUri].
+         *
+         * @param treeUri Tree URI the user chose through `ACTION_OPEN_DOCUMENT_TREE`.
+         */
+        fun reloadFromRoot(treeUri: Uri) = this@PlaybackService.reloadFromRoot(treeUri)
     }
 
     override fun onCreate() {
@@ -61,8 +71,9 @@ class PlaybackService : MediaSessionService() {
         // Start the notification/foreground machinery now, without waiting for an external controller:
         // addSession registers the media notification manager's own player listener for this session.
         addSession(built)
-        // The audio grant persists across process death, so a headless restart can self-load.
-        if (hasAudioPermission(this)) {
+        // Both a chosen-folder grant and the audio permission persist across process death, so a
+        // headless restart can self-load from whichever the user set up.
+        if (LibraryRoot.heldRoot(this) != null || hasAudioPermission(this)) {
             ensureLibraryLoaded()
         }
     }
@@ -73,9 +84,10 @@ class PlaybackService : MediaSessionService() {
         if (intent?.action == ACTION_LOCAL_BIND) localBinder else super.onBind(intent)
 
     /**
-     * Query the device audio library and hand it to the brain, once. Safe to call from both the
-     * headless self-load and the activity's post-grant signal; the [libraryLoaded] guard keeps it to
-     * a single query.
+     * Load the library and hand it to the brain, once. Safe to call from both the headless self-load
+     * and the activity's post-grant signal; the [libraryLoaded] guard keeps it to a single load. The
+     * source is the user's chosen folder when one is set and still readable, otherwise the device-wide
+     * audio collection.
      */
     fun ensureLibraryLoaded() {
         if (libraryLoaded) {
@@ -83,11 +95,64 @@ class PlaybackService : MediaSessionService() {
         }
         libraryLoaded = true
         scope.launch {
-            val tracks = MediaStoreSource.query(contentResolver)
+            val tracks = loadInitialTracks()
             controller.openLibrary(tracks)
             Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks")
         }
     }
+
+    /**
+     * Replace the library with a just-picked folder's contents, overriding the one-shot
+     * [libraryLoaded] guard because an explicit re-pick is meant to supersede whatever loaded first.
+     *
+     * @param treeUri Tree URI the user chose; the activity has already taken a persistable grant.
+     */
+    fun reloadFromRoot(treeUri: Uri) {
+        libraryLoaded = true
+        scope.launch {
+            val tracks = scanRoot(treeUri)
+            controller.openLibrary(tracks)
+            Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks from picked folder")
+        }
+    }
+
+    /**
+     * Pick the initial source: the chosen folder when [LibraryRoot.heldRoot] confirms a live grant
+     * (returned even when empty, so a deliberately small folder is honored rather than silently
+     * widened to every track on the device), otherwise MediaStore when the audio permission is held,
+     * otherwise nothing (the user has neither chosen a folder nor granted audio access yet).
+     *
+     * @return Tracks for the brain to open; empty when no source is available.
+     */
+    private suspend fun loadInitialTracks(): List<Track> {
+        val root: Uri? = LibraryRoot.heldRoot(this)
+        if (root != null) {
+            return scanRoot(root)
+        }
+        if (hasAudioPermission(this)) {
+            return MediaStoreSource.query(contentResolver)
+        }
+        return emptyList()
+    }
+
+    /**
+     * Scan a chosen folder, degrading an unexpected scan failure to an empty library rather than
+     * letting it crash a background service on cold start. [SafTreeSource.query] already skips
+     * individual unreadable directories, so this guards only a failure of the whole walk; a coroutine
+     * cancellation is rethrown so structured cancellation still works.
+     *
+     * @param treeUri Granted tree URI to scan.
+     * @return Audio tracks under the folder, or empty when the whole scan failed.
+     */
+    private suspend fun scanRoot(treeUri: Uri): List<Track> =
+        try {
+            SafTreeSource.query(contentResolver, treeUri)
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (failure: Exception) {
+            Log.w(LOG_TAG, "scan of folder $treeUri failed; treating as empty", failure)
+            emptyList()
+        }
 
     override fun onDestroy() {
         session?.run {

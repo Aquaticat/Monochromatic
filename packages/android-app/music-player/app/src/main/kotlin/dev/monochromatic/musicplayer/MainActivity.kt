@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -36,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -106,7 +108,11 @@ class MainActivity : ComponentActivity() {
                     if (controller == null) {
                         StartingGate()
                     } else {
-                        AppRoot(controller = controller, onAudioGranted = { binder?.ensureLibraryLoaded() })
+                        AppRoot(
+                            controller = controller,
+                            onAudioGranted = { binder?.ensureLibraryLoaded() },
+                            onFolderChosen = ::onFolderChosen,
+                        )
                     }
                 }
             }
@@ -127,6 +133,22 @@ class MainActivity : ComponentActivity() {
         binder = null
         boundController.value = null
     }
+
+    /**
+     * Persist read access to a just-picked Storage Access Framework folder and make it the live
+     * library. Taking a persistable grant lets a later cold start re-read the folder with no re-pick,
+     * remembering the choice backs that restart, and the bound service is told to rescan now. Only
+     * the activity can do this: the persistable grant is delivered to the component that launched the
+     * picker.
+     *
+     * @param treeUri Tree URI returned by `ACTION_OPEN_DOCUMENT_TREE`.
+     */
+    private fun onFolderChosen(treeUri: Uri) {
+        contentResolver.takePersistableUriPermission(treeUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        LibraryRoot.save(this, treeUri)
+        binder?.reloadFromRoot(treeUri)
+        Log.i(LOG_TAG, "folder chosen: $treeUri")
+    }
 }
 
 /**
@@ -136,9 +158,10 @@ class MainActivity : ComponentActivity() {
  *
  * @param controller Service-owned brain to render and drive.
  * @param onAudioGranted Invoked when audio access is (re)confirmed, to trigger the service-side load.
+ * @param onFolderChosen Invoked with a picked tree URI to persist it and rescan from that folder.
  */
 @Composable
-private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit) {
+private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit, onFolderChosen: (Uri) -> Unit) {
     val context = LocalContext.current
     var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -160,7 +183,7 @@ private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit) {
         }
     }
     if (hasAudioAccess) {
-        PlayerScreen(controller)
+        PlayerScreen(controller = controller, onFolderChosen = onFolderChosen)
     } else {
         PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
     }
@@ -186,13 +209,20 @@ private fun StartingGate() {
  * track list. Tap a track to play it; tap the playing track to pause or resume.
  *
  * @param controller Drives the queue, pagination, and playback; its `uiState` is observed here.
+ * @param onFolderChosen Invoked with a picked tree URI when the user chooses a library folder.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun PlayerScreen(controller: PlayerController) {
+fun PlayerScreen(controller: PlayerController, onFolderChosen: (Uri) -> Unit) {
     val state = controller.uiState
     var position by remember { mutableDoubleStateOf(0.0) }
     var duration by remember { mutableDoubleStateOf(0.0) }
+    // Folder picker: a non-null result is a granted tree the activity persists and rescans.
+    val folderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        if (tree != null) {
+            onFolderChosen(tree)
+        }
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -203,7 +233,14 @@ fun PlayerScreen(controller: PlayerController) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Music Player") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Music Player") },
+                actions = {
+                    TextButton(onClick = { folderLauncher.launch(null) }) { Text("Folder") }
+                },
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
