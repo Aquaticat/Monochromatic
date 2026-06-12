@@ -1,7 +1,7 @@
 # Android UI/app-shell stack vet for the kopia-to-pCloud backup app
 
-Status: per-technology vet and four-stack comparison complete. UI/app-shell stack decision is open
-(not yet recorded). Date updated: 2026-06-07.
+Status: per-technology vet and five-stack comparison complete. UI/app-shell stack decision is open
+(not yet recorded). Date updated: 2026-06-12.
 
 ## Context
 
@@ -20,7 +20,7 @@ monorepo (mise, pnpm, cargo).
 
 ## Decisive result: run on the real device
 
-All four UI stacks were built and launched on the physical Pixel 6:
+All five UI stacks were built and launched on the physical Pixel 6:
 
 - Native Jetpack Compose: runs. Counter increments; an in-app Ktor CIO server served HTTP 200.
 - Compose Multiplatform: runs (desktop runComposeUiTest plus a debug APK on the device).
@@ -29,6 +29,15 @@ All four UI stacks were built and launched on the physical Pixel 6:
   only via dynamic code loading (`internal/backends/android-activity/javahelper.rs:251-307`,
   `InMemoryDexClassLoader`), which GrapheneOS blocks by default, raising a `SecurityException` before any
   UI renders. Disqualified for this device as shipped; the issue is unreported upstream.
+- NativeScript: builds (a current, 16 KB-aligned `@nativescript/android` 9.0.4 APK), but crashes at V8
+  isolate initialization before any app JavaScript runs. GrapheneOS denies executable memory
+  (`TSEC_FLAG_DENY_EXECMEM` in logcat), so V8 cannot allocate its code space while deserializing the startup
+  snapshot and aborts (`Fatal javascript OOM ... during deserialization`, SIGTRAP). This is the
+  executable-memory side of the same protection, distinct from Slint's dex-loading `SecurityException`. The
+  obvious mitigation, `--jitless` via `android.v8Flags`, was built and run and crashes identically, so no
+  app-side flag boots it. A second, independent break also applies (the runtime generates dex at runtime via
+  `DexFactory` to `DexClassLoader`, which storage-DCL blocks). Disqualified for this device as shipped,
+  ranked last of the five; the failure is unreported upstream.
 
 ## Candidate stacks
 
@@ -68,9 +77,34 @@ is strong and DCL-free. But the Slint UI does not run on the owner's GrapheneOS 
 disqualifies it for the target device unless the per-app dynamic-code-loading restriction is disabled or
 Slint upstream gains an app-classpath helper path.
 
+### NativeScript (TypeScript/JavaScript, V8 on Android)
+
+Runs the app's bundled TypeScript on an embedded V8 in `libNativeScript.so` and renders native Android views
+through a reflection bridge. TypeScript-friendly, which suits the repo on paper.
+
+Does not run on the owner's GrapheneOS device, more decisively than Slint. V8 needs executable memory to
+deserialize its startup snapshot at isolate init; GrapheneOS's memory-DCL protection denies it
+(`TSEC_FLAG_DENY_EXECMEM`), and V8 aborts before any app JS, so even a hello-world app dies. The textbook
+`--jitless` mitigation was built and run and crashes identically (V8 still allocates executable memory at
+deserialization), so no app-side flag boots it; there is no jitless performance to weigh because nothing
+starts. A second, independent GrapheneOS break stacks on top: the runtime generates dex at runtime via
+`DexFactory` to a file-based `DexClassLoader` for any native subclass the build-time Static Binding Generator
+cannot statically resolve, which storage-DCL blocks. So NativeScript faces two breaks where Slint faces one.
+Separately, the gateway (the app's hard part) has no natural home: `@nativescript/core` HTTP is a buffering
+client with no server and no streaming, and the JS to Java bridge copies buffers per crossing, so the
+streaming pump must be Kotlin/Java (Ktor plus OkHttp) regardless, with NativeScript as a do-nothing launcher.
+
+Pros: native UI from TypeScript suits the repo's strength; the build path is clean and the shipped
+`libNativeScript.so` is already 16 KB-page-aligned for Android 15/16 with no manual fix. Cons: disqualified on
+the target device (V8 cannot get executable memory, and `--jitless` does not help); a second storage-DCL break
+for realistic native subclassing; the gateway lands in Kotlin/Java anyway under a JS shell that adds nothing;
+it embeds a second JIT engine, the very thing GrapheneOS blocks; maintenance is active-but-thin (OpenJS
+At-Large tier, nStudio-subsidized, roughly one Android major behind, targets API 35), and the E2E testing
+story is build-your-own-Maestro-harness.
+
 ## Ranking (analysis, not a recorded decision)
 
-Native Jetpack Compose > Tauri v2 > Compose Multiplatform > Slint.
+Native Jetpack Compose > Tauri v2 > Compose Multiplatform > Slint > NativeScript.
 
 - Native Jetpack over Tauri: every viable stack needs a Gradle/Kotlin Android shell anyway for the
   foreground service and kopia bundling, so Tauri does not escape the JVM/Gradle island; it adds Rust plus
@@ -80,9 +114,17 @@ Native Jetpack Compose > Tauri v2 > Compose Multiplatform > Slint.
 - Tauri over Compose Multiplatform: Tauri is a genuinely different architecture (Rust core, web UI);
   Compose Multiplatform is a heavier native Jetpack for an Android-only app.
 - Compose Multiplatform over Slint: Slint does not run on the device.
+- Slint over NativeScript: neither runs on the device, but Slint keeps the gateway in first-class Rust
+  (matching the repo's desktop Slint apps), has a single GrapheneOS break with one toggle as an escape hatch,
+  and is the repo's incumbent UI tech. NativeScript has two stacked breaks (executable-memory/JIT plus
+  runtime-dex/storage-DCL), its only app-side mitigation (`--jitless`) does not work, and the gateway has no
+  Rust or idiomatic-Kotlin home (it forces Kotlin/Java under a JS shell that adds nothing).
 
 Flip conditions: if iOS or desktop becomes a real target, Compose Multiplatform rises above native Jetpack;
-if keeping the gateway in Rust and out of the JVM is weighted highest, Tauri rises above native Jetpack.
+if keeping the gateway in Rust and out of the JVM is weighted highest, Tauri rises above native Jetpack; if
+the target were a device without DCL hardening (stock Android, or GrapheneOS with the memory and storage DCL
+toggles off for this app), NativeScript would boot and rise to roughly Tauri's class (TypeScript UI plus a
+native shell, gateway in Kotlin), but on the owner's hardened Pixel 6 it is last.
 
 The pick is a value judgment reserved to the owner; this document records the comparison, not a selection.
 
@@ -94,6 +136,21 @@ end to end at about 8.2 MiB peak RSS, with pure-Rust TLS (rustls, no OpenSSL).
 S3-gateway core, Kotlin path (Jetpack and Compose Multiplatform): Ktor CIO server verified in-app on the
 device; OkHttp 5.3.2 / Retrofit 3.0.0 streaming client verified. Rejected: NanoHTTPD (dormant, blocking),
 Spring Boot (too heavy), `java.net.http` (no Ktor-engine path).
+
+S3-gateway core, NativeScript path: no native home. `@nativescript/core` HTTP is a buffering client with no
+server and no streaming (`Async.java:398` writes the whole body; an in-source TODO admits large files will not
+work), and the JS to Java bridge copies buffers per crossing (`index.android.ts:158-160`), so the streaming
+pump cannot live in JS. The viable hosts are `java.net.ServerSocket`, NanoHTTPD (unmaintained since 2019), or
+Ktor CIO, all driven from `App_Resources/Android` and pumping in Kotlin/Java, identical to the Kotlin-path
+gateway above but wrapped in a JS shell. The one JS-resident option, nodejs-mobile, means a second JS engine
+(`libnode.so` about 62 MiB per ABI) and its NativeScript binding is gone from npm. Moot on the target device:
+V8 does not initialize (see below).
+
+V8 executable-memory disqualifier (NativeScript): on the owner's GrapheneOS Pixel 6, V8 cannot allocate
+executable memory to deserialize its startup snapshot (`TSEC_FLAG_DENY_EXECMEM`, the memory-DCL protection),
+so it aborts at isolate init before any app JS. Verified on device for both the default JIT build and a
+`--jitless` build (identical crash). This is the executable-memory side of GrapheneOS DCL, distinct from
+Slint's `InMemoryDexClassLoader` dex-loading break.
 
 Background execution (needed by every stack): WorkManager plus a dataSync Foreground Service verified
 surviving backgrounding on the device. Constraint: apps targeting API 35+ get about 6 hours of dataSync
@@ -130,7 +187,13 @@ JUnit5.
 ## Cross-cutting Android constraints (any stack)
 
 - GrapheneOS device: INTERNET is a revocable per-app permission (default off), so the app must request
-  Network access; dynamic code loading is restricted (this is what disqualifies Slint's UI).
+  Network access; dynamic code loading is restricted on two axes, both enforced on this device. Dex loading
+  (memory and storage) raises a `SecurityException` at `DexClassLoader`/`InMemoryDexClassLoader` (this is what
+  disqualifies Slint's UI, and is the second, latent break for any NativeScript app that subclasses a native
+  type at runtime). Executable memory / app JIT is denied separately (`TSEC_FLAG_DENY_EXECMEM`), which
+  disqualifies any stack embedding its own JIT engine: this is what kills NativeScript's V8 at startup, and
+  `--jitless` does not avoid it. Stacks that emit no runtime dex and embed no JIT (native Kotlin in
+  `classes.dex`, Tauri's system WebView, Rust) clear both axes.
 - Foreground-service time cap (API 35+): about 6 hours of dataSync per 24 hours; design backups as
   chunked, resumable, onTimeout-checkpointed, and prefer a user-initiated data transfer job for bulk.
 - kopia binary: ship per ABI as `jniLibs/<abi>/lib*.so` with `extractNativeLibs=true`, and exec it from
@@ -140,12 +203,13 @@ JUnit5.
 
 ## Evidence
 
-Sixteen per-technology full-verification vets were run this session, each producing a report with exact
-commands, outputs, and source citations. The load-bearing numbers and version pins are inlined above so
-this document stands alone. The full raw reports are persisted alongside this doc under
-`kotlin-android-kopia-pcloud-vet-reports/` (verbatim agent output, not lint-conformed):
+Seventeen per-technology full-verification vets were run (sixteen on 2026-06-07, plus NativeScript on
+2026-06-12), each producing a report with exact commands, outputs, and source citations. The load-bearing
+numbers and version pins are inlined above so this document stands alone. The full raw reports are persisted
+alongside this doc under `kotlin-android-kopia-pcloud-vet-reports/` (verbatim agent output, not
+lint-conformed):
 
-- Stacks: `vet-jetpack-compose.md`, `vet-compose.md`, `vet-tauri.md`, `vet-slint-rust.md`.
+- Stacks: `vet-jetpack-compose.md`, `vet-compose.md`, `vet-tauri.md`, `vet-slint-rust.md`, `vet-nativescript.md`.
 - Gateway core: `vet-ktor.md`, `vet-okhttp.md`, `vet-rust-http-core.md`.
 - Background and runtime: `vet-android-runtime.md`.
 - Testing: `vet-slint-testing.md`, `vet-tauri-driver.md`, `vet-android-e2e.md`, `vet-test-frameworks.md`.
