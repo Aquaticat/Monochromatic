@@ -148,10 +148,11 @@ facts:
   app exercised CocoaPods. The CocoaPods + `.xcworkspace` signing path is still unproven and will be
   settled by the React Native gate (or a Flutter app with a plugin).
 
-### .NET / Microsoft.iOS: substrate PASS (Mono AOT + interpreter, Rust FFI); MAUI UI PASS; Avalonia + Uno UI pending
+### .NET / Microsoft.iOS: PASS (substrate + MAUI + Avalonia + Uno all render-verified)
 
-Status: substrate and MAUI device-confirmed 2026-06-12; Avalonia and Uno still need their own UI render
-gates (see "Scope" and "MAUI" below).
+Status: substrate, MAUI, Avalonia, and Uno all device-confirmed 2026-06-12. The whole .NET trio renders
+on the iPhone X with no iOS-17 wall. They differ in a11y posture by renderer (MAUI native UIKit; Avalonia
+and Uno-Skia self-drawn with their own a11y bridges); see the per-framework notes below.
 
 The .NET trio (MAUI, Avalonia, Uno) shares one iOS substrate: the Microsoft.iOS workload's Mono runtime,
 AOT-compiled for the device (iOS forbids JIT). This gate proves that substrate on the iPhone X with a
@@ -183,8 +184,10 @@ need: managed UI code calling a linked native archive over FFI.
 - Signing: `dotnet build` auto-detected identity `1690CF17...` and profile UUID `b08f51d5...` (team
   `HWLVAKDV4F`, app id `HWLVAKDV4F.dev.monochromatic.iosvet.hellodevice`) through the vet keychain in
   the search list, no call to Apple, fully unattended over SSH.
-- a11y: a UIKit `UILabel` is a native accessibility element (iOS 12+). MAUI iOS and Uno iOS both render
-  through native UIKit handlers, so they inherit native a11y with no iOS-17 dependency, unlike Slint.
+- a11y: a UIKit `UILabel` is a native accessibility element (iOS 12+). MAUI iOS renders through native
+  UIKit handlers, so it inherits native a11y with no iOS-17 dependency, unlike Slint. Avalonia and Uno's
+  default Skia renderer self-draw and route a11y through their own bridges (see their notes below); none
+  of the three depends on an iOS-17 API.
 
 Scope of this PASS, and what it does NOT cover: it gates the shared Microsoft.iOS execution substrate
 (Mono AOT plus interpreter, native FFI, a native UIKit render), which all of MAUI, Avalonia, and Uno sit
@@ -210,9 +213,28 @@ Slint's iOS-17 `UITraitUserInterfaceStyle` observer, which is exactly why MAUI r
 Slint does not. Native UIKit handlers give native a11y. So MAUI is the first trio member gated as a
 framework, not just on the shared substrate.
 
-Still pending for the trio, each its own on-device render gate with the same Slint-signature scan, since
-neither the substrate result nor the MAUI render transfers to them: Avalonia (renders via SkiaSharp on a
-Metal/GL layer, a genuinely different surface) and Uno (its own renderer).
+Avalonia itself: PASS (UI render-verified 2026-06-12). An actual `dotnet new avalonia.xplat` iOS head
+(`~/ios-vet/avx/avx.iOS`, Avalonia 12.0.4, `net10.0-ios`, CFBundleIdentifier forced, Release full AOT,
+signed via the vet keychain) installed and rendered "Welcome to Avalonia!" on the iPhone X, drawn by
+Avalonia's own SkiaSharp renderer on a Metal/GL layer (not native UIKit controls). No fresh crash report,
+no Slint signature. a11y caveat under the a11y-must rule: because Avalonia self-draws, its accessibility
+goes through Avalonia's own iOS `AutomationPeer`-to-`UIAccessibility` bridge, not native UIKit, so its
+a11y fidelity (does VoiceOver actually read its controls and states?) is a stage-2 question the render
+gate does not answer. The render and the absence of any iOS-17 wall are proven; the a11y depth is not.
+
+Uno itself: PASS (UI render-verified 2026-06-12). An actual `dotnet new unoapp -preset blank` app
+(`~/ios-vet/unogate`, Uno.Sdk 6.5.x, TFM trimmed to `net10.0-ios`, `ApplicationId` forced, Release full
+AOT, signed via the vet keychain) installed and rendered "Hello Uno Platform!" on the iPhone X. The blank
+template defaults to `UnoFeatures: SkiaRenderer`, so Uno 6 self-draws on Skia like Avalonia (not native
+UIKit); the same a11y caveat applies (Uno's own automation-to-iOS bridge, fidelity is stage-2). Uno does
+also ship a native-UIKit renderer (legacy Uno.UI), which would give native a11y at the cost of the older
+rendering path; under the a11y-must rule that native renderer, not the Skia default, is Uno's a11y-safe
+configuration and should be the one re-verified in stage 2. No fresh crash report, no Slint signature.
+
+So all three frameworks are now gated as frameworks, not just on the shared substrate. Net a11y posture,
+which matters under the a11y-must rule: MAUI is strongest (native UIKit handlers, native a11y for free);
+Avalonia and Uno render fine but their default (self-drawn Skia) a11y rides a custom bridge whose iOS
+fidelity is a stage-2 check, with Uno's native renderer as its a11y-safe fallback.
 
 Toolchain notes for reproduction (Homebrew dotnet 10.0.300): the prior session's `dotnet workload
 install ios` had written only the iOS manifest, not the runtime/AOT packs, so the first device build
@@ -255,23 +277,16 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
-share its WKWebView), Flutter (rank 4), and MAUI (rank 3, actual XAML UI, above). The shared
-.NET/Microsoft.iOS substrate (rank 3) is also execution-verified (Mono AOT and interpreter, Rust FFI,
-above); within that trio Avalonia and Uno still need their own UI render gates (the substrate gate and
-the MAUI render do not exercise their renderers, where a Slint-style iOS-17 wall would live). Slint
-(rank 1) was gated and FAILED (disqualified, above).
+share its WKWebView), Flutter (rank 4), and the full .NET trio (rank 3): substrate (Mono AOT and
+interpreter, Rust FFI), MAUI, Avalonia, and Uno all render-verified, above. Slint (rank 1) was gated and
+FAILED (disqualified, above).
 
-Owner directive (2026-06-12): defer the six WKWebView frameworks (the Capacitor and Cordova shells plus
-the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
-framework is gated. The remaining order, each confirmed by render (screenshot) and a few seconds of
+Owner directives (2026-06-12): (1) defer the six WKWebView frameworks (the Capacitor and Cordova shells
+plus the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
+framework is gated; (2) add Dioxus, SnapKit, UIKit, and SwiftUI to the queue, positioned just before
+that deferred web block. The remaining order, each confirmed by render (screenshot) and a few seconds of
 no-crash runtime, not by launch success alone:
 
-- Avalonia and Uno UI render gates (rank 3 UI, next; MAUI already passed, above). Render an actual
-  Avalonia iOS app and an actual Uno iOS app on device, each scanned for the Slint signature (dyld
-  `Symbol not found` or an objc2/class-not-found panic on an iOS-17 API) before the screenshot. The
-  substrate is already proven; this gates each framework's own renderer and a11y bridge. Toolchain:
-  Avalonia templates (`dotnet new install Avalonia.Templates`) and Uno templates
-  (`dotnet new install Uno.Templates`) on the present dotnet 10.0.300.
 - Compose Multiplatform (rank 5, expected-pass). Kotlin/Native LLVM-AOT static framework; a cinterop
   link of a Rust `.a`; check whether `embeddedServer(CIO)` binds on iosArm64. Toolchain: JDK 17+,
   Kotlin/Gradle, KMP (Kotlin/Native downloads its own LLVM/iOS toolchain).
@@ -288,6 +303,28 @@ no-crash runtime, not by launch success alone:
   the iPhone X (A11) caps at iOS 16.7, so a 6.11 binary will not install. Confirm a QML screen
   animates (V4 bytecode interpreter, no execmem kill) and a linked Rust value prints. Toolchain: Qt
   for iOS prebuilt static libs (qt-unified) + CMake.
+
+Appended 2026-06-12 (owner), gated after the cross-platform set above and before the deferred web block:
+
+- Dioxus (`dioxuslabs.com`, the most substantive of these four; Rust, so directly relevant to the
+  music-player and kopia Rust cores). On iOS, Dioxus mobile renders its UI through `wry` (a WKWebView
+  wrapped via `tao`), driven by AOT-compiled Rust, so it is a Rust-driven WKWebView, not native UIKit:
+  expected-pass on the substrate (WKWebView is already gated; Rust is AOT, no JIT wall) but it must be
+  device-confirmed that the Dioxus + `wry` stack builds and renders on iOS 16.7. a11y is WebKit-native
+  (same posture as Capacitor). Toolchain: `dx` CLI (dioxus-cli) plus the `aarch64-apple-ios` Rust target
+  (already installed); build with `dx bundle --platform ios` or a cargo staticlib in an Xcode wrapper.
+- SnapKit (`github.com/SnapKit/SnapKit`): a pure-Swift Auto Layout constraint DSL over UIKit, no custom
+  rendering. The gate is a UIKit Swift app that lays out with SnapKit constraints, pulling SnapKit via
+  Swift Package Manager; it doubles as the SPM-Swift-dependency signing check. Native UIKit a11y;
+  expected trivial pass. Toolchain: xcodegen (already installed) + SPM.
+- UIKit: Apple's native imperative UI. The gate is a pure-UIKit Swift app (xcodegen project like the
+  HelloDevice canary, but UIKit instead of SwiftUI). Native a11y, iOS-forever baseline; expected trivial
+  pass. Toolchain: xcodegen (already installed).
+- SwiftUI: Apple's native declarative UI (iOS 13+). Effectively already render-proven: the HelloDevice
+  signing canary (`docs/runbook/ios-iphone-x-codesign-setup.md`, Appendix A) is a SwiftUI app that
+  rendered "iOS vet signing OK" on this device. This queue item is a formal re-confirmation, not a new
+  unknown. Native a11y. Toolchain: xcodegen (already installed).
+
 Deferred to the very end per the owner directive (the six WKWebView frameworks), after every gate above:
 
 - Apache Cordova substrate (comparison against the already-passed Capacitor shell).
