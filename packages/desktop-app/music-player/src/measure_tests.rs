@@ -10,7 +10,7 @@
 // TS map:   `measure.unit.test.ts` beside `measure.ts`.
 
 // What:     `use super::*;`. Bring the module's items into the test scope.
-// Why:      Tests use `resolve_track_gain`, `spawn_queue_measurement`, `PeakCache`, etc.
+// Why:      Tests use `spawn_queue_measurement`, `PeakCache`, and helpers.
 // TS map:   `import * as parent from "./measure";`
 use super::*;
 // What:     `use std::time::{SystemTime, UNIX_EPOCH};`. Clock + epoch for unique names.
@@ -38,49 +38,6 @@ fn temp_cache(tag: &str) -> PathBuf {
         nanos,
         tag
     ))
-}
-
-// What:     `#[test]` for the synchronous path.
-// Why:      A cache miss measures and caches; the quiet fixture (sub-ceiling) yields
-//           unity gain (attenuate-only leaves it unchanged).
-// TS map:   `test("resolve_track_gain ...", () => {...})`
-#[test]
-fn resolve_track_gain_measures_caches_and_leaves_quiet_track_unchanged() {
-    // What:     `let path = temp_cache("resolve");`. Throwaway cache file.
-    // Why:      No real-config pollution.
-    // TS map:   `const path = tempCache("resolve");`
-    let path = temp_cache("resolve");
-    // What:     `let cache = Arc::new(Mutex::new(PeakCache::from_path(Some(path.clone()))));`.
-    //           Shared empty cache pointing at the temp file.
-    // Why:      The shape `resolve_track_gain` expects.
-    // TS map:   `const cache = shared(PeakCache.fromPath(path));`
-    let cache = Arc::new(Mutex::new(PeakCache::from_path(Some(path.clone()))));
-
-    // What:     `let gain = resolve_track_gain(Path::new("fixtures/tone.flac"), &cache);`.
-    //           Cache miss -> measures the fixture, stores it, returns the gain.
-    // Why:      Exercise the miss path end-to-end.
-    // TS map:   `const gain = resolveTrackGain("fixtures/tone.flac", cache);`
-    let gain = resolve_track_gain(Path::new("fixtures/tone.flac"), &cache);
-    // What:     `assert!((gain - 1.0).abs() < 1e-4, ...)`. The fixture peaks ~0.088,
-    //           below the -1 dBTP ceiling, so attenuate-only normalization returns 1.0.
-    // Why:      Quiet tracks must not be boosted.
-    // TS map:   `expect(Math.abs(gain - 1) < 1e-4).toBe(true);`
-    assert!((gain - 1.0).abs() < 1e-4, "gain was {gain}");
-
-    // What:     `let key = peakcache::fingerprint(Path::new("fixtures/tone.flac")).unwrap();`.
-    //           The cache key for the fixture.
-    // Why:      Confirm the measurement was memoized.
-    // TS map:   `const key = fingerprint("fixtures/tone.flac");`
-    let key = peakcache::fingerprint(Path::new("fixtures/tone.flac")).unwrap();
-    // What:     `assert!(cache.lock().unwrap().get(&key).is_some());`. The peak is cached.
-    // Why:      A second load would hit the cache.
-    // TS map:   `expect(cache.get(key)).toBeDefined();`
-    assert!(cache.lock().unwrap().get(&key).is_some());
-
-    // What:     clean up the temp cache file.
-    // Why:      No droppings.
-    // TS map:   `try { unlinkSync(path); } catch {}`
-    let _ = std::fs::remove_file(&path);
 }
 
 // What:     `#[test]` for the background sweep.

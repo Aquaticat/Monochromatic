@@ -608,6 +608,17 @@ fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
             break;
         }
 
+        // What:     `let applied_peak = controller.poll_pending_peak();`. Poll any
+        //           in-flight current-track peak measurement without blocking.
+        // Why:      If a measured gain landed, apply it before decoding the next audio
+        //           chunk so future samples use exact normalization.
+        // TS map:   `const appliedPeak = controller.pollPendingPeak();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const appliedPeak = controller.pollPendingPeak();
+        // ```
+        let applied_peak = controller.poll_pending_peak();
         // What:     `let did_work = controller.pump_audio();`. Try to push one block of
         //           audio; returns whether anything happened.
         // Why:      Decide whether to sleep.
@@ -619,23 +630,24 @@ fn run(rx: Receiver<Command>, on_update: Box<dyn Fn(Update) + Send>) {
         // ```
         let did_work = controller.pump_audio();
 
-        // What:     `if !did_work { thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)); }`.
-        //           When idle (paused / buffer full / no track), PARK: block the thread
-        //           (using ~0 CPU) until someone calls `unpark()` on this thread, or the
-        //           timeout elapses, whichever comes first. `park_timeout` also returns
-        //           immediately if an `unpark` permit was already left while we were busy,
-        //           so a wake racing with this call is never lost.
-        // Why:      The audio callback unparks us when it drains the ring buffer (space to
-        //           decode into) and command senders unpark us when they queue work.
-        //           Blocking instead of looping is what stops the worker from pegging a CPU
-        //           core; the timeout is only a safety net.
-        // TS map:   `if (!didWork) await Promise.race([wokenSignal, sleep(100)]);`
+        // What:     `if !applied_peak && !did_work { thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)); }`.
+        //           When neither a peak swap nor audio pumping did work, PARK: block the
+        //           thread (using ~0 CPU) until someone calls `unpark()` on this thread,
+        //           or the timeout elapses, whichever comes first. `park_timeout` also
+        //           returns immediately if an `unpark` permit was already left while we
+        //           were busy, so a wake racing with this call is never lost.
+        // Why:      Peak application counts as work because the next loop should observe
+        //           fresh state immediately; otherwise the audio callback unparks us when
+        //           it drains the ring buffer and command senders unpark us when they queue
+        //           work. Blocking instead of looping is what stops the worker from pegging
+        //           a CPU core; the timeout is only a safety net.
+        // TS map:   `if (!appliedPeak && !didWork) await Promise.race([wokenSignal, sleep(100)]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (!didWork) await Promise.race([wokenSignal, sleep(IDLE_PARK_FALLBACK_MS)]);
+        // if (!appliedPeak && !didWork) await Promise.race([wokenSignal, sleep(IDLE_PARK_FALLBACK_MS)]);
         // ```
-        if !did_work {
+        if !applied_peak && !did_work {
             thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS));
         }
     }

@@ -183,6 +183,18 @@ pub mod peakcache;
 // ```
 pub mod measure;
 
+// What:     `pub mod peak_swap;` the current-track true-peak swap strategy
+//           (`src/peak_swap.rs`).
+// Why:      Cache misses now start with a safe temporary gain, wait briefly at
+//           playback start, then swap to the measured gain when it lands.
+// TS map:   `export * as peakSwap from "./peak_swap";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export * as peakSwap from "./peak_swap";
+// ```
+pub mod peak_swap;
+
 // What:     `pub mod controller;` the playback state machine (`src/controller.rs`),
 //           with its loading/audio half in `src/controller_audio.rs`.
 // Why:      Owns the queue + decoder + output; turns commands into playback.

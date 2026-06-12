@@ -1,22 +1,23 @@
-//! Wiring measurement to the cache: a synchronous gain lookup for the track about
-//! to play, and a detached background sweep that pre-measures the rest of a queue.
+//! Background queue true-peak measurement.
 //!
-//! On every queue load the controller starts a background sweep over all the
-//! tracks; it measures only the ones not already cached, gently (a short sleep
-//! between measurements) so it does not starve the audio thread. Sweeps are never
-//! cancelled: re-opening a directory just finds most peaks already cached and
-//! returns quickly. The shared cache (an `Arc<Mutex<PeakCache>>`) is the single
-//! source of truth all sweeps and the playing track read and write.
+//! On every queue load the controller starts a background sweep over the queue's
+//! non-current tracks; it measures only the ones not already cached, gently (a
+//! short sleep between measurements) so it does not starve the audio thread.
+//! Sweeps are never cancelled: re-opening a directory just finds most peaks
+//! already cached and returns quickly. The current track is handled by
+//! `peak_swap`, because playback may wait briefly for that one visible result.
 
-// What:     `use std::path::{Path, PathBuf};`. Borrowed and owned filesystem paths.
-// Why:      `resolve_track_gain` borrows one path; the sweep owns a list of paths.
-// TS map:   both are `string`.
+// What:     `use std::path::PathBuf;`. Owned filesystem path buffer. Sibling:
+//           `&Path`, a borrowed path view, is not needed here because the sweep
+//           owns a list of paths.
+// Why:      The detached sweep thread needs paths that outlive the caller.
+// TS map:   paths are just `string` in TypeScript.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// // both are just `string` in TS
+// type PathBuf = string;
 // ```
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 // What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
 //           (atomic reference count; sibling: `Rc<T>`, single-thread only). `Mutex<T>`
@@ -66,16 +67,16 @@ use std::time::{Duration, Instant};
 // ```
 use crate::peakcache::{self, PeakCache};
 
-// What:     `use crate::truepeak::{measure_true_peak, normalization_gain};`. The
-//           measurement and the gain it feeds.
-// Why:      Measure a track and convert the peak to a playback gain.
-// TS map:   `import { measureTruePeak, normalizationGain } from "./truepeak";`
+// What:     `use crate::truepeak::measure_true_peak;`. The whole-file true-peak
+//           scanner.
+// Why:      Background sweeps decode uncached tracks and cache their raw peaks.
+// TS map:   `import { measureTruePeak } from "./truepeak";`
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { measureTruePeak, normalizationGain } from "./truepeak";
+// import { measureTruePeak } from "./truepeak";
 // ```
-use crate::truepeak::{measure_true_peak, normalization_gain};
+use crate::truepeak::measure_true_peak;
 
 // What:     `const SAVE_BATCH: usize = 16;`. Persist the cache after this many new
 //           measurements during a sweep. `usize` to compare with the unsaved count.
@@ -113,150 +114,6 @@ const MEASURE_GAP_MS: u64 = 20;
 // const SAVE_INTERVAL_SECS = 10;
 // ```
 const SAVE_INTERVAL_SECS: u64 = 10;
-
-// What:     `pub(crate) fn resolve_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> f32`.
-//           Return the normalization gain for the track at `path`: a cache hit returns
-//           immediately; a miss measures the track now (decoding it fully), stores the
-//           result, and returns the gain. `pub(crate)` for the controller.
-// Why:      The currently loading track must play at its correct constant gain from the
-//           first sample, so it cannot wait for the background sweep.
-// TS map:   `function resolveTrackGain(path: string, cache: SharedPeakCache): number`
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function resolveTrackGain(path: string, cache: SharedPeakCache): number { ... }
-// ```
-pub(crate) fn resolve_track_gain(path: &Path, cache: &Arc<Mutex<PeakCache>>) -> f32 {
-    // What:     `let fingerprint = peakcache::fingerprint(path);`. Opaque key, or `None`
-    //           if the file cannot be stat'd.
-    // Why:      Both the lookup and the store key off it.
-    // TS map:   `const fingerprint = peakcache.fingerprint(path);`
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const fingerprint = peakcache.fingerprint(path);
-    // ```
-    let fingerprint = peakcache::fingerprint(path);
-
-    // What:     `if let Some(key) = &fingerprint { ... }`. When we have a key, try the
-    //           cache. `&fingerprint` borrows the `Option` so we can still use it later.
-    // Why:      A hit avoids the expensive decode.
-    // TS map:   `if (fingerprint) { ... }`
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (fingerprint) { ... }
-    // ```
-    if let Some(key) = &fingerprint {
-        // What:     `let cached = cache.lock().unwrap().get(key);`. Lock the cache, look up
-        //           the key, release the lock at the end of the statement. `.lock()`
-        //           returns a `Result` (poisoned if a holder panicked); `.unwrap()` takes
-        //           the guard or panics. We do NOT hold the lock while decoding below.
-        // Why:      Read the memoized peak under the lock, briefly.
-        // TS map:   `const cached = withLock(cache, c => c.get(key));`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const cached = withLock(cache, (c) => c.get(key));
-        // ```
-        let cached = cache.lock().unwrap().get(key);
-        // What:     `if let Some(peak) = cached { return normalization_gain(peak); }`. Cache
-        //           hit -> compute and return the gain.
-        // Why:      Fast path; no decoding needed.
-        // TS map:   `if (cached !== undefined) return normalizationGain(cached);`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (cached !== undefined) return normalizationGain(cached);
-        // ```
-        if let Some(peak) = cached {
-            return normalization_gain(peak);
-        }
-    }
-
-    // What:     `let peak = match measure_true_peak(path) { Ok(p) => p, Err(_) => return 1.0 };`.
-    //           Cache miss: measure now. A decode failure falls back to unity gain (the
-    //           clamp downstream still guards clipping).
-    // Why:      Guarantee a correct constant gain for the track that is about to play.
-    // TS map:   `let peak; try { peak = measureTruePeak(path); } catch { return 1; }`
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let peak; try { peak = measureTruePeak(path); } catch { return 1; }
-    // ```
-    let peak = match measure_true_peak(path) {
-        // What:     `Ok(p) => p`. Unwrap the measured peak.
-        // Why:      Continue to caching it.
-        // TS map:   `peak = p;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // peak = p;
-        // ```
-        Ok(p) => p,
-        // What:     `Err(_) => return 1.0`. Decode failed: unity gain, discard the error.
-        // Why:      A broken file should still play (clamped) at full level.
-        // TS map:   `catch { return 1; }`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // catch { return 1; }
-        // ```
-        Err(_) => return 1.0,
-    };
-
-    // What:     `if let Some(key) = fingerprint { ... }`. Store the fresh measurement when
-    //           we have a key (CONSUMES the `Option` now; we are done with it).
-    // Why:      Memoize so future loads and the sweep skip this track.
-    // TS map:   `if (fingerprint) { ... }`
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // if (fingerprint) { ... }
-    // ```
-    if let Some(key) = fingerprint {
-        // What:     `let mut guard = cache.lock().unwrap();`. Take the lock to mutate. The
-        //           `guard` is a smart pointer that unlocks when it drops at end of scope.
-        // Why:      Insert and persist under the lock.
-        // TS map:   `const guard = lock(cache);`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const guard = lock(cache);
-        // ```
-        let mut guard = cache.lock().unwrap();
-        // What:     `guard.insert(key, peak);`. Record it (consumes the owned key).
-        // Why:      Memoize.
-        // TS map:   `guard.insert(key, peak);`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // guard.insert(key, peak);
-        // ```
-        guard.insert(key, peak);
-        // What:     `let _ = guard.save();`. Persist immediately; ignore IO errors (`let _ =`
-        //           discards the `Result`).
-        // Why:      A single-entry save is cheap and keeps the current track durable.
-        // TS map:   `try { guard.save(); } catch {}`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // try { guard.save(); } catch {}
-        // ```
-        let _ = guard.save();
-    }
-
-    // What:     `normalization_gain(peak)`. Convert the measured peak to a gain. Tail
-    //           expression -> return.
-    // Why:      The value the caller applies.
-    // TS map:   `return normalizationGain(peak);`
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return normalizationGain(peak);
-    // ```
-    normalization_gain(peak)
-}
 
 // What:     `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: Arc<Mutex<PeakCache>>)`.
 //           Start a detached background thread that measures every uncached track in

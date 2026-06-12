@@ -1,7 +1,7 @@
 //! The loading and audio-pumping half of `Controller` (a second `impl` block on
 //! the type defined in `controller.rs`). Split out so each file stays within the
-//! line budget. These methods open decoders, resolve each track's true-peak
-//! normalization gain, push samples into the ring buffer, and report position.
+//! line budget. These methods open decoders, prepare each track's true-peak swap
+//! gain, push samples into the ring buffer, and report position.
 
 // What:     `use std::path::Path;`. Borrowed filesystem-path type (sibling: owned
 //           `PathBuf`). The owned form is produced by `.clone()` here but not named.
@@ -56,17 +56,6 @@ use crate::controller::Controller;
 // import { Source } from "./decode";
 // ```
 use crate::decode::Source;
-
-// What:     `use crate::measure::resolve_track_gain;`. Cache-or-measure the current
-//           track's normalization gain.
-// Why:      Set `track_gain` when a track loads.
-// TS map:   `import { resolveTrackGain } from "./measure";`
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { resolveTrackGain } from "./measure";
-// ```
-use crate::measure::resolve_track_gain;
 
 // What:     `use crate::playback::{file_name_of, frames_to_secs, process_sample};`.
 //           Display-name extraction, frame->seconds conversion, and the per-sample
@@ -362,18 +351,17 @@ impl Controller {
         // ```
         let spec = source.spec();
 
-        // What:     `self.track_gain = resolve_track_gain(path, &self.peaks);`. Look up (or
-        //           measure now, on a cache miss) the track's true-peak normalization gain
-        //           and store it. `&self.peaks` lends the shared cache handle.
-        // Why:      Apply a correct constant gain from the first sample of this track; the
-        //           synchronous miss-path decode is the per-track-normalization cost.
-        // TS map:   `this.trackGain = resolveTrackGain(path, this.peaks);`
+        // What:     `self.prepare_peak_for_path(path);`. Start the current-track
+        //           peak swap path: cache hit applies immediately; cache miss sets
+        //           fallback gain and stores a pending measurement receiver.
+        // Why:      Loading no longer blocks on a full-track true-peak decode.
+        // TS map:   `this.preparePeakForPath(path);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.trackGain = resolveTrackGain(path, this.peaks);
+        // this.preparePeakForPath(path);
         // ```
-        self.track_gain = resolve_track_gain(path, &self.peaks);
+        self.prepare_peak_for_path(path);
 
         // What:     `if let Some(output) = self.output.as_mut() { ... }`. `.as_mut()` borrows
         //           the `Option<Output>` as `Option<&mut Output>`; reconfigure only when
@@ -531,6 +519,20 @@ impl Controller {
         // this.emit({ kind: "position", secs: 0 });
         // ```
         self.emit(Update::Position(0.0));
+        // What:     `if self.playing { self.wait_for_pending_peak_before_start(); }`.
+        //           When a track change happens during active playback, wait up to the
+        //           one-second swap window before decoding new-track samples.
+        // Why:      Next/prev while playing and natural auto-advance get the same
+        //           wait-then-fallback behavior as an explicit Play command.
+        // TS map:   `if (this.playing) this.waitForPendingPeakBeforeStart();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.playing) this.waitForPendingPeakBeforeStart();
+        // ```
+        if self.playing {
+            self.wait_for_pending_peak_before_start();
+        }
     }
 
     // What:     `pub(crate) fn seek(&mut self, secs: f64)`. Move playback to `secs` and

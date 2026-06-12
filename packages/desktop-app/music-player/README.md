@@ -107,13 +107,16 @@ backend differs by target.
    so it reveals nothing about the
   library.
    On every queue load (an Open or the launch-time auto-load),
-   a background thread pre-measures all the
-  queue's tracks into the cache,
+   a background thread pre-measures the queue's non-current tracks into the cache,
    skipping any already cached,
    so re-opening a known folder does little work.
-  The currently loading track is measured synchronously (a cache miss decodes it before playback) so it plays
-  at the correct gain from the first sample;
-   this is the per-track-normalization cost on first encounter.
+  The current track uses a one-second swap strategy on a cache miss:
+   start measuring it on a dedicated worker,
+   wait up to one second when playback is about to start,
+   then play with the temporary -1 dBTP ceiling gain if measurement is still pending.
+  When the measured gain lands,
+   future decoded samples swap to it;
+   already-buffered fallback-gain samples are not flushed.
 
 ## Codecs
 
@@ -223,10 +226,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    then rename),
    and exposes get/insert.
 - `src/measure.rs`:
-   measurement orchestration.
-   `resolve_track_gain` returns a track's gain from the cache or
-  measures it now on a miss;
-   `spawn_queue_measurement` runs the detached background sweep over a queue,
+   background measurement orchestration.
+   `spawn_queue_measurement` runs the detached background sweep over a queue's non-current tracks,
    gently
   (a short sleep between measurements) and never cancelled.
    The sweep thread first drops itself to the platform's
@@ -237,6 +238,12 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    and Windows `THREAD_PRIORITY_IDLE`,
    with a
   no-op on any other target.
+- `src/peak_swap.rs`:
+   current-track peak swap orchestration.
+   Cache hits return the measured gain immediately;
+   cache misses set the temporary ceiling gain,
+   spawn a current-track worker,
+   and expose a pending result that the controller polls before decoding.
 - `src/controller.rs`:
    the playback state machine (state struct,
    command handling,
