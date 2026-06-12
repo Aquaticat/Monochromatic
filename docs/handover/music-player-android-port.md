@@ -233,12 +233,19 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
 - kopia Android stack decision + vet reports (the GrapheneOS, Compose-on-device, and runtime findings):
   `docs/decisions/kotlin-android-kopia-pcloud-stack.md` and `docs/decisions/kotlin-android-kopia-pcloud-vet-reports/`.
 
-## Open item awaiting the user
+## Resolved: config-dir migration (2026-06-12)
 
-- Config-dir migration. The config-triple change moves the Linux config dir from `~/.config/music-player` to
-  `~/.config/musicplayer`. The old dir holds `peaks.json` (298 KB, the library's measured true-peaks) and
-  `session.json` (392 KB). Offered to `mv ~/.config/music-player ~/.config/musicplayer` to preserve both; awaiting
-  the user's yes/no. Do not touch the real config without confirmation.
+- The identity unification (`7ea4ad07d`) already moved the resolver to `ProjectDirs::from("dev", "monochromatic",
+  "musicplayer")`, which on Linux is `~/.config/musicplayer`; the README documents this. The user authorized the
+  data move, so the old dir was renamed: `mv --no-clobber ~/.config/music-player ~/.config/musicplayer` (atomic
+  same-filesystem rename, guarded on no running player process and a non-existent target). Both `peaks.json`
+  (299561 B) and `session.json` (397536 B) carried over losslessly with mtimes preserved; the old path is gone.
+- Verified the target path with a real invocation of the identical `directories = "5"` crate and the app's exact
+  triple: `config_dir = /home/user/.config/musicplayer`, so a current-source desktop build finds the migrated data.
+- Caveat for a future session: the installed binary `~/.local/bin/music-player` (Jun 11, pre-unification) still
+  resolves `~/.config/music-player` and would recreate that old dir with an empty session if run. Rebuild and
+  reinstall the desktop app (`mise run //packages/desktop-app/music-player:build` then redeploy to `~/.local/bin`)
+  so the installed binary uses the new path; not done here because the desktop app is not this port's focus.
 
 ## Next steps (the build phase, when the user says go)
 
