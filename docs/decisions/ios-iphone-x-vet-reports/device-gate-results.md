@@ -382,10 +382,12 @@ trimmed to iOS-only, drew a solid-fill UI with text on the iPhone X. Decisive fa
   localhost. Building that server on-device and the Rust `.a` cinterop are stage-2 deep checks, not yet
   run; the render gate (the must) is passed.
 
-### React Native: PASS render + Hermes (both legs); Rust crossing pending
+### React Native: PASS render + Hermes + Rust crossing (both legs)
 
-Status: render + Hermes + dual-target device + simulator confirmed 2026-06-12. The Rust-crossing half (an
-Objective-C `.m` shim over a C ABI, owner-approved deviation) is the remaining piece, in progress.
+Status: render + Hermes + Rust crossing + dual-target device + simulator all confirmed 2026-06-12. The
+Rust-crossing half (an Objective-C `.m` shim over a C ABI, owner-approved deviation) landed: a Rust
+staticlib value (`rust_gate_answer() = 720`, a heap `Vec` + iterator `product`, the same `.a` the .NET
+gate used) crossed Rust -> Obj-C -> JS and rendered on both legs.
 
 A React Native 0.86.0 app (`/Volumes/MacData/ios-vet/RnGate`, `@react-native-community/cli init`) renders
 on both targets from one codebase. Decisive facts:
@@ -408,9 +410,32 @@ on both targets from one codebase. Decisive facts:
   `simctl` install/launch, same "RN Gate / Hermes: ON". One codebase, SDK switch only.
 - a11y: React Native renders to native `UIView`/`UILabel` (it does not self-draw a canvas), so a11y is
   native UIKit (iOS 12+), no iOS-17 wall. On-device VoiceOver confirmation owed (tracked).
-- Rust crossing (next, owner-approved Obj-C deviation): reach a Rust staticlib from JS through a thin
-  Objective-C `.m` NativeModule over a C ABI (no `.c`/`.cpp`/`.mm`, no New-Arch C++/JSI TurboModule), with
-  the Rust core built for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` per the dual-triple rule.
+- Rust crossing (PASS, owner-approved Obj-C deviation): a Rust staticlib reached JS through a thin
+  Objective-C `.m` NativeModule over a C ABI (no `.c`/`.cpp`/`.mm`, no New-Arch C++/JSI TurboModule). The
+  app screen reads "Rust answer: 720 / CROSSING OK" (blue only when the value equals 720; red otherwise),
+  on both the iPhone X (iOS 16.7) and the iPhone 17 Pro / iOS 26.5 simulator, from one codebase. The path:
+  - Packaging: the Rust core built for `aarch64-apple-ios` + `aarch64-apple-ios-sim`, packed with
+    `xcodebuild -create-xcframework` into `RustGate.xcframework` (slices `ios-arm64` + `ios-arm64-simulator`).
+    This is the dual-triple rule realized as an XCFramework, the same shape the kopia/music-player cores need.
+  - Shim: `modules/rust-gate/ios/RustGate.m` is the entire Obj-C surface, a legacy `RCTBridgeModule` that
+    declares `extern int rust_gate_answer(void);` (the only C-ABI line) and returns it via
+    `constantsToExport`. No app logic, no `.c`/`.cpp`/`.mm`.
+  - Integration without hand-editing the pbxproj: a local pod (`rust-gate.podspec`, `source_files` the
+    `.m`, `vendored_frameworks` the XCFramework) plus an app-root `react-native.config.js` whose
+    `dependencies.rust-gate.root` points autolinking at the module. `pod install` then compiles the shim and
+    links the matching XCFramework slice per platform; `Installing rust-gate (0.0.1)` confirmed autolink.
+  - New Architecture finding: RN 0.86 defaults to the New Architecture (bridgeless), yet a legacy Obj-C
+    `RCTBridgeModule` + `constantsToExport` still surfaces through the interop layer:
+    `NativeModules.RustGate.answer` resolved to 720 on both legs with no `newArchEnabled=false`, no
+    C++/JSI TurboModule. This is the clean answer to "must we write C++ for a New-Arch native module": no.
+  - x86_64-simulator caveat (RN-specific manifestation of the dual-triple rule): a Release sim build
+    compiles all simulator archs by default (`ONLY_ACTIVE_ARCH=NO`), so it tried to link an x86_64 slice the
+    XCFramework does not carry (`ld: library 'rustgate' not found`, target `x86_64-apple-ios-simulator`). On
+    this Apple-silicon Mac the fix is `ARCHS=arm64 ONLY_ACTIVE_ARCH=YES`; an Intel-Mac simulator would
+    additionally need an `x86_64-apple-ios` Rust slice in the XCFramework (a triple-triple, not just dual).
+  - The build also compiles RN's own `ReactCodegen` C++ (Fabric/New-Arch glue). That is framework-internal
+    substrate, the same category as Hermes being C++; the no-C/C++ rule governs our code, and our module is
+    pure Obj-C + Rust. Worth stating so the C++ in the build log is not mistaken for a rule breach.
 
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
@@ -447,8 +472,9 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
 share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (Mono AOT and
 interpreter, Rust FFI), MAUI, Avalonia, and Uno, Compose Multiplatform (rank 5, Kotlin/Native AOT,
-Skiko/Metal), and React Native (rank 6, Hermes bytecode, native UIViews; Rust crossing pending), all
-render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
+Skiko/Metal), and React Native (rank 6, Hermes bytecode, native UIViews, Rust crossing PASS via a thin
+Obj-C shim + dual-triple XCFramework), all render-verified, above. Slint (rank 1) was gated and FAILED
+(disqualified, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
@@ -463,9 +489,11 @@ plus the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after 
 framework is gated; (2) add Dioxus, SnapKit, UIKit, and SwiftUI to the queue, positioned just before
 that deferred web block; (3) no C or C++ is to be written anywhere in this vet, including throwaway
 experiments. This reshapes the native-glue plans below: the Rust-crossing checks for React Native
-(written as "C++ JSI/TurboModule"), NativeScript, Lynx (a `LynxModule` `.mm`), and Qt must use Rust
-binding crates, a C-ABI boundary (Rust `extern "C"` declared in a Swift bridging header, which is an ABI
-declaration, not hand-written C/C++), or Swift glue, never a hand-authored `.c`/`.cpp`/`.mm` file. The
+(done, PASS, see its section: a legacy Obj-C `RCTBridgeModule` surfaced the Rust value even under the New
+Architecture, so no "C++ JSI/TurboModule" was needed), NativeScript, Lynx (a `LynxModule` `.mm`), and Qt
+must use Rust binding crates, a C-ABI boundary (Rust `extern "C"` declared in a Swift bridging header,
+which is an ABI declaration, not hand-written C/C++), or Swift glue, never a hand-authored
+`.c`/`.cpp`/`.mm` file. The
 gate question stays the same (does a Rust value cross into the framework and render), only the FFI
 mechanism is constrained. Objective-C clarification (owner, 2026-06-12): "no C or C++" is the
 language-name ban, so a minimal Objective-C `.m` shim is allowed purely to register or call Rust over a C

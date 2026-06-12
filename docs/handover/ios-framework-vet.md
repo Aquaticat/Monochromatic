@@ -5,8 +5,9 @@ synthesis); device gating in progress. Render-verified so far: Capacitor PASS, F
 entire .NET trio (the shared Microsoft.iOS substrate plus MAUI, Avalonia, and Uno, each gated as an
 actual framework, not just on the substrate). Slint DISQUALIFIED (decisive finding, below). The whole
 gate-and-render-verify chain also works over wireless, so no USB cable is needed. Compose Multiplatform
-also PASS (Kotlin/Native AOT, Skiko/Metal), and React Native render + Hermes + dual-target PASS (CocoaPods
-proven; its Rust-crossing half is next). Remaining native and managed gates: React Native Rust crossing,
+also PASS (Kotlin/Native AOT, Skiko/Metal), and React Native FULL PASS (render + Hermes + dual-target +
+Rust crossing; CocoaPods proven; a legacy Obj-C `RCTBridgeModule` surfaced the Rust value even under the
+New Architecture, so no C++/JSI TurboModule was needed). Remaining native and managed gates:
 NativeScript, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI; then the six
 WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
@@ -181,14 +182,26 @@ headlessly. (2) Rust-linking apps must build the Rust core for both `aarch64-app
   Rust `.a` cinterop are stage-2 checks. A gate-methodology gotcha surfaced here: the first build
   screenshotted all-black because bare Material text on Compose's dark default canvas is invisible; force
   an explicit background for screenshot gates (recorded in `device-gate-results.md`).
-- React Native (rank 6): render + Hermes + dual-target PASS on both legs; Rust crossing pending. RN 0.86.0
-  app at `/Volumes/MacData/ios-vet/RnGate` renders blue "RN Gate / Hermes: ON" on the iPhone X (Release,
-  signed, upgrade-installed) and on iPhone 17 Pro / iOS 26.5 (`-sdk iphonesimulator CODE_SIGNING_ALLOWED=NO`)
-  from one `.xcworkspace` + `App.tsx`. Proves CocoaPods (Pods/hermes-engine/React.framework, the path
-  Capacitor-SPM and plugin-less Flutter left unproven). Hermes bytecode VM live in Release (no Metro at
-  launch, iOS-legal); `ios/.xcode.env.local` pins `NODE_BINARY` to the real mise node so the build phase
-  resolves it over SSH. RN renders native UIViews, so a11y is native UIKit (VoiceOver owed). Next: the
-  Rust crossing via a thin Obj-C `.m` NativeModule over a C ABI (owner-approved) + Rust dual-triple.
+- React Native (rank 6): FULL PASS on both legs (render + Hermes + dual-target + Rust crossing). RN 0.86.0
+  app at `/Volumes/MacData/ios-vet/RnGate`. The render+Hermes half renders blue "RN Gate / Hermes: ON" on
+  the iPhone X (Release, signed, upgrade-installed) and on iPhone 17 Pro / iOS 26.5
+  (`-sdk iphonesimulator CODE_SIGNING_ALLOWED=NO`) from one `.xcworkspace` + `App.tsx`. Proves CocoaPods
+  (Pods/hermes-engine/React.framework, the path Capacitor-SPM and plugin-less Flutter left unproven).
+  Hermes bytecode VM live in Release (no Metro at launch, iOS-legal); `ios/.xcode.env.local` pins
+  `NODE_BINARY` to the real mise node so the build phase resolves it over SSH. RN renders native UIViews,
+  so a11y is native UIKit (VoiceOver owed). Rust crossing (PASS): `rust_gate_answer() = 720` (the same
+  `.a` the .NET gate used) crosses Rust -> Obj-C -> JS and the screen reads "Rust answer: 720 / CROSSING OK"
+  on both legs. How: the Rust core built for `aarch64-apple-ios` + `aarch64-apple-ios-sim`, packed with
+  `xcodebuild -create-xcframework` into `RustGate.xcframework`; a local pod (`modules/rust-gate`,
+  `rust-gate.podspec` with `vendored_frameworks`) autolinked via an app-root `react-native.config.js`
+  `dependencies.rust-gate.root`, so no pbxproj hand-edit; the shim `modules/rust-gate/ios/RustGate.m` is a
+  legacy `RCTBridgeModule` returning the C-ABI value via `constantsToExport`. Decisive finding: RN 0.86
+  defaults to the New Architecture (bridgeless), yet this legacy Obj-C module still surfaces through the
+  interop layer (`NativeModules.RustGate.answer` resolved on both legs) with no `newArchEnabled=false` and
+  no C++/JSI TurboModule. RN-specific dual-triple caveat: a Release sim build links all sim archs, so the
+  arm64-only XCFramework fails the x86_64 link (`ld: library 'rustgate' not found`); fix is
+  `ARCHS=arm64 ONLY_ACTIVE_ARCH=YES` on this Apple-silicon Mac (an Intel-Mac sim would need an added
+  `x86_64-apple-ios` slice, a triple-triple).
 
 ## The Slint disqualification (decisive)
 
@@ -233,9 +246,8 @@ add a Rust-native UI option. Not blocking; the funnel continues regardless.
 Each must be render-verified (not just launched), and each adds only its own SDK/CLI on the shared base
 (Xcode + signing + `rustup target add aarch64-apple-ios`).
 
-.NET trio (rank 3) and Compose Multiplatform (rank 5) are DONE (PASS, above). React Native (rank 6) has
-its render + Hermes + dual-target half DONE (PASS, above); its Rust-crossing half is NEXT. Remaining, in
-order:
+.NET trio (rank 3), Compose Multiplatform (rank 5), and React Native (rank 6, including its Rust crossing)
+are all DONE (FULL PASS, above). The next gate is NativeScript (rank 7). Remaining, in order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -249,9 +261,11 @@ Dual-target (2026-06-12): each gate below must render on both the device and the
 Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by RID/SDK (proven via the
 .NET substrate's `RustTriple` fix); a single device archive fails the sim link.
 
-- React Native (rank 6): render + Hermes + dual-target DONE (PASS, above; CocoaPods proven, Hermes ON
-  both legs). Remaining: the Rust crossing, a staticlib reached from JS through a thin Obj-C `.m`
-  NativeModule over a C ABI (owner-approved deviation, no New-Arch C++/JSI), Rust built for both triples.
+- React Native (rank 6): FULL PASS, DONE (above; render + Hermes + dual-target + Rust crossing). The Rust
+  staticlib reached JS through a thin Obj-C `.m` `RCTBridgeModule` over a C ABI (owner-approved deviation,
+  no New-Arch C++/JSI), packaged as a dual-triple XCFramework and autolinked via a local pod. The legacy
+  Obj-C module surfaced under RN's New Architecture through the interop layer, so no `newArchEnabled=false`
+  and no TurboModule were needed. This is the reusable Rust-crossing template for the gates below.
 - NativeScript (rank 7, needs-device): prove jitless V8 + libffi static trampolines return a Rust value
   with no AMFI/execmem kill (iOS inverse of its Android DENY_EXECMEM death). The Rust value crosses over
   a C ABI through NativeScript's own metadata bridge, no hand-written native glue.
