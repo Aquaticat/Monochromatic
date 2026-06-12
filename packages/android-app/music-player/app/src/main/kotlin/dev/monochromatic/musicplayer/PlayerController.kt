@@ -25,6 +25,13 @@ class PlayerController(private val engine: AudioEngine) {
     private var loadedIndex: Int? = null
     private var isPlaying: Boolean = false
 
+    /**
+     * Playback URIs aligned by load-order index with the display paths fed to [queue]; the queue
+     * never reorders its track list (shuffle permutes a separate index list), so `uris[index]` is
+     * always the URI for the track the queue reports at that load-order index.
+     */
+    private var uris: List<String> = emptyList()
+
     /** Compose-observable snapshot the screen renders; reassigned by [refresh]. */
     var uiState: PlayerUiState by mutableStateOf(PlayerUiState())
         private set
@@ -42,13 +49,16 @@ class PlayerController(private val engine: AudioEngine) {
     }
 
     /**
-     * Replace the queue with [paths] (load order), repaginate, and show the first page without
-     * starting playback (Android is tap-to-play).
+     * Replace the library with [tracks] (load order): keep their playback URIs in [uris], feed their
+     * display paths to the queue (whose pagination trims the shared root and groups by folder,
+     * exactly as on the desktop), repaginate, and show the first page without starting playback
+     * (Android is tap-to-play).
      *
-     * @param paths Track paths in load order.
+     * @param tracks Library entries in load order, each pairing a playback URI with a display path.
      */
-    fun openTracks(paths: List<String>) {
-        queue.setTracks(paths)
+    fun openLibrary(tracks: List<Track>) {
+        uris = tracks.map { it.uri }
+        queue.setTracks(tracks.map { it.displayPath })
         pages = paginate(queue.displayPaths())
         loadedIndex = null
         refresh(followCurrent = true)
@@ -158,13 +168,13 @@ class PlayerController(private val engine: AudioEngine) {
 
     /** Load the queue's current track and play it, or refresh idle state when the queue is empty. */
     private fun playCurrent() {
-        val path = queue.currentPath()
-        if (path == null) {
+        val index = queue.currentIndex()
+        if (index == null) {
             refresh()
             return
         }
-        loadedIndex = queue.currentIndex()
-        engine.load(path, play = true)
+        loadedIndex = index
+        engine.load(uris[index], play = true)
         refresh(followCurrent = true)
     }
 

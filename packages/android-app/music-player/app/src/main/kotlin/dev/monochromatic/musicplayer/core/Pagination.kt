@@ -87,7 +87,7 @@ private fun sortKey(label: String): String = label.uppercase()
  * @param right Second string to compare.
  * @return Negative, zero, or positive when [left] sorts before, equal to, or after [right].
  */
-private fun compareByCodePoint(left: String, right: String): Int {
+internal fun compareByCodePoint(left: String, right: String): Int {
     var leftOffset = 0
     var rightOffset = 0
     while (leftOffset < left.length && rightOffset < right.length) {

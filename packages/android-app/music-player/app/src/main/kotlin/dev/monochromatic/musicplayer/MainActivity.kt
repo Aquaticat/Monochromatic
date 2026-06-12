@@ -1,10 +1,16 @@
 package dev.monochromatic.musicplayer
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -37,6 +43,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import dev.monochromatic.musicplayer.core.ShuffleMode
 import kotlinx.coroutines.delay
 
@@ -71,21 +79,33 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val context = LocalContext.current
                     val controller = remember { PlayerController(createAudioEngine(context)) }
-                    LaunchedEffect(controller) {
-                        // The library source is the app's external files dir for now; SAF tree and
-                        // MediaStore replace it next. Load paused (tap to play).
-                        val files = context.getExternalFilesDir(null)
-                            ?.listFiles()
-                            ?.filter { it.isFile }
-                            ?.map { it.absolutePath }
-                            ?.sorted()
-                            ?: emptyList()
-                        controller.openTracks(files)
+                    var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
+                    val permissionLauncher = rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission(),
+                    ) { granted ->
+                        Log.i(LOG_TAG, "audio permission granted=$granted")
+                        hasAudioAccess = granted
+                    }
+                    // Ask once on first launch; the gate's button re-asks if the user declined.
+                    LaunchedEffect(Unit) {
+                        if (!hasAudioAccess) {
+                            permissionLauncher.launch(audioPermission())
+                        }
+                    }
+                    // Load the real library from MediaStore once access is granted (tap to play).
+                    LaunchedEffect(hasAudioAccess) {
+                        if (hasAudioAccess) {
+                            controller.openLibrary(MediaStoreSource.query(context.contentResolver))
+                        }
                     }
                     DisposableEffect(controller) {
                         onDispose { controller.release() }
                     }
-                    PlayerScreen(controller)
+                    if (hasAudioAccess) {
+                        PlayerScreen(controller)
+                    } else {
+                        PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
+                    }
                 }
             }
         }
@@ -228,7 +248,7 @@ private fun PageTabs(state: PlayerUiState, onSelectPage: (Int) -> Unit) {
 @Composable
 private fun ColumnScope.TrackList(state: PlayerUiState, controller: PlayerController) {
     if (state.queueSize == 0) {
-        Text("No tracks. Push audio into the app's files dir, or open a folder (coming next).")
+        Text("No music found in your audio library.")
         return
     }
     LazyColumn(
@@ -278,3 +298,46 @@ private fun formatTime(seconds: Double): String {
     val secs = total % SECONDS_PER_MINUTE
     return "%d:%02d".format(minutes, secs)
 }
+
+/**
+ * Shown until audio access is granted: a one-line rationale and a button that re-requests the
+ * permission, so a user who declined the first prompt still has a way back in.
+ *
+ * @param onGrant Invoked when the user taps the button; launches the permission request.
+ */
+@Composable
+private fun PermissionGate(onGrant: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Music Player needs access to your audio library to list your music.")
+        Button(onClick = onGrant) { Text("Grant access") }
+    }
+}
+
+/**
+ * The audio-read permission for this platform: the granular `READ_MEDIA_AUDIO` on API 33+, the broad
+ * `READ_EXTERNAL_STORAGE` on API 26-32 (where the granular permission does not exist).
+ *
+ * @return Permission string to request and check.
+ */
+private fun audioPermission(): String =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+
+/**
+ * Whether the platform's audio-read permission ([audioPermission]) is already granted, so the first
+ * composition can skip straight to the library instead of flashing the gate.
+ *
+ * @param context Context to check the permission against.
+ * @return True when the permission is granted.
+ */
+private fun hasAudioPermission(context: Context): Boolean =
+    ContextCompat.checkSelfPermission(context, audioPermission()) == PackageManager.PERMISSION_GRANTED
