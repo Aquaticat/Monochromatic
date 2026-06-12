@@ -58,8 +58,10 @@ source evidence alone; the standard is on-device.
 
 ## Decisive result: run on the real device
 
-The 16 frameworks collapse to nine distinct device gates (shared substrate and toolchain). Two are
-device-verified to render, Slint is disqualified, and six remain (gate order from the synthesis):
+The 16 frameworks collapse to nine distinct device gates (shared substrate and toolchain). Three are now
+device-verified to render (Capacitor, Flutter, and the whole .NET trio), Slint is disqualified, and the
+rest remain. Two owner directives (2026-06-12) revise the order: defer the six WKWebView frameworks to
+the very end, and append Dioxus, SnapKit, UIKit, and SwiftUI just before that web block. Gate status:
 
 - Slint (rank 1): FAIL, disqualified. The `energy-monitor` demo builds and the process launches, but
   held alive and screenshotted it crashes before rendering. Slint's iOS support is iOS 17+ in two
@@ -71,15 +73,27 @@ device-verified to render, Slint is disqualified, and six remain (gate order fro
   (the screenshot shows the WebView content). Capacitor 7 uses Swift Package Manager, not CocoaPods;
   WebKit provides native a11y.
 - Flutter (rank 4): PASS, render-verified (the Dart AOT Release build draws its UI). Native UIKit a11y.
-- .NET MAUI (rank 3, covers the .NET trio): pending, needs-device (prove full-AOT P/Invoke and
-  trimming survive).
-- Compose Multiplatform (rank 5): pending, expected-pass.
+- .NET trio (rank 3, MAUI/Avalonia/Uno): PASS, all four parts render-verified. The shared Microsoft.iOS
+  substrate runs in both Release (full AOT) and Debug (interpreter) and P/Invokes a linked Rust `.a`
+  (`[DllImport("__Internal")]`, no execmem kill); then MAUI (native UIKit handlers), Avalonia (own
+  SkiaSharp/Metal renderer), and Uno (Skia renderer) each rendered for real. a11y posture: MAUI native;
+  Avalonia and Uno-Skia self-draw via their own a11y bridges (stage-2 fidelity check, Uno has a
+  native-renderer fallback). The trimming/full-AOT risk flagged in the desk audit did not bite. The
+  in-app HTTP/S3 server (ASP.NET Core Kestrel in-process) remains the stage-2 unknown, as for every
+  substrate. Evidence in `ios-iphone-x-vet-reports/device-gate-results.md`.
+- Compose Multiplatform (rank 5): pending, expected-pass. NEXT to gate.
 - React Native (rank 6): pending, expected-pass; also the gate that proves the CocoaPods path.
 - NativeScript (rank 7): pending, needs-device (prove jitless V8 plus libffi static trampolines, the
   iOS inverse of its Android disqualification).
 - Lynx (rank 8): pending, expected-pass.
 - Qt (rank 9): pending, needs-device; must pin Qt 6.5 LTS because Qt 6.11 requires iOS 17, which the
   iPhone X never gets.
+- Appended (owner, gate after the above and before the deferred web block): Dioxus (Rust UI; on iOS
+  renders via `wry`/WKWebView driven by AOT Rust, the substantive one), SnapKit (UIKit Auto Layout DSL
+  via SPM), UIKit (native), SwiftUI (already render-proven by the HelloDevice canary). The first is a
+  real gate; the last three are native/trivial.
+- Deferred to the very end (owner): the six WKWebView frameworks (Cordova substrate plus the Ionic,
+  Framework7, Onsen, Quasar UI-render notes on the proven Capacitor/WKWebView substrate).
 
 Every gate used one signing path: a forced bundle id (`dev.monochromatic.iosvet.hellodevice`) plus the
 vet keychain, with no `-allowProvisioningUpdates`. The signing proof and the render-vs-launch
@@ -191,8 +205,9 @@ device-support maturity is the open question; full UI rewrite; smallest tooling 
 
 Slint's disqualification removes the former top pick and the only no-UI-rewrite option, and it carries
 a method lesson: Slint was "expected-pass" on the desk audit and crashed on the device, so on-device
-verification status now weighs in the ranking. Two candidates are device-verified to render with native
-a11y (Flutter and the WKWebView substrate); the rest are desk "expected-pass" and unconfirmed.
+verification status now weighs in the ranking. Three candidates are now device-verified to render with
+usable a11y (Flutter, the WKWebView substrate, and the .NET trio via MAUI's native UIKit handlers); the
+rest are desk "expected-pass" and unconfirmed.
 
 Music-player port: with Slint disqualified, the port to the iPhone X is no longer a UI reuse. Either
 maintain a downported Slint fork (high, ongoing maintenance; see the Slint section) or rewrite the UI
@@ -201,15 +216,24 @@ while keeping the Rust audio core behind FFI. If rewriting, the ranking is the k
 track.
 
 kopia stack (and the music-player if its UI is rewritten):
-Flutter > WKWebView (Capacitor) > Compose Multiplatform > React Native > .NET trio > Qt > Lynx >
+Flutter > .NET trio (MAUI) > WKWebView (Capacitor) > Compose Multiplatform > React Native > Qt > Lynx >
 NativeScript.
 
-- Flutter over WKWebView: both are device-verified with native a11y, but Flutter links the Rust/Go core
-  through a single `dart:ffi` hop and renders native UIKit, versus the WebView's JS-to-Swift-to-Rust
+- Flutter over the .NET trio: both are now device-verified with native a11y and link the Rust/Go core
+  through a single C-ABI hop (`dart:ffi` / `[DllImport("__Internal")]`, the latter proven on-device by
+  the 720 P/Invoke), and both leave the in-app HTTP/S3 server to stage 2. Flutter leads on the more
+  mature mobile-and-audio ecosystem and a single first-party framework, where the .NET trio is three UI
+  stacks over one runtime (only MAUI gives native a11y; Avalonia and Uno self-draw). The gap is small and
+  would close, perhaps invert, if .NET's in-process Kestrel server is device-proven first, since that is
+  the kopia app's hardest capability and .NET has the most plausible in-process listening socket of any
+  candidate.
+- The .NET trio over WKWebView: the device-verified .NET trio renders native UIKit (MAUI) with native
+  a11y and reaches the Rust/Go core through one P/Invoke hop, versus the WebView's JS-to-Swift-to-Rust
   double bridge, its lack of a real in-WebView listening socket, and bridge-marshaling cost on
-  high-frequency audio/queue state. WKWebView's edge (collapses six candidates, suits the repo's
-  TypeScript strength) does not outweigh the cleaner core integration for an app whose hard parts are
-  native.
+  high-frequency audio/queue state. The desk audit's trimming, full-AOT, and marshaling doubts that had
+  placed the trio fifth did not bite on the device (full AOT and the interpreter both render and
+  P/Invoke). WKWebView keeps its convenience edge (collapses six candidates, suits the repo's TypeScript
+  strength) but that does not outweigh cleaner native integration for an app whose hard parts are native.
 - WKWebView over Compose Multiplatform: WKWebView is device-verified and Compose is not, and Compose's
   in-app server story (`embeddedServer(CIO)` on `iosArm64`) is unproven. Compose's cleaner single
   cinterop hop is why it is close; it would rise above WKWebView once its gate renders and the server
@@ -217,10 +241,8 @@ NativeScript.
 - Compose Multiplatform over React Native: both expected-pass and AOT/jitless-clean, but cinterop is a
   single C-ABI hop versus RN's C++ JSI/TurboModule, and RN's streaming pump and server still land in
   native code under a JS shell.
-- React Native over the .NET trio: Hermes is a clean no-JIT interpreter with a zero-copy JSI link,
-  versus full-AOT plus trimming risk and AOT P/Invoke marshaling in the .NET trio.
-- .NET trio over Qt: one workload covers three UIs and full-AOT is proven on iOS generally, versus Qt's
-  hard iOS-17 ceiling forcing a 6.5 LTS pin and a heavier C++ toolchain.
+- React Native over Qt: RN's Hermes is a clean no-JIT interpreter with a zero-copy JSI link and a large
+  ecosystem, versus Qt's hard iOS-17 ceiling forcing a 6.5 LTS pin and a heavier C++ toolchain.
 - Qt over Lynx: Qt is mature with a known static-link and audio story, versus Lynx's unproven device
   maturity.
 - Lynx over NativeScript: both are jitless native-UI-from-JS, but Lynx is native UIKit by construction
@@ -233,9 +255,11 @@ Flip conditions:
   backend (or upstream availability-guards the iOS-17 APIs and objc2 gains weak-linked statics), Slint
   returns as the top pick for both apps on repo fit and zero-bridge core integration. Until then it does
   not run on the device, so it is out under the a11y-must rule.
-- If a needs-device gate crashes on render (the .NET trio's trimming/AOT, NativeScript's libffi path, a
-  Qt 6.5 install issue) or an expected-pass gate fails the way Slint did, that track drops accordingly.
-  The Slint result is the standing proof that desk "expected-pass" is not device-confirmed.
+- If a still-unconfirmed needs-device gate crashes on render (NativeScript's libffi path, a Qt 6.5
+  install issue) or an expected-pass gate fails the way Slint did, that track drops accordingly. The
+  Slint result is the standing proof that desk "expected-pass" is not device-confirmed. The .NET trio's
+  trimming/AOT risk is now retired: it was device-confirmed to render (full AOT and interpreter) and
+  P/Invoke a linked Rust `.a`.
 - If the in-app S3 endpoint is kept framework-independent by embedding the server inside the linked
   Rust/Go staticlib (the recommended de-risk), every framework's HTTP-server uncertainty disappears.
 
