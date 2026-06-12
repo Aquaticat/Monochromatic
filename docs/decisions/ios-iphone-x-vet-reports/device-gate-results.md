@@ -94,6 +94,26 @@ The in-tree `energy-monitor` demo, built from Slint master, launched on the iPho
 So Slint on iOS is real and runs on this exact device today, on master. At the crates.io release it
 would not: the iOS build fix (slint-ui/slint#11741) postdates the 1.16 line.
 
+### Flutter: PASS (Dart AOT, managed-runtime family)
+
+Status: device-confirmed 2026-06-12.
+
+A `flutter create` app built in Release configuration (Dart AOT) launched on the iPhone X. Decisive
+facts:
+
+- Release config compiles Dart to an AOT snapshot (`libdart_aotruntime`, `App.framework`), so this is
+  the shipping execution model, not the JIT debug path. It clears wall 2 for the managed-runtime
+  family (the iOS twin of the same AOT requirement the .NET trio faces).
+- Driven through the proven xcodebuild pattern on `ios/Runner.xcworkspace` with overrides
+  `PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.hellodevice DEVELOPMENT_TEAM=HWLVAKDV4F
+  CODE_SIGN_STYLE=Automatic`; signed with the vet keychain reusing profile `b08f51d5...`, no call to
+  Apple. `** BUILD SUCCEEDED **`, then `ios-deploy ... run` printed `success`.
+- Caveat on the CocoaPods claim: a plugin-less `flutter create` generates NO `Podfile` (the log shows
+  "No Podfile found"); Flutter integrates its own framework via a generated xcconfig plus a build
+  phase, not CocoaPods, until a plugin pulls pods in. So neither Capacitor (SwiftPM) nor this Flutter
+  app exercised CocoaPods. The CocoaPods + `.xcworkspace` signing path is still unproven and will be
+  settled by the React Native gate (or a Flutter app with a plugin).
+
 ## Music-player iOS port (settled by the Slint gate plus source)
 
 The music-player (`packages/desktop-app/music-player`, Rust + Slint) can be ported to iOS. The Slint
@@ -125,13 +145,33 @@ each concrete:
 
 ## Pending gates
 
-- Flutter (top candidate; proves the Dart-AOT path and Flutter's own iOS integration). Toolchain:
-  Flutter 3.44.2 present; needs `flutter precache --ios`.
-- React Native (proves the CocoaPods + `.xcworkspace` path and Hermes AOT bytecode).
-- .NET trio (MAUI, then Avalonia and Uno) on one `dotnet workload install` of the iOS workload.
-- Compose Multiplatform (Kotlin/Native AOT to iOS).
-- NativeScript (the iOS twin of the Android DENY_EXECMEM disqualification: confirm jitless interpreter
-  behavior on device).
-- Qt for iOS (static link; QtMultimedia audio).
-- Lynx (PrimJS on iOS; maturity of device support).
-- Cordova substrate (comparison against Capacitor only).
+Of the nine distinct device gates the synthesis identified (the 16 frameworks collapse to nine on
+shared substrate and toolchain), three are passed: Slint (rank 1), Capacitor (rank 2, covers six), and
+Flutter (rank 4). Remaining, in the synthesis gate order:
+
+- .NET MAUI (rank 3, needs-device, covers MAUI/Avalonia/Uno). Build both Release (Mono full-AOT) and
+  Debug (interpreter); confirm `[DllImport("__Internal")]` into a linked Rust `.a` returns with no
+  JIT exception, no `EXC_BAD_ACCESS`, no codesign/execmem kill. Toolchain: `dotnet workload install
+  ios` on the present dotnet 10.0.300.
+- Compose Multiplatform (rank 5, expected-pass). Kotlin/Native LLVM-AOT static framework; a cinterop
+  link of a Rust `.a`; check whether `embeddedServer(CIO)` binds on iosArm64. Toolchain: JDK 17+,
+  Kotlin/Gradle, KMP (Kotlin/Native downloads its own LLVM/iOS toolchain).
+- React Native (rank 6, expected-pass; also the gate that proves the CocoaPods + `.xcworkspace` path).
+  Confirm `global.HermesInternal` truthy (Hermes AOT-bytecode interpreter live); a C++ JSI/TurboModule
+  linking a Rust staticlib. Toolchain: Node, RN community CLI, CocoaPods, Watchman/Metro.
+- NativeScript (rank 7, needs-device). The iOS inverse of the Android DENY_EXECMEM death: confirm V8
+  runs jitless and a Rust value returns via `dlsym`/libffi with no AMFI/codesign/execmem kill.
+  Toolchain: Node, `ns` CLI, Homebrew CMake, CocoaPods, xcodeproj gem.
+- Lynx (rank 8, expected-pass). UI renders as native UIKit (`LynxView : UIView`, no WKWebView in the
+  hierarchy); PrimJS fires jitless; a `LynxModule` `.mm` links a Rust staticlib. Toolchain: Node, pnpm
+  (rspeedy/ReactLynx), CocoaPods, Ruby/Bundler.
+- Qt (rank 9, needs-device). Hard constraint: pin Qt 6.5 LTS (iOS 14+). Qt 6.11 sets minimum iOS 17;
+  the iPhone X (A11) caps at iOS 16.7, so a 6.11 binary will not install. Confirm a QML screen
+  animates (V4 bytecode interpreter, no execmem kill) and a linked Rust value prints. Toolchain: Qt
+  for iOS prebuilt static libs (qt-unified) + CMake.
+- Apache Cordova substrate (optional, comparison against Capacitor only; the four WKWebView UI layers
+  Ionic/Framework7/Onsen/Quasar need no fresh substrate gate, only UI-render notes).
+
+Universal toolchain base every gate already shares: macOS + Xcode + signing + `rustup target add
+aarch64-apple-ios` (the Rust core staticlib is the common FFI payload on every track). Each gate adds
+only its own SDK/CLI.
