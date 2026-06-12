@@ -37,6 +37,19 @@ installs and runs it. The vet keychain must be unlocked and present in the user 
 duration of the build (xcodebuild resolves the identity through the search list, not the `--keychain`
 flag alone); the search list is restored to login-only afterward.
 
+Dual-target gate criterion (owner, 2026-06-12): a framework is not a PASS until it render-verifies on
+BOTH the physical iPhone X (iosArm64, iOS 16.7) and the latest iOS simulator (iosSimulatorArm64, iOS 26.5
+on Xcode 26.5), from one codebase with no device-only or simulator-only fork. The simulator leg is
+signing-free and uses `simctl`: `xcrun simctl boot <sim-udid>` (headless is fine, CoreSimulator renders
+offscreen), then `xcodebuild ... -sdk iphonesimulator -destination 'platform=iOS Simulator,id=<sim-udid>'
+CODE_SIGNING_ALLOWED=NO build` (the same project; the embed phase builds the iosSimulatorArm64 slice from
+the same source), `xcrun simctl install <sim-udid> <App>.app`, `xcrun simctl launch <sim-udid>
+<bundle-id>`, then `xcrun simctl io <sim-udid> screenshot <path>`. One quirk: CoreSimulator cannot write a
+screenshot to the external MacData volume (TCC denies it, NSPOSIXErrorDomain code 1), so write the PNG to
+the Mac's internal `/tmp` and `scp` it off. The latest simulator on this Mac is iPhone 17 Pro on iOS 26.5
+(`09D9EB9B-8036-4D23-929D-F75ADE9987FA`); the device UDID is
+`9057e2a8c2e70162e35b9ea8bf006f736670877b`.
+
 Two mechanics that bit during setup and will bite again:
 
 - The Mac login shell is zsh, which does not word-split unquoted parameter expansions. A
@@ -274,7 +287,7 @@ not registered by the workload install under Homebrew dotnet and were added with
 
 ### Compose Multiplatform: PASS (Kotlin/Native AOT, Skiko/Metal self-renderer)
 
-Status: device-confirmed 2026-06-12, render screenshot captured.
+Status: device + latest-simulator confirmed 2026-06-12, render screenshots captured on both.
 
 A Compose Multiplatform iOS app built from the JetBrains `compose-multiplatform-ios-android-template`,
 trimmed to iOS-only, drew a solid-fill UI with text on the iPhone X. Decisive facts:
@@ -299,9 +312,16 @@ trimmed to iOS-only, drew a solid-fill UI with text on the iPhone X. Decisive fa
   xcodebuild line. Signed with the vet keychain (cert `1690CF17...`), reusing profile `b08f51d5...`, no
   call to Apple. `** BUILD SUCCEEDED **`. Installed with `ideviceinstaller -n upgrade` (in place, trust
   held by the anchor).
-- Render-verified: held alive with `idevicedebug -n run` and screenshotted, the screen shows a solid blue
-  (`0xFF1565C0`) background with white "Compose Gate" and "Compose Multiplatform on iOS" text. Process
-  held alive, no dyld error, no crash. Skiko/Metal self-rendering works on the A11 / iOS 16.7 device.
+- Render-verified on the device: held alive with `idevicedebug -n run` and screenshotted, the screen
+  shows a solid blue (`0xFF1565C0`) background with white "Compose Gate" and "Compose Multiplatform on
+  iOS" text. Process held alive, no dyld error, no crash. Skiko/Metal self-rendering works on the A11 /
+  iOS 16.7 device.
+- Render-verified on the latest simulator (the dual-target criterion): the same `iosApp.xcodeproj` and
+  `:shared` source, rebuilt with `-sdk iphonesimulator CODE_SIGNING_ALLOWED=NO` (the `iosSimulatorArm64`
+  slice, no signing), installed and launched on iPhone 17 Pro / iOS 26.5 via `simctl`, drew the identical
+  blue UI (`simctl io ... screenshot`, written to internal `/tmp`). One codebase, no device-only or
+  simulator-only fork: the `:shared` module already declares `iosArm64` and `iosSimulatorArm64` from the
+  same `commonMain`/`iosMain` sources, and the Xcode project switches only the SDK.
 - a11y standing (must, not yet exercised on-device): Compose Multiplatform bridges its semantics tree to
   iOS `UIAccessibility` (the iOS accessibility integration landed in CMP 1.6 and has matured since), so
   its a11y is a native bridge (Avalonia-class, not WebKit-clean), iOS 14+, no iOS-17 wall. Render is
@@ -349,6 +369,12 @@ Device-verified to render so far: Capacitor (rank 2, covers the six web framewor
 share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (Mono AOT and
 interpreter, Rust FFI), MAUI, Avalonia, and Uno, and Compose Multiplatform (rank 5, Kotlin/Native AOT,
 Skiko/Metal), all render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
+
+Dual-target obligation (owner directive 2026-06-12, see the gate mechanism): a PASS now requires render
+on BOTH the device and the latest simulator from one codebase. Compose Multiplatform is confirmed on both.
+Capacitor, Flutter, and the .NET trio were verified on the device before this directive, so each owes a
+retroactive latest-simulator render check (their apps are still on the Mac); until that is done they are
+device-confirmed, simulator-pending. Every remaining gate must clear both legs up front.
 
 Owner directives (2026-06-12): (1) defer the six WKWebView frameworks (the Capacitor and Cordova shells
 plus the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed

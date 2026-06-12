@@ -7,9 +7,11 @@ actual framework, not just on the substrate). Slint DISQUALIFIED (decisive findi
 gate-and-render-verify chain also works over wireless, so no USB cable is needed. Compose Multiplatform
 also PASS (Kotlin/Native AOT, Skiko/Metal). Remaining native and managed gates: React Native (NEXT),
 NativeScript, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI; then the six
-WKWebView frameworks, deferred to the very end per owner. Owner constraint (2026-06-12): no C or C++
+WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
-Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs).
+Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
+device and the latest iOS simulator (iOS 26.5) from one codebase. Compose cleared both legs; Capacitor,
+Flutter, and the .NET trio owe a retroactive simulator check.
 
 ## Goal and hard constraints
 
@@ -117,6 +119,17 @@ attached wirelessly (Xcode wireless debugging), add `-n`/`--network` to the libi
 (`idevicedebug -n run`, `idevicescreenshot -n`, `idevicecrashreport -n`); `ios-deploy` uses wifi by
 default. The whole chain (build, install, run, screenshot, crash logs) is confirmed working over wifi.
 
+Dual-target criterion (owner, 2026-06-12): a gate is not a PASS until it render-verifies on BOTH the
+iPhone X device (iosArm64, iOS 16.7) and the latest iOS simulator (iosSimulatorArm64, iPhone 17 Pro /
+iOS 26.5 on Xcode 26.5), from one codebase with no device-only or simulator-only fork. The simulator leg
+needs no signing: `xcrun simctl boot <sim-udid>` (headless renders offscreen), `xcodebuild ... -sdk
+iphonesimulator -destination 'platform=iOS Simulator,id=<sim-udid>' CODE_SIGNING_ALLOWED=NO build`, then
+`xcrun simctl install/launch/io <sim-udid> ... screenshot`. CoreSimulator cannot write the screenshot to
+the external MacData volume (TCC, code 1), so write to the Mac's internal `/tmp` and `scp` it off. Sim
+udid `09D9EB9B-8036-4D23-929D-F75ADE9987FA`. Capacitor, Flutter, and the .NET trio passed the device leg
+before this directive and owe a retroactive simulator render check (apps still on the Mac); every
+remaining gate clears both legs up front.
+
 - Capacitor (rank 2, covers the six WKWebView members): PASS, renders (`Capacitor vet / WKWebView OK`).
   Capacitor 7 uses Swift Package Manager, not CocoaPods. WebKit gives native a11y. App at
   `~/ios-vet/capgate`.
@@ -136,9 +149,10 @@ default. The whole chain (build, install, run, screenshot, crash logs) is confir
   (native UIKit a11y); Avalonia and Uno-Skia self-draw via their own a11y bridges, fidelity is a stage-2
   check, with Uno's native-UIKit renderer as its a11y-safe fallback. Full evidence in
   `device-gate-results.md`.
-- Compose Multiplatform (rank 5): PASS, renders. Kotlin/Native LLVM-AOT static framework, Skiko/Metal
-  self-renderer; a solid blue UI with white "Compose Gate" text drew on the device, process held alive,
-  no crash. The working version matrix is Kotlin 2.4.0 / Compose Multiplatform 1.11.1 / Gradle 8.14 on
+- Compose Multiplatform (rank 5): PASS on both legs (device + latest simulator), renders. Kotlin/Native
+  LLVM-AOT static framework, Skiko/Metal self-renderer; a solid blue UI with white "Compose Gate" text
+  drew on the iPhone X (iosArm64, held alive, no crash) and on the iPhone 17 Pro / iOS 26.5 simulator
+  (iosSimulatorArm64, signing-free `simctl` build) from the same `iosApp.xcodeproj` + `:shared` sources. The working version matrix is Kotlin 2.4.0 / Compose Multiplatform 1.11.1 / Gradle 8.14 on
   Temurin JDK 21 (the template's 1.9.21 / Gradle 8.2.1 fails twice: Gradle 8.2.1 will not run on JDK 21,
   and Kotlin/Native gained Xcode 26 support only in 2.2.21). App at `/Volumes/MacData/ios-vet/composegate`
   (iOS-only trim of the JetBrains template, Android module removed so no Android SDK is needed; Konan and
