@@ -1,45 +1,69 @@
 package dev.monochromatic.musicplayer
 
 /**
- * Observable snapshot of the engine's playback state, surfaced to the UI.
- *
- * @property status Human-readable transport state: idle, buffering, playing, paused, ended, or an error string.
- * @property nowPlaying File name of the loaded track, or null when nothing is loaded.
- */
-data class EngineState(
-    val status: String,
-    val nowPlaying: String?,
-)
-
-/**
- * The single seam the three engine variants (Media3, hybrid, full-Rust) implement.
- *
- * Each product flavor supplies its own [createAudioEngine] factory, so the rest of the app
- * (the Compose UI, later the MediaSessionService) depends only on this interface and never
- * on a concrete engine. Kept deliberately small for the derisking skeleton; it grows as the
- * queue, true-peak gain, and session features port over.
+ * The low-level audio primitive each engine flavor implements: play one track at a time, report the
+ * play/pause state and natural end, and expose position/duration for the seek bar. The queue,
+ * pagination, shuffle/scope, and transport orchestration live in [PlayerController]; this interface
+ * is only "play this file". Keeping it small is what lets the three variants (Media3, hybrid Rust,
+ * full Rust) swap behind one seam.
  */
 interface AudioEngine {
     /**
-     * Load the file at [path] and begin playback.
+     * Load the track at [uri] and optionally begin playing.
      *
-     * @param path Absolute filesystem path or content URI string the engine can resolve.
+     * @param uri Absolute filesystem path or content URI the engine can resolve.
+     * @param play Start playback immediately when true; load paused when false.
      */
-    fun play(path: String)
+    fun load(uri: String, play: Boolean)
+
+    /** Resume playback of the loaded track. */
+    fun play()
 
     /** Pause playback, keeping the loaded track and position. */
     fun pause()
 
-    /** Stop playback and clear the prepared media. */
-    fun stop()
-
-    /** Release all native resources; the engine is unusable afterwards. */
-    fun release()
+    /**
+     * Seek within the loaded track.
+     *
+     * @param positionSec Target position in seconds.
+     */
+    fun seekTo(positionSec: Double)
 
     /**
-     * Register the callback the engine invokes on every state transition.
+     * Set the output gain.
      *
-     * @param callback Receiver of each new [EngineState]; replaces any previously set callback.
+     * @param volume Linear gain in `0.0..1.0`.
      */
-    fun setOnState(callback: (EngineState) -> Unit)
+    fun setVolume(volume: Float)
+
+    /**
+     * Current playback position.
+     *
+     * @return Position in seconds, 0.0 when nothing is loaded.
+     */
+    fun positionSec(): Double
+
+    /**
+     * Loaded track duration.
+     *
+     * @return Duration in seconds, 0.0 when still unknown.
+     */
+    fun durationSec(): Double
+
+    /**
+     * Register the play/pause-state callback.
+     *
+     * @param callback Invoked with true when playback is running, false when paused or stopped.
+     */
+    fun setOnPlayingChanged(callback: (Boolean) -> Unit)
+
+    /**
+     * Register the natural-end callback.
+     *
+     * @param callback Invoked when the loaded track plays through to its end.
+     */
+    fun setOnTrackEnded(callback: () -> Unit)
+
+    /** Release native resources; the engine is unusable afterwards. */
+    fun release()
 }
