@@ -203,9 +203,11 @@ facts:
 
 ### .NET / Microsoft.iOS: PASS (substrate + MAUI + Avalonia + Uno all render-verified)
 
-Status: substrate, MAUI, Avalonia, and Uno all device-confirmed 2026-06-12. The whole .NET trio renders
-on the iPhone X with no iOS-17 wall. They differ in a11y posture by renderer (MAUI native UIKit; Avalonia
-and Uno-Skia self-drawn with their own a11y bridges); see the per-framework notes below.
+Status: substrate, MAUI, Avalonia, and Uno all device + latest-simulator confirmed 2026-06-12. The whole
+.NET trio renders on the iPhone X and on iPhone 17 Pro / iOS 26.5 with no iOS-17 wall. They differ in
+a11y posture by renderer (MAUI native UIKit; Avalonia and Uno-Skia self-drawn with their own a11y
+bridges); see the per-framework notes below. The simulator leg, including the Rust dual-triple fix it
+forced, is documented after the substrate FFI discussion.
 
 The .NET trio (MAUI, Avalonia, Uno) shares one iOS substrate: the Microsoft.iOS workload's Mono runtime,
 AOT-compiled for the device (iOS forbids JIT). This gate proves that substrate on the iPhone X with a
@@ -233,6 +235,33 @@ means Mono (AOT in Release, interpreter in Debug) called into a linked Rust `.a`
 JIT, no `EXC_BAD_ACCESS`, and no codesign/execmem kill. This is the exact static-lib linkage the
 kopia-to-pCloud core (kopia as a gomobile c-archive, or a Rust shim) and the music-player Rust core
 need: managed UI code calling a linked native archive over FFI.
+
+Simulator leg and the Rust dual-triple fix (dual-target criterion, 2026-06-12): all four .NET apps were
+rebuilt with `dotnet build -c Debug -f net10.0-ios -p:RuntimeIdentifier=iossimulator-arm64` and run on
+iPhone 17 Pro / iOS 26.5 via `simctl`. The substrate (`mauigate`) exposed the central one-codebase issue
+for every Rust-linking framework in this vet: its `NativeReference` pointed at the device Rust slice
+(`rust/target/aarch64-apple-ios/release/librustgate.a`), so the simulator build failed at link with `ld:
+building for 'iOS-simulator', but linking in object file ... built for 'iOS'`. A device arm64 archive and
+a simulator arm64 archive are the same CPU arch but different platform triples and cannot be lipo'd into
+one fat file; the fix is to build the Rust core for both triples and select by RID. The Rust core was
+built for `aarch64-apple-ios-sim` (`cargo build --release --target aarch64-apple-ios-sim`, target already
+installed) and the csproj made RID-conditional with one property (same source, per-target lib):
+
+```xml
+<RustTriple Condition="$(RuntimeIdentifier.StartsWith('iossimulator'))">aarch64-apple-ios-sim</RustTriple>
+<RustTriple Condition="'$(RustTriple)' == ''">aarch64-apple-ios</RustTriple>
+<!-- ... -->
+<NativeReference Include="rust/target/$(RustTriple)/release/librustgate.a" />
+```
+
+The device build (already passed) is unchanged because `RustTriple` defaults to `aarch64-apple-ios`. The
+simulator substrate then rendered ".NET iOS gate OK / Rust FFI returns: 720", proving the Rust value
+crosses on the simulator slice too. This dual-triple build is mandatory for the kopia/music-player Rust
+cores and for every remaining Rust-linking gate (React Native, NativeScript, Lynx, Qt): ship the Rust
+core as both `aarch64-apple-ios` and `aarch64-apple-ios-sim` (an XCFramework packages both cleanly), not
+a single device archive. Renders: MAUI drew its dotnet-bot/"Hello, World!"/"Click me" XAML, Avalonia drew
+"Welcome to Avalonia!" (its SkiaSharp/Metal renderer presents frames headlessly, like Compose/Skiko and
+unlike Flutter's Impeller), and Uno drew "Hello Uno Platform!". All four are device + simulator confirmed.
 
 - Signing: `dotnet build` auto-detected identity `1690CF17...` and profile UUID `b08f51d5...` (team
   `HWLVAKDV4F`, app id `HWLVAKDV4F.dev.monochromatic.iosvet.hellodevice`) through the vet keychain in
@@ -390,12 +419,13 @@ share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (
 interpreter, Rust FFI), MAUI, Avalonia, and Uno, and Compose Multiplatform (rank 5, Kotlin/Native AOT,
 Skiko/Metal), all render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
 
-Dual-target obligation (owner directive 2026-06-12, see the gate mechanism): a PASS now requires render
-on BOTH the device and the latest simulator from one codebase. Compose Multiplatform, Capacitor, and
-Flutter are confirmed on both legs (Flutter's simulator leg needed the Impeller-off headless workaround,
-above). The .NET trio (substrate, MAUI, Avalonia, Uno) was verified on the device before this directive
-and still owes a retroactive latest-simulator render check (apps still on the Mac); until then it is
-device-confirmed, simulator-pending. Every remaining gate must clear both legs up front.
+Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
+the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
+Multiplatform, Capacitor, Flutter, and the full .NET trio (substrate, MAUI, Avalonia, Uno) are all
+confirmed on both legs. Two findings the sweep produced, both above: Flutter's simulator leg needed the
+Impeller-off headless workaround, and the .NET Rust-FFI substrate needed the Rust core built for both
+`aarch64-apple-ios` and `aarch64-apple-ios-sim` with RID-conditional linking (mandatory for every
+remaining Rust-linking gate). Every remaining gate must clear both legs up front.
 
 Owner directives (2026-06-12): (1) defer the six WKWebView frameworks (the Capacitor and Cordova shells
 plus the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
