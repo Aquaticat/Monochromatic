@@ -110,13 +110,16 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   notification icon on every track change (now reports the engine's play intent via `AudioEngine.playWhenReady()`);
   and `handleSeek` discarded `positionMs` for `COMMAND_SEEK_TO_MEDIA_ITEM` (external controllers only). Two review
   findings were deferred (see "Deferred from the MediaSessionService review" below).
-- Device state to resume from: the latest `media3` debug APK (the SAF feature, commits `fa647b61` + `1ef469de` +
-  `ef90fd1a`) is installed on the Pixel 6 (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` and
-  `POST_NOTIFICATIONS` granted, AND a persisted SAF read grant for
-  `content://com.android.externalstorage.documents/tree/primary:Plain/Music`. Because a held SAF root wins, the app
-  now cold-loads 3486 files from that folder via `SafTreeSource`, NOT the device-wide MediaStore (3638 `IS_MUSIC`);
-  to exercise the MediaStore path again, clear the app's storage (there is no in-UI "forget folder" yet) or revoke
-  the grant in Settings. The top-bar "Folder" action opens the picker; playback is hosted in `PlaybackService`.
+- Device state to resume from: the latest `media3` debug APK (scroll fix `bab7f556`, offline true-peak decoder
+  `5d89f21d` which is built but NOT yet wired into playback, minSdk 36) is installed on the Pixel 6
+  (`dev.monochromatic.musicplayer.media3`) with `READ_MEDIA_AUDIO` and `POST_NOTIFICATIONS` granted. IMPORTANT: the
+  persisted SAF grant for `content://com.android.externalstorage.documents/tree/primary:Plain/Music` was WIPED when
+  the decoder's `connectedMedia3DebugAndroidTest` run uninstalled the app (AGP uninstalls both APKs after a
+  connected test; uninstall revokes persisted URI grants), so the app currently falls back to the device-wide
+  MediaStore (3638 `IS_MUSIC`). To restore the owner's Plain/Music library, tap the top-bar "Folder" action and
+  re-pick `Plain/Music` (the picker needs a human tap; the grant + choice are the user's). The scroll fix was
+  verified on the MediaStore "Plain" page (~3000 rows scroll; the tab row scrolls off with the list). Playback is
+  hosted in `PlaybackService`. To exercise the MediaStore path deliberately, just do not re-pick a folder.
   Rebuild + reinstall with `mise run //packages/android-app/music-player:build:media3` then
   `adb -s 1C171FDF600KWW install -r app/build/outputs/apk/media3/debug/app-media3-debug.apk`; re-grant with
   `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`
@@ -130,7 +133,8 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   `uiautomator dump` works intermittently on this Compose surface (some dumps return empty; retry a few times, or
   fall back to `screencap`); it did yield the page tabs, track rows, and the "Folder" button. Drive taps by
   coordinate (screen is 1080x2400) and read back via logcat (`MusicPlayer:I MediaStoreSource:I SafTreeSource:I
-  LibraryRoot:I PlaybackService:I`) and `dumpsys media_session` (shows `state=PLAYING`, position, and the track
+  LibraryRoot:I PlaybackService:I Media3Engine:I Media3TruePeak:I`) and `dumpsys media_session` (shows
+  `state=PLAYING`, position, and the track
   title, the most reliable playback check). SDK is `local.properties` -> `/var/tmp/vet-jc/android-sdk`.
   adb is flock-guarded on `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
 
@@ -349,3 +353,12 @@ persistable grants are per-applicationId, so each flavor needs its own grant.
   behavior; the MediaStore default library is the one spot that does not map 1:1 to the desktop's folder model.
 - Kotlin files do not need the Rust `dum-dum-non-ts` comment convention (that is Rust-file-specific). General repo
   rules apply: run everything through mise tasks, commit eagerly with scoped pathspecs, no AI-attribution trailers.
+- Instrumented tests (`mise run //packages/android-app/music-player:test:instrumented` ->
+  `connectedMedia3DebugAndroidTest`) run on the connected device via gradle's own adb, so pin `ANDROID_SERIAL` and
+  hold the `/tmp/agent/adb-phone.lock` flock around the run to coordinate with concurrent sessions. CAVEAT: AGP
+  UNINSTALLS both the app and the test APK after a connected run, which also revokes the app's persisted SAF grant
+  and clears its data; this is what wiped the owner's Plain/Music grant. To verify instrumented tests without
+  disturbing an installed app, prefer building the test APK and driving `am instrument` manually (install both
+  APKs, run, leave them installed), or just reinstall + re-grant the app afterward. The harness is minimal (runner
+  1.7.0, no Espresso, so the Compose BOM's Espresso-3.5.0-on-Android-16 crash cannot trigger); decode-only tests
+  produce no audio.
