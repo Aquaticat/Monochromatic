@@ -1,8 +1,11 @@
 # iOS UI/app-shell stack vet for the iPhone X (music-player port and kopia-to-pCloud backup)
 
 Status: source audit and adversarial cite-check complete for all 16 candidates; device gating in
-progress (3 of 9 distinct gates run and passed). The UI/app-shell decision is open (not recorded
-here); the document records the comparison and the on-device evidence. Date updated: 2026-06-12.
+progress. Of 9 distinct gates, 2 are device-verified to render (Capacitor, Flutter); Slint is
+disqualified for this device (its iOS backend is iOS 17+, see below); 6 remain. Accessibility is a hard
+requirement (owner-stated), which is decisive against Slint here. The UI/app-shell decision is open
+(not recorded here); the document records the comparison and the on-device evidence. Date updated:
+2026-06-12.
 
 ## Context
 
@@ -16,6 +19,11 @@ never receives iOS 17):
 - `packages/desktop-app/music-player`, a Rust plus Slint native player (symphonia plus libopus decode,
   always-on true-peak normalization with an on-disk peak cache, a folder-scanned queue with two-axis
   pagination, session persistence, cpal output) to be ported to iOS.
+
+Hard requirements, owner-stated: accessibility (a11y) is mandatory, and the target is specifically the
+iPhone X, which is A11 silicon and never receives iOS 17. Together these are decisive: a framework
+whose iOS support assumes iOS 17 APIs cannot be used on this device even if it builds, and a11y cannot
+be dropped to dodge an iOS-17 a11y dependency.
 
 Standard: choosing-technology full-verification. Every candidate was cloned, source-audited, and the
 load-bearing runtime claims cite a concrete source file or doc; survivors are built and launched on
@@ -50,16 +58,19 @@ source evidence alone; the standard is on-device.
 
 ## Decisive result: run on the real device
 
-The 16 frameworks collapse to nine distinct device gates (shared substrate and toolchain). Three are
-run and passed; six remain (gate order from the synthesis):
+The 16 frameworks collapse to nine distinct device gates (shared substrate and toolchain). Two are
+device-verified to render, Slint is disqualified, and six remain (gate order from the synthesis):
 
-- Slint (rank 1): PASS. The in-tree `energy-monitor` demo, built from Slint master for
-  `aarch64-apple-ios`, launched on the iPhone X. Native Rust binary, winit plus Skia/Metal, no managed
-  runtime. About a two-minute build (prebuilt Skia).
-- Capacitor (rank 2, covers Capacitor, Cordova, Ionic, Framework7, Onsen, Quasar): PASS. A minimal
-  WKWebView app launched. Capacitor 7 uses Swift Package Manager, not CocoaPods.
-- Flutter (rank 4): PASS. A Release (Dart AOT) build launched, confirming the shipping AOT execution
-  model on device.
+- Slint (rank 1): FAIL, disqualified. The `energy-monitor` demo builds and the process launches, but
+  held alive and screenshotted it crashes before rendering. Slint's iOS support is iOS 17+ in two
+  independent places: `accesskit_ios` (a11y) references four iOS-17 symbols (dyld `Symbol not found:
+  _UIAccessibilityPriorityHigh`), and Slint's own winit backend reads dark/light mode through the
+  iOS-17 `UITrait` API (panic `class UITraitUserInterfaceStyle could not be found`). The iPhone X never
+  gets iOS 17. Evidence in `ios-iphone-x-vet-reports/device-gate-results.md`.
+- Capacitor (rank 2, covers Capacitor, Cordova, Ionic, Framework7, Onsen, Quasar): PASS, render-verified
+  (the screenshot shows the WebView content). Capacitor 7 uses Swift Package Manager, not CocoaPods;
+  WebKit provides native a11y.
+- Flutter (rank 4): PASS, render-verified (the Dart AOT Release build draws its UI). Native UIKit a11y.
 - .NET MAUI (rank 3, covers the .NET trio): pending, needs-device (prove full-AOT P/Invoke and
   trimming survive).
 - Compose Multiplatform (rank 5): pending, expected-pass.
@@ -70,26 +81,32 @@ run and passed; six remain (gate order from the synthesis):
 - Qt (rank 9): pending, needs-device; must pin Qt 6.5 LTS because Qt 6.11 requires iOS 17, which the
   iPhone X never gets.
 
-All three passes used one signing path: a forced bundle id (`dev.monochromatic.iosvet.hellodevice`)
-plus the vet keychain, with no `-allowProvisioningUpdates`. The path and its proof are in
-`ios-iphone-x-vet-reports/device-gate-results.md`.
+Every gate used one signing path: a forced bundle id (`dev.monochromatic.iosvet.hellodevice`) plus the
+vet keychain, with no `-allowProvisioningUpdates`. The signing proof and the render-vs-launch
+verification method (`idevicedebug -d run` plus `idevicescreenshot`, since `ios-deploy --justlaunch`
+reports success before any UI draws) are in `ios-iphone-x-vet-reports/device-gate-results.md`.
 
 ## Candidate frameworks
 
-### Slint plus Rust (native, the incumbent)
+### Slint plus Rust (native, the incumbent): DISQUALIFIED for this device
 
-Runs on the device. The app is one cargo-built `aarch64-apple-ios` binary: Slint's UI is Rust, the
-`.slint` markup is AOT-compiled by slint-build at host build time, and iOS rendering is winit plus
-Skia on Metal. Slint has a first-class, CI-tested, TestFlight-shipping iOS path.
+Does not run on the iPhone X. The app builds (one cargo-built `aarch64-apple-ios` binary, winit plus
+Skia/Metal) and the process launches, but it crashes before rendering because Slint's iOS support
+assumes iOS 17 in two independent places, both verified on the device: the a11y backend `accesskit_ios`
+references four iOS-17 symbols unconditionally (dyld load failure), and Slint's own winit iOS backend
+reads dark/light mode through the iOS-17 `UITrait` API (runtime panic). The iPhone X is A11 and caps at
+iOS 16.7. a11y is a hard requirement, so the first wall cannot be dodged by dropping a11y, and the
+second wall is in Slint's own code regardless of a11y.
 
-Pros: best repo fit (pure Rust, matching the existing Slint desktop apps); all three walls collapse to
-ordinary Rust-on-iOS work; kopia links as a standard static archive via `build.rs` with zero bridge
-hops; the music-player's entire symphonia plus cpal core recompiles unchanged because cpal already
-ships an iOS CoreAudio backend (`src/host/coreaudio/ios/mod.rs`). For the music-player it is the only
-candidate that is not a full UI rewrite. Cons: Slint iOS is newer than the desktop backends (the
-build fix slint-ui/slint#11741 landed 2026-05-15, so the port must bump past the music-player's pinned
-April rev and switch `renderer-femtovg` to `renderer-skia`); the in-app S3 server must live in the
-linked Rust code, not in Slint.
+On paper Slint is the best repo fit (pure Rust, matching the existing Slint desktop apps; kopia links
+as a standard static archive via `build.rs` with zero bridge hops; the music-player's symphonia plus
+cpal core recompiles unchanged because cpal already ships an iOS CoreAudio backend at
+`src/host/coreaudio/ios/mod.rs`; it is the only candidate that is not a full UI rewrite). None of that
+applies while it cannot launch on the device. Reviving it requires maintaining a downported fork of
+both accesskit and Slint's winit iOS backend, with an iOS-16 a11y fidelity loss and re-verification
+after every Slint bump, until upstream availability-guards these APIs (which also needs objc2 to support
+weak-linked statics). This is the iOS analog of Slint's Android disqualification (dex loading on
+GrapheneOS): does not run on the owner's device on either platform.
 
 ### WKWebView substrate (Capacitor and Cordova shells; Ionic, Framework7, Onsen, Quasar UI layers)
 
@@ -172,32 +189,38 @@ device-support maturity is the open question; full UI rewrite; smallest tooling 
 
 ## Ranking (analysis, not a recorded decision)
 
-The two apps converge on the same top pick for different reasons, then diverge below it.
+Slint's disqualification removes the former top pick and the only no-UI-rewrite option, and it carries
+a method lesson: Slint was "expected-pass" on the desk audit and crashed on the device, so on-device
+verification status now weighs in the ranking. Two candidates are device-verified to render with native
+a11y (Flutter and the WKWebView substrate); the rest are desk "expected-pass" and unconfirmed.
 
-Music-player port: Slint, decisively, then everyone else far behind. Every non-Slint candidate is a
-full UI rewrite of a working Slint app, and Slint alone reuses the symphonia plus cpal audio core
-through a recompile (cpal has an iOS CoreAudio backend). The rest rank only as "if you were starting
-the UI from scratch": Flutter, Compose Multiplatform, React Native, the WKWebView substrate, the .NET
-trio, Qt, Lynx, NativeScript, in that rough order, because below Slint the deciding factors are FFI
-cleanliness and audio-thread behavior, not incumbency.
+Music-player port: with Slint disqualified, the port to the iPhone X is no longer a UI reuse. Either
+maintain a downported Slint fork (high, ongoing maintenance; see the Slint section) or rewrite the UI
+while keeping the Rust audio core behind FFI. If rewriting, the ranking is the kopia-stack ranking below
+(incumbency no longer applies once the UI is rebuilt); the symphonia plus cpal core reuse holds on every
+track.
 
-kopia stack: Slint > Flutter > Compose Multiplatform > WKWebView (Capacitor) > React Native > .NET
-trio > Qt > Lynx > NativeScript.
+kopia stack (and the music-player if its UI is rewritten):
+Flutter > WKWebView (Capacitor) > Compose Multiplatform > React Native > .NET trio > Qt > Lynx >
+NativeScript.
 
-- Slint over Flutter: Slint links the Go/Rust core as an ordinary static archive via `build.rs` with
-  zero bridge hops and keeps the gateway in first-class Rust matching the repo, versus Flutter's single
-  `dart:ffi` hop and a full UI build. Both AOT and both run on device; Slint wins on architecture fit.
-- Flutter over Compose Multiplatform: one proven AOT bridge (`dart:ffi`, gate passed) versus a newer
-  Kotlin/Native track with an unproven in-app server story on `iosArm64`.
-- Compose Multiplatform over WKWebView: cinterop is a single clean C-ABI hop, versus the WebView's
-  JS-to-Swift-to-Rust double bridge and the lack of a real in-WebView listening socket.
-- WKWebView over React Native: both are JS, both clear wall 2, but the WebView substrate collapses six
-  candidates and suits the repo's web strength, while RN's advantage (JSI) still lands the gateway in
-  native code under a JS shell; close call, repo fit breaks it.
+- Flutter over WKWebView: both are device-verified with native a11y, but Flutter links the Rust/Go core
+  through a single `dart:ffi` hop and renders native UIKit, versus the WebView's JS-to-Swift-to-Rust
+  double bridge, its lack of a real in-WebView listening socket, and bridge-marshaling cost on
+  high-frequency audio/queue state. WKWebView's edge (collapses six candidates, suits the repo's
+  TypeScript strength) does not outweigh the cleaner core integration for an app whose hard parts are
+  native.
+- WKWebView over Compose Multiplatform: WKWebView is device-verified and Compose is not, and Compose's
+  in-app server story (`embeddedServer(CIO)` on `iosArm64`) is unproven. Compose's cleaner single
+  cinterop hop is why it is close; it would rise above WKWebView once its gate renders and the server
+  question resolves.
+- Compose Multiplatform over React Native: both expected-pass and AOT/jitless-clean, but cinterop is a
+  single C-ABI hop versus RN's C++ JSI/TurboModule, and RN's streaming pump and server still land in
+  native code under a JS shell.
 - React Native over the .NET trio: Hermes is a clean no-JIT interpreter with a zero-copy JSI link,
   versus full-AOT plus trimming risk and AOT P/Invoke marshaling in the .NET trio.
-- .NET trio over Qt: one workload covers three UIs and full-AOT is proven on iOS, versus Qt's hard iOS
-  17 version ceiling forcing a 6.5 LTS pin and a heavier C++ toolchain.
+- .NET trio over Qt: one workload covers three UIs and full-AOT is proven on iOS generally, versus Qt's
+  hard iOS-17 ceiling forcing a 6.5 LTS pin and a heavier C++ toolchain.
 - Qt over Lynx: Qt is mature with a known static-link and audio story, versus Lynx's unproven device
   maturity.
 - Lynx over NativeScript: both are jitless native-UI-from-JS, but Lynx is native UIKit by construction
@@ -206,23 +229,25 @@ trio > Qt > Lynx > NativeScript.
 
 Flip conditions:
 
+- The big one is Slint: if the team will maintain a downported fork of accesskit and Slint's winit iOS
+  backend (or upstream availability-guards the iOS-17 APIs and objc2 gains weak-linked statics), Slint
+  returns as the top pick for both apps on repo fit and zero-bridge core integration. Until then it does
+  not run on the device, so it is out under the a11y-must rule.
+- If a needs-device gate crashes on render (the .NET trio's trimming/AOT, NativeScript's libffi path, a
+  Qt 6.5 install issue) or an expected-pass gate fails the way Slint did, that track drops accordingly.
+  The Slint result is the standing proof that desk "expected-pass" is not device-confirmed.
 - If the in-app S3 endpoint is kept framework-independent by embedding the server inside the linked
-  Rust/Go staticlib (the recommended de-risk), every framework's HTTP-server uncertainty disappears
-  and the ranking is driven purely by FFI cleanliness and UI cost, which only strengthens Slint.
-- If the team wants the UI in TypeScript and accepts the music-player rewrite, the WKWebView substrate
-  rises above Flutter for the kopia app on repo fit.
-- If a needs-device gate fails (the .NET trio's trimming/AOT, NativeScript's libffi path, or a Qt 6.5
-  install issue), that track drops below the expected-pass tracks beneath it.
+  Rust/Go staticlib (the recommended de-risk), every framework's HTTP-server uncertainty disappears.
 
-The pick is a value judgment reserved to the owner; this document records the comparison and the
-device evidence, not a selection.
+The pick is a value judgment reserved to the owner; this document records the comparison and the device
+evidence, not a selection.
 
 ## Per-technology scorecard (the shared spine)
 
 The synthesis estimates roughly 52 deduplicated reports because the hard parts are shared and written
 once, then reused across every surviving framework. What varies per framework is narrow: the
-FFI-bridge marshaling vet, the Slint-UI re-author (every non-Slint candidate rewrites the UI), and the
-framework-specific in-process UI-test and e2e harness.
+FFI-bridge marshaling vet, the UI re-author (every candidate now rewrites the Slint UI, since Slint is
+disqualified on this device), and the framework-specific in-process UI-test and e2e harness.
 
 - Shared Rust/Go core (identical on every track): the music-player symphonia plus cpal core (decode,
   true-peak normalization, peak cache, queue, pagination, persistence) and the kopia c-archive or Rust
@@ -255,8 +280,11 @@ framework-specific in-process UI-test and e2e harness.
   the Android DENY_EXECMEM result that disqualified NativeScript and Slint's dex path there).
 - No long-running background; restructure the snapshot around background `URLSession` and
   `BGProcessingTask`. Audio playback is permitted backgrounded with `UIBackgroundModes: audio`.
-- Device ceiling: the iPhone X is A11 and caps at iOS 16.7, so any framework with a minimum deployment
-  of iOS 17 (Qt 6.11) cannot install; pin to an LTS that supports iOS 14 to 16.
+- Device ceiling: the iPhone X is A11 and caps at iOS 16.7, so any framework that depends on an iOS-17
+  API cannot run here. This disqualifies Slint (its accesskit a11y backend and its own winit
+  color-scheme code both reference iOS-17 symbols) and forces Qt to the 6.5 LTS pin (6.11 sets a 17
+  minimum). Verify on the device, not at build time: Slint built and launched yet crashed at dyld load
+  and again at the first trait-collection change.
 - Signing for on-device dev: a free personal team gives a 1-year certificate and 7-day profiles; the
   vet reuses one provisioned bundle id so gates need no `-allowProvisioningUpdates`. See
   `ios-iphone-x-vet-reports/device-gate-results.md` and `../runbook/ios-iphone-x-codesign-setup.md`.
@@ -268,9 +296,9 @@ its load-bearing wall claims against a concrete source, followed by an adversari
 synthesis. The raw per-framework reports (verbatim structured output, not lint-conformed) and the
 on-device gate results are persisted alongside this doc under `ios-iphone-x-vet-reports/`:
 
-- On-device gates: `device-gate-results.md` (the signing mechanism, plus Slint, Capacitor, and Flutter
-  passes with exact build evidence).
-- Native: `vet-slint.md`.
+- On-device gates: `device-gate-results.md` (the signing mechanism, the render-vs-launch verification,
+  the Capacitor and Flutter render passes, and the Slint disqualification, with exact evidence).
+- Native (disqualified on device): `vet-slint.md`.
 - WKWebView substrate: `vet-capacitor.md`, `vet-cordova.md`, `vet-ionic.md`, `vet-framework7.md`,
   `vet-onsen.md`, `vet-quasar.md`.
 - Managed/AOT: `vet-flutter.md`, `vet-dotnet-maui.md`, `vet-avalonia.md`, `vet-uno.md`,

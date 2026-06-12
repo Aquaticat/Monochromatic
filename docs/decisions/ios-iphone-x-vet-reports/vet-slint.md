@@ -6,6 +6,24 @@ requirements), with an adversarial cite-check. Not lint-conformed. On-device gat
 run, live in `device-gate-results.md`; the cross-cutting decision is in
 `../ios-iphone-x-music-player-kopia-stack.md`.
 
+## Device-gate result: DISQUALIFIED (overrides this audit's expected-pass)
+
+This source audit concluded expected-pass. The on-device gate disproves it. The Slint `energy-monitor`
+demo builds and the process launches, but it crashes before rendering on iOS 16.7 because Slint's iOS
+support is iOS 17+ in two independent places, both verified on the device:
+
+- `accesskit_ios` (the a11y backend, a hard requirement) references four iOS-17 symbols unconditionally:
+  `UIAccessibilityPriorityHigh`/`Low`, `UIAccessibilitySpeechAttributeAnnouncementPriority`
+  (`event.rs`) and `UIAccessibilityTraitToggleButton` (`node.rs`). dyld `Symbol not found:
+  _UIAccessibilityPriorityHigh`, SIGKILL before any UI.
+- Slint's own `internal/backends/winit/ios/color_scheme.rs:37` uses the iOS-17 `UITrait` API
+  (`UITraitUserInterfaceStyle::class()` / `registerForTraitChanges`). Runtime panic on iOS 16.7:
+  `class UITraitUserInterfaceStyle could not be found`.
+
+The iPhone X (A11) never gets iOS 17, and a11y cannot be dropped, so Slint is disqualified for this
+device. Reviving it needs a maintained downport fork of both accesskit and Slint's winit iOS backend.
+See `device-gate-results.md` for the full evidence.
+
 ## Verdict
 
 - iOS runtime model: AOT-native machine code. The iOS app is a plain Rust binary cross-compiled with `cargo build --target aarch64-apple-ios --bin` (scripts/build_for_ios_with_cargo.bash:57), lipo'd, dSYM'd, and codesigned, then wrapped by an Xcode/XcodeGen project that only signs and packages it. The shipped binary has an ordinary Rust `fn main()` (tools/viewer/main.rs:153) that runs the Slint event loop (`component.run()` -> winit iOS event loop, event_loop.rs:700 `run_app`). There is no managed runtime, no bytecode VM, no JIT, and no interpreter for app code: Slint's UI is Rust-compiled, .slint markup is compiled ahead of time by slint-build into Rust at host build time. The iOS backend drives UIKit directly through native objc2 bindings (objc2-ui-kit: UIApplication/UIView/UIScreen, objc2-quartz-core: CADisplayLink) (internal/backends/winit/Cargo.toml:130-135).

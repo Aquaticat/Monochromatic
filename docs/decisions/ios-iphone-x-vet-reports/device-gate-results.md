@@ -3,9 +3,12 @@
 On-device build-and-run outcomes for the funnel's stage 1, recorded as each framework is gated on
 the owner's iPhone X (`iPhone10,3`, iOS 16.7.16, build 20H392, UDID
 `9057e2a8c2e70162e35b9ea8bf006f736670877b`). This is the evidence layer the desk audits cannot
-produce: a desk audit judges from source, a gate judges from a signed app actually launching on the
-hardware. Read this together with the per-framework `vet-<framework>.md` reports (source audit) and
-the synthesis at `docs/decisions/ios-iphone-x-music-player-kopia-stack.md`.
+produce: a desk audit judges from source, a gate judges from a signed app actually rendering its UI and
+running on the hardware. Launch success alone is not a pass: an app can pass `ios-deploy ... run` and
+then die at dyld load or panic before drawing a frame. Every PASS below is confirmed by an on-device
+screenshot plus a few seconds of no-crash runtime, not by launch success. Read this together with the
+per-framework `vet-<framework>.md` reports (source audit) and the synthesis at
+`docs/decisions/ios-iphone-x-music-player-kopia-stack.md`.
 
 Signing and device path are established and documented separately in
 `docs/runbook/ios-iphone-x-codesign-setup.md`; this file records only what each framework's own
@@ -42,6 +45,11 @@ Two mechanics that bit during setup and will bite again:
 - `tail -n` on a failing `xcodebuild | tail` hides the real error, which xcodebuild prints near the
   top. When a build "fails with usage text," re-run capturing the head, or run `xcodebuild -list`
   first to confirm the scheme.
+- Launch is not render. `ios-deploy --justlaunch` prints `success` as soon as the process is created
+  under lldb, before any UI draws, and then detaches, which kills the app. To confirm a gate renders,
+  relaunch with `idevicedebug -d run <bundle id>` (which holds the app alive), `idevicescreenshot`
+  after a few seconds, and scan the app stdout plus `idevicecrashreport` for a dyld `Symbol not found`
+  or a Rust panic. The Slint result below was a launch-success this step caught as a crash.
 
 ## Results
 
@@ -61,8 +69,11 @@ Decisive facts from the build log:
   (Debug and Release), so the existing profile signed it directly.
 - Signing identity `Apple Development: little.plan2433@fastmail.com (L3DN5L9CVL)`, profile
   `iOS Team Provisioning Profile: dev.monochromatic.iosvet.hellodevice`
-  (`b08f51d5-37ba-4462-b098-d1533058bf16`), `** BUILD SUCCEEDED **`, then `ios-deploy ... run` printed
+  (`b08f51d5-37ba-4462-b098-d1533058bf16`), `** BUILD SUCCEEDED **`, `ios-deploy ... run` printed
   `success`.
+- Render-verified: held alive with `idevicedebug -d run` and screenshotted, the WebView draws the page
+  content (`Capacitor vet` / `WKWebView OK`), not a blank or home screen, with no dyld error or crash
+  report. WKWebView a11y is native (WebKit maps ARIA to iOS accessibility), so there is no iOS-17 wall.
 
 Because Apache Cordova, Ionic, Framework7, Onsen UI, and Quasar all render their UI inside the same
 WKWebView the Capacitor (or Cordova) shell hosts, this PASS establishes the substrate for all of them.
@@ -70,29 +81,41 @@ What remains for those is layer-specific (the JS UI library and the plugin used 
 server, native FFI, and background), not a fresh substrate gate. Cordova still warrants its own
 substrate gate only to compare its shell against Capacitor's; the four UI layers do not.
 
-### Slint: PASS (native Rust, highest product value)
+### Slint: FAIL, disqualified for the iPhone X (the iOS backend is iOS 17+)
 
-Status: device-confirmed 2026-06-12.
+Status: device-disproven 2026-06-12. An earlier revision of this file recorded a Slint PASS. That was
+wrong: it rested on `ios-deploy ... run` printing `success`, which only means the process was created
+under lldb. Held alive with `idevicedebug -d run` and screenshotted, the Slint `energy-monitor` demo
+does not render; it crashes before drawing. The build itself does succeed (`cargo build --target
+aarch64-apple-ios`, winit plus Skia/Metal, prebuilt Skia, about a two-minute build, signed via the vet
+keychain reusing profile `b08f51d5...` through `xcodegen generate --spec ios-project.yml`), but the
+signed app does not run on iOS 16.7. Two independent iOS-17 hard dependencies, both verified on the
+device:
 
-The in-tree `energy-monitor` demo, built from Slint master, launched on the iPhone X. Decisive facts:
+- Accessibility (a11y, a hard requirement here) pulls in `accesskit_ios` (latest 0.1.1), which
+  references four iOS-17-only UIKit symbols unconditionally, with no availability guard or weak
+  linking: `UIAccessibilityPriorityHigh`/`Low` and `UIAccessibilitySpeechAttributeAnnouncementPriority`
+  (announcement priority, `accesskit_ios/src/event.rs`) and `UIAccessibilityTraitToggleButton`
+  (`accesskit_ios/src/node.rs`). On iOS 16.7 dyld cannot resolve them and SIGKILLs the app before any
+  UI: `dyld: Symbol not found: _UIAccessibilityPriorityHigh`. A local accesskit fork patched to drop
+  these (post the announcement without the iOS-17 priority; expose toggles as plain buttons) clears the
+  dyld failure, but then the second wall fires.
+- Slint's own winit iOS backend detects dark/light theme with the iOS-17 `UITrait` system:
+  `internal/backends/winit/ios/color_scheme.rs:37` calls `UITraitUserInterfaceStyle::class()` and
+  `install_trait_change_observer` (`trait_observer.rs`, whose own comment notes
+  `registerForTraitChanges:withHandler:` is iOS 17+). objc2 resolves the class at runtime and panics on
+  iOS 16.7: `thread 'main' panicked ... class UITraitUserInterfaceStyle could not be found`
+  (`objc2-ui-kit-0.3.2/.../UITrait.rs`). This is Slint's own code, not a dependency that can be swapped.
 
-- The app is a Rust binary cross-compiled to `aarch64-apple-ios`, wrapped by an xcodegen
-  `ios-project.yml` whose `postCompileScripts` runs `scripts/build_for_ios_with_cargo.bash`
-  (`cargo build --target aarch64-apple-ios --bin`, then lipo, dSYM, and codesign). Slint renders on
-  iOS through the winit backend plus the Skia renderer on Metal (the femtovg and software renderers
-  are not the iOS path).
-- The full Slint + Skia iOS build finished in about two minutes (14:41:33 to 14:43:30), because Skia
-  resolves prebuilt iOS binaries rather than compiling from source. This is the cargo-built-executable
-  signing path (distinct from Capacitor's SwiftPM path), and it works the same way: the build script's
-  `codesign --force --sign <hash>` resolves the identity through the vet keychain in the search list,
-  and the override `PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.hellodevice` plus
-  `DEVELOPMENT_TEAM=HWLVAKDV4F CODE_SIGN_STYLE=Automatic` on the xcodebuild line let it reuse the
-  existing profile (`b08f51d5...`) with no call to Apple.
-- `xcodegen generate --spec ios-project.yml` is required because the spec is not named the default
-  `project.yml`. `** BUILD SUCCEEDED **`, then `ios-deploy ... run` printed `success`.
-
-So Slint on iOS is real and runs on this exact device today, on master. At the crates.io release it
-would not: the iOS build fix (slint-ui/slint#11741) postdates the 1.16 line.
+So even with the accesskit fork, Slint panics on the iPhone X. Making Slint run would require forking
+both accesskit and Slint's winit iOS backend, downporting each iOS-17 API to iOS 16, accepting the a11y
+fidelity loss above, and re-verifying after every Slint bump, with no guarantee further iOS-17
+dependencies will not surface (this exploration found five distinct iOS-17 API uses across two crates).
+The iPhone X is A11 and never receives iOS 17. This is the iOS analog of Slint's Android
+disqualification (the Android series' `vet-slint-rust.md`: dex loading blocked on GrapheneOS): best repo
+fit on paper, does not run on the owner's device on either platform. Under the a11y-must rule, Slint is
+disqualified for this device. Every other candidate uses native iOS accessibility (UIKit or WebKit),
+which works on iOS 16.7 with no iOS-17 dependency, so none of them hit this wall.
 
 ### Flutter: PASS (Dart AOT, managed-runtime family)
 
@@ -107,47 +130,54 @@ facts:
 - Driven through the proven xcodebuild pattern on `ios/Runner.xcworkspace` with overrides
   `PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.hellodevice DEVELOPMENT_TEAM=HWLVAKDV4F
   CODE_SIGN_STYLE=Automatic`; signed with the vet keychain reusing profile `b08f51d5...`, no call to
-  Apple. `** BUILD SUCCEEDED **`, then `ios-deploy ... run` printed `success`.
+  Apple. `** BUILD SUCCEEDED **`, `ios-deploy ... run` printed `success`.
+- Render-verified: held alive with `idevicedebug -d run` and screenshotted, the default Flutter counter
+  UI draws (`You have pushed the button this many times: 0`, the `+` FAB), with no dyld error or crash
+  report. Flutter a11y is native (its semantics tree bridges to UIKit accessibility, iOS 12+), so there
+  is no iOS-17 wall.
 - Caveat on the CocoaPods claim: a plugin-less `flutter create` generates NO `Podfile` (the log shows
   "No Podfile found"); Flutter integrates its own framework via a generated xcconfig plus a build
   phase, not CocoaPods, until a plugin pulls pods in. So neither Capacitor (SwiftPM) nor this Flutter
   app exercised CocoaPods. The CocoaPods + `.xcworkspace` signing path is still unproven and will be
   settled by the React Native gate (or a Flutter app with a plugin).
 
-## Music-player iOS port (settled by the Slint gate plus source)
+## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
-The music-player (`packages/desktop-app/music-player`, Rust + Slint) can be ported to iOS. The Slint
-gate proves the UI path on this device; the audio path is confirmed from source. Required changes,
-each concrete:
+The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
+owner's iPhone X (see the Slint result above: the iOS backend is iOS 17+ in two independent places). A
+direct Slint port therefore targets iOS 17+ only and excludes this device. Two ways forward:
 
-- Renderer: the crate pins `renderer-femtovg` and `renderer-software`; iOS needs `renderer-skia`
-  (Metal). Add it under a target cfg.
-- Slint revision: the crate pins rev `85e3eb76` (a master rev from about 2026-04-15, for the Flickable
-  wheel fix #11338). iOS support needs at least #11741 (merged 2026-05-15, "winit: fix the iOS build
-  failure") plus the May safe-area and CADisplayLink fixes. The port must bump the pin to a late-May
-  or newer master rev.
-- Backend construction: the crate constructs `i-slint-backend-winit` explicitly to set the Wayland
-  `app_id` (KDE taskbar). That code is already `cfg(target_os = "linux")`; on iOS, fall back to
-  Slint's default backend (do not hand-construct winit).
-- Audio core reuse (no AVAudioEngine rewrite): symphonia is pure Rust; opus builds its bundled libopus
-  via cmake (cross-compiles for iOS); cpal has an iOS backend (RemoteIO AudioUnit with `objc2-avf-audio`
-  AVAudioSession integration). The crate's `cfg(not(target_os = "linux"))` cpal table already includes
-  iOS. Background playback is permitted (it is media playback, not arbitrary background execution) but
-  needs the app-level `UIBackgroundModes: audio` plus an AVAudioSession playback category.
-- The `cfg(any(target_os = "linux", target_os = "macos"))` libc table (thread QoS in `measure.rs`)
-  excludes iOS; either add `target_os = "ios"` or drop the QoS lowering there for iOS.
-- Filesystem and queue model: this is the real architecture cost. The desktop "scan a folder" queue
-  does not map to the iOS sandbox. iOS needs file or folder import through UIDocumentPicker with
-  security-scoped bookmarks, or reading from the app's own Documents container (exposed via
-  `UIFileSharingEnabled` and the Files app). `rfd`'s iOS file-dialog support is limited, so this likely
-  needs a small native shim. The true-peak normalization and on-disk peak cache are plain sandboxed
-  file I/O and port unchanged.
+- Maintain a downported fork of Slint's iOS support: fork accesskit for the four a11y symbols and patch
+  Slint's `internal/backends/winit/ios` color-scheme path off the iOS-17 `UITrait` API, accept the
+  iOS-16 a11y fidelity loss, and re-verify after every Slint bump. High, ongoing maintenance, and only
+  worthwhile if Slint upstream is unwilling to availability-guard these (which also needs objc2 to
+  support weak-linked statics for a clean fix).
+- Rewrite the UI in a framework that runs on iOS 16.7 with native a11y (Flutter is the strongest
+  device-verified option; the WKWebView substrate is the web-UI alternative) while keeping the Rust
+  core behind FFI. The audio core ports either way and is the larger asset.
+
+The Rust core reuse holds regardless of the UI choice: symphonia is pure Rust; opus builds its bundled
+libopus via cmake (cross-compiles for iOS); cpal has an iOS backend (RemoteIO AudioUnit with
+`objc2-avf-audio` AVAudioSession integration), and the crate's `cfg(not(target_os = "linux"))` cpal
+table already includes iOS. Background playback is permitted (media playback, not arbitrary background
+execution) with `UIBackgroundModes: audio` plus an AVAudioSession playback category. The
+`cfg(any(target_os = "linux", target_os = "macos"))` libc QoS table excludes iOS (add
+`target_os = "ios"` or drop the QoS lowering there). The real architecture cost is the folder-scanned
+queue: the desktop "scan a folder" model does not map to the iOS sandbox, which needs UIDocumentPicker
+with security-scoped bookmarks or the app's own Documents container (`UIFileSharingEnabled` plus the
+Files app); `rfd`'s iOS support is limited, so this needs a small native shim. True-peak normalization
+and the on-disk peak cache are plain sandboxed file I/O and port unchanged. If the Slint UI is kept via
+the downported fork, it additionally needs `renderer-skia` (iOS uses Skia/Metal, not the pinned
+femtovg/software), a Slint rev past slint-ui/slint#11741 (2026-05-15), and cfg-gating the explicit
+winit-backend construction (the Wayland `app_id` is Linux-only).
 
 ## Pending gates
 
 Of the nine distinct device gates the synthesis identified (the 16 frameworks collapse to nine on
-shared substrate and toolchain), three are passed: Slint (rank 1), Capacitor (rank 2, covers six), and
-Flutter (rank 4). Remaining, in the synthesis gate order:
+shared substrate and toolchain), two are device-verified to render: Capacitor (rank 2, covers six) and
+Flutter (rank 4). Slint (rank 1) was gated and FAILED (disqualified, above). Remaining, in the
+synthesis gate order, each to be confirmed by render (screenshot) and a few seconds of no-crash
+runtime, not by launch success alone:
 
 - .NET MAUI (rank 3, needs-device, covers MAUI/Avalonia/Uno). Build both Release (Mono full-AOT) and
   Debug (interpreter); confirm `[DllImport("__Internal")]` into a linked Rust `.a` returns with no
