@@ -9,9 +9,37 @@ handover adds the working state, measured facts, and exact next steps.
 
 - All product forks are resolved (see the ADR). The design tree is fully walked.
 - Identity unified to `dev.monochromatic.musicplayer` and committed.
-- Nothing built yet. The next phase is building all three engine variants on the Pixel 6.
-- The user is still in the grilling/planning posture: do NOT auto-start the build. Building is a separate phase
-  the user must move into. The user runs with `ultracode` on (use workflows for substantive build phases).
+- The user said "Go": the build phase has started. The derisking milestone (toolchain + scaffold + Media3
+  skeleton playing real audio on the Pixel 6) is DONE and committed. See "Build progress" below.
+- Next is the real Media3 variant: port the pure logic to Kotlin and build the full UI/service. The user runs
+  with `ultracode` on, so the pure-logic port is the workflow fan-out (one Rust module to one Kotlin file plus its
+  ported `_tests.rs` oracle, against a fixed type contract; compile centrally). See the advisor design in the ADR
+  follow-through and "Next steps".
+
+## Build progress (this session)
+
+Milestone 1, the derisk, is complete and verified at the user boundary:
+
+- `929789f1e` feat(music-player-android): scaffold. `packages/android-app/music-player/` is a Gradle island (AGP
+  9.2.1 / Gradle 9.5.1 / Kotlin 2.2.10 / Compose BOM 2026.05.01 / Media3 1.10.1), one `:app` with three product
+  flavors on the `engine` dimension (`media3`, `hybrid`, `rust`), each with its own `applicationIdSuffix`
+  (`.media3` etc.) so all three install side by side. The engine sits behind an `AudioEngine` interface; each
+  flavor supplies its own `createAudioEngine` factory. `media3` is the real Media3/ExoPlayer engine; `hybrid` and
+  `rust` are throwing stubs so the flavor architecture compiles before the NDK work. All three flavors build green.
+  mise tasks (`build:media3`, `build`, `install:media3`, `lint`, `clean`) shell to the committed Gradle wrapper.
+- On-device verification (Pixel 6, flock-guarded): the `media3` APK installs, launches, renders the Compose UI,
+  lists files, and PLAYS. Tapping a real Opus and a real FLAC drove ExoPlayer through the platform Codec2 decoders
+  (`c2.android.opus.decoder`, `c2.android.flac.decoder`) to a live `AudioTrack`. Confirmed finding: no
+  `media3-decoder-*` dependency is needed; the platform decodes Opus and FLAC. The ADR codec section is corrected
+  to match.
+- Measured already: APK sizes media3 14.97 MB vs the stub flavors 11.53 MB, so Media3 + ExoPlayer adds ~3.4 MB.
+- AGP 9 gotchas hit and fixed: `core-ktx 1.19.0` (and the current Compose BOM) require `compileSdk 37`, so AGP 9
+  rejects compiling against 36 (the exact rejection the runtime vet documented); bumped to compileSdk 37, targetSdk
+  stays 36. `BuildConfig` is off by default in AGP 9; enabled `buildFeatures { buildConfig = true }`.
+- Getting test audio onto the device: `adb push` into the app's external files dir
+  (`/sdcard/Android/data/<appId>/files/`) works on Android 16 / GrapheneOS and creates the dir; the skeleton reads
+  that dir (no storage permission needed), which isolates "does Media3 decode" from "does SAF/MediaStore work".
+  Clean-named fixtures staged at `/tmp/agent/musictest/` (test1.opus, test2.flac, test3.m4a, test4.mp3).
 
 ## Committed work (on main)
 
@@ -65,13 +93,24 @@ handover adds the working state, measured facts, and exact next steps.
 
 ## Build environment (host, as of this session)
 
-- No Android SDK installed. No `java` on PATH (mise has `temurin-17`, `temurin-21`). `adb` present at
-  `/usr/bin/adb`. Rust Android targets installed (`aarch64-linux-android` etc.). `cargo-ndk` MISSING. No
-  `gradle`/`kotlin` on PATH. No existing Kotlin/Gradle/Android code anywhere in the repo.
-- Recipe to mirror (the kopia vets built Compose on this exact device): isolated `ANDROID_HOME` under `/var/tmp`,
-  `cmdline-tools` + `platform-tools` + an Android platform + `build-tools`, JDK Temurin 21 via mise, a standalone
-  Gradle. The jetpack vet used Gradle 9.5.1 / AGP 9.2.1 / compileSdk 37 / minSdk 24 / Compose BOM 2026.05.01 and
-  built + installed + ran on the device. Full step-by-step commands in
+Resolved and in use this session (all reused from the prior vets, nothing freshly downloaded except API-37 was
+attempted; these `/var/tmp` paths can be reaped, so a future session may need to re-point or re-install):
+
+- Android SDK: `sdk.dir=/var/tmp/vet-jc/android-sdk` (set in the gitignored `local.properties`). It is the jetpack
+  vet's SDK and the only one with `platforms/android-37.0` + `build-tools/37.0.0` already present, which
+  `compileSdk 37` requires. Note: the tauri vet SDK (`/var/tmp/tauri-vet-work/android-sdk`) has the NDK but its
+  cmdline-tools (rev 12.0) cannot fetch `platforms;android-37` (it only parses repo XML up to v3 and skips the v4
+  android-37 entry, "Failed to find package"); the vet-jc SDK already had android-37.0 installed, so use it.
+- JDK: Temurin 21 via mise (`/home/user/.local/share/mise/installs/java/temurin-21.0.11+10.0.LTS`). The package
+  `mise.toml` pins `java = "temurin-21"`, so `mise run //packages/android-app/music-player:<task>` sets JAVA_HOME
+  automatically; Gradle reads the SDK from `local.properties`, so no ANDROID_HOME env is needed.
+- Gradle: the committed wrapper (9.5.1) drives all builds; it was generated with the standalone
+  `/var/tmp/vet-jc/gradle-9.5.1`.
+- `cargo-ndk`: installed at `/home/user/.cargo/bin/cargo-ndk` (via `cargo binstall`). NDK for the Rust flavors:
+  `/var/tmp/tauri-vet-work/android-sdk/ndk/29.0.13846066` (the vet-jc SDK has none; point `ndk.dir` at it or
+  install an NDK into the vet-jc SDK when the Rust flavors start). Rust Android targets are all installed.
+- Build matrix in use: AGP 9.2.1, Gradle 9.5.1, Kotlin 2.2.10, Compose BOM 2026.05.01, Media3 1.10.1, compileSdk
+  37, targetSdk 36, minSdk 26. Full vet recipe context in
   `docs/decisions/kotlin-android-kopia-pcloud-vet-reports/vet-jetpack-compose.md` and `vet-android-runtime.md`.
 
 ## Reference artifacts
@@ -100,22 +139,31 @@ handover adds the working state, measured facts, and exact next steps.
 
 ## Next steps (the build phase, when the user says go)
 
-1. Stand up the Android toolchain mirroring the kopia jetpack vet recipe (isolated `ANDROID_HOME`, cmdline-tools,
-   platform-tools, platform android-36, build-tools, JDK 21 via mise, Gradle/AGP 9.x). Add `cargo-ndk` and the NDK
-   for the Rust variants.
-2. Create `packages/android-app/music-player/`: a Gradle project, `mise.toml` shelling to the Gradle wrapper,
-   `applicationId`/namespace `dev.monochromatic.musicplayer`, minSdk 26, compileSdk/targetSdk 36.
-3. Build the shared baseline + the Media3 (pure Kotlin) variant FIRST, end to end, deploy to the Pixel 6, and
-   verify it plays real audio at the user boundary (transport, queue, background/screen-off, notification,
-   lockscreen). This is the lowest-risk path and proves the whole pipeline. Port the pure logic to Kotlin
-   (queue/scope/shuffle, pagination, relpath, true-peak math, peak cache, session); build the Compose UI per the
-   survey's UI spec (phone-first single column, tap-to-play, custom radio/checkbox/scrollbar); wire SAF +
-   MediaStore sources; host the player in a `MediaSessionService` with ExoPlayer; apply true-peak as a Media3
-   `AudioProcessor` plus the WorkManager charging/idle sweep. Instrument metrics from the start.
-4. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
-   alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia).
-5. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
+Done: step 1 (toolchain), step 2 (scaffold), and the skeleton half of step 3 (Media3 plays real audio on device).
+Remaining:
+
+1. Port the pure logic to Kotlin (the workflow fan-out, per the advisor design). One Rust module to one Kotlin file
+   plus its `_tests.rs` assertions ported as the test oracle, against a type contract fixed up front and handed to
+   each agent verbatim so they cannot invent divergent type names. Units: queue/scope/shuffle
+   (`queue.rs`/`command.rs`), pagination (`pagination.rs`, the A-Z + `#` routing and tie-breaks), relpath
+   (`relpath.rs`), true-peak math (`truepeak.rs`, CEILING `0.8912509`, `gain = min(CEILING/peak, 1.0)`, 4x
+   Catmull-Rom), peak cache (`peakcache.rs`, FNV-1a `path+size+mtime`), session (`session.rs`). Agents return
+   source; compile and integrate centrally (no worktree-per-agent needed for pure logic).
+2. Build out the real Media3 variant on top of the ported logic: the Compose UI per the survey's UI spec
+   (phone-first single column, tap-to-play, custom radio/checkbox/scrollbar); SAF tree + MediaStore sources; host
+   the player in a `MediaSessionService` with ExoPlayer; true-peak as a Media3 `AudioProcessor` (the gain stage)
+   plus the WorkManager charging/idle measurement sweep. Verify on device at the user boundary (transport, queue,
+   background/screen-off, notification, lockscreen). Instrument metrics from the start.
+3. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
+   alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia via
+   `ContentResolver.openFileDescriptor`).
+4. Verify each variant on device; Maestro for E2E; `androidx.test` pinned `>= 3.7.0`. Compare all metrics and let
    the user pick the winner.
+
+GrapheneOS testing notes proven this session: `adb push` into `/sdcard/Android/data/<appId>/files/` works for
+fixtures; for the MediaStore default library expect `READ_MEDIA_AUDIO` to be revocable-off by default like INTERNET
+was in the vet (grant via `adb shell pm grant <appId> android.permission.READ_MEDIA_AUDIO` for testing); SAF
+persistable grants are per-applicationId, so each flavor needs its own grant.
 
 ## Gotchas
 

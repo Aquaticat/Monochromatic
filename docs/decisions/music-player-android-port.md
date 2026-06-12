@@ -27,9 +27,15 @@ UI does not.
 ## Codec coverage is a non-issue
 
 The owner's real library (measured on the host: 3857 files, 67% Opus, 22% FLAC, the rest AAC, MP3, Vorbis) is
-fully decodable by Media3 with no native extensions: Opus and FLAC via Media3's bundled software decoders, AAC and
-MP3 via the platform. The source audit found Media3 gaps only for ALAC (needs the FFmpeg NDK extension or a device
-codec) and AIFF (no Media3 extractor at all), and neither format appears in the library. The desktop's symphonia
+fully decodable by Media3 with no native extensions. This is now verified on the device, not just from the source
+audit: with ExoPlayer's default renderers and zero `media3-decoder-*` dependency, the skeleton played a real Opus
+and a real FLAC file on the Pixel 6, and logcat showed the platform Codec2 decoders doing the work
+(`c2.android.opus.decoder` reporting "Configuring decoder: 48000 Hz, 2 channels", `c2.android.flac.decoder`
+reporting "44100 Hz, 2 channels"), with decoded PCM delivered to an `AudioTrack`. So Opus and FLAC are decoded by
+the platform, not by any Media3-bundled or extension decoder, which removes a whole dependency and APK-size
+category from the Media3 variant. AAC and MP3 are likewise platform-decoded. The source audit found Media3 gaps
+only for ALAC (needs the FFmpeg NDK extension or a device codec) and AIFF (no Media3 extractor at all), and neither
+format appears in the library. The desktop's symphonia
 `features = ["all"]` coverage of ALAC/ADPCM/AIFF is over-provisioned in practice. The Rust engine paths cover
 everything via symphonia regardless.
 
