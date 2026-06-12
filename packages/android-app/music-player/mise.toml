@@ -1,0 +1,46 @@
+# Android island. This package is a self-contained Gradle build; mise owns it by
+# shelling to the committed Gradle wrapper, exactly the pattern the kopia Jetpack
+# Compose vet established. pnpm and cargo have no part in this build graph.
+#
+# The JDK comes from the mise-managed Temurin 21 below (AGP 9 / Gradle 9 need a
+# JDK in the 17..21 range; the host's newer JBR is too new). The Android SDK
+# location is machine-local and lives in the gitignored local.properties
+# (sdk.dir=...), which Gradle reads natively, so no ANDROID_HOME env is set here.
+
+[tools]
+java = "temurin-21"
+
+[tasks."build:media3"]
+description = "Assemble the Media3 (pure-Kotlin) debug APK"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleMedia3Debug --no-daemon --console=plain"
+
+[tasks."build:hybrid"]
+description = "Assemble the hybrid (Rust true-peak + Media3) debug APK"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleHybridDebug --no-daemon --console=plain"
+
+[tasks."build:rust"]
+description = "Assemble the full-Rust-engine debug APK"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleRustDebug --no-daemon --console=plain"
+
+[tasks.build]
+description = "Assemble every flavor's debug APK"
+dir = "{{config_root}}"
+run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
+
+[tasks."install:media3"]
+description = "Install the Media3 debug APK on the connected device"
+dir = "{{config_root}}"
+run = "./gradlew :app:installMedia3Debug --no-daemon --console=plain"
+
+[tasks.lint]
+description = "Run Android Lint on the Media3 debug variant"
+dir = "{{config_root}}"
+run = "./gradlew :app:lintMedia3Debug --no-daemon --console=plain"
+
+[tasks.clean]
+description = "Delete Gradle build outputs"
+dir = "{{config_root}}"
+run = "./gradlew clean --no-daemon --console=plain"

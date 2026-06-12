@@ -1,0 +1,9 @@
+# Gradle / Android build outputs and machine-local config.
+/build
+/app/build
+/.gradle
+/.kotlin
+/local.properties
+*.iml
+.idea/
+captures/
