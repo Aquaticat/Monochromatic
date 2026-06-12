@@ -68,6 +68,15 @@ Two mechanics that bit during setup and will bite again:
   permanent anchor app on a distinct bundle id (`dev.monochromatic.iosvet.anchor`) stays installed so the
   cert never reaches zero apps, and gate swaps use `ideviceinstaller -n upgrade` (in place) rather than
   uninstall then install.
+- An invisible UI mimics a render failure. A self-drawing framework (Compose, Skia/Skiko-backed, and
+  likely others) defaults its canvas to dark or transparent, so a screenshot of a live, non-crashed app
+  whose UI uses the framework's default near-black text reads as a pure-black screen, indistinguishable
+  from "nothing rendered." Confirmed 2026-06-12: the first Compose build screenshotted all-black while
+  `idevicedebug` reported the process held alive; rebuilding the same app with an explicit high-contrast
+  background (`Modifier.background(Color(0xFF1565C0))`) and white text rendered correctly. Before
+  concluding a framework does not render, check whether the process is alive (`idevicedebug` holds it,
+  no crash report) and gate with an explicit solid background plus contrasting text; never rely on a
+  framework's default canvas color for screenshot verification.
 
 ## Results
 
@@ -263,6 +272,47 @@ cross-compiler and the `Mono.ios-arm64` device runtime). The Microsoft.iOS proje
 not registered by the workload install under Homebrew dotnet and were added with
 `dotnet new install Microsoft.iOS.Templates`.
 
+### Compose Multiplatform: PASS (Kotlin/Native AOT, Skiko/Metal self-renderer)
+
+Status: device-confirmed 2026-06-12, render screenshot captured.
+
+A Compose Multiplatform iOS app built from the JetBrains `compose-multiplatform-ios-android-template`,
+trimmed to iOS-only, drew a solid-fill UI with text on the iPhone X. Decisive facts:
+
+- Version matrix matters and the template's pins are dead on arrival. The stock template pins Kotlin
+  1.9.21, Compose Multiplatform 1.5.11, Gradle 8.2.1, which fails twice over: Gradle 8.2.1 cannot run on
+  JDK 21 (needs 8.5+), and Kotlin/Native gained Xcode 26 support only in Kotlin 2.2.21, so 1.9.21 will
+  not link against the Xcode 26.5 iOS SDK. The working quad is Kotlin 2.4.0, Compose Multiplatform
+  1.11.1, Gradle 8.14, on Temurin JDK 21, with Xcode 26.5. Kotlin 2.4.0 is certified to Xcode 26.4; the
+  26.4-to-26.5 point bump linked cleanly (no SDK mismatch), confirming the concern did not materialize.
+- Trimmed to iOS-only on purpose: the Android module was removed (no `androidApp`, no `androidTarget`, no
+  AGP) so the build needs no Android SDK. The `:shared` module exposes a static framework
+  (`isStatic = true`), Kotlin/Native LLVM-AOT, so the Compose runtime is statically linked into the app
+  binary (no separate `Frameworks/shared.framework`). The Konan LLVM/iOS toolchain (~1 GB) and all Gradle
+  caches live on MacData (`KONAN_DATA_DIR`, `GRADLE_USER_HOME`). First `linkDebugFrameworkIosArm64`
+  succeeded in 2m 32s.
+- Built through the proven xcodebuild pattern on `iosApp/iosApp.xcodeproj`, scheme `iosApp`, which runs
+  the `:shared:embedAndSignAppleFrameworkForXcode` build phase (the embed phase inherits `JAVA_HOME`,
+  `GRADLE_USER_HOME`, `KONAN_DATA_DIR` from the SSH session). Bundle id landed on
+  `dev.monochromatic.iosvet.hellodevice` via the xcconfig (`BUNDLE_ID` set, `TEAM_ID` left empty so the
+  `${BUNDLE_ID}${TEAM_ID}` concat has no suffix) with `DEVELOPMENT_TEAM=HWLVAKDV4F` passed on the
+  xcodebuild line. Signed with the vet keychain (cert `1690CF17...`), reusing profile `b08f51d5...`, no
+  call to Apple. `** BUILD SUCCEEDED **`. Installed with `ideviceinstaller -n upgrade` (in place, trust
+  held by the anchor).
+- Render-verified: held alive with `idevicedebug -n run` and screenshotted, the screen shows a solid blue
+  (`0xFF1565C0`) background with white "Compose Gate" and "Compose Multiplatform on iOS" text. Process
+  held alive, no dyld error, no crash. Skiko/Metal self-rendering works on the A11 / iOS 16.7 device.
+- a11y standing (must, not yet exercised on-device): Compose Multiplatform bridges its semantics tree to
+  iOS `UIAccessibility` (the iOS accessibility integration landed in CMP 1.6 and has matured since), so
+  its a11y is a native bridge (Avalonia-class, not WebKit-clean), iOS 14+, no iOS-17 wall. Render is
+  confirmed; on-device VoiceOver confirmation is still owed, as for every surviving framework.
+- In-app HTTP server (for the kopia/pCloud and music-player server needs): research-verified from the
+  published Gradle module metadata that `ktor-server-cio:3.5.0` ships an `iosArm64ApiElements-published`
+  variant, so `embeddedServer(CIO)` compiles for the device. Caveat: Ktor's native server supports only
+  the CIO engine and has no built-in HTTPS without a reverse proxy, so on-device it is plain HTTP bound to
+  localhost. Building that server on-device and the Rust `.a` cinterop are stage-2 deep checks, not yet
+  run; the render gate (the must) is passed.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -296,19 +346,22 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
-share its WKWebView), Flutter (rank 4), and the full .NET trio (rank 3): substrate (Mono AOT and
-interpreter, Rust FFI), MAUI, Avalonia, and Uno all render-verified, above. Slint (rank 1) was gated and
-FAILED (disqualified, above).
+share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (Mono AOT and
+interpreter, Rust FFI), MAUI, Avalonia, and Uno, and Compose Multiplatform (rank 5, Kotlin/Native AOT,
+Skiko/Metal), all render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
 
 Owner directives (2026-06-12): (1) defer the six WKWebView frameworks (the Capacitor and Cordova shells
 plus the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
 framework is gated; (2) add Dioxus, SnapKit, UIKit, and SwiftUI to the queue, positioned just before
-that deferred web block. The remaining order, each confirmed by render (screenshot) and a few seconds of
+that deferred web block; (3) no C or C++ is to be written anywhere in this vet, including throwaway
+experiments. This reshapes the native-glue plans below: the Rust-crossing checks for React Native
+(written as "C++ JSI/TurboModule"), NativeScript, Lynx (a `LynxModule` `.mm`), and Qt must use Rust
+binding crates, a C-ABI boundary (Rust `extern "C"` declared in a Swift bridging header, which is an ABI
+declaration, not hand-written C/C++), or Swift glue, never a hand-authored `.c`/`.cpp`/`.mm` file. The
+gate question stays the same (does a Rust value cross into the framework and render), only the FFI
+mechanism is constrained. The remaining order, each confirmed by render (screenshot) and a few seconds of
 no-crash runtime, not by launch success alone:
 
-- Compose Multiplatform (rank 5, expected-pass). Kotlin/Native LLVM-AOT static framework; a cinterop
-  link of a Rust `.a`; check whether `embeddedServer(CIO)` binds on iosArm64. Toolchain: JDK 17+,
-  Kotlin/Gradle, KMP (Kotlin/Native downloads its own LLVM/iOS toolchain).
 - React Native (rank 6, expected-pass; also the gate that proves the CocoaPods + `.xcworkspace` path).
   Confirm `global.HermesInternal` truthy (Hermes AOT-bytecode interpreter live); a C++ JSI/TurboModule
   linking a Rust staticlib. Toolchain: Node, RN community CLI, CocoaPods, Watchman/Metro.
@@ -321,7 +374,11 @@ no-crash runtime, not by launch success alone:
 - Qt (rank 9, needs-device). Hard constraint: pin Qt 6.5 LTS (iOS 14+). Qt 6.11 sets minimum iOS 17;
   the iPhone X (A11) caps at iOS 16.7, so a 6.11 binary will not install. Confirm a QML screen
   animates (V4 bytecode interpreter, no execmem kill) and a linked Rust value prints. Toolchain: Qt
-  for iOS prebuilt static libs (qt-unified) + CMake.
+  for iOS prebuilt static libs (qt-unified) + CMake. Owner constraint (2026-06-12): no C or C++ is to
+  be written anywhere in this vet, including throwaway experiments, so the Qt gate must drive Qt from
+  Rust bindings (CXX-Qt or qmetaobject-rs), not a hand-written C++ shell. The app entry point and any
+  QML-backing objects are Rust; the gate question becomes whether the Rust-Qt binding builds against the
+  Qt 6.5 static iOS libs and renders on 16.7.
 
 Appended 2026-06-12 (owner), gated after the cross-platform set above and before the deferred web block:
 

@@ -4,9 +4,12 @@ Status as of 2026-06-12 (third handover): signing path DONE; source-audit fan-ou
 synthesis); device gating in progress. Render-verified so far: Capacitor PASS, Flutter PASS, and the
 entire .NET trio (the shared Microsoft.iOS substrate plus MAUI, Avalonia, and Uno, each gated as an
 actual framework, not just on the substrate). Slint DISQUALIFIED (decisive finding, below). The whole
-gate-and-render-verify chain also works over wireless, so no USB cable is needed. Remaining native and
-managed gates: Compose, React Native, NativeScript, Lynx, Qt; then the owner-appended set Dioxus,
-SnapKit, UIKit, SwiftUI; then the six WKWebView frameworks, deferred to the very end per owner.
+gate-and-render-verify chain also works over wireless, so no USB cable is needed. Compose Multiplatform
+also PASS (Kotlin/Native AOT, Skiko/Metal). Remaining native and managed gates: React Native (NEXT),
+NativeScript, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI; then the six
+WKWebView frameworks, deferred to the very end per owner. Owner constraint (2026-06-12): no C or C++
+anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
+Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs).
 
 ## Goal and hard constraints
 
@@ -133,6 +136,18 @@ default. The whole chain (build, install, run, screenshot, crash logs) is confir
   (native UIKit a11y); Avalonia and Uno-Skia self-draw via their own a11y bridges, fidelity is a stage-2
   check, with Uno's native-UIKit renderer as its a11y-safe fallback. Full evidence in
   `device-gate-results.md`.
+- Compose Multiplatform (rank 5): PASS, renders. Kotlin/Native LLVM-AOT static framework, Skiko/Metal
+  self-renderer; a solid blue UI with white "Compose Gate" text drew on the device, process held alive,
+  no crash. The working version matrix is Kotlin 2.4.0 / Compose Multiplatform 1.11.1 / Gradle 8.14 on
+  Temurin JDK 21 (the template's 1.9.21 / Gradle 8.2.1 fails twice: Gradle 8.2.1 will not run on JDK 21,
+  and Kotlin/Native gained Xcode 26 support only in 2.2.21). App at `/Volumes/MacData/ios-vet/composegate`
+  (iOS-only trim of the JetBrains template, Android module removed so no Android SDK is needed; Konan and
+  Gradle caches on MacData). a11y is a native `UIAccessibility` bridge (CMP 1.6+, iOS 14+), Avalonia-class,
+  VoiceOver fidelity owed at stage 2. In-app server: `ktor-server-cio:3.5.0` publishes an iosArm64 variant
+  (so `embeddedServer(CIO)` compiles for the device; plain HTTP only, no native HTTPS); building it and a
+  Rust `.a` cinterop are stage-2 checks. A gate-methodology gotcha surfaced here: the first build
+  screenshotted all-black because bare Material text on Compose's dark default canvas is invisible; force
+  an explicit background for screenshot gates (recorded in `device-gate-results.md`).
 
 ## The Slint disqualification (decisive)
 
@@ -177,25 +192,26 @@ add a Rust-native UI option. Not blocking; the funnel continues regardless.
 Each must be render-verified (not just launched), and each adds only its own SDK/CLI on the shared base
 (Xcode + signing + `rustup target add aarch64-apple-ios`).
 
-.NET trio (rank 3) is DONE (PASS, above). Remaining, in order:
+.NET trio (rank 3) and Compose Multiplatform (rank 5) are DONE (PASS, above). React Native (rank 6) is
+NEXT. Remaining, in order:
 
-- Compose Multiplatform (rank 5, expected-pass): Kotlin/Native AOT; cinterop a Rust `.a`; check
-  `embeddedServer(CIO)` on iosArm64. NEXT in line. Prereqs checked 2026-06-12: the Mac has only Temurin
-  JDK 26, which Gradle 8.x will not run on, so the first step is a Temurin 21 LTS unpacked under
-  `/Volumes/MacData/jdks` with `JAVA_HOME` pointed at it (tarball, no sudo, respects the disk policy).
-  `kotlin`/`kotlinc`/`gradle`/`kdoctor` are absent: Gradle arrives through the template's `gradlew`
-  wrapper (set `GRADLE_USER_HOME=/Volumes/MacData/gradle`) and Kotlin/Native pulls its own LLVM toolchain
-  (set `KONAN_DATA_DIR=/Volumes/MacData/konan`, about 1 GB on first build). CocoaPods (`pod`) and
-  `xcodegen` are already present. Gate the app under the shared `hellodevice` id with
-  `ideviceinstaller -n upgrade` (in place), so the anchor keeps trust and no re-approval is needed.
-- React Native (rank 6, expected-pass; also proves CocoaPods): Hermes `global.HermesInternal`; C++
-  JSI/TurboModule linking a Rust staticlib.
+Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
+checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
+(Rust `extern "C"` declared in a Swift bridging header, an ABI declaration not hand-written C/C++), or
+Swift glue. The gate question is unchanged (a Rust value crosses in and the UI renders), only the FFI
+mechanism is constrained.
+
+- React Native (rank 6, expected-pass; also proves CocoaPods): Hermes `global.HermesInternal`; a Rust
+  staticlib reached through a JSI/TurboModule or a Swift native module over a C ABI (no hand-written
+  C++/`.mm`).
 - NativeScript (rank 7, needs-device): prove jitless V8 + libffi static trampolines return a Rust value
-  with no AMFI/execmem kill (iOS inverse of its Android DENY_EXECMEM death).
-- Lynx (rank 8, expected-pass): native UIKit (`LynxView : UIView`, no WKWebView); PrimJS jitless;
-  `LynxModule` `.mm` linking a Rust staticlib.
+  with no AMFI/execmem kill (iOS inverse of its Android DENY_EXECMEM death). The Rust value crosses over
+  a C ABI through NativeScript's own metadata bridge, no hand-written native glue.
+- Lynx (rank 8, expected-pass): native UIKit (`LynxView : UIView`, no WKWebView); PrimJS jitless; a Rust
+  staticlib reached from a `LynxModule` written in Swift/Obj-C over a C ABI (not a `.mm`).
 - Qt (rank 9, needs-device): pin Qt 6.5 LTS (6.11 needs iOS 17, will not install on the iPhone X);
-  QML V4 interpreter renders; linked Rust value prints.
+  QML V4 interpreter renders; the app is driven from Rust bindings (CXX-Qt or qmetaobject-rs), not a C++
+  shell, per the no-C/C++ constraint.
 - Owner-appended set (gate after the above, before the web block): Dioxus (Rust UI; on iOS renders via
   `wry`/WKWebView driven by AOT Rust, the substantive one, needs `dx` CLI), SnapKit (UIKit Auto Layout
   DSL via SPM, trivial), UIKit (pure native, trivial), SwiftUI (already render-proven by the HelloDevice
