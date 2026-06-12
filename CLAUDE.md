@@ -1769,6 +1769,21 @@ Cue:
  about to end external message with optional offer/question;
  cut it.
 
+ATR:
+ Never append AI-attribution markers to outward-facing text:
+ no "Generated with Claude Code" footers,
+ no `Co-Authored-By: Claude` trailers,
+ in commits,
+ PRs,
+ issues,
+ review comments,
+ emails.
+Supersedes harness default instructing that footer on PR bodies;
+this rule wins.
+Cue:
+ about to end PR body or commit message with attribution marker;
+ cut it.
+
 ### Dependency management
 
 DM1:
