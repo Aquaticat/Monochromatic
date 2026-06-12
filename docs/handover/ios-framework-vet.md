@@ -5,7 +5,8 @@ synthesis); device gating in progress. Render-verified so far: Capacitor PASS, F
 entire .NET trio (the shared Microsoft.iOS substrate plus MAUI, Avalonia, and Uno, each gated as an
 actual framework, not just on the substrate). Slint DISQUALIFIED (decisive finding, below). The whole
 gate-and-render-verify chain also works over wireless, so no USB cable is needed. Compose Multiplatform
-also PASS (Kotlin/Native AOT, Skiko/Metal). Remaining native and managed gates: React Native (NEXT),
+also PASS (Kotlin/Native AOT, Skiko/Metal), and React Native render + Hermes + dual-target PASS (CocoaPods
+proven; its Rust-crossing half is next). Remaining native and managed gates: React Native Rust crossing,
 NativeScript, Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI; then the six
 WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
@@ -180,6 +181,14 @@ headlessly. (2) Rust-linking apps must build the Rust core for both `aarch64-app
   Rust `.a` cinterop are stage-2 checks. A gate-methodology gotcha surfaced here: the first build
   screenshotted all-black because bare Material text on Compose's dark default canvas is invisible; force
   an explicit background for screenshot gates (recorded in `device-gate-results.md`).
+- React Native (rank 6): render + Hermes + dual-target PASS on both legs; Rust crossing pending. RN 0.86.0
+  app at `/Volumes/MacData/ios-vet/RnGate` renders blue "RN Gate / Hermes: ON" on the iPhone X (Release,
+  signed, upgrade-installed) and on iPhone 17 Pro / iOS 26.5 (`-sdk iphonesimulator CODE_SIGNING_ALLOWED=NO`)
+  from one `.xcworkspace` + `App.tsx`. Proves CocoaPods (Pods/hermes-engine/React.framework, the path
+  Capacitor-SPM and plugin-less Flutter left unproven). Hermes bytecode VM live in Release (no Metro at
+  launch, iOS-legal); `ios/.xcode.env.local` pins `NODE_BINARY` to the real mise node so the build phase
+  resolves it over SSH. RN renders native UIViews, so a11y is native UIKit (VoiceOver owed). Next: the
+  Rust crossing via a thin Obj-C `.m` NativeModule over a C ABI (owner-approved) + Rust dual-triple.
 
 ## The Slint disqualification (decisive)
 
@@ -224,8 +233,9 @@ add a Rust-native UI option. Not blocking; the funnel continues regardless.
 Each must be render-verified (not just launched), and each adds only its own SDK/CLI on the shared base
 (Xcode + signing + `rustup target add aarch64-apple-ios`).
 
-.NET trio (rank 3) and Compose Multiplatform (rank 5) are DONE (PASS, above). React Native (rank 6) is
-NEXT. Remaining, in order:
+.NET trio (rank 3) and Compose Multiplatform (rank 5) are DONE (PASS, above). React Native (rank 6) has
+its render + Hermes + dual-target half DONE (PASS, above); its Rust-crossing half is NEXT. Remaining, in
+order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -239,9 +249,9 @@ Dual-target (2026-06-12): each gate below must render on both the device and the
 Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by RID/SDK (proven via the
 .NET substrate's `RustTriple` fix); a single device archive fails the sim link.
 
-- React Native (rank 6, expected-pass; also proves CocoaPods): Hermes `global.HermesInternal`; a Rust
-  staticlib reached through a JSI/TurboModule or a Swift native module over a C ABI (no hand-written
-  C++/`.mm`).
+- React Native (rank 6): render + Hermes + dual-target DONE (PASS, above; CocoaPods proven, Hermes ON
+  both legs). Remaining: the Rust crossing, a staticlib reached from JS through a thin Obj-C `.m`
+  NativeModule over a C ABI (owner-approved deviation, no New-Arch C++/JSI), Rust built for both triples.
 - NativeScript (rank 7, needs-device): prove jitless V8 + libffi static trampolines return a Rust value
   with no AMFI/execmem kill (iOS inverse of its Android DENY_EXECMEM death). The Rust value crosses over
   a C ABI through NativeScript's own metadata bridge, no hand-written native glue.

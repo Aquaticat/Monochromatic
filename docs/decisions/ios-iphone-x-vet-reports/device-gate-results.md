@@ -382,6 +382,36 @@ trimmed to iOS-only, drew a solid-fill UI with text on the iPhone X. Decisive fa
   localhost. Building that server on-device and the Rust `.a` cinterop are stage-2 deep checks, not yet
   run; the render gate (the must) is passed.
 
+### React Native: PASS render + Hermes (both legs); Rust crossing pending
+
+Status: render + Hermes + dual-target device + simulator confirmed 2026-06-12. The Rust-crossing half (an
+Objective-C `.m` shim over a C ABI, owner-approved deviation) is the remaining piece, in progress.
+
+A React Native 0.86.0 app (`/Volumes/MacData/ios-vet/RnGate`, `@react-native-community/cli init`) renders
+on both targets from one codebase. Decisive facts:
+
+- CocoaPods proven (the path Capacitor's SPM and plugin-less Flutter left unproven): `init` generated
+  `ios/RnGate.xcworkspace` with an installed `Pods/` tree (`hermes-engine`, `React.framework`,
+  `ReactNativeDependencies.framework`), built through the `.xcworkspace`, not a bare `.xcodeproj`.
+- Hermes live: `App.tsx` reports `global.HermesInternal` is a non-null object, and the screen reads
+  "Hermes: ON" on both targets. Built `-configuration Release`, which precompiles the JS bundle to Hermes
+  bytecode inside the app (`hermesvm.framework` signed into the bundle) and needs no Metro server at
+  launch, so this is the AOT-bytecode shipping path, not the JIT/Metro debug path, and it is iOS-legal
+  (no executable-memory allocation). The Release bundling phase needs node; `ios/.xcode.env.local` pins
+  `NODE_BINARY` to the real mise node binary so the Xcode build phase resolves it over SSH.
+- Device leg (iPhone X, iOS 16.7): `xcodebuild -workspace ... -scheme RnGate -configuration Release
+  -destination generic/platform=iOS` with `DEVELOPMENT_TEAM=HWLVAKDV4F
+  PRODUCT_BUNDLE_IDENTIFIER=dev.monochromatic.iosvet.hellodevice CODE_SIGN_STYLE=Automatic`, signed with
+  the vet keychain reusing profile `b08f51d5...`, `** BUILD SUCCEEDED **`, upgrade-installed, held alive
+  with `idevicedebug -n run`, screenshot shows blue "RN Gate / Hermes: ON", no crash.
+- Simulator leg (iPhone 17 Pro / iOS 26.5): same workspace, `-sdk iphonesimulator CODE_SIGNING_ALLOWED=NO`,
+  `simctl` install/launch, same "RN Gate / Hermes: ON". One codebase, SDK switch only.
+- a11y: React Native renders to native `UIView`/`UILabel` (it does not self-draw a canvas), so a11y is
+  native UIKit (iOS 12+), no iOS-17 wall. On-device VoiceOver confirmation owed (tracked).
+- Rust crossing (next, owner-approved Obj-C deviation): reach a Rust staticlib from JS through a thin
+  Objective-C `.m` NativeModule over a C ABI (no `.c`/`.cpp`/`.mm`, no New-Arch C++/JSI TurboModule), with
+  the Rust core built for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` per the dual-triple rule.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -416,8 +446,9 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
 share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (Mono AOT and
-interpreter, Rust FFI), MAUI, Avalonia, and Uno, and Compose Multiplatform (rank 5, Kotlin/Native AOT,
-Skiko/Metal), all render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
+interpreter, Rust FFI), MAUI, Avalonia, and Uno, Compose Multiplatform (rank 5, Kotlin/Native AOT,
+Skiko/Metal), and React Native (rank 6, Hermes bytecode, native UIViews; Rust crossing pending), all
+render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
