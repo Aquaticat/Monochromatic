@@ -148,10 +148,10 @@ facts:
   app exercised CocoaPods. The CocoaPods + `.xcworkspace` signing path is still unproven and will be
   settled by the React Native gate (or a Flutter app with a plugin).
 
-### .NET / Microsoft.iOS substrate: PASS (Mono AOT and interpreter, Rust FFI); the MAUI / Avalonia / Uno UI layers are not yet gated
+### .NET / Microsoft.iOS: substrate PASS (Mono AOT + interpreter, Rust FFI); MAUI UI PASS; Avalonia + Uno UI pending
 
-Status: substrate device-confirmed 2026-06-12; the three frameworks' own UI/a11y layers still need their
-own render gates (see "Scope" below).
+Status: substrate and MAUI device-confirmed 2026-06-12; Avalonia and Uno still need their own UI render
+gates (see "Scope" and "MAUI" below).
 
 The .NET trio (MAUI, Avalonia, Uno) shares one iOS substrate: the Microsoft.iOS workload's Mono runtime,
 AOT-compiled for the device (iOS forbids JIT). This gate proves that substrate on the iPhone X with a
@@ -197,7 +197,22 @@ Skia, Metal were fine) but in its own framework code (`accesskit_ios`'s a11y sym
 `color_scheme.rs`'s `UITraitUserInterfaceStyle`). A bare UIKit app would have falsely passed Slint. So
 each of MAUI, Avalonia, and Uno needs its own on-device render gate, watched specifically for the Slint
 signature (a dyld `Symbol not found`, or an objc2/class-not-found panic on an iOS-17 API) before the
-screenshot. Until those land the trio is substrate-proven but UI-unproven, not passed.
+screenshot. Until those land each framework is substrate-proven but UI-unproven.
+
+MAUI itself: PASS (UI render-verified 2026-06-12). An actual `dotnet new maui` app (`~/ios-vet/mauiui`,
+TFM trimmed to `net10.0-ios`, `ApplicationId` forced, Release full AOT, signed via the vet keychain)
+installed and rendered its real XAML UI on the iPhone X: the Shell `Home` bar, the dotnet-bot image,
+"Hello, World!", "Welcome to .NET Multi-platform App UI", and a styled "Click me" button, all drawn
+through MAUI's native UIKit handlers. No fresh crash report named the app, and the launch showed none of
+the Slint signature (no dyld `Symbol not found`, no objc2 class-not-found). MAUI reads dark/light through
+the iOS-12-era `UITraitCollection.userInterfaceStyle` (the screenshot is in the device's dark mode), not
+Slint's iOS-17 `UITraitUserInterfaceStyle` observer, which is exactly why MAUI renders on 16.7 where
+Slint does not. Native UIKit handlers give native a11y. So MAUI is the first trio member gated as a
+framework, not just on the shared substrate.
+
+Still pending for the trio, each its own on-device render gate with the same Slint-signature scan, since
+neither the substrate result nor the MAUI render transfers to them: Avalonia (renders via SkiaSharp on a
+Metal/GL layer, a genuinely different surface) and Uno (its own renderer).
 
 Toolchain notes for reproduction (Homebrew dotnet 10.0.300): the prior session's `dotnet workload
 install ios` had written only the iOS manifest, not the runtime/AOT packs, so the first device build
@@ -240,21 +255,23 @@ winit-backend construction (the Wayland `app_id` is Linux-only).
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
-share its WKWebView) and Flutter (rank 4). The shared .NET/Microsoft.iOS substrate (rank 3) is
-execution-verified (Mono AOT and interpreter, Rust FFI, above) but the MAUI, Avalonia, and Uno UI layers
-are each still unproven (the substrate gate does not exercise their native framework code, where the
-Slint-style iOS-17 wall would live). Slint (rank 1) was gated and FAILED (disqualified, above).
+share its WKWebView), Flutter (rank 4), and MAUI (rank 3, actual XAML UI, above). The shared
+.NET/Microsoft.iOS substrate (rank 3) is also execution-verified (Mono AOT and interpreter, Rust FFI,
+above); within that trio Avalonia and Uno still need their own UI render gates (the substrate gate and
+the MAUI render do not exercise their renderers, where a Slint-style iOS-17 wall would live). Slint
+(rank 1) was gated and FAILED (disqualified, above).
 
 Owner directive (2026-06-12): defer the six WKWebView frameworks (the Capacitor and Cordova shells plus
 the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
 framework is gated. The remaining order, each confirmed by render (screenshot) and a few seconds of
 no-crash runtime, not by launch success alone:
 
-- .NET trio UI layers (rank 3 UI, next): render an actual MAUI app, an Avalonia app, and a Uno app on
-  device, each scanned for the Slint signature (dyld `Symbol not found` or an objc2/class-not-found
-  panic on an iOS-17 API) before the screenshot. The substrate (above) is already proven; this gates
-  each framework's own native UI/a11y code. Toolchain: `dotnet workload install maui`; Avalonia and Uno
-  templates via `dotnet new install`.
+- Avalonia and Uno UI render gates (rank 3 UI, next; MAUI already passed, above). Render an actual
+  Avalonia iOS app and an actual Uno iOS app on device, each scanned for the Slint signature (dyld
+  `Symbol not found` or an objc2/class-not-found panic on an iOS-17 API) before the screenshot. The
+  substrate is already proven; this gates each framework's own renderer and a11y bridge. Toolchain:
+  Avalonia templates (`dotnet new install Avalonia.Templates`) and Uno templates
+  (`dotnet new install Uno.Templates`) on the present dotnet 10.0.300.
 - Compose Multiplatform (rank 5, expected-pass). Kotlin/Native LLVM-AOT static framework; a cinterop
   link of a Rust `.a`; check whether `embeddedServer(CIO)` binds on iosArm64. Toolchain: JDK 17+,
   Kotlin/Gradle, KMP (Kotlin/Native downloads its own LLVM/iOS toolchain).
