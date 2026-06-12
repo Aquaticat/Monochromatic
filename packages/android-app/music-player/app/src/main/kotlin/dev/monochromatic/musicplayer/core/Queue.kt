@@ -132,6 +132,23 @@ class Queue private constructor(private val rng: Random) {
      * @return Current track's load-order path, or `null` when nothing is selected.
      */
     fun currentPath(): String? = currentIndex()?.let { tracks[it] }
+
+    /**
+     * Current scope's playback order as load-order indices: the sequence playback walks right now,
+     * the same order a [MediaSession] timeline must report so its (framework-computed) next/previous
+     * navigation matches this queue. Position `i` in the result is timeline window index `i`.
+     *
+     * @return Load-order indices in playback order; empty when the queue is empty.
+     */
+    fun playbackOrder(): List<Int> = order
+
+    /**
+     * Cursor's position within [playbackOrder] (the current timeline window index), or `null` when
+     * the queue is empty; the [MediaSession] reports this as the current media-item index.
+     *
+     * @return Index into [playbackOrder] of the current track, or `null` when nothing is selected.
+     */
+    fun cursorPosition(): Int? = pos
     //endregion
 
     //region Mutators
@@ -206,6 +223,23 @@ class Queue private constructor(private val rng: Random) {
         }
         pos = 0
         return order[0]
+    }
+
+    /**
+     * Move the cursor straight to scope position [scopeIndex] (a timeline window index), without
+     * changing the scope; used when a [MediaSession] seek (Next/Previous from the notification, or a
+     * jump to a queue item) resolves to an index the framework already computed against the reported
+     * order. Out-of-range indices move nothing, matching the framework's `C.INDEX_UNSET` no-op.
+     *
+     * @param scopeIndex Target position within [playbackOrder].
+     * @return Load-order index now current, or `null` when [scopeIndex] is out of range.
+     */
+    fun moveCursorTo(scopeIndex: Int): Int? {
+        if (scopeIndex < 0 || scopeIndex >= order.size) {
+            return null
+        }
+        pos = scopeIndex
+        return order[scopeIndex]
     }
 
     /**

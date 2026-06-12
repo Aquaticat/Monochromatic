@@ -1,10 +1,11 @@
 package dev.monochromatic.musicplayer
 
-import android.Manifest
+import android.content.ComponentName
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -39,7 +40,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -52,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import dev.monochromatic.musicplayer.core.ShuffleMode
 import kotlinx.coroutines.delay
 
@@ -65,8 +64,34 @@ private const val SECONDS_PER_MINUTE: Int = 60
 /** Position-poll cadence for the seek bar, in milliseconds (the desktop emits every 0.1s). */
 private const val POSITION_POLL_MS: Long = 200L
 
-/** Single-activity host; the whole UI is the Compose tree set in [onCreate]. */
+/**
+ * Single-activity host. The player lives in [PlaybackService] so audio outlives this activity, so the
+ * UI binds to that service for a direct handle to the service-owned [PlayerController] and drives it
+ * (single process, one brain). Binding with [Context.BIND_AUTO_CREATE] also creates the service,
+ * which builds the [androidx.media3.session.MediaSession] and goes foreground on play.
+ */
 class MainActivity : ComponentActivity() {
+    /** Service-owned brain, observable so the Compose tree swaps off the loading state once bound. */
+    private val boundController = mutableStateOf<PlayerController?>(null)
+
+    /** Live binder for the post-grant library-load signal; null while unbound. */
+    private var binder: PlaybackService.LocalBinder? = null
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val local = service as PlaybackService.LocalBinder
+            binder = local
+            boundController.value = local.controller
+            Log.i(LOG_TAG, "bound to PlaybackService")
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            binder = null
+            boundController.value = null
+            Log.i(LOG_TAG, "PlaybackService disconnected")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i(LOG_TAG, "MainActivity.onCreate flavor=${BuildConfig.FLAVOR}")
@@ -77,38 +102,81 @@ class MainActivity : ComponentActivity() {
             val colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
             MaterialTheme(colorScheme = colorScheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    val context = LocalContext.current
-                    val controller = remember { PlayerController(createAudioEngine(context)) }
-                    var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
-                    val permissionLauncher = rememberLauncherForActivityResult(
-                        ActivityResultContracts.RequestPermission(),
-                    ) { granted ->
-                        Log.i(LOG_TAG, "audio permission granted=$granted")
-                        hasAudioAccess = granted
-                    }
-                    // Ask once on first launch; the gate's button re-asks if the user declined.
-                    LaunchedEffect(Unit) {
-                        if (!hasAudioAccess) {
-                            permissionLauncher.launch(audioPermission())
-                        }
-                    }
-                    // Load the real library from MediaStore once access is granted (tap to play).
-                    LaunchedEffect(hasAudioAccess) {
-                        if (hasAudioAccess) {
-                            controller.openLibrary(MediaStoreSource.query(context.contentResolver))
-                        }
-                    }
-                    DisposableEffect(controller) {
-                        onDispose { controller.release() }
-                    }
-                    if (hasAudioAccess) {
-                        PlayerScreen(controller)
+                    val controller = boundController.value
+                    if (controller == null) {
+                        StartingGate()
                     } else {
-                        PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
+                        AppRoot(controller = controller, onAudioGranted = { binder?.ensureLibraryLoaded() })
                     }
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intent = Intent(this, PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND)
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Unbind only; the service stays alive on its own (foreground while playing) so audio keeps
+        // going. Never release the controller here: it belongs to the service, not this activity.
+        unbindService(connection)
+        binder = null
+        boundController.value = null
+    }
+}
+
+/**
+ * The audio-permission gate and library trigger over a bound [controller]: requests audio access
+ * once, shows [PermissionGate] until granted, and on grant signals the service to load the library
+ * (the service owns the query); once access is held it shows [PlayerScreen].
+ *
+ * @param controller Service-owned brain to render and drive.
+ * @param onAudioGranted Invoked when audio access is (re)confirmed, to trigger the service-side load.
+ */
+@Composable
+private fun AppRoot(controller: PlayerController, onAudioGranted: () -> Unit) {
+    val context = LocalContext.current
+    var hasAudioAccess by remember { mutableStateOf(hasAudioPermission(context)) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        Log.i(LOG_TAG, "audio permission granted=$granted")
+        hasAudioAccess = granted
+    }
+    // Ask once on first launch; the gate's button re-asks if the user declined.
+    LaunchedEffect(Unit) {
+        if (!hasAudioAccess) {
+            permissionLauncher.launch(audioPermission())
+        }
+    }
+    // On (re)confirmed access, tell the service to load the library (it owns the brain + query).
+    LaunchedEffect(hasAudioAccess) {
+        if (hasAudioAccess) {
+            onAudioGranted()
+        }
+    }
+    if (hasAudioAccess) {
+        PlayerScreen(controller)
+    } else {
+        PermissionGate(onGrant = { permissionLauncher.launch(audioPermission()) })
+    }
+}
+
+/** Brief placeholder shown while the activity binds to [PlaybackService]. */
+@Composable
+private fun StartingGate() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text("Starting Music Player...")
     }
 }
 
@@ -318,26 +386,3 @@ private fun PermissionGate(onGrant: () -> Unit) {
         Button(onClick = onGrant) { Text("Grant access") }
     }
 }
-
-/**
- * The audio-read permission for this platform: the granular `READ_MEDIA_AUDIO` on API 33+, the broad
- * `READ_EXTERNAL_STORAGE` on API 26-32 (where the granular permission does not exist).
- *
- * @return Permission string to request and check.
- */
-private fun audioPermission(): String =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Manifest.permission.READ_MEDIA_AUDIO
-    } else {
-        Manifest.permission.READ_EXTERNAL_STORAGE
-    }
-
-/**
- * Whether the platform's audio-read permission ([audioPermission]) is already granted, so the first
- * composition can skip straight to the library instead of flashing the gate.
- *
- * @param context Context to check the permission against.
- * @return True when the permission is granted.
- */
-private fun hasAudioPermission(context: Context): Boolean =
-    ContextCompat.checkSelfPermission(context, audioPermission()) == PackageManager.PERMISSION_GRANTED

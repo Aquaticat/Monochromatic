@@ -165,6 +165,46 @@ class QueueTest {
     }
 
     @Test
+    fun playbackOrderAndCursorTrackTheTimelineWindow() {
+        val q = Queue.withRngSeed(1)
+        q.setTracks(paths(4))
+        assertEquals(listOf(0, 1, 2, 3), q.playbackOrder())
+        assertEquals(0, q.cursorPosition())
+        q.advance(false)
+        assertEquals(1, q.cursorPosition())
+        assertEquals(q.playbackOrder()[q.cursorPosition()!!], q.currentIndex())
+    }
+
+    @Test
+    fun emptyQueueHasNoCursor() {
+        val q = Queue.withRngSeed(1)
+        assertTrue(q.playbackOrder().isEmpty())
+        assertNull(q.cursorPosition())
+    }
+
+    @Test
+    fun moveCursorToJumpsToScopePositionAndRejectsOutOfRange() {
+        val q = Queue.withRngSeed(1)
+        q.setTracks(paths(4))
+        assertEquals(2, q.moveCursorTo(2))
+        assertEquals(2, q.currentIndex())
+        assertEquals(2, q.cursorPosition())
+        assertNull(q.moveCursorTo(4))
+        assertNull(q.moveCursorTo(-1))
+        assertEquals(2, q.cursorPosition())
+    }
+
+    @Test
+    fun moveCursorToFollowsScopeOrderUnderShuffle() {
+        val q = Queue.withRngSeed(31)
+        q.setTracks(paths(6))
+        q.setShuffle(ShuffleMode.ALL)
+        val order: List<Int> = q.playbackOrder()
+        assertEquals(order[3], q.moveCursorTo(3))
+        assertEquals(order[3], q.currentIndex())
+    }
+
+    @Test
     fun displayPathsStripsCommonPrefix() {
         val q = Queue.withRngSeed(1)
         q.setTracks(listOf("/music/A/Alb/01.flac", "/music/B/Alb/01.flac"))

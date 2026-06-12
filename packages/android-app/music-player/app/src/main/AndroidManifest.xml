@@ -8,6 +8,14 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <!-- Background playback runs in a mediaPlayback foreground service. At targetSdk 36 (>= 34) both
+         the base permission and the typed FOREGROUND_SERVICE_MEDIA_PLAYBACK are mandatory or
+         startForeground throws. POST_NOTIFICATIONS is requested for completeness; the media-session
+         notification itself is exempt from that gate and shows without it. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:label="Music Player"
@@ -21,6 +29,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Hosts the player so audio survives the activity being backgrounded or destroyed. The
+             intent-filter action lets external controllers (system media controls, Android Auto,
+             Wear) discover the session; the in-app UI binds with a private action for a direct
+             handle to the same service-owned controller. -->
+        <service
+            android:name=".PlaybackService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

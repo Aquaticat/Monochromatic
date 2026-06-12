@@ -36,6 +36,14 @@ class PlayerController(private val engine: AudioEngine) {
     var uiState: PlayerUiState by mutableStateOf(PlayerUiState())
         private set
 
+    /**
+     * Invoked at the end of every [refresh] so a [MediaSession] projection ([BrainPlayer]) can
+     * re-pull its state on a discontinuity (track change, play/pause, scope change). Left null when
+     * no session is attached; the callback must post `invalidateState` to the looper rather than run
+     * it synchronously, since some refreshes happen inside a player command.
+     */
+    var onStateChanged: (() -> Unit)? = null
+
     init {
         engine.setOnPlayingChanged { playing ->
             isPlaying = playing
@@ -74,6 +82,20 @@ class PlayerController(private val engine: AudioEngine) {
         playCurrent()
     }
 
+    /**
+     * Move to scope position [scopeIndex] (a [MediaSession] timeline window index the framework
+     * computed for Next/Previous or a queue-item jump) and play it; an out-of-range index does
+     * nothing, matching the framework's no-op.
+     *
+     * @param scopeIndex Target position within the current playback scope.
+     */
+    fun seekToScopeIndex(scopeIndex: Int) {
+        if (queue.moveCursorTo(scopeIndex) == null) {
+            return
+        }
+        playCurrent()
+    }
+
     /** Toggle play/pause: pause if playing, resume the loaded track, else load and play the current track. */
     fun togglePlay() {
         if (isPlaying) {
@@ -83,6 +105,27 @@ class PlayerController(private val engine: AudioEngine) {
         } else {
             playCurrent()
         }
+        refresh()
+    }
+
+    /**
+     * Set the play intent explicitly (the [MediaSession]'s play/pause command and the system media
+     * buttons): resume or start the current track, or pause it. Unlike [togglePlay] the caller names
+     * the target state, so a duplicate command (pause while already paused) is a safe no-op.
+     *
+     * @param play True to play (resume the loaded track or load and play the current one), false to pause.
+     */
+    fun setPlayWhenReady(play: Boolean) {
+        if (play) {
+            if (loadedIndex != null && loadedIndex == queue.currentIndex()) {
+                engine.play()
+            } else {
+                playCurrent()
+            }
+        } else {
+            engine.pause()
+        }
+        refresh()
     }
 
     /** Skip to the next track in scope and play it (user pressed Next). */
@@ -161,6 +204,30 @@ class PlayerController(private val engine: AudioEngine) {
      */
     fun durationSec(): Double = engine.durationSec()
 
+    /**
+     * Point-in-time view of the current scope and transport for the [MediaSession] projection
+     * ([BrainPlayer]). The scope's tracks are reported in playback order so the session's
+     * framework-computed Next/Previous matches this queue; position and duration are sampled here and
+     * extrapolated by the session between pulls.
+     *
+     * @return Snapshot of the current playback scope and transport state.
+     */
+    fun snapshot(): PlaybackSnapshot {
+        val order: List<Int> = queue.playbackOrder()
+        val display: List<String> = queue.displayPaths()
+        val items: List<SnapshotItem> = order.map { loadIndex ->
+            SnapshotItem(uri = uris[loadIndex], title = display[loadIndex], loadIndex = loadIndex)
+        }
+        return PlaybackSnapshot(
+            items = items,
+            currentIndex = queue.cursorPosition(),
+            playing = isPlaying,
+            volume = uiState.volume,
+            durationMs = (durationSec() * MILLIS_PER_SEC).toLong(),
+            positionMs = (positionSec() * MILLIS_PER_SEC).toLong(),
+        )
+    }
+
     /** Release the underlying engine. */
     fun release() {
         engine.release()
@@ -202,5 +269,11 @@ class PlayerController(private val engine: AudioEngine) {
             volume = uiState.volume,
             queueSize = queue.len(),
         )
+        onStateChanged?.invoke()
+    }
+
+    companion object {
+        /** Milliseconds per second, for the snapshot's millisecond position/duration. */
+        private const val MILLIS_PER_SEC: Double = 1000.0
     }
 }

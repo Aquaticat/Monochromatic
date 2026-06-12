@@ -81,10 +81,16 @@ dependencies {
     // no device.
     testImplementation("junit:junit:4.13.2")
 
+    // The session layer (MediaSessionService, MediaSession, MediaController) plus
+    // media3-common (SimpleBasePlayer) is flavor-agnostic: it projects whichever
+    // AudioEngine the flavor supplies to the system notification/lockscreen, so it
+    // is on every flavor's classpath. media3-session api-depends on media3-common,
+    // so SimpleBasePlayer comes along transitively.
+    implementation("androidx.media3:media3-session:1.10.1")
+
     // Media3 flavor only: ExoPlayer with the platform MediaCodec decoders. No
     // media3-decoder-* extension is pulled in; the Pixel 6 decodes Opus and FLAC
-    // natively, which this build is meant to prove. media3-session lands the
-    // MediaSessionService later.
+    // natively, which this build is meant to prove. The hybrid flavor will add its
+    // own ExoPlayer dependency when it lands; the full-Rust flavor never uses it.
     "media3Implementation"("androidx.media3:media3-exoplayer:1.10.1")
-    "media3Implementation"("androidx.media3:media3-session:1.10.1")
 }
