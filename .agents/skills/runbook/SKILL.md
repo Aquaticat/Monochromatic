@@ -20,9 +20,10 @@ The earliest cue is the moment you catch yourself about to write
 If you have reached that moment without naming the bridges you tried,
 stop, try the bridges, then come back.
 
-The skill encodes four pieces:
+The skill encodes five pieces:
 required sections (Setup, Steps, What to check, Restore),
 element-level rules (bold UI elements, expected outcomes, exact strings),
+fresh-context completeness,
 the canonical example,
 and the cues that signal you are violating the rules.
 
@@ -50,6 +51,57 @@ so the user can tell an unconsidered handoff from a real obstacle.
 See AGENTS.md "Before claiming inability" and "Handing off manual actions" lead paragraph
 for the broader rule: a capability claim about the whole toolset,
 not about any single tool.
+
+## Fresh-context completeness
+
+Every runbook must work for a fresh machine,
+fresh person,
+fresh checkout,
+fresh credentials context,
+and no ambient memory from the agent session that produced it.
+Assume the reader has only the runbook and access they can legitimately obtain.
+
+Encode every prerequisite directly in the runbook:
+
+- Required OS,
+  app,
+  CLI,
+  browser,
+  package manager,
+  device,
+  account,
+  repository,
+  branch,
+  token,
+  permission,
+  or network condition.
+- Exact paths,
+  commands,
+  URLs,
+  identifiers,
+  screen names,
+  and expected starting state.
+- How to install,
+  sign in,
+  fetch,
+  clone,
+  build,
+  start,
+  or navigate to the state the steps require.
+- How to recover if a prerequisite is already present,
+  absent,
+  expired,
+  or named differently on a clean system.
+
+Do not rely on chat history,
+local shell history,
+previously opened tabs,
+existing build artifacts,
+already-authenticated CLIs,
+machine-specific paths,
+or the current user knowing why the procedure matters.
+If the runbook omits context because "the user already knows",
+it fails.
 
 ## Required sections
 
@@ -202,6 +254,10 @@ Status: TODO
 - A step without an expected outcome.
 - A paraphrase ("look for the rename event")
   instead of an exact filter string (`"type":"fileChanged"`).
+- A prerequisite hidden in chat history,
+  shell history,
+  existing machine state,
+  or current-user memory.
 
 Each cue is a one-grep self-check after writing the runbook.
 Scan once before handing it to the user.
@@ -209,6 +265,8 @@ Scan once before handing it to the user.
 ## Quality check before handing the runbook off
 
 - At least one bridge tried and named in the prelude.
+- Fresh-context completeness satisfied:
+  a new person on a new machine can reach the required starting state from the runbook alone.
 - All four sections present (Setup, Steps, What to check, Restore)
   with `Status: TODO | DONE` markers.
 - Every UI element bold.
