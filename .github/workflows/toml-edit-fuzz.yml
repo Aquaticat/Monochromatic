@@ -38,6 +38,12 @@ jobs:
 
     - name: Set up mise (skip auto-install of all tools)
       uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        # Without this, mise-action defaults to `install: true` and builds every
+        # root tool (including the cargo:slint-ui/slint git crate, which fails to
+        # compile), dying before any step runs. Matches publish.yml and
+        # cargo-publish.yml; the next step installs only what this job needs.
+        install: false
 
     - name: Install pnpm and node
       run: mise install 'npm:pnpm' node
