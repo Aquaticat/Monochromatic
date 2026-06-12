@@ -122,7 +122,10 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   `adb -s 1C171FDF600KWW shell pm grant dev.monochromatic.musicplayer.media3 android.permission.READ_MEDIA_AUDIO`
   (and `... android.permission.POST_NOTIFICATIONS`). The seek-bar slider responds to `input tap` at device y=305
   (NOT 292; y=292 lands in dead space above it); track rows respond around y=1180 + ~140px pitch; media-button
-  Next/Prev/PlayPause are `adb shell input keyevent 87/88/85` and drive the session. Note: many on-device tracks
+  Next/Prev/PlayPause are `adb shell input keyevent 87/88/85` and drive the session. Resident-noise rule (user
+  directive, 2026-06-12): the Pixel 6 is in a shared space, so EVERY on-device playback test must pause immediately
+  after confirming playback started (start -> verify `state=PLAYING` via `dumpsys media_session` -> `input keyevent
+  85` to pause at once); never leave audio running while inspecting state. Note: many on-device tracks
   under `2025MAR26/` are 30-minute field recordings, so a natural-end test needs a near-end seek, not a wait.
   `uiautomator dump` works intermittently on this Compose surface (some dumps return empty; retry a few times, or
   fall back to `screencap`); it did yield the page tabs, track rows, and the "Folder" button. Drive taps by
