@@ -28,10 +28,9 @@ The "bugs" were never written down anywhere; this reconstruction comes from the 
   in the last test it did not work even though it is documented to.
 - The ban routed delegation to `spawn-claude` on the premise that a child session's results
   forward back to the parent automatically.
-  That forwarding is also unreliable, so the premise was false:
-  `spawn-claude` child sessions need manual monitoring to collect output,
-  exactly like in-process subagents.
-  The ban's asymmetry rested on a feature that does not work.
+  In fact `spawn-claude` forwarding is unreliable and needs manual monitoring,
+  while in-process subagents (the banned path) forward their results reliably.
+  The ban pushed delegation toward the less reliable forwarding path.
 
 ## Why it is lifted now
 
@@ -40,7 +39,7 @@ see how many are running, and message them directly.
 This does not fix the agent-side blindness and does not make `SendMessage` work;
 it moves the observe-and-steer role to the human.
 With a human supervising in the UI, general-purpose subagents are no riskier than
-`spawn-claude` child sessions, and both carry the same manual result-collection cost.
+`spawn-claude` child sessions, and they forward results reliably, which `spawn-claude` does not.
 
 ## Scope and boundary
 
@@ -65,4 +64,5 @@ With a human supervising in the UI, general-purpose subagents are no riskier tha
 - Removed the general-purpose deny branch and its `isGeneralPurpose` helper from `ccgr`;
   the guardrail still blocks Agent `resume` polling and `bun test` invocations.
 - Rewrote the `CLAUDE.md` preamble to present in-process subagents and `spawn-claude` child sessions
-  as peer mechanisms, both needing manual result collection.
+  as peer mechanisms, noting that in-process subagents forward results reliably
+  while `spawn-claude` child sessions need manual monitoring.
