@@ -180,7 +180,14 @@ Each must be render-verified (not just launched), and each adds only its own SDK
 .NET trio (rank 3) is DONE (PASS, above). Remaining, in order:
 
 - Compose Multiplatform (rank 5, expected-pass): Kotlin/Native AOT; cinterop a Rust `.a`; check
-  `embeddedServer(CIO)` on iosArm64. NEXT in line.
+  `embeddedServer(CIO)` on iosArm64. NEXT in line. Prereqs checked 2026-06-12: the Mac has only Temurin
+  JDK 26, which Gradle 8.x will not run on, so the first step is a Temurin 21 LTS unpacked under
+  `/Volumes/MacData/jdks` with `JAVA_HOME` pointed at it (tarball, no sudo, respects the disk policy).
+  `kotlin`/`kotlinc`/`gradle`/`kdoctor` are absent: Gradle arrives through the template's `gradlew`
+  wrapper (set `GRADLE_USER_HOME=/Volumes/MacData/gradle`) and Kotlin/Native pulls its own LLVM toolchain
+  (set `KONAN_DATA_DIR=/Volumes/MacData/konan`, about 1 GB on first build). CocoaPods (`pod`) and
+  `xcodegen` are already present. Gate the app under the shared `hellodevice` id with
+  `ideviceinstaller -n upgrade` (in place), so the anchor keeps trust and no re-approval is needed.
 - React Native (rank 6, expected-pass; also proves CocoaPods): Hermes `global.HermesInternal`; C++
   JSI/TurboModule linking a Rust staticlib.
 - NativeScript (rank 7, needs-device): prove jitless V8 + libffi static trampolines return a Rust value
