@@ -37,6 +37,16 @@ bundle id forced to `dev.monochromatic.iosvet.hellodevice`, `DEVELOPMENT_TEAM=HW
 CODE_SIGN_STYLE=Automatic`, and the vet keychain; no `-allowProvisioningUpdates`. The exact pattern and
 the signing details are in `docs/decisions/ios-iphone-x-vet-reports/device-gate-results.md`.
 
+Trust anchor (do not uninstall): all gates reuse the one `hellodevice` bundle id, so swapping a gate by
+uninstall-then-install leaves the cert with zero apps for a moment, which drops the device-wide developer
+trust and makes the next launch fail as "not explicitly trusted" (looks like a framework failure, is
+not). A permanent app `dev.monochromatic.iosvet.anchor` ("Vet Anchor", built from `~/ios-vet/Anchor`,
+same cert `1690CF17`) now stays installed so the cert never reaches zero apps. Rules: never uninstall the
+anchor, and swap gate apps with `ideviceinstaller -n upgrade` (in place), not uninstall-then-install.
+Its first build used `-allowProvisioningUpdates` (over SSH this still reached Apple and minted a new
+7-day profile); the codesign step required the vet keychain because login.keychain is unreachable from
+SSH. Behavior across the 7-day expiry is untested. See the runbook's "Keep the developer trust" section.
+
 ### Toolchains on the Mac
 
 Installed: full Xcode 26.5; `ios-deploy`, `libimobiledevice` (idevicedebug, idevicescreenshot,

@@ -43,6 +43,12 @@ Permanent artifacts on this instance, all surviving reboot:
   `docs/handover/ios-framework-vet.md` under "Mac disk layout (MacData)".
 - Device: Developer Mode on, this Mac trusted, the Apple Development certificate trusted
   (**Settings ▸ General ▸ Device Management**).
+- Mac + device, trust anchor: a minimal SwiftUI app `dev.monochromatic.iosvet.anchor` ("Vet Anchor"),
+  built from `~/ios-vet/Anchor` and signed by the same identity, stays installed on the device
+  permanently and is never uninstalled. It exists so the certificate never has zero installed apps:
+  uninstalling the last app from a free-team identity drops the device-wide developer trust and forces a
+  manual re-approval. Distinct bundle id so churning the shared gate id never removes it. Project files in
+  Appendix D; the mechanism and rules are in "Keep the developer trust" below.
 
 ## Build and run any vet app
 
@@ -77,6 +83,48 @@ codesign step, not identity resolution), signs, installs and launches, then rese
 login-only. The reset keeps the locked vet keychain out of the idle search list, which is what would
 otherwise make the daily GUI renewal prompt for the throwaway. No GUI **Cmd+R**, no per-build owner
 action.
+
+Wired or wireless: the iPhone X is currently attached over wifi (paired for network), so it enumerates
+under `idevice_id -n` (`(Network)`) but not under `idevice_id -l` (USB only). `xcodebuild` and
+`ios-deploy` use wifi by default; `ios-deploy --no-wifi` and the `UDID=$(idevice_id -l)` line above both
+assume a USB cable, so drop `--no-wifi` and read the UDID from `idevice_id -n` when wireless. The
+libimobiledevice tools need the `-n` flag explicitly. The verified wireless install-and-render chain this
+session was `ideviceinstaller -n install <app>` (or `-n upgrade`), then `idevicedebug -n run <bundleid>`
+held alive, then `idevicescreenshot -n` after the UI draws, then `idevicecrashreport -n` to scan for a
+crash. `--justlaunch` only proves the process was created under lldb, not that it rendered.
+
+## Keep the developer trust: the anchor app and gate churn
+
+Status: DONE
+
+Failure observed 2026-06-12: the vet apps all reuse one bundle id
+(`dev.monochromatic.iosvet.hellodevice`), so swapping one for another means
+`ideviceinstaller -n uninstall` then `install`. During that gap the certificate had zero installed apps,
+which drops the device-wide developer trust. The reinstalled app then refused to launch with "Unable to
+launch ... because it has an invalid code signature, inadequate entitlements or its profile has not been
+explicitly trusted by the user," and the owner had to re-approve the developer once in
+**Settings ▸ General ▸ VPN & Device Management**. The block clears for every app on the cert at once,
+not per app.
+
+Two defenses, used together:
+
+- Permanent anchor app. `dev.monochromatic.iosvet.anchor` is a distinct bundle id signed by the same
+  identity. Because it is never uninstalled, the certificate always has at least one installed app, so
+  uninstalling or reinstalling any gate app under the shared id can no longer reach zero. Build it once
+  with the reusable pattern above, pointing at `~/ios-vet/Anchor/Anchor.xcodeproj`, scheme `Anchor`; its
+  first build mints a fresh 7-day profile for the new app id through `-allowProvisioningUpdates` (a free
+  team allows about 10 app ids per 7 days, so this spends one). Verified: it installs, launches, and
+  renders "Vet Anchor" on the device, signed by the same cert hash
+  `1690CF17B3C5E9A6D0E553096863ACEE28136D68` as the gate apps (so trusting it trusts them).
+- Swap gate apps in place. Prefer `ideviceinstaller -n upgrade <app>` over uninstall then install: it
+  replaces the app without a zero-app window, so it never drops trust even on the shared id.
+
+Honesty caveat: the anchor is verified to prevent the uninstall-induced drop. Its behavior across the
+7-day profile expiry is untested (it cannot be checked without waiting out a cycle). The renewal agent
+below refreshes the signing capability but does not reinstall device apps, so the anchor's on-device copy
+still expires in 7 days like any free-team build; rebuild and reinstall it with the reusable pattern to
+keep it launchable, and if trust ever drops anyway, re-approve once in Settings. This removes the
+churn-induced blocks, not every possible block.
 
 ## Auto-renew of the 7-day profile
 
@@ -234,8 +282,11 @@ Status: DONE
 
 Status: DONE
 
-- Remove the test app: `ssh m1 'ideviceinstaller -U dev.monochromatic.iosvet.hellodevice'`, or
-  long-press the icon and remove.
+- Remove the test app: `ssh m1 'ideviceinstaller -n uninstall dev.monochromatic.iosvet.hellodevice'`,
+  or long-press the icon and remove. Removing the last app from this cert drops the device-wide
+  developer trust (see "Keep the developer trust"); the anchor app is the deliberate permanent resident,
+  so a full teardown also removes it:
+  `ssh m1 'ideviceinstaller -n uninstall dev.monochromatic.iosvet.anchor'`.
 - Stop auto-renew: `ssh m1 'launchctl bootout gui/$(id -u)/dev.monochromatic.iosvet.profilerenew; rm ~/Library/LaunchAgents/dev.monochromatic.iosvet.profilerenew.plist'`.
 - Tear down signing: `ssh m1 'rm ~/ios-vet/vet.keychain-db; security list-keychains -d user -s ~/Library/Keychains/login.keychain-db'`; remove `XCODE_IDENTITY_SSH_USABLE` from `.env.local`; in
   Xcode **Settings ▸ Accounts** remove the Apple ID.
@@ -339,4 +390,64 @@ real home):
   <string>/Users/user/ios-vet/renew.log</string>
 </dict>
 </plist>
+```
+
+## Appendix D: trust anchor project files
+
+Identical to Appendix A apart from the name, bundle id, the explicit team, and the on-screen text. Write
+these under `~/ios-vet/Anchor`, run `xcodegen generate`, then build with the reusable pattern (scheme
+`Anchor`). `DEVELOPMENT_TEAM` is set explicitly here because the spec carries no other team hint; use the
+value from `security find-identity` or the existing profile (here `HWLVAKDV4F`).
+
+`project.yml`:
+
+```yaml
+name: Anchor
+options:
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  Anchor:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.monochromatic.iosvet.anchor
+        DEVELOPMENT_TEAM: HWLVAKDV4F
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+```
+
+`Sources/App.swift`:
+
+```swift
+import SwiftUI
+
+@main
+struct AnchorApp: App {
+    var body: some Scene {
+        WindowGroup { ContentView() }
+    }
+}
+```
+
+`Sources/ContentView.swift`:
+
+```swift
+import SwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Vet Anchor").font(.largeTitle)
+            Text("Keeps dev cert trusted. Do not delete.")
+        }.padding()
+    }
+}
 ```

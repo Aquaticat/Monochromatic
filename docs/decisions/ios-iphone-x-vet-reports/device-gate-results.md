@@ -57,6 +57,17 @@ Two mechanics that bit during setup and will bite again:
   `idevicescreenshot -n`, `idevicedebug -n run`, `idevicecrashreport -n`, `ideviceinfo -n`. Large AOT
   installs and long debug holds are slower over wifi than USB, so USB is the fallback if an install
   stalls, but functionally wifi covers install, run, screenshot, and crash-log retrieval.
+- A trust drop mimics a framework failure. Because every gate reuses one bundle id, swapping gates means
+  uninstall then install, and during that gap the cert has zero installed apps, which drops the
+  device-wide developer trust. The next launch then fails with "invalid code signature, inadequate
+  entitlements or its profile has not been explicitly trusted by the user," a message that reads like a
+  codesign or framework defect but is neither. Confirmed 2026-06-12: the Uno Release build first failed
+  to launch this way, the owner re-approved the developer in **Settings ▸ General ▸ VPN & Device
+  Management**, and the identical build then installed and rendered "Hello Uno Platform!" Before blaming
+  a framework for a launch failure, rule out a trust drop. Mitigations (see the codesign runbook): a
+  permanent anchor app on a distinct bundle id (`dev.monochromatic.iosvet.anchor`) stays installed so the
+  cert never reaches zero apps, and gate swaps use `ideviceinstaller -n upgrade` (in place) rather than
+  uninstall then install.
 
 ## Results
 
