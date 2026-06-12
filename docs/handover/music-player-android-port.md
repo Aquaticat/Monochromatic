@@ -46,6 +46,19 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   host JVM JUnit tests pass via `mise run //packages/android-app/music-player:test:unit` (no device). True-peak
   was verified line-for-line against `truepeak.rs`. Each port was driven by the Rust module plus its `_tests.rs`
   as the test oracle; deferrals are listed under "Integration seams left by the port" below.
+- Milestone 2 (in progress), the real player UI, is DONE and verified on device. The debug skeleton is replaced by
+  the desktop's narrow single-column layout in Compose (`MainActivity.kt`): seek bar, volume, a wrapping control
+  row (3-state shuffle radios, prev/play-next, repeat-track checkbox), the page-tab grid, and the selected page's
+  track list with tap-to-play (tap plays; tap the current row toggles pause). New `PlayerController` wires the
+  ported `Queue` + `paginate` over the current local-files source and drives the engine, following the playing
+  track's page; `AudioEngine` was expanded to load/play/pause/seek/volume/position + a track-ended callback, and
+  `Media3Engine` implements it on ExoPlayer. Verified: tapping a row loaded+played via the platform decoder, the
+  highlight moved, the seek bar advanced (0:24/0:35), and Play flipped to Pause. Two deliberate platform-idiom
+  choices to revisit if the owner wants exact desktop fidelity: the controls use Material3 RadioButton/Checkbox/
+  Slider/Button (not the desktop's plain-HTML-styled customs), and the page tabs use filled vs OutlinedButton (not
+  the desktop's primary flag); the custom VScrollBar is dropped in favor of LazyColumn's native scroll. Earlier
+  this milestone, a real defect was fixed: the skeleton drew under the status bar (edge-to-edge with no insets),
+  now handled by `enableEdgeToEdge()` + a Scaffold, plus a system-following dark/light theme.
 
 ## Committed work (on main)
 
@@ -148,11 +161,13 @@ attempted; these `/var/tmp` paths can be reaped, so a future session may need to
 Done: step 1 (toolchain), step 2 (scaffold), the skeleton half of step 3 (Media3 plays real audio on device), and
 the pure-logic Kotlin port (the `core` package, 52 tests green). Remaining:
 
-1. Build out the real Media3 variant on top of the ported logic: the Compose UI per the survey's UI spec
-   (phone-first single column, tap-to-play, custom radio/checkbox/scrollbar); SAF tree + MediaStore sources; host
-   the player in a `MediaSessionService` with ExoPlayer; true-peak as a Media3 `AudioProcessor` (the gain stage)
-   plus the WorkManager charging/idle measurement sweep. Verify on device at the user boundary (transport, queue,
-   background/screen-off, notification, lockscreen). Instrument metrics from the start.
+1. Finish the real Media3 variant. The Compose UI is DONE (narrow layout, tap-to-play, verified on device).
+   Remaining: wire SAF tree + MediaStore as the real library source (replacing the app-files-dir source in
+   `MainActivity`'s `LaunchedEffect`, feeding `PlayerController.openTracks` from `DocumentsContract`/`RELATIVE_PATH`);
+   host the player in a `MediaSessionService` with ExoPlayer (move the engine into the service, make the UI a
+   `MediaController` client) for background/lockscreen/notification; apply true-peak as a Media3 `AudioProcessor`
+   (the deferred `process_sample` gain stage) plus the WorkManager charging/idle measurement sweep. Verify on
+   device at the user boundary (background/screen-off, notification, lockscreen). Instrument metrics from the start.
 2. Layer the hybrid and full-Rust variants behind the `AudioEngine` interface (UniFFI + cargo-ndk; mind 16 KB page
    alignment `-Wl,-z,max-page-size=16384`; feed `content://` fds into symphonia via
    `ContentResolver.openFileDescriptor`).
