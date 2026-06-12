@@ -368,7 +368,7 @@ function main(): void {
             return `  ${regression.file}: ${String(regression.baseline,)} -> ${String(regression.current,)} covered lines`;
           },)
           .join('\n',)
-      }\nReach the lost lines again, or refreeze the baseline with the 'write' mode if the drop is intended.`,
+      }\nReach the lost lines again, or, if the drop is intended (for example a node release shifted V8 coverage), refreeze the baseline with the fuzz:coverage --write task.`,
     );
   }
 }

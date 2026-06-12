@@ -1,6 +1,7 @@
 name: toml-edit-fuzz
 
-# Runs the property-based fuzz smoke for @monochromatic-dev/module-toml-edit on
+# Runs the property-based fuzz smoke, the toml-test conformance suite, and the
+# V8 line-coverage reachability gate for @monochromatic-dev/module-toml-edit on
 # changes that touch the package, its shared fixtures, or the fuzzing decision
 # doc. The same *.property.unit.test.ts files run bounded in test:unit and as a
 # short per-property campaign through the package fuzz task. See
@@ -57,3 +58,16 @@ jobs:
       # A short per-property budget, not the 60s local default, keeps the smoke
       # bounded while still exploring well past the bounded-mode run count.
       run: mise run //packages/module/toml-edit:fuzz --budget 3000
+
+    - name: Conformance (toml-test decode and encode for 1.0 and 1.1)
+      # Follows the latest upstream toml-test runner through mise (a deliberate
+      # moving oracle); the task logs the resolved runner version.
+      run: mise run //packages/module/toml-edit:test:conformance
+
+    - name: Coverage gate (no per-file src reachability regression)
+      # The committed baseline is a V8-coverage artifact. This repo always tracks
+      # the latest node, so a node release that shifts V8 coverage is handled by
+      # refreezing the baseline with
+      # `mise run //packages/module/toml-edit:fuzz:coverage --write`, not by
+      # pinning node.
+      run: mise run //packages/module/toml-edit:fuzz:coverage

@@ -219,8 +219,19 @@ superset of the suite (zero suite-only lines) after closing six gaps the diff
 surfaced (the CRLF and overflow parse paths, the existing-node-aware encoders,
 the pending-insertion and pending-edit projection arms, and the root-delete arm).
 The covered-line set is saturated: it is identical across a second seed and a
-2.5 times run count, so the committed baseline is a true high-water mark. The
-first baseline is 5287 covered lines across 39 target files.
+2.5 times run count, so the committed baseline is a true high-water mark (this
+was verified against one random property-suite run, which is sufficient given the
+margin). The first baseline is 5287 covered lines across 39 target files.
+
+The baseline is a V8-coverage artifact, and V8's block-coverage output is
+node-version-bound. This repository deliberately tracks the latest node rather
+than pinning, so a node release that shifts V8 coverage is handled by refreezing
+the baseline with `mise run //packages/module/toml-edit:fuzz:coverage --write`,
+the same maintenance the latest-node policy already implies; the gate is not a
+reason to pin node. Line granularity absorbs minor releases in practice, so the
+refreeze is expected only at a node major bump. The gate catches a regression in
+reach, not new uncovered code: a freshly added `src` file is absent from the
+baseline, so it does not fail the gate until the baseline is refrozen.
 
 ## Reusable fuzz-target checklist
 
