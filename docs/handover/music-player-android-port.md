@@ -131,7 +131,10 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   85` to pause at once); never leave audio running while inspecting state. Note: many on-device tracks
   under `2025MAR26/` are 30-minute field recordings, so a natural-end test needs a near-end seek, not a wait.
   `uiautomator dump` works intermittently on this Compose surface (some dumps return empty; retry a few times, or
-  fall back to `screencap`); it did yield the page tabs, track rows, and the "Folder" button. Drive taps by
+  fall back to `screencap`); it did yield the page tabs, track rows, and the "Open" button (the folder action,
+  renamed from "Folder" and moved into the control row). Owner overlay: the device runs the owner's own "fooview"
+  floating tool, which draws a small circular widget near the bottom-left of every screenshot; it is NOT part of
+  this app (a `uiautomator dump` of the app shows no such node), so ignore it when reading captures. Drive taps by
   coordinate (screen is 1080x2400) and read back via logcat (`MusicPlayer:I MediaStoreSource:I SafTreeSource:I
   LibraryRoot:I PlaybackService:I Media3Engine:I Media3TruePeak:I`) and `dumpsys media_session` (shows
   `state=PLAYING`, position, and the track
