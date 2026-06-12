@@ -341,14 +341,94 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     // by position, so filtering must happen here, not after compile). The
     // dropped count is the measurement: "this engine cannot express N of
     // the ruleset's rules". Production (no override) keeps fail-fast.
+    // The successful compiles are KEPT in `forced_precompiled` and reused
+    // by phase 1 below, so a forced load compiles each rule exactly once,
+    // same as production. An earlier version threw the compiles away and
+    // recompiled survivors, which double-charged forced-engine cold-start
+    // benchmarks (~2x on compile-dominated loads; resharp has no
+    // second-compile interning discount, measured 203 ms -> 194 ms for an
+    // identical in-process recompile of `[\w=\.-]{32,64}`).
+    //
+    // What:     `let mut forced_precompiled: Vec<CompiledRegex> = Vec::new();`
+    //           declares a growable OWNED list, starting empty. `Vec<T>` is
+    //           the heap-allocated growable array (siblings: `&[T]` borrowed
+    //           slice, `[T; N]` fixed-size array); `mut` makes the binding
+    //           growable/reassignable. `Vec::new()` allocates nothing until
+    //           the first push.
+    // Why:      Vec (not a slice) because forced mode fills it element by
+    //           element with values that must outlive this block; phase 1
+    //           consumes them by value.
+    // TS map:   `const forcedPrecompiled: CompiledRegex[] = [];`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const forcedPrecompiled: CompiledRegex[] = [];
+    // ```
+    let mut forced_precompiled: Vec<CompiledRegex> = Vec::new();
     if engine_is_forced() {
         let before = regex_specs.len();
-        let verdicts: Vec<bool> = regex_specs
+        // What:     `.par_iter().map(...).collect()` runs the closure on
+        //           every spec across the rayon pool and gathers results in
+        //           order. `compile_rule_src(src).ok()` converts each
+        //           `Result<CompiledRegex, String>` into an `Option`:
+        //           `Some(re)` on success, `None` on failure (error text
+        //           deliberately dropped; the count is the measurement).
+        // Why:      One parallel pass yields both the keep/drop verdict and
+        //           the reusable compiled engine, replacing the old
+        //           verdict-only `is_ok()` pass that forced a recompile.
+        // TS map:   `const compiled = await Promise.all(regexSpecs.map(([, src]) => { try { return compileRuleSrc(src); } catch { return null; } }));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const compiled: (CompiledRegex | null)[] = await Promise.all(
+        //   regexSpecs.map(([, src]) => tryCompileOrNull(src)),
+        // );
+        // ```
+        let compiled: Vec<Option<CompiledRegex>> = regex_specs
             .par_iter()
-            .map(|(_, src)| compile_rule_src(src).is_ok())
+            .map(|(_, src)| compile_rule_src(src).ok())
             .collect();
-        let mut keep = verdicts.into_iter();
-        regex_specs.retain(|_| keep.next().unwrap_or(false));
+        // What:     `std::mem::take(&mut regex_specs)` swaps the vec out of
+        //           the binding by value, leaving a fresh empty vec behind,
+        //           so we can consume the old contents with `.into_iter()`
+        //           while the binding stays usable. `.zip(compiled)` pairs
+        //           each spec with its compile result, in order.
+        // Why:      Spec list and compiled list must be filtered in
+        //           lockstep: a spec survives only when its compile
+        //           succeeded, and the success is saved for phase 1.
+        // TS map:   No ownership dance needed in TS; mentally:
+        //           `const pairs = regexSpecs.map((s, i) => [s, compiled[i]]);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const keptSpecs: [number, string][] = [];
+        // for (const [spec, re] of regexSpecs.map((s, i) => [s, compiled[i]] as const)) {
+        //   if (re !== null) {
+        //     keptSpecs.push(spec);
+        //     forcedPrecompiled.push(re);
+        //   }
+        // }
+        // regexSpecs = keptSpecs;
+        // ```
+        let mut kept_specs: Vec<(usize, String)> = Vec::with_capacity(before);
+        for (spec, re) in std::mem::take(&mut regex_specs).into_iter().zip(compiled) {
+            // What:     `if let Some(re) = re` pattern-matches the Option;
+            //           the body runs only when a compiled value is present,
+            //           rebinding `re` to the unwrapped `CompiledRegex`.
+            // Why:      Failed rules are dropped right here; the drop count
+            //           printed below is the expressiveness measurement.
+            // TS map:   `if (re !== null) { ... }`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (re !== null) { keptSpecs.push(spec); forcedPrecompiled.push(re); }
+            // ```
+            if let Some(re) = re {
+                kept_specs.push(spec);
+                forced_precompiled.push(re);
+            }
+        }
+        regex_specs = kept_specs;
         eprintln!(
             "forbidden-strings[force]: {} regex rules compiled, {} dropped (engine cannot express)",
             regex_specs.len(),
@@ -448,14 +528,49 @@ pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, 
     //   }),
     // );
     // ```
-    let regex_rules: Vec<RegexRule> = regex_specs
-        .par_iter()
-        .map(|(idx, src)| {
-            compile_rule_src(src)
-                .map(|re| RegexRule { idx: *idx, re })
-                .map_err(|e| format!("rule on line {} {}", idx, e))
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+    // Forced mode already compiled every surviving rule in the prefilter
+    // above; reuse those compiles instead of paying them a second time.
+    //
+    // What:     `if engine_is_forced() { ... } else { ... }` as an
+    //           EXPRESSION: both branches produce the `Vec<RegexRule>`
+    //           that initializes `regex_rules`. The forced branch zips the
+    //           surviving specs with their saved compiles (`.zip(...)`
+    //           pairs two iterators in order; `forced_precompiled` is
+    //           consumed by value, which is fine because nothing reads it
+    //           afterwards) and `RegexRule { idx: *idx, re }` rewraps each
+    //           pair (`*idx` copies the line number out of the borrowed
+    //           tuple). The else branch is the production path described
+    //           in the block comment above.
+    // Why:      Lists were filtered in lockstep in the prefilter, so
+    //           position i of `regex_specs` corresponds to position i of
+    //           `forced_precompiled` by construction; zipping restores the
+    //           pairing without recompiling.
+    // TS map:   `const regexRules = engineIsForced()
+    //              ? regexSpecs.map(([idx], i) => ({ idx, re: forcedPrecompiled[i] }))
+    //              : await Promise.all(regexSpecs.map(([idx, src]) => ({ idx, re: compileRuleSrc(src) })));`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const regexRules: RegexRule[] = engineIsForced()
+    //   ? regexSpecs.map(([idx], i) => ({ idx, re: forcedPrecompiled[i] }))
+    //   : await Promise.all(regexSpecs.map(([idx, src]) => compileWrapped(idx, src)));
+    // ```
+    let regex_rules: Vec<RegexRule> = if engine_is_forced() {
+        regex_specs
+            .iter()
+            .zip(forced_precompiled)
+            .map(|((idx, _), re)| RegexRule { idx: *idx, re })
+            .collect()
+    } else {
+        regex_specs
+            .par_iter()
+            .map(|(idx, src)| {
+                compile_rule_src(src)
+                    .map(|re| RegexRule { idx: *idx, re })
+                    .map_err(|e| format!("rule on line {} {}", idx, e))
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
     phase("1 classify+regex_compile");
 
     // Phase 2b: extract a Vec of gating substrings from each regex rule
