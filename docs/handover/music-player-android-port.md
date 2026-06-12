@@ -59,13 +59,31 @@ Milestone 1, the derisk, is complete and verified at the user boundary:
   the desktop's primary flag); the custom VScrollBar is dropped in favor of LazyColumn's native scroll. Earlier
   this milestone, a real defect was fixed: the skeleton drew under the status bar (edge-to-edge with no insets),
   now handled by `enableEdgeToEdge()` + a Scaffold, plus a system-following dark/light theme.
+- Device state to resume from: the `media3` debug APK is installed on the Pixel 6
+  (`dev.monochromatic.musicplayer.media3`); four fixtures (test1.opus/test2.flac/test3.m4a/test4.mp3) sit in its
+  external files dir and in `/tmp/agent/musictest/`; playback is paused. Rebuild + reinstall with
+  `mise run //packages/android-app/music-player:build:media3` then `adb -s 1C171FDF600KWW install -r <apk>` (the SDK
+  is `local.properties` -> `/var/tmp/vet-jc/android-sdk`, may need re-pointing if reaped). adb is flock-guarded on
+  `/tmp/agent/adb-phone.lock`, serial `1C171FDF600KWW`.
 
 ## Committed work (on main)
 
-- `7ea4ad07` refactor(music-player): unify identity to dev.monochromatic.musicplayer. Touched `src/identity.rs`,
-  `src/peakcache.rs` (routed through the identity constants instead of a hardcoded triple), `src/session.rs`,
-  `macos/Info.plist`, `README.md`. `cargo check` passes on the host (3.88s).
-- `44b4affe` docs(decisions): record the music-player Android port plan.
+Pre-build (desktop side): `7ea4ad07` unify identity to dev.monochromatic.musicplayer (`src/identity.rs`,
+`src/peakcache.rs`, `src/session.rs`, `macos/Info.plist`, `README.md`); `44b4affe` record the Android port ADR.
+
+Android package (`packages/android-app/music-player/`), in order:
+
+- `929789f1e` scaffold: 3-flavor Gradle island, all flavors build green.
+- `e7ced156` docs: milestone 1 + codec-claim correction.
+- `683da414` port relpath to the Kotlin `core` + host JUnit harness (`testMedia3DebugUnitTest`).
+- `ebb5051a` shared core type contract (ShuffleMode, Page/PageEntry).
+- `611e03b0` port the pure-logic core (pagination, queue, true-peak, peak cache, session, audio extensions); 52 tests.
+- `c70cedee` docs: core port + integration seams.
+- `d855776d` fix: edge-to-edge insets, Material3 top bar, system dark/light theme.
+- `c87fa94d` real player UI on the ported queue/pagination (narrow layout, tap-to-play), verified on device.
+- `c90cd858` docs: real UI milestone + remaining storage/service work.
+
+Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; those are not part of this work.
 
 ## Resolved decisions (do not relitigate; rationale in the ADR)
 
