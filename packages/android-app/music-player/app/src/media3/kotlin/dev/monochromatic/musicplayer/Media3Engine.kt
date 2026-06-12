@@ -2,6 +2,7 @@ package dev.monochromatic.musicplayer
 
 import android.content.Context
 import android.util.Log
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -15,10 +16,26 @@ import androidx.media3.exoplayer.ExoPlayer
  * application looper. One track at a time; [PlayerController] owns the queue and advances on
  * [setOnTrackEnded].
  *
+ * ExoPlayer handles audio focus and the "becoming noisy" (headphone unplug) broadcast itself once
+ * enabled, so a phone call ducks/pauses this player and unplugging headphones pauses it, with no
+ * focus code of our own. Focus lives in the inner ExoPlayer (not the [MediaSession] wrapper or the
+ * session module), so it must be enabled here; a focus-induced pause surfaces through
+ * [setOnPlayingChanged] like any other pause, which is what keeps the notification/lockscreen state
+ * correct.
+ *
  * @param context Context used to build the underlying ExoPlayer.
  */
 class Media3Engine(context: Context) : AudioEngine {
-    private val player: ExoPlayer = ExoPlayer.Builder(context).build()
+    private val player: ExoPlayer = ExoPlayer.Builder(context)
+        // Pause/resume around a headphone unplug; without it audio keeps blaring on the speaker.
+        .setHandleAudioBecomingNoisy(true)
+        .build()
+        .apply {
+            // handleAudioFocus=true: ExoPlayer requests focus and pauses/ducks on loss (phone call,
+            // another media app) by itself. AudioAttributes.DEFAULT already carries usage=USAGE_MEDIA,
+            // which the focus path requires, so this cannot throw.
+            setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus = */ true)
+        }
     private var onPlayingChanged: ((Boolean) -> Unit)? = null
     private var onTrackEnded: (() -> Unit)? = null
 
