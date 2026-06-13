@@ -372,6 +372,49 @@ capability ranking leaned on, the in-app HTTP/S3 server and cpal audio output, a
 framework-independent way (a linked Rust staticlib, stage-2 probes below), so they no longer favour any one
 framework. The owner weighs the two axes; this section supplies the language axis.
 
+## Combined ranking (analysis, not a recorded decision)
+
+Weighing both axes plus the stage-2 stack findings (2026-06-12). Render is not a differentiator (all 18
+pass); the Swift trio is excluded as baseline-only (Swift is non-allowed); Slint and Qt are eliminated.
+This is analysis to inform the owner's pick, not a selection.
+
+Combined order:
+Dioxus > WebKit shells (Capacitor) > Compose Multiplatform > NativeScript > React Native > Lynx >
+Flutter > .NET trio.
+
+- Dioxus over the WebKit shells: both are allowed-language and both WebKit-native a11y, but Dioxus reaches
+  the Rust cores with no FFI boundary (its UI is Rust), where the shells need a plugin bridge that risks a
+  little Swift/Objective-C. Decisive for the music-player's Rust core. Watch-items: Dioxus a11y is
+  webview-class (not self-drawn native), and the scroll/event-loop issue (#4894) is unconfirmed.
+- WebKit shells over Compose: both allowed-language, but the shells have WebKit-native a11y (proven-class,
+  no fidelity question) where Compose self-draws and routes a11y through its own UIAccessibility bridge
+  (fidelity owed); the shells are also the most mature web stack and collapse six frameworks.
+- Compose over NativeScript: both allowed-language with a clean native boundary (cinterop versus a
+  zero-native-code crossing); Compose's Kotlin is more robust and better maintained and the repo already
+  runs Kotlin on Android, where NativeScript carries the thinnest maintenance of any candidate.
+- NativeScript over React Native: directive 4 tips this, NativeScript's Rust crossing needed zero
+  hand-written native code while RN needed a thin Objective-C `.m` shim; it is close, because RN's
+  ecosystem is far larger.
+- React Native over Lynx: same language standing (TypeScript plus one `.m` shim) and both native-UIKit
+  a11y, but RN is vastly more mature and device-proven; Lynx is the youngest ecosystem.
+- Lynx over Flutter: Lynx authors in an allowed language (TypeScript); Flutter authors the whole app in
+  Dart, a non-allowed language with no offsetting advantage. Once render and a11y are satisfied, directive
+  4 places any allowed-language option above a non-allowed one.
+- Flutter over the .NET trio: both non-allowed (Dart, C#), but Flutter has the stronger mobile/audio
+  ecosystem and is not disqualified as a host, whereas the .NET trio is ruled out as the kopia host
+  specifically (the Go-versus-Mono SIGKILL finding). This pair flips the pure-language axis (which had
+  .NET above Flutter on C#'s clean P/Invoke and MAUI's native a11y), because the kopia-host disqualification
+  is a concrete capability loss the language axis did not weigh.
+
+Per-app divergence (the order is not identical for the two target apps):
+
+- Music-player (Rust audio core): Dioxus is the clear standout, Rust UI plus Rust core with zero FFI, and
+  its audio and crypto are already device-proven. The allowed-language options follow as above.
+- kopia-to-pCloud (Go payload): the host-runtime finding reshuffles the tail. The .NET trio is out (Go plus
+  Mono SIGKILLs on device), and Flutter is an untested-but-same-risk host (Dart also carries a runtime). The
+  non-managed hosts (Dioxus, the WebKit shells, React Native, NativeScript, Lynx) are the safe kopia hosts;
+  the in-app S3 server is already proven framework-independently in the linked staticlib.
+
 ## Per-technology scorecard (the shared spine)
 
 The synthesis estimates roughly 52 deduplicated reports because the hard parts are shared and written
