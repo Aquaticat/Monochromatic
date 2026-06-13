@@ -64,8 +64,6 @@ packages/cli/forbidden-strings/target/
 
 *.fast
 
-*.lock
-
 *.vec
 
 *.term
