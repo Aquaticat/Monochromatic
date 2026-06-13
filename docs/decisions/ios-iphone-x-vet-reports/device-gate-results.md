@@ -701,6 +701,36 @@ Language-rule standing (owner directive 4): SwiftUI app code is 100% Swift, a no
 SwiftUI is baseline-only, not an implementation candidate, despite being the lightest native path. Work
 dir: `/Volumes/MacData/ios-vet/swiftuigate`.
 
+### Cordova: FULL PASS (both legs), the second WKWebView substrate
+
+Status: FULL PASS 2026-06-12, the first of the deferred WKWebView block. Apache Cordova 13.0.0 CLI with
+cordova-ios 8 (Swift Package Manager, not CocoaPods: the generated `App.xcworkspace` resolves two local SPM
+packages, `Cordova` and `CordovaPlugins`, with no Podfile), render-verified on BOTH the iPhone X (iOS 16.7)
+and the iPhone 17 Pro / iOS 26.5 simulator from one codebase: blue "Cordova Gate / WKWebView OK / JS: 720"
+on each, the 720 (6! reduced in in-bundle page JS) rendered green only when the JavaScript actually ran, so
+the number proves the WKWebView executed the bundle, not merely that the shell launched.
+
+This is the second WKWebView substrate gate (Capacitor was the first), and it exists to compare Cordova's
+shell against Capacitor's per the owner directive. The comparison is now concrete: both host the app in a
+WKWebView with WebKit-native a11y and no iOS-17 wall, and on current versions both moved to SPM (cordova-ios
+8 and Capacitor 7 each generate a plain `App.xcworkspace` with local SPM packages and no Podfile), so the
+historical "Cordova means CocoaPods, Capacitor means SPM" split no longer holds. Capacitor stays ahead on
+ecosystem and the native-bridge story; Cordova passes as a viable but more legacy alternative substrate.
+
+Build mechanism: `cordova create cordovagate dev.monochromatic.iosvet.hellodevice CordovaGate` pins the
+widget id, which lands directly in the pbxproj `PRODUCT_BUNDLE_IDENTIFIER`; `cordova platform add ios`
+generates the SPM workspace (scheme "App"); `cordova prepare ios` stages `www/` into the bundle. Simulator
+leg: `xcodebuild -workspace platforms/ios/App.xcworkspace -scheme App -sdk iphonesimulator -destination
+'...id=<sim>' CODE_SIGNING_ALLOWED=NO build`, then `simctl install/launch/io screenshot`. Device leg: the
+canonical runbook keychain wrapper (`OTHER_CODE_SIGN_FLAGS="--keychain $KC"` under the search-list
+manipulation), signed inline by the vet identity, `ideviceinstaller -n upgrade`, held alive with
+`idevicedebug -n run`, `idevicescreenshot -n`. No Rust crossing here (the web shells reach native code
+through Cordova/Capacitor plugins, a stage-2 concern). a11y is WebKit-native (VoiceOver reads the web a11y
+tree); on-device VoiceOver confirmation is owed under the retroactive sweep. Language standing (owner
+directive 4): the app is HTML, CSS, and JavaScript (exempt markup plus a scripting runtime that TypeScript,
+an allowed language, compiles to), so the WKWebView shells align with the allowed-language rule. Work dir:
+`/Volumes/MacData/ios-vet/cordovagate`. Toolchain: cordova 13.0.0 CLI (npm global).
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
