@@ -26,6 +26,10 @@ handover adds the working state, measured facts, and exact next steps.
   cross-compile for arm64 and run on the device (`OK (3 tests)`: a libopus decoder constructs via
   `opus_decoder_create` and the symphonia registry initializes on the arm64 CPU). Next is the engine itself
   (Task #12); see "Next steps".
+- Full-Rust variant: all HARD primitives are now de-risked on device (toolchain #10, libopus + symphonia #11, native
+  decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16). The remaining work (Task #12) is integration, not
+  unknowns: the decode -> output playback loop, the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks), the
+  queue/controller port, and the `content://` fd path (seekability + fd ownership traps).
 
 ## Build progress (this session)
 
@@ -210,6 +214,16 @@ Native decode port + benchmark (this session): `285ce21c` ports the desktop deco
 the native crate and adds `nativeDecodeBenchmark`, the full-Rust go/no-go. Result: native opus decode ~0.032
 us/sample vs the Media3 MediaCodec ~0.33 us/sample baseline, about an order of magnitude faster (see "Native decode
 benchmark"). Strong GO; the engine build (Task #12) is greenlit. Light comments only (dum-dum deferred to Task #14).
+
+AAudio output backend (this session): `ab24debb` adds the chosen output (`output.rs`, raw `ndk::audio`, `ndk` 0.9
+`audio` feature, pure Rust, no C/C++ build, zero JNI). A silent `nativeOutputLatencyProbe` opens a LowLatency
+PCM_Float 48k stereo stream with a zero-fill data callback and reads presentation latency from
+`AAudioStream_getTimestamp` ((`frames_written - frame_position`)/rate); on the Pixel 6 it measured 43.0 ms (tunable
+lower via `bufferSizeInFrames`), test passes, no session PLAYING (inaudible). With this, every HARD primitive of the
+full-Rust variant (toolchain, libopus + symphonia decode, native decode ~10x faster, AAudio output) is de-risked on
+device; what remains for the engine (Task #12) is integration, not unknowns: the decode -> output playback loop, the
+Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks), the queue/controller port, and the `content://` fd
+path (the two traps: seekability + fd ownership/double-close).
 
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
