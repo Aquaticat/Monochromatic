@@ -1527,9 +1527,11 @@ class QueueTest {
     @Test
     // What:     `fun moveCursorToFollowsScopeOrderUnderShuffle() { ... }` declares a no-arg
     //           `Unit`-returning test method, block body.
-    // Why:      Pins that under shuffle, `moveCursorTo(i)` resolves to the track at SCOPE position
-    //           `i` in the SHUFFLED order (not load order), so it returns `playbackOrder()[i]`.
-    //           The cursor follows the framework-reported (shuffled) timeline.
+    // Why:      Pins that under JUST-IN-TIME shuffle, `moveCursorTo(i)` resolves to the track at
+    //           timeline position `i` in the play HISTORY (`playbackOrder()[i]`), not load order.
+    //           Because the history is built as you go, the test first advances to grow it, THEN
+    //           jumps within it (jumping past the built history is the `moveCursorTo` no-op covered
+    //           by the bounds test, not this one).
     // TS map:   `() => { ... }`.
     //
     // In TS you'd write (pseudocode):
@@ -1556,7 +1558,7 @@ class QueueTest {
         // ```
         q.setTracks(paths(6))
         // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
-        // Why:      Produce a shuffled playback order whose positions differ from load order.
+        // Why:      Produce a shuffled play history whose positions differ from load order.
         // TS map:   `q.setShuffle(ShuffleMode.ALL);`
         //
         // In TS you'd write (pseudocode):
@@ -1564,10 +1566,21 @@ class QueueTest {
         // q.setShuffle(ShuffleMode.ALL);
         // ```
         q.setShuffle(ShuffleMode.ALL)
-        // What:     `val order: List<Int> = q.playbackOrder()` declares a read-only local `order`
-        //           of explicit type `List<Int>`, holding the current shuffled playback order.
-        // Why:      Capture the shuffled order so the assertion can reference position 3 directly
-        //           rather than guessing the RNG output.
+        // What:     `repeat(4) { q.advance(false) }` advances four times. `repeat(n) { ... }` is a
+        //           stdlib loop running the block `n` times.
+        // Why:      Just-in-time shuffle starts `playbackOrder()` as `[anchor]` (size 1) and grows
+        //           it one without-replacement pick per advance. Four advances grow the history to
+        //           five distinct positions, giving `moveCursorTo` real positions to jump between.
+        // TS map:   `for (let k = 0; k < 4; k++) q.advance(false);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (let k = 0; k < 4; k++) q.advance(false);
+        // ```
+        repeat(4) { q.advance(false) }
+        // What:     `val order: List<Int> = q.playbackOrder()` captures the now-grown history (the
+        //           anchor plus four picks).
+        // Why:      Reference a built timeline position directly rather than guessing RNG output.
         // TS map:   `const order: number[] = q.playbackOrder();`
         //
         // In TS you'd write (pseudocode):
@@ -1575,29 +1588,38 @@ class QueueTest {
         // const order: number[] = q.playbackOrder();
         // ```
         val order: List<Int> = q.playbackOrder()
-        // What:     `assertEquals(order[3], q.moveCursorTo(3))` is `assertEquals(expected, actual)`.
-        //           EXPECTED `order[3]` indexes the captured shuffled order at position 3; ACTUAL
-        //           `q.moveCursorTo(3)` jumps to scope position 3 and returns the track index
-        //           there.
-        // Why:      Prove `moveCursorTo(3)` follows the SHUFFLED order, returning `order[3]`, not
-        //           the load-order index 3.
-        // TS map:   `expect(q.moveCursorTo(3)).toEqual(order[3]);`
+        // What:     `assertEquals(5, order.size)` pins that the history grew to five entries
+        //           (anchor + four distinct picks, without replacement within the six-track cycle).
+        // Why:      Guard the test's premise: there must be a position 2 to jump to.
+        // TS map:   `expect(order.length).toEqual(5);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // expect(q.moveCursorTo(3)).toEqual(order[3]);
+        // expect(order.length).toEqual(5);
         // ```
-        assertEquals(order[3], q.moveCursorTo(3))
-        // What:     `assertEquals(order[3], q.currentIndex())` confirms the current track is now
-        //           `order[3]` (the shuffled-position-3 track).
-        // Why:      The jump made the shuffled-order track current.
-        // TS map:   `expect(q.currentIndex()).toEqual(order[3]);`
+        assertEquals(5, order.size)
+        // What:     `assertEquals(order[2], q.moveCursorTo(2))`. EXPECTED `order[2]` (the history
+        //           pick at timeline position 2); ACTUAL `q.moveCursorTo(2)` jumps back to that
+        //           position and returns the track index there.
+        // Why:      Prove `moveCursorTo` follows the built history order, returning `order[2]`, not
+        //           load-order index 2.
+        // TS map:   `expect(q.moveCursorTo(2)).toEqual(order[2]);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // expect(q.currentIndex()).toEqual(order[3]);
+        // expect(q.moveCursorTo(2)).toEqual(order[2]);
         // ```
-        assertEquals(order[3], q.currentIndex())
+        assertEquals(order[2], q.moveCursorTo(2))
+        // What:     `assertEquals(order[2], q.currentIndex())` confirms the current track is now
+        //           `order[2]` (the history-position-2 track).
+        // Why:      The jump made that history track current.
+        // TS map:   `expect(q.currentIndex()).toEqual(order[2]);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.currentIndex()).toEqual(order[2]);
+        // ```
+        assertEquals(order[2], q.currentIndex())
     }
 
     // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
@@ -1998,6 +2020,319 @@ class QueueTest {
         // expect(q.currentIndex()).toEqual(2);
         // ```
         assertEquals(2, q.currentIndex())
+    }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
+    // Why:      Registers `shufflePlaysEachTrackOnceBeforeRepeating` with the runner.
+    // TS map:   The `test("...", () => {` wrapper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("shuffle plays each track once before repeating", () => {
+    // ```
+    @Test
+    // What:     `fun shufflePlaysEachTrackOnceBeforeRepeating() { ... }` declares a no-arg
+    //           `Unit`-returning test method, block body.
+    // Why:      Pins the without-replacement guarantee of just-in-time shuffle: one full cycle of a
+    //           5-track scope (the anchor plus four advances) visits every track exactly once
+    //           before any repeats. Ported from desktop `shuffle_plays_each_track_once_before_repeating`.
+    // TS map:   `() => { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // () => { /* ...arrange + assertions below... *\/ }
+    // ```
+    fun shufflePlaysEachTrackOnceBeforeRepeating() {
+        // What:     `val q = Queue.withRngSeed(42)` constructs a deterministically-seeded queue.
+        // Why:      A fixed seed makes the cycle reproducible.
+        // TS map:   `const q = Queue.withRngSeed(42n);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const q = Queue.withRngSeed(42n);
+        // ```
+        val q = Queue.withRngSeed(42)
+        // What:     `q.setTracks(paths(5))` loads five root tracks (indices 0..4).
+        // Why:      A five-track scope to cycle through.
+        // TS map:   `q.setTracks(paths(5));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // q.setTracks(paths(5));
+        // ```
+        q.setTracks(paths(5))
+        // What:     `q.setShuffle(ShuffleMode.ALL)` switches to whole-queue shuffle.
+        // Why:      Exercise the just-in-time cycle over all five tracks.
+        // TS map:   `q.setShuffle(ShuffleMode.ALL);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // q.setShuffle(ShuffleMode.ALL);
+        // ```
+        q.setShuffle(ShuffleMode.ALL)
+        // What:     `val seen: MutableList<Int> = mutableListOf(q.currentIndex()!!)` seeds a mutable
+        //           list with the anchor track. `q.currentIndex()!!` reads the current index and
+        //           `!!` asserts non-null (the queue is non-empty here).
+        // Why:      Collect the cycle starting from the anchor (the first track of the cycle).
+        // TS map:   `const seen: number[] = [q.currentIndex()!];`
+        // Gotcha:   `!!` is Kotlin's not-null assertion (throws if null); used in tests where the
+        //           value is known non-null.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const seen: number[] = [q.currentIndex()!];
+        // ```
+        val seen: MutableList<Int> = mutableListOf(q.currentIndex()!!)
+        // What:     `repeat(4) { seen.add(q.advance(false)!!) }` advances four more times, appending
+        //           each pick. `repeat(n) { ... }` runs the block `n` times.
+        // Why:      Four advances complete the five-track cycle (anchor + 4 = 5).
+        // TS map:   `for (let k = 0; k < 4; k++) seen.push(q.advance(false)!);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (let k = 0; k < 4; k++) seen.push(q.advance(false)!);
+        // ```
+        repeat(4) { seen.add(q.advance(false)!!) }
+        // What:     `val unique: Set<Int> = seen.toSet()` collapses the collected list into a set
+        //           (dropping any duplicates).
+        // Why:      A set lets us check both the count and the exact membership.
+        // TS map:   `const unique = new Set(seen);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const unique = new Set(seen);
+        // ```
+        val unique: Set<Int> = seen.toSet()
+        // What:     `assertEquals(5, unique.size)` asserts five distinct tracks were seen.
+        // Why:      No track repeated within the cycle (without replacement).
+        // TS map:   `expect(unique.size).toEqual(5);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(unique.size).toEqual(5);
+        // ```
+        assertEquals(5, unique.size)
+        // What:     `assertEquals((0 until 4 + 1).toSet(), unique)` asserts the seen set is exactly
+        //           the load-order indices 0..4. `(0 until 5).toSet()` would read clearer, but the
+        //           range is written as `0 until 5` below.
+        // Why:      The cycle covered the WHOLE scope, not just five arbitrary picks.
+        // TS map:   `expect(unique).toEqual(new Set([0,1,2,3,4]));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(unique).toEqual(new Set([0, 1, 2, 3, 4]));
+        // ```
+        assertEquals((0 until 5).toSet(), unique)
+    }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
+    // Why:      Registers `shufflePrevThenNextRetracesHistory` with the runner.
+    // TS map:   The `test("...", () => {` wrapper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("shuffle prev then next retraces history", () => {
+    // ```
+    @Test
+    // What:     `fun shufflePrevThenNextRetracesHistory() { ... }` declares a no-arg
+    //           `Unit`-returning test method, block body.
+    // Why:      Pins that under shuffle `prev`/`next` act as a back/forward cursor over the play
+    //           history: after advancing a->b->c, two `prev`s return b then a, and two `next`s
+    //           retrace b then c WITHOUT drawing new picks. Ported from desktop
+    //           `shuffle_prev_then_next_retraces_history`.
+    // TS map:   `() => { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // () => { /* ...arrange + assertions below... *\/ }
+    // ```
+    fun shufflePrevThenNextRetracesHistory() {
+        // What:     `val q = Queue.withRngSeed(7)` constructs a deterministically-seeded queue.
+        // Why:      Reproducible history.
+        // TS map:   `const q = Queue.withRngSeed(7n);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const q = Queue.withRngSeed(7n);
+        // ```
+        val q = Queue.withRngSeed(7)
+        // What:     `q.setTracks(paths(6))` loads six tracks; `q.setShuffle(ShuffleMode.ALL)`
+        //           switches to whole-queue shuffle.
+        // Why:      A scope large enough for a three-track history with distinct picks.
+        // TS map:   `q.setTracks(paths(6)); q.setShuffle(ShuffleMode.ALL);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // q.setTracks(paths(6)); q.setShuffle(ShuffleMode.ALL);
+        // ```
+        q.setTracks(paths(6))
+        q.setShuffle(ShuffleMode.ALL)
+        // What:     `val a = q.currentIndex()!!` is the anchor; `val b = q.advance(false)!!` and
+        //           `val c = q.advance(false)!!` are the next two just-in-time picks.
+        // Why:      Build a three-entry history a -> b -> c to retrace.
+        // TS map:   `const a = q.currentIndex()!; const b = q.advance(false)!; const c = q.advance(false)!;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const a = q.currentIndex()!; const b = q.advance(false)!; const c = q.advance(false)!;
+        // ```
+        val a = q.currentIndex()!!
+        val b = q.advance(false)!!
+        val c = q.advance(false)!!
+        // What:     `assertEquals(b, q.prev())` then `assertEquals(a, q.prev())`. Stepping back
+        //           returns the prior history entries in reverse.
+        // Why:      `prev` walks the retained history backward, not a fresh random draw.
+        // TS map:   `expect(q.prev()).toEqual(b); expect(q.prev()).toEqual(a);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.prev()).toEqual(b); expect(q.prev()).toEqual(a);
+        // ```
+        assertEquals(b, q.prev())
+        assertEquals(a, q.prev())
+        // What:     `assertEquals(b, q.advance(false))` then `assertEquals(c, q.advance(false))`.
+        //           Advancing now retraces FORWARD through the same history (b then c) instead of
+        //           drawing new picks, because the cursor is not at the end of history.
+        // Why:      `next` after `prev` is forward navigation over the existing history.
+        // TS map:   `expect(q.advance(false)).toEqual(b); expect(q.advance(false)).toEqual(c);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.advance(false)).toEqual(b); expect(q.advance(false)).toEqual(c);
+        // ```
+        assertEquals(b, q.advance(false))
+        assertEquals(c, q.advance(false))
+    }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
+    // Why:      Registers `shufflePrevAtHistoryStartStays` with the runner.
+    // TS map:   The `test("...", () => {` wrapper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("shuffle prev at history start stays", () => {
+    // ```
+    @Test
+    // What:     `fun shufflePrevAtHistoryStartStays() { ... }` declares a no-arg `Unit`-returning
+    //           test method, block body.
+    // Why:      Pins that under shuffle, `prev` at the OLDEST history entry stays put (no wrap to a
+    //           "last" track, unlike `OFF`). Ported from desktop `shuffle_prev_at_history_start_stays`.
+    // TS map:   `() => { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // () => { /* ...arrange + assertions below... *\/ }
+    // ```
+    fun shufflePrevAtHistoryStartStays() {
+        // What:     `val q = Queue.withRngSeed(3)` then `q.setTracks(paths(4))` then
+        //           `q.setShuffle(ShuffleMode.ALL)` builds a four-track shuffled queue at its anchor.
+        // Why:      The cursor sits at history position 0 (only the anchor played).
+        // TS map:   `const q = Queue.withRngSeed(3n); q.setTracks(paths(4)); q.setShuffle(ShuffleMode.ALL);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const q = Queue.withRngSeed(3n); q.setTracks(paths(4)); q.setShuffle(ShuffleMode.ALL);
+        // ```
+        val q = Queue.withRngSeed(3)
+        q.setTracks(paths(4))
+        q.setShuffle(ShuffleMode.ALL)
+        // What:     `val start = q.currentIndex()!!` captures the anchor track index.
+        // Why:      The track `prev` should return without moving.
+        // TS map:   `const start = q.currentIndex()!;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const start = q.currentIndex()!;
+        // ```
+        val start = q.currentIndex()!!
+        // What:     `assertEquals(start, q.prev())` asserts `prev` at the history start returns the
+        //           same track (stays put).
+        // Why:      No older history to step into; shuffle `prev` does not wrap.
+        // TS map:   `expect(q.prev()).toEqual(start);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.prev()).toEqual(start);
+        // ```
+        assertEquals(start, q.prev())
+        // What:     `assertEquals(start, q.currentIndex())` confirms the cursor did not move.
+        // Why:      The current track is unchanged after the no-op `prev`.
+        // TS map:   `expect(q.currentIndex()).toEqual(start);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.currentIndex()).toEqual(start);
+        // ```
+        assertEquals(start, q.currentIndex())
+    }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
+    // Why:      Registers `shuffleNewCycleAvoidsImmediateRepeat` with the runner.
+    // TS map:   The `test("...", () => {` wrapper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("shuffle new cycle avoids immediate repeat", () => {
+    // ```
+    @Test
+    // What:     `fun shuffleNewCycleAvoidsImmediateRepeat() { ... }` declares a no-arg
+    //           `Unit`-returning test method, block body.
+    // Why:      Pins that the FIRST pick of a fresh cycle is not the same track that ended the
+    //           previous cycle (no jarring back-to-back repeat across the cycle boundary). Ported
+    //           from desktop `shuffle_new_cycle_avoids_immediate_repeat`.
+    // TS map:   `() => { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // () => { /* ...arrange + assertions below... *\/ }
+    // ```
+    fun shuffleNewCycleAvoidsImmediateRepeat() {
+        // What:     `val q = Queue.withRngSeed(99)` then `q.setTracks(paths(4))` then
+        //           `q.setShuffle(ShuffleMode.ALL)` builds a four-track shuffled queue.
+        // Why:      A small scope so one full cycle is exactly four advances (anchor + 3).
+        // TS map:   `const q = Queue.withRngSeed(99n); q.setTracks(paths(4)); q.setShuffle(ShuffleMode.ALL);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const q = Queue.withRngSeed(99n); q.setTracks(paths(4)); q.setShuffle(ShuffleMode.ALL);
+        // ```
+        val q = Queue.withRngSeed(99)
+        q.setTracks(paths(4))
+        q.setShuffle(ShuffleMode.ALL)
+        // What:     `val cycle: MutableList<Int> = mutableListOf(q.currentIndex()!!)` seeds the
+        //           first cycle with the anchor; `repeat(3) { cycle.add(q.advance(false)!!) }`
+        //           completes it (anchor + 3 = 4 tracks).
+        // Why:      Exhaust the first cycle so the next advance must start a new one.
+        // TS map:   `const cycle = [q.currentIndex()!]; for (let k=0;k<3;k++) cycle.push(q.advance(false)!);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const cycle = [q.currentIndex()!];
+        // for (let k = 0; k < 3; k++) cycle.push(q.advance(false)!);
+        // ```
+        val cycle: MutableList<Int> = mutableListOf(q.currentIndex()!!)
+        repeat(3) { cycle.add(q.advance(false)!!) }
+        // What:     `val next = q.advance(false)!!` is the first pick of the SECOND cycle.
+        // Why:      The track whose value must differ from the previous cycle's last.
+        // TS map:   `const next = q.advance(false)!;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const next = q.advance(false)!;
+        // ```
+        val next = q.advance(false)!!
+        // What:     `assertTrue(next != cycle.last())` asserts the new cycle's first pick is not the
+        //           same as the last track of the previous cycle. `cycle.last()` reads the final
+        //           collected index; `!=` is value inequality; `assertTrue` asserts the result.
+        // Why:      The fresh cycle deliberately excludes the just-played track to avoid an
+        //           immediate repeat (the `scope.filter { it != current }` step in `pickNextShuffle`).
+        // TS map:   `expect(next).not.toEqual(cycle[cycle.length - 1]);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(next).not.toEqual(cycle[cycle.length - 1]);
+        // ```
+        assertTrue(next != cycle.last())
     }
     //endregion
 }

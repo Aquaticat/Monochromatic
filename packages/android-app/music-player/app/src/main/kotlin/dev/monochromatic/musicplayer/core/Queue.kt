@@ -213,6 +213,25 @@ class Queue private constructor(private val rng: Random) {
     // private repeatTrackFlag: boolean = false;
     // ```
     private var repeatTrackFlag: Boolean = false
+
+    // What:     `private var cycleStart: Int = 0` declares a private, reassignable
+    //           `Int` field, initialised to `0`. It is an index INTO `order`: the
+    //           position at which the CURRENT just-in-time shuffle cycle began.
+    // Why:      Just-in-time shuffle plays each scope track once per cycle WITHOUT
+    //           precomputing a permutation. The slice `order[cycleStart until order.size]`
+    //           is the set already played this cycle; a new pick is drawn only from
+    //           scope tracks NOT in that set (without replacement). When a cycle has
+    //           exhausted the scope, `cycleStart` advances to `order.size` so the next
+    //           pick begins a fresh cycle. Under `ShuffleMode.OFF` it is unused
+    //           (sequential order needs no play history). Mirrors the desktop
+    //           `queue.rs` `cycle_start`. See `docs/decisions/music-player-jit-shuffle.md`.
+    // TS map:   `private cycleStart: number = 0;`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private cycleStart = 0; // index into `order`: start of the current shuffle cycle
+    // ```
+    private var cycleStart: Int = 0
     //endregion
 
     //region Factories
@@ -661,9 +680,13 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // playIndex(track: number): number | null {
     //   if (track >= this.tracks.length) return null;
-    //   const position = this.order.indexOf(track);
-    //   if (position >= 0) this.pos = position;
-    //   else this.rebuildScopeOrder(track);
+    //   if (this.shuffle === ShuffleMode.OFF) {
+    //     const position = this.order.indexOf(track);
+    //     if (position >= 0) this.pos = position;
+    //     else this.rebuildScopeOrder(track);
+    //   } else {
+    //     this.rebuildScopeOrder(track);
+    //   }
     //   return track;
     // }
     // ```
@@ -681,52 +704,61 @@ class Queue private constructor(private val rng: Random) {
         // if (track >= this.tracks.length) return null;
         // ```
         if (track >= tracks.size) return null
-        // What:     `val position: Int = order.indexOf(track)` declares a read-only
-        //           local `position` with explicit type `Int`. `order.indexOf(track)`
-        //           is a stdlib `List` method returning the FIRST index at which
-        //           `track` appears in `order`, or `-1` if it is absent.
-        // Why:      Find where (if anywhere) the clicked track sits in the CURRENT
-        //           scope order, so we can stay in the same scope when possible.
-        // TS map:   `const position: number = this.order.indexOf(track);`
-        // Gotcha:   `.indexOf` returns `-1` for "not found" (not `null`); the code
-        //           below tests `position >= 0` rather than a null check.
+        // What:     `if (shuffle == ShuffleMode.OFF) { ... } else { ... }` branches on
+        //           the shuffle mode. `==` compares the `shuffle` field against the
+        //           `OFF` enum constant (enum value equality, like TS `===`).
+        // Why:      Just-in-time shuffle keeps NO reusable precomputed order, so a
+        //           jump under shuffle cannot "find the track in the existing order"
+        //           the way the deterministic `OFF` order can; it must restart the
+        //           cycle at the chosen track. So `OFF` reuses its scope order when it
+        //           can, while shuffle always rebuilds.
+        // TS map:   `if (this.shuffle === ShuffleMode.OFF) { ... } else { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const position: number = this.order.indexOf(track);
+        // if (this.shuffle === ShuffleMode.OFF) { /* find-or-rebuild */ } else { this.rebuildScopeOrder(track); }
         // ```
-        val position: Int = order.indexOf(track)
-        // What:     `if (position >= 0) { ... } else { ... }` is a plain if/else
-        //           STATEMENT (used for control flow, not as an expression). The
-        //           condition `position >= 0` means "the track is already in the
-        //           current scope order".
-        // Why:      Branch: if the track is already in this scope, just move the
-        //           cursor; otherwise the track is on a different page and the scope
-        //           must be rebuilt around it.
-        // TS map:   `if (position >= 0) { ... } else { ... }`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (position >= 0) { this.pos = position; } else { this.rebuildScopeOrder(track); }
-        // ```
-        if (position >= 0) {
-            // What:     `pos = position` assigns the found scope position into the
-            //           `Int?` cursor field. A non-null `Int` is a valid `Int?`.
-            // Why:      Clicking a track already on the current page keeps the page's
-            //           (possibly shuffled) order intact; we only move the cursor.
-            // TS map:   `this.pos = position;`
+        if (shuffle == ShuffleMode.OFF) {
+            // What:     `val position: Int = order.indexOf(track)` declares a read-only
+            //           local `position`. `order.indexOf(track)` is a stdlib `List`
+            //           method returning the FIRST index at which `track` appears in
+            //           `order`, or `-1` if absent.
+            // Why:      Under `OFF` the scope order is the deterministic page sequence,
+            //           so if the clicked track is already in it we can keep that order
+            //           and only move the cursor.
+            // TS map:   `const position: number = this.order.indexOf(track);`
+            // Gotcha:   `.indexOf` returns `-1` for "not found" (not `null`); the test
+            //           below is `position >= 0`, not a null check.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.pos = position;
+            // const position: number = this.order.indexOf(track);
             // ```
-            pos = position
+            val position: Int = order.indexOf(track)
+            // What:     `if (position >= 0) { pos = position } else { rebuildScopeOrder(track) }`.
+            //           The condition means "the track is already in the current scope
+            //           order"; the `then` moves the cursor, the `else` rebuilds the
+            //           scope around the clicked track (it is on another page).
+            // Why:      Stay in the same page when possible; switch pages otherwise.
+            // TS map:   `if (position >= 0) this.pos = position; else this.rebuildScopeOrder(track);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (position >= 0) this.pos = position; else this.rebuildScopeOrder(track);
+            // ```
+            if (position >= 0) {
+                pos = position
+            } else {
+                rebuildScopeOrder(track)
+            }
         } else {
-            // What:     `rebuildScopeOrder(track)` calls the private helper with the
-            //           clicked load-order index as the anchor (a non-null `Int`
-            //           passed to the `Int?` parameter).
-            // Why:      The track is on another page (under `OFF`/`WITHIN_PAGE`), so
-            //           rebuild the scope around it, switching playback to its page.
+            // What:     `rebuildScopeOrder(track)` rebuilds the scope around the clicked
+            //           track. Under shuffle (`rebuildScopeOrder`'s shuffle branch) this
+            //           resets `order` to `[track]`, `pos` to 0, and `cycleStart` to 0,
+            //           starting a fresh just-in-time cycle at that track.
+            // Why:      A deliberate jump under shuffle restarts the without-replacement
+            //           cycle from the chosen track (the accepted cycle reset; see
+            //           `docs/decisions/music-player-jit-shuffle.md`).
             // TS map:   `this.rebuildScopeOrder(track);`
             //
             // In TS you'd write (pseudocode):
@@ -735,9 +767,8 @@ class Queue private constructor(private val rng: Random) {
             // ```
             rebuildScopeOrder(track)
         }
-        // What:     `return track` returns the clicked load-order index. This is an
-        //           explicit `return` (block body), returning the non-null `Int`
-        //           wrapped as the `Int?` result.
+        // What:     `return track` returns the clicked load-order index (explicit
+        //           `return`, the non-null `Int` wrapped as the `Int?` result).
         // Why:      Tell the caller which track is now current so it can load that
         //           index.
         // TS map:   `return track;`
@@ -764,125 +795,179 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // advance(natural: boolean): number | null {
     //   if (this.pos === null) return null;
-    //   const current = this.pos;
-    //   if (natural && this.repeatTrackFlag) return this.order[current];
-    //   const next = current + 1;
+    //   const position = this.pos;
+    //   if (natural && this.repeatTrackFlag) return this.order[position];
+    //   if (this.shuffle !== ShuffleMode.OFF) {
+    //     if (position + 1 < this.order.length) { this.pos = position + 1; return this.order[position + 1]; }
+    //     const pick = this.pickNextShuffle(this.order[position]);
+    //     this.order = [...this.order, pick]; this.pos = this.order.length - 1; return pick;
+    //   }
+    //   const next = position + 1;
     //   if (next < this.order.length) { this.pos = next; return this.order[next]; }
     //   this.pos = 0; return this.order[0];
     // }
     // ```
     fun advance(natural: Boolean): Int? {
-        // What:     `val current: Int = pos ?: return null` declares a read-only local
-        //           `current` of type `Int`, using the ELVIS operator `?:`.
-        //           - `pos` is the `Int?` cursor.
-        //           - `?:` (Elvis) means "use the left value if it is non-null,
-        //             otherwise evaluate the right side". Here the right side is
-        //             `return null`, which exits the whole function. So if `pos` is
-        //             non-null, `current` gets its (now `Int`, non-null) value; if
-        //             `pos` is `null`, the method returns `null` immediately.
+        // What:     `val position: Int = pos ?: return null` declares a read-only `Int`
+        //           local `position` (the cursor's index WITHIN `order`) using the
+        //           ELVIS operator `?:`: take `pos`'s value when non-null, otherwise
+        //           `return null` from the whole function.
         // Why:      No cursor means the queue is empty / nothing to advance; bail out
-        //           early. This also smart-casts away the nullability so `current`
-        //           can be used as a plain `Int` below.
-        // TS map:   `if (this.pos === null) return null; const current = this.pos;`
-        // Gotcha:   `?: return null` is Kotlin's idiomatic "unwrap-or-bail". The right
-        //           side of Elvis can be ANY expression, including `return` (which has
-        //           type `Nothing`), which is why this compiles as a single line. It
-        //           is the close analogue of Rust's `?` operator on an `Option`.
+        //           early. This also smart-casts away the nullability so `position` is
+        //           a plain `Int` below. (Named `position`, not `current`, so it does
+        //           not clash with the TRACK index `order[position]` used in the
+        //           shuffle branch.)
+        // TS map:   `if (this.pos === null) return null; const position = this.pos;`
+        // Gotcha:   `?: return null` is Kotlin's "unwrap-or-bail"; the right side of
+        //           Elvis can be any expression, including `return` (type `Nothing`),
+        //           the close analogue of Rust's `?` on an `Option`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (this.pos === null) return null;
-        // const current = this.pos;
+        // const position = this.pos;
         // ```
-        val current: Int = pos ?: return null
-        // What:     `if (natural && repeatTrackFlag) { ... }` is a control-flow if.
-        //           `&&` is logical AND of two booleans; the body runs only when the
-        //           track ended naturally AND repeat-track is on.
-        // Why:      A track that ends on its own under "repeat track" replays itself
-        //           (a manual Next must NOT, which is why `natural` gates it).
-        // TS map:   `if (natural && this.repeatTrackFlag) { ... }`
+        val position: Int = pos ?: return null
+        // What:     `if (natural && repeatTrackFlag) return order[position]`. `&&` is
+        //           logical AND; the body runs only when the track ended naturally AND
+        //           repeat-track is on, returning the SAME track index without moving
+        //           the cursor.
+        // Why:      A track that ends on its own under "repeat track" replays itself (a
+        //           manual Next must NOT, which is why `natural` gates it). This is
+        //           independent of shuffle, so it is checked first.
+        // TS map:   `if (natural && this.repeatTrackFlag) return this.order[position];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (natural && this.repeatTrackFlag) return this.order[current];
+        // if (natural && this.repeatTrackFlag) return this.order[position];
         // ```
         if (natural && repeatTrackFlag) {
-            // What:     `return order[current]` indexes the `order` list at the current
-            //           cursor position and returns that load-order index (the cursor
-            //           is left unchanged). Wrapped as the `Int?` result.
-            // Why:      Signal "play this same track again" without moving the cursor.
-            // TS map:   `return this.order[current];`
+            return order[position]
+        }
+        // What:     `if (shuffle != ShuffleMode.OFF) { ... }` branches into the
+        //           just-in-time shuffle path (`WITHIN_PAGE` or `ALL`). `!=` is enum
+        //           value inequality.
+        // Why:      Shuffle has no precomputed order: `order` is the play HISTORY built
+        //           as you go. So advancing either retraces forward through history (if
+        //           you previously stepped back) or draws a fresh without-replacement
+        //           pick and appends it.
+        // TS map:   `if (this.shuffle !== ShuffleMode.OFF) { ... }`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.shuffle !== ShuffleMode.OFF) { /* retrace or draw a new pick */ }
+        // ```
+        if (shuffle != ShuffleMode.OFF) {
+            // What:     `if (position + 1 < order.size) { pos = position + 1; return order[position + 1] }`.
+            //           When the cursor is not at the end of the history (because a
+            //           prior `prev` stepped it back), advance retraces FORWARD through
+            //           the already-drawn history rather than drawing anew.
+            // Why:      `prev`/`next` act as a back/forward cursor over the shuffle
+            //           history; re-drawing here would lose the forward path.
+            // TS map:   `if (position + 1 < this.order.length) { this.pos = position + 1; return this.order[position + 1]; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return this.order[current];
+            // if (position + 1 < this.order.length) { this.pos = position + 1; return this.order[position + 1]; }
             // ```
-            return order[current]
+            if (position + 1 < order.size) {
+                pos = position + 1
+                return order[position + 1]
+            }
+            // What:     `val current: Int = order[position]` reads the load-order index
+            //           of the track currently at the cursor (the end of history).
+            // Why:      The new pick must avoid an immediate repeat of THIS track when a
+            //           fresh cycle starts; `pickNextShuffle` takes it to exclude it.
+            // TS map:   `const current = this.order[position];`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const current = this.order[position];
+            // ```
+            val current: Int = order[position]
+            // What:     `val pick: Int = pickNextShuffle(current)` draws the next
+            //           without-replacement scope track (a load-order index), starting a
+            //           new cycle if the current one is exhausted.
+            // Why:      This is the just-in-time draw: one random scope track not yet
+            //           played this cycle.
+            // TS map:   `const pick = this.pickNextShuffle(current);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const pick = this.pickNextShuffle(current);
+            // ```
+            val pick: Int = pickNextShuffle(current)
+            // What:     `order = order + pick` reassigns `order` to a NEW list with
+            //           `pick` appended. `list + element` is Kotlin's immutable-append
+            //           operator: it builds a fresh `List<Int>`, leaving the old one
+            //           untouched. (The desktop twin mutates a `Vec` via `.push`; the
+            //           Kotlin `order` field is an immutable `List`, so it is replaced.)
+            // Why:      Grow the play history by the new pick.
+            // TS map:   `this.order = [...this.order, pick];`
+            // Gotcha:   `order + pick` does NOT mutate; it allocates a new list and
+            //           rebinds the field. With one append per user-paced advance this
+            //           is fine (not a tight inner loop).
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order = [...this.order, pick];
+            // ```
+            order = order + pick
+            // What:     `pos = order.size - 1` moves the cursor to the just-appended
+            //           last slot.
+            // Why:      The newly drawn pick is now current.
+            // TS map:   `this.pos = this.order.length - 1;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.pos = this.order.length - 1;
+            // ```
+            pos = order.size - 1
+            // What:     `return pick` returns the drawn load-order index (the `Int?`
+            //           result).
+            // Why:      Hand back the track to play next.
+            // TS map:   `return pick;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return pick;
+            // ```
+            return pick
         }
-        // What:     `val next: Int = current + 1` declares a read-only `Int` local
-        //           `next` as the position after the current one. `+ 1` is plain
-        //           integer arithmetic, identical to TS.
-        // Why:      Try to step forward within the scope.
-        // TS map:   `const next: number = current + 1;`
+        // What:     `val next: Int = position + 1` is the position after the current one
+        //           in the (sequential, `OFF`) scope order.
+        // Why:      Try to step forward within the page.
+        // TS map:   `const next: number = position + 1;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const next: number = current + 1;
+        // const next: number = position + 1;
         // ```
-        val next: Int = current + 1
-        // What:     `if (next < order.size) { ... }` is a control-flow bounds check.
-        //           `order.size` is the scope length; `next < order.size` means
-        //           "there is a track after the current one in this scope".
-        // Why:      A normal forward step is possible without looping.
-        // TS map:   `if (next < this.order.length) { ... }`
+        val next: Int = position + 1
+        // What:     `if (next < order.size) { pos = next; return order[next] }` is the
+        //           normal forward step when there is a track after the current one.
+        // Why:      A plain forward move without looping.
+        // TS map:   `if (next < this.order.length) { this.pos = next; return this.order[next]; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (next < this.order.length) { this.pos = next; return this.order[next]; }
         // ```
         if (next < order.size) {
-            // What:     `pos = next` updates the `Int?` cursor field to the new
-            //           position (a non-null `Int` assigned to the nullable field).
-            // Why:      Record the forward move.
-            // TS map:   `this.pos = next;`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.pos = next;
-            // ```
             pos = next
-            // What:     `return order[next]` indexes `order` at the new position and
-            //           returns that load-order index (as the `Int?` result).
-            // Why:      Hand back what to play next.
-            // TS map:   `return this.order[next];`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return this.order[next];
-            // ```
             return order[next]
         }
-        // What:     `pos = 0` sets the cursor back to the scope's start. Reached only
-        //           when we were past the end of the scope.
-        // Why:      `OFF`/`WITHIN_PAGE` loop the page; `ALL` loops the whole queue.
-        //           There is no "stop at end" mode (only repeat-track changes a
-        //           natural end), so the end of the scope wraps to its start.
-        // TS map:   `this.pos = 0;`
+        // What:     `pos = 0` then `return order[0]` wraps the cursor to the scope's
+        //           start. Reached only past the end of the `OFF` scope.
+        // Why:      `OFF`/`WITHIN_PAGE` loop the page (there is no "stop at end" mode
+        //           other than repeat-track), so the end wraps to the start.
+        // TS map:   `this.pos = 0; return this.order[0];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.pos = 0;
+        // this.pos = 0; return this.order[0];
         // ```
         pos = 0
-        // What:     `return order[0]` indexes the first element of `order` and returns
-        //           it (the `Int?` result). This is the final statement of the block.
-        // Why:      Begin the next loop of the scope from its first track.
-        // TS map:   `return this.order[0];`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return this.order[0];
-        // ```
         return order[0]
     }
 
@@ -956,87 +1041,95 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // prev(): number | null {
     //   if (this.pos === null) return null;
-    //   const current = this.pos;
-    //   if (current > 0) { this.pos = current - 1; return this.order[current - 1]; }
+    //   const position = this.pos;
+    //   if (this.shuffle !== ShuffleMode.OFF) {
+    //     if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
+    //     return this.order[position]; // at history start: stay put
+    //   }
+    //   if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
     //   const last = this.order.length - 1;
     //   this.pos = last; return this.order[last];
     // }
     // ```
     fun prev(): Int? {
-        // What:     `val current: Int = pos ?: return null` declares a read-only `Int`
-        //           local `current` using the Elvis operator `?:` again: take `pos`'s
-        //           value when non-null, otherwise `return null` from `prev`
-        //           immediately.
+        // What:     `val position: Int = pos ?: return null` declares a read-only `Int`
+        //           local `position` (the cursor index within `order`) using the Elvis
+        //           operator `?:`: take `pos`'s value when non-null, otherwise
+        //           `return null` from `prev` immediately.
         // Why:      Nothing to go back to when there is no cursor; bail out early and
         //           smart-cast away the nullability.
-        // TS map:   `if (this.pos === null) return null; const current = this.pos;`
+        // TS map:   `if (this.pos === null) return null; const position = this.pos;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (this.pos === null) return null;
-        // const current = this.pos;
+        // const position = this.pos;
         // ```
-        val current: Int = pos ?: return null
-        // What:     `if (current > 0) { ... }` is a control-flow check: there is a
-        //           previous slot in the scope.
-        // Why:      A normal backward step is possible without wrapping.
-        // TS map:   `if (current > 0) { ... }`
+        val position: Int = pos ?: return null
+        // What:     `if (shuffle != ShuffleMode.OFF) { ... }` branches into the
+        //           just-in-time shuffle path. `!=` is enum value inequality.
+        // Why:      Under shuffle, `order` is the play HISTORY; `prev` steps back
+        //           through it but, unlike `OFF`, does NOT wrap to the end (there is no
+        //           "last" of a history; the start is the oldest played track).
+        // TS map:   `if (this.shuffle !== ShuffleMode.OFF) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (current > 0) { this.pos = current - 1; return this.order[current - 1]; }
+        // if (this.shuffle !== ShuffleMode.OFF) { /* step back, no wrap */ }
         // ```
-        if (current > 0) {
-            // What:     `pos = current - 1` decrements the cursor field. `- 1` is plain
-            //           integer arithmetic.
-            // Why:      Move to the previous track.
-            // TS map:   `this.pos = current - 1;`
+        if (shuffle != ShuffleMode.OFF) {
+            // What:     `if (position > 0) { pos = position - 1; return order[position - 1] }`.
+            //           When there is older history, step the cursor back one slot.
+            // Why:      Retrace the shuffle history backward (the back half of the
+            //           back/forward cursor `advance` retraces forward).
+            // TS map:   `if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.pos = current - 1;
+            // if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
             // ```
-            pos = current - 1
-            // What:     `return order[current - 1]` indexes `order` one slot back and
-            //           returns that load-order index (the `Int?` result).
-            // Why:      Hand back the previous track.
-            // TS map:   `return this.order[current - 1];`
+            if (position > 0) {
+                pos = position - 1
+                return order[position - 1]
+            }
+            // What:     `return order[position]` returns the current track index WITHOUT
+            //           moving the cursor (reached only when `position == 0`).
+            // Why:      At the oldest played track, `prev` stays put rather than wrapping
+            //           (the desktop shuffle `prev` does the same).
+            // TS map:   `return this.order[position];`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return this.order[current - 1];
+            // return this.order[position]; // history start: stay put
             // ```
-            return order[current - 1]
+            return order[position]
         }
-        // What:     `val last: Int = order.size - 1` declares a read-only `Int` local
-        //           `last`, the index of the LAST scope slot (`size - 1`).
-        // Why:      At the start of the scope, Previous wraps to its end.
-        // TS map:   `const last: number = this.order.length - 1;`
+        // What:     `if (position > 0) { pos = position - 1; return order[position - 1] }`
+            //           is the normal `OFF` backward step within the page.
+        // Why:      A plain backward move without wrapping.
+        // TS map:   `if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const last: number = this.order.length - 1;
+        // if (position > 0) { this.pos = position - 1; return this.order[position - 1]; }
+        // ```
+        if (position > 0) {
+            pos = position - 1
+            return order[position - 1]
+        }
+        // What:     `val last: Int = order.size - 1` then `pos = last` then
+        //           `return order[last]`. At the start of the `OFF` page, Previous wraps
+        //           to the page's last track.
+        // Why:      `OFF`/`WITHIN_PAGE` always loop the page, so Previous from the start
+        //           jumps to the end. (Shuffle returned above, so this wrap is `OFF`-only.)
+        // TS map:   `const last = this.order.length - 1; this.pos = last; return this.order[last];`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const last = this.order.length - 1; this.pos = last; return this.order[last];
         // ```
         val last: Int = order.size - 1
-        // What:     `pos = last` sets the cursor field to the last slot.
-        // Why:      Wrap behaviour: the scope always loops, so Previous from the start
-        //           jumps to the end.
-        // TS map:   `this.pos = last;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.pos = last;
-        // ```
         pos = last
-        // What:     `return order[last]` indexes the last element of `order` and
-        //           returns it (the `Int?` result).
-        // Why:      Play the wrapped (last) track of the scope.
-        // TS map:   `return this.order[last];`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return this.order[last];
-        // ```
         return order[last]
     }
     //endregion
@@ -1190,160 +1283,142 @@ class Queue private constructor(private val rng: Random) {
         }
     }
 
-    // What:     `private fun shuffleSlice(slice: List<Int>): List<Int> { ... }`
-    //           declares a private instance method taking one read-only `List<Int>`
-    //           parameter `slice` (scope indices to permute) and returning a new
-    //           read-only `List<Int>`, block body.
-    // Why:      Fisher-Yates shuffle of a scope's indices using the seeded `rng`;
-    //           returns a NEW list so the caller's input is left untouched. Unchanged
-    //           for 0- or 1-element inputs.
-    // TS map:   `private shuffleSlice(slice: readonly number[]): number[] { ... }`
+    // What:     `private fun pickNextShuffle(current: Int): Int { ... }` declares a
+    //           private instance method taking the CURRENT track's load-order index
+    //           and returning the next just-in-time shuffle pick (also a load-order
+    //           index), block body.
+    // Why:      The just-in-time draw, replacing the old precomputed Fisher-Yates
+    //           permutation. It returns one random scope track NOT yet played this
+    //           cycle (without replacement); when the cycle has exhausted the scope it
+    //           starts a fresh cycle (advancing `cycleStart`) that avoids an immediate
+    //           repeat of `current`. Mirrors desktop `queue.rs` `pick_next_shuffle`.
+    //           See `docs/decisions/music-player-jit-shuffle.md`.
+    // TS map:   `private pickNextShuffle(current: number): number { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // private shuffleSlice(slice: readonly number[]): number[] {
-    //   if (slice.length < 2) return slice;
-    //   const result = [...slice];
-    //   let i = result.length - 1;
-    //   while (i > 0) {
-    //     const j = this.rng.nextInt(i + 1);
-    //     const swap = result[i];
-    //     result[i] = result[j];
-    //     result[j] = swap;
-    //     i -= 1;
+    // private pickNextShuffle(current: number): number {
+    //   const scope = this.scopeIndices(current);
+    //   const played = new Set(this.order.slice(this.cycleStart));
+    //   let remaining = scope.filter((i) => !played.has(i));
+    //   if (remaining.length === 0) {
+    //     this.cycleStart = this.order.length;
+    //     remaining = scope.filter((i) => i !== current);
+    //     if (remaining.length === 0) remaining = scope;
     //   }
-    //   return result;
+    //   return remaining[this.rng.nextInt(remaining.length)];
     // }
     // ```
-    private fun shuffleSlice(slice: List<Int>): List<Int> {
-        // What:     `if (slice.size < 2) return slice` is an early return. `slice.size`
-        //           is the element count; for 0 or 1 elements there is nothing to
-        //           shuffle, so the original `slice` is returned unchanged.
-        // Why:      Avoid the `size - 1` underflow on an empty slice and skip needless
-        //           work for a single element.
-        // TS map:   `if (slice.length < 2) return slice;`
+    private fun pickNextShuffle(current: Int): Int {
+        // What:     `val scope: List<Int> = scopeIndices(current)` declares a read-only
+        //           `List<Int>` of the load-order indices eligible this cycle (the
+        //           anchor's page for `WITHIN_PAGE`, the whole queue for `ALL`).
+        // Why:      The pool the pick is drawn from.
+        // TS map:   `const scope = this.scopeIndices(current);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (slice.length < 2) return slice;
+        // const scope = this.scopeIndices(current);
         // ```
-        if (slice.size < 2) return slice
-        // What:     `val result: MutableList<Int> = slice.toMutableList()` declares a
-        //           read-only BINDING `result` (the `val` means we will not point
-        //           `result` at a different list) whose type is `MutableList<Int>` — a
-        //           list whose ELEMENTS can be reassigned in place (`result[i] = ...`).
-        //           Sibling: the plain `List<Int>` (read-only elements) used elsewhere.
-        //           `slice.toMutableList()` is a type-CONVERSION call that COPIES the
-        //           input into a fresh mutable list.
-        // Why:      Fisher-Yates swaps elements in place, so we need a mutable copy;
-        //           copying also keeps the caller's input untouched.
-        // TS map:   `const result: number[] = [...slice];` — TS arrays are always
-        //           element-mutable, so there is no `List` vs `MutableList` split; the
-        //           spread `[...slice]` is the `toMutableList()` copy.
-        // Gotcha:   `val result` does NOT make the elements immutable; `val` only locks
-        //           the BINDING. `result[i] = x` is still legal because the TYPE is
-        //           `MutableList`. (Kotlin separates "can I rebind the name?" from "can
-        //           I mutate the contents?".)
+        val scope: List<Int> = scopeIndices(current)
+        // What:     `val played: Set<Int> = order.subList(cycleStart, order.size).toHashSet()`
+        //           declares a read-only `Set<Int>` of the indices already played THIS
+        //           cycle.
+        //           - `order.subList(cycleStart, order.size)` is a VIEW of `order` from
+        //             `cycleStart` (inclusive) to the end (exclusive of `order.size`,
+        //             which is one past the last). This is the current cycle's history.
+        //           - `.toHashSet()` copies that view into a hash `Set<Int>` for O(1)
+        //             membership tests below.
+        // Why:      "Without replacement" means excluding everything already played this
+        //           cycle; a set makes the exclusion test cheap.
+        // TS map:   `const played = new Set(this.order.slice(this.cycleStart));`
+        // Gotcha:   `subList(from, to)` is a half-open range like TS `slice(from, to)`;
+        //           `to = order.size` takes through the last element.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const result: number[] = [...slice];
+        // const played = new Set(this.order.slice(this.cycleStart));
         // ```
-        val result: MutableList<Int> = slice.toMutableList()
-        // What:     `var i: Int = result.size - 1` declares a REASSIGNABLE (`var`)
-        //           `Int` loop counter `i`, initialised to the last index.
-        // Why:      Fisher-Yates walks from the last index down to 1.
-        // TS map:   `let i: number = result.length - 1;`
+        val played: Set<Int> = order.subList(cycleStart, order.size).toHashSet()
+        // What:     `var remaining: List<Int> = scope.filter { it !in played }` declares
+        //           a REASSIGNABLE (`var`) `List<Int>` of scope tracks not yet played
+        //           this cycle.
+        //           - `.filter { ... }` keeps elements for which the trailing lambda is
+        //             true; `it` is each scope index.
+        //           - `it !in played` is the negated MEMBERSHIP operator (`!in` is
+        //             `!played.contains(it)`).
+        //           `var` (not `val`) because the empty-cycle branch below reassigns it.
+        // Why:      The eligible picks: scope minus this cycle's history.
+        // TS map:   `let remaining = scope.filter((i) => !played.has(i));`
+        // Gotcha:   Kotlin's `in`/`!in` is MEMBERSHIP (`.contains`), NOT JS `in`
+        //           (property-key); translate to `.has(...)`/`!.has(...)`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let i: number = result.length - 1;
+        // let remaining = scope.filter((i) => !played.has(i));
         // ```
-        var i: Int = result.size - 1
-        // What:     `while (i > 0) { ... }` is a condition-controlled loop, run while
-        //           `i` is greater than 0. Plain control flow, identical to TS.
-        // Why:      Standard Fisher-Yates traversal from the end toward the start.
-        // TS map:   `while (i > 0) { ... }`
+        var remaining: List<Int> = scope.filter { it !in played }
+        // What:     `if (remaining.isEmpty()) { ... }` runs when every scope track has
+        //           been played this cycle (the cycle is exhausted).
+        // Why:      Start a FRESH cycle: mark the boundary and reseed the eligible pool.
+        // TS map:   `if (remaining.length === 0) { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // while (i > 0) { ... }
+        // if (remaining.length === 0) { /* start a fresh cycle */ }
         // ```
-        while (i > 0) {
-            // What:     `val j: Int = rng.nextInt(i + 1)` declares a read-only `Int`
-            //           local `j`. `rng.nextInt(i + 1)` calls the seeded `Random`'s
-            //           `nextInt(bound)` method, which returns a uniformly random `Int`
-            //           in the half-open range `0 until (i + 1)` (i.e. `0..i`
-            //           inclusive). `rng` is the private `Random` field from the
-            //           constructor.
-            // Why:      Pick a random slot `j` in `0..i` to swap with slot `i`.
-            // TS map:   `const j: number = this.rng.nextInt(i + 1);` — equivalently
-            //           `Math.floor(rand() * (i + 1))` with a seedable `rand`.
-            // Gotcha:   This is the KOTLIN seeded RNG (`kotlin.random.Random.nextInt`),
-            //           NOT the desktop's hand-rolled xorshift64. `nextInt(bound)` is
-            //           exclusive of `bound`, so `i + 1` makes slot `i` reachable.
+        if (remaining.isEmpty()) {
+            // What:     `cycleStart = order.size` advances the cycle boundary to the
+            //           current end of history, so the new cycle's "played" set starts
+            //           empty (the next `subList(cycleStart, order.size)` is empty until
+            //           picks are appended).
+            // Why:      Begin counting a new without-replacement cycle from here.
+            // TS map:   `this.cycleStart = this.order.length;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const j: number = this.rng.nextInt(i + 1); // 0..=i inclusive
+            // this.cycleStart = this.order.length;
             // ```
-            val j: Int = rng.nextInt(i + 1)
-            // What:     `val swap: Int = result[i]` declares a read-only `Int` local
-            //           `swap` holding the value currently at slot `i` (so it is not
-            //           lost when we overwrite slot `i`). `result[i]` reads the mutable
-            //           list at index `i`.
-            // Why:      Temporary holder for the classic three-step element swap.
-            // TS map:   `const swap: number = result[i];`
+            cycleStart = order.size
+            // What:     `remaining = scope.filter { it != current }` reseeds the pool to
+            //           the whole scope EXCEPT the current track, so the fresh cycle does
+            //           not immediately replay the track that just ended.
+            // Why:      Avoid a jarring back-to-back repeat across the cycle boundary.
+            // TS map:   `remaining = scope.filter((i) => i !== current);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const swap: number = result[i];
+            // remaining = scope.filter((i) => i !== current);
             // ```
-            val swap: Int = result[i]
-            // What:     `result[i] = result[j]` writes the value at slot `j` into slot
-            //           `i`. Indexed assignment into a `MutableList` (legal because the
-            //           type is mutable, even though the `result` binding is `val`).
-            // Why:      First half of the swap.
-            // TS map:   `result[i] = result[j];`
+            remaining = scope.filter { it != current }
+            // What:     `if (remaining.isEmpty()) { remaining = scope }` handles a
+            //           single-track scope, where excluding `current` leaves nothing; in
+            //           that case the only option is to replay `current`.
+            // Why:      A one-track scope must still yield a pick.
+            // TS map:   `if (remaining.length === 0) remaining = scope;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // result[i] = result[j];
+            // if (remaining.length === 0) remaining = scope;
             // ```
-            result[i] = result[j]
-            // What:     `result[j] = swap` writes the saved original `result[i]` value
-            //           (held in `swap`) into slot `j`.
-            // Why:      Second half of the swap; slots `i` and `j` are now exchanged.
-            // TS map:   `result[j] = swap;`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // result[j] = swap;
-            // ```
-            result[j] = swap
-            // What:     `i -= 1` decrements the loop counter (`i = i - 1`). Plain
-            //           integer arithmetic, same as TS.
-            // Why:      Move toward the loop's end (counter reaches 0, loop stops).
-            // TS map:   `i -= 1;`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // i -= 1;
-            // ```
-            i -= 1
+            if (remaining.isEmpty()) {
+                remaining = scope
+            }
         }
-        // What:     `return result` returns the now-shuffled mutable list. Its declared
-        //           type `MutableList<Int>` is a `List<Int>`, so it satisfies the
-        //           method's `List<Int>` return type (callers see only the read-only
-        //           view).
-        // Why:      Hand back the shuffled copy.
-        // TS map:   `return result;`
+        // What:     `return remaining[rng.nextInt(remaining.size)]` draws a uniformly
+        //           random element of `remaining`. `rng.nextInt(remaining.size)` returns
+        //           an `Int` in `0 until remaining.size`; indexing yields the chosen
+        //           load-order index, which is returned.
+        // Why:      The actual random pick from the eligible pool.
+        // TS map:   `return remaining[this.rng.nextInt(remaining.length)];`
+        // Gotcha:   This is the KOTLIN seeded RNG (`kotlin.random.Random.nextInt`), NOT
+        //           the desktop's xorshift64; only within-Kotlin determinism is shared.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return result;
+        // return remaining[this.rng.nextInt(remaining.length)];
         // ```
-        return result
+        return remaining[rng.nextInt(remaining.size)]
     }
 
     // What:     `private fun rebuildScopeOrder(anchor: Int?) { ... }` declares a
@@ -1360,12 +1435,16 @@ class Queue private constructor(private val rng: Random) {
     // ```ts
     // private rebuildScopeOrder(anchor: number | null): void {
     //   if (this.tracks.length === 0) { this.order = []; this.pos = null; return; }
-    //   const clamped = Math.min(anchor ?? 0, this.tracks.length - 1);
-    //   const scope = this.scopeIndices(clamped);
-    //   const ordered = this.shuffle !== ShuffleMode.OFF ? this.shuffleSlice(scope) : scope;
-    //   const found = ordered.indexOf(clamped);
-    //   this.order = ordered;
-    //   this.pos = found < 0 ? 0 : found;
+    //   if (anchor === null) { this.order = []; this.pos = null; return; }
+    //   const clamped = Math.min(anchor, this.tracks.length - 1);
+    //   if (this.shuffle === ShuffleMode.OFF) {
+    //     const scope = this.scopeIndices(clamped);
+    //     const found = scope.indexOf(clamped);
+    //     this.order = scope;
+    //     this.pos = found < 0 ? 0 : found;
+    //   } else {
+    //     this.order = [clamped]; this.pos = 0; this.cycleStart = 0; // just-in-time: history grows in advance()
+    //   }
     // }
     // ```
     private fun rebuildScopeOrder(anchor: Int?) {
@@ -1443,74 +1522,98 @@ class Queue private constructor(private val rng: Random) {
         // const clamped: number = Math.min(anchor, this.tracks.length - 1);
         // ```
         val clamped: Int = minOf(anchor, tracks.size - 1)
-        // What:     `val scope: List<Int> = scopeIndices(clamped)` declares a read-only
-        //           `List<Int>` local `scope`, the scope's indices in ascending load
-        //           order, by calling the private `scopeIndices` helper with the
-        //           clamped anchor.
-        // Why:      Starting point for the playback order (before any shuffle).
-        // TS map:   `const scope: number[] = this.scopeIndices(clamped);`
+        // What:     `if (shuffle == ShuffleMode.OFF) { ... } else { ... }` branches the
+        //           rebuild on shuffle mode. `==` is enum value equality.
+        // Why:      `OFF` builds the FULL sequential page scope up front (it is
+        //           deterministic and needs no play history). The shuffle modes build no
+        //           permutation: `order` starts as just the anchor and grows as
+        //           just-in-time picks are drawn (see `advance`), so the rebuild only
+        //           seeds the single anchor and resets the cycle.
+        // TS map:   `if (this.shuffle === ShuffleMode.OFF) { ... } else { ... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const scope: number[] = this.scopeIndices(clamped);
+        // if (this.shuffle === ShuffleMode.OFF) { /* full sequential scope */ } else { /* [anchor] + reset cycle */ }
         // ```
-        val scope: List<Int> = scopeIndices(clamped)
-        // What:     `val ordered: List<Int> = if (shuffle != ShuffleMode.OFF) shuffleSlice(scope) else scope`
-        //           declares a read-only `List<Int>` local `ordered` from an IF/ELSE
-        //           EXPRESSION (it evaluates to one of the two branch values, like a
-        //           TS ternary).
-        //           - `shuffle != ShuffleMode.OFF` uses `!=` (not-equal) on the enum:
-        //             true for both `WITHIN_PAGE` and `ALL`.
-        //           - `then` branch `shuffleSlice(scope)` returns a shuffled copy;
-        //             `else` branch `scope` keeps load order.
-        // Why:      `OFF` keeps load order; the other two modes randomise the scope.
-        // TS map:   `const ordered: number[] = this.shuffle !== ShuffleMode.OFF ? this.shuffleSlice(scope) : scope;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const ordered: number[] =
-        //   this.shuffle !== ShuffleMode.OFF ? this.shuffleSlice(scope) : scope;
-        // ```
-        val ordered: List<Int> = if (shuffle != ShuffleMode.OFF) shuffleSlice(scope) else scope
-        // What:     `val found: Int = ordered.indexOf(clamped)` declares a read-only
-        //           `Int` local `found`. `ordered.indexOf(clamped)` returns the
-        //           position of the anchor within the (possibly shuffled) `ordered`
-        //           list, or `-1` when absent.
-        // Why:      The cursor must point at the anchor after the rebuild, so we locate
-        //           it in the final order.
-        // TS map:   `const found: number = ordered.indexOf(clamped);`
-        // Gotcha:   `.indexOf` returns `-1` (not `null`) when not found; the next line
-        //           tests `found < 0`, not a null check.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const found: number = ordered.indexOf(clamped);
-        // ```
-        val found: Int = ordered.indexOf(clamped)
-        // What:     `order = ordered` assigns the rebuilt list into the `order` field
-        //           (the `List<Int>` field accepts the `List<Int>` value).
-        // Why:      Adopt the rebuilt scope order.
-        // TS map:   `this.order = ordered;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.order = ordered;
-        // ```
-        order = ordered
-        // What:     `pos = if (found < 0) 0 else found` assigns the cursor field from
-        //           an IF/ELSE EXPRESSION (ternary-like). If the anchor was not found
-        //           (`found < 0`), use `0` (the scope's start); otherwise use the
-        //           found position. The non-null `Int` result is stored into the
-        //           `Int?` field.
-        // Why:      Point the cursor at the anchor, or the scope's start if the anchor
-        //           somehow fell outside (which cannot happen for a real track).
-        // TS map:   `this.pos = found < 0 ? 0 : found;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.pos = found < 0 ? 0 : found;
-        // ```
-        pos = if (found < 0) 0 else found
+        if (shuffle == ShuffleMode.OFF) {
+            // What:     `val scope: List<Int> = scopeIndices(clamped)` is the page's
+            //           indices in ascending load order (the whole sequential scope).
+            // Why:      `OFF` plays the page in load order, so the scope IS the order.
+            // TS map:   `const scope = this.scopeIndices(clamped);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const scope = this.scopeIndices(clamped);
+            // ```
+            val scope: List<Int> = scopeIndices(clamped)
+            // What:     `val found: Int = scope.indexOf(clamped)` locates the anchor's
+            //           position within the scope, or `-1` if absent.
+            // Why:      The cursor must point at the anchor after the rebuild.
+            // TS map:   `const found = scope.indexOf(clamped);`
+            // Gotcha:   `.indexOf` returns `-1` (not `null`) when not found; the test
+            //           below is `found < 0`, not a null check.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const found = scope.indexOf(clamped);
+            // ```
+            val found: Int = scope.indexOf(clamped)
+            // What:     `order = scope` adopts the sequential scope as the playback order.
+            // Why:      Under `OFF` the order is the load-order page.
+            // TS map:   `this.order = scope;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order = scope;
+            // ```
+            order = scope
+            // What:     `pos = if (found < 0) 0 else found` points the cursor at the
+            //           anchor (or the scope's start if it somehow fell outside, which
+            //           cannot happen for a real track). The non-null `Int` is stored
+            //           into the `Int?` field.
+            // Why:      Keep the anchor current after the rebuild.
+            // TS map:   `this.pos = found < 0 ? 0 : found;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.pos = found < 0 ? 0 : found;
+            // ```
+            pos = if (found < 0) 0 else found
+        } else {
+            // What:     `order = listOf(clamped)` seeds the play history with JUST the
+            //           anchor. `listOf(x)` builds a one-element read-only `List<Int>`.
+            // Why:      Just-in-time shuffle does not precompute a permutation; the
+            //           history starts at the anchor and grows via `advance`.
+            // TS map:   `this.order = [clamped];`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order = [clamped];
+            // ```
+            order = listOf(clamped)
+            // What:     `pos = 0` points the cursor at that single seeded entry.
+            // Why:      The anchor is the current track.
+            // TS map:   `this.pos = 0;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.pos = 0;
+            // ```
+            pos = 0
+            // What:     `cycleStart = 0` resets the cycle boundary to the start of the
+            //           freshly seeded history, so the new cycle's "played" set is just
+            //           the anchor.
+            // Why:      A rebuild (open, restore, shuffle toggle, jump) begins a new
+            //           without-replacement cycle at the anchor (the accepted cycle
+            //           reset; see `docs/decisions/music-player-jit-shuffle.md`).
+            // TS map:   `this.cycleStart = 0;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.cycleStart = 0;
+            // ```
+            cycleStart = 0
+        }
     }
     //endregion
 }
