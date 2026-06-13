@@ -27,15 +27,13 @@ handover adds the working state, measured facts, and exact next steps.
   `opus_decoder_create` and the symphonia registry initializes on the arm64 CPU). Next is the engine itself
   (Task #12); see "Next steps".
 - Full-Rust variant: the standalone primitives are de-risked on device (toolchain #10, libopus + symphonia #11,
-  native decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16). TWO unknowns remain to verify FIRST in the
-  engine (Task #12), because the isolated probes could not surface them: (1) sample-rate matching, `output.rs`
-  hardcodes 48k and opus is always 48k so the probe matched, but FLAC/MP3 decode at the track's native rate (often
-  44.1k), so the engine MUST open the AAudio stream at `spec.rate` or playback runs ~8.8% fast and pitched up, a
-  correctness requirement not wiring; (2) `content://` fd seekability, the benchmark used plain `File`, so symphonia
-  probing a SAF/MediaStore fd is unverified (Task #17, the next on-device derisk: a `nativeDecodeFromFd` exercising
-  seek + fd ownership detachFd/dup). The rest of #12 is integration: the decode -> output loop (decode on a worker +
-  lock-free ring, never in the AAudio callback), the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks),
-  and the queue/controller port.
+  native decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16, `content://` fd decode #17). ONE unknown
+  remains to verify in the engine (Task #12): sample-rate matching, `output.rs` hardcodes 48k and opus is always 48k
+  so the probe matched, but FLAC/MP3 decode at the track's native rate (often 44.1k), so the engine MUST open the
+  AAudio stream at `spec.rate` or playback runs ~8.8% fast and pitched up, a correctness requirement not wiring. The
+  `content://` fd path is now RESOLVED (#17, below). The rest of #12 is integration: the decode -> output loop (decode
+  on a worker + lock-free ring, never in the AAudio callback), the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based
+  callbacks), and the queue/controller port.
 
 ## Build progress (this session)
 
@@ -227,16 +225,38 @@ PCM_Float 48k stereo stream with a zero-fill data callback and reads presentatio
 `AAudioStream_getTimestamp` ((`frames_written - frame_position`)/rate); on the Pixel 6 it measured 43.0 ms (tunable
 lower via `bufferSizeInFrames`), test passes, no session PLAYING (inaudible). With this, the standalone primitives of
 the full-Rust variant (toolchain, libopus + symphonia decode, native decode ~10x faster, AAudio output) are de-risked
-on device. Two unknowns the isolated probes could NOT surface must be verified FIRST in the engine (Task #12): (a)
+on device. One unknown the isolated probes could NOT surface must still be verified in the engine (Task #12):
 sample-rate matching, this `output.rs` hardcodes 48k and opus is always 48k so the silent probe matched by luck, but
-FLAC/MP3 (852 + 13 files) decode at the track's native rate (often 44.1k), so the engine must open the AAudio stream
-at `spec.rate` (reopening on rate change) or playback runs ~8.8% fast and pitched up, a correctness requirement not
-wiring; (b) `content://` fd seekability, the benchmark used plain `File`, so symphonia probing a SAF/MediaStore fd is
-unverified (Task #17, a `nativeDecodeFromFd` exercising probe-seek + fd ownership detachFd/dup, the cheapest
-highest-value next derisk). The rest is integration: the decode -> output loop (decode on a worker + lock-free ring,
-never decode/alloc in the AAudio callback), the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks), and the
-queue/controller port. Optional hardening, only if the 10x must be bulletproof not directional: a same-device
-same-file media3 decode comparison.
+FLAC/MP3 decode at the track's native rate (often 44.1k), so the engine must open the AAudio stream at `spec.rate`
+(reopening on rate change) or playback runs ~8.8% fast and pitched up, a correctness requirement not wiring. The
+`content://` fd path that was the other unknown is now resolved (#17, below). The rest is integration: the decode ->
+output loop (decode on a worker + lock-free ring, never decode/alloc in the AAudio callback), the Kotlin `AudioEngine`
+JNI seam (raw JNI, pull-based callbacks), and the queue/controller port. Optional hardening, only if the 10x must be
+bulletproof not directional: a same-device same-file media3 decode comparison.
+
+content:// fd decode (this session, #17): `d5f313e3` adds the fd decode path the engine needs. `decode.rs` gains
+`open_borrowed_fd(RawFd)`: it dups the borrowed Android `ParcelFileDescriptor.getFd()` with std
+`BorrowedFd::borrow_raw(fd).try_clone_to_owned()` (F_DUPFD_CLOEXEC, no libc dep) and owns ONLY the dup, so the JVM
+keeps and closes the original PFD. This is the load-bearing safety choice: calling `File::from_raw_fd` on the borrowed
+fd is a DETERMINISTIC fdsan `SIGABRT` on API 30+ (the PFD fdsan-tags its fd; bionic `close()` aborts on an owner-tag
+mismatch, reproduced verbatim in mobile-ffmpeg #634 on a SAF fd), whereas the dup is untagged and closes cleanly. Two
+guards are load-bearing: dup SYNCHRONOUSLY inside the JNI call (a late dup on the worker thread hits a fd Kotlin's
+`use{}` already closed), and `if fd < 0` before `borrow_raw` (it panics on -1 and a panic across `extern "system"`
+aborts). A `std::fs::File` over a regular-file fd is a seekable `MediaSource` (symphonia `is_file()`), so it feeds the
+shared `open_media_source` tail directly with an empty `Hint`; probe never hard-seeks the source. `lib.rs` adds
+`nativeDecodeFdBenchmark(fd)` and factors the timing loop into a shared `benchmark_decode`. The instrumented test
+`NativeBridgeTest.decodeFromContentFd` queries MediaStore (READ_MEDIA_AUDIO granted via `adb pm grant`, no SAF picker),
+opens one real `content://media/...` track per format via `openFileDescriptor(uri,"r").use { pfd -> ...(pfd.fd) }`, and
+decodes through the dup path: on the GrapheneOS Pixel 6 it measured opus 0.033, flac 0.015, mp3 0.022 us/sample, test
+OK, no session PLAYING. This proves MediaProvider returns a seekable fd, symphonia probes/decodes/seeks over it, and
+the dup protocol does not double-close (any double-close would have been a hard SIGABRT, not a soft failure). SAF
+caveat: this on-device test exercised the MediaStore provider; the SAF document fd path (the preferred chosen-folder
+source) runs the IDENTICAL provider-agnostic Rust `open_borrowed_fd`, and the built-in ExternalStorageProvider returns
+a seekable regular-file fd for local documents on GrapheneOS-16 (verified by source-read of its forked
+MediaProvider/ExternalStorageProvider: Storage Scopes is access-control only and never converts a granted open into a
+pipe). A SAF tree grant cannot be created headlessly (it needs the `ACTION_OPEN_DOCUMENT_TREE` picker), so the SAF fd
+will be confirmed on-device incidentally once the engine plays from a real granted folder; the Rust fd-ownership and
+decode logic is already proven and is provider-independent.
 
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
