@@ -847,15 +847,17 @@ class MainActivity : ComponentActivity() {
             // What:     `val pending = pendingRoot; if (pending != null) { ... } else { local.rescan() }`
             //           reads the nullable `pendingRoot` into a local (smart-cast to non-null in
             //           the `then` branch), then branches on whether a folder pick is waiting.
-            // Why:      Two foreground cases on (re)bind. (1) A folder was picked while unbound:
-            //           apply it now (a full reload that clears selection, the explicit-Open
-            //           semantic). (2) Otherwise this is a routine foreground (re)bind: ask the
-            //           service to rescan and reconcile (LIVE UPDATE). `onStop` unbinds and
-            //           `onStart` rebinds on every foreground, so `onServiceConnected` is the
-            //           reliable "app foregrounded" hook (unlike `onResume`, where the async
-            //           rebind leaves `binder` null). `rescan()` is a no-op before the first
-            //           load or while a load is in flight, so it never disturbs the cold-start
-            //           restore.
+            // Why:      Runs ONCE per activity, when the single `onCreate` bind connects (the
+            //           bind is held until `onDestroy`, so this no longer fires per foreground;
+            //           the per-foreground hook is now `onStart` -> `rescan`). Two cases at the
+            //           initial connect. (1) A folder was picked before the bind completed
+            //           (`pendingRoot` set): apply it now (a full reload that clears selection,
+            //           the explicit-Open semantic). (2) Otherwise rescan/reconcile (LIVE
+            //           UPDATE). `rescan()` is a no-op before the first load or while a load is
+            //           in flight, so during the usual cold start (the service's own `onCreate`
+            //           is still running `ensureLibraryLoaded`) it does nothing and cannot
+            //           disturb the restore; if the service was already alive and loaded (e.g.
+            //           headless playback), it reconciles.
             //
             // In TS you'd write (pseudocode):
             // ```ts
@@ -966,6 +968,34 @@ class MainActivity : ComponentActivity() {
         // enableEdgeToEdge();
         // ```
         enableEdgeToEdge()
+        // What:     `bindService(Intent(this, PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND), connection, Context.BIND_AUTO_CREATE)`
+        //           binds to the service ONCE for the activity's whole lifetime (paired with the
+        //           single `unbindService` in `onDestroy`). `BIND_AUTO_CREATE` also creates the
+        //           service if it is not already running; `connection.onServiceConnected`
+        //           publishes the brain into `boundController`.
+        // Why:      Hold the binding across `onStop`/`onStart` so the bind-only
+        //           `MediaSessionService` is NOT torn down on every background. The bind used to
+        //           live in `onStart`/`onStop`, so each app switch dropped the last client, the
+        //           service was destroyed, and the next foreground re-created it and re-ran
+        //           `ensureLibraryLoaded` (a full ~3.6k-track rescan with a blocking loading
+        //           state). Binding once keeps the service, its engine, and the loaded library
+        //           alive, so a foreground is a cheap non-blocking reconcile (`onStart` ->
+        //           `rescan`). media3 keeps the service foreground while playing, so background
+        //           audio is unaffected.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.bindService(
+        //   new Intent(this, PlaybackService).setAction(PlaybackService.ACTION_LOCAL_BIND),
+        //   this.connection,
+        //   Context.BIND_AUTO_CREATE,
+        // );
+        // ```
+        bindService(
+            Intent(this, PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND),
+            connection,
+            Context.BIND_AUTO_CREATE,
+        )
         // What:     `setContent { ... }` mounts a Compose UI tree as this activity's
         //           content; the trailing lambda IS the root composable.
         // Why:      Render the app UI.
@@ -1078,12 +1108,14 @@ class MainActivity : ComponentActivity() {
     }
 
     // What:     `override fun onStart() { ... }` overrides the lifecycle hook called when
-    //           the activity becomes visible.
-    // Why:      Bind to the service so the UI can reach the brain.
+    //           the activity becomes visible (every foreground, including app switches).
+    // Why:      Trigger the foreground LIVE UPDATE. Binding happens once in `onCreate` and is
+    //           held until `onDestroy`, so `onStart` does not bind; it just asks the
+    //           already-bound service to rescan and reconcile the queue.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // override onStart(): void { ... }
+    // override onStart(): void { this.binder?.rescan(); }
     // ```
     override fun onStart() {
         // What:     `super.onStart()` calls the base class first.
@@ -1094,43 +1126,37 @@ class MainActivity : ComponentActivity() {
         // super.onStart();
         // ```
         super.onStart()
-        // What:     `val intent = Intent(this, PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND)`
-        //           builds the bind `Intent`. `Intent(this, PlaybackService::class.java)`
-        //           constructs an explicit intent: `this` is the context;
-        //           `PlaybackService::class.java` is the Java `Class` object for the service
-        //           (`::class` is the Kotlin `KClass` literal, `.java` converts it to the
-        //           Java `Class` the API wants). `.setAction(...)` chains to set the private
-        //           bind action and returns the same `Intent`.
-        // Why:      Address the bind to our service with the local-bind action.
-        // Gotcha:   `PlaybackService::class.java` is the class-reference-to-Java-Class
-        //           conversion; `::class` alone is a Kotlin `KClass`, and `.java` adapts it
-        //           for the Android API. No TS analogue beyond passing the class itself.
+        // What:     `binder?.rescan()` SAFE-CALLs the service's `rescan` (the live-update entry
+        //           point) when the binder is present. On the very first foreground the bind
+        //           from `onCreate` may not have completed yet (`binder` null), so this no-ops
+        //           and the initial library load is the service's own `onCreate`
+        //           (`ensureLibraryLoaded`). On every later foreground the binder is set, so this
+        //           re-scans the current source and reconciles the queue WITHOUT a loading state
+        //           (`reconcileLibrary`), preserving the playing track.
+        // Why:      Pick up files added/removed/renamed while the app was away, non-blockingly
+        //           (the desktop "Rescan" analog; see
+        //           docs/decisions/music-player-live-update-rescan.md). `rescan` itself no-ops
+        //           before the first load or while a load is in flight, so a foreground arriving
+        //           during the cold-start restore cannot disturb it.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const intent = new Intent(this, PlaybackService).setAction(PlaybackService.ACTION_LOCAL_BIND);
+        // this.binder?.rescan();
         // ```
-        val intent = Intent(this, PlaybackService::class.java).setAction(PlaybackService.ACTION_LOCAL_BIND)
-        // What:     `bindService(intent, connection, Context.BIND_AUTO_CREATE)` binds to the
-        //           service using our `connection` callbacks; `Context.BIND_AUTO_CREATE`
-        //           also CREATES the service if it is not running.
-        // Why:      Establish the in-process connection (and start the service) so the brain
-        //           becomes reachable.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.bindService(intent, this.connection, Context.BIND_AUTO_CREATE);
-        // ```
-        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        binder?.rescan()
     }
 
     // What:     `override fun onStop() { ... }` overrides the lifecycle hook called when the
-    //           activity is no longer visible.
-    // Why:      Unbind from the service (without killing it) so audio keeps playing.
+    //           activity is no longer visible (backgrounded, e.g. an app switch).
+    // Why:      Persist the resume position. It does NOT unbind: the binding is held from
+    //           `onCreate` to `onDestroy` so the bind-only service is not torn down on a
+    //           background (which previously forced a full reload on the next foreground). The
+    //           service keeps running, and media3 keeps it foreground while playing, so audio is
+    //           unaffected.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // override onStop(): void { ... }
+    // override onStop(): void { this.binder?.saveSession(); }
     // ```
     override fun onStop() {
         // What:     `super.onStop()` calls the base class first.
@@ -1142,58 +1168,57 @@ class MainActivity : ComponentActivity() {
         // ```
         super.onStop()
         // What:     `binder?.saveSession()` SAFE-CALLs the service's `saveSession` while the
-        //           binder is still valid (BEFORE the `unbindService` below).
+        //           binder is valid.
         // Why:      Capture the resume position when the user backgrounds mid-track while
         //           playing: no state-change fires then, so the controller's `onPersist` would
         //           miss it, and `onDestroy` may not run if the process is later killed. Saving
         //           here, on the live service controller, makes the backgrounded position
-        //           durable. No-op if unbound or the library has not loaded.
+        //           durable. No-op if the library has not loaded.
+        // Note:     We intentionally do NOT `unbindService` here, and we keep `boundController`.
+        //           Holding the binding keeps the service, its engine, and the loaded library
+        //           alive across the background, so the next foreground is a cheap non-blocking
+        //           reconcile (`onStart` -> `rescan`) instead of a destroy + full reload. The
+        //           binding is released once, in `onDestroy`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // this.binder?.saveSession();
         // ```
         binder?.saveSession()
-        // What:     `unbindService(connection)` detaches our connection from the service.
-        //           (Folds in the old inline note: unbind only; the service stays alive on
-        //           its own, foreground while playing, so audio keeps going. Never release
-        //           the controller here: it belongs to the service, not this activity.)
-        // Why:      Stop observing while invisible without stopping playback.
+    }
+
+    // What:     `override fun onDestroy() { ... }` overrides the final lifecycle hook, called
+    //           when the activity is being destroyed.
+    // Why:      Release the binding taken in `onCreate`. This single unbind (held until now) is
+    //           what keeps the bind-only `MediaSessionService` alive across `onStop`/`onStart`,
+    //           fixing the reload-on-every-app-switch. media3 keeps the service foreground while
+    //           playing, so background audio survives the activity's destruction.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // override onDestroy(): void { this.unbindService(this.connection); this.binder = null; }
+    // ```
+    override fun onDestroy() {
+        // What:     `super.onDestroy()` calls the base class first.
+        // Why:      Let the framework run its own destroy logic.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // this.unbindService(this.connection);
+        // super.onDestroy();
+        // ```
+        super.onDestroy()
+        // What:     `unbindService(connection)` releases the connection taken in `onCreate`
+        //           (paired one-to-one with that single `bindService`), then `binder = null`
+        //           clears the handle.
+        // Why:      Drop our reference so the service can be reclaimed when nothing else keeps it
+        //           alive (e.g. not playing).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.unbindService(this.connection); this.binder = null;
         // ```
         unbindService(connection)
-        // What:     `binder = null` clears the binder handle.
-        // Why:      We are unbound now.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.binder = null;
-        // ```
         binder = null
-        // What:     We deliberately do NOT null `boundController` here (it used to be set to
-        //           `null` on every stop, which forced the next foreground back to
-        //           `StartingGate`). Retaining the published controller across the unbind keeps
-        //           the already-loaded library on screen when the app returns, so a foreground
-        //           is a NON-BLOCKING live rescan (`reconcileLibrary`, no loading state) instead
-        //           of a gate flash. The controller is a single instance built once in
-        //           `PlaybackService.onCreate`. Safe in both service-lifetime cases: while
-        //           playing, the service is started/foreground (media3 foregrounds it on
-        //           playback) and survives this unbind, so `onServiceConnected` rebinds the SAME
-        //           controller. Before any playback the service is bind-only, so this unbind may
-        //           destroy it (`onDestroy` releases the engine); the retained controller then
-        //           just renders its last snapshot (stale, harmless), and its engine accessors
-        //           are hardened (every native entry guards `handle == 0` and returns 0 after
-        //           release; see `RustEngine`/`rust/src/lib.rs`), so the still-running position
-        //           poll reads 0 rather than crashing. `onServiceConnected` then republishes the
-        //           freshly-built controller and the poll (keyed on `controller`) re-targets it.
-        //           `StartingGate` appears only before the very first bind (no prior state to
-        //           show); `onServiceDisconnected` still nulls it, since an unexpected mid-bind
-        //           service death means the brain is genuinely gone.
-        // Why:      The foreground rescan should be non-blocking unless there is no prior state
-        //           (the live-update intent in docs/decisions/music-player-live-update-rescan.md).
     }
 
     // What:     `private fun onFolderChosen(treeUri: Uri) { ... }` declares a private method
