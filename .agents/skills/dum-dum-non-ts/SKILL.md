@@ -10,9 +10,8 @@ programming languages: C, C++, Rust, Go, Python, Java, Kotlin, Swift, Ruby,
 PHP, Lua, Zig, Nim, Haskell, OCaml, Elixir, Clojure, Scala, F#, or any other.
 
 The skill encodes two rules (simplest possible constructs; comments on every
-concept-introducing line) and a comment template (What, Why, TS map, optional
-Gotcha) with a TypeScript pseudocode equivalent above every concept-introducing
-line.
+concept-introducing line) and a comment template (What, Why, optional Gotcha)
+with a TypeScript pseudocode equivalent above every concept-introducing line.
 
 See "Out of scope" at the bottom for file types this skill does not apply to.
 
@@ -134,9 +133,6 @@ Lisp / Clojure):
     What**. "Why `usize` and not `u64`?" "Why `String` and not `&str`?"
     "Why `Box<T>` and not `Rc<T>`?" One sentence each is enough; silence
     is not.
-- **TS map:** how to translate the construct into TypeScript thinking. If
-  there is no clean equivalent, say so explicitly ("no TS equivalent —
-  mentally: …"). **Always include this field. It is the whole point.**
 - **Gotcha** *(optional, only when warranted):* one line warning the reader
   when the construct **looks like** something familiar from TS but behaves
   differently (operator overloading, value-vs-reference, integer overflow,
@@ -163,9 +159,6 @@ the `T` is freed automatically".
 //           directories (vs `"..."` which means "in my project").
 // Why:      We need it so the `std::cout` line below is defined. Without
 //           this `#include`, the file does not compile.
-// TS map:   Closest equivalent is an `import` — except `#include` is a
-//           literal text paste, not a module system, and the names it
-//           brings in land inside the `std::` namespace (see next block).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -179,10 +172,6 @@ the `T` is freed automatically".
 // Why:      Every C++ program must have exactly one `main`. The OS calls it
 //           when the program starts; whatever it returns becomes the
 //           program's exit code.
-// TS map:   TS has no entry-point function — files just run top-to-bottom.
-//           Mentally, picture wrapping this whole file in
-//           `async function main(): Promise<number> { ... }` and the
-//           runtime auto-calling it.
 // Gotcha:   `int` is NOT TS's `number`. It is a fixed-width 32-bit signed
 //           integer (range roughly ±2.1 billion). Overflow is undefined
 //           behaviour — there is no auto-widening to `bigint`.
@@ -203,7 +192,6 @@ int main() {
   //           literal. `std::endl` is a special value meaning "write a
   //           newline character AND flush the buffer to the terminal".
   // Why:      Print the word `hello` followed by a newline.
-  // TS map:   Whole line collapses to `console.log("hello")` in TS.
   // Gotcha:   `<<` here is OPERATOR OVERLOADING — the same `<<` symbol is
   //           bitwise left-shift on integers. C++ lets a type redefine what
   //           an operator means. TS has no such mechanism, so do not expect
@@ -220,8 +208,6 @@ int main() {
   //           operating system, and `0` is the convention for "program
   //           succeeded".
   // Why:      Tell the OS the program finished without error.
-  // TS map:   In a Node script the equivalent is `process.exit(0)` — or
-  //           just letting the script reach its end without throwing.
   //
   // In TS you'd write (pseudocode):
   // ```ts
@@ -269,8 +255,6 @@ fn load_rules(path: &str) -> Result<Vec<Rule>, String> {
     //           the function's tail expression — Rust auto-returns it.
     // Why:      Hand the freshly loaded rules to the caller and signal
     //           "no error".
-    // TS map:   In throwing-style TS, the equivalent is just
-    //           `return rules;` — the success channel is implicit.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -299,9 +283,6 @@ Good:
 // Why:      The function signature is `Result<_, String>`, so the error
 //           channel must contain an owned `String`, not a borrowed
 //           `&str` — the caller may keep the error past our stack frame.
-// TS map:   `throw new Error("no rules loaded");` — TS strings are
-//           always GC'd and owned, so the borrowed-vs-owned distinction
-//           is invisible.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -331,8 +312,6 @@ fn parse_rule_source(line: &str) -> Option<String> {
     //           expression, so it's the return value.
     // Why:      The trimmed line is a plain literal; we escape it and
     //           hand it back as "yes, here is a rule source".
-    // TS map:   `return escapeLiteral(trimmed);` — TS `string | null`
-    //           returns the value directly; no wrapper.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -362,7 +341,6 @@ Good:
 //           transferring ownership to the matcher.
 // Why:      Treat any regex-engine failure as "no match" rather than
 //           propagating it; a corrupt input shouldn't crash the scan.
-// TS map:   `try { return combined.isMatch(content); } catch { return false; }`.
 // Gotcha:   `.unwrap_or(value)` on `Result` SILENTLY discards the error
 //           value. Use only when "no info, fall back" is genuinely
 //           correct.
@@ -392,7 +370,7 @@ struct Rule { index: usize, src: String, regex: Regex }
 
 Good:
 
-```rust
+````rust
 // What:     `struct Rule { ... }` declares a record type with three OWNED
 //           fields:
 //           - `index: usize`. `usize` is the unsigned integer wide enough
@@ -410,20 +388,23 @@ Good:
 //             outlives the function that read the file; a borrowed slice
 //             would dangle.
 //           - `regex` is owned for the same outlive reason.
-// TS map:   `type Rule = { index: number; src: string; regex: Regex };`
-//           — TS has no owned/borrowed distinction (everything is GC'd),
-//           so the type-choice question doesn't arise.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type Rule = { index: number; src: string; regex: Regex };
+// // TS has no owned/borrowed distinction (everything is GC'd), so the type-choice
+// // question does not arise.
+// ```
 struct Rule { index: usize, src: String, regex: Regex }
-```
+````
 
 ## Anti-patterns
 
 - Reaching for an idiomatic-but-opaque construct because it is "the way" in
   that language (Rust iterator chains, Python list comprehensions, Go
   interface satisfaction by name, Kotlin scope functions).
-- Dropping the **TS map** field or the **pseudocode** block because "the
-  code is obvious" — it is not, to this user. Both are mandatory on every
-  block.
+- Dropping the **pseudocode** block because "the code is obvious". It is
+  not obvious to this user, and it is mandatory on every block.
 - Skipping **What** on a symbol-heavy line. If the line contains `<<`,
   `::`, `&`, `*`, `?`, `!`, `<...>`, `mut`, lifetimes, or any punctuation a
   TS dev would not recognise, name and explain each piece individually.
