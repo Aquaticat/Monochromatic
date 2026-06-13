@@ -612,6 +612,49 @@ prebuilt arm64-sim slice," not "Qt fails on the device." Unlike Slint (an AMFI/i
 a toolchain-packaging limit. The downloaded Qt 6.5.3 device and desktop kits under
 `/Volumes/MacData/ios-vet/qt` can be removed.
 
+### Dioxus: FULL PASS (both legs), the structural anti-Qt for dual-target
+
+Status: FULL PASS 2026-06-12, first of the owner-appended set. Dioxus 0.7.9 (`dx` CLI), render-verified on
+BOTH the iPhone X (iOS 16.7, `aarch64-apple-ios`) and the iPhone 17 Pro / iOS 26.5 simulator
+(`aarch64-apple-ios-sim`) from one codebase: blue "Dioxus Gate / Rust: 720 / CROSSING OK" on each.
+
+Backend: wry/WKWebView (a webview), confirmed by the compiled dependency set (`tao`, `wry`, `objc2_ui_kit`,
+`dioxus_desktop`). It is NOT the experimental native renderer (`dioxus-native`/Blitz/WGPU), which `dx` does
+not default to on iOS and which ships no iOS AccessKit adapter (its dep tree carries
+`accesskit_macos`/`unix`/`windows`/`winit` only, no `accesskit_ios`), so the native path would fail
+VoiceOver. The gate deliberately stays on the webview backend, where accessibility is WebKit-native.
+
+Dual-target is structurally clean, the exact opposite of the Qt failure. Dioxus is pure Rust compiled
+per-target: `dx bundle --ios --target aarch64-apple-ios-sim` builds the native arm64 simulator slice
+(verified `architecture: arm64`; installed and rendered on the booted arm64 iOS 26.5 sim), and `--target
+aarch64-apple-ios` builds the device slice (arm64 iphoneos; the wireless `ideviceinstaller -n upgrade` to
+the physical iPhone X succeeded, which installd permits only for an iphoneos binary). There is no prebuilt
+fat-binary forcing an x86_64-only simulator the way Qt's kit does; one codebase, two rustc targets, both
+native arm64.
+
+Rust crossing is inherent, not an FFI shim. Because the UI layer itself is Rust (RSX), the gate computes
+720 in Rust and renders it straight through the RSX into the WKWebView with zero hand-written native code
+and no C-ABI boundary. This is the cleanest crossing in the funnel (there is no foreign framework to cross
+into; the framework is Rust), and it is why Dioxus is directly relevant to the music-player and kopia Rust
+cores.
+
+Build and signing mechanism. `dx bundle --ios --package-types ios` emits an unsigned `.app` (verified "code
+object is not signed at all"); `dx`'s own codesign and `devicectl` deploy assume a USB device, but the
+iPhone X is wireless, so the device leg is signed by hand with the vet keychain (embed the
+`dev.monochromatic.iosvet.hellodevice` profile as `embedded.mobileprovision`, then `codesign --force
+--sign` the vet identity with the profile entitlements under the keychain-search-list wrapper) and
+installed with `ideviceinstaller -n upgrade`. The simulator leg needs no signing (`simctl install`/`launch`).
+Deployment target defaults to 13.0 (`dx`), well under 16.7. No AMFI/execmem question for the app itself:
+Rust is AOT, and the webview's JS JIT runs under WKWebView's own iOS entitlement, not the sandboxed app's,
+so there is no jitless-engine gate the way there was for the JS-runtime frameworks.
+
+a11y: WebKit-native (VoiceOver reads the web a11y tree), same class as Capacitor, satisfied only on the
+webview backend; on-device VoiceOver confirmation is still owed under the retroactive a11y sweep. Watch
+item for real apps: Dioxus issue #4894 (open) reports that scrolling can halt the Dioxus event loop on the
+iOS simulator; the static gate did not exercise scrolling, so confirm scroll behaviour before relying on
+it. Work dir: `/Volumes/MacData/ios-vet/dioxusgate` (hand-rolled minimal `dioxus = { features = ["mobile"]
+}` project; build with `dx bundle --ios --target <triple>`). Toolchain installed: `dx` (dioxus-cli) 0.7.9.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -651,9 +694,11 @@ Skiko/Metal), React Native (rank 6, Hermes bytecode, native UIViews, Rust crossi
 Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3.22 survives AMFI on the
 iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), and Lynx (rank 8,
 native UIKit `LynxView`, jitless PrimJS/JSC survives AMFI on the iPhone X, render both legs, Rust crossing
-PASS via a pure-ObjC `LynxModule` shim), all render-verified, above. Slint (rank 1) was gated and FAILED
-(disqualified, above), and Qt (rank 9) was CULLED (no prebuilt arm64-simulator slice, and the only
-arm64-sim path also breaks the no-hand-written-C++ rule, above).
+PASS via a pure-ObjC `LynxModule` shim), and Dioxus (first of the owner-appended set, Rust UI rendering
+through wry/WKWebView, dual-target structurally clean because it is pure Rust per-target), all
+render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above), and Qt (rank 9) was
+CULLED (no prebuilt arm64-simulator slice, and the only arm64-sim path also breaks the no-hand-written-C++
+rule, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose

@@ -24,8 +24,11 @@ plus simulator x86_64 only; `lipo`/`otool` on 6.5.3 and 6.12.0, corroborated by 
 Qt iOS docs), so it cannot render on the M1's native arm64 iOS 26.5 simulator; the only arm64-sim path is
 a from-source Qt build that independently breaks the no-hand-written-C++ rule (sole proven iOS CXX-Qt path
 uses a developer-authored C++ `main.cpp` on unmerged fork patches). Fails two owner hard rules; details in
-`device-gate-results.md`. Remaining native and managed gates: the owner-appended set Dioxus, SnapKit,
-UIKit, SwiftUI; then the six WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
+`device-gate-results.md`. Dioxus also FULL PASS both legs (first appended gate, 2026-06-12: Dioxus 0.7.9 via
+the `dx` CLI, Rust UI rendering through wry/WKWebView, dual-target structurally clean because it is pure
+Rust per-target, the anti-Qt; a Rust-computed value renders with no FFI shim; WebKit-native a11y). Remaining
+native and managed gates: the owner-appended set SnapKit, UIKit, SwiftUI; then the six WKWebView frameworks,
+deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
 device and the latest iOS simulator (iOS 26.5) from one codebase. Retroactive sweep complete: Compose,
@@ -256,8 +259,10 @@ Separately, the music-player UI choice is an open owner decision informed by the
 a downported Slint fork (keep the UI, accept the fork burden), or rewrite the UI in a device-verified
 native-a11y framework keeping the Rust audio core via FFI (symphonia/opus/cpal port unchanged; cpal has
 an iOS CoreAudio backend). Device-verified native-a11y options now include both Flutter and MAUI (MAUI
-keeps the Rust core via `[DllImport("__Internal")]`, proven above); the Dioxus result, once gated, would
-add a Rust-native UI option. Not blocking; the funnel continues regardless.
+keeps the Rust core via `[DllImport("__Internal")]`, proven above), and now Dioxus, the Rust-native UI
+option (FULL PASS both legs, below): the whole UI is Rust, so the music-player audio core would link with no
+FFI boundary, though Dioxus a11y is WebKit-webview-class (VoiceOver via the web tree), not self-drawn
+native. Not blocking; the funnel continues regardless.
 
 ## Remaining gates (synthesis order)
 
@@ -268,7 +273,8 @@ Each must be render-verified (not just launched), and each adds only its own SDK
 NativeScript (rank 7, including its Rust crossing), and Lynx (rank 8, including its Rust crossing) are all
 DONE (FULL PASS, above). Qt (rank 9) is CULLED (no prebuilt arm64-iphonesimulator slice in any version, so
 it cannot render on the M1's native arm64 iOS 26.5 simulator, and the only arm64-sim path breaks the no-C++
-rule; see below and `device-gate-results.md`). The next gate is Dioxus. Remaining, in order:
+rule; see below and `device-gate-results.md`). Dioxus (first appended gate) is DONE (FULL PASS both legs,
+below). The next gate is SnapKit. Remaining, in order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -321,10 +327,12 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   only arm64-sim path is a from-source Qt cross-compile, which independently breaks the no-hand-written-C++
   rule (the sole proven iOS CXX-Qt path uses a developer-authored C++ `main.cpp` on unmerged fork patches).
   Fails two owner hard rules; no gate build attempted. Full reasoning in `device-gate-results.md`.
-- Owner-appended set (gate after the above, before the web block): Dioxus (Rust UI; on iOS renders via
-  `wry`/WKWebView driven by AOT Rust, the substantive one, needs `dx` CLI), SnapKit (UIKit Auto Layout
-  DSL via SPM, trivial), UIKit (pure native, trivial), SwiftUI (already render-proven by the HelloDevice
-  canary; formal re-confirm).
+- Owner-appended set (gate after the above, before the web block): Dioxus DONE (FULL PASS both legs,
+  2026-06-12: Dioxus 0.7.9 `dx` CLI, Rust UI through wry/WKWebView, dual-target structurally clean because
+  pure Rust per-target, Rust-computed value renders with no FFI shim; built `dx bundle --ios --target
+  <triple>`, device leg signed by hand with the vet keychain since `dx`'s deploy assumes USB; see
+  `device-gate-results.md`). Remaining: SnapKit (UIKit Auto Layout DSL via SPM, trivial), UIKit (pure
+  native, trivial), SwiftUI (already render-proven by the HelloDevice canary; formal re-confirm).
 - Deferred to the very end per owner: the six WKWebView frameworks (Cordova substrate plus the Ionic,
   Framework7, Onsen, Quasar UI-render notes on the already-proven Capacitor/WKWebView substrate).
 
