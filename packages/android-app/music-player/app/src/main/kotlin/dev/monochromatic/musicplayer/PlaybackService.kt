@@ -8,7 +8,6 @@ import android.os.Looper
 import android.util.Log
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -94,18 +93,20 @@ class PlaybackService : MediaSessionService() {
     /**
      * Load the library and hand it to the brain, once. Safe to call from both the headless self-load
      * and the activity's post-grant signal; the [libraryLoaded] guard keeps it to a single load. The
-     * source is the user's chosen folder when one is set and still readable, otherwise the device-wide
-     * audio collection.
+     * source is [LibrarySource], shared with the background sweep so their fingerprints agree. A
+     * library is available at this point, so the charging-plus-idle peak sweep is enqueued here too
+     * ([PeakSweepScheduler.enqueue] is idempotent).
      */
     fun ensureLibraryLoaded() {
         if (libraryLoaded) {
             return
         }
         libraryLoaded = true
+        PeakSweepScheduler.enqueue(this)
         controller.beginLoad()
         loadJob?.cancel()
         loadJob = scope.launch {
-            val tracks = loadInitialTracks()
+            val tracks = LibrarySource.load(this@PlaybackService)
             controller.openLibrary(tracks)
             Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks")
         }
@@ -119,52 +120,15 @@ class PlaybackService : MediaSessionService() {
      */
     fun reloadFromRoot(treeUri: Uri) {
         libraryLoaded = true
+        PeakSweepScheduler.enqueue(this)
         controller.beginLoad()
         loadJob?.cancel()
         loadJob = scope.launch {
-            val tracks = scanRoot(treeUri)
+            val tracks = LibrarySource.scanRoot(this@PlaybackService, treeUri)
             controller.openLibrary(tracks)
             Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks from picked folder")
         }
     }
-
-    /**
-     * Pick the initial source: the chosen folder when [LibraryRoot.heldRoot] confirms a live grant
-     * (returned even when empty, so a deliberately small folder is honored rather than silently
-     * widened to every track on the device), otherwise MediaStore when the audio permission is held,
-     * otherwise nothing (the user has neither chosen a folder nor granted audio access yet).
-     *
-     * @return Tracks for the brain to open; empty when no source is available.
-     */
-    private suspend fun loadInitialTracks(): List<Track> {
-        val root: Uri? = LibraryRoot.heldRoot(this)
-        if (root != null) {
-            return scanRoot(root)
-        }
-        if (hasAudioPermission(this)) {
-            return MediaStoreSource.query(contentResolver)
-        }
-        return emptyList()
-    }
-
-    /**
-     * Scan a chosen folder, degrading an unexpected scan failure to an empty library rather than
-     * letting it crash a background service on cold start. [SafTreeSource.query] already skips
-     * individual unreadable directories, so this guards only a failure of the whole walk; a coroutine
-     * cancellation is rethrown so structured cancellation still works.
-     *
-     * @param treeUri Granted tree URI to scan.
-     * @return Audio tracks under the folder, or empty when the whole scan failed.
-     */
-    private suspend fun scanRoot(treeUri: Uri): List<Track> =
-        try {
-            SafTreeSource.query(contentResolver, treeUri)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        } catch (failure: Exception) {
-            Log.w(LOG_TAG, "scan of folder $treeUri failed; treating as empty", failure)
-            emptyList()
-        }
 
     override fun onDestroy() {
         session?.run {

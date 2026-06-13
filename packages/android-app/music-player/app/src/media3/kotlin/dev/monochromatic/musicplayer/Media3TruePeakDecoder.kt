@@ -10,6 +10,7 @@ import android.util.Log
 import dev.monochromatic.musicplayer.core.measureTruePeak
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -69,15 +70,19 @@ object Media3TruePeakDecoder {
      * near `1.0` for full-scale material. A zero-channel or empty stream yields `0.0` (the core's
      * silence guard), which downstream maps to unity normalization gain.
      *
-     * Runs on [Dispatchers.IO]. The pass is intentionally not cancellable mid-decode: a single track
-     * is bounded work, and the measure-on-miss caller would rather let it finish and cache the result
-     * than waste a partial decode; cancellation is honored at the track boundary by the batch sweep,
-     * not inside one decode.
+     * Runs on [dispatcher] (the shared [Dispatchers.IO] by default; the background sweep passes a
+     * single low-priority thread so its decode yields to playback). The pass is intentionally not
+     * cancellable mid-decode: a single track is bounded work, and the measure-on-miss caller would
+     * rather let it finish and cache the result than waste a partial decode; cancellation is honored at
+     * the track boundary by the batch sweep, not inside one decode.
      *
      * @param context Resolves [contentUri] through its `ContentResolver`; required because a
      *   `content://` URI is opened via the provider, not a raw path.
      * @param contentUri Audio URI from MediaStore or a SAF document tree (`content://`), or a
      *   `file://` URI for a test fixture.
+     * @param dispatcher Coroutine dispatcher the whole decode runs on; defaults to [Dispatchers.IO]
+     *   for the foreground measure-on-miss, while the sweep supplies a low-priority thread so its
+     *   CPU-heavy pass cannot contend with playback.
      * @return Measured true peak across the stream; `0.0` for a zero-channel stream.
      * @throws IllegalArgumentException When [contentUri] exposes no audio track to decode.
      * @throws IllegalStateException When the selected track lacks a MIME type, or the decoder emits a
@@ -89,7 +94,11 @@ object Media3TruePeakDecoder {
      * val gain = normalizationGain(peak)
      * ```
      */
-    suspend fun measure(context: Context, contentUri: Uri): Float = withContext(Dispatchers.IO) {
+    suspend fun measure(
+        context: Context,
+        contentUri: Uri,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    ): Float = withContext(dispatcher) {
         val extractor = MediaExtractor()
         // setDataSource(context, uri, null): the null headers map is allowed; for a content:// URI
         // the framework opens it via the ContentResolver itself, so no manual fd handling is needed.

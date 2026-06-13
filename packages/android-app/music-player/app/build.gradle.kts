@@ -111,4 +111,16 @@ dependencies {
     // natively, which this build is meant to prove. The hybrid flavor will add its
     // own ExoPlayer dependency when it lands; the full-Rust flavor never uses it.
     "media3Implementation"("androidx.media3:media3-exoplayer:1.10.1")
+
+    // WorkManager backs the charging+idle background peak sweep (PeakSweepWorker): it
+    // pre-measures the library's true peaks so playback rarely hits an uncached track.
+    // Flavor-agnostic (the worker lives in src/main and calls the per-flavor
+    // measureTrackPeak seam), so it is on every flavor's classpath. CoroutineWorker
+    // lives in work-runtime; the -ktx artifact has been empty since 2.7.
+    implementation("androidx.work:work-runtime:2.11.2")
+
+    // On-device WorkManager test harness: TestListenableWorkerBuilder runs the sweep
+    // worker's real doWork against the installed library and cache file (see
+    // PeakSweepWorkerTest), the same way the decoder is verified on a device.
+    androidTestImplementation("androidx.work:work-testing:2.11.2")
 }
