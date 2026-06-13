@@ -655,6 +655,27 @@ iOS simulator; the static gate did not exercise scrolling, so confirm scroll beh
 it. Work dir: `/Volumes/MacData/ios-vet/dioxusgate` (hand-rolled minimal `dioxus = { features = ["mobile"]
 }` project; build with `dx bundle --ios --target <triple>`). Toolchain installed: `dx` (dioxus-cli) 0.7.9.
 
+### SnapKit: FULL PASS (both legs), the SPM Swift-dependency signing check
+
+Status: FULL PASS 2026-06-12, second of the owner-appended set. SnapKit 5.x via Swift Package Manager,
+render-verified on BOTH the iPhone X (iOS 16.7) and the iPhone 17 Pro / iOS 26.5 simulator from one
+codebase (both native arm64): "SnapKit Gate / UIKit + SnapKit via SPM / LAYOUT OK", the `UIStackView`
+centered by SnapKit's `snp.makeConstraints` DSL.
+
+SnapKit is a pure-Swift Auto Layout constraint DSL over UIKit with no custom rendering, so the gate is two
+checks: (1) an SPM Swift dependency resolves, compiles, and links into a signable app (xcodegen `packages:`
+pointing at SnapKit `from: 5.7.0`), and (2) the constraint DSL actually lays out (the centered stack is the
+proof; a resolve or link failure would not have rendered). Both pass. This is the first SPM dependency gate
+in the funnel; every prior native-glue gate used CocoaPods.
+
+Build mechanism: a plain xcodegen UIKit app (`AppDelegate` plus window plus `ViewController`, no Rust). The
+device leg used the canonical runbook wrapper directly (`xcodebuild ... OTHER_CODE_SIGN_FLAGS="--keychain
+$KC"` under the keychain-search-list manipulation), signed inline by the vet identity (Apple Development:
+little.plan2433, team `HWLVAKDV4F`), then `ideviceinstaller -n upgrade`; the simulator leg built with
+`CODE_SIGNING_ALLOWED=NO`. No Rust crossing (pure Swift). a11y is native UIKit (VoiceOver works through
+UIKit with no bridge); on-device VoiceOver confirmation owed under the retroactive sweep. Work dir:
+`/Volumes/MacData/ios-vet/snapkitgate`. Toolchain: xcodegen (already installed) plus SPM.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -694,8 +715,9 @@ Skiko/Metal), React Native (rank 6, Hermes bytecode, native UIViews, Rust crossi
 Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3.22 survives AMFI on the
 iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), and Lynx (rank 8,
 native UIKit `LynxView`, jitless PrimJS/JSC survives AMFI on the iPhone X, render both legs, Rust crossing
-PASS via a pure-ObjC `LynxModule` shim), and Dioxus (first of the owner-appended set, Rust UI rendering
-through wry/WKWebView, dual-target structurally clean because it is pure Rust per-target), all
+PASS via a pure-ObjC `LynxModule` shim), Dioxus (first of the owner-appended set, Rust UI rendering
+through wry/WKWebView, dual-target structurally clean because it is pure Rust per-target), and SnapKit
+(second appended gate, pure-Swift UIKit Auto Layout DSL via SPM, the first SPM dependency gate), all
 render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above), and Qt (rank 9) was
 CULLED (no prebuilt arm64-simulator slice, and the only arm64-sim path also breaks the no-hand-written-C++
 rule, above).
