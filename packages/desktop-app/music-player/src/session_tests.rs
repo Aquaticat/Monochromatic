@@ -1,40 +1,36 @@
 // What:     Unit tests for `session.rs`, pulled in by
-//           `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` at
-//           the bottom of `session.rs`. Compiles only under
-//           `cargo nextest run` / `cargo test`; reaches the module items
-//           (including private ones) via `use super::*` because this file is
-//           the `tests` CHILD of session.
-// Why:      Keep the tests beside the code without inflating
-//           `session.rs` or its max-lines budget (sibling
-//           `*_tests.rs` files are exempt from the linter).
+//           `#[cfg(test)] #[path = "session_tests.rs"] mod tests;` at the bottom of
+//           `session.rs`. Compiles only under `cargo nextest run` / `cargo test`;
+//           reaches the module items via `use super::*` because this file is the
+//           `tests` CHILD of session.
+// Why:      Keep the tests beside the code without inflating `session.rs` or its
+//           max-lines budget (sibling `*_tests.rs` files are exempt from the linter).
 // TS map:   `session.unit.test.ts` beside `session.ts`.
 
 // What:     `use super::*;` bring the module's items into the test scope.
-// Why:      Tests need `Session`, etc.
+// Why:      Tests need `Session`, `ShuffleMode`, `PathBuf`.
 // TS map:   `import * as parent from "./session";`
 use super::*;
 
+// What:     `#[test] fn json_round_trip_preserves_fields()`. Serialize a fully-populated
+//           session and parse it back.
+// Why:      Every field (source root, selection, settings) must survive the wire form.
+// TS map:   `test("json round trip preserves fields", () => { ... })`
 #[test]
 fn json_round_trip_preserves_fields() {
-    // What:     build a non-default session literal.
+    // What:     build a non-default session literal with a root and a selection.
     // Why:      Exercise serialization of every field.
     // TS map:   `const original = { ... };`
     let original = Session {
-        // What:     `vec![PathBuf::from("/a.flac"), PathBuf::from("/b.opus")]`
-        //           the `vec!` macro builds a `Vec` from listed elements;
-        //           `PathBuf::from` wraps each string literal as a path.
-        // Why:      Two sample tracks.
-        // TS map:   `["/a.flac", "/b.opus"]`.
-        tracks: vec![PathBuf::from("/a.flac"), PathBuf::from("/b.opus")],
-        current: Some(1),
+        source_root: Some(PathBuf::from("/music/Artist")),
+        selected: Some(PathBuf::from("/music/Artist/01.flac")),
         position_secs: 12.5,
         volume: 0.7,
         shuffle: ShuffleMode::WithinPage,
         repeat_track: true,
     };
-    // What:     `serde_json::to_string(&original).unwrap()` serializes to JSON.
-    //           `.unwrap()` extracts the `Ok` value and PANICS on `Err` (fine
-    //           in a test).
+    // What:     `serde_json::to_string(&original).unwrap()` serializes to JSON; `.unwrap()`
+    //           panics on error (fine in a test).
     // Why:      Produce the wire form.
     // TS map:   `const json = JSON.stringify(original);`
     let json = serde_json::to_string(&original).unwrap();
@@ -42,141 +38,81 @@ fn json_round_trip_preserves_fields() {
     // Why:      Round-trip the value.
     // TS map:   `const back = JSON.parse(json) as Session;`
     let back = serde_json::from_str::<Session>(&json).unwrap();
-    // What:     `assert_eq!(original, back)` fails unless they are equal (uses
-    //           the derived `PartialEq`).
+    // What:     `assert_eq!(original, back)` via the derived `PartialEq`.
     // Why:      No field is lost or altered by the round-trip.
     // TS map:   `expect(back).toEqual(original);`
     assert_eq!(original, back);
 }
 
+// What:     `#[test] fn none_root_and_selection_round_trip()`. A default session (no root,
+//           nothing cued) must serialize and parse back unchanged.
+// Why:      The first-run / nothing-loaded state is the common case and must round-trip.
+// TS map:   `test("none root and selection round trip", () => { ... })`
 #[test]
-fn prune_drops_missing_and_remaps_current() {
-    // What:     `std::env::temp_dir()` returns the OS temp directory `PathBuf`.
-    // Why:      We create one real file there so `exists()` is true for it.
-    // TS map:   `const dir = os.tmpdir();`
-    let dir = std::env::temp_dir();
-    // What:     `dir.join("player_prune_test_present.wav")` build a real path.
-    // Why:      This file will actually be created.
-    // TS map:   `const present = join(dir, "...present.wav");`
-    let present = dir.join("player_prune_test_present.wav");
-    // What:     `std::fs::write(&present, b"x").unwrap();` writes one byte.
-    //           `b"x"` is a BYTE-STRING literal (`&[u8]`), not a text `&str`.
-    // Why:      Make the file exist on disk.
-    // TS map:   `writeFileSync(present, "x");`
-    std::fs::write(&present, b"x").unwrap();
-    // What:     a path that does not exist.
-    // Why:      Should be pruned.
-    // TS map:   `const missing = join(dir, "...missing.wav");`
-    let missing = dir.join("player_prune_test_missing_xyz.wav");
-    // What:     session with [missing, present], current = 1 (the present one).
-    // Why:      After pruning, only `present` survives and current must remap
-    //           from index 1 to index 0.
-    // TS map:   `{ tracks: [missing, present], current: 1, ... }`.
-    let mut session = Session {
-        tracks: vec![missing.clone(), present.clone()],
-        current: Some(1),
-        position_secs: 5.0,
-        volume: 1.0,
-        shuffle: ShuffleMode::Off,
-        repeat_track: false,
-    };
-    // What:     run the prune.
-    // Why:      The behaviour under test.
-    // TS map:   `session.pruneUnplayable();`
-    session.prune_unplayable();
-    // What:     only one track remains.
-    // Why:      The missing one was dropped.
-    // TS map:   `expect(session.tracks.length).toBe(1);`
-    assert_eq!(session.tracks.len(), 1);
-    // What:     the survivor is `present`.
-    // Why:      Correct file kept.
-    // TS map:   `expect(session.tracks[0]).toBe(present);`
-    assert_eq!(session.tracks[0], present);
-    // What:     current remapped from 1 to 0.
-    // Why:      The cursor must follow the surviving track.
-    // TS map:   `expect(session.current).toBe(0);`
-    assert_eq!(session.current, Some(0));
-    // What:     `std::fs::remove_file(&present).ok();` clean up the temp file.
-    //           `.ok()` converts the `Result` to `Option`, discarding any error.
-    // Why:      Do not leave test droppings; ignore failure to delete.
-    // TS map:   `try { unlinkSync(present); } catch {}`
-    std::fs::remove_file(&present).ok();
+fn none_root_and_selection_round_trip() {
+    // What:     `Session::default()` the empty starting state.
+    // Why:      Exercise the `None` source root and selection.
+    // TS map:   `const original = defaultSession();`
+    let original = Session::default();
+    // What:     serialize then parse back.
+    // Why:      Confirm `None` fields survive.
+    // TS map:   `const back = JSON.parse(JSON.stringify(original));`
+    let back = serde_json::from_str::<Session>(&serde_json::to_string(&original).unwrap()).unwrap();
+    // What:     equal to the original, with both optionals `None`.
+    // Why:      No drift on the empty state.
+    // TS map:   `expect(back).toEqual(original);`
+    assert_eq!(back, original);
+    assert_eq!(back.source_root, None);
+    assert_eq!(back.selected, None);
 }
 
+// What:     `#[test] fn empty_json_object_yields_defaults()`. Parsing `{}` must produce the
+//           default session.
+// Why:      `#[serde(default)]` fills every missing field, so a truncated/empty file is
+//           tolerated rather than failing the restore.
+// TS map:   `test("empty json object yields defaults", () => { ... })`
 #[test]
-fn prune_clears_position_when_current_track_gone() {
-    // What:     session whose only track is missing and is current.
-    // Why:      Position must reset because the resume target is gone.
-    // TS map:   `{ tracks: [missing], current: 0, positionSecs: 9, ... }`.
-    let mut session = Session {
-        tracks: vec![PathBuf::from("/definitely/not/here_404.flac")],
-        current: Some(0),
-        position_secs: 9.0,
-        volume: 1.0,
-        shuffle: ShuffleMode::Off,
-        repeat_track: false,
-    };
-    session.prune_unplayable();
-    // What:     queue now empty.
-    // Why:      The only track was missing.
-    // TS map:   `expect(session.tracks.length).toBe(0);`
-    assert_eq!(session.tracks.len(), 0);
-    // What:     current cleared.
-    // Why:      Nothing to resume.
-    // TS map:   `expect(session.current).toBe(null);`
-    assert_eq!(session.current, None);
-    // What:     position reset to 0.0.
-    // Why:      No track to resume into.
-    // TS map:   `expect(session.positionSecs).toBe(0);`
-    assert_eq!(session.position_secs, 0.0);
+fn empty_json_object_yields_defaults() {
+    // What:     parse an empty JSON object.
+    // Why:      Every field is absent, so all default.
+    // TS map:   `const parsed = JSON.parse("{}") as Session;`
+    let parsed = serde_json::from_str::<Session>("{}").unwrap();
+    // What:     equals the default session.
+    // Why:      Confirms the `#[serde(default)]` fallback.
+    // TS map:   `expect(parsed).toEqual(defaultSession());`
+    assert_eq!(parsed, Session::default());
 }
 
+// What:     `#[test] fn old_track_list_format_degrades_to_no_root_but_keeps_settings()`.
+//           A session written by the pre-source-root build carried `tracks`/`current`.
+// Why:      Those obsolete fields must be ignored, the absent `source_root`/`selected`
+//           default to `None` (so launch falls through to the music directory), and the
+//           saved settings must still be read.
+// TS map:   `test("old track-list format degrades but keeps settings", () => { ... })`
 #[test]
-fn prune_drops_present_non_audio_and_remaps_current() {
-    // What:     `let dir = std::env::temp_dir();`. The OS temp directory.
-    // Why:      We create real files so `exists()` is true for both.
-    // TS map:   `const dir = os.tmpdir();`
-    let dir = std::env::temp_dir();
-    // What:     a present NON-audio file (cover art) and a present audio file.
-    // Why:      Both exist, so only the audio-extension test separates them.
-    // TS map:   `const junk = join(dir, "...cover.jpg"); const audio = join(dir, "...song.flac");`
-    let junk = dir.join("player_prune_cover_xyz.jpg");
-    let audio = dir.join("player_prune_song_xyz.flac");
-    // What:     `std::fs::write(&junk, b"x").unwrap();`. Create each file with one
-    //           byte. `b"x"` is a BYTE-STRING literal (`&[u8]`), not text.
-    // Why:      Make both paths exist on disk.
-    // TS map:   `writeFileSync(junk, "x"); writeFileSync(audio, "x");`
-    std::fs::write(&junk, b"x").unwrap();
-    std::fs::write(&audio, b"x").unwrap();
-    // What:     session with [junk, audio], current = 1 (the audio one).
-    // Why:      After pruning, only `audio` survives and current must remap from
-    //           index 1 to index 0.
-    // TS map:   `{ tracks: [junk, audio], current: 1, ... }`.
-    let mut session = Session {
-        tracks: vec![junk.clone(), audio.clone()],
-        current: Some(1),
-        position_secs: 3.0,
-        volume: 1.0,
-        shuffle: ShuffleMode::Off,
-        repeat_track: false,
-    };
-    // What:     run the prune.
-    // Why:      The behaviour under test.
-    // TS map:   `session.pruneUnplayable();`
-    session.prune_unplayable();
-    // What:     `assert_eq!(session.tracks, vec![audio.clone()]);`. Only the audio
-    //           file remains.
-    // Why:      The present non-audio file was dropped.
-    // TS map:   `expect(session.tracks).toEqual([audio]);`
-    assert_eq!(session.tracks, vec![audio.clone()]);
-    // What:     current remapped from 1 to 0.
-    // Why:      The cursor must follow the surviving audio track.
-    // TS map:   `expect(session.current).toBe(0);`
-    assert_eq!(session.current, Some(0));
-    // What:     `std::fs::remove_file(...).ok();` clean up both temp files;
-    //           `.ok()` discards any deletion error.
-    // Why:      Leave no test droppings.
-    // TS map:   `try { unlinkSync(junk); unlinkSync(audio); } catch {}`
-    std::fs::remove_file(&junk).ok();
-    std::fs::remove_file(&audio).ok();
+fn old_track_list_format_degrades_to_no_root_but_keeps_settings() {
+    // What:     a hand-written old-format JSON (shuffle omitted so the test does not depend
+    //           on the enum's serialized spelling; it defaults to `Off`).
+    // Why:      Reproduce a session file from the previous schema.
+    // TS map:   `const old = '{"tracks":[...],"current":1,"position_secs":5,"volume":0.5,"repeat_track":true}';`
+    let old = r#"{"tracks":["/a.flac","/b.opus"],"current":1,"position_secs":5.0,"volume":0.5,"repeat_track":true}"#;
+    // What:     parse it as the new `Session`.
+    // Why:      Confirm graceful degradation.
+    // TS map:   `const parsed = JSON.parse(old) as Session;`
+    let parsed = serde_json::from_str::<Session>(old).unwrap();
+    // What:     no usable root and no selection survive the old format.
+    // Why:      The obsolete `tracks`/`current` cannot become a root; launch must fall back.
+    // TS map:   `expect(parsed.sourceRoot).toBeNull(); expect(parsed.selected).toBeNull();`
+    assert_eq!(parsed.source_root, None);
+    assert_eq!(parsed.selected, None);
+    // What:     the saved settings are still read.
+    // Why:      Volume/position/repeat persistence must not regress for old files.
+    // TS map:   `expect(parsed.positionSecs).toBe(5); expect(parsed.volume).toBe(0.5); expect(parsed.repeatTrack).toBe(true);`
+    assert_eq!(parsed.position_secs, 5.0);
+    assert_eq!(parsed.volume, 0.5);
+    assert!(parsed.repeat_track);
+    // What:     omitted shuffle defaults to `Off`.
+    // Why:      Confirms missing fields fall back rather than failing the parse.
+    // TS map:   `expect(parsed.shuffle).toBe("Off");`
+    assert_eq!(parsed.shuffle, ShuffleMode::Off);
 }

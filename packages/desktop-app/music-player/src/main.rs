@@ -1859,25 +1859,23 @@ fn main() -> Result<(), slint::PlatformError> {
                 // if (dir) { ... }
                 // ```
                 if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                    // What:     `tx.send(Command::OpenPaths { paths: vec![dir], play: false });`.
-                    //           `vec![dir]` wraps the single folder in a one-element
-                    //           vector; the struct-variant literal builds the command
-                    //           with `play: false` (a folder picked from the UI loads
-                    //           PAUSED; only a `--start-playing` command-line launch
-                    //           auto-plays). `CommandSender::send` returns nothing and
-                    //           swallows a send error (engine gone) internally, then
-                    //           wakes the worker; the engine expands the folder
-                    //           recursively.
-                    // Why:      Replace the queue with the folder's tracks without
-                    //           surprise playback; the user presses play.
-                    // TS map:   `tx.send(Command.OpenPaths({ paths: [dir], play: false }));`
+                    // What:     `tx.send(Command::OpenRoot { root: dir, select: None, play: false });`.
+                    //           The picked folder becomes the Source Root; `select: None`
+                    //           opens with nothing cued; `play: false` loads PAUSED (only a
+                    //           `--start-playing` command-line launch auto-plays).
+                    //           `CommandSender::send` swallows a send error (engine gone)
+                    //           internally, then wakes the worker; the engine scans the root.
+                    // Why:      Replace the queue with the folder's tracks without surprise
+                    //           playback; the user presses play.
+                    // TS map:   `tx.send(Command.OpenRoot({ root: dir, select: null, play: false }));`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // tx.send(Command.OpenPaths({ paths: [dir], play: false }));
+                    // tx.send(Command.OpenRoot({ root: dir, select: null, play: false }));
                     // ```
-                    tx.send(Command::OpenPaths {
-                        paths: vec![dir],
+                    tx.send(Command::OpenRoot {
+                        root: dir,
+                        select: None,
                         play: false,
                     });
                 }
@@ -1885,109 +1883,121 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
-    // What:     `if !cli.paths.is_empty() { ... } else { ... }`. The arguments were
-    //           already parsed into `cli` at the top of `main`. `.is_empty()` is
-    //           `true` for a zero-length `Vec`; `!` negates it. CLI paths take
-    //           precedence over a saved session; with no paths, restore the last
-    //           session instead.
-    // Why:      Opening files explicitly should override resuming.
-    // TS map:   `if (cli.paths.length) { ... } else { ... }`
+    // What:     `match cli.path { Some(path) => ..., None => ... }`. The single optional
+    //           positional path was parsed into `cli` at the top of `main`. A CLI path
+    //           takes precedence over a saved session; with no path, restore the session.
+    // Why:      Opening a path explicitly should override resuming.
+    // TS map:   `if (cli.path) { ... } else { ... }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (cli.paths.length) { ... } else { ... }
+    // if (cli.path) { ... } else { ... }
     // ```
-    if !cli.paths.is_empty() {
-        // What:     `engine.send(Command::OpenPaths { paths: cli.paths, play: cli.start_playing });`.
-        //           Build and send the open command. `play` is `cli.start_playing`, so
-        //           the queue auto-plays ONLY when `--start-playing` was passed. This
-        //           struct literal MOVES `cli.paths` (a `Vec`, owned) out of `cli` and
-        //           COPIES `cli.start_playing` (a `bool`, `Copy`); a partial move plus
-        //           a copy in one expression is allowed.
-        // Why:      Honour CLI paths while keeping the "never auto-play unless
-        //           --start-playing" rule: paths alone load PAUSED.
-        // TS map:   `engine.send(Command.OpenPaths({ paths: cli.paths, play: cli.start_playing }));`
+    match cli.path {
+        // What:     `Some(path) => { ... }`. A CLI path: a directory becomes the Source
+        //           Root with nothing selected; a file becomes its parent directory as the
+        //           root with that file preselected. `path.is_dir()` tests the filesystem.
+        // Why:      Exactly one directory Source Root; a single file is cued inside its
+        //           folder.
+        // TS map:   `if (isDir(path)) openRoot(path, null) else openRoot(dirname(path), path)`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // engine.send(Command.OpenPaths({ paths: cli.paths, play: cli.start_playing }));
+        // if (isDir(path)) engine.send(OpenRoot({ root: path, select: null, play }));
+        // else engine.send(OpenRoot({ root: dirname(path), select: path, play }));
         // ```
-        engine.send(Command::OpenPaths {
-            paths: cli.paths,
-            play: cli.start_playing,
-        });
-    } else {
-        // What:     `let session = Session::load();`. `Session::load()` reads the saved
-        //           session (returns defaults if none/corrupt; prunes moved files).
-        // Why:      Resume where the user left off.
-        // TS map:   `const session = Session.load();`
+        Some(path) => {
+            if path.is_dir() {
+                engine.send(Command::OpenRoot {
+                    root: path,
+                    select: None,
+                    play: cli.start_playing,
+                });
+            } else {
+                // What:     `path.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| PathBuf::from("."))`.
+                //           The file's parent directory, or the current directory when the
+                //           path has no parent (a bare filename).
+                // Why:      The parent folder is the Source Root for a single-file launch.
+                // TS map:   `const root = dirname(path) || ".";`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const root = dirname(path) || ".";
+                // ```
+                let root = path
+                    .parent()
+                    .map(|p| p.to_path_buf())
+                    .unwrap_or_else(|| PathBuf::from("."));
+                engine.send(Command::OpenRoot {
+                    root,
+                    select: Some(path),
+                    play: cli.start_playing,
+                });
+            }
+        }
+        // What:     `None => { ... }`. No CLI path: restore the saved session, falling back
+        //           to the music directory.
+        // Why:      Resume where the user left off when nothing was named on the CLI.
+        // TS map:   `else { /* restore or auto-load */ }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const session = Session.load();
+        // else { /* restore or auto-load music dir */ }
         // ```
-        let session = Session::load();
-        // What:     `if !session.tracks.is_empty() { ... } else if let Some(music_dir) = music_dir() { ... }`.
-        //           A two-branch chain: restore a saved queue when one survived
-        //           pruning, else try the music directory. `load()` already dropped
-        //           files that moved, so an all-missing session arrives with `tracks`
-        //           empty and falls through to the music-dir branch.
-        // Why:      A launch with nothing to resume (no session, or every saved file
-        //           pruned away) should not leave an empty queue when the user has a
-        //           music folder.
-        // TS map:   `if (session.tracks.length) { restore } else if (musicDir) { autoload }`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (session.tracks.length) { /* restore */ } else { const dir = musicDir(); if (dir) { /* autoload */ } }
-        // ```
-        if !session.tracks.is_empty() {
-            // What:     `engine.send(Command::Restore { ... });`. Build and send the
-            //           restore command from the saved fields (`tracks`, `current`,
-            //           `position`, `volume`, `shuffle`, `repeat_track`). It loads
-            //           paused at the saved position.
-            // Why:      Resume the previous queue and position.
-            // TS map:   `engine.send({ kind: "restore", ... });`
+        None => {
+            // What:     `let session = Session::load();`. Read the saved session (defaults
+            //           if none/corrupt). It no longer prunes; the engine re-scans the root.
+            // Why:      Resume where the user left off.
+            // TS map:   `const session = Session.load();`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // engine.send(Command.Restore({ tracks: session.tracks, current: session.current, ... }));
+            // const session = Session.load();
             // ```
-            engine.send(Command::Restore {
-                tracks: session.tracks,
-                current: session.current,
-                position: session.position_secs,
-                volume: session.volume,
-                shuffle: session.shuffle,
-                repeat_track: session.repeat_track,
-            });
-        // What:     `} else if let Some(music_dir) = music_dir() {`. The fallback
-        //           branch: `music_dir()` is `Option<PathBuf>`, and `if let Some(...)`
-        //           runs only when a music directory was found, binding it.
-        // Why:      Populate a fresh launch from the music library.
-        // TS map:   `} else if (musicDir()) {`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const dir = musicDir(); if (dir) { ... }
-        // ```
-        } else if let Some(music_dir) = music_dir() {
-            // What:     `engine.send(Command::OpenPaths { paths: vec![music_dir], play: false });`.
-            //           `vec![music_dir]` wraps the one directory; `play: false`
-            //           auto-loads the music directory PAUSED, so the queue is
-            //           populated without blasting audio on launch.
-            // Why:      Give a fresh launch a ready-to-play library without surprise
-            //           playback.
-            // TS map:   `engine.send(Command.OpenPaths({ paths: [musicDir], play: false }));`
+            let session = Session::load();
+            // What:     `let root = session.source_root.clone().filter(|r| r.is_dir());`. The
+            //           saved Source Root, kept only if it still exists as a directory.
+            // Why:      A missing root falls back to the music directory (and is replaced on
+            //           the next save), so a non-directory root is treated as absent.
+            // TS map:   `const root = session.sourceRoot && isDir(session.sourceRoot) ? session.sourceRoot : null;`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // engine.send(Command.OpenPaths({ paths: [musicDir], play: false }));
+            // const root = (session.sourceRoot && isDir(session.sourceRoot)) ? session.sourceRoot : null;
             // ```
-            engine.send(Command::OpenPaths {
-                paths: vec![music_dir],
-                play: false,
-            });
+            let root = session.source_root.clone().filter(|r| r.is_dir());
+            // What:     `if let Some(root) = root { ... } else if let Some(music_dir) = music_dir() { ... }`.
+            //           Restore the saved root with its Selected Track and position, else
+            //           restore the music directory carrying the saved settings but no
+            //           selection, else leave the queue empty.
+            // Why:      Keep the user's settings even when the saved root is gone, and never
+            //           leave a usable launch empty when a music directory exists.
+            // TS map:   `if (root) restore(root, selected, ...) else if (musicDir) restore(musicDir, null, settings)`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (root) restore(root, session.selected, ...);
+            // else if (musicDir()) restore(musicDir(), null, settingsOnly);
+            // ```
+            if let Some(root) = root {
+                engine.send(Command::Restore {
+                    root,
+                    selected: session.selected,
+                    position: session.position_secs,
+                    volume: session.volume,
+                    shuffle: session.shuffle,
+                    repeat_track: session.repeat_track,
+                });
+            } else if let Some(music_dir) = music_dir() {
+                engine.send(Command::Restore {
+                    root: music_dir,
+                    selected: None,
+                    position: 0.0,
+                    volume: session.volume,
+                    shuffle: session.shuffle,
+                    repeat_track: session.repeat_track,
+                });
+            }
         }
     }
 

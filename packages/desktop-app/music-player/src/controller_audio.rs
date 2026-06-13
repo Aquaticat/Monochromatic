@@ -123,21 +123,25 @@ impl Controller {
         // ```
         let position_secs =
             frames_to_secs(self.position_frames, self.spec.as_ref().map_or(0, |s| s.rate));
-        // What:     `Session { ... }`. Build the record from the queue + state.
-        //           `self.queue.tracks().to_vec()` clones borrowed paths into an owned
-        //           `Vec`. Tail -> return.
-        // Why:      Bundle everything the next launch needs.
-        // TS map:   `return { tracks: [...], current: ..., ... };`
+        // What:     `Session { ... }`. Build the record from the Source Root + state.
+        //           `self.source_root.clone()` copies the owned root option;
+        //           `self.queue.current_path().cloned()` is the Selected Track's path (or
+        //           `None`). The queue itself is NOT stored. Tail -> return.
+        // Why:      Bundle only what the next launch needs to re-derive the queue: the root,
+        //           the cued track, and the settings.
+        // TS map:   `return { sourceRoot: this.sourceRoot, selected: this.queue.currentPath(),
+        //            positionSecs, volume: this.volume, shuffle: this.queue.shuffleMode(),
+        //            repeatTrack: this.queue.repeatTrack() };`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // return { tracks: [...this.queue.tracks()], current: this.queue.currentIndex(),
+        // return { sourceRoot: this.sourceRoot, selected: this.queue.currentPath() ?? null,
         //          positionSecs, volume: this.volume, shuffle: this.queue.shuffleMode(),
         //          repeatTrack: this.queue.repeatTrack() };
         // ```
         Session {
-            tracks: self.queue.tracks().to_vec(),
-            current: self.queue.current_index(),
+            source_root: self.source_root.clone(),
+            selected: self.queue.current_path().cloned(),
             position_secs,
             volume: self.volume,
             shuffle: self.queue.shuffle_mode(),

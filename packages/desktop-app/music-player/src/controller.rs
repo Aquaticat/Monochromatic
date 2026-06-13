@@ -7,17 +7,17 @@
 //! stays crate-private because it holds the `!Send` `Output` and never leaves its
 //! thread.
 
-// What:     `use std::path::Path;`. Borrowed filesystem-path view. Sibling:
-//           `PathBuf`, the owned path buffer, is not needed in this file.
-// Why:      `prepare_peak_for_path` borrows the current track path without taking
-//           ownership from the queue or loader.
+// What:     `use std::path::{Path, PathBuf};`. `Path` is the borrowed filesystem-path
+//           view; `PathBuf` is the owned path buffer.
+// Why:      `prepare_peak_for_path` borrows the current track path, and the controller
+//           now also OWNS the current Source Root path in a field.
 // TS map:   paths are plain `string` values in TypeScript.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // type Path = string;
 // ```
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 // What:     `use std::sync::{Arc, Mutex};`. `Arc<T>` is a thread-safe shared owner
 //           (atomic refcount; sibling: single-thread `Rc<T>`); `Mutex<T>` guards `T` so
@@ -192,6 +192,18 @@ pub(crate) struct Controller {
     // queue: Queue;
     // ```
     pub(crate) queue: Queue,
+    // What:     `source_root: Option<PathBuf>`. The directory the current queue was scanned
+    //           from (`Some`), or `None` before anything is loaded.
+    // Why:      The session persists this, the watcher watches it, and a rescan re-derives
+    //           the queue from it. The queue holds files; this holds the one directory they
+    //           came from, which `expand_paths` otherwise discards.
+    // TS map:   `sourceRoot: string | null;`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // sourceRoot: string | null;
+    // ```
+    pub(crate) source_root: Option<PathBuf>,
     // What:     `source: Option<Box<dyn Source>>`. The active decoder, or `None`.
     // Why:      Produces the PCM we push.
     // TS map:   `source: Source | null;`
@@ -357,6 +369,7 @@ impl Controller {
             on_update,
             output,
             queue: Queue::new(),
+            source_root: None,
             source: None,
             producer: None,
             spec: None,
@@ -897,16 +910,28 @@ impl Controller {
             // ```ts
             // case "openPaths": { const { paths, play } = command; ... }
             // ```
-            Command::OpenPaths { paths, play } => {
-                // What:     `let tracks = expand_paths(paths);`. Folders -> their files.
-                // Why:      The queue holds files, not directories.
-                // TS map:   `const tracks = expandPaths(paths);`
+            Command::OpenRoot { root, select, play } => {
+                // What:     `self.source_root = Some(root.clone());`. Remember the directory
+                //           the queue is scanned from. `.clone()` because `root` is moved
+                //           into `expand_paths` next.
+                // Why:      The session, the watcher, and any rescan need the root.
+                // TS map:   `this.sourceRoot = root;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // const tracks = expandPaths(paths);
+                // this.sourceRoot = root;
                 // ```
-                let tracks = expand_paths(paths);
+                self.source_root = Some(root.clone());
+                // What:     `let tracks = expand_paths(vec![root]);`. Scan the single root
+                //           directory into its files (folders -> their files, recursively).
+                // Why:      The queue holds files, not directories; one root is scanned.
+                // TS map:   `const tracks = expandPaths([root]);`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const tracks = expandPaths([root]);
+                // ```
+                let tracks = expand_paths(vec![root]);
                 // What:     `self.queue.set_tracks(tracks);`. Replace the queue (consumes
                 //           the owned `tracks`).
                 // Why:      New playlist.
@@ -937,73 +962,78 @@ impl Controller {
                 // this.startQueueMeasurement();
                 // ```
                 self.start_queue_measurement();
-                // What:     `if play && self.queue.current_path().is_some() { ... } else { ... }`.
-                //           `play && ...` short-circuits: only a `--start-playing` launch
-                //           (`play == true`) AND a non-empty queue (`current_path()` is `Some`)
-                //           enter the play branch; every other open falls to the else branch.
-                //           `set_tracks` anchored `Some(0)`, so when we DO play, the first
-                //           track is already current.
-                // Why:      Auto-select a track ONLY for the explicit `--start-playing` launch;
-                //           a normal open (folder picker, music-dir auto-load, plain CLI paths)
-                //           must select and load NOTHING until the user picks a track.
-                // TS map:   `if (play && this.queue.currentPath()) { ... } else { ... }`
+                // What:     `match select { Some(sel) => ..., None => ... }`. A single-file
+                //           launch carries `Some(file)` to preselect; a folder open or
+                //           auto-load carries `None`.
+                // Why:      Preselect the named file inside its folder, else fall back to the
+                //           normal open behavior (select nothing unless `--start-playing`).
+                // TS map:   `if (select) { ...preselect... } else { ...normal... }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (play && this.queue.currentPath()) { ... } else { ... }
+                // if (select) { /* preselect */ } else { /* normal open */ }
                 // ```
-                if play && self.queue.current_path().is_some() {
-                    // What:     `let ok = self.load_current();`. Load the anchored first track.
-                    // Why:      Make it ready, then play it below.
-                    // TS map:   `const ok = this.loadCurrent();`
+                match select {
+                    // What:     `Some(sel) => { ... }`. Find `sel` in the scanned queue and
+                    //           select it; `position(|p| *p == sel)` returns the matching index
+                    //           or `None`.
+                    // Why:      Cue the file the launch named, loaded paused unless `play`.
+                    // TS map:   `const idx = tracks.indexOf(sel); ...`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // const ok = this.loadCurrent();
+                    // const idx = tracks.indexOf(sel);
                     // ```
-                    let ok = self.load_current();
-                    // What:     `self.set_playing(ok);`. Start playback when the track loaded.
-                    //           We are inside `if play`, so `play` is known true here; only the
-                    //           load result gates it.
-                    // Why:      `--start-playing` should begin audio on the first track.
-                    // TS map:   `this.setPlaying(ok);`
+                    Some(sel) => match self.queue.tracks().iter().position(|p| *p == sel) {
+                        // What:     `Some(idx) => { ... }`. The file is in the scan: select,
+                        //           load, and play only when `play` AND the load succeeded.
+                        // Why:      A preselected file is cued; `--start-playing` plays it.
+                        // TS map:   `this.queue.playIndex(idx); const ok = this.loadCurrent(); this.setPlaying(play && ok);`
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // this.queue.playIndex(idx); const ok = this.loadCurrent(); this.setPlaying(play && ok);
+                        // ```
+                        Some(idx) => {
+                            self.queue.play_index(idx);
+                            let ok = self.load_current();
+                            self.set_playing(play && ok);
+                        }
+                        // What:     `None => { ... }`. The named file is not in the scan (e.g.
+                        //           it vanished): open with nothing selected, paused.
+                        // Why:      Match the "selected track missing" rule: clear the cue.
+                        // TS map:   `this.queue.clearSelection(); this.emitNoTrack(); this.setPlaying(false);`
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // this.queue.clearSelection(); this.emitNoTrack(); this.setPlaying(false);
+                        // ```
+                        None => {
+                            self.queue.clear_selection();
+                            self.emit_no_track();
+                            self.set_playing(false);
+                        }
+                    },
+                    // What:     `None => { ... }`. No preselect. Only a `--start-playing`
+                    //           launch with a non-empty queue auto-plays the anchored first
+                    //           track; every other open selects and loads NOTHING.
+                    // Why:      A normal open must not auto-select or blast audio.
+                    // TS map:   `if (play && this.queue.currentPath()) { ... } else { ... }`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // this.setPlaying(ok);
+                    // if (play && this.queue.currentPath()) { ... } else { ... }
                     // ```
-                    self.set_playing(ok);
-                } else {
-                    // What:     `self.queue.clear_selection();`. Drop the cursor that
-                    //           `set_tracks` anchored, so no track is current.
-                    // Why:      Disable auto-selecting a track on a normal open.
-                    // TS map:   `this.queue.clearSelection();`
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // this.queue.clearSelection();
-                    // ```
-                    self.queue.clear_selection();
-                    // What:     `self.emit_no_track();`. Push the cleared now-playing view
-                    //           (blank label, no row highlight, reset seek bar) to the UI.
-                    // Why:      Deselecting in the queue alone does not refresh the UI's
-                    //           current-index / track-name properties; this emit does.
-                    // TS map:   `this.emitNoTrack();`
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // this.emitNoTrack();
-                    // ```
-                    self.emit_no_track();
-                    // What:     `self.set_playing(false);`. Ensure paused.
-                    // Why:      Nothing is selected, so nothing should be playing.
-                    // TS map:   `this.setPlaying(false);`
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // this.setPlaying(false);
-                    // ```
-                    self.set_playing(false);
+                    None => {
+                        if play && self.queue.current_path().is_some() {
+                            let ok = self.load_current();
+                            self.set_playing(ok);
+                        } else {
+                            self.queue.clear_selection();
+                            self.emit_no_track();
+                            self.set_playing(false);
+                        }
+                    }
                 }
             }
             // What:     `Command::TogglePlay => self.set_playing(!self.playing)`. Flip
@@ -1246,8 +1276,8 @@ impl Controller {
             // case "restore": { const { tracks, current, position, volume, shuffle, repeatTrack } = command; ... }
             // ```
             Command::Restore {
-                tracks,
-                current,
+                root,
+                selected,
                 position,
                 volume,
                 shuffle,
@@ -1272,15 +1302,22 @@ impl Controller {
                 // this.queue.setRepeatTrack(repeatTrack);
                 // ```
                 self.queue.set_repeat_track(repeat_track);
-                // What:     `self.queue.set_tracks(tracks);`. Rebuild the queue.
-                // Why:      Restore the playlist.
-                // TS map:   `this.queue.setTracks(tracks);`
+                // What:     `self.source_root = Some(root.clone());` then
+                //           `self.queue.set_tracks(expand_paths(vec![root]));`. Remember the
+                //           root and rebuild the queue by SCANNING it fresh from disk, rather
+                //           than from a saved track list. `.clone()` because `root` is moved
+                //           into `expand_paths`.
+                // Why:      The queue is a projection of the Source Root; re-scanning is the
+                //           restore auto-correction (added/removed/renamed files sort
+                //           themselves out).
+                // TS map:   `this.sourceRoot = root; this.queue.setTracks(expandPaths([root]));`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // this.queue.setTracks(tracks);
+                // this.sourceRoot = root; this.queue.setTracks(expandPaths([root]));
                 // ```
-                self.queue.set_tracks(tracks);
+                self.source_root = Some(root.clone());
+                self.queue.set_tracks(expand_paths(vec![root]));
                 // What:     `self.queue.set_shuffle(shuffle);`. Restore shuffle ordering.
                 // Why:      Restore shuffle state.
                 // TS map:   `this.queue.setShuffle(shuffle);`
@@ -1290,25 +1327,24 @@ impl Controller {
                 // this.queue.setShuffle(shuffle);
                 // ```
                 self.queue.set_shuffle(shuffle);
-                // What:     `match current { Some(idx) => { self.queue.play_index(idx); } None => { self.queue.clear_selection(); } }`.
-                //           Pattern-match the saved `Option<usize>`: `Some(idx)` moves the
-                //           cursor to that track; `None` (the session had no current track)
-                //           clears the selection that `set_tracks` anchored.
-                // Why:      Resume on the right track when one was saved; otherwise restore the
-                //           "nothing selected" state faithfully instead of auto-selecting track
-                //           0. Done before the background sweep so it skips the current track.
-                // TS map:   `if (current != null) this.queue.playIndex(current); else this.queue.clearSelection();`
+                // What:     `match selected { Some(sel) => ..., None => ... }`. Re-select the
+                //           saved track BY PATH: `Some(sel)` looks it up in the fresh scan,
+                //           `None` (nothing was cued) clears the anchored selection.
+                // Why:      Resume on the saved track when the scan still contains it; if it
+                //           moved or vanished, clear the cue (the "selected track missing"
+                //           rule). Done before the background sweep so it skips the current.
+                // TS map:   `const idx = selected ? tracks.indexOf(selected) : -1; ...`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (current != null) this.queue.playIndex(current);
-                // else this.queue.clearSelection();
+                // const idx = selected ? tracks.indexOf(selected) : -1;
+                // if (idx >= 0) this.queue.playIndex(idx); else this.queue.clearSelection();
                 // ```
-                match current {
-                    // What:     `Some(idx) => { self.queue.play_index(idx); }`. A saved current
-                    //           track: select it (rebuilding the scope around it).
+                match selected.and_then(|sel| self.queue.tracks().iter().position(|p| *p == sel)) {
+                    // What:     `Some(idx) => { self.queue.play_index(idx); }`. The saved track
+                    //           is present: select it (rebuilding the scope around it).
                     // Why:      Resume where the user left off.
-                    // TS map:   `if (current != null) this.queue.playIndex(current);`
+                    // TS map:   `this.queue.playIndex(idx);`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
@@ -1317,11 +1353,11 @@ impl Controller {
                     Some(idx) => {
                         self.queue.play_index(idx);
                     }
-                    // What:     `None => { self.queue.clear_selection(); }`. No saved current:
-                    //           deselect (empty scope, null cursor).
-                    // Why:      A session opened-but-never-played should reopen with nothing
-                    //           selected, not auto-select the first track.
-                    // TS map:   `else this.queue.clearSelection();`
+                    // What:     `None => { self.queue.clear_selection(); }`. No saved track, or
+                    //           it is absent from the fresh scan: deselect.
+                    // Why:      A never-cued or moved-away selection reopens with nothing
+                    //           selected, not auto-selecting the first track.
+                    // TS map:   `this.queue.clearSelection();`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts

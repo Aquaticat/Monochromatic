@@ -139,34 +139,45 @@ pub enum ShuffleMode {
 //   | { kind: "quit" };
 // ```
 pub enum Command {
-    // What:     `OpenPaths { paths: Vec<PathBuf>, play: bool }` is a STRUCT variant:
-    //           replace the queue with these files/folders (folders are expanded
-    //           recursively to their files), then either start playing (`play: true`)
-    //           or just load the first track PAUSED (`play: false`).
-    // Why:      Only a command-line launch with `--start-playing` sets `play: true`;
-    //           every other open (the folder picker, the launch-time auto-load of the
-    //           music directory, a session restore) populates the queue PAUSED so the
-    //           app never blasts audio just from being opened.
-    // TS map:   `{ kind: "openPaths"; paths: string[]; play: boolean }`
+    // What:     `OpenRoot { root: PathBuf, select: Option<PathBuf>, play: bool }` is a
+    //           STRUCT variant: set the Source Root to `root`, scan it recursively to
+    //           build the queue, optionally preselect `select` (the file a single-file
+    //           launch named), then either start playing (`play: true`) or load PAUSED
+    //           (`play: false`).
+    // Why:      Exactly one directory Source Root identifies what is loaded. Only a
+    //           command-line launch with `--start-playing` sets `play: true`; the folder
+    //           picker and the music-directory auto-load pass `false` (load paused) so
+    //           the app never blasts audio just from being opened.
+    // TS map:   `{ kind: "openRoot"; root: string; select: string | null; play: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // { kind: "openPaths"; paths: string[]; play: boolean }
+    // { kind: "openRoot"; root: string; select: string | null; play: boolean }
     // ```
-    OpenPaths {
-        // What:     `paths: Vec<PathBuf>` files/folders to open (owned paths; `Vec<T>`
-        //           is the growable array, sibling `&[PathBuf]` a borrowed slice).
-        // Why:      Source of the new queue.
-        // TS map:   `paths: string[]`.
+    OpenRoot {
+        // What:     `root: PathBuf` the directory to scan into the queue (owned path).
+        // Why:      The Source Root whose scan IS the queue.
+        // TS map:   `root: string`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // paths: string[];
+        // root: string;
         // ```
-        paths: Vec<PathBuf>,
+        root: PathBuf,
+        // What:     `select: Option<PathBuf>` a track to preselect (`Some`), or `None` to
+        //           open with nothing selected.
+        // Why:      A single-file launch names its parent as the root and preselects the
+        //           file; a folder open selects nothing.
+        // TS map:   `select: string | null`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // select: string | null;
+        // ```
+        select: Option<PathBuf>,
         // What:     `play: bool` whether to start playing once loaded.
         // Why:      Set only by a `--start-playing` command-line launch; the folder
-        //           picker, auto-load, and restore all pass `false` (load paused).
+        //           picker and auto-load pass `false` (load paused).
         // TS map:   `play: boolean`.
         //
         // In TS you'd write (pseudocode):
@@ -280,39 +291,41 @@ pub enum Command {
     // ```
     SetRepeatTrack(bool),
     // What:     `Restore { ... }` is a STRUCT variant carrying a saved session to
-    //           reinstate at launch: the queue paths, which track was current, the
-    //           position, and the volume/shuffle/repeat settings. The engine loads the
-    //           current track PAUSED at the saved position.
-    // Why:      Sent once on startup to resume where the user left off, without
-    //           coupling this enum to the persistence `Session` type.
-    // TS map:   `{ kind: "restore"; tracks: string[]; current: number | null;
+    //           reinstate at launch: the Source Root to scan, the optional Selected Track
+    //           to re-select, the position, and the volume/shuffle/repeat settings. The
+    //           engine scans the root, re-selects the track if the scan still contains it,
+    //           and loads it PAUSED at the saved position.
+    // Why:      Sent once on startup to resume where the user left off, without coupling
+    //           this enum to the persistence `Session` type.
+    // TS map:   `{ kind: "restore"; root: string; selected: string | null;
     //             position: number; volume: number; shuffle: ShuffleMode; repeatTrack: boolean }`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // { kind: "restore"; tracks: string[]; current: number | null; position: number;
+    // { kind: "restore"; root: string; selected: string | null; position: number;
     //   volume: number; shuffle: ShuffleMode; repeatTrack: boolean }
     // ```
     Restore {
-        // What:     `tracks: Vec<PathBuf>` the saved queue in load order.
-        // Why:      Rebuild the queue.
-        // TS map:   `tracks: string[]`.
+        // What:     `root: PathBuf` the saved Source Root to re-scan into the queue.
+        // Why:      The queue is re-derived from disk, not from a saved track list.
+        // TS map:   `root: string`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // tracks: string[];
+        // root: string;
         // ```
-        tracks: Vec<PathBuf>,
-        // What:     `current: Option<usize>` which track was current. `Option<T>` is
-        //           `Some(value)` or `None` (Rust's no-`null` "maybe a number").
-        // Why:      Position the cursor on restore.
-        // TS map:   `current: number | null`.
+        root: PathBuf,
+        // What:     `selected: Option<PathBuf>` the saved Selected Track's path, or `None`.
+        //           `Option<T>` is `Some(value)` or `None` (Rust's no-`null` "maybe").
+        // Why:      Re-select this track if the fresh scan still contains it; otherwise the
+        //           selection is cleared.
+        // TS map:   `selected: string | null`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // current: number | null;
+        // selected: string | null;
         // ```
-        current: Option<usize>,
+        selected: Option<PathBuf>,
         // What:     `position: f64` saved playback position in seconds (same
         //           seconds-as-f64 unit as `Seek`/`Position`).
         // Why:      Resume mid-track.

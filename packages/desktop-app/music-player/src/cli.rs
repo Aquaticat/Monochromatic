@@ -56,7 +56,7 @@ use clap::Parser;
 #[command(
     name = "music-player",
     version,
-    about = "Minimal native music player. Enqueues the given file/folder paths (folders are scanned recursively) and loads them PAUSED unless --start-playing is passed."
+    about = "Minimal native music player. Opens one folder (scanned recursively) as the source root, or one file (its parent folder becomes the source root and the file is preselected), loaded PAUSED unless --start-playing is passed."
 )]
 pub struct Cli {
     // What:     `#[arg(long = "start-playing")] pub start_playing: bool`. The
@@ -78,21 +78,21 @@ pub struct Cli {
     )]
     pub start_playing: bool,
 
-    // What:     `pub paths: Vec<PathBuf>`. A field with NO `#[arg(...)]` flag attribute
-    //           is a POSITIONAL argument; typed as `Vec<PathBuf>`, clap collects every
-    //           positional into the vector and parses each token into a `PathBuf`.
-    //           `Vec<T>` is a heap-allocated growable array; siblings: `&[T]` (a
-    //           borrowed slice) and `[T; N]` (a fixed-size array).
-    // Why:      The file/folder paths to enqueue; a vector because the user may pass
-    //           several, and it is empty when they pass none.
-    // TS map:   `paths: string[] // the bare positional arguments`
+    // What:     `pub path: Option<PathBuf>`. A field with NO `#[arg(...)]` flag attribute
+    //           is a POSITIONAL argument; typed as `Option<PathBuf>`, clap accepts ZERO or
+    //           ONE positional token (a second one is a parse error), parsing it into a
+    //           `PathBuf`. `Option<T>` is `Some(value)` or `None` (no path given).
+    // Why:      Exactly one Source Root is loaded, so the CLI takes at most one path: a
+    //           folder, or a single file whose parent folder becomes the root. The old
+    //           multi-path form is deliberately removed; passing two paths now errors.
+    // TS map:   `path?: string // an optional single positional argument`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // // @positional({ variadic: true }) paths: string[] = [];
+    // // @positional() path?: string;
     // ```
-    #[arg(help = "File or folder paths to enqueue (folders are scanned recursively)")]
-    pub paths: Vec<PathBuf>,
+    #[arg(help = "One folder (scanned recursively) or one file (its parent folder becomes the source root)")]
+    pub path: Option<PathBuf>,
 }
 
 // What:     `#[cfg(test)] #[path = "cli_tests.rs"] mod tests;`. Pull the unit tests
