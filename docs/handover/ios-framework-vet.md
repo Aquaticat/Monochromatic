@@ -30,9 +30,16 @@ Rust per-target, the anti-Qt; a Rust-computed value renders with no FFI shim; We
 also FULL PASS both legs (second appended gate, 2026-06-12: pure-Swift UIKit Auto Layout DSL via SPM, the
 first SPM dependency gate; centered layout renders, native UIKit a11y). UIKit and SwiftUI also FULL PASS
 both legs (third and fourth appended gates, 2026-06-12: pure-Swift native baselines, both render-verified;
-SwiftUI is the HelloDevice canary's framework formally re-confirmed). The entire native and managed initial
-vet is now complete; only the deferred web block (six WKWebView frameworks) remains for the initial vet.
-The pure-Swift gates (UIKit, SwiftUI, SnapKit) are baseline-only under the allowed-language rule. Owner constraints (2026-06-12): (a) no C or C++
+SwiftUI is the HelloDevice canary's framework formally re-confirmed). The deferred WKWebView block is now
+also DONE (2026-06-12): Cordova FULL PASS both legs (cordova-ios 8, SPM, the second WKWebView substrate),
+and the four UI layers Ionic (`@ionic/core` 8.8.10, ESM web components upgraded under the `app://localhost`
+scheme), Framework7 (9.0.5, iOS theme), Onsen UI (2.12.8), and Quasar (2.20.0 + Vue 3.5.38, Material via the
+UMD build) all FULL PASS both legs, each rendering its own real components (not just text) in the proven
+Cordova/WKWebView shell with its npm distributable bundled in-app and 6!=720 computed in page JS. So the
+ENTIRE initial framework vet is now complete: 16 frameworks render-verified both legs, Slint disqualified,
+Qt culled. The pure-Swift gates (UIKit, SwiftUI, SnapKit) are baseline-only under the allowed-language rule.
+What remains is not framework gating but the survivors' work: the second-pass language ranking (directive
+4), the stage-2 supporting-stack vets, and the on-device VoiceOver a11y sweep. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
 device and the latest iOS simulator (iOS 26.5) from one codebase. Retroactive sweep complete: Compose,
@@ -290,9 +297,11 @@ DONE (FULL PASS, above). Qt (rank 9) is CULLED (no prebuilt arm64-iphonesimulato
 it cannot render on the M1's native arm64 iOS 26.5 simulator, and the only arm64-sim path breaks the no-C++
 rule; see below and `device-gate-results.md`). Dioxus (first appended gate) is DONE (FULL PASS both legs,
 below). SnapKit, UIKit, and SwiftUI (second through fourth appended gates) are all DONE (FULL PASS both
-legs, below); the pure-Swift trio is baseline-only under the allowed-language rule. The entire native and
-managed initial vet is complete. The only initial-vet work left is the deferred WKWebView block. Remaining,
-in order:
+legs, below); the pure-Swift trio is baseline-only under the allowed-language rule. The deferred WKWebView
+block (Cordova plus Ionic/Framework7/Onsen/Quasar) is also DONE (FULL PASS both legs, 2026-06-12), so the
+entire initial framework vet is now complete and no framework gating remains. The post-gate survivor work
+(second-pass language ranking, stage-2 supporting-stack vets, VoiceOver a11y sweep) is tracked below. The
+historical gate order, for the record:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -355,8 +364,10 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   native `NSLayoutConstraint`, the native baseline). SwiftUI DONE (FULL PASS both legs, 2026-06-12: SwiftUI
   App-lifecycle app, the HelloDevice canary's framework formally re-confirmed). All four appended gates
   done; the pure-Swift trio (SnapKit/UIKit/SwiftUI) is baseline-only under the allowed-language rule.
-- Deferred to the very end per owner: the six WKWebView frameworks (Cordova substrate plus the Ionic,
-  Framework7, Onsen, Quasar UI-render notes on the already-proven Capacitor/WKWebView substrate).
+- Deferred web block: DONE (2026-06-12, FULL PASS both legs). Cordova (cordova-ios 8 SPM, the second
+  WKWebView substrate) plus the Ionic, Framework7, Onsen, and Quasar UI layers, each rendered with its real
+  npm distributable bundled in the Cordova/WKWebView shell on the iPhone X and the iPhone 17 Pro / iOS 26.5
+  sim. Details in `device-gate-results.md`. This closes the initial framework vet.
 
 After gates: stage 2 deep supporting-stack vets (the ~52-report roadmap, enumerated inside each
 `vet-*.md`), then keep the synthesis doc current.

@@ -731,6 +731,54 @@ directive 4): the app is HTML, CSS, and JavaScript (exempt markup plus a scripti
 an allowed language, compiles to), so the WKWebView shells align with the allowed-language rule. Work dir:
 `/Volumes/MacData/ios-vet/cordovagate`. Toolchain: cordova 13.0.0 CLI (npm global).
 
+### Ionic, Framework7, Onsen UI, Quasar: FULL PASS (both legs), the four WKWebView UI layers
+
+Status: FULL PASS 2026-06-12, the last four of the deferred WKWebView block, which closes the entire
+initial framework vet. Each of the four UI libraries render-verified on BOTH the iPhone X (iOS 16.7) and the
+iPhone 17 Pro / iOS 26.5 simulator from one codebase, hosted in the already-proven Cordova/WKWebView shell
+(the same `cordovagate` App, its `www/` swapped per framework, rebuilt for each leg), with each framework's
+real npm distributable bundled in the app (not loaded from a CDN, so this is the shipping path), and each
+computing 6! = 720 in page JavaScript, rendered green only when the WKWebView actually executed the bundle.
+Versions: `@ionic/core` 8.8.10, `framework7` 9.0.5, `onsenui` 2.12.8, `quasar` 2.20.0 with `vue` 3.5.38.
+
+The render note is deliberately stronger than text-on-a-page: each screenshot shows the framework's own
+distinctive components drawing, not just a string, so a blank or unstyled page would have failed it.
+
+- Ionic: the lazy ESM web components actually upgraded under Cordova's `app://localhost` custom scheme. The
+  `ion-toolbar color="primary"`, `ion-card`, `ion-card-title`, and `ion-button expand="block"` all rendered
+  with Ionic's theme (bold iOS typography, the primary-blue toolbar and pill button) on both legs, which
+  proves `ionic.esm.js` fetched its per-component `*.entry.js` chunks from the bundle over the custom scheme
+  (the one real risk for a web-component library inside a hybrid shell, and it passed).
+- Framework7: `new Framework7({ theme: 'ios' })` initialized and drew its iOS-theme navbar, `block-strong`,
+  and `button-large button-fill` on both legs.
+- Onsen UI: `ons-toolbar`, `ons-card`, and `ons-button modifier="large"` rendered with Onsen's component
+  CSS on both legs (the framework auto-initialized on `init`/`load`).
+- Quasar: Vue 3 (UMD `vue.global.prod.js`) mounted and `app.use(Quasar)` registered the component set, so
+  `q-layout`/`q-header`/`q-toolbar-title`/`q-card`/`q-btn` drew Quasar's Material UI on both legs; the
+  `mounted` hook computed 720, proving Vue's lifecycle ran. One cosmetic note: the `q-header` did not reserve
+  the status-bar safe-area inset (it sits under the clock); the components themselves rendered correctly.
+
+These four needed no fresh substrate gate: they are pure web UI inside the same WKWebView that Capacitor and
+Cordova already proved, so the gate is whether each component library draws in an iOS WKWebView on both
+targets, and all four do. a11y is WebKit-native for all (VoiceOver reads the web a11y tree, the same class
+as Capacitor/Cordova/Dioxus), no iOS-17 wall; on-device VoiceOver confirmation is owed under the retroactive
+sweep. Language standing (owner directive 4): the app code is HTML, CSS, and JavaScript (Quasar adds a Vue
+template, which compiles to JS), all exempt markup plus a scripting runtime that the allowed language
+TypeScript compiles to, so all four align with the allowed-language rule. Build mechanism: one `cordovagate`
+shell, `www/` replaced from `/Volumes/MacData/ios-vet/webui/<framework>/www` (real dist copied out of
+`node_modules`), `cordova prepare ios`, sim leg `CODE_SIGNING_ALLOWED=NO`, device leg the runbook keychain
+wrapper, `ideviceinstaller -n upgrade`, `idevicedebug -n run`, `idevicescreenshot -n`. Work dirs:
+`/Volumes/MacData/ios-vet/cordovagate` (shell) and `/Volumes/MacData/ios-vet/webui` (per-framework `www`).
+Toolchain: cordova CLI plus the four npm packages.
+
+With these four the deferred web block is finished and every framework in the funnel has been gated: the
+initial vet is complete. The full render-verified set (both legs) is Capacitor, the .NET trio
+(substrate/MAUI/Avalonia/Uno), Flutter, Compose Multiplatform, React Native, NativeScript, Lynx, Dioxus,
+SnapKit, UIKit, SwiftUI, Cordova, Ionic, Framework7, Onsen UI, and Quasar; Slint is DISQUALIFIED (iOS-17
+a11y death) and Qt is CULLED (no prebuilt arm64-simulator slice). What remains is not framework gating but
+the second-pass language ranking (owner directive 4), the survivors' supporting-stack vets (stage 2), and
+the on-device VoiceOver a11y sweep.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
