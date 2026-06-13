@@ -13,9 +13,12 @@ and only the second is open:
 
 The element-tree dumps in `../decisions/ios-iphone-x-vet-reports/vet-ui-automation.md` are the headless half of
 this: they show what each rendering model exposes (labels, roles, traits). This runbook is the audible half:
-whether VoiceOver speaks those exposures and traverses them in order. The load-bearing group is the self-drawn
-renderers (Compose Multiplatform, Avalonia, Uno-Skia), where a render PASS can still hide an a11y gap; the
-WebKit-native and native-UIKit groups are confirmations.
+whether VoiceOver speaks those exposures and traverses them in order. The one load-bearing case is Compose
+Multiplatform, the self-drawn renderer that is a live contender for both apps and whose interactive a11y is
+unverified, so a render PASS can still hide a gap there; the WebKit-native and native-UIKit groups are
+confirmations. The other self-drawn renderers, Avalonia and Uno-Skia, are .NET: ruled out as the kopia host by
+the Go-versus-Mono SIGKILL finding and bottom-ranked for the music-player, so their a11y does not gate a likely
+decision and they are optional here, not a must.
 
 Bridges tried and confirmed insufficient (so this handoff is a real obstacle, not an unconsidered one): the
 Appium / XCUITest accessibility-tree dump captures labels, roles, and traits but not the audible speech, the
@@ -52,8 +55,9 @@ Status: TODO
 
 Status: TODO
 
-Do the self-drawn group first (it is the real test), then Flutter, then one representative of each remaining
-group. Repeat steps 2 to 8 for each framework in the checklist under What to check.
+Do Compose Multiplatform first (the one load-bearing self-drawn contender), then Flutter (the best interactive
+test), then one representative of each remaining group; Avalonia and Uno are optional (see What this proves).
+Repeat steps 2 to 8 for each framework in the checklist under What to check.
 
 1. Open the framework's gate app (tap its icon). Expected outcome: the gate's render screen appears (for
    example **Compose Multiplatform on iOS**, or **WKWebView OK**).
@@ -100,10 +104,7 @@ Concrete spoken strings to expect per gate (you should hear these words):
 
 Checklist (do the MUST group first; tick PASS or write the defect):
 
-- [ ] Compose Multiplatform (self-drawn, MUST)
-- [ ] Avalonia (self-drawn, MUST)
-- [ ] Uno, default Skia renderer (self-drawn, MUST)
-- [ ] Uno, native-UIKit renderer (the a11y-safe config; confirm it is better than Skia)
+- [ ] Compose Multiplatform (self-drawn, MUST: the one load-bearing self-drawn contender for both apps)
 - [ ] Flutter (self-drawn but a mature UIKit bridge; the interactive counter makes it the best role/value test)
 - [ ] Capacitor (WebKit, confirm)
 - [ ] Cordova / Quasar (WebKit, has an interactive button, confirm role + activation)
@@ -113,6 +114,9 @@ Checklist (do the MUST group first; tick PASS or write the defect):
 - [ ] NativeScript (native UIKit, confirm)
 - [ ] Lynx (native UIKit via its own engine, confirm)
 - [ ] MAUI, UIKit, SwiftUI, SnapKit (native baselines, spot-check one)
+- [ ] Avalonia, Uno-Skia, Uno-native (OPTIONAL, music-player-only: the .NET trio is ruled out as the kopia host
+  by the Go-versus-Mono SIGKILL and is bottom-ranked for the music-player, so sweep these only if .NET is being
+  reconsidered for the music-player)
 
 Known evidence limit (not a defect, record it as scope): the gate apps are render-proofs, and most carry no
 interactive control; only the Flutter gate (counter) and the Cordova/Quasar gate (button) exercise interactive
