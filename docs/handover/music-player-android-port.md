@@ -34,10 +34,12 @@ handover adds the working state, measured facts, and exact next steps.
   play through the real app (the volume-0 tests prove mechanics and real-time position proves real PCM flows, but only
   ears confirm channel order and glitch-free output). The sample-rate unknown is RESOLVED: the engine opens AAudio at
   `spec.rate` and the on-device test confirmed position tracks real-time (0.494 s in ~0.5 s of playback, no 8.8% drift)
-  and an accurate mid-track seek. Remaining for the
-  full-Rust variant (Milestone 2, parity with Media3, none needed to measure decode/output perf): audio-focus handling
-  (pause on a phone call), the becoming-noisy headphone-unplug pause, and true-peak normalization gain. The
-  queue/advance/shuffle stay in Kotlin's `PlayerController` (the native engine is only the per-track primitive).
+  and an accurate mid-track seek. Audio focus + becoming-noisy landed (`6ec84c84`): `RustEngine` requests media focus
+  before playing, pauses on focus loss (transient loss arms resume-on-gain), and pauses on a headphone unplug. Remaining
+  for the full-Rust variant: true-peak normalization gain (Milestone 2's last piece, needs a native true-peak measure
+  since the rust flavor's peak cache is its own app-data and starts empty), plus a brief AUDIBLE play and the metric
+  comparison (#13). None of these is needed to measure decode/output perf. The queue/advance/shuffle stay in Kotlin's
+  `PlayerController` (the native engine is only the per-track primitive).
 
 ## Build progress (this session)
 
