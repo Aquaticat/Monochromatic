@@ -825,6 +825,72 @@ impl Controller {
         self.emit(Update::Position(0.0));
     }
 
+    // What:     `fn emit_current_now_playing(&self)`. Re-emit the now-playing view for the
+    //           CURRENT track WITHOUT reloading it: the (possibly shifted) load-order index,
+    //           the display name at that index, and the loaded track's duration. Read-only.
+    // Why:      After a live rescan reorders the queue, the highlighted row's index changes
+    //           even though the same track keeps playing; this refreshes the highlight and
+    //           title without touching the decoder (so audio is not interrupted). It does NOT
+    //           emit `Position`, so the seek bar keeps its live position.
+    // TS map:   `emitCurrentNowPlaying(): void`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // emitCurrentNowPlaying(): void {
+    //   const index = this.queue.currentIndex();
+    //   const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";
+    //   this.emit({ kind: "nowPlaying", index, name, duration: this.spec?.durationSecs ?? 0 });
+    // }
+    // ```
+    fn emit_current_now_playing(&self) {
+        // What:     `let index = self.queue.current_index();`. The current track's load-order
+        //           position (`Option<usize>`), which may have shifted after the rescan.
+        // Why:      Drives the row highlight.
+        // TS map:   `const index = this.queue.currentIndex();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const index = this.queue.currentIndex();
+        // ```
+        let index = self.queue.current_index();
+        // What:     `let name = index.and_then(|i| self.queue.display_paths().into_iter().nth(i)).unwrap_or_default();`.
+        //           The display path at that index, or an empty string when there is none.
+        // Why:      The window title and label use this same relative-path string.
+        // TS map:   `const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const name = index != null ? this.queue.displayPaths()[index] ?? "" : "";
+        // ```
+        let name = index
+            .and_then(|i| self.queue.display_paths().into_iter().nth(i))
+            .unwrap_or_default();
+        // What:     `let duration = self.spec.as_ref().map_or(0.0, |s| s.duration_secs);`. The
+        //           loaded track's duration (0.0 when nothing is loaded).
+        // Why:      Keeps the seek-bar maximum correct without recomputing it.
+        // TS map:   `const duration = this.spec ? this.spec.durationSecs : 0;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const duration = this.spec ? this.spec.durationSecs : 0;
+        // ```
+        let duration = self.spec.as_ref().map_or(0.0, |s| s.duration_secs);
+        // What:     `self.emit(Update::NowPlaying { index, name, duration });`. Push the refreshed
+        //           now-playing view (no `Position` emit, so the live seek position is kept).
+        // Why:      Update the highlight/title after a reorder without restarting playback.
+        // TS map:   `this.emit({ kind: "nowPlaying", index, name, duration });`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.emit({ kind: "nowPlaying", index, name, duration });
+        // ```
+        self.emit(Update::NowPlaying {
+            index,
+            name,
+            duration,
+        });
+    }
+
     // What:     `fn start_queue_measurement(&self)`. Kick off the background sweep that
     //           pre-measures every non-current track in the current queue into the
     //           shared cache. Read-only borrow (it only clones paths and the cache handle).
@@ -1470,6 +1536,107 @@ impl Controller {
                 // ```
                 if loaded && position > 0.0 {
                     self.seek(position);
+                }
+            }
+            // What:     `Command::Rescan => { ... }`. Re-scan the current Source Root and
+            //           reconcile the queue with disk, preserving the Selected Track by path.
+            // Why:      The single live-update projection (queue = scan of the root), driven by
+            //           the file watcher and any "rescan required" signal.
+            // TS map:   `case "rescan": { ... }`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "rescan": { /* re-scan root, diff, preserve selection */ break; }
+            // ```
+            Command::Rescan => {
+                // What:     `if let Some(root) = self.source_root.clone() { ... }`. Rescan only
+                //           when a root is set; clone so the scan owns its path while the queue
+                //           is mutated.
+                // Why:      With no root there is nothing to project from.
+                // TS map:   `if (this.sourceRoot) { ... }`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (this.sourceRoot) { ... }
+                // ```
+                if let Some(root) = self.source_root.clone() {
+                    // What:     `let selected_path = self.queue.current_path().cloned();`. The
+                    //           Selected Track's path BEFORE the queue is replaced.
+                    // Why:      Re-select the same track by path after the rescan.
+                    // TS map:   `const selectedPath = this.queue.currentPath();`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const selectedPath = this.queue.currentPath();
+                    // ```
+                    let selected_path = self.queue.current_path().cloned();
+                    // What:     `self.queue.set_tracks(expand_paths(vec![root]));`. Rebuild the
+                    //           queue from a fresh scan of the root.
+                    // Why:      Added files appear, removed files drop, all in sorted order.
+                    // TS map:   `this.queue.setTracks(expandPaths([root]));`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // this.queue.setTracks(expandPaths([root]));
+                    // ```
+                    self.queue.set_tracks(expand_paths(vec![root]));
+                    // What:     `match selected_path.and_then(|p| ...position(|t| *t == p)) { ... }`.
+                    //           Find the previously-selected path in the fresh scan.
+                    // Why:      Preserve the selection across the rescan, or detect its loss.
+                    // TS map:   `const idx = selectedPath ? tracks.indexOf(selectedPath) : -1;`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const idx = selectedPath ? tracks.indexOf(selectedPath) : -1;
+                    // ```
+                    match selected_path
+                        .and_then(|p| self.queue.tracks().iter().position(|t| *t == p))
+                    {
+                        // What:     `Some(idx) => { ... }`. The Selected Track survived: re-anchor
+                        //           the cursor at its new index (audio is decoder-owned, so it is
+                        //           NOT interrupted) and refresh the list + highlight.
+                        // Why:      A live change to other files must not disturb playback.
+                        // TS map:   `this.queue.playIndex(idx); emitQueue(); emitCurrentNowPlaying();`
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // this.queue.playIndex(idx); this.emitQueue(); this.emitCurrentNowPlaying();
+                        // ```
+                        Some(idx) => {
+                            self.queue.play_index(idx);
+                            self.emit(Update::Queue(self.queue.display_paths()));
+                            self.emit_current_now_playing();
+                        }
+                        // What:     `None => { ... }`. The Selected Track is gone (or there was
+                        //           none): clear the selection, refresh the list, and STOP if it
+                        //           was playing (its file left the root).
+                        // Why:      The "playing file gone -> stop + clear" rule.
+                        // TS map:   `this.queue.clearSelection(); emitQueue(); emitNoTrack(); if (playing) setPlaying(false);`
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // this.queue.clearSelection(); this.emitQueue(); this.emitNoTrack();
+                        // if (this.playing) this.setPlaying(false);
+                        // ```
+                        None => {
+                            self.queue.clear_selection();
+                            self.emit(Update::Queue(self.queue.display_paths()));
+                            self.emit_no_track();
+                            if self.playing {
+                                self.set_playing(false);
+                            }
+                        }
+                    }
+                    // What:     `self.start_queue_measurement();`. Warm the peak cache for any
+                    //           newly added tracks (cached ones are skipped by fingerprint).
+                    // Why:      New files need true-peak measurement like any queue load.
+                    // TS map:   `this.startQueueMeasurement();`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // this.startQueueMeasurement();
+                    // ```
+                    self.start_queue_measurement();
                 }
             }
             // What:     `Command::Quit => {}`. Empty arm: handled in `run`'s drain loop;

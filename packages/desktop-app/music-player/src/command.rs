@@ -364,6 +364,19 @@ pub enum Command {
         // ```
         repeat_track: bool,
     },
+    // What:     `Rescan` a fieldless variant.
+    // Why:      Re-scan the current Source Root and reconcile the queue with disk: added
+    //           files appear, removed files drop, and the Selected Track is preserved by
+    //           path (or, if its file left the root while playing, playback stops and the
+    //           selection clears). Sent by the file watcher on a debounced change, and on
+    //           any "rescan required" signal.
+    // TS map:   `{ kind: "rescan" }`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // { kind: "rescan" }
+    // ```
+    Rescan,
     // What:     `Quit` a fieldless variant.
     // Why:      Shut the engine thread down.
     // TS map:   `{ kind: "quit" }`

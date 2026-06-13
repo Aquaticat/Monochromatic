@@ -364,3 +364,83 @@ fn background_sweep_skips_current_track() {
     // TS map:   `try { unlinkSync(cachePath); } catch {}`
     let _ = std::fs::remove_file(&cache_path);
 }
+
+// What:     `#[test] fn rescan_reflects_disk_and_preserves_selection_by_path()`. Drive the
+//           `Command::Rescan` reconcile over a real disposable directory.
+// Why:      The live-update core must reflect added/removed files and keep the Selected
+//           Track selected by path (clearing it only when its file leaves the root).
+// TS map:   `test("rescan reflects disk and preserves selection by path", () => { ... })`
+#[test]
+fn rescan_reflects_disk_and_preserves_selection_by_path() {
+    // What:     `let nanos = ...as_nanos();`. A unique suffix for a throwaway directory.
+    // Why:      Each run gets its own scratch root (THR: verify on a throwaway).
+    // TS map:   `const nanos = Date.now();`
+    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    // What:     `let dir = std::env::temp_dir().join(format!("mp_rescan_{nanos}"));`. The
+    //           disposable Source Root.
+    // Why:      A real directory so `expand_paths` actually scans it.
+    // TS map:   `const dir = join(os.tmpdir(), `mp_rescan_${nanos}`);`
+    let dir = std::env::temp_dir().join(format!("mp_rescan_{nanos}"));
+    // What:     `std::fs::create_dir_all(&dir).unwrap();`. Create it.
+    // Why:      The root must exist before scanning.
+    // TS map:   `mkdirSync(dir, { recursive: true });`
+    std::fs::create_dir_all(&dir).unwrap();
+    // What:     two audio-extension files written with one byte each.
+    // Why:      `expand_paths` keeps only audio extensions; content is irrelevant here.
+    // TS map:   `writeFileSync(a, "x"); writeFileSync(b, "x");`
+    let a = dir.join("a.flac");
+    let b = dir.join("b.flac");
+    std::fs::write(&a, b"x").unwrap();
+    std::fs::write(&b, b"x").unwrap();
+
+    // What:     build a silent controller and point its Source Root at the scratch dir.
+    // Why:      Drive the real `Rescan` handler without audio or UI.
+    // TS map:   `const c = testController(); c.sourceRoot = dir;`
+    let mut controller = test_controller();
+    controller.source_root = Some(dir.clone());
+    // What:     `controller.handle_command(Command::Rescan);`. Run the reconcile.
+    // Why:      Build the queue from the directory.
+    // TS map:   `c.handleCommand({ kind: "rescan" });`
+    controller.handle_command(Command::Rescan);
+    // What:     both files present after the scan.
+    // Why:      The queue mirrors the directory.
+    // TS map:   `expect(c.queue.tracks().length).toBe(2);`
+    assert_eq!(controller.queue.tracks().len(), 2);
+    assert!(controller.queue.tracks().contains(&a));
+    assert!(controller.queue.tracks().contains(&b));
+
+    // What:     select `b` by its scanned position.
+    // Why:      Establish a Selected Track to preserve across the next rescan.
+    // TS map:   `c.queue.playIndex(indexOf(b));`
+    let bi = controller.queue.tracks().iter().position(|p| *p == b).unwrap();
+    controller.queue.play_index(bi);
+    assert_eq!(controller.queue.current_path(), Some(&b));
+
+    // What:     add a file that sorts before the others, then rescan.
+    // Why:      Adding a file shifts `b`'s index; the selection must follow by path.
+    // TS map:   `writeFileSync(zero, "x"); c.handleCommand({ kind: "rescan" });`
+    let zero = dir.join("0.flac");
+    std::fs::write(&zero, b"x").unwrap();
+    controller.handle_command(Command::Rescan);
+    // What:     the new file is in the queue and `b` is still the selection.
+    // Why:      Live add is reflected; selection preserved by path despite the index shift.
+    // TS map:   `expect(c.queue.tracks().contains(zero)).toBe(true); expect(c.queue.currentPath()).toBe(b);`
+    assert!(controller.queue.tracks().contains(&zero));
+    assert_eq!(controller.queue.current_path(), Some(&b));
+
+    // What:     remove the selected file `b`, then rescan.
+    // Why:      The Selected Track's file left the root, so the selection must clear.
+    // TS map:   `unlinkSync(b); c.handleCommand({ kind: "rescan" });`
+    std::fs::remove_file(&b).unwrap();
+    controller.handle_command(Command::Rescan);
+    // What:     `b` is gone from the queue and nothing is selected.
+    // Why:      Live remove is reflected; the missing selection is cleared.
+    // TS map:   `expect(c.queue.tracks().contains(b)).toBe(false); expect(c.queue.currentPath()).toBeNull();`
+    assert!(!controller.queue.tracks().contains(&b));
+    assert_eq!(controller.queue.current_path(), None);
+
+    // What:     `std::fs::remove_dir_all(&dir).ok();`. Best-effort cleanup of the scratch dir.
+    // Why:      Leave no test droppings.
+    // TS map:   `try { rmSync(dir, { recursive: true }); } catch {}`
+    std::fs::remove_dir_all(&dir).ok();
+}
