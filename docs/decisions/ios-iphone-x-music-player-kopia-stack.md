@@ -349,9 +349,11 @@ What this reshapes. On directive 4 the implementation shortlist is Dioxus first 
 zero-boundary for the music-player's Rust core), then Compose Multiplatform (Kotlin) and the
 TypeScript stacks (NativeScript, then the WKWebView shells), with React Native and Lynx one minimal shim
 behind. Flutter and the .NET trio, which lead the capability ranking, are demoted here because Dart and C#
-are non-allowed; they return to contention only if their capability lead proves decisive, most plausibly if
-one of them is the first to device-prove the in-app HTTP/S3 server (the one capability the capability
-ranking still flags as uncertain). The owner weighs the two axes; this section supplies the language axis.
+are non-allowed; they return to contention only if their capability lead (mobile and audio ecosystem
+maturity, MAUI's native a11y) proves decisive. That lead is now narrower, because the two capabilities the
+capability ranking leaned on, the in-app HTTP/S3 server and cpal audio output, are both device-proven in a
+framework-independent way (a linked Rust staticlib, stage-2 probes below), so they no longer favour any one
+framework. The owner weighs the two axes; this section supplies the language axis.
 
 ## Per-technology scorecard (the shared spine)
 
@@ -409,6 +411,77 @@ disqualified on this device), and the framework-specific in-process UI-test and 
 - Signing for on-device dev: a free personal team gives a 1-year certificate and 7-day profiles; the
   vet reuses one provisioned bundle id so gates need no `-allowProvisioningUpdates`. See
   `ios-iphone-x-vet-reports/device-gate-results.md` and `../runbook/ios-iphone-x-codesign-setup.md`.
+
+## Accessibility (VoiceOver) posture and the owner-owed on-device sweep
+
+Accessibility is an owner hard rule and the exact criterion that disqualified Slint, so it is tracked
+separately from render. Two distinct a11y questions must not be conflated:
+
+- Crash-survival (does the framework's a11y code run on iOS 16.7, or does it reference an iOS-17 API and die
+  like Slint?). This question is now CLOSED for every survivor: all 16 render-verified on the iPhone X
+  without a dyld `Symbol not found` or an objc2 class-not-found, the two signatures of the Slint death. None
+  depends on an iOS-17 a11y API.
+- VoiceOver fidelity (does VoiceOver actually read each control, its label, value, and state, in a sensible
+  focus order?). This is the remaining a11y work, and it genuinely needs the owner plus the device GUI:
+  VoiceOver speech cannot be captured headlessly over SSH, and a simulator a11y-tree audit would run on iOS
+  26.5 (where Slint's killer symbols exist, so it is not a 16.7-device substitute) and could only evidence
+  "elements are exposed with labels," not "VoiceOver reads them correctly on the target." So this sweep is
+  documented and enumerated here rather than faked.
+
+Posture by survivor, descending native-ness (this predicts fidelity, it does not confirm it):
+
+- WebKit-native (VoiceOver reads the web ARIA tree, mature, iOS 12+): the WKWebView shells (Capacitor,
+  Cordova, Ionic, Framework7, Onsen, Quasar) and Dioxus (wry/WKWebView). Lowest-risk: the web a11y tree maps
+  to UIAccessibility automatically; the owner check is "enable VoiceOver, confirm it announces the rendered
+  controls and their roles/states."
+- Native UIKit (renders real UIViews, native a11y for free, iOS 12+): React Native, NativeScript, Lynx,
+  Flutter (its semantics tree bridges to UIKit), MAUI, and the Swift trio (UIKit, SwiftUI, SnapKit,
+  baseline-only). Low-risk by construction; the owner check confirms VoiceOver reads the native controls.
+- Self-drawn custom bridge (the framework paints its own canvas and routes a11y through its own
+  UIAccessibility bridge, so fidelity is the real open question): Compose Multiplatform (semantics ->
+  UIAccessibility), Avalonia (AutomationPeer -> UIAccessibility), and Uno's default Skia renderer. Here the
+  owner check is the load-bearing one: does VoiceOver actually read each self-drawn control and its state,
+  and is focus order sane? For Uno, re-verify with its native-UIKit renderer, which is the a11y-safe config.
+
+The owner-owed sweep, then, is: enable VoiceOver on the iPhone X and run each surviving gate, confirming the
+controls are spoken with correct labels and roles. It is low-risk for the WebKit-native and native-UIKit
+groups (a confirmation) and load-bearing for the self-drawn group (Compose, Avalonia, Uno-Skia), which is
+where a render PASS could still hide an a11y gap. This is the one vetting dimension that cannot be closed
+autonomously; everything it depends on (no iOS-17 a11y death, the framework renders on 16.7) is already
+device-confirmed.
+
+## Stage 2 status (supporting stacks)
+
+Stage 2 is the per-survivor supporting-stack vet. The two capabilities the synthesis flagged as genuinely
+uncertain are now device-proven (framework-independently, via a linked Rust staticlib on the iPhone X), which
+de-risks the kopia and music-player apps on every track at once. Status by capability:
+
+- In-app HTTP/S3 server: PROVEN on device (`device-gate-results.md`, stage-2 probes). A `std::net` loopback
+  HTTP server inside the linked Rust `.a` bound `127.0.0.1`, served an S3-style `ListBucketResult`, and
+  round-tripped in-process on the iPhone X, no entitlement, no local-network prompt. This is exactly how
+  kopia's own repository server and client sit in one linked core.
+- Audio output (cpal CoreAudio): PROVEN on device. cpal cross-compiled to both iOS triples, opened the
+  48 kHz output device, and its RemoteIO render callback fired on the iPhone X (silence only). The
+  music-player's symphonia-plus-cpal core needs no AVAudioEngine rewrite, only the AVAudioSession shim and
+  `AudioToolbox` linked.
+- Linked native staticlib (the kopia payload shape): PROVEN. Three Rust `.a` functions (`rust_gate_answer`,
+  the server, the audio probe) link and run via `[DllImport("__Internal")]` on the device. Packaging kopia
+  as a Go gomobile c-archive and linking it is then an integration task on a proven linkage, not a new
+  capability unknown; it is the next concrete stage-2 build (needs the Go/gomobile toolchain).
+- Outbound HTTPS to pCloud (reqwest/rustls): ASSERTED low-risk, not live-tested tonight (the device is in
+  airplane mode, so no external request is possible). rustls is pure Rust and ring supports `aarch64-apple-ios`,
+  and this is a widely-shipped path; the cheap next probe is a loopback TLS handshake (rustls server + client,
+  self-signed cert) inside the staticlib to confirm ring's crypto runs on the device offline.
+- Background transfer (background `URLSession` + `BGProcessingTask`) and backgrounded audio
+  (`UIBackgroundModes: audio` plus interruption handling): OWED. These are restructuring tasks shared by
+  every framework, not binary capability probes, and need real backgrounding to verify; they do not block the
+  framework choice.
+- Per-framework FFI marshaling and the in-process UI-test/e2e harnesses: the remaining stage-2 roadmap,
+  enumerated per framework in each `vet-*.md`; narrow and per-track, run once the framework is chosen.
+
+So the stage-2 conclusion: the capabilities that were genuinely in doubt for these two apps on this device
+(an in-app server socket, and Rust-core audio output) both work on the iPhone X; what remains is integration
+and restructuring on proven foundations, plus the owner-owed VoiceOver sweep above.
 
 ## Evidence
 
