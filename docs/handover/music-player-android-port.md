@@ -26,10 +26,16 @@ handover adds the working state, measured facts, and exact next steps.
   cross-compile for arm64 and run on the device (`OK (3 tests)`: a libopus decoder constructs via
   `opus_decoder_create` and the symphonia registry initializes on the arm64 CPU). Next is the engine itself
   (Task #12); see "Next steps".
-- Full-Rust variant: all HARD primitives are now de-risked on device (toolchain #10, libopus + symphonia #11, native
-  decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16). The remaining work (Task #12) is integration, not
-  unknowns: the decode -> output playback loop, the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks), the
-  queue/controller port, and the `content://` fd path (seekability + fd ownership traps).
+- Full-Rust variant: the standalone primitives are de-risked on device (toolchain #10, libopus + symphonia #11,
+  native decode ~10x faster than MediaCodec #15, AAudio output 43 ms #16). TWO unknowns remain to verify FIRST in the
+  engine (Task #12), because the isolated probes could not surface them: (1) sample-rate matching, `output.rs`
+  hardcodes 48k and opus is always 48k so the probe matched, but FLAC/MP3 decode at the track's native rate (often
+  44.1k), so the engine MUST open the AAudio stream at `spec.rate` or playback runs ~8.8% fast and pitched up, a
+  correctness requirement not wiring; (2) `content://` fd seekability, the benchmark used plain `File`, so symphonia
+  probing a SAF/MediaStore fd is unverified (Task #17, the next on-device derisk: a `nativeDecodeFromFd` exercising
+  seek + fd ownership detachFd/dup). The rest of #12 is integration: the decode -> output loop (decode on a worker +
+  lock-free ring, never in the AAudio callback), the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks),
+  and the queue/controller port.
 
 ## Build progress (this session)
 
@@ -219,11 +225,18 @@ AAudio output backend (this session): `ab24debb` adds the chosen output (`output
 `audio` feature, pure Rust, no C/C++ build, zero JNI). A silent `nativeOutputLatencyProbe` opens a LowLatency
 PCM_Float 48k stereo stream with a zero-fill data callback and reads presentation latency from
 `AAudioStream_getTimestamp` ((`frames_written - frame_position`)/rate); on the Pixel 6 it measured 43.0 ms (tunable
-lower via `bufferSizeInFrames`), test passes, no session PLAYING (inaudible). With this, every HARD primitive of the
-full-Rust variant (toolchain, libopus + symphonia decode, native decode ~10x faster, AAudio output) is de-risked on
-device; what remains for the engine (Task #12) is integration, not unknowns: the decode -> output playback loop, the
-Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks), the queue/controller port, and the `content://` fd
-path (the two traps: seekability + fd ownership/double-close).
+lower via `bufferSizeInFrames`), test passes, no session PLAYING (inaudible). With this, the standalone primitives of
+the full-Rust variant (toolchain, libopus + symphonia decode, native decode ~10x faster, AAudio output) are de-risked
+on device. Two unknowns the isolated probes could NOT surface must be verified FIRST in the engine (Task #12): (a)
+sample-rate matching, this `output.rs` hardcodes 48k and opus is always 48k so the silent probe matched by luck, but
+FLAC/MP3 (852 + 13 files) decode at the track's native rate (often 44.1k), so the engine must open the AAudio stream
+at `spec.rate` (reopening on rate change) or playback runs ~8.8% fast and pitched up, a correctness requirement not
+wiring; (b) `content://` fd seekability, the benchmark used plain `File`, so symphonia probing a SAF/MediaStore fd is
+unverified (Task #17, a `nativeDecodeFromFd` exercising probe-seek + fd ownership detachFd/dup, the cheapest
+highest-value next derisk). The rest is integration: the decode -> output loop (decode on a worker + lock-free ring,
+never decode/alloc in the AAudio callback), the Kotlin `AudioEngine` JNI seam (raw JNI, pull-based callbacks), and the
+queue/controller port. Optional hardening, only if the 10x must be bulletproof not directional: a same-device
+same-file media3 decode comparison.
 
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
