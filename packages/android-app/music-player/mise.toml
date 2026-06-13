@@ -1,33 +1,91 @@
-# Android island. This package is a self-contained Gradle build; mise owns it by
-# shelling to the committed Gradle wrapper, exactly the pattern the kopia Jetpack
-# Compose vet established. pnpm and cargo have no part in this build graph.
+# Android island. mise owns this package by shelling to the committed Gradle
+# wrapper, the pattern the kopia Jetpack Compose vet established. pnpm has no part
+# in this build graph; cargo takes part only through cargo-ndk, which
+# cross-compiles the native engine .so (see build:native).
 #
-# The JDK comes from the mise-managed Temurin 21 below (AGP 9 / Gradle 9 need a
-# JDK in the 17..21 range; the host's newer JBR is too new). The Android SDK
-# location is machine-local and lives in the gitignored local.properties
-# (sdk.dir=...), which Gradle reads natively, so no ANDROID_HOME env is set here.
+# The toolchain (JDK, Android SDK command-line tools, cargo-ndk) is provisioned
+# from the root mise manifest, not here, so the repo is self-contained from one
+# place (see the "Android toolchain" block in mise.no-env.toml). mise exports
+# ANDROID_HOME / ANDROID_SDK_ROOT from the android-sdk tool, which Gradle and
+# cargo-ndk both read, so no machine-local local.properties is required. The SDK
+# *components* (platforms, build-tools, ndk, platform-tools) and the Android Rust
+# target are installed by the run-once root `prepare:android` task (auto-run by the
+# `prepare` umbrella).
 #
 # One engine, one variant: the media3 and hybrid flavors are gone (the full-Rust
 # engine won the head-to-head), so the tasks below drive the single debug/release
 # variant (assembleDebug, testDebugUnitTest, connectedDebugAndroidTest, lintDebug).
 
-[tools]
-java = "temurin-21"
+# Tools (java, android-sdk, cargo-ndk) are inherited from the root mise manifest;
+# this package declares no [tools] of its own. The one-time SDK-component install
+# is the root `prepare:android` task (the `prepare` umbrella auto-runs it). See
+# mise.no-env.toml.
 
 [tasks."build:native"]
-description = "Cross-compile the native engine .so (arm64-v8a, 16KB-aligned, API 26 floor) into app/src/main/jniLibs. Requires ANDROID_NDK_HOME (see docs/handover/music-player-android-port.md)."
+description = "Cross-compile the native engine .so (arm64-v8a, 16KB-aligned, API 26 floor) into app/src/main/jniLibs. Derives and exports ANDROID_NDK_HOME from the mise-provisioned $ANDROID_HOME/ndk (run prepare:android once)."
 dir = "{{config_root}}/rust"
 shell = "node -e"
 run = '''
-const ndk = process.env.ANDROID_NDK_HOME;
-if (!ndk) {
-  throw new Error("ANDROID_NDK_HOME is unset; export it to an Android NDK path (see docs/handover/music-player-android-port.md). cargo-ndk dumps the whole environment on a missing-NDK panic, so this task refuses to run without it.");
+const { existsSync, readdirSync, readFileSync, rmSync } = require("node:fs");
+const { join } = require("node:path");
+const sdk = process.env.ANDROID_HOME;
+if (!sdk) {
+  throw new Error("ANDROID_HOME is unset; the android-sdk mise tool exports it. Run `mise install` at the repo root.");
 }
+const ndkDir = join(sdk, "ndk");
+// An NDK install is a version dir carrying the CMake toolchain file; ignore anything else.
+const ndks = existsSync(ndkDir)
+  ? readdirSync(ndkDir).filter((e) => existsSync(join(ndkDir, e, "build", "cmake", "android.toolchain.cmake")))
+  : [];
+if (ndks.length === 0) {
+  throw new Error(`No NDK under ${ndkDir}; run \`mise run prepare:android\` once to install it.`);
+}
+// Pick the highest version, matching cargo-ndk's own autodetect choice.
+const ndkHome = join(ndkDir, ndks.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).at(-1));
+const toolchainFile = join(ndkHome, "build", "cmake", "android.toolchain.cmake");
+// Self-heal against a poisoned opusic-sys CMake cache. If a configure ever ran
+// without the android toolchain (a host build: e.g. a bare `cargo ndk build` with
+// ANDROID_NDK_HOME unset) or against a different NDK, its cached compiler checks
+// are wrong for aarch64 (`SSE1_SUPPORTED:INTERNAL=1` from a host x86 clang). CMake
+// never re-evaluates those cached checks, so a later aarch64 compile dies on
+// `-msse unsupported`. Purge any opusic-sys build dir whose cache is not exactly
+// our android toolchain (or carries an x86 SSE marker); a healthy cache is kept,
+// so incremental builds stay fast. This makes the poisoning recurrence impossible
+// through this task, even after a stray manual run or an NDK bump.
+const buildRoot = "target/aarch64-linux-android";
+if (existsSync(buildRoot)) {
+  for (const profile of readdirSync(buildRoot)) {
+    const profBuild = join(buildRoot, profile, "build");
+    if (!existsSync(profBuild)) {
+      continue;
+    }
+    for (const entry of readdirSync(profBuild)) {
+      if (!entry.startsWith("opusic-sys-")) {
+        continue;
+      }
+      const cachePath = join(profBuild, entry, "out", "build", "CMakeCache.txt");
+      if (!existsSync(cachePath)) {
+        continue;
+      }
+      const cache = readFileSync(cachePath, "utf8");
+      const healthy = cache.includes(toolchainFile) && !cache.includes("SSE1_SUPPORTED:INTERNAL=1");
+      if (!healthy) {
+        console.log(`Purging poisoned opusic-sys CMake cache (forces clean reconfigure): ${join(profBuild, entry)}`);
+        rmSync(join(profBuild, entry), { recursive: true, force: true });
+      }
+    }
+  }
+}
+// cargo-ndk autodetects the NDK for its own Rust cross-toolchain, but it does NOT
+// export ANDROID_NDK_HOME to child build scripts. opusic-sys (bundled libopus)
+// reads ANDROID_NDK_HOME to apply the CMake android toolchain; without it that
+// build silently falls back to a HOST compile (and a /usr/local install). So set
+// it explicitly, derived from the mise SDK, keeping the build self-contained.
 const { execFileSync } = require("node:child_process");
 execFileSync(
   "cargo",
   ["ndk", "-t", "arm64-v8a", "--platform", "26", "-o", "../app/src/main/jniLibs", "build", "--release"],
-  { stdio: "inherit", env: process.env },
+  { stdio: "inherit", env: { ...process.env, ANDROID_NDK_HOME: ndkHome } },
 );
 '''
 
