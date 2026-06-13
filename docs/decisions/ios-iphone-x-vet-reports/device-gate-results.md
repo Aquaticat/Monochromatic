@@ -491,6 +491,72 @@ so a rendered number proves V8 actually executed the bundle, not merely that the
     metadata bridge. No `.m`/`.c`/`.cpp`/`.mm`, no Swift glue: only a C-ABI declaration, a modulemap, and a
     linker flag, all config/declarations. This is the cleanest Rust crossing of any gate so far.
 
+### Lynx: device leg PASS + Rust crossing PASS (jitless engine survives AMFI); simulator leg pending
+
+Status: device render + Rust crossing confirmed on the iPhone X 2026-06-12; the device leg is the
+load-bearing AMFI test and it passes. Simulator leg (iOS 26.5) still building at the time of this commit,
+so this is not yet a dual-target FULL PASS. The Rust crossing uses a pure Objective-C `LynxModule` `.m`
+shim (the owner-approved thin-bridge deviation), not a `.mm`.
+
+Lynx 3.8.1 (`Lynx/Framework` + `PrimJS/quickjs,napi` 3.8.0, CocoaPods, no devtool) with an
+`@lynx-js/rspeedy` 0.14.5 `react-ts` bundle, assembled as a hand-built native app (xcodegen project +
+CocoaPods workspace) at `/Volumes/MacData/ios-vet/lynxgate`. `LynxView` is a genuine UIKit `UIView`
+subclass (header-verified `@interface LynxView : UIView`), not a WKWebView; it renders through native
+`LynxUI` text/image/list views. The JS bundle computes `[1..6].reduce((a,b)=>a*b,1) = 720`, so a rendered
+number proves the JS engine executed the bundle, not merely that the process launched.
+
+- The device leg IS the gate. The iOS Simulator does not enforce AMFI / the W^X executable-memory
+  prohibition, so only the iPhone X can answer the jitless-engine question. On the iPhone X (iOS 16.7) the
+  screen reads "Lynx Gate / JS: 720 / Rust: 720 / CROSSING OK": a jitless JS engine initialized and ran
+  the bundle on-device with no AMFI execmem kill and no crash report. Engine identity: Lynx's iOS build
+  ships PrimJS (a QuickJS-derived template interpreter, handlers baked into `__TEXT` at build, no
+  `PROT_EXEC`/`MAP_JIT`) as the lightweight engine and JavaScriptCore as the only alternative; V8 is not
+  compiled on iOS. Both compiled iOS engines are jitless on a non-entitled device, so the AMFI-survival
+  finding holds regardless of which the background runtime selected. The default-engine selection
+  (`force_use_lightweight_js_engine`) is not echoed in the device's default-level syslog, so this records
+  "a jitless engine, PrimJS by default" rather than asserting PrimJS specifically from the render alone.
+  Built `-configuration Debug` from the xcodegen-generated `LynxGate.xcworkspace` with the proven
+  vet-keychain wrapper (unlock + search-list add + `OTHER_CODE_SIGN_FLAGS=--keychain`), upgrade-installed,
+  held alive with `idevicedebug -n run`.
+- a11y: `LynxView` renders native UIKit views, so a11y is native UIKit (VoiceOver owed, task #7).
+- Rust crossing (PASS on device): `rust_gate_answer() = 720` crosses Rust -> JS and renders "Rust: 720 /
+  CROSSING OK". The native surface is a pure-Objective-C `RustGateModule` implementing the `LynxModule`
+  protocol (`+name`, `+methodLookup` mapping the JS method `answer` to the `-answer` selector), registered
+  with `[LynxConfig registerModule:RustGateModule.class]`, and called from JS as
+  `NativeModules.RustGateModule.answer()`. The `-answer` body calls `extern int rust_gate_answer(void)`
+  (declaring an extern C function in a `.m` is plain C, a strict subset of Objective-C, no C++/`.mm`).
+  Unlike NativeScript, the Rust symbol is referenced by native code (the `-answer` IMP), not only by JS at
+  runtime, so there is no metadata-bridge / dead-strip-of-an-unreferenced-symbol problem.
+- Three non-obvious snags this gate surfaced, all fixed in CocoaPods/build config (no edits to vendored
+  Lynx source):
+  - Lynx 3.8.1 and PrimJS 3.8.0 compile each `.cc`/`.m` with a per-file `-Wall -Werror ...`
+    `COMPILER_FLAGS`. Xcode 26's clang promotes a new strictness warning (`-Wc99-designator` in
+    `core/runtime/lepus/vm_context.cc`) that this `-Werror` turns into a hard error (the same Xcode-26
+    family as Lynx issues #3157/#3433, but a warning they have not yet patched for 3.8.1). Fix: a Podfile
+    `post_install` hook appends `-Wno-error` to the END of every per-file `COMPILER_FLAGS` string (last
+    flag wins, downgrading `-Werror`), plus `GCC_TREAT_WARNINGS_AS_ERRORS = NO`. 930 files patched.
+  - xcodegen's `framework:` dependency for the Rust static-library xcframework did NOT survive CocoaPods
+    integration into the app's link phase: the project carried the file reference and the `-L`/`-F` search
+    paths, but the archive was never linked (`-lrustgate` absent), so the symbol was left undefined and
+    dead-strip dropped the `-answer` IMP while the link still "succeeded". Fix: link the Rust lib via the
+    `rust-gate` local pod (`vendored_frameworks`, the same pod RN and NativeScript used) so CocoaPods adds
+    `-l"rustgate"`, plus `OTHER_LDFLAGS = $(inherited) -u _rust_gate_answer` as a dead-strip-root guarantee
+    that doubles as a link-time assertion the lib is actually present.
+  - Xcode 16+ `ENABLE_DEBUG_DYLIB`: a Debug build splits the app into a thin launcher (`LynxGate`, 87 KB,
+    just loads `@rpath/LynxGate.debug.dylib`) plus `LynxGate.debug.dylib` (49 MB) holding all the real code
+    (Lynx statically linked, `RustGateModule`, `T _rust_gate_answer`). An `nm` symbol check on a Debug
+    build must target the `.debug.dylib`, not the launcher (Release has no split). This briefly masked the
+    successful link until the dylib was checked directly. General note for every future gate's `nm` check.
+- Bundle wiring (the silent-failure point: a missing bundle renders blank, not an error): `npm run build`
+  emits `dist/main.lynx.bundle` (86 KB), shipped flat in the `.app` and loaded by a `TemplateProvider`
+  (`pathForResource:@"main.lynx" ofType:@"bundle"`). Xcode types the `.bundle` file as `wrapper.cfbundle`
+  but copies it intact (verified 85966 bytes inside the built `.app`).
+- Build path: `npm run build` (rspeedy) for the bundle, then xcodegen `generate` + `pod install` for the
+  native app, then build the `.xcworkspace` with the vet-keychain wrapper. There is no Lynx CLI scaffold
+  for a signable native app (the LynxExplorer in the repo is the only reference); the integration is the
+  hand-built pattern above. Toolchain installed: Node, `@lynx-js/rspeedy`/`create-rspeedy`, xcodegen,
+  CocoaPods, xcodeproj gem.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
