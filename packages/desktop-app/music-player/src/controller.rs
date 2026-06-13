@@ -767,6 +767,51 @@ impl Controller {
         self.emit(Update::Playing(on));
     }
 
+    // What:     `fn emit_no_track(&self)`. Tell the UI that NOTHING is current: a cleared
+    //           now-playing label and a reset seek bar. `&self` is a SHARED (read-only) borrow
+    //           (we only send messages, never mutate state here).
+    // Why:      The desktop's `current-index` and `track-name` UI properties change ONLY via a
+    //           `NowPlaying` emit, so clearing the queue cursor is not enough; we must also
+    //           push the "nothing playing" view on a normal open or a no-selection restore.
+    // TS map:   `emitNoTrack(): void`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // emitNoTrack(): void {
+    //   this.emit({ kind: "nowPlaying", index: null, name: "", duration: 0 });
+    //   this.emit({ kind: "position", secs: 0 });
+    // }
+    // ```
+    fn emit_no_track(&self) {
+        // What:     `self.emit(Update::NowPlaying { index: None, name: String::new(), duration: 0.0 });`.
+        //           Struct-variant literal: `index: None` is the absent `Option<usize>` (the UI
+        //           maps it to its -1 "no highlight" sentinel); `String::new()` builds a fresh
+        //           empty OWNED `String` (sibling: a borrowed `&str`; the field is owned); and
+        //           `0.0` is an `f64` zero duration.
+        // Why:      Blank the now-playing label (the window title then falls back to "Music
+        //           Player") and drop any row highlight.
+        // TS map:   `this.emit({ kind: "nowPlaying", index: null, name: "", duration: 0 });`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.emit({ kind: "nowPlaying", index: null, name: "", duration: 0 });
+        // ```
+        self.emit(Update::NowPlaying {
+            index: None,
+            name: String::new(),
+            duration: 0.0,
+        });
+        // What:     `self.emit(Update::Position(0.0));`. Tuple-variant carrying an `f64` `0.0`.
+        // Why:      Snap the seek bar to the start so no stale position lingers.
+        // TS map:   `this.emit({ kind: "position", secs: 0 });`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.emit({ kind: "position", secs: 0 });
+        // ```
+        self.emit(Update::Position(0.0));
+    }
+
     // What:     `fn start_queue_measurement(&self)`. Kick off the background sweep that
     //           pre-measures every non-current track in the current queue into the
     //           shared cache. Read-only borrow (it only clones paths and the cache handle).
@@ -892,19 +937,24 @@ impl Controller {
                 // this.startQueueMeasurement();
                 // ```
                 self.start_queue_measurement();
-                // What:     `if self.queue.current_path().is_some() { ... } else { ... }`.
-                //           Load the first track if the queue is non-empty. `.is_some()` is
-                //           true when the `Option` has a value.
-                // Why:      Opening should make a track current.
-                // TS map:   `if (this.queue.currentPath()) { ... } else { ... }`
+                // What:     `if play && self.queue.current_path().is_some() { ... } else { ... }`.
+                //           `play && ...` short-circuits: only a `--start-playing` launch
+                //           (`play == true`) AND a non-empty queue (`current_path()` is `Some`)
+                //           enter the play branch; every other open falls to the else branch.
+                //           `set_tracks` anchored `Some(0)`, so when we DO play, the first
+                //           track is already current.
+                // Why:      Auto-select a track ONLY for the explicit `--start-playing` launch;
+                //           a normal open (folder picker, music-dir auto-load, plain CLI paths)
+                //           must select and load NOTHING until the user picks a track.
+                // TS map:   `if (play && this.queue.currentPath()) { ... } else { ... }`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (this.queue.currentPath()) { ... } else { ... }
+                // if (play && this.queue.currentPath()) { ... } else { ... }
                 // ```
-                if self.queue.current_path().is_some() {
-                    // What:     `let ok = self.load_current();`. Load the current track.
-                    // Why:      Make it ready to play.
+                if play && self.queue.current_path().is_some() {
+                    // What:     `let ok = self.load_current();`. Load the anchored first track.
+                    // Why:      Make it ready, then play it below.
                     // TS map:   `const ok = this.loadCurrent();`
                     //
                     // In TS you'd write (pseudocode):
@@ -912,21 +962,41 @@ impl Controller {
                     // const ok = this.loadCurrent();
                     // ```
                     let ok = self.load_current();
-                    // What:     `self.set_playing(play && ok);`. Play only if asked AND a
-                    //           track loaded. `&&` short-circuits.
-                    // Why:      `play` is true only for a `--start-playing` command-line
-                    //           launch; the folder picker, auto-load, and restore pass
-                    //           false, so they load paused.
-                    // TS map:   `this.setPlaying(play && ok);`
+                    // What:     `self.set_playing(ok);`. Start playback when the track loaded.
+                    //           We are inside `if play`, so `play` is known true here; only the
+                    //           load result gates it.
+                    // Why:      `--start-playing` should begin audio on the first track.
+                    // TS map:   `this.setPlaying(ok);`
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
-                    // this.setPlaying(play && ok);
+                    // this.setPlaying(ok);
                     // ```
-                    self.set_playing(play && ok);
+                    self.set_playing(ok);
                 } else {
-                    // What:     `self.set_playing(false);`. Empty queue -> stopped.
-                    // Why:      Nothing to play.
+                    // What:     `self.queue.clear_selection();`. Drop the cursor that
+                    //           `set_tracks` anchored, so no track is current.
+                    // Why:      Disable auto-selecting a track on a normal open.
+                    // TS map:   `this.queue.clearSelection();`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // this.queue.clearSelection();
+                    // ```
+                    self.queue.clear_selection();
+                    // What:     `self.emit_no_track();`. Push the cleared now-playing view
+                    //           (blank label, no row highlight, reset seek bar) to the UI.
+                    // Why:      Deselecting in the queue alone does not refresh the UI's
+                    //           current-index / track-name properties; this emit does.
+                    // TS map:   `this.emitNoTrack();`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // this.emitNoTrack();
+                    // ```
+                    self.emit_no_track();
+                    // What:     `self.set_playing(false);`. Ensure paused.
+                    // Why:      Nothing is selected, so nothing should be playing.
                     // TS map:   `this.setPlaying(false);`
                     //
                     // In TS you'd write (pseudocode):
@@ -1220,18 +1290,46 @@ impl Controller {
                 // this.queue.setShuffle(shuffle);
                 // ```
                 self.queue.set_shuffle(shuffle);
-                // What:     `if let Some(idx) = current { self.queue.play_index(idx); }`.
-                //           Move the cursor to the saved current track, if any.
-                // Why:      Resume on the right track before spawning the background
-                //           sweep, so the sweep skips the actual current track.
-                // TS map:   `if (current != null) this.queue.playIndex(current);`
+                // What:     `match current { Some(idx) => { self.queue.play_index(idx); } None => { self.queue.clear_selection(); } }`.
+                //           Pattern-match the saved `Option<usize>`: `Some(idx)` moves the
+                //           cursor to that track; `None` (the session had no current track)
+                //           clears the selection that `set_tracks` anchored.
+                // Why:      Resume on the right track when one was saved; otherwise restore the
+                //           "nothing selected" state faithfully instead of auto-selecting track
+                //           0. Done before the background sweep so it skips the current track.
+                // TS map:   `if (current != null) this.queue.playIndex(current); else this.queue.clearSelection();`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
                 // if (current != null) this.queue.playIndex(current);
+                // else this.queue.clearSelection();
                 // ```
-                if let Some(idx) = current {
-                    self.queue.play_index(idx);
+                match current {
+                    // What:     `Some(idx) => { self.queue.play_index(idx); }`. A saved current
+                    //           track: select it (rebuilding the scope around it).
+                    // Why:      Resume where the user left off.
+                    // TS map:   `if (current != null) this.queue.playIndex(current);`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // this.queue.playIndex(idx);
+                    // ```
+                    Some(idx) => {
+                        self.queue.play_index(idx);
+                    }
+                    // What:     `None => { self.queue.clear_selection(); }`. No saved current:
+                    //           deselect (empty scope, null cursor).
+                    // Why:      A session opened-but-never-played should reopen with nothing
+                    //           selected, not auto-select the first track.
+                    // TS map:   `else this.queue.clearSelection();`
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // this.queue.clearSelection();
+                    // ```
+                    None => {
+                        self.queue.clear_selection();
+                    }
                 }
                 // What:     `self.start_queue_measurement();`. Pre-measure the restored
                 //           queue in the background, like any other queue load.
@@ -1301,6 +1399,21 @@ impl Controller {
                 // const loaded = this.loadCurrent();
                 // ```
                 let loaded = self.load_current();
+                // What:     `if !loaded { self.emit_no_track(); }`. When NO track loaded (the
+                //           session had no current track, or every saved file was unreadable),
+                //           push the cleared now-playing view. `!` negates the bool.
+                // Why:      `load_current` emits `NowPlaying` only when it actually loads a
+                //           track, so a no-current restore would otherwise leave a stale label
+                //           and row highlight on screen.
+                // TS map:   `if (!loaded) this.emitNoTrack();`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (!loaded) this.emitNoTrack();
+                // ```
+                if !loaded {
+                    self.emit_no_track();
+                }
                 // What:     `self.emit(Update::Playing(false));`. Mirror paused state.
                 // Why:      Show the Play button.
                 // TS map:   `this.emit({ kind: "playing", on: false });`

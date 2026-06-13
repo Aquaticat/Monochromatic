@@ -937,3 +937,52 @@ fun pageOfIndex(pages: List<Page>, index: Int): Int? {
     // ```
     return if (position < 0) null else position
 }
+
+// What:     `fun rowDisplay(label: String, name: String): String { ... }` declares a PUBLIC
+//           function (no visibility keyword means `public`). Params: `label` is a page's tab
+//           caption and `name` is one of that page's track display strings; both are `String`
+//           (sibling: `Char`, a single UTF-16 code unit). Returns the `String` a row should
+//           SHOW.
+// Why:      A FOLDER tab already names its top-level folder, so repeating it on every row
+//           (`Ado/B/C.opus` under the `Ado` tab) is noise; show `B/C.opus` instead. A LETTER
+//           or `#` tab groups loose root-level files with no folder segment, so their names
+//           stay whole. A pure helper keeps this identical to the desktop's
+//           `pagination::row_display` and unit-testable.
+// TS map:   `function rowDisplay(label: string, name: string): string { ... }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function rowDisplay(label: string, name: string): string {
+//   const prefix = label + "/";
+//   return name.startsWith(prefix) ? name.slice(prefix.length) : name;
+// }
+// ```
+fun rowDisplay(label: String, name: String): String {
+    // What:     `val prefix: String = label + PAGE_SEPARATOR` declares a read-only (`val`)
+    //           `String` `prefix`. `+` here is String CONCATENATION (not a numeric add);
+    //           `PAGE_SEPARATOR` is the file-private `"/"` constant reused so the join char
+    //           matches the split char elsewhere in this file.
+    // Why:      A folder-page name is exactly `<label>/...`, so we test for that whole prefix
+    //           (the trailing `/` is what stops a letter label `A` from matching `Apple.flac`).
+    // TS map:   `const prefix = label + "/";`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const prefix = label + "/";
+    // ```
+    val prefix: String = label + PAGE_SEPARATOR
+    // What:     `return if (name.startsWith(prefix)) name.substring(prefix.length) else name`.
+    //           An `if/else` EXPRESSION whose value is returned. `name.startsWith(prefix)` is a
+    //           plain forward compare (not a regex); `name.substring(prefix.length)` returns
+    //           the text AFTER the `<label>/` prefix; the `else` arm returns the whole `name`.
+    // Why:      Strip the folder prefix on folder pages (`Ado/B/C.opus` -> `B/C.opus`); leave
+    //           letter / `#` page names untouched, since a root file like `Apple.flac` never
+    //           starts with `A/`.
+    // TS map:   `return name.startsWith(prefix) ? name.slice(prefix.length) : name;`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return name.startsWith(prefix) ? name.slice(prefix.length) : name;
+    // ```
+    return if (name.startsWith(prefix)) name.substring(prefix.length) else name
+}

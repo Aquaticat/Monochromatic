@@ -462,6 +462,17 @@ class PlayerController(private val engine: AudioEngine) {
         // this.queue.setTracks(tracks.map((t) => t.displayPath));
         // ```
         queue.setTracks(tracks.map { it.displayPath })
+        // What:     `queue.clearSelection()` drops the cursor that `setTracks` anchored on the
+        //           first track, so no track is current.
+        // Why:      Disable auto-selecting a track: a freshly opened library highlights nothing
+        //           until the user taps a row (Android is tap-to-play).
+        // TS map:   `this.queue.clearSelection();`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.queue.clearSelection();
+        // ```
+        queue.clearSelection()
         // What:     `pages = paginate(queue.displayPaths())` reassigns `pages` from the
         //           paginator over the queue's display paths.
         // Why:      Rebuild the page tabs for the new library.

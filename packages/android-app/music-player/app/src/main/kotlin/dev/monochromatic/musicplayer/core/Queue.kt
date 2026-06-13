@@ -550,6 +550,32 @@ class Queue private constructor(private val rng: Random) {
         rebuildScopeOrder(0)
     }
 
+    // What:     `fun clearSelection() { ... }` declares a public (no visibility keyword)
+    //           instance method, no params, `Unit` (void) return, block body.
+    // Why:      Drop the current-track selection so no track is current and there is no
+    //           playback scope until the user taps one. `PlayerController.openLibrary` calls
+    //           this after `setTracks` so a freshly opened library auto-selects NOTHING.
+    // TS map:   `clearSelection(): void { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // clearSelection(): void { this.rebuildScopeOrder(null); }
+    // ```
+    fun clearSelection() {
+        // What:     `rebuildScopeOrder(null)` calls the private helper with a `null` anchor,
+        //           which (see `rebuildScopeOrder`) empties `order` and nulls `pos`. `null` is
+        //           the absent value of the `Int?` parameter.
+        // Why:      Reuse the single method that owns the scope/cursor invariant instead of
+        //           poking the fields here.
+        // TS map:   `this.rebuildScopeOrder(null);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.rebuildScopeOrder(null);
+        // ```
+        rebuildScopeOrder(null)
+    }
+
     // What:     `fun setShuffle(mode: ShuffleMode) { ... }` declares an instance
     //           method taking one `ShuffleMode` enum parameter `mode`, returning
     //           `Unit` (void), block body.
@@ -607,10 +633,12 @@ class Queue private constructor(private val rng: Random) {
         // ```
         shuffle = mode
         // What:     `rebuildScopeOrder(current)` calls the private helper, passing the
-        //           remembered `Int?` anchor (which may be `null` for an empty queue;
-        //           the helper handles `null` by defaulting to the first track).
+        //           remembered `Int?` anchor. When `current` is `null` (nothing selected, e.g.
+        //           shuffle toggled before tapping a track), the helper DESELECTS (empty scope,
+        //           null cursor) rather than defaulting to the first track.
         // Why:      Apply the new mode by recomputing the scope order, anchored on the
-        //           previously playing track so it stays current.
+        //           previously playing track so it stays current; with no current track,
+        //           toggling shuffle must keep nothing selected.
         // TS map:   `this.rebuildScopeOrder(current);`
         //
         // In TS you'd write (pseudocode):
@@ -1383,25 +1411,38 @@ class Queue private constructor(private val rng: Random) {
             // ```
             return
         }
-        // What:     `val clamped: Int = minOf(anchor ?: 0, tracks.size - 1)` declares a
-        //           read-only `Int` local `clamped`. Two pieces:
-        //           - `anchor ?: 0` is the ELVIS operator: use `anchor`'s value when
-        //             non-null, otherwise `0`. This turns the `Int?` parameter into a
-        //             plain `Int` defaulting to the first track.
-        //           - `minOf(x, y)` is a stdlib function returning the smaller of two
-        //             values; here it CLAMPS the anchor to at most `tracks.size - 1`
-        //             (the last valid index).
-        // Why:      Always anchor on a real, in-range index: default a missing anchor
-        //           to the first track, and clamp a stale index that points past the
-        //           end.
-        // TS map:   `const clamped: number = Math.min(anchor ?? 0, this.tracks.length - 1);`
-        //           — Kotlin's `?:` is TS's `??`; `minOf` is `Math.min`.
+        // What:     `if (anchor == null) { order = emptyList(); pos = null; return }`. A `null`
+        //           anchor means "NO current track": assign the shared zero-length read-only
+        //           list to `order`, null the `pos` cursor, and `return` early. The `== null`
+        //           check also SMART-CASTS `anchor` to a non-null `Int` for the lines below.
+        // Why:      `setTracks` anchors `0`, but `clearSelection` (and toggling shuffle while
+        //           nothing is selected) passes `null` to DESELECT, so a freshly opened library
+        //           highlights nothing until the user taps a track.
+        // TS map:   `if (anchor === null) { this.order = []; this.pos = null; return; }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const clamped: number = Math.min(anchor ?? 0, this.tracks.length - 1);
+        // if (anchor === null) { this.order = []; this.pos = null; return; }
         // ```
-        val clamped: Int = minOf(anchor ?: 0, tracks.size - 1)
+        if (anchor == null) {
+            order = emptyList()
+            pos = null
+            return
+        }
+        // What:     `val clamped: Int = minOf(anchor, tracks.size - 1)` declares a read-only
+        //           (`val`) `Int` local `clamped`. `anchor` is now smart-cast to a non-null
+        //           `Int` (the null case returned above); `minOf(x, y)` returns the smaller of
+        //           two values, CLAMPING the anchor to at most `tracks.size - 1` (the last
+        //           valid index).
+        // Why:      Defensive: a stale index must not point past the end of the queue.
+        // TS map:   `const clamped: number = Math.min(anchor, this.tracks.length - 1);`
+        //           — `minOf` is `Math.min`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const clamped: number = Math.min(anchor, this.tracks.length - 1);
+        // ```
+        val clamped: Int = minOf(anchor, tracks.size - 1)
         // What:     `val scope: List<Int> = scopeIndices(clamped)` declares a read-only
         //           `List<Int>` local `scope`, the scope's indices in ascending load
         //           order, by calling the private `scopeIndices` helper with the

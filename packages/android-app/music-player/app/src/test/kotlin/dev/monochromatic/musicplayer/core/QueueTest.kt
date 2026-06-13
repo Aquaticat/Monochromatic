@@ -1893,5 +1893,111 @@ class QueueTest {
         // ```
         assertEquals(firstOrder, secondOrder)
     }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
+    // Why:      Registers `clearSelectionDeselectsButKeepsTracks` with the runner.
+    // TS map:   The `test("...", () => {` wrapper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("clear selection deselects but keeps tracks", () => {
+    // ```
+    @Test
+    // What:     `fun clearSelectionDeselectsButKeepsTracks() { ... }` declares a no-arg
+    //           `Unit`-returning test method, block body.
+    // Why:      Pins that `clearSelection` drops the current track (so a fresh open
+    //           auto-selects nothing) while KEEPING every track, and that tapping selects
+    //           again. Mirrors the desktop's `clear_selection_deselects_but_keeps_tracks`.
+    // TS map:   `() => { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // () => { /* ...arrange + assertions below... *\/ }
+    // ```
+    fun clearSelectionDeselectsButKeepsTracks() {
+        // What:     `val q = Queue.withRngSeed(1)` constructs a seeded empty queue.
+        // Why:      A deterministic queue to load and clear.
+        // TS map:   `const q = Queue.withRngSeed(1n);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const q = Queue.withRngSeed(1n);
+        // ```
+        val q = Queue.withRngSeed(1)
+        // What:     `q.setTracks(paths(3))` loads three root tracks, anchoring the cursor on
+        //           track 0.
+        // Why:      Set up a non-empty queue with a selection to clear.
+        // TS map:   `q.setTracks(paths(3));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // q.setTracks(paths(3));
+        // ```
+        q.setTracks(paths(3))
+        // What:     `assertEquals(0, q.currentIndex())` confirms the cursor anchored on track 0.
+        // Why:      Establish the pre-clear state so the clear is meaningful.
+        // TS map:   `expect(q.currentIndex()).toEqual(0);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.currentIndex()).toEqual(0);
+        // ```
+        assertEquals(0, q.currentIndex())
+        // What:     `q.clearSelection()` drops the cursor and the scope.
+        // Why:      The behaviour under test (a normal open auto-selects nothing).
+        // TS map:   `q.clearSelection();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // q.clearSelection();
+        // ```
+        q.clearSelection()
+        // What:     `assertNull(q.currentIndex())` asserts the current index is now `null`.
+        // Why:      Nothing is auto-selected once cleared.
+        // TS map:   `expect(q.currentIndex()).toBeNull();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.currentIndex()).toBeNull();
+        // ```
+        assertNull(q.currentIndex())
+        // What:     `assertEquals(3, q.len())` confirms all three tracks survive the clear.
+        // Why:      The UI list still shows every track; only the selection is gone.
+        // TS map:   `expect(q.len()).toEqual(3);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.len()).toEqual(3);
+        // ```
+        assertEquals(3, q.len())
+        // What:     `assertNull(q.advance(false))` asserts advancing yields `null` with no
+        //           cursor.
+        // Why:      Next / auto-advance must not invent a track when nothing is selected.
+        // TS map:   `expect(q.advance(false)).toBeNull();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.advance(false)).toBeNull();
+        // ```
+        assertNull(q.advance(false))
+        // What:     `assertEquals(2, q.playIndex(2))` confirms tapping track 2 returns its index.
+        // Why:      Selection works after a clear (rebuilds the scope around the tapped track).
+        // TS map:   `expect(q.playIndex(2)).toEqual(2);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.playIndex(2)).toEqual(2);
+        // ```
+        assertEquals(2, q.playIndex(2))
+        // What:     `assertEquals(2, q.currentIndex())` confirms the cursor moved to track 2.
+        // Why:      The tapped track is now current.
+        // TS map:   `expect(q.currentIndex()).toEqual(2);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(q.currentIndex()).toEqual(2);
+        // ```
+        assertEquals(2, q.currentIndex())
+    }
     //endregion
 }

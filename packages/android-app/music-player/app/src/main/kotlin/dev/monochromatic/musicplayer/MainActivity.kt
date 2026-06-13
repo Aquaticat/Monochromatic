@@ -692,6 +692,18 @@ import dev.monochromatic.musicplayer.core.PageEntry
 // ```
 import dev.monochromatic.musicplayer.core.ShuffleMode
 
+// What:     `import dev.monochromatic.musicplayer.core.rowDisplay` imports the
+//           `rowDisplay(label, name)` FUNCTION that strips a folder tab's `<label>/` prefix
+//           from a track's display name (and leaves letter / `#` tab names whole).
+// Why:      `TrackRow` shows the path BELOW the active folder tab, not the full relative path.
+// TS map:   `import { rowDisplay } from "./core/Pagination";`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { rowDisplay } from "./core/Pagination";
+// ```
+import dev.monochromatic.musicplayer.core.rowDisplay
+
 // What:     `import kotlinx.coroutines.delay` imports `delay(ms)`, a `suspend` function
 //           that pauses the coroutine for the given milliseconds without blocking a
 //           thread.
@@ -2625,14 +2637,40 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
         // ```
         MaterialTheme.colorScheme.onSurface
     }
-    // What:     `Text( text = item.name, color = rowColor, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(rowBackground).clickable { ... }.padding(horizontal = 8.dp, vertical = 8.dp), )`
-    //           renders the row as a single `Text`. Named args: `text` is the display name;
-    //           `color` is `rowColor`; `maxLines = 1` and `overflow = TextOverflow.Ellipsis`
-    //           clip long names with an ellipsis. The `modifier` chain fills the width, paints
-    //           `rowBackground`, makes the row `clickable { ... }` (the trailing lambda is the
-    //           tap handler), then pads it.
-    // Why:      Show the track name, highlight it when current, and handle taps.
-    // TS map:   `<Text style={{ color: rowColor }} numberOfLines={1} ellipsizeMode="tail" modifier={Modifier.fillMaxWidth().background(rowBackground).clickable(onTap).padding(...)}>{item.name}</Text>`.
+    // What:     `val rowLabel: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()`
+    //           declares a read-only `String` holding the ACTIVE tab's caption.
+    //           `getOrNull(i)` returns the label or `null` for an out-of-range index (no
+    //           throw); `.orEmpty()` turns a `null` into the empty string `""`.
+    // Why:      `rowDisplay` needs the current page's folder label to know which prefix to trim
+    //           from this row; `state.pageItems` are exactly that page's entries.
+    // TS map:   `const rowLabel = state.pageLabels[state.selectedPage] ?? "";`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rowLabel = state.pageLabels[state.selectedPage] ?? "";
+    // ```
+    val rowLabel: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()
+    // What:     `val rowText: String = rowDisplay(rowLabel, item.name)` declares a read-only
+    //           `String`: the text to SHOW. `rowDisplay` strips the `<rowLabel>/` folder prefix
+    //           on folder tabs, or returns the whole name on letter / `#` tabs (see
+    //           `Pagination.kt`).
+    // Why:      A folder tab already names its folder, so the row shows only the path below it.
+    // TS map:   `const rowText = rowDisplay(rowLabel, item.name);`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rowText = rowDisplay(rowLabel, item.name);
+    // ```
+    val rowText: String = rowDisplay(rowLabel, item.name)
+    // What:     `Text( text = rowText, color = rowColor, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(rowBackground).clickable { ... }.padding(horizontal = 8.dp, vertical = 8.dp), )`
+    //           renders the row as a single `Text`. Named args: `text` is the trimmed display
+    //           name (`rowText`); `color` is `rowColor`; `maxLines = 1` and
+    //           `overflow = TextOverflow.Ellipsis` clip long names with an ellipsis. The
+    //           `modifier` chain fills the width, paints `rowBackground`, makes the row
+    //           `clickable { ... }` (the trailing lambda is the tap handler), then pads it.
+    // Why:      Show the track name (folder-tab prefix trimmed), highlight it when current, and
+    //           handle taps.
+    // TS map:   `<Text style={{ color: rowColor }} numberOfLines={1} ellipsizeMode="tail" modifier={Modifier.fillMaxWidth().background(rowBackground).clickable(onTap).padding(...)}>{rowText}</Text>`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -2641,10 +2679,10 @@ private fun TrackRow(item: PageEntry, state: PlayerUiState, controller: PlayerCo
     //   maxLines={1}
     //   overflow={TextOverflow.Ellipsis}
     //   modifier={Modifier.fillMaxWidth().background(rowBackground).clickable(onTap).padding({ horizontal: dp(8), vertical: dp(8) })}
-    // >{item.name}</Text>
+    // >{rowText}</Text>
     // ```
     Text(
-        text = item.name,
+        text = rowText,
         color = rowColor,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,

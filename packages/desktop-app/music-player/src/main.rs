@@ -598,24 +598,29 @@ fn refresh_page(app: &AppWindow, target: Option<i32>) {
     // const items = (pages[clamped]?.entries ?? []).map((e) => ({ name: e.name, index: e.index }));
     // ```
     let items: Vec<PageItem> = match pages.get(clamped as usize) {
-        // What:     `Some(page) => page.entries.iter().map(|entry| PageItem { name: entry.name.as_str().into(), index: entry.index as i32 }).collect()`.
-        //           Destructure the present page; `.iter()` borrows its entries; the
-        //           closure builds a Slint `PageItem`: `entry.name.as_str().into()`
-        //           borrows the name as `&str` then `.into()` converts it to the
-        //           `SharedString` field, and `entry.index as i32` narrows the index.
+        // What:     `Some(page) => page.entries.iter().map(|entry| PageItem { name: pagination::row_display(&page.label, &entry.name).into(), index: entry.index as i32 }).collect()`.
+        //           Destructure the present page; `.iter()` borrows its entries; the closure
+        //           builds a Slint `PageItem`. `pagination::row_display(&page.label, &entry.name)`
+        //           lends the page LABEL and the full display NAME read-only (each `&` borrows,
+        //           transferring no ownership) and returns a `&str` VIEW: the name with the
+        //           `<label>/` folder prefix stripped on folder pages, or the whole name on
+        //           letter / `#` pages. `.into()` then converts that `&str` into the
+        //           `SharedString` field (copying it). `entry.index as i32` narrows the index.
         //           `.collect()` gathers into the `Vec<PageItem>`.
-        // Why:      Carry the real queue index so a click maps back correctly.
-        // TS map:   `page.entries.map(e => ({ name: e.name, index: e.index }))`
+        // Why:      Show the path BELOW the folder tab (the folder name is already the tab
+        //           caption), while still carrying the real queue index so a click maps back
+        //           correctly.
+        // TS map:   `page.entries.map(e => ({ name: rowDisplay(page.label, e.name), index: e.index }))`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // page.entries.map((entry) => ({ name: entry.name, index: entry.index }));
+        // page.entries.map((entry) => ({ name: rowDisplay(page.label, entry.name), index: entry.index }));
         // ```
         Some(page) => page
             .entries
             .iter()
             .map(|entry| PageItem {
-                name: entry.name.as_str().into(),
+                name: pagination::row_display(&page.label, &entry.name).into(),
                 index: entry.index as i32,
             })
             .collect(),

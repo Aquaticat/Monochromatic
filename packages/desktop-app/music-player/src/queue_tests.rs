@@ -345,3 +345,47 @@ fn display_paths_strips_common_prefix() {
         vec!["A/Alb/01.flac".to_string(), "B/Alb/01.flac".to_string()]
     );
 }
+
+// What:     `#[test]` clearing the selection deselects without losing the tracks.
+// Why:      Opening a library auto-selects nothing; the queue must report no current track
+//           yet still hold every track for the UI list, and selection must work afterward.
+// TS map:   `test("clear selection deselects but keeps tracks", () => { ... })`.
+#[test]
+fn clear_selection_deselects_but_keeps_tracks() {
+    // What:     `let mut q = Queue::with_rng_seed(1);` a mutable, seeded queue.
+    // Why:      Deterministic; we call mutating methods.
+    // TS map:   `const q = Queue.withRngSeed(1n);`
+    let mut q = Queue::with_rng_seed(1);
+    // What:     load 3 tracks (which anchors the cursor on track 0).
+    // Why:      Set up a non-empty queue with a selection to clear.
+    // TS map:   `q.setTracks(paths(3));`
+    q.set_tracks(paths(3));
+    // What:     `Some(0)` is the current index after loading.
+    // Why:      Confirm the pre-clear state so the clear is meaningful.
+    // TS map:   `expect(q.currentIndex()).toBe(0);`
+    assert_eq!(q.current_index(), Some(0));
+    // What:     `q.clear_selection();` drops the cursor and scope.
+    // Why:      The behaviour under test (a normal open auto-selects nothing).
+    // TS map:   `q.clearSelection();`
+    q.clear_selection();
+    // What:     `None` is the current index after clearing.
+    // Why:      Nothing is auto-selected once cleared.
+    // TS map:   `expect(q.currentIndex()).toBe(null);`
+    assert_eq!(q.current_index(), None);
+    // What:     length is still 3.
+    // Why:      The tracks survive the clear; only the selection is gone.
+    // TS map:   `expect(q.len()).toBe(3);`
+    assert_eq!(q.len(), 3);
+    // What:     advancing with no cursor yields None.
+    // Why:      Next / auto-advance must not invent a track when nothing is selected.
+    // TS map:   `expect(q.advance(false)).toBe(null);`
+    assert_eq!(q.advance(false), None);
+    // What:     `Some(2)` is returned when tapping track 2.
+    // Why:      Selection works after a clear (rebuilds the scope around the tapped track).
+    // TS map:   `expect(q.playIndex(2)).toBe(2);`
+    assert_eq!(q.play_index(2), Some(2));
+    // What:     `Some(2)` is the current index after the tap.
+    // Why:      Confirm the cursor moved to the tapped track.
+    // TS map:   `expect(q.currentIndex()).toBe(2);`
+    assert_eq!(q.current_index(), Some(2));
+}

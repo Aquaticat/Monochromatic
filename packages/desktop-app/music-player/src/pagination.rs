@@ -480,6 +480,72 @@ pub fn page_of_index(pages: &[Page], index: usize) -> Option<usize> {
         .position(|page| page.entries.iter().any(|entry| entry.index == index))
 }
 
+// What:     `pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str`. Given a page's
+//           LABEL and one of that page's track display NAMES, return the text a row should
+//           SHOW. `<'a>` is a LIFETIME parameter: it ties the returned `&str` to the same
+//           `name` that came in, so the result borrows from `name` and lives exactly as long
+//           as it. `&str` is a BORROWED string slice (sibling: the owned `String`); we hand
+//           back a slice INTO `name`, never a fresh allocation. `label` needs no lifetime
+//           because we never return a piece of it.
+// Why:      A FOLDER tab already names its top-level folder, so repeating it on every row
+//           (`Ado/B/C.opus` under the `Ado` tab) is noise; show `B/C.opus` instead. A LETTER
+//           or `#` tab groups loose root-level files that have no folder segment to strip, so
+//           their names stay whole. One pure helper keeps both flavours' trimming identical
+//           and unit-tested.
+// TS map:   `function rowDisplay(label: string, name: string): string` — TS strings are GC'd
+//           with no borrowed-vs-owned split, so the `<'a>` lifetime simply vanishes.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function rowDisplay(label: string, name: string): string {
+//   const prefix = label + "/";
+//   return name.startsWith(prefix) ? name.slice(prefix.length) : name;
+// }
+// ```
+pub fn row_display<'a>(label: &str, name: &'a str) -> &'a str {
+    // What:     `match name.strip_prefix(label) { ... }`. `name.strip_prefix(label)` returns
+    //           `Option<&str>`: `Some(rest)` (the text AFTER `label`, a slice borrowed from
+    //           `name`) when `name` starts with `label`, otherwise `None`. It is a plain
+    //           forward comparison, not a regex.
+    // Why:      A folder-page name is exactly `<label>/...`, so a label match is the first
+    //           half of detecting that shape; the `/` check below is the second half.
+    // TS map:   `const rest = name.startsWith(label) ? name.slice(label.length) : undefined;`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rest = name.startsWith(label) ? name.slice(label.length) : undefined;
+    // ```
+    match name.strip_prefix(label) {
+        // What:     `Some(rest) => rest.strip_prefix('/').unwrap_or(name)`. We matched the
+        //           label; `rest` is the remainder. `rest.strip_prefix('/')` returns
+        //           `Some(after_slash)` only when `rest` begins with a `/`, else `None`;
+        //           `.unwrap_or(name)` extracts that slash-stripped slice or, when there was
+        //           no leading `/`, FALLS BACK to the whole original `name`.
+        // Why:      `Ado/B/C.opus` under label `Ado` becomes `B/C.opus`; a root file that
+        //           merely shares the label's leading letters (label `A`, name `Apple.flac`,
+        //           no `/` after the `A`) is returned untouched, so letter tabs never trim.
+        // TS map:   `return rest !== undefined && rest.startsWith("/") ? rest.slice(1) : name;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return rest !== undefined && rest.startsWith("/") ? rest.slice(1) : name;
+        // ```
+        Some(rest) => rest.strip_prefix('/').unwrap_or(name),
+        // What:     `None => name`. `name` did not start with `label` at all (e.g. the `#`
+        //           catch-all label against `#tag.flac` once `#` is stripped there is no `/`,
+        //           but a name like `élan.flac` under `#` never matched `#` to begin with).
+        //           Return the whole `name`.
+        // Why:      Nothing to strip when the label is not a prefix.
+        // TS map:   `return name;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return name;
+        // ```
+        None => name,
+    }
+}
+
 // What:     `#[cfg(test)] mod tests { ... }` declares a submodule compiled ONLY during
 //           `cargo test`. `#[cfg(test)]` is a conditional-compilation attribute. Unlike
 //           the other modules' flat sibling `*_tests.rs` files, this one is INLINE.
@@ -973,5 +1039,66 @@ mod tests {
         // expect(pageOfIndex(pages, 99)).toBe(null);
         // ```
         assert_eq!(page_of_index(&pages, 99), None);
+    }
+
+    // What:     `#[test] fn row_display_trims_only_folder_tab_prefix()`. A test case for the
+    //           `row_display` helper.
+    // Why:      Prove folder tabs drop the `<label>/` prefix while letter / `#` tabs keep the
+    //           whole name (the reported display change).
+    // TS map:   `test("row display trims only folder tab prefix", () => { ... })`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("row display trims only folder tab prefix", () => { ... });
+    // ```
+    #[test]
+    fn row_display_trims_only_folder_tab_prefix() {
+        // What:     `assert_eq!(row_display("Ado", "Ado/B/C.opus"), "B/C.opus");`. A folder
+        //           page (label `Ado`, name nested under `Ado/`): the `Ado/` prefix is
+        //           stripped.
+        // Why:      The `Ado` tab already names the folder; the row shows only the path below
+        //           it.
+        // TS map:   `expect(rowDisplay("Ado", "Ado/B/C.opus")).toBe("B/C.opus");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("Ado", "Ado/B/C.opus")).toBe("B/C.opus");
+        // ```
+        assert_eq!(row_display("Ado", "Ado/B/C.opus"), "B/C.opus");
+        // What:     `assert_eq!(row_display("A", "Apple.flac"), "Apple.flac");`. A LETTER page
+        //           (label `A`) whose root file merely starts with `A` but has no `/`: it is
+        //           returned UNCHANGED.
+        // Why:      Loose files grouped by first letter have no folder to trim; the bare `A`
+        //           must not be chopped off the filename.
+        // TS map:   `expect(rowDisplay("A", "Apple.flac")).toBe("Apple.flac");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("A", "Apple.flac")).toBe("Apple.flac");
+        // ```
+        assert_eq!(row_display("A", "Apple.flac"), "Apple.flac");
+        // What:     `assert_eq!(row_display("#", "#tag.flac"), "#tag.flac");`. The `#`
+        //           catch-all page: a root file starting with `#` is returned unchanged
+        //           (after stripping `#` there is no `/`).
+        // Why:      The catch-all is a letter-style tab; its loose files keep their names.
+        // TS map:   `expect(rowDisplay("#", "#tag.flac")).toBe("#tag.flac");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("#", "#tag.flac")).toBe("#tag.flac");
+        // ```
+        assert_eq!(row_display("#", "#tag.flac"), "#tag.flac");
+        // What:     `assert_eq!(row_display("A", "A/song.flac"), "song.flac");`. A FOLDER
+        //           literally named `A` (its names are `A/...`): this IS a folder tab, so the
+        //           `A/` prefix is stripped.
+        // Why:      The distinction is the `/` after the label, not the label's length: a
+        //           one-letter FOLDER still trims, unlike a one-letter LETTER bucket.
+        // TS map:   `expect(rowDisplay("A", "A/song.flac")).toBe("song.flac");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("A", "A/song.flac")).toBe("song.flac");
+        // ```
+        assert_eq!(row_display("A", "A/song.flac"), "song.flac");
     }
 }

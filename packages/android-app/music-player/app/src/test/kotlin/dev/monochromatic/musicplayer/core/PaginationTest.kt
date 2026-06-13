@@ -671,4 +671,71 @@ class PaginationTest {
         // ```
         assertNull(pageOfIndex(pages, 99))
     }
+
+    // What:     `@Test` annotation marking the next method as a JUnit test (metadata only).
+    // Why:      Registers `rowDisplayTrimsOnlyFolderTabPrefix` with the runner.
+    // TS map:   The `test("...", () => {` wrapper.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("row display trims only folder tab prefix", () => {
+    // ```
+    @Test
+    // What:     `fun rowDisplayTrimsOnlyFolderTabPrefix() { ... }` declares a no-parameter test
+    //           method returning `Unit`, block body.
+    // Why:      Pins that folder tabs drop the `<label>/` prefix while letter / `#` tabs keep
+    //           the whole name. Mirrors the desktop's `row_display_trims_only_folder_tab_prefix`.
+    // TS map:   `() => { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // () => { /* ...assertions below... *\/ }
+    // ```
+    fun rowDisplayTrimsOnlyFolderTabPrefix() {
+        // What:     `assertEquals("B/C.opus", rowDisplay("Ado", "Ado/B/C.opus"))` is
+        //           `assertEquals(expected, actual)`: EXPECTED `"B/C.opus"`; ACTUAL the helper
+        //           result. A folder page (label `Ado`) strips the `Ado/` prefix.
+        // Why:      The `Ado` tab already names the folder; the row shows the path below it.
+        // TS map:   `expect(rowDisplay("Ado", "Ado/B/C.opus")).toEqual("B/C.opus");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("Ado", "Ado/B/C.opus")).toEqual("B/C.opus");
+        // ```
+        assertEquals("B/C.opus", rowDisplay("Ado", "Ado/B/C.opus"))
+        // What:     `assertEquals("Apple.flac", rowDisplay("A", "Apple.flac"))`. A LETTER page
+        //           (label `A`) whose root file merely starts with `A` but has no `/`: returned
+        //           UNCHANGED.
+        // Why:      Loose files grouped by first letter have no folder to trim; the bare `A`
+        //           must not be chopped off the filename.
+        // TS map:   `expect(rowDisplay("A", "Apple.flac")).toEqual("Apple.flac");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("A", "Apple.flac")).toEqual("Apple.flac");
+        // ```
+        assertEquals("Apple.flac", rowDisplay("A", "Apple.flac"))
+        // What:     `assertEquals("#tag.flac", rowDisplay("#", "#tag.flac"))`. The `#` catch-all
+        //           page: a root file starting with `#` is returned unchanged.
+        // Why:      The catch-all is a letter-style tab; its loose files keep their names.
+        // TS map:   `expect(rowDisplay("#", "#tag.flac")).toEqual("#tag.flac");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("#", "#tag.flac")).toEqual("#tag.flac");
+        // ```
+        assertEquals("#tag.flac", rowDisplay("#", "#tag.flac"))
+        // What:     `assertEquals("song.flac", rowDisplay("A", "A/song.flac"))`. A FOLDER named
+        //           `A` (its names are `A/...`): this IS a folder tab, so the `A/` prefix is
+        //           stripped.
+        // Why:      The distinction is the `/` after the label, not the label's length: a
+        //           one-letter FOLDER still trims, unlike a one-letter LETTER bucket.
+        // TS map:   `expect(rowDisplay("A", "A/song.flac")).toEqual("song.flac");`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // expect(rowDisplay("A", "A/song.flac")).toEqual("song.flac");
+        // ```
+        assertEquals("song.flac", rowDisplay("A", "A/song.flac"))
+    }
 }

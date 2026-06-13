@@ -566,6 +566,33 @@ impl Queue {
         self.rebuild_scope_order(Some(0));
     }
 
+    // What:     `pub fn clear_selection(&mut self)`. Drop the current-track selection: after
+    //           this, no track is current and there is no playback scope until the user picks
+    //           one. `&mut self` is a MUTABLE borrow of the queue (we reassign its fields).
+    // Why:      Opening a library should auto-select NOTHING. The controller calls this after
+    //           `set_tracks` on a normal open, and the restore path calls it when the saved
+    //           session had no current track, so a fresh queue highlights and loads nothing.
+    // TS map:   `clearSelection(): void`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // clearSelection(): void { this.rebuildScopeOrder(null); }
+    // ```
+    pub fn clear_selection(&mut self) {
+        // What:     `self.rebuild_scope_order(None);`. Rebuild the scope with a `None` anchor;
+        //           `None` is the absent variant of `Option<usize>`, which `rebuild_scope_order`
+        //           treats as "no current track" (empties `order`, sets `pos = None`).
+        // Why:      Reuse the single method that owns the scope/cursor invariant instead of
+        //           poking the fields here.
+        // TS map:   `this.rebuildScopeOrder(null);`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.rebuildScopeOrder(null);
+        // ```
+        self.rebuild_scope_order(None);
+    }
+
     // What:     `fn scope_indices(&self, anchor: usize) -> Vec<usize>` returns the
     //           load-order indices that make up the playback scope around the `anchor`
     //           track, in ascending load order. Private helper.
@@ -781,17 +808,48 @@ impl Queue {
             self.pos = None;
             return;
         }
-        // What:     `let anchor = anchor.unwrap_or(0);`. Default a missing anchor to the
-        //           first track. `.unwrap_or` extracts `Some`'s value or substitutes `0`.
-        //           (This SHADOWS the parameter `anchor` with a new `usize` binding.)
-        // Why:      Always anchor on a real index.
-        // TS map:   `const a0 = anchor ?? 0;`
+        // What:     `let anchor = match anchor { Some(a) => a, None => { ...; return; } };`.
+        //           Turn the `Option<usize>` parameter into a plain `usize`, but treat a
+        //           `None` anchor as "NO current track": clear the order and cursor and RETURN
+        //           early (handled in the `None` arm below). `Some(a) => a` keeps a real index.
+        //           (This SHADOWS the parameter `anchor` with the new `usize` binding.)
+        // Why:      `set_tracks` anchors `Some(0)`, but `clear_selection` (and toggling shuffle
+        //           while nothing is selected) passes `None` to DESELECT, so a freshly opened
+        //           library highlights and loads nothing until the user picks a track.
+        // TS map:   `if (anchor === null) { this.order = []; this.pos = null; return; } const a0 = anchor;`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const a0 = anchor ?? 0;
+        // if (anchor === null) { this.order = []; this.pos = null; return; }
+        // const a0 = anchor;
         // ```
-        let anchor = anchor.unwrap_or(0);
+        let anchor = match anchor {
+            // What:     `Some(a) => a`. Unwrap a present anchor to its `usize` index.
+            // Why:      We have a real track to centre the scope on.
+            // TS map:   `const a0 = anchor;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const a0 = anchor;
+            // ```
+            Some(a) => a,
+            // What:     `None => { self.order = Vec::new(); self.pos = None; return; }`. No
+            //           anchor: `Vec::new()` builds a fresh empty owned vector for `order`,
+            //           `self.pos = None` nulls the cursor, and `return` exits the function.
+            // Why:      Express "nothing selected" for a loaded (non-empty) queue; a later
+            //           `play_index` rebuilds a real scope when the user taps a track.
+            // TS map:   `this.order = []; this.pos = null; return;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order = []; this.pos = null; return;
+            // ```
+            None => {
+                self.order = Vec::new();
+                self.pos = None;
+                return;
+            }
+        };
         // What:     `let anchor = anchor.min(self.tracks.len() - 1);`. Clamp the anchor into
         //           range. `.min(x)` returns the smaller of the two. (Shadows again.)
         // Why:      Defensive: a stale index must not point past the tracks.
