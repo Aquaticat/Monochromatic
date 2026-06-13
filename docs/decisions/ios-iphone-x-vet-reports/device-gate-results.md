@@ -734,7 +734,15 @@ Owner directives (2026-06-12): (1) defer the six WKWebView frameworks (the Capac
 plus the Ionic, Framework7, Onsen, and Quasar UI layers) to the very end, after every native and managed
 framework is gated; (2) add Dioxus, SnapKit, UIKit, and SwiftUI to the queue, positioned just before
 that deferred web block; (3) no C or C++ is to be written anywhere in this vet, including throwaway
-experiments. This reshapes the native-glue plans below: the Rust-crossing checks for React Native
+experiments; (4) implementation languages are constrained to Kotlin, TypeScript, and Rust, and after the
+vet completes the chosen framework and the eventual iOS port must minimize Swift and every other
+non-allowed language (Objective-C `.m` shims included). Directive (4) is a ranking axis on the final
+recommendation, not a vet gate: all frameworks are still gated for completeness, but app code authored in
+an allowed language is preferred, so the pure-Swift UIKit/SwiftUI/SnapKit gates are baseline-only (not
+implementation candidates), while Dioxus (Rust), Compose Multiplatform (Kotlin), and the TypeScript
+WebView/JS shells (Capacitor, React Native, NativeScript, Lynx) align. The thin Objective-C `.m` shims used
+for the React Native, NativeScript, and Lynx Rust crossings are non-allowed-language deviations to minimize
+too; Dioxus needs none (pure Rust). This reshapes the native-glue plans below: the Rust-crossing checks for React Native
 (done, PASS, see its section: a legacy Obj-C `RCTBridgeModule` surfaced the Rust value even under the New
 Architecture, so no "C++ JSI/TurboModule" was needed), NativeScript, Lynx (a `LynxModule` `.mm`), and Qt
 must use Rust binding crates, a C-ABI boundary (Rust `extern "C"` declared in a Swift bridging header,

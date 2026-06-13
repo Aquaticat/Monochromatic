@@ -48,6 +48,17 @@ and `packages/desktop-app/music-player` (Rust + Slint, to port to iOS).
 Owner-stated hard constraints (these decide outcomes):
 
 - Accessibility (a11y) is mandatory. A framework whose a11y needs an iOS-17 API is out.
+- Implementation languages are constrained to Kotlin, TypeScript, and Rust (owner, 2026-06-12). After the
+  vet completes, the chosen framework and the eventual iOS port must minimize Swift and every other
+  language outside that allowed set (Objective-C `.m` shims, C/C++, and so on). This is a ranking axis on
+  the final recommendation, not a vet gate: all frameworks are still vetted for completeness, but a
+  framework whose app code is authored in an allowed language is preferred over one that forces a
+  non-allowed language. Concretely: Dioxus (app code is Rust) and Compose Multiplatform (Kotlin) and the
+  WebView/JS shells (Capacitor, React Native, NativeScript, Lynx in TypeScript) align; the pure-Swift
+  frameworks (UIKit, SwiftUI, SnapKit) do not, so they are baseline-only, not implementation candidates.
+  The thin Objective-C `.m` shims used for the React Native, NativeScript, and Lynx Rust crossings are also
+  non-allowed-language deviations to minimize; Dioxus needs none (pure Rust), which is a point in its
+  favour for the music-player port (whose Slint UI would be replaced by a Rust UI keeping the Rust core).
 - The target is the iPhone X specifically: `iPhone10,3`, iOS 16.7.16, UDID
   `9057e2a8c2e70162e35b9ea8bf006f736670877b`. It is A11 silicon and never receives iOS 17, so anything
   that depends on an iOS-17 API cannot run here even if it builds.
