@@ -275,6 +275,84 @@ Flip conditions:
 The pick is a value judgment reserved to the owner; this document records the comparison and the device
 evidence, not a selection.
 
+## Second-pass ranking: minimizing non-allowed programming languages (owner directive 4)
+
+This is a re-vet of the survivors on a different axis from the capability ranking above. Owner directive 4
+(2026-06-12) constrains implementation languages to Kotlin, TypeScript, and Rust, and asks that the chosen
+framework and the eventual port minimize Swift and every other non-allowed programming language (Objective-C
+`.m` shims, C, C++, Dart, C#). Non-programming languages are exempt: HTML, CSS, the Vue and QML markup
+templates, YAML, JSON, TOML, and XML do not count against a framework. This is a ranking axis, not a vet
+gate: every framework was still gated for completeness (all 16 render-verified both legs), but a framework
+whose app code is authored in an allowed language is preferred. The two axes point in different directions,
+which is the whole reason to record this one separately: the capability ranking favours Flutter and the
+.NET trio, whereas those two author the app in Dart and C# and so fall on this axis.
+
+Each survivor's language footprint, from the device gates:
+
+- Dioxus: app code is Rust (RSX). No FFI shim and, for the music-player, no FFI boundary at all, because the
+  UI is itself Rust and links the Rust audio core directly. Non-allowed programming languages: zero.
+- Compose Multiplatform: app code is Kotlin. The Rust core is reached through a single cinterop hop, whose
+  surface is a C-ABI `.def` declaration, not hand-written C. Non-allowed: zero.
+- NativeScript: app code is TypeScript. Its Rust crossing was the only JS shell that needed zero
+  hand-written native code (a C-ABI header plus a `module.modulemap` plus a `-u` linker flag, all
+  declarations and config). Non-allowed: zero.
+- The WKWebView shells (Capacitor and Cordova substrates; Ionic, Framework7, Onsen, Quasar UI layers): app
+  code is TypeScript or JavaScript plus exempt HTML and CSS (Quasar adds a Vue template, which is exempt
+  markup compiled to JS). Non-allowed in the app: zero. The only place a non-allowed language can enter is a
+  bespoke native plugin (Capacitor `CAPPlugin` or Cordova `CDVPlugin`), which in pure form is Swift or
+  Objective-C; the universal de-risk (the in-app server and core inside the linked Rust staticlib, reached
+  through an existing plugin) keeps even that out, so the non-allowed surface is minimizable to zero.
+- React Native: app code is TypeScript, but the proven Rust crossing used a thin Objective-C `.m`
+  `RCTBridgeModule` (the owner-approved minimal-shim deviation). Non-allowed: one thin `.m` shim.
+- Lynx: app code is TypeScript, but the proven Rust crossing used a pure Objective-C `.m` `LynxModule`
+  shim. Non-allowed: one thin `.m` shim.
+- The .NET trio (MAUI, Avalonia, Uno): app code is C#, a non-allowed language, for the entire app. It does
+  cleanly avoid C and C++ (the Rust P/Invoke is a declaration), but the app language itself is non-allowed.
+- Flutter: app code is Dart, a non-allowed language, for the entire app.
+- The Swift trio (SnapKit, UIKit, SwiftUI): app code is 100% Swift, a non-allowed language. Already
+  baseline-only, listed here for completeness, not an implementation candidate.
+
+Language-axis ranking (best to worst at minimizing non-allowed programming languages):
+
+Dioxus > Compose Multiplatform = NativeScript > WKWebView shells > React Native = Lynx > .NET trio >
+Flutter > Swift trio.
+
+- Dioxus over everything else: it is the only candidate that authors the app in an allowed language (Rust)
+  AND needs no FFI boundary to the Rust core, so for the music-player it is zero non-allowed code end to
+  end. The others authored in an allowed language still cross a C-ABI boundary to reach the Rust core;
+  Dioxus does not have one to cross.
+- Compose Multiplatform and NativeScript are tied on this axis: both author the app in an allowed language
+  (Kotlin, TypeScript) and reach the Rust core with zero hand-written non-allowed code (a cinterop `.def`
+  for Compose, a C-ABI header plus modulemap for NativeScript). The tie breaks on secondary, non-language
+  factors only: Compose's Kotlin is a compiled, strongly typed allowed language that the repo already runs
+  on Android, where NativeScript carries the thinnest maintenance of any candidate, so for a real build
+  Compose is the safer of the two equals.
+- Compose and NativeScript over the WKWebView shells: all three keep non-allowed app code at zero, but the
+  shells carry a latent Swift/Objective-C risk in any bespoke native plugin, where Compose's cinterop and
+  NativeScript's metadata bridge keep the native boundary inside declarations and config. The shells are
+  one conditional deviation behind; the gap closes to zero if the in-staticlib server de-risk holds.
+- The WKWebView shells over React Native and Lynx: the shells need no hand-written native shim to render
+  (and only a conditional one for a custom plugin), whereas React Native and Lynx each needed a real,
+  hand-written Objective-C `.m` shim to surface the Rust value in the gate. A proven `.m` file outranks (as
+  worse) a merely possible one.
+- React Native and Lynx are tied: each authors the app in TypeScript and each needed exactly one thin
+  Objective-C `.m` shim for the Rust crossing; neither has a pure-allowed-language path proven on device.
+- React Native and Lynx over the .NET trio: a TypeScript app with one thin Objective-C shim has far less
+  non-allowed code than an entire app authored in C#.
+- The .NET trio over Flutter: a tie on "entire app in a non-allowed language," broken because C# at least
+  reaches native through pure P/Invoke declarations with no C/C++, and the trio includes MAUI's native
+  UIKit a11y, whereas Dart is equally non-allowed with no offsetting language advantage.
+- Flutter over the Swift trio: both author the app in a non-allowed language, but Flutter is at least a
+  cross-platform option, where the Swift trio is Apple-only and already baseline-only.
+
+What this reshapes. On directive 4 the implementation shortlist is Dioxus first (Rust, and uniquely
+zero-boundary for the music-player's Rust core), then Compose Multiplatform (Kotlin) and the
+TypeScript stacks (NativeScript, then the WKWebView shells), with React Native and Lynx one minimal shim
+behind. Flutter and the .NET trio, which lead the capability ranking, are demoted here because Dart and C#
+are non-allowed; they return to contention only if their capability lead proves decisive, most plausibly if
+one of them is the first to device-prove the in-app HTTP/S3 server (the one capability the capability
+ranking still flags as uncertain). The owner weighs the two axes; this section supplies the language axis.
+
 ## Per-technology scorecard (the shared spine)
 
 The synthesis estimates roughly 52 deduplicated reports because the hard parts are shared and written
