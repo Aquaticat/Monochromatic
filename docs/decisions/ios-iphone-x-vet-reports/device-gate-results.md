@@ -809,6 +809,50 @@ the downported fork, it additionally needs `renderer-skia` (iOS uses Skia/Metal,
 femtovg/software), a Slint rev past slint-ui/slint#11741 (2026-05-15), and cfg-gating the explicit
 winit-backend construction (the Wayland `app_id` is Linux-only).
 
+## Stage 2 supporting-stack probes
+
+### In-app HTTP/S3 server in a linked Rust staticlib: FULL PASS (both legs)
+
+Status: FULL PASS 2026-06-12. This is the stage-2 probe of the one capability the synthesis flagged as
+genuinely uncertain across every substrate (the in-app HTTP/S3 endpoint the kopia-to-pCloud app needs): can
+a sandboxed iOS app bind a listening socket and serve HTTP on loopback? On the iPhone X (iOS 16.7) it can.
+
+The probe realizes the synthesis's recommended de-risk literally: the server lives inside the linked Rust
+staticlib, so the capability is framework-independent. Two C-ABI functions were added to the proven
+`mauigate` Rust `.a` (`rust/src/lib.rs`): `rust_server_probe` binds a `std::net::TcpListener` on
+`127.0.0.1:0`, spawns a thread that accepts one connection and writes an HTTP/1.1 200 with an S3-style
+`<ListBucketResult>` XML body, then connects back as a client over loopback, issues
+`GET /probe-bucket/?list-type=2`, and reads the response; `rust_string_free` releases the result string. No
+new crates (pure `std::net`), so the cross-compile is identical to the proven gate. The .NET substrate calls
+it over the existing `[DllImport("__Internal")]` path and renders the result, the screen green only when the
+full bind/accept/serve/connect/read round-trip succeeds.
+
+- Device leg (the load-bearing test): on the iPhone X (iOS 16.7), Release/full-AOT, signed with the vet
+  keychain and run held-alive, the screen reads "In-app server probe / Rust FFI: 720 / S3 SERVER OK
+  port=53178" on a green background. So a sandboxed, non-entitled, AOT app process bound a listening TCP
+  socket on loopback, accepted a connection, completed an HTTP exchange, and the client read the S3-style
+  body back, all in-process, with no special entitlement and (decisively) no local-network privacy prompt,
+  because loopback `127.0.0.1` is exempt from the iOS local-network permission (which gates LAN and Bonjour,
+  not loopback). The ephemeral port differs per run (sim 57115, device 53178), confirming a real bind, not a
+  fixed stub.
+- Simulator leg (iPhone 17 Pro / iOS 26.5): same source, "S3 SERVER OK port=57115". The simulator does not
+  enforce the device sandbox, so as with the AMFI checks the device leg is the one that counts; the sim leg
+  satisfies the dual-target criterion.
+
+What this proves and what it does not. PROVEN: the framework-independent in-app server capability (a Rust
+staticlib bound to loopback, serving HTTP, consumed in-process) runs on the real iPhone X, which is exactly
+how kopia's own repository server and client sit in one linked core. This retires the synthesis's single
+biggest capability risk for the kopia app, and it generalizes to every framework that links the staticlib
+(.NET proven here; Flutter `dart:ffi`, Compose cinterop, the WebView plugins, NativeScript, Lynx, and
+Dioxus all link the same kind of `.a`). NOT YET PROVEN (smaller, owed sub-checks): a WKWebView's WebContent
+process reaching the loopback server over `http://127.0.0.1` (an App Transport Security question, only
+relevant if the web UI fetches the endpoint directly rather than the native/kopia client consuming it); the
+server thread's survival when the app is backgrounded (the iOS background-execution limit, a restructuring
+concern shared by every framework, see wall 3); and real kopia/S3 protocol fidelity beyond the shaped
+response. The bind-and-serve foundation those build on is now device-confirmed. Work dir:
+`/Volumes/MacData/ios-vet/mauigate` (the probe is additive; the original gate sources are backed up as
+`rust/src/lib.rs.orig` and `SceneDelegate.cs.orig`).
+
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely

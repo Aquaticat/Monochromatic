@@ -368,10 +368,16 @@ disqualified on this device), and the framework-specific in-process UI-test and 
   Flutter `dart:ffi`; Compose cinterop; RN C++ JSI/TurboModule; .NET `[DllImport("__Internal")]`;
   WKWebView `CAPPlugin`/`CDVPlugin`; NativeScript `dlsym`/libffi; Lynx `LynxModule`; Qt `extern "C"`),
   but the payload is the same archive.
-- In-app HTTP/S3 endpoint: the single genuinely uncertain capability across substrates. WKWebView's
+- In-app HTTP/S3 endpoint: was the single genuinely uncertain capability across substrates; the de-risk is
+  now device-proven (2026-06-12, `device-gate-results.md`, "Stage 2 supporting-stack probes"). WKWebView's
   `URLSchemeHandler` is not a listening socket, and Compose's `embeddedServer(CIO)` on `iosArm64` is
-  unproven. Universal de-risk: embed the server inside the linked Rust/Go staticlib (kopia's own
-  server, or `hyper`/`tiny_http` bound to `127.0.0.1`), making the endpoint framework-independent.
+  unproven, so the universal de-risk is to embed the server inside the linked Rust/Go staticlib (kopia's own
+  server, or a `std::net`/`hyper`/`tiny_http` listener bound to `127.0.0.1`), making the endpoint
+  framework-independent. A probe built exactly this (a `std::net` loopback HTTP server in the linked Rust
+  `.a`, an S3-style `ListBucketResult` exchange) and it ran on the iPhone X (iOS 16.7) in a sandboxed,
+  non-entitled AOT app, binding the listener and completing the round-trip with no entitlement and no
+  local-network prompt (loopback is exempt). Remaining sub-checks: a WKWebView reaching the loopback server
+  over ATS (only if the web UI fetches it directly), and background-execution survival (wall 3).
 - HTTPS streaming to pCloud: `reqwest` plus `rustls` (or the Go client) inside the linked core, or a
   background `URLSession` bridge for transfers that must survive suspension.
 - Background transfer (wall 3): background `URLSession` plus `BGProcessingTask`, the snapshot chunked
