@@ -1546,6 +1546,20 @@ WR3:
  Never use bold as standalone title;
  use appropriate ATX header level instead.
 
+WR4:
+ Avoid unnecessary numbers in prose.
+ Use numerals only when exact count,
+ order,
+ quantity,
+ version,
+ ID,
+ or reproducible measurement matters.
+ Prefer count-neutral wording when count is incidental or likely to drift,
+ for example `these cases`,
+ not a fixed count.
+ Lists may use markers for structure;
+ do not mention list length unless length is part of the claim.
+
 #### Markdown syntax
 
 MD1:
