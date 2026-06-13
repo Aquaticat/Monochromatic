@@ -28,6 +28,17 @@ The seedable PRNG is kept, so shuffle remains deterministic under test.
 - `prev` now depends on retained history rather than walking a stored order.
 - Changes the Queue's shuffle internals and their tests;
  moderately hard to reverse once the model and tests are rewritten.
+- The play history is kept by load-order index, not by path, so it does not survive the index
+  shifts a rescan causes.
+ A reload or live rescan therefore resets the shuffle cycle:
+ the controller re-selects the surviving track by path, which restarts the history at that
+  track and begins a fresh cycle.
+ This is acceptable because live changes to the source root are rare;
+ the alternative (path-keyed history surviving rescans) was not worth the added complexity.
+- Implementation detail: `Off` keeps the existing sequential scope order (it is deterministic
+  and needs no history);
+ only `WithinPage` and `All` use the just-in-time history, so `prev` wraps in `Off` but stops
+  at the history start under shuffle.
 
 ## Considered and rejected
 

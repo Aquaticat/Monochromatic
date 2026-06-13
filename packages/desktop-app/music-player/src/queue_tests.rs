@@ -389,3 +389,100 @@ fn clear_selection_deselects_but_keeps_tracks() {
     // TS map:   `expect(q.currentIndex()).toBe(2);`
     assert_eq!(q.current_index(), Some(2));
 }
+
+// What:     `#[test] fn shuffle_plays_each_track_once_before_repeating()`. A full cycle of
+//           just-in-time shuffle must cover every scope track exactly once.
+// Why:      "Without replacement" means no track repeats until the whole scope has played.
+// TS map:   `test("shuffle plays each track once before repeating", () => { ... })`
+#[test]
+fn shuffle_plays_each_track_once_before_repeating() {
+    // What:     a 5-track queue, shuffled over the whole queue.
+    // Why:      One scope (no pages) keeps the cycle = all 5 tracks.
+    // TS map:   `q.setTracks(paths(5)); q.setShuffle("all");`
+    let mut q = Queue::with_rng_seed(42);
+    q.set_tracks(paths(5));
+    q.set_shuffle(ShuffleMode::All);
+    // What:     collect the current track plus four advances (a full cycle of 5).
+    // Why:      These are one cycle's worth of picks.
+    // TS map:   `const seen = [q.currentIndex(), ...Array(4).map(() => q.advance(false))];`
+    let mut seen: Vec<usize> = vec![q.current_index().unwrap()];
+    for _ in 0..4 {
+        seen.push(q.advance(false).unwrap());
+    }
+    // What:     the cycle holds 5 distinct indices, exactly 0..5.
+    // Why:      Every track played once, none repeated within the cycle.
+    // TS map:   `expect(new Set(seen)).toEqual(new Set([0,1,2,3,4]));`
+    let unique: std::collections::HashSet<usize> = seen.iter().copied().collect();
+    assert_eq!(unique.len(), 5);
+    assert_eq!(unique, (0..5).collect());
+}
+
+// What:     `#[test] fn shuffle_prev_then_next_retraces_history()`. After stepping back,
+//           `next` must replay the recorded history before drawing a new random pick.
+// Why:      The play history acts as a back/forward cursor.
+// TS map:   `test("shuffle prev then next retraces history", () => { ... })`
+#[test]
+fn shuffle_prev_then_next_retraces_history() {
+    // What:     a 6-track shuffled queue; record three forward picks.
+    // Why:      Build a history to step back into and retrace.
+    // TS map:   `q.setShuffle("all"); const a = current; const b = advance(); const c = advance();`
+    let mut q = Queue::with_rng_seed(7);
+    q.set_tracks(paths(6));
+    q.set_shuffle(ShuffleMode::All);
+    let a = q.current_index().unwrap();
+    let b = q.advance(false).unwrap();
+    let c = q.advance(false).unwrap();
+    // What:     two steps back return c's predecessors b then a.
+    // Why:      `prev` walks the history backward.
+    // TS map:   `expect(q.prev()).toBe(b); expect(q.prev()).toBe(a);`
+    assert_eq!(q.prev(), Some(b));
+    assert_eq!(q.prev(), Some(a));
+    // What:     two steps forward retrace b then c (no new random pick yet).
+    // Why:      `next` after `prev` replays forward history first.
+    // TS map:   `expect(q.advance(false)).toBe(b); expect(q.advance(false)).toBe(c);`
+    assert_eq!(q.advance(false), Some(b));
+    assert_eq!(q.advance(false), Some(c));
+}
+
+// What:     `#[test] fn shuffle_prev_at_history_start_stays()`. `prev` at the start of the
+//           shuffle history stays on the current track (no wrap).
+// Why:      A random history has no meaningful "last" to wrap to.
+// TS map:   `test("shuffle prev at history start stays", () => { ... })`
+#[test]
+fn shuffle_prev_at_history_start_stays() {
+    // What:     a shuffled queue with nothing advanced yet (history = [current]).
+    // Why:      The cursor is at the start of the history.
+    // TS map:   `q.setShuffle("all");`
+    let mut q = Queue::with_rng_seed(3);
+    q.set_tracks(paths(4));
+    q.set_shuffle(ShuffleMode::All);
+    let start = q.current_index().unwrap();
+    // What:     `prev` returns the same current track and does not move.
+    // Why:      No earlier history; stay put rather than invent a track.
+    // TS map:   `expect(q.prev()).toBe(start); expect(q.currentIndex()).toBe(start);`
+    assert_eq!(q.prev(), Some(start));
+    assert_eq!(q.current_index(), Some(start));
+}
+
+// What:     `#[test] fn shuffle_new_cycle_avoids_immediate_repeat()`. The first pick of a new
+//           cycle is not the track that just finished the previous cycle.
+// Why:      Starting a fresh cycle should not replay the current track back-to-back.
+// TS map:   `test("shuffle new cycle avoids immediate repeat", () => { ... })`
+#[test]
+fn shuffle_new_cycle_avoids_immediate_repeat() {
+    // What:     a 4-track shuffled queue; walk one full cycle (4 picks), then one more.
+    // Why:      The 5th pick begins the next cycle.
+    // TS map:   `q.setShuffle("all"); const cycle = [current, advance x3]; const next = advance();`
+    let mut q = Queue::with_rng_seed(99);
+    q.set_tracks(paths(4));
+    q.set_shuffle(ShuffleMode::All);
+    let mut cycle: Vec<usize> = vec![q.current_index().unwrap()];
+    for _ in 0..3 {
+        cycle.push(q.advance(false).unwrap());
+    }
+    // What:     the next pick (first of the new cycle) differs from the cycle's last track.
+    // Why:      No immediate back-to-back repeat across the cycle boundary.
+    // TS map:   `expect(next).not.toBe(cycle[cycle.length - 1]);`
+    let next = q.advance(false).unwrap();
+    assert_ne!(next, *cycle.last().unwrap());
+}

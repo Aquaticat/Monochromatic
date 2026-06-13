@@ -13,6 +13,13 @@
 //! - `ShuffleMode::All` scopes playback to the whole queue, shuffled, and loops
 //!   the whole queue.
 //!
+//! Shuffle is JUST IN TIME and WITHOUT REPLACEMENT: there is no precomputed
+//! permutation. Each cycle plays every track in the scope once, in a random order
+//! chosen one pick at a time, then starts a fresh cycle. `order` doubles as the
+//! play history, so `prev` steps back through it and a `next` after `prev`
+//! retraces forward before drawing a new random pick. See
+//! `docs/decisions/music-player-jit-shuffle.md`.
+//!
 //! "Repeat track" is independent: when on, a track that ends NATURALLY replays
 //! itself; a manual Next/Prev still moves within the scope.
 //!
@@ -31,6 +38,17 @@
 // type PathBuf = string;
 // ```
 use std::path::PathBuf;
+
+// What:     `use std::collections::HashSet;` the hash-set type.
+// Why:      The just-in-time shuffle pick excludes tracks already played this cycle; a set
+//           gives O(1) membership over a possibly large (whole-queue) scope.
+// TS map:   `// a Set<number>`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // const played = new Set<number>();
+// ```
+use std::collections::HashSet;
 
 // What:     `use crate::command::ShuffleMode;` imports our own enum from the sibling
 //           module. `crate::` means "from the root of this package".
@@ -126,6 +144,19 @@ pub struct Queue {
     // private rngState: bigint;
     // ```
     rng_state: u64,
+    // What:     `cycle_start: usize`. An index into `order` marking where the current shuffle
+    //           CYCLE began (a cycle plays every scope track once before repeating). Only
+    //           meaningful in the shuffle modes; `0` and unused for `Off`.
+    // Why:      The just-in-time without-replacement pick excludes tracks played since this
+    //           point; when the scope is exhausted, `cycle_start` jumps forward to start a new
+    //           cycle. `order[cycle_start..]` is "played this cycle".
+    // TS map:   `private cycleStart: number;`
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private cycleStart: number;
+    // ```
+    cycle_start: usize,
 }
 
 // What:     `impl Queue { ... }`. The queue's methods (an `impl` block holds a type's
@@ -243,6 +274,16 @@ impl Queue {
             // rngState: seed === 0n ? 1n : seed,
             // ```
             rng_state: if seed == 0 { 1 } else { seed },
+            // What:     `cycle_start: 0`. No shuffle cycle has begun yet.
+            // Why:      Set properly by `rebuild_scope_order` the first time a shuffle scope is
+            //           anchored.
+            // TS map:   `cycleStart: 0,`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // cycleStart: 0,
+            // ```
+            cycle_start: 0,
         }
     }
 
@@ -693,85 +734,123 @@ impl Queue {
         }
     }
 
-    // What:     `fn shuffle_slice(&mut self, slice: &mut [usize])`. Fisher-Yates shuffle of
-    //           a borrowed mutable slice of indices. `&mut [usize]` is a mutable view; the
-    //           slice is a local Vec the caller owns, so mutating it does not clash with
-    //           `self.next_rand()`'s `&mut self`.
-    // Why:      Randomly permute the scope indices before they become `order`.
-    // TS map:   `private shuffleSlice(slice: number[]): void`.
+    // What:     `fn pick_next_shuffle(&mut self, current: usize) -> usize`. Choose the next
+    //           shuffle track JUST IN TIME and WITHOUT REPLACEMENT: a uniformly random scope
+    //           track not yet played this cycle; when the cycle is exhausted, start a fresh one
+    //           (avoiding an immediate repeat of `current` unless the scope has one track).
+    // Why:      Replaces the precomputed shuffled permutation with one pick at a time, so live
+    //           queue changes need no order bookkeeping.
+    // TS map:   `private pickNextShuffle(current: number): number`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // private shuffleSlice(slice: number[]): void {
-    //   for (let i = slice.length - 1; i > 0; i--) {
-    //     const j = Number(this.nextRand() % BigInt(i + 1));
-    //     [slice[i], slice[j]] = [slice[j], slice[i]];
+    // private pickNextShuffle(current: number): number {
+    //   const scope = this.scopeIndices(current);
+    //   const played = new Set(this.order.slice(this.cycleStart));
+    //   let remaining = scope.filter((i) => !played.has(i));
+    //   if (remaining.length === 0) {
+    //     this.cycleStart = this.order.length;
+    //     remaining = scope.filter((i) => i !== current);
+    //     if (remaining.length === 0) remaining = scope;
     //   }
+    //   return remaining[Number(this.nextRand() % BigInt(remaining.length))];
     // }
     // ```
-    fn shuffle_slice(&mut self, slice: &mut [usize]) {
-        // What:     `if slice.len() < 2 { return; }` is an EARLY RETURN: nothing to shuffle
-        //           for 0 or 1 elements.
-        // Why:      Avoid the `len() - 1` underflow on an empty slice (usize is unsigned, so
-        //           0 - 1 would panic in debug).
-        // TS map:   `if (slice.length < 2) return;`
+    fn pick_next_shuffle(&mut self, current: usize) -> usize {
+        // What:     `let scope = self.scope_indices(current);`. The scope's load-order indices
+        //           (the page for `WithinPage`, the whole queue for `All`).
+        // Why:      The pool to pick from.
+        // TS map:   `const scope = this.scopeIndices(current);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (slice.length < 2) return;
+        // const scope = this.scopeIndices(current);
         // ```
-        if slice.len() < 2 {
-            return;
+        let scope = self.scope_indices(current);
+        // What:     `let played: HashSet<usize> = self.order[self.cycle_start..].iter().copied().collect();`.
+        //           The tracks played since the current cycle began. `.copied()` turns
+        //           `&usize` into `usize`; `.collect()` builds an owned set (so it does not
+        //           keep borrowing `self.order`).
+        // Why:      Excluded from this cycle's remaining picks.
+        // TS map:   `const played = new Set(this.order.slice(this.cycleStart));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const played = new Set(this.order.slice(this.cycleStart));
+        // ```
+        let played: HashSet<usize> = self.order[self.cycle_start..].iter().copied().collect();
+        // What:     `let mut remaining: Vec<usize> = scope.iter().copied().filter(|i| !played.contains(i)).collect();`.
+        //           Scope tracks not yet played this cycle.
+        // Why:      The candidates for the next pick.
+        // TS map:   `let remaining = scope.filter((i) => !played.has(i));`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // let remaining = scope.filter((i) => !played.has(i));
+        // ```
+        let mut remaining: Vec<usize> =
+            scope.iter().copied().filter(|i| !played.contains(i)).collect();
+        // What:     `if remaining.is_empty() { ... }`. Cycle exhausted: begin a new one.
+        // Why:      Without replacement means a full cycle covers the whole scope; then reshuffle.
+        // TS map:   `if (!remaining.length) { ... }`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!remaining.length) { ... }
+        // ```
+        if remaining.is_empty() {
+            // What:     `self.cycle_start = self.order.len();`. The new cycle starts after the
+            //           history written so far.
+            // Why:      Subsequent picks measure "played this cycle" from here.
+            // TS map:   `this.cycleStart = this.order.length;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.cycleStart = this.order.length;
+            // ```
+            self.cycle_start = self.order.len();
+            // What:     `remaining = scope.iter().copied().filter(|&i| i != current).collect();`.
+            //           All scope tracks except the one that just finished.
+            // Why:      A fresh cycle should not immediately replay the current track.
+            // TS map:   `remaining = scope.filter((i) => i !== current);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // remaining = scope.filter((i) => i !== current);
+            // ```
+            remaining = scope.iter().copied().filter(|&i| i != current).collect();
+            // What:     `if remaining.is_empty() { remaining = scope; }`. A single-track scope
+            //           has nothing else; replay it.
+            // Why:      Avoid an empty candidate list when the scope is one track.
+            // TS map:   `if (!remaining.length) remaining = scope;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (!remaining.length) remaining = scope;
+            // ```
+            if remaining.is_empty() {
+                remaining = scope;
+            }
         }
-        // What:     `let mut i = slice.len() - 1;` a mutable loop counter.
-        // Why:      Fisher-Yates walks from the last index down to 1.
-        // TS map:   `let i = slice.length - 1;`
+        // What:     `let j = (self.next_rand() % remaining.len() as u64) as usize;`. A uniform
+        //           index into `remaining`.
+        // Why:      Random choice among the candidates.
+        // TS map:   `const j = Number(this.nextRand() % BigInt(remaining.length));`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let i = slice.length - 1;
+        // const j = Number(this.nextRand() % BigInt(remaining.length));
         // ```
-        let mut i = slice.len() - 1;
-        // What:     `while i > 0 { ... }` a condition-controlled loop.
-        // Why:      Standard Fisher-Yates traversal.
-        // TS map:   `while (i > 0) { ... }`
+        let j = (self.next_rand() % remaining.len() as u64) as usize;
+        // What:     `remaining[j]`. The chosen load-order index. Tail -> return.
+        // Why:      Hand back the next track to play.
+        // TS map:   `return remaining[j];`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // while (i > 0) { ... }
+        // return remaining[j];
         // ```
-        while i > 0 {
-            // What:     `let j = (self.next_rand() % (i as u64 + 1)) as usize;`.
-            //           `self.next_rand()` returns a `u64`; `% (i as u64 + 1)` is modulo.
-            //           `i as u64` casts the `usize` index to `u64` to match the PRNG's type;
-            //           `as usize` casts the result back for indexing.
-            // Why:      Pick a random slot `j` in `0..=i`.
-            // TS map:   `const j = Number(this.nextRand() % BigInt(i + 1));`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const j = Number(this.nextRand() % BigInt(i + 1));
-            // ```
-            let j = (self.next_rand() % (i as u64 + 1)) as usize;
-            // What:     `slice.swap(i, j)` swaps two elements in place.
-            // Why:      The shuffle step.
-            // TS map:   `[slice[i], slice[j]] = [slice[j], slice[i]];`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // [slice[i], slice[j]] = [slice[j], slice[i]];
-            // ```
-            slice.swap(i, j);
-            // What:     `i -= 1;` decrement the counter.
-            // Why:      Move toward the loop end.
-            // TS map:   `i--;`
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // i--;
-            // ```
-            i -= 1;
-        }
+        remaining[j]
     }
 
     // What:     `fn rebuild_scope_order(&mut self, anchor: Option<usize>)`. Recompute the
@@ -860,61 +939,63 @@ impl Queue {
         // const a = Math.min(a0, this.tracks.length - 1);
         // ```
         let anchor = anchor.min(self.tracks.len() - 1);
-        // What:     `let mut scope = self.scope_indices(anchor);`. The scope's indices in
-        //           ascending load order; `mut` so we can shuffle it.
-        // Why:      Starting point for the playback order.
-        // TS map:   `let scope = this.scopeIndices(a);`
+        // What:     `if self.shuffle == ShuffleMode::Off { ... } else { ... }`. Off builds the
+        //           full sequential scope order; the shuffle modes start a fresh play history.
+        // Why:      Off is a deterministic in-order walk of the scope, while shuffle picks just
+        //           in time, so its `order` begins as only the anchor and grows on `advance`.
+        // TS map:   `if (this.shuffle === "off") { ...sequential... } else { ...history... }`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // let scope = this.scopeIndices(a);
+        // if (this.shuffle === "off") { /* full sequential scope */ } else { /* [anchor] */ }
         // ```
-        let mut scope = self.scope_indices(anchor);
-        // What:     `if self.shuffle != ShuffleMode::Off { self.shuffle_slice(&mut scope); }`.
-        //           `!=` is "not equal"; both `WithinPage` and `All` shuffle. `&mut scope`
-        //           lends the local vector mutably to the shuffler.
-        // Why:      Off keeps load order; the other two randomise the scope.
-        // TS map:   `if (this.shuffle !== "off") this.shuffleSlice(scope);`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.shuffle !== "off") this.shuffleSlice(scope);
-        // ```
-        if self.shuffle != ShuffleMode::Off {
-            self.shuffle_slice(&mut scope);
+        if self.shuffle == ShuffleMode::Off {
+            // What:     `let scope = self.scope_indices(anchor);`. The scope's indices in
+            //           ascending load order.
+            // Why:      Off plays the scope in load order.
+            // TS map:   `const scope = this.scopeIndices(anchor);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const scope = this.scopeIndices(anchor);
+            // ```
+            let scope = self.scope_indices(anchor);
+            // What:     `let pos = scope.iter().position(|&x| x == anchor);`. The anchor's slot
+            //           in the scope.
+            // Why:      The cursor must point at the anchor after the rebuild.
+            // TS map:   `const p = scope.indexOf(anchor);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const p = scope.indexOf(anchor);
+            // ```
+            let pos = scope.iter().position(|&x| x == anchor);
+            // What:     `self.order = scope; self.pos = pos.or(Some(0));`. Adopt the sequential
+            //           order and point the cursor at the anchor (or the start).
+            // Why:      Off's `order` is the full scope, walked sequentially with looping.
+            // TS map:   `this.order = scope; this.pos = p < 0 ? 0 : p;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order = scope; this.pos = p < 0 ? 0 : p;
+            // ```
+            self.order = scope;
+            self.pos = pos.or(Some(0));
+        } else {
+            // What:     `self.order = vec![anchor]; self.pos = Some(0); self.cycle_start = 0;`.
+            //           Begin the play history with just the anchor and open a fresh cycle.
+            // Why:      Shuffle does not precompute a permutation; `advance` appends each
+            //           just-in-time pick to `order`, and the anchor is the first track played.
+            // TS map:   `this.order = [anchor]; this.pos = 0; this.cycleStart = 0;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order = [anchor]; this.pos = 0; this.cycleStart = 0;
+            // ```
+            self.order = vec![anchor];
+            self.pos = Some(0);
+            self.cycle_start = 0;
         }
-        // What:     `let pos = scope.iter().position(|&x| x == anchor);`. Find the anchor's
-        //           index within the (possibly shuffled) scope. `.iter()` borrows; `|&x|`
-        //           destructures the `&usize` to a `usize` value; `.position` returns
-        //           `Option<usize>`.
-        // Why:      The cursor must point at the anchor after the rebuild.
-        // TS map:   `const p = scope.indexOf(a);`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const p = scope.indexOf(a);
-        // ```
-        let pos = scope.iter().position(|&x| x == anchor);
-        // What:     `self.order = scope;` move the new order into place.
-        // Why:      Adopt the rebuilt scope.
-        // TS map:   `this.order = scope;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.order = scope;
-        // ```
-        self.order = scope;
-        // What:     `self.pos = pos.or(Some(0));`. `.or(default)` keeps `Some`, else
-        //           substitutes `Some(0)`. `Some(0)` wraps index 0.
-        // Why:      Point the cursor at the anchor, or the scope's start if the anchor
-        //           somehow fell outside (cannot happen for a real track).
-        // TS map:   `this.pos = p < 0 ? 0 : p;`
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.pos = p < 0 ? 0 : p;
-        // ```
-        self.pos = pos.or(Some(0));
     }
 
     // What:     `pub fn set_shuffle(&mut self, mode: ShuffleMode)` changes the shuffle/scope
@@ -1003,39 +1084,65 @@ impl Queue {
         if track >= self.tracks.len() {
             return None;
         }
-        // What:     `match self.order.iter().position(|&x| x == track) { ... }`. Find the
-        //           track's position in the CURRENT scope order, if any.
-        // Why:      Stay in the same scope when possible; rebuild only on a jump to a
-        //           different page.
-        // TS map:   `const p = this.order.indexOf(track);`
+        // What:     `if self.shuffle == ShuffleMode::Off { ...find or rebuild... } else { rebuild }`.
+        //           In `Off`, stay in the current scope when the track is already in it and
+        //           only rebuild on a jump to another page; in the shuffle modes, always
+        //           rebuild so the play history restarts from the clicked track.
+        // Why:      For `Off`, `order` is the full sequential scope, so the track's slot is a
+        //           valid cursor; for shuffle, `order` is the play history, and clicking a
+        //           track should begin a fresh cycle at it rather than retrace into history.
+        // TS map:   `if (this.shuffle === "off") { const p = this.order.indexOf(track); p >= 0 ? this.pos = p : this.rebuildScopeOrder(track); } else this.rebuildScopeOrder(track);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const p = this.order.indexOf(track);
+        // if (this.shuffle === "off") {
+        //   const p = this.order.indexOf(track);
+        //   if (p >= 0) this.pos = p; else this.rebuildScopeOrder(track);
+        // } else this.rebuildScopeOrder(track);
         // ```
-        match self.order.iter().position(|&x| x == track) {
-            // What:     `Some(p) => self.pos = Some(p)`. Already in scope: just move the
-            //           cursor. `Some(p)` wraps the position.
-            // Why:      Clicking another track on the same page keeps the page's shuffle
-            //           order intact.
-            // TS map:   `if (p >= 0) this.pos = p;`
+        if self.shuffle == ShuffleMode::Off {
+            // What:     `match self.order.iter().position(|&x| x == track) { ... }`. Find the
+            //           track's slot in the current sequential scope, if any.
+            // Why:      Stay in scope when possible; rebuild only on a jump to another page.
+            // TS map:   `const p = this.order.indexOf(track);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // if (p >= 0) this.pos = p;
+            // const p = this.order.indexOf(track);
             // ```
-            Some(p) => self.pos = Some(p),
-            // What:     `None => self.rebuild_scope_order(Some(track))`. Not in the current
-            //           scope: the track is on another page (Off/WithinPage) — rebuild the
-            //           scope around it. `Some(track)` wraps the anchor.
-            // Why:      Switch playback to the clicked track's page.
-            // TS map:   `else this.rebuildScopeOrder(track);`
+            match self.order.iter().position(|&x| x == track) {
+                // What:     `Some(p) => self.pos = Some(p)`. Already in scope: move the cursor.
+                // Why:      Clicking another track on the same page keeps the scope intact.
+                // TS map:   `if (p >= 0) this.pos = p;`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (p >= 0) this.pos = p;
+                // ```
+                Some(p) => self.pos = Some(p),
+                // What:     `None => self.rebuild_scope_order(Some(track))`. Another page:
+                //           rebuild the scope around the clicked track.
+                // Why:      Switch playback to the clicked track's page.
+                // TS map:   `else this.rebuildScopeOrder(track);`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // else this.rebuildScopeOrder(track);
+                // ```
+                None => self.rebuild_scope_order(Some(track)),
+            }
+        } else {
+            // What:     `self.rebuild_scope_order(Some(track));`. Restart the shuffle history at
+            //           the clicked track (order = [track], a fresh cycle).
+            // Why:      Selecting a track under shuffle should make it current and shuffle
+            //           onward from there, not replay recorded history.
+            // TS map:   `this.rebuildScopeOrder(track);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // else this.rebuildScopeOrder(track);
+            // this.rebuildScopeOrder(track);
             // ```
-            None => self.rebuild_scope_order(Some(track)),
+            self.rebuild_scope_order(Some(track));
         }
         // What:     `Some(track)` tail expression: report the now-current track.
         // Why:      The caller loads this index.
@@ -1098,7 +1205,63 @@ impl Queue {
             // ```
             return Some(self.order[pos]);
         }
-        // What:     `let next = pos + 1;` compute the following position.
+        // What:     `if self.shuffle != ShuffleMode::Off { ... }`. The shuffle modes use the
+        //           just-in-time path; `Off` falls through to the sequential walk below.
+        // Why:      Shuffle has no precomputed order: it retraces history forward, or appends a
+        //           fresh random pick when at the history end.
+        // TS map:   `if (this.shuffle !== "off") { ... }`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.shuffle !== "off") { /* retrace or pick */ }
+        // ```
+        if self.shuffle != ShuffleMode::Off {
+            // What:     `if pos + 1 < self.order.len() { ... }`. There is forward history to
+            //           retrace (the user pressed `prev` earlier, then `next`).
+            // Why:      `next` after `prev` replays the recorded history before drawing anew.
+            // TS map:   `if (pos + 1 < this.order.length) { this.pos = pos + 1; return this.order[pos + 1]; }`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (pos + 1 < this.order.length) { this.pos = pos + 1; return this.order[pos + 1]; }
+            // ```
+            if pos + 1 < self.order.len() {
+                self.pos = Some(pos + 1);
+                return Some(self.order[pos + 1]);
+            }
+            // What:     `let current = self.order[pos];` then `let pick = self.pick_next_shuffle(current);`.
+            //           At the history end: choose the next track just in time.
+            // Why:      Without replacement within the cycle, reshuffling at cycle end.
+            // TS map:   `const pick = this.pickNextShuffle(this.order[pos]);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const pick = this.pickNextShuffle(this.order[pos]);
+            // ```
+            let current = self.order[pos];
+            let pick = self.pick_next_shuffle(current);
+            // What:     `self.order.push(pick); self.pos = Some(self.order.len() - 1);`. Append
+            //           the pick to the history and point the cursor at it.
+            // Why:      The history grows by one; the new track is current.
+            // TS map:   `this.order.push(pick); this.pos = this.order.length - 1;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.order.push(pick); this.pos = this.order.length - 1;
+            // ```
+            self.order.push(pick);
+            self.pos = Some(self.order.len() - 1);
+            // What:     `return Some(pick);`. The chosen track.
+            // Why:      Hand back what to play next.
+            // TS map:   `return pick;`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return pick;
+            // ```
+            return Some(pick);
+        }
+        // What:     `let next = pos + 1;` compute the following position (Off, sequential).
         // Why:      Try to move forward within the scope.
         // TS map:   `const next = pos + 1;`
         //
@@ -1137,8 +1300,8 @@ impl Queue {
         }
         // What:     `self.pos = Some(0);`. Past the end of the scope: wrap to its start.
         //           `Some(0)` wraps index 0.
-        // Why:      Off/WithinPage loop the page; All loops the whole queue. There is no
-        //           "stop at end" mode (only repeat-track changes natural-end).
+        // Why:      Off loops the page. There is no "stop at end" mode (only repeat-track
+        //           changes natural-end).
         // TS map:   `this.pos = 0;`
         //
         // In TS you'd write (pseudocode):
@@ -1157,9 +1320,11 @@ impl Queue {
         Some(self.order[0])
     }
 
-    // What:     `pub fn prev(&mut self) -> Option<usize>` steps backward within the scope,
-    //           wrapping to the end at the start.
-    // Why:      The user pressed Previous.
+    // What:     `pub fn prev(&mut self) -> Option<usize>` steps backward. In `Off` it walks the
+    //           sequential scope and wraps to the end at the start; in the shuffle modes it
+    //           steps back through the play history and stops at its start (no wrap).
+    // Why:      The user pressed Previous. A shuffle history has no meaningful "last" to wrap
+    //           to, so going back past its start would invent a track.
     // TS map:   `prev(): number | null`.
     //
     // In TS you'd write (pseudocode):
@@ -1167,6 +1332,10 @@ impl Queue {
     // prev(): number | null {
     //   if (this.pos === null) return null;
     //   const pos = this.pos;
+    //   if (this.shuffle !== "off") {
+    //     if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }
+    //     return this.order[pos];
+    //   }
     //   if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }
     //   const last = this.order.length - 1; this.pos = last; return this.order[last];
     // }
@@ -1184,7 +1353,40 @@ impl Queue {
         // const pos = this.pos;
         // ```
         let pos = self.pos?;
-        // What:     `if pos > 0 { ... }` there is a previous slot in the scope.
+        // What:     `if self.shuffle != ShuffleMode::Off { ... }`. Shuffle steps back through
+        //           the history and stops at its start; `Off` falls through to the wrap below.
+        // Why:      Going back past the start of a random history would invent a track.
+        // TS map:   `if (this.shuffle !== "off") { if (pos > 0) {...} return this.order[pos]; }`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.shuffle !== "off") { if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; } return this.order[pos]; }
+        // ```
+        if self.shuffle != ShuffleMode::Off {
+            // What:     `if pos > 0 { self.pos = Some(pos - 1); return Some(self.order[pos - 1]); }`.
+            //           Step back one in the history.
+            // Why:      Replay the previously-played track.
+            // TS map:   `if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (pos > 0) { this.pos = pos - 1; return this.order[pos - 1]; }
+            // ```
+            if pos > 0 {
+                self.pos = Some(pos - 1);
+                return Some(self.order[pos - 1]);
+            }
+            // What:     `return Some(self.order[pos]);`. Already at the history start: stay put.
+            // Why:      No earlier history; report the current track unchanged.
+            // TS map:   `return this.order[pos];`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return this.order[pos];
+            // ```
+            return Some(self.order[pos]);
+        }
+        // What:     `if pos > 0 { ... }` there is a previous slot in the scope (Off).
         // Why:      Normal backward step.
         // TS map:   `if (pos > 0) { ... }`
         //
