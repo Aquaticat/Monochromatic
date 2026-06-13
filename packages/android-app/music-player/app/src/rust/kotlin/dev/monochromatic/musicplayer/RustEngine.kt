@@ -1,6 +1,12 @@
 package dev.monochromatic.musicplayer
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -60,10 +66,45 @@ class RustEngine(context: Context) : AudioEngine {
         }
     }
 
+    /** System audio service, for focus and the music-stream becoming-noisy broadcast. */
+    private val audioManager: AudioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+    /** Persistent media focus request (gain, usage=media), reused for every play. */
+    private val focusRequest: AudioFocusRequest =
+        AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build(),
+            )
+            .setOnAudioFocusChangeListener({ change -> onFocusChange(change) }, poller)
+            .setWillPauseWhenDucked(true)
+            .build()
+
+    /** Set when a transient focus loss paused mid-play, so a later focus gain resumes; a permanent loss
+     * or a user pause clears it. */
+    private var resumeOnFocusGain: Boolean = false
+
+    /** Pauses on a headphone unplug (ACTION_AUDIO_BECOMING_NOISY) so audio never jumps to the speaker. */
+    private val noisyReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
+                resumeOnFocusGain = false
+                NativeBridge.nativeEnginePause(handle)
+            }
+        }
+    }
+
     init {
         if (handle == 0L) {
             throw IllegalStateException("native engine worker could not be spawned")
         }
+        appContext.registerReceiver(
+            noisyReceiver,
+            IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY),
+            Context.RECEIVER_NOT_EXPORTED,
+        )
         poller.postDelayed(pollTask, POLL_MS)
     }
 
@@ -78,8 +119,10 @@ class RustEngine(context: Context) : AudioEngine {
             Log.w(LOG_TAG, "could not open a descriptor for $uri")
             return
         }
+        // Only start playing if audio focus is granted (a phone call or another player can deny it).
+        val startPlaying: Boolean = play && requestFocus()
         // Pass the BORROWED fd; native dups it synchronously, so use {} closes the original after.
-        val result: Int = descriptor.use { NativeBridge.nativeEngineLoad(handle, it.fd, play) }
+        val result: Int = descriptor.use { NativeBridge.nativeEngineLoad(handle, it.fd, startPlaying) }
         if (result != 0) {
             Log.w(LOG_TAG, "native load failed (code $result) for $uri")
         }
@@ -105,7 +148,9 @@ class RustEngine(context: Context) : AudioEngine {
         }
 
     override fun play() {
-        NativeBridge.nativeEnginePlay(handle)
+        if (requestFocus()) {
+            NativeBridge.nativeEnginePlay(handle)
+        }
     }
 
     override fun pause() {
@@ -136,8 +181,52 @@ class RustEngine(context: Context) : AudioEngine {
 
     override fun release() {
         poller.removeCallbacks(pollTask)
+        resumeOnFocusGain = false
+        audioManager.abandonAudioFocusRequest(focusRequest)
+        try {
+            appContext.unregisterReceiver(noisyReceiver)
+        } catch (alreadyUnregistered: IllegalArgumentException) {
+            // Benign: release() ran twice, or the receiver was never registered; nothing to undo.
+            Log.w(LOG_TAG, "noisy receiver already unregistered", alreadyUnregistered)
+        }
         NativeBridge.nativeEngineRelease(handle)
         handle = 0L
+    }
+
+    /**
+     * Request media audio focus.
+     *
+     * @return True when focus was granted (so playback may start).
+     */
+    private fun requestFocus(): Boolean =
+        audioManager.requestAudioFocus(focusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+
+    /**
+     * React to a system audio-focus change so a phone call, navigation prompt, or another media app
+     * pauses (and a transient interruption resumes) this engine, the behavior ExoPlayer gives the
+     * Media3 flavor for free. A permanent loss pauses and abandons focus; a transient loss pauses and
+     * arms resume-on-gain; a gain resumes only if a transient loss had paused us.
+     *
+     * @param change One of the `AudioManager.AUDIOFOCUS_*` change constants.
+     */
+    private fun onFocusChange(change: Int) {
+        when (change) {
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                resumeOnFocusGain = false
+                NativeBridge.nativeEnginePause(handle)
+                audioManager.abandonAudioFocusRequest(focusRequest)
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                resumeOnFocusGain = NativeBridge.nativeEngineIsPlaying(handle)
+                NativeBridge.nativeEnginePause(handle)
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (resumeOnFocusGain) {
+                    resumeOnFocusGain = false
+                    NativeBridge.nativeEnginePlay(handle)
+                }
+            }
+        }
     }
 
     /**
