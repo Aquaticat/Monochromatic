@@ -28,9 +28,11 @@ uses a developer-authored C++ `main.cpp` on unmerged fork patches). Fails two ow
 the `dx` CLI, Rust UI rendering through wry/WKWebView, dual-target structurally clean because it is pure
 Rust per-target, the anti-Qt; a Rust-computed value renders with no FFI shim; WebKit-native a11y). SnapKit
 also FULL PASS both legs (second appended gate, 2026-06-12: pure-Swift UIKit Auto Layout DSL via SPM, the
-first SPM dependency gate; centered layout renders, native UIKit a11y). Remaining native and managed gates:
-the owner-appended set UIKit, SwiftUI; then the six WKWebView frameworks, deferred to the very end per
-owner. Owner constraints (2026-06-12): (a) no C or C++
+first SPM dependency gate; centered layout renders, native UIKit a11y). UIKit and SwiftUI also FULL PASS
+both legs (third and fourth appended gates, 2026-06-12: pure-Swift native baselines, both render-verified;
+SwiftUI is the HelloDevice canary's framework formally re-confirmed). The entire native and managed initial
+vet is now complete; only the deferred web block (six WKWebView frameworks) remains for the initial vet.
+The pure-Swift gates (UIKit, SwiftUI, SnapKit) are baseline-only under the allowed-language rule. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
 device and the latest iOS simulator (iOS 26.5) from one codebase. Retroactive sweep complete: Compose,
@@ -287,8 +289,10 @@ NativeScript (rank 7, including its Rust crossing), and Lynx (rank 8, including 
 DONE (FULL PASS, above). Qt (rank 9) is CULLED (no prebuilt arm64-iphonesimulator slice in any version, so
 it cannot render on the M1's native arm64 iOS 26.5 simulator, and the only arm64-sim path breaks the no-C++
 rule; see below and `device-gate-results.md`). Dioxus (first appended gate) is DONE (FULL PASS both legs,
-below). SnapKit (second appended gate) is DONE (FULL PASS both legs, below). The next gate is UIKit.
-Remaining, in order:
+below). SnapKit, UIKit, and SwiftUI (second through fourth appended gates) are all DONE (FULL PASS both
+legs, below); the pure-Swift trio is baseline-only under the allowed-language rule. The entire native and
+managed initial vet is complete. The only initial-vet work left is the deferred WKWebView block. Remaining,
+in order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -347,8 +351,10 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   <triple>`, device leg signed by hand with the vet keychain since `dx`'s deploy assumes USB; see
   `device-gate-results.md`). SnapKit DONE (FULL PASS both legs, 2026-06-12: pure-Swift UIKit Auto Layout
   DSL via SPM, the first SPM dependency gate; xcodegen UIKit app, device leg signed inline by the runbook
-  wrapper; see `device-gate-results.md`). Remaining: UIKit (pure native, trivial), SwiftUI (already
-  render-proven by the HelloDevice canary; formal re-confirm).
+  wrapper; see `device-gate-results.md`). UIKit DONE (FULL PASS both legs, 2026-06-12: pure-UIKit Swift app,
+  native `NSLayoutConstraint`, the native baseline). SwiftUI DONE (FULL PASS both legs, 2026-06-12: SwiftUI
+  App-lifecycle app, the HelloDevice canary's framework formally re-confirmed). All four appended gates
+  done; the pure-Swift trio (SnapKit/UIKit/SwiftUI) is baseline-only under the allowed-language rule.
 - Deferred to the very end per owner: the six WKWebView frameworks (Cordova substrate plus the Ionic,
   Framework7, Onsen, Quasar UI-render notes on the already-proven Capacitor/WKWebView substrate).
 

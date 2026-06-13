@@ -676,6 +676,31 @@ little.plan2433, team `HWLVAKDV4F`), then `ideviceinstaller -n upgrade`; the sim
 UIKit with no bridge); on-device VoiceOver confirmation owed under the retroactive sweep. Work dir:
 `/Volumes/MacData/ios-vet/snapkitgate`. Toolchain: xcodegen (already installed) plus SPM.
 
+### UIKit: FULL PASS (both legs), the pure-Swift native baseline
+
+Status: FULL PASS 2026-06-12, third of the owner-appended set. A pure-UIKit Swift app (xcodegen, native
+`NSLayoutConstraint`, no third-party deps), render-verified on BOTH the iPhone X (iOS 16.7) and the iPhone
+17 Pro / iOS 26.5 simulator from one codebase: "UIKit Gate / Pure UIKit, native a11y / RENDER OK", the
+stack centered with native Auto Layout anchors. UIKit is the iOS-forever native baseline and the substrate
+every other gate's views ultimately render through, so it trivially passes; native a11y (VoiceOver through
+UIKit with no bridge). Same xcodegen plus runbook-wrapper build path as SnapKit, minus the SPM dependency.
+
+Language-rule standing (owner directive 4): UIKit app code is 100% Swift, a non-allowed language, so UIKit
+is baseline-only, not an implementation candidate. Vetted to confirm the native floor renders and as the
+a11y reference. Work dir: `/Volumes/MacData/ios-vet/uikitgate`.
+
+### SwiftUI: FULL PASS (both legs), the canary's framework formally re-confirmed
+
+Status: FULL PASS 2026-06-12, fourth of the owner-appended set, and the formal re-confirm of the framework
+the HelloDevice signing canary already proved. A SwiftUI App-lifecycle app (xcodegen, `@main struct ...:
+App`, no AppDelegate), render-verified on BOTH the iPhone X (iOS 16.7) and the iPhone 17 Pro / iOS 26.5
+simulator from one codebase: "SwiftUI Gate / SwiftUI, native a11y / RENDER OK". SwiftUI bridges to native
+UIKit accessibility, so VoiceOver works with no extra work (the canary already ran it on the device).
+
+Language-rule standing (owner directive 4): SwiftUI app code is 100% Swift, a non-allowed language, so
+SwiftUI is baseline-only, not an implementation candidate, despite being the lightest native path. Work
+dir: `/Volumes/MacData/ios-vet/swiftuigate`.
+
 ## Music-player iOS port (the Slint path is blocked on iOS 16.7)
 
 The music-player is Slint, so the natural port would reuse the UI. But Slint does not run on the
@@ -716,9 +741,11 @@ Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3
 iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), and Lynx (rank 8,
 native UIKit `LynxView`, jitless PrimJS/JSC survives AMFI on the iPhone X, render both legs, Rust crossing
 PASS via a pure-ObjC `LynxModule` shim), Dioxus (first of the owner-appended set, Rust UI rendering
-through wry/WKWebView, dual-target structurally clean because it is pure Rust per-target), and SnapKit
-(second appended gate, pure-Swift UIKit Auto Layout DSL via SPM, the first SPM dependency gate), all
-render-verified, above. Slint (rank 1) was gated and FAILED (disqualified, above), and Qt (rank 9) was
+through wry/WKWebView, dual-target structurally clean because it is pure Rust per-target), SnapKit
+(second appended gate, pure-Swift UIKit Auto Layout DSL via SPM, the first SPM dependency gate), UIKit
+(third appended gate, pure-Swift native baseline), and SwiftUI (fourth appended gate, the HelloDevice
+canary's framework formally re-confirmed), all render-verified, above. The pure-Swift trio
+(SnapKit/UIKit/SwiftUI) is baseline-only under the allowed-language rule (owner directive 4). Slint (rank 1) was gated and FAILED (disqualified, above), and Qt (rank 9) was
 CULLED (no prebuilt arm64-simulator slice, and the only arm64-sim path also breaks the no-hand-written-C++
 rule, above).
 
