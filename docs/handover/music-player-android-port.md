@@ -68,6 +68,22 @@ are done; the app is a single full-Rust-engine variant at the true minSdk floor 
 the collapsed APK was explicitly waived by the owner; the build, unit tests, instrumented-test assemble, and lint all
 pass on the collapsed structure.)
 
+Session redesign features (later session, implemented): the desktop's source-root session redesign (the three ADRs
+`docs/decisions/music-player-{session-source-root,jit-shuffle,live-update-rescan}.md`, each "applies to both") is now
+ported to Android. The deferred Session persistence seam (below) is wired, and restore auto-correction + live updating
+are built. Five commits: Session model collapsed to selected-track URI + settings + position, dropping the
+materialized queue and `pruneUnplayable` (the Source Root is NOT persisted; `LibrarySource` re-resolves it each
+launch); just-in-time shuffle in `core/Queue.kt` (history grows as you go, `cycleStart`, +4 tests); `SessionStore`
+(SharedPreferences); and the controller/service/activity wiring (`PlayerController.restoreLibrary`/`reconcileLibrary`,
+keyed by `loadedUri` not index so it survives a rescan; `PlaybackService.rescan`/`saveSession`, rescan guarded to
+no-op while a load is in flight so it cannot cancel the cold-start restore; `MainActivity` rescans in
+`onServiceConnected` (the reliable foreground hook, not `onResume`) and saves in `onStop`). Verified to the limit
+reachable without a device: `core` is unit-tested (`test:unit`, the JIT + Session cases) and the whole app +
+instrumented source set compile-check and lint clean. The RUNTIME behaviors that only a device exercises remain owed
+(owner-waived per the collapse note): Rescan-does-not-restart-playback, Restore reselects + seeks, and the ON_RESUME
+live update. The MediaSession timeline shrinking to `[anchor]` after a reconcile under JIT shuffle is the known
+on-device-only consequence of the just-in-time history.
+
 Metric comparison (#13, decisive): a like-for-like fresh head-to-head, the same first 8 MediaStore tracks run through
 the same operation (full decode + 4x Catmull-Rom true peak) on each engine: `NativeBridgeTest.measureTruePeakOnDevice`
 (rust, `nativeMeasureTruePeak` = symphonia/libopus) vs `Media3TruePeakDecoderTest.measureLibraryTimingForComparison`
