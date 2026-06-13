@@ -1,7 +1,10 @@
 package dev.monochromatic.musicplayer
 
+import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.io.File
@@ -10,6 +13,7 @@ import java.nio.ByteOrder
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -90,6 +94,35 @@ class Media3TruePeakDecoderTest {
         assertTrue("measured $measured should stay a sane level", measured <= SANE_UPPER_BOUND)
     }
 
+    // Times the Media3 (MediaExtractor + MediaCodec) decode + true-peak measure over the first real
+    // library tracks, for the like-for-like head-to-head against the full-Rust flavor's
+    // nativeMeasureTruePeak (NativeBridgeTest.measureTruePeakOnDevice) on the same MediaStore tracks.
+    // Same operation (full decode + 4x Catmull-Rom true peak), so the times are directly comparable.
+    // Decode-only, silent; needs READ_MEDIA_AUDIO; skips when no library is indexed. Logged under the
+    // shared NativeBench tag.
+    @Test
+    fun measureLibraryTimingForComparison() {
+        val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        val uris = mutableListOf<Uri>()
+        context.contentResolver.query(collection, arrayOf(MediaStore.Audio.Media._ID), "${MediaStore.Audio.Media.IS_MUSIC} != 0", null, null)?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            while (cursor.moveToNext() && uris.size < TIMING_TRACK_COUNT) {
+                uris.add(ContentUris.withAppendedId(collection, cursor.getLong(idColumn)))
+            }
+        }
+        assumeTrue("no indexed MediaStore audio (grant READ_MEDIA_AUDIO)", uris.isNotEmpty())
+        var totalMs = 0.0
+        for (uri in uris) {
+            val start = System.nanoTime()
+            val peak: Float = runBlocking { Media3TruePeakDecoder.measure(context, uri) }
+            val elapsedMs = (System.nanoTime() - start) / 1_000_000.0
+            totalMs += elapsedMs
+            Log.i(BENCH_TAG, "media3-measure (${uri.lastPathSegment}) -> peak=$peak elapsedMs=${"%.1f".format(elapsedMs)}")
+            assertTrue("media3 measure failed for $uri (peak=$peak)", peak >= 0.0f)
+        }
+        Log.i(BENCH_TAG, "media3-measure TOTAL ${uris.size} tracks = ${"%.1f".format(totalMs)} ms (MediaCodec decode + true-peak)")
+    }
+
     @Test
     fun silenceMeasuresZero() {
         // An all-zero stream must measure exactly 0.0 (the silence guard maps it to unity gain).
@@ -131,6 +164,12 @@ class Media3TruePeakDecoderTest {
     }
 
     private companion object {
+        /** Shared log tag with the rust flavor's native bench, so both sides grep together. */
+        private const val BENCH_TAG: String = "NativeBench"
+
+        /** Tracks to time for the head-to-head, matching the rust flavor's sample size. */
+        private const val TIMING_TRACK_COUNT: Int = 8
+
         /** Fixture sample rate; any standard rate works since the oracle is amplitude-based. */
         private const val SAMPLE_RATE: Int = 48_000
 

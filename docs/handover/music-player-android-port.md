@@ -39,9 +39,24 @@ handover adds the working state, measured facts, and exact next steps.
   `7a5e632b` + gain wiring; the rust flavor's `measureTrackPeak` sweep seam is now implemented too, so its background
   peak sweep works). Audible playback is CONFIRMED: the user tested the real app and confirmed the full-Rust variant
   plays correctly (the human-ears check the volume-0 tests could not provide; channel order / glitch-free output now
-  verified by the user). Remaining is only the Media3-vs-Rust steady-state metric comparison (#13, the clean in-use
-  head-to-head; the 10x decode number is fresh-native-vs-recorded-media3, not yet a like-for-like playback comparison).
+  verified by the user). The Media3-vs-Rust metric comparison (#13) is DONE and decisive (below): rust is ~86-187x
+  faster at the same decode + true-peak operation on the same tracks. WINNER: the full-Rust variant.
   The queue/advance/shuffle stay in Kotlin's `PlayerController` (the native engine is only the per-track primitive).
+
+Metric comparison (#13, decisive): a like-for-like fresh head-to-head, the same first 8 MediaStore tracks run through
+the same operation (full decode + 4x Catmull-Rom true peak) on each engine: `NativeBridgeTest.measureTruePeakOnDevice`
+(rust, `nativeMeasureTruePeak` = symphonia/libopus) vs `Media3TruePeakDecoderTest.measureLibraryTimingForComparison`
+(media3, MediaExtractor + MediaCodec). Rust did all 8 in 6.7 s total (per track 17-3252 ms); media3 took ~12.8 min for
+just 6 tracks and had not finished the 8th when stopped, e.g. track ...861 took 606 s (10 min) on media3 vs 3.25 s on
+rust (187x), ...858 17.5 s vs 97 ms (181x), ...852 3.46 s vs 29 ms (120x), ...796 100.7 s vs 1.16 s (86x). This
+validates the variant's premise: in-process libopus/symphonia avoids the MediaCodec/Codec2 per-buffer binder overhead,
+which is catastrophic for the OFFLINE decode-as-fast-as-possible peak sweep (and means lower decode CPU during playback
+too; MediaCodec only has to keep up with 1x real time during playback, so the gap there is smaller). Correctness
+bonus: rust's true peak matched media3 BIT-EXACTLY on the 5 lossless tracks (0.012969971, 0.005311966, 0.016937256,
+0.05836296, 0.028305292) and diverged only on the lossy track (rust 1.43 vs media3 1.15, expected decoder variance),
+an independent confirmation the native meter is correct. Caveat: this is the offline/sweep decode path; a steady-state
+playback-CPU comparison was not separately run (the offline number already settles the winner, and playback decode is
+the same symphonia/libopus path measured here).
 
 ## Build progress (this session)
 

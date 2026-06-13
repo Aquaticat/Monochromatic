@@ -87,15 +87,20 @@ class NativeBridgeTest {
         assumeTrue("no indexed MediaStore audio (grant READ_MEDIA_AUDIO)", uris.isNotEmpty())
         val ceiling = 0.8912509f
         var maxPeak = 0.0f
+        var totalMs = 0.0
         for (uri in uris) {
+            val start = System.nanoTime()
             val peak: Float = resolver.openFileDescriptor(uri, "r")?.use { pfd ->
                 NativeBridge.nativeMeasureTruePeak(pfd.fd)
             } ?: -100.0f
+            val elapsedMs = (System.nanoTime() - start) / 1_000_000.0
+            totalMs += elapsedMs
             val gain: Float = if (peak > 0.0f) minOf(ceiling / peak, 1.0f) else 1.0f
-            Log.i("NativeBench", "true-peak (${uri.lastPathSegment}) -> peak=$peak gain=$gain")
+            Log.i("NativeBench", "rust-measure (${uri.lastPathSegment}) -> peak=$peak gain=$gain elapsedMs=${"%.1f".format(elapsedMs)}")
             assertTrue("true-peak measure failed for $uri (peak=$peak)", peak > 0.0f && peak < 8.0f)
             maxPeak = maxOf(maxPeak, peak)
         }
+        Log.i("NativeBench", "rust-measure TOTAL ${uris.size} tracks = ${"%.1f".format(totalMs)} ms (native symphonia/opus decode + true-peak)")
         // A real library has at least one reasonably loud track; a uniformly tiny max
         // across the sample would mean a systematic scaling bug, not genuinely quiet music.
         assertTrue("all sampled tracks improbably quiet (maxPeak=$maxPeak) - possible scaling bug", maxPeak > 0.1f)
