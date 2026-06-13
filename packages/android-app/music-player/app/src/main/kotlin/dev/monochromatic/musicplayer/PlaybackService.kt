@@ -415,6 +415,32 @@ class PlaybackService : MediaSessionService() {
         // }
         // ```
         fun reloadFromRoot(treeUri: Uri) = this@PlaybackService.reloadFromRoot(treeUri)
+
+        // What:     `fun rescan() = this@PlaybackService.rescan()` declares an
+        //           expression-body method forwarding to the outer service's `rescan()`.
+        // Why:      The activity calls this when it comes to the foreground (on rebind), so
+        //           the service re-scans the source and reconciles the queue (live update),
+        //           preserving the playing track.
+        // TS map:   `rescan(): void { return this.outer.rescan(); }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // rescan(): void { this.outer.rescan(); }
+        // ```
+        fun rescan() = this@PlaybackService.rescan()
+
+        // What:     `fun saveSession() = this@PlaybackService.saveSession()` declares an
+        //           expression-body method forwarding to the outer service's `saveSession()`.
+        // Why:      The activity calls this in `onStop` (before unbinding) so the live resume
+        //           position is captured even when the user backgrounds mid-track while
+        //           playing (no state-change event fires then, so `onPersist` would miss it).
+        // TS map:   `saveSession(): void { return this.outer.saveSession(); }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // saveSession(): void { this.outer.saveSession(); }
+        // ```
+        fun saveSession() = this@PlaybackService.saveSession()
     }
 
     // What:     `override fun onCreate() { ... }` overrides the service lifecycle hook
@@ -479,6 +505,19 @@ class PlaybackService : MediaSessionService() {
         // this.brainPlayer = new BrainPlayer(this.controller, Looper.getMainLooper());
         // ```
         brainPlayer = BrainPlayer(controller, Looper.getMainLooper())
+        // What:     `controller.onPersist = { saveSession() }` wires the controller's persist
+        //           callback to this service's `saveSession`. The lambda is invoked at the end
+        //           of every `refresh` (selection/settings/play-state changes).
+        // Why:      Persist the session on any meaningful change so a later kill keeps the
+        //           latest selection/settings. This is SEPARATE from `onStateChanged`, which
+        //           `BrainPlayer` already owns for the MediaSession projection.
+        // TS map:   `this.controller.onPersist = () => this.saveSession();`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.controller.onPersist = () => this.saveSession();
+        // ```
+        controller.onPersist = { saveSession() }
         // What:     `val built: MediaSession = MediaSession.Builder(this, brainPlayer).build()`
         //           declares a read-only `MediaSession` local `built`. `MediaSession.Builder(this, brainPlayer)`
         //           constructs a builder seeded with the service context and the projected
@@ -702,26 +741,42 @@ class PlaybackService : MediaSessionService() {
             // const tracks = await LibrarySource.load(this);
             // ```
             val tracks = LibrarySource.load(this@PlaybackService)
-            // What:     `controller.openLibrary(tracks)` hands the loaded tracks to the
-            //           brain, which repaginates and shows the first page.
-            // Why:      Deliver the load result to the brain/UI.
-            // TS map:   `this.controller.openLibrary(tracks);`.
+            // What:     `val session = SessionStore.load(this@PlaybackService)` reads the
+            //           persisted session (selected track URI + settings + position), or the
+            //           model defaults when none was saved.
+            // Why:      The self-load is the RESTORE path: it must reapply the saved settings
+            //           and reselect the saved track, not start blank.
+            // TS map:   `const session = SessionStore.load(this);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.controller.openLibrary(tracks);
+            // const session = SessionStore.load(this);
             // ```
-            controller.openLibrary(tracks)
-            // What:     `Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks")` logs
+            val session = SessionStore.load(this@PlaybackService)
+            // What:     `controller.restoreLibrary(tracks, session)` hands the freshly scanned
+            //           tracks AND the saved session to the brain, which re-derives the queue,
+            //           reapplies settings, and reselects the saved track by URI (paused at the
+            //           saved position). This re-scan-and-reselect IS the restore
+            //           auto-correction.
+            // Why:      Resume where the user left off, self-correcting for files added,
+            //           removed, or renamed since the last run.
+            // TS map:   `this.controller.restoreLibrary(tracks, session);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.controller.restoreLibrary(tracks, session);
+            // ```
+            controller.restoreLibrary(tracks, session)
+            // What:     `Log.i(LOG_TAG, "PlaybackService restored ${tracks.size} tracks")` logs
             //           the load count (`${tracks.size}` is the list length).
             // Why:      Record how many tracks loaded, for verification.
-            // TS map:   `console.info(`[${LOG_TAG}] PlaybackService loaded ${tracks.length} tracks`);`
+            // TS map:   `console.info(`[${LOG_TAG}] PlaybackService restored ${tracks.length} tracks`);`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // console.info(`[${LOG_TAG}] PlaybackService loaded ${tracks.length} tracks`);
+            // console.info(`[${LOG_TAG}] PlaybackService restored ${tracks.length} tracks`);
             // ```
-            Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks")
+            Log.i(LOG_TAG, "PlaybackService restored ${tracks.size} tracks")
         }
     }
 
@@ -826,6 +881,135 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
+    // What:     `fun rescan() { ... }` declares a public method, no params, `Unit` return,
+    //           block body. The LIVE-UPDATE entry point (the desktop "Rescan" analog).
+    // Why:      Called when the app returns to the foreground: re-resolve the current source
+    //           and reconcile the queue, preserving the playing track. Two guards make it
+    //           safe: it does nothing before the first load, and it does NOTHING WHILE A LOAD
+    //           IS IN FLIGHT, so a foreground arriving during the cold-start restore does not
+    //           cancel that restore (the in-flight load already yields fresh state).
+    // TS map:   `rescan(): void { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // rescan(): void {
+    //   if (!this.libraryLoaded) return;
+    //   if (this.loadJob?.isActive) return;
+    //   this.loadJob = launch(this.scope, async () => {
+    //     this.controller.reconcileLibrary(await LibrarySource.load(this));
+    //   });
+    // }
+    // ```
+    fun rescan() {
+        // What:     `if (!libraryLoaded) return` bails before the first load.
+        // Why:      Nothing to reconcile until a library has been loaded; the first load is
+        //           `ensureLibraryLoaded`'s job, not a rescan's.
+        // TS map:   `if (!this.libraryLoaded) return;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!this.libraryLoaded) return;
+        // ```
+        if (!libraryLoaded) return
+        // What:     `if (loadJob?.isActive == true) return` bails when a load/reload/restore (or
+        //           a prior rescan) is still running. `loadJob?.isActive` is the coroutine's
+        //           live flag (true from `launch` until completion), null-safe via `?.`.
+        // Why:      CRITICAL: the cold-start `ensureLibraryLoaded` launches the restore, then a
+        //           foreground bind fires `rescan`; without this guard `rescan` would cancel the
+        //           restore mid-scan and reconcile with `loadedUri == null`, clearing the
+        //           restored selection. The in-flight load already produces fresh state, so
+        //           skipping is correct (also de-dupes rapid double-foregrounds).
+        // TS map:   `if (this.loadJob?.isActive) return;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (this.loadJob?.isActive) return;
+        // ```
+        if (loadJob?.isActive == true) return
+        // What:     `loadJob = scope.launch { ... }` runs the reconcile off the UI thread,
+        //           keeping the `Job` handle. Inside: scan the source, then reconcile.
+        // Why:      Re-derive the queue from disk now and reconcile it, preserving playback.
+        // TS map:   `this.loadJob = launch(this.scope, async () => { ... });`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.loadJob = launch(this.scope, async () => { ... });
+        // ```
+        loadJob = scope.launch {
+            // What:     `val tracks = LibrarySource.load(this@PlaybackService)` re-resolves the
+            //           CURRENT source (held SAF root, else MediaStore) and scans it.
+            // Why:      The live state of the source on this foreground.
+            // TS map:   `const tracks = await LibrarySource.load(this);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const tracks = await LibrarySource.load(this);
+            // ```
+            val tracks = LibrarySource.load(this@PlaybackService)
+            // What:     `controller.reconcileLibrary(tracks)` reconciles the queue with the
+            //           scan, preserving the playing track by URI WITHOUT restarting playback.
+            // Why:      The live update: added/removed/renamed files show up, the current track
+            //           keeps playing if it survives.
+            // TS map:   `this.controller.reconcileLibrary(tracks);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // this.controller.reconcileLibrary(tracks);
+            // ```
+            controller.reconcileLibrary(tracks)
+            // What:     `Log.i(...)` records the reconcile count for verification.
+            // Why:      Trace the live-update path.
+            // TS map:   `console.info(...);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // console.info(`[${LOG_TAG}] PlaybackService reconciled ${tracks.length} tracks (live update)`);
+            // ```
+            Log.i(LOG_TAG, "PlaybackService reconciled ${tracks.size} tracks (live update)")
+        }
+    }
+
+    // What:     `fun saveSession() { ... }` declares a public method, no params, `Unit` return,
+    //           block body.
+    // Why:      Persist the current session (selected track URI + settings + live position) via
+    //           `SessionStore`. Called from the controller's `onPersist` on state changes, from
+    //           the activity's `onStop` (to capture a mid-track-background position), and from
+    //           `onDestroy` (final save). No-op before a library is loaded so it cannot
+    //           overwrite a good saved session with an empty one during startup.
+    // TS map:   `saveSession(): void { ... }`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // saveSession(): void {
+    //   if (!this.libraryLoaded) return;
+    //   SessionStore.save(this, this.controller.currentSession());
+    // }
+    // ```
+    fun saveSession() {
+        // What:     `if (!libraryLoaded) return` guards against saving before the library has
+        //           loaded.
+        // Why:      During startup the controller has no real selection yet; saving then would
+        //           clobber the persisted session with defaults.
+        // TS map:   `if (!this.libraryLoaded) return;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!this.libraryLoaded) return;
+        // ```
+        if (!libraryLoaded) return
+        // What:     `SessionStore.save(this, controller.currentSession())` writes the snapshot.
+        //           `controller.currentSession()` builds a `core.Session` from the live queue +
+        //           engine; `this` is the service `Context`.
+        // Why:      Durably record where the user is, for the next launch's restore.
+        // TS map:   `SessionStore.save(this, this.controller.currentSession());`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // SessionStore.save(this, this.controller.currentSession());
+        // ```
+        SessionStore.save(this, controller.currentSession())
+    }
+
     // What:     `override fun onDestroy() { ... }` overrides the lifecycle hook Android
     //           calls when the service is being destroyed.
     // Why:      Release the session and its player, clear state, and cancel the load
@@ -837,6 +1021,18 @@ class PlaybackService : MediaSessionService() {
     // override onDestroy(): void { ... }
     // ```
     override fun onDestroy() {
+        // What:     `saveSession()` persists the final session BEFORE anything is released.
+        // Why:      Capture the latest selection/settings/position while the controller and
+        //           engine are still alive (`currentSession()` reads `engine.positionSec()`);
+        //           the releases below tear the engine down, so this must run first. No-op if
+        //           the library never loaded.
+        // TS map:   `this.saveSession();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.saveSession();
+        // ```
+        saveSession()
         // What:     `session?.run { player.release(); release() }` uses the SCOPE FUNCTION
         //           `run` after a SAFE-CALL `?.`: when `session` is non-null, `run { ... }`
         //           executes the trailing lambda WITH `session` as the lambda's `this`

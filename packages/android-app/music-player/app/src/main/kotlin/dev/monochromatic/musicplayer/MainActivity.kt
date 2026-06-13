@@ -947,44 +947,51 @@ class MainActivity : ComponentActivity() {
             // console.info(`[${LOG_TAG}] bound to PlaybackService`);
             // ```
             Log.i(LOG_TAG, "bound to PlaybackService")
-            // What:     `pendingRoot?.let { root -> ... }` SAFE-CALLs `.let` on the nullable
-            //           `pendingRoot`: when it is non-null, run the trailing lambda with the
-            //           non-null value bound to `root`; when null, do nothing. (Folds in the
-            //           old inline note: a folder picked while unbound is applied now that the
-            //           service is connected.)
-            // Why:      If a folder was picked while unbound, apply it now that we are
-            //           connected.
-            // TS map:   `if (this.pendingRoot !== null) { const root = this.pendingRoot; ... }`
-            //           — `?.let { x -> }` is "if non-null, run this block with the value."
+            // What:     `val pending = pendingRoot; if (pending != null) { ... } else { local.rescan() }`
+            //           reads the nullable `pendingRoot` into a local (smart-cast to non-null in
+            //           the `then` branch), then branches on whether a folder pick is waiting.
+            // Why:      Two foreground cases on (re)bind. (1) A folder was picked while unbound:
+            //           apply it now (a full reload that clears selection, the explicit-Open
+            //           semantic). (2) Otherwise this is a routine foreground (re)bind: ask the
+            //           service to rescan and reconcile (LIVE UPDATE). `onStop` unbinds and
+            //           `onStart` rebinds on every foreground, so `onServiceConnected` is the
+            //           reliable "app foregrounded" hook (unlike `onResume`, where the async
+            //           rebind leaves `binder` null). `rescan()` is a no-op before the first
+            //           load or while a load is in flight, so it never disturbs the cold-start
+            //           restore.
+            // TS map:   `const pending = this.pendingRoot; if (pending !== null) { local.reloadFromRoot(pending); this.pendingRoot = null; } else { local.rescan(); }`
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // if (this.pendingRoot !== null) {
-            //   const root = this.pendingRoot;
-            //   local.reloadFromRoot(root);
-            //   this.pendingRoot = null;
-            // }
+            // const pending = this.pendingRoot;
+            // if (pending !== null) { local.reloadFromRoot(pending); this.pendingRoot = null; }
+            // else { local.rescan(); }
             // ```
-            pendingRoot?.let { root ->
-                // What:     `local.reloadFromRoot(root)` tells the service to load the
-                //           pending folder. `root` is the non-null `Uri` from `.let`.
-                // Why:      Apply the deferred pick now.
-                // TS map:   `local.reloadFromRoot(root);`.
+            val pending = pendingRoot
+            if (pending != null) {
+                // What:     `local.reloadFromRoot(pending)` tells the service to load the pending
+                //           folder; `pendingRoot = null` clears it so it is not reapplied.
+                // Why:      Apply the deferred explicit pick exactly once.
+                // TS map:   `local.reloadFromRoot(pending); this.pendingRoot = null;`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // local.reloadFromRoot(root);
+                // local.reloadFromRoot(pending); this.pendingRoot = null;
                 // ```
-                local.reloadFromRoot(root)
-                // What:     `pendingRoot = null` clears the deferred pick.
-                // Why:      It has been applied; don't reapply on the next bind.
-                // TS map:   `this.pendingRoot = null;`.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.pendingRoot = null;
-                // ```
+                local.reloadFromRoot(pending)
                 pendingRoot = null
+            } else {
+                // What:     `local.rescan()` asks the service to re-scan the current source and
+                //           reconcile the queue (live update), preserving the playing track.
+                // Why:      The foreground signal: pick up files added/removed/renamed while the
+                //           app was away. Safe no-op during the first load (cold-start restore).
+                // TS map:   `local.rescan();`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // local.rescan();
+                // ```
+                local.rescan()
             }
         }
 
@@ -1264,6 +1271,20 @@ class MainActivity : ComponentActivity() {
         // super.onStop();
         // ```
         super.onStop()
+        // What:     `binder?.saveSession()` SAFE-CALLs the service's `saveSession` while the
+        //           binder is still valid (BEFORE the `unbindService` below).
+        // Why:      Capture the resume position when the user backgrounds mid-track while
+        //           playing: no state-change fires then, so the controller's `onPersist` would
+        //           miss it, and `onDestroy` may not run if the process is later killed. Saving
+        //           here, on the live service controller, makes the backgrounded position
+        //           durable. No-op if unbound or the library has not loaded.
+        // TS map:   `this.binder?.saveSession();`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.binder?.saveSession();
+        // ```
+        binder?.saveSession()
         // What:     `unbindService(connection)` detaches our connection from the service.
         //           (Folds in the old inline note: unbind only; the service stays alive on
         //           its own, foreground while playing, so audio keeps going. Never release
