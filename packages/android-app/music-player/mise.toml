@@ -6,27 +6,16 @@
 # JDK in the 17..21 range; the host's newer JBR is too new). The Android SDK
 # location is machine-local and lives in the gitignored local.properties
 # (sdk.dir=...), which Gradle reads natively, so no ANDROID_HOME env is set here.
+#
+# One engine, one variant: the media3 and hybrid flavors are gone (the full-Rust
+# engine won the head-to-head), so the tasks below drive the single debug/release
+# variant (assembleDebug, testDebugUnitTest, connectedDebugAndroidTest, lintDebug).
 
 [tools]
 java = "temurin-21"
 
-[tasks."build:media3"]
-description = "Assemble the Media3 (pure-Kotlin) debug APK"
-dir = "{{config_root}}"
-run = "./gradlew :app:assembleMedia3Debug --no-daemon --console=plain"
-
-[tasks."build:media3:release"]
-description = "Assemble the optimized (non-debuggable) Media3 release APK, debug-signed so it installs"
-dir = "{{config_root}}"
-run = "./gradlew :app:assembleMedia3Release --no-daemon --console=plain"
-
-[tasks."build:hybrid"]
-description = "Assemble the hybrid (Rust true-peak + Media3) debug APK"
-dir = "{{config_root}}"
-run = "./gradlew :app:assembleHybridDebug --no-daemon --console=plain"
-
-[tasks."build:rust:native"]
-description = "Cross-compile the native engine .so (arm64-v8a, 16KB-aligned) into the rust flavor jniLibs. Requires ANDROID_NDK_HOME (see docs/handover/music-player-android-port.md)."
+[tasks."build:native"]
+description = "Cross-compile the native engine .so (arm64-v8a, 16KB-aligned, API 26 floor) into app/src/main/jniLibs. Requires ANDROID_NDK_HOME (see docs/handover/music-player-android-port.md)."
 dir = "{{config_root}}/rust"
 shell = "node -e"
 run = '''
@@ -37,59 +26,50 @@ if (!ndk) {
 const { execFileSync } = require("node:child_process");
 execFileSync(
   "cargo",
-  ["ndk", "-t", "arm64-v8a", "--platform", "35", "-o", "../app/src/rust/jniLibs", "build", "--release"],
+  ["ndk", "-t", "arm64-v8a", "--platform", "26", "-o", "../app/src/main/jniLibs", "build", "--release"],
   { stdio: "inherit", env: process.env },
 );
 '''
 
-[tasks."build:rust"]
-description = "Assemble the full-Rust-engine debug APK (rebuilds the native .so first)"
-dir = "{{config_root}}"
-depends = ["build:rust:native"]
-run = "./gradlew :app:assembleRustDebug --no-daemon --console=plain"
-
 [tasks.build]
-description = "Assemble every flavor's debug APK (rebuilds the native .so first, since the rust flavor needs it)"
+description = "Assemble the debug APK (rebuilds the native .so first)"
 dir = "{{config_root}}"
-depends = ["build:rust:native"]
+depends = ["build:native"]
 run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
 
-[tasks."install:media3"]
-description = "Install the Media3 debug APK on the connected device"
+[tasks."build:release"]
+description = "Assemble the optimized (non-debuggable) release APK, debug-signed so it installs (rebuilds the native .so first)"
 dir = "{{config_root}}"
-run = "./gradlew :app:installMedia3Debug --no-daemon --console=plain"
+depends = ["build:native"]
+run = "./gradlew :app:assembleRelease --no-daemon --console=plain"
 
-[tasks."install:rust"]
-description = "Install the full-Rust debug APK on the connected device (rebuilds the native .so first)"
+[tasks.install]
+description = "Install the debug APK on the connected device (rebuilds the native .so first)"
 dir = "{{config_root}}"
-depends = ["build:rust:native"]
-run = "./gradlew :app:installRustDebug --no-daemon --console=plain"
-
-[tasks."test:instrumented:rust:build"]
-description = "Assemble the rust flavor app + instrumented-test APKs (native .so included; no device). Run on device with am instrument, not connectedAndroidTest."
-dir = "{{config_root}}"
-depends = ["build:rust:native"]
-run = "./gradlew :app:assembleRustDebug :app:assembleRustDebugAndroidTest --no-daemon --console=plain"
+depends = ["build:native"]
+run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
 [tasks."test:unit"]
 description = "Run host JVM unit tests for the pure-logic core (no device)"
 dir = "{{config_root}}"
-run = "./gradlew :app:testMedia3DebugUnitTest --no-daemon --console=plain"
+run = "./gradlew :app:testDebugUnitTest --no-daemon --console=plain"
 
 [tasks."test:instrumented:build"]
-description = "Assemble the Media3 debug instrumented-test APK (no device)"
+description = "Assemble the app + instrumented-test APKs (native .so included; no device). Run on device with am instrument or connectedAndroidTest."
 dir = "{{config_root}}"
-run = "./gradlew :app:assembleMedia3DebugAndroidTest --no-daemon --console=plain"
+depends = ["build:native"]
+run = "./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --console=plain"
 
 [tasks."test:instrumented"]
-description = "Run Media3 debug instrumented tests on the connected device (pin ANDROID_SERIAL; hold the adb flock)"
+description = "Run instrumented tests on the connected device (pin ANDROID_SERIAL; hold the adb flock; rebuilds the native .so first)"
 dir = "{{config_root}}"
-run = "./gradlew :app:connectedMedia3DebugAndroidTest --no-daemon --console=plain"
+depends = ["build:native"]
+run = "./gradlew :app:connectedDebugAndroidTest --no-daemon --console=plain"
 
 [tasks.lint]
-description = "Run Android Lint on the Media3 debug variant"
+description = "Run Android Lint on the debug variant"
 dir = "{{config_root}}"
-run = "./gradlew :app:lintMedia3Debug --no-daemon --console=plain"
+run = "./gradlew :app:lintDebug --no-daemon --console=plain"
 
 [tasks.clean]
 description = "Delete Gradle build outputs"

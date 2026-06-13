@@ -145,6 +145,21 @@ import android.os.ParcelFileDescriptor
 // ```
 import android.util.Log
 
+// What:     `import androidx.core.content.ContextCompat` brings in the AndroidX compat helper for
+//           `Context` operations; below we use its static `registerReceiver(...)` and its
+//           `RECEIVER_NOT_EXPORTED` flag constant.
+// Why:      `ContextCompat.registerReceiver` applies the API-33+ `RECEIVER_NOT_EXPORTED` export flag
+//           on new devices and falls back to plain registration on API 26-32, so the becoming-noisy
+//           receiver needs no hand-written `Build.VERSION.SDK_INT` branch and the app's true floor
+//           stays at the native AAudio API-26 minimum instead of being pushed up to 33.
+// TS map:   `import { ContextCompat } from "androidx-core-content";`
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { ContextCompat } from "androidx-core-content";
+// ```
+import androidx.core.content.ContextCompat
+
 // What:     `import dev.monochromatic.musicplayer.core.normalizationGain` brings in the SHARED core
 //           function `normalizationGain(peak)` from the `main` core package: maps a measured peak to
 //           an attenuate-only gain in `0.0..1.0`.
@@ -629,25 +644,32 @@ class RustEngine(context: Context) : AudioEngine {
         if (handle == 0L) {
             throw IllegalStateException("native engine worker could not be spawned")
         }
-        // What:     `appContext.registerReceiver(noisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), Context.RECEIVER_NOT_EXPORTED)`
+        // What:     `ContextCompat.registerReceiver(appContext, noisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED)`
         //           registers the receiver for the becoming-noisy action. `IntentFilter(...)` constructs
-        //           a filter for that one action; `Context.RECEIVER_NOT_EXPORTED` flags the receiver as
-        //           NOT visible to other apps (a required security flag on recent Android).
-        // Why:      Start listening for headphone-unplug so the engine can pause on it.
-        // TS map:   `appContext.registerReceiver(noisyReceiver, new IntentFilter(ACTION_AUDIO_BECOMING_NOISY), Context.RECEIVER_NOT_EXPORTED);`
+        //           a filter for that one action; `ContextCompat.RECEIVER_NOT_EXPORTED` flags the receiver
+        //           as NOT visible to other apps.
+        // Why:      Start listening for headphone-unplug so the engine can pause on it. The COMPAT call
+        //           (not `appContext.registerReceiver(..., Context.RECEIVER_NOT_EXPORTED)`) is what keeps
+        //           the minSdk floor at 26: `Context.RECEIVER_NOT_EXPORTED` is an API-33 field, so naming
+        //           it directly would force minSdk 33, whereas `ContextCompat` carries the constant at all
+        //           levels and applies the export flag only on API 33+ (a no-op on 26-32, where this
+        //           system-protected broadcast registers fine without it).
+        // TS map:   `ContextCompat.registerReceiver(appContext, noisyReceiver, new IntentFilter(ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // appContext.registerReceiver(
+        // ContextCompat.registerReceiver(
+        //   appContext,
         //   noisyReceiver,
         //   new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY),
-        //   Context.RECEIVER_NOT_EXPORTED,
+        //   ContextCompat.RECEIVER_NOT_EXPORTED,
         // );
         // ```
-        appContext.registerReceiver(
+        ContextCompat.registerReceiver(
+            appContext,
             noisyReceiver,
             IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY),
-            Context.RECEIVER_NOT_EXPORTED,
+            ContextCompat.RECEIVER_NOT_EXPORTED,
         )
         // What:     `poller.postDelayed(pollTask, POLL_MS)` schedules the first poll after `POLL_MS`
         //           milliseconds, kicking off the self-rescheduling loop.

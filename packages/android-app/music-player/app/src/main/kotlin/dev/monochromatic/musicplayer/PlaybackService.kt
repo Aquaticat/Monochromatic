@@ -440,18 +440,18 @@ class PlaybackService : MediaSessionService() {
         // super.onCreate();
         // ```
         super.onCreate()
-        // What:     `Log.i(LOG_TAG, "PlaybackService.onCreate flavor=${BuildConfig.FLAVOR}")`
-        //           logs an info line; `${BuildConfig.FLAVOR}` interpolates the build
-        //           flavor (a generated constant). `LOG_TAG` is the shared tag declared in
-        //           `MainActivity.kt`.
-        // Why:      Record which flavor created the service, for verification.
-        // TS map:   `console.info(`[${LOG_TAG}] PlaybackService.onCreate flavor=${BuildConfig.FLAVOR}`);`
+        // What:     `Log.i(LOG_TAG, "PlaybackService.onCreate")` logs an info line. `LOG_TAG`
+        //           is the shared tag declared in `MainActivity.kt`. (Dropped the old
+        //           `flavor=${BuildConfig.FLAVOR}` suffix: the media3/hybrid flavors are gone,
+        //           so there is one engine and no FLAVOR constant.)
+        // Why:      Record service creation in logcat, for verification.
+        // TS map:   `console.info(`[${LOG_TAG}] PlaybackService.onCreate`);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // console.info(`[${LOG_TAG}] PlaybackService.onCreate flavor=${BuildConfig.FLAVOR}`);
+        // console.info(`[${LOG_TAG}] PlaybackService.onCreate`);
         // ```
-        Log.i(LOG_TAG, "PlaybackService.onCreate flavor=${BuildConfig.FLAVOR}")
+        Log.i(LOG_TAG, "PlaybackService.onCreate")
         // What:     `controller = PlayerController(createAudioEngine(this))` ASSIGNS the
         //           `lateinit` field. `PlayerController(...)` is a constructor call (no
         //           `new`); its argument `createAudioEngine(this)` is a flavor-specific

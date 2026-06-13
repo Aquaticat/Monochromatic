@@ -1038,16 +1038,18 @@ class MainActivity : ComponentActivity() {
         // super.onCreate(savedInstanceState);
         // ```
         super.onCreate(savedInstanceState)
-        // What:     `Log.i(LOG_TAG, "MainActivity.onCreate flavor=${BuildConfig.FLAVOR}")`
-        //           logs creation with the build flavor interpolated.
-        // Why:      Trace which flavor launched, for verification.
-        // TS map:   `console.info(`[${LOG_TAG}] MainActivity.onCreate flavor=${BuildConfig.FLAVOR}`);`
+        // What:     `Log.i(LOG_TAG, "MainActivity.onCreate")` logs an info line at activity
+        //           creation. (Dropped the old `flavor=${BuildConfig.FLAVOR}` suffix: the
+        //           media3/hybrid flavors are gone, so there is one engine and no FLAVOR
+        //           constant.)
+        // Why:      Trace activity launch in logcat, for verification.
+        // TS map:   `console.info(`[${LOG_TAG}] MainActivity.onCreate`);`
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // console.info(`[${LOG_TAG}] MainActivity.onCreate flavor=${BuildConfig.FLAVOR}`);
+        // console.info(`[${LOG_TAG}] MainActivity.onCreate`);
         // ```
-        Log.i(LOG_TAG, "MainActivity.onCreate flavor=${BuildConfig.FLAVOR}")
+        Log.i(LOG_TAG, "MainActivity.onCreate")
         // What:     `enableEdgeToEdge()` draws the app behind the system bars. (Folds in the
         //           old inline note: draw edge to edge, the platform default on targetSdk
         //           35+, and let the `Scaffold` apply the system-bar insets.)
