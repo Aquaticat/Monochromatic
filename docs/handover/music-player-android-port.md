@@ -255,6 +255,11 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
   behavior is the exact unknown to avoid. Callbacks are kept pull-based (the UI already polls position) so no
   native->JVM callback machinery (`AttachCurrentThread`, global refs, cached method ids) is needed. Decided
   2026-06-12 (advisor-endorsed); settle the final shape when building the engine surface (Task #12).
+- Audio output (full-Rust variant): build BOTH an AAudio (native NDK) backend and a cpal backend, measure output
+  latency on device, and keep the lower-latency one (owner directive 2026-06-12, the same measure-and-pick ethos as
+  the variants themselves). The latency derisk is silent: write zero-filled buffers and read each API's reported
+  presentation latency, so it does not disturb residents and the resident-noise rule is not engaged until real audio
+  plays in the engine.
 - Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
 - minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
   older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
