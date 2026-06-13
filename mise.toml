@@ -863,7 +863,7 @@ runWorkspaceNode('packages/dev-script/task-util', 'depends', ['--sources', 'sh:e
 # Triple-SINGLE-quoted so the `\n` license-acceptance newlines reach node literally
 # (a triple-double-quoted body would have TOML pre-expand them and break the JS).
 [tasks."prepare:android"]
-description = "Install the Android SDK components packages/android-app/music-player needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android rustup target. Idempotent: a no-op once provisioned."
+description = "Install the Android SDK components packages/android-app/music-player needs (platforms;android-37.0, build-tools;37.0.0, ndk;29.0.13846066, platform-tools) into $ANDROID_HOME via sdkmanager, accept licenses, and add the aarch64-linux-android rustup target. EXPENSIVE: ~2.9 GB on disk (the NDK alone is ~2.4 GB), and the `prepare` umbrella auto-runs it for every developer, not just Android ones; this cost is intended and tolerated. Idempotent: a no-op once provisioned."
 shell = "node -e"
 run = '''
 const { existsSync, readdirSync } = require("node:fs");
