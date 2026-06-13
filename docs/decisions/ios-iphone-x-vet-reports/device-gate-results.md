@@ -882,6 +882,29 @@ exercised: real decoded PCM through symphonia into the cpal buffer (this probe w
 handling, and background audio with `UIBackgroundModes: audio` (a separate restructuring check). The parts
 that were uncertain on iOS, the output device opening and the render callback firing, are device-confirmed.
 
+### ring crypto (rustls's iOS backend) in a linked Rust staticlib: FULL PASS (both legs)
+
+Status: FULL PASS 2026-06-12. The kopia app streams to pCloud over HTTPS, typically via reqwest plus rustls
+in the linked Rust core. rustls's state machine is pure Rust (no platform risk); its only platform-sensitive
+part is the crypto backend, ring, whose assembly must run on iOS arm64. The device is in airplane mode, so no
+live pCloud request is possible, but the platform-sensitive question is answerable offline: the same
+`mauigate` Rust `.a` gained `rust_crypto_probe`, which runs an X25519 ephemeral key agreement (the TLS key
+exchange) and an AES-256-GCM seal/open round-trip (the TLS bulk cipher) using ring 0.17, reporting success
+only if both complete and the AEAD recovers the plaintext.
+
+- Device leg: on the iPhone X (iOS 16.7), Release/full-AOT, the screen reads "CRYPTO OK x25519+aesgcm": ring
+  computed a 32-byte X25519 shared secret and AES-256-GCM sealed then opened a buffer on the device. So
+  ring's crypto runs on iOS arm64, which is the one platform-specific part of an outbound rustls/TLS stack;
+  the rest is pure Rust.
+- Simulator leg (iPhone 17 Pro / iOS 26.5): same "CRYPTO OK". ring 0.17.14 cross-compiled cleanly to both
+  iOS triples with no extra flags.
+
+This converts the outbound-HTTPS-to-pCloud item from asserted to device-proven at the crypto-core level. What
+remains for that path is a live TLS handshake and a real pCloud request, both needing network (the device is
+offline tonight); the platform-sensitive crypto they depend on is confirmed. So all three Rust-core
+capabilities the two apps need (an in-app loopback server, CoreAudio output, and TLS crypto) now run on the
+iPhone X from one linked staticlib, with one render: "Rust FFI: 720 / S3 SERVER OK / AUDIO OK / CRYPTO OK".
+
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely

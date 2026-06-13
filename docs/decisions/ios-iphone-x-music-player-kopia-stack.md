@@ -381,7 +381,9 @@ disqualified on this device), and the framework-specific in-process UI-test and 
   local-network prompt (loopback is exempt). Remaining sub-checks: a WKWebView reaching the loopback server
   over ATS (only if the web UI fetches it directly), and background-execution survival (wall 3).
 - HTTPS streaming to pCloud: `reqwest` plus `rustls` (or the Go client) inside the linked core, or a
-  background `URLSession` bridge for transfers that must survive suspension.
+  background `URLSession` bridge for transfers that must survive suspension. ring's crypto (rustls's
+  platform-sensitive backend) is device-proven on the iPhone X (2026-06-12); the live handshake and transfer
+  need network.
 - Background transfer (wall 3): background `URLSession` plus `BGProcessingTask`, the snapshot chunked
   and resumable; identical restructuring work on every track.
 - Audio output: cpal CoreAudio/`RemoteIO` plus an AVAudioSession activation shim and
@@ -468,10 +470,12 @@ de-risks the kopia and music-player apps on every track at once. Status by capab
   the server, the audio probe) link and run via `[DllImport("__Internal")]` on the device. Packaging kopia
   as a Go gomobile c-archive and linking it is then an integration task on a proven linkage, not a new
   capability unknown; it is the next concrete stage-2 build (needs the Go/gomobile toolchain).
-- Outbound HTTPS to pCloud (reqwest/rustls): ASSERTED low-risk, not live-tested tonight (the device is in
-  airplane mode, so no external request is possible). rustls is pure Rust and ring supports `aarch64-apple-ios`,
-  and this is a widely-shipped path; the cheap next probe is a loopback TLS handshake (rustls server + client,
-  self-signed cert) inside the staticlib to confirm ring's crypto runs on the device offline.
+- Outbound HTTPS to pCloud (reqwest/rustls): crypto core PROVEN on device, full path asserted. rustls's
+  state machine is pure Rust; its only platform-sensitive part is ring's crypto, and a probe ran ring's
+  X25519 agreement and an AES-256-GCM round-trip on the iPhone X ("CRYPTO OK", `device-gate-results.md`), with
+  ring 0.17 cross-compiling cleanly to both iOS triples. What stays asserted is the live TLS handshake and a
+  real pCloud request, both needing network (the device is in airplane mode tonight); the platform-sensitive
+  crypto they rest on is confirmed.
 - Background transfer (background `URLSession` + `BGProcessingTask`) and backgrounded audio
   (`UIBackgroundModes: audio` plus interruption handling): OWED. These are restructuring tasks shared by
   every framework, not binary capability probes, and need real backgrounding to verify; they do not block the
@@ -479,9 +483,11 @@ de-risks the kopia and music-player apps on every track at once. Status by capab
 - Per-framework FFI marshaling and the in-process UI-test/e2e harnesses: the remaining stage-2 roadmap,
   enumerated per framework in each `vet-*.md`; narrow and per-track, run once the framework is chosen.
 
-So the stage-2 conclusion: the capabilities that were genuinely in doubt for these two apps on this device
-(an in-app server socket, and Rust-core audio output) both work on the iPhone X; what remains is integration
-and restructuring on proven foundations, plus the owner-owed VoiceOver sweep above.
+So the stage-2 conclusion: the Rust-core capabilities that were genuinely in doubt for these two apps on this
+device (an in-app loopback server socket, CoreAudio output, and ring's TLS crypto) all run on the iPhone X
+from one linked staticlib; what remains is integration and restructuring on proven foundations (the kopia Go
+c-archive, a live TLS handshake and pCloud transfer, background `URLSession`), plus the owner-owed VoiceOver
+sweep above.
 
 ## Evidence
 
