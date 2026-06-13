@@ -1,64 +1,441 @@
+// File summary (folds in the old KDoc's domain content):
+//
+// This file decides WHERE the music app reads its library of tracks from, and
+// hands back the list of tracks. It is the single shared "seam" (one chokepoint
+// both readers go through) used by two callers:
+//   - the foreground player (`PlaybackService`), which plays audio for the user, and
+//   - the background sweep (`PeakSweepWorker`), which precomputes loudness peaks
+//     while the app is idle.
+//
+// Why one shared seam matters (this is NOT cosmetic): the loudness-peak cache is
+// keyed by `TrackFingerprint`, which is computed from a track's URI plus its byte
+// size plus its last-modified time. The same physical audio file can be reached
+// through two DIFFERENT URI styles on Android:
+//   - a MediaStore URI (the device-wide media database), and
+//   - a SAF document URI (a folder the user explicitly granted via the Storage
+//     Access Framework, "SAF").
+// Those two URI styles fingerprint DIFFERENTLY for the same file (MediaStore has no
+// last-modified column, so it falls back to zero). If the background sweep listed
+// the library from one source while playback listed it from the other, every cache
+// entry the sweep wrote would fail to match on playback: the cache would be
+// "write-only" (filled but never read back). Because both callers go through the
+// single `load` function below, their URIs (and therefore fingerprints) line up.
+//
+// Which source wins, in order:
+//   1. the user's chosen folder, when `LibraryRoot.heldRoot` confirms a still-live
+//      permission grant (honored even when the folder is empty, so a deliberately
+//      small folder is respected and not silently widened to the whole device);
+//   2. otherwise the device-wide MediaStore collection, when the audio permission
+//      is held;
+//   3. otherwise nothing (an empty list).
+//
+// What:     `package dev.monochromatic.musicplayer` declares which namespace
+//           (logical grouping / folder-like path of names) every type in this
+//           file belongs to. Other Kotlin files in the same package can refer to
+//           these names without importing them.
+// Why:      We need every file in this app to share one namespace so `Track`,
+//           `LibraryRoot`, `PlaybackService`, etc. can see each other without
+//           fully-qualified names.
+// TS map:   TS has no `package` keyword; the closest idea is "this file lives in a
+//           directory that forms an implicit module group", except Kotlin's
+//           package name is written explicitly and need not match the folder.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No 1:1 equivalent — in TS the file path + `import`/`export` define grouping.
+// ```
 package dev.monochromatic.musicplayer
 
+// What:     `import android.content.Context` pulls the name `Context` into this
+//           file from the Android framework. `Context` is Android's "handle to the
+//           running app environment" object: you ask it for system services, the
+//           content resolver, permissions state, etc.
+// Why:      The functions below take a `Context` so they can resolve the held
+//           folder, check the audio permission, and reach the content resolver.
+// TS map:   A plain named import: `import { Context } from "android/content";`.
+//           There is no Android `Context` analogue in TS; mentally it is a
+//           god-object passed around to reach platform services.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Context } from "android/content";
+// ```
 import android.content.Context
+
+// What:     `import android.net.Uri` brings in `Uri`, Android's parsed
+//           "Uniform Resource Identifier" type (a string like
+//           `content://...` that points at a resource). It is NOT a plain string;
+//           it is a structured object with scheme/authority/path parts.
+// Why:      The library source is identified by a `Uri` (the granted folder's tree
+//           URI, or a MediaStore URI), so we need this type to talk about it.
+// TS map:   `import { Uri } from "android/net";`. Closest TS analogue is the
+//           built-in `URL` class, but Android `Uri` also models `content://`
+//           provider URIs that `URL` does not.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Uri } from "android/net";
+// ```
 import android.net.Uri
+
+// What:     `import android.util.Log` brings in `Log`, Android's logging facility
+//           that writes lines to "logcat" (the device log stream developers read).
+// Why:      The folder-scan fallback below logs a warning when an entire scan fails
+//           so the failure is visible in logcat instead of silently swallowed.
+// TS map:   `import { Log } from "android/util";` — think of it as the platform's
+//           `console`, where `Log.w(tag, msg, throwable)` is roughly
+//           `console.warn(tag, msg, error)`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Log } from "android/util";
+// ```
 import android.util.Log
+
+// What:     `import kotlinx.coroutines.CancellationException` brings in the special
+//           exception type a Kotlin coroutine (a suspendable, async unit of work)
+//           throws when it is cancelled. It is an `Exception` subtype, but it is
+//           "special": catching it and swallowing it would break cancellation.
+// Why:      The scan runs inside a coroutine; we must catch real failures but
+//           RE-THROW `CancellationException` so structured cancellation (parent
+//           cancels child) keeps working. See the catch clauses below.
+// TS map:   `import { CancellationException } from "kotlinx/coroutines";`. Closest
+//           TS analogue is the `DOMException` with name `"AbortError"` produced by
+//           an aborted `AbortController` — you generally must not swallow it.
+// Gotcha:   In TS a thrown async error is just an `Error`; here cancellation is a
+//           distinct exception class you are REQUIRED to re-throw, not absorb.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { CancellationException } from "kotlinx/coroutines";
+// ```
 import kotlinx.coroutines.CancellationException
 
-/**
- * Resolves the library the app reads, the single seam both the foreground player ([PlaybackService])
- * and the background sweep ([PeakSweepWorker]) load from. Sharing one selection is not cosmetic: the
- * peak-cache key is [TrackFingerprint] over the track's URI plus size plus modified-time, and a
- * MediaStore URI and a SAF document URI for the same physical file fingerprint differently (MediaStore
- * carries no last-modified column and falls back to zero). If the sweep enumerated one source while
- * playback enumerated another, every entry the sweep wrote would miss on playback and the cache would
- * be write-only. Both paths call [load], so their URIs (and therefore fingerprints) coincide.
- *
- * The source is the user's chosen folder when [LibraryRoot.heldRoot] confirms a live grant (honored
- * even when empty, so a deliberately small folder is respected rather than silently widened to the
- * whole device), otherwise the device-wide MediaStore collection when the audio permission is held,
- * otherwise nothing.
- */
+// What:     `object LibrarySource { ... }` declares a SINGLETON. The `object`
+//           keyword (not `class`) means Kotlin creates exactly one instance,
+//           lazily, the first time it is used, and `LibrarySource` is both the
+//           type name AND that single instance. There is no `new LibrarySource()`.
+//           Siblings the reader might expect: `class` (you instantiate many),
+//           `companion object` (a singleton nested INSIDE a class), `interface`
+//           (no instances at all).
+// Why:      The library source is global, stateless app behavior shared by every
+//           caller; a singleton namespace of functions is the right shape, and it
+//           keeps `LibrarySource.load(...)` callable from anywhere with no setup.
+// TS map:   The closest TS shape is a module-level object literal of functions, or
+//           a class with only static methods:
+//           `export const LibrarySource = { load, scanRoot };`. Members are
+//           accessed as `LibrarySource.load(...)`, exactly like static methods.
+// Gotcha:   Unlike a TS `class`, you never construct this; `LibrarySource` already
+//           IS the instance. Treat it as a namespace, not a constructable type.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export const LibrarySource = {
+//   // load, scanRoot defined below
+// };
+// ```
 object LibrarySource {
-    /** Logcat tag for the scan-failure fallback. */
+    // What:     `private const val SOURCE_TAG: String = "LibrarySource"` declares a
+    //           compile-time constant string.
+    //           - `private` limits visibility to this `object`.
+    //           - `const` means the value is known at compile time and inlined at
+    //             every use site (only allowed for primitives and `String`).
+    //           - `val` means read-only (cannot be reassigned), the opposite of
+    //             `var`.
+    //           - `: String` is the explicit type. Kotlin's `String` is an
+    //             immutable UTF-16 text value; there is no separate borrowed-vs-
+    //             owned distinction (unlike Rust's `String` vs `&str`).
+    // Why:      A single named tag is passed to `Log.w(...)` so every log line from
+    //           this file is filterable in logcat under one label.
+    // TS map:   `const SOURCE_TAG: string = "LibrarySource";` at module scope.
+    //           Kotlin `const val` is closest to a TS `const` of a primitive that
+    //           the compiler may inline.
+    // Gotcha:   `const` here is a Kotlin compile-time constant, NOT TS's
+    //           block-scoped `const`; `val` alone is the runtime read-only binding.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const SOURCE_TAG: string = "LibrarySource";
+    // ```
     private const val SOURCE_TAG: String = "LibrarySource"
 
-    /**
-     * Load the active library. Prefers the chosen folder over the device-wide collection; returns
-     * empty when neither a folder grant nor the audio permission is held (the user has set up no
-     * source yet).
-     *
-     * @param context Resolves the held root, the audio permission, and the content resolver.
-     * @return Tracks for the current source in display-path order; empty when no source is available.
-     */
+    // What:     `suspend fun load(context: Context): List<Track>` declares a
+    //           function named `load`.
+    //           - `suspend` marks it as a coroutine function: it may PAUSE
+    //             (suspend) at await-like points and resume later without blocking
+    //             a thread. A `suspend` function can only be called from another
+    //             `suspend` function or a coroutine builder.
+    //           - `context: Context` is its one parameter (the app-environment
+    //             handle).
+    //           - `: List<Track>` is the return type: a read-only list of `Track`.
+    //             `List<T>` is the immutable-view list interface; siblings the
+    //             reader might expect are `MutableList<T>` (you can add/remove) and
+    //             `Array<T>` (fixed-size). `Track` is this app's track record type.
+    // Why:      This is the single public entry point both callers use to fetch the
+    //           current library, so their URIs and fingerprints stay in sync.
+    // TS map:   `suspend` maps to `async`, and a `suspend` function returning
+    //           `List<Track>` maps to an `async` function returning
+    //           `Promise<readonly Track[]>`:
+    //           `async function load(context: Context): Promise<readonly Track[]>`.
+    // Gotcha:   `suspend` is NOT `async` at the type level: the return type is
+    //           `List<Track>`, not `Promise<List<Track>>`. The "promise" is hidden
+    //           by the compiler. You `await` implicitly just by calling it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function load(context: Context): Promise<readonly Track[]> {
+    //   // ...body...
+    // }
+    // ```
     suspend fun load(context: Context): List<Track> {
+        // What:     `val root: Uri? = LibraryRoot.heldRoot(context)`.
+        //           - `val` is a read-only binding (cannot be reassigned).
+        //           - `: Uri?` is the type, and the trailing `?` makes it NULLABLE:
+        //             the value is either a `Uri` or `null`. Without the `?`,
+        //             Kotlin forbids `null` entirely. This is the type-level
+        //             encoding of "maybe there is a chosen folder, maybe not".
+        //           - `LibraryRoot.heldRoot(context)` calls the singleton
+        //             `LibraryRoot`'s `heldRoot` method, which returns `Uri?`: the
+        //             granted folder URI when a live grant exists, else `null`.
+        // Why:      We look up the user's chosen folder first; its presence decides
+        //           whether we scan that folder or fall through to MediaStore.
+        // TS map:   `const root: Uri | null = LibraryRoot.heldRoot(context);`.
+        //           Kotlin's `Uri?` is exactly TS's `Uri | null`.
+        // Gotcha:   The `?` on the TYPE means nullable. It is unrelated to Rust's
+        //           `?` propagation operator and unrelated to Kotlin's `?.`/`?:`
+        //           operators; here it is purely "this slot may hold null".
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const root: Uri | null = LibraryRoot.heldRoot(context);
+        // ```
         val root: Uri? = LibraryRoot.heldRoot(context)
+        // What:     `if (root != null) { ... }` tests whether the chosen-folder URI
+        //           exists. Inside this block Kotlin SMART-CASTS `root` from `Uri?`
+        //           to non-null `Uri`, so it can be passed where a plain `Uri` is
+        //           required without any unwrap call.
+        // Why:      A held folder grant always wins over the device-wide collection,
+        //           so when one exists we scan it and return immediately.
+        // TS map:   `if (root !== null) { ... }`. TS narrows `Uri | null` to `Uri`
+        //           inside the block the same way (control-flow narrowing).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (root !== null) {
+        //   return scanRoot(context, root);
+        // }
+        // ```
         if (root != null) {
+            // What:     `return scanRoot(context, root)` calls the sibling function
+            //           `scanRoot` with the context and the now-non-null `root`,
+            //           and returns its `List<Track>` to the caller. `scanRoot` is
+            //           itself `suspend`, so this call is an implicit await point.
+            // Why:      Delegate folder enumeration (and its failure handling) to
+            //           `scanRoot`, and hand its tracks straight back.
+            // TS map:   `return await scanRoot(context, root);` — in Kotlin the
+            //           `await` is implicit because `load` is already `suspend`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return await scanRoot(context, root);
+            // ```
             return scanRoot(context, root)
         }
+        // What:     `if (hasAudioPermission(context)) { ... }` calls the top-level
+        //           function `hasAudioPermission` (defined in `Permissions.kt`,
+        //           visible here because it shares this package), which returns a
+        //           plain `Boolean`, and branches on it.
+        // Why:      With no chosen folder, we may still read the device-wide
+        //           MediaStore collection, but only if the user granted the audio
+        //           read permission; this gate enforces that.
+        // TS map:   `if (hasAudioPermission(context)) { ... }`. `Boolean` is TS
+        //           `boolean`; this is a 1:1 conditional.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (hasAudioPermission(context)) {
+        //   return MediaStoreSource.query(context.contentResolver);
+        // }
+        // ```
         if (hasAudioPermission(context)) {
+            // What:     `return MediaStoreSource.query(context.contentResolver)`.
+            //           - `context.contentResolver` reads the `contentResolver`
+            //             property off the `Context`: Android's gateway object for
+            //             querying content providers (databases like MediaStore).
+            //           - `MediaStoreSource.query(...)` calls the singleton
+            //             `MediaStoreSource`'s `suspend` `query`, which returns
+            //             `List<Track>` from the device-wide media database.
+            // Why:      No folder was chosen but audio permission is held, so the
+            //           whole-device collection is the active library; return it.
+            // TS map:   `return await MediaStoreSource.query(context.contentResolver);`
+            //           — `.contentResolver` is just a property access
+            //           (`context.contentResolver`), and the call is awaited
+            //           implicitly because `load` is `suspend`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return await MediaStoreSource.query(context.contentResolver);
+            // ```
             return MediaStoreSource.query(context.contentResolver)
         }
+        // What:     `return emptyList()` calls Kotlin's standard-library helper
+        //           `emptyList()`, which returns a shared, immutable, zero-element
+        //           `List<T>`. The element type `Track` is inferred from `load`'s
+        //           declared return type `List<Track>`.
+        // Why:      Neither a folder grant nor the audio permission is held, so
+        //           there is no source yet; an empty library is the correct,
+        //           non-crashing answer.
+        // TS map:   `return [];` — TS infers the element type from the function's
+        //           declared `Promise<readonly Track[]>` return.
+        // Gotcha:   `emptyList()` returns a SHARED immutable instance (cheap, no
+        //           allocation), not a fresh array each call as `[]` would in TS.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return [];
+        // ```
         return emptyList()
     }
 
-    /**
-     * Scan a chosen folder, degrading an unexpected whole-walk failure to an empty library rather than
-     * crashing the cold-start service or the background worker. [SafTreeSource.query] already skips
-     * individual unreadable directories, so this guards only a failure of the entire walk; a coroutine
-     * cancellation is rethrown so structured cancellation still works.
-     *
-     * @param context Resolves the content resolver the document provider is queried through.
-     * @param treeUri Granted tree URI to scan.
-     * @return Audio tracks under the folder, or empty when the whole scan failed.
-     */
+    // What:     `suspend fun scanRoot(context: Context, treeUri: Uri): List<Track>`
+    //           declares a coroutine function named `scanRoot` with TWO parameters,
+    //           `context: Context` and `treeUri: Uri` (the granted folder's tree
+    //           URI), returning a read-only `List<Track>`. The body uses the
+    //           `=` expression-body form (see the next block), not a `{ }` block.
+    // Why:      Folder scanning needs its own failure handling: an unexpected
+    //           whole-walk crash must degrade to an empty library rather than take
+    //           down the cold-start service or the background worker. Isolating
+    //           that in `scanRoot` keeps `load` simple.
+    // TS map:   `async function scanRoot(context: Context, treeUri: Uri):
+    //            Promise<readonly Track[]>`. Two params, awaited body.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function scanRoot(
+    //   context: Context,
+    //   treeUri: Uri,
+    // ): Promise<readonly Track[]> {
+    //   // ...body...
+    // }
+    // ```
     suspend fun scanRoot(context: Context, treeUri: Uri): List<Track> =
+        // What:     `try { ... } catch (...) { ... }` runs the folder scan and, if
+        //           it throws, routes the error to a matching `catch` clause. Here
+        //           the WHOLE `try`/`catch` is an EXPRESSION whose value becomes the
+        //           function's result, because `scanRoot` uses the `= <expr>` body
+        //           form (the `try` block's value is its last expression). This is
+        //           the implicit-return tail of `scanRoot`.
+        // Why:      We want a single value (the track list, or empty on failure) to
+        //           fall out of the scan and be returned, with cancellation handled
+        //           separately from real failures.
+        // TS map:   In TS, `try`/`catch` is a STATEMENT, not an expression, so you
+        //           cannot assign it directly; you `return` from each branch
+        //           instead. See the pseudocode on the inner lines.
+        // Gotcha:   Unlike TS, Kotlin's `try`/`catch` evaluates to a value. Read
+        //           this as "the function returns whichever branch ran".
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // // try/catch is a statement in TS, so each branch returns:
+        // try {
+        //   return await SafTreeSource.query(context.contentResolver, treeUri);
+        // } catch (e) {
+        //   if (e instanceof CancellationException) throw e;
+        //   Log.w(SOURCE_TAG, `scan of folder ${treeUri} failed; treating as empty`, e);
+        //   return [];
+        // }
+        // ```
         try {
+            // What:     `SafTreeSource.query(context.contentResolver, treeUri)`
+            //           calls the singleton `SafTreeSource`'s `suspend` `query`,
+            //           passing the content resolver and the granted tree URI; it
+            //           returns `List<Track>` for every audio file under the folder.
+            //           No trailing `return` and no `;`: as the last expression in
+            //           the `try` block, its value becomes the `try` expression's
+            //           value, which (via the `=` body) becomes `scanRoot`'s return.
+            // Why:      Delegate the actual folder walk to `SafTreeSource`, which
+            //           already skips individual unreadable directories; this layer
+            //           only guards a failure of the ENTIRE walk.
+            // TS map:   `return await SafTreeSource.query(context.contentResolver, treeUri);`
+            //           — implicit-return tail in Kotlin becomes an explicit
+            //           `return await` in TS.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return await SafTreeSource.query(context.contentResolver, treeUri);
+            // ```
             SafTreeSource.query(context.contentResolver, treeUri)
         } catch (cancellation: CancellationException) {
+            // What:     `throw cancellation` re-throws the caught
+            //           `CancellationException` unchanged, propagating it to the
+            //           coroutine machinery instead of treating it as a scan
+            //           failure. `cancellation` is the bound name of the caught
+            //           exception from the `catch (cancellation: CancellationException)`
+            //           clause directly above.
+            // Why:      Coroutine cancellation must NOT be swallowed; re-throwing it
+            //           lets structured cancellation (a parent cancelling its
+            //           children) work correctly. Catching it first, before the
+            //           generic `Exception` clause below, is what separates "we were
+            //           cancelled" from "the scan genuinely failed".
+            // TS map:   `if (e instanceof CancellationException) throw e;` — in TS
+            //           there is one `catch (e)`, so you test the type and re-throw
+            //           the abort-like error rather than having a dedicated clause.
+            // Gotcha:   Order matters: `CancellationException` is itself an
+            //           `Exception`, so this MORE SPECIFIC clause must come before
+            //           the broad `catch (failure: Exception)` clause, or every
+            //           cancellation would be wrongly absorbed as a failure.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (e instanceof CancellationException) throw e;
+            // ```
             throw cancellation
         } catch (failure: Exception) {
+            // What:     `Log.w(SOURCE_TAG, "scan of folder $treeUri failed; treating as empty", failure)`
+            //           writes a WARNING-level line to logcat.
+            //           - `SOURCE_TAG` is the filter label.
+            //           - The middle argument is a Kotlin STRING TEMPLATE: `$treeUri`
+            //             inside the double-quoted literal is interpolation that
+            //             splices the `treeUri` value into the text (Kotlin calls
+            //             `toString()` on it).
+            //           - `failure` is the caught `Exception` from the
+            //             `catch (failure: Exception)` clause; passing it as the
+            //             third argument makes `Log` print its stack trace.
+            // Why:      The whole folder walk failed for some unexpected reason; we
+            //           record it visibly (rather than silently swallowing) before
+            //           degrading to an empty library.
+            // TS map:   `Log.w(SOURCE_TAG, \`scan of folder ${treeUri} failed; treating as empty\`, failure);`
+            //           — Kotlin's `"...$treeUri..."` template equals a TS template
+            //           literal `` `...${treeUri}...` ``.
+            // Gotcha:   `$treeUri` works ONLY inside a double-quoted Kotlin string;
+            //           it is interpolation, not a shell/regex variable. For an
+            //           expression you would write `${treeUri.something}`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // Log.w(SOURCE_TAG, `scan of folder ${treeUri} failed; treating as empty`, failure);
+            // ```
             Log.w(SOURCE_TAG, "scan of folder $treeUri failed; treating as empty", failure)
+            // What:     `emptyList()` returns the shared immutable zero-element
+            //           `List<Track>` (element type inferred from `scanRoot`'s
+            //           return type). It is the last expression in this `catch`
+            //           block, so it is the block's value, which becomes the value
+            //           of the whole `try`/`catch` expression and thus the
+            //           implicit return of `scanRoot` when a real failure occurred.
+            // Why:      A whole-walk failure should look like "the folder has no
+            //           tracks" to callers, never a crash; an empty library is the
+            //           safe degraded result.
+            // TS map:   `return [];` — in TS this is the explicit return inside the
+            //           `catch` branch.
+            // Gotcha:   No `return` keyword and no `;` here: this bare
+            //           `emptyList()` IS the tail value of the `catch` branch, which
+            //           is the tail value of the function. Easy to miss for a TS
+            //           reader used to seeing an explicit `return`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return [];
+            // ```
             emptyList()
         }
 }

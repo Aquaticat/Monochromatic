@@ -1,47 +1,249 @@
+// File summary (folds in the old KDoc that lived on `object MediaStoreSource`):
+// This file reads the device's shared audio library out of Android's `MediaStore` (a
+// system-wide content database of every audio file the OS has indexed) and turns each
+// row into a `Track` the player can show and play. It is the Android analog of the
+// desktop player's "scan a chosen music folder" step, with one honest divergence:
+// the desktop walks a single folder you pick, whereas `MediaStore` is the whole device's
+// audio collection, so this code filters to `IS_MUSIC != 0` to drop ringtones, alarms,
+// and notification sounds. (A "point at one folder" source, matching the desktop more
+// exactly, is a separate file that lands in a later slice.) Each indexed row becomes a
+// playable `content://media/...` URI plus a folder-relative display path; the finished
+// list is sorted by display path in Unicode code-point order so it matches the desktop's
+// bytewise path sort and the on-page load order stays faithful. The query runs on the IO
+// thread pool because it is cursor I/O (reading rows one at a time) over the whole
+// collection, which can be large.
+
+// What:     A Kotlin `package` declaration. It names the dotted namespace every symbol in
+//           this file belongs to (here `dev.monochromatic.musicplayer`). Other files in
+//           the same package can refer to these symbols without importing them.
+// Why:      Android/Kotlin group code by package; this places `MediaStoreSource` in the
+//           app's main package so the rest of the app can find it.
+// TS map:   There is no exact TS equivalent. The closest mental model is the folder a
+//           module lives in plus a project-wide path alias; TS modules are file-scoped,
+//           Kotlin packages are name-scoped and can span many files.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // no statement — TS uses the file path / module system instead of a `package` line
+// ```
 package dev.monochromatic.musicplayer
 
+// What:     An `import` of a single type, `ContentResolver`, from the Android framework
+//           package `android.content`. `ContentResolver` is the object you hand a query
+//           to in order to read a content database (here, `MediaStore`).
+// Why:      The `query` function below takes a `ContentResolver` parameter and calls
+//           `.query(...)` on it; without this import the type name is unknown.
+// TS map:   A named import, exactly like `import { ContentResolver } from "android/content"`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { ContentResolver } from "android/content";
+// ```
 import android.content.ContentResolver
+
+// What:     Imports `ContentUris`, an Android helper class whose static method
+//           `withAppendedId(uri, id)` builds a row-specific `content://` URI by appending
+//           a numeric row id onto a base collection URI.
+// Why:      We need it to turn each row's numeric `_ID` into the playable per-track URI.
+// TS map:   `import { ContentUris } from "android/content";` — a namespace of static
+//           helpers, like importing a module that only exports functions.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { ContentUris } from "android/content";
+// ```
 import android.content.ContentUris
+
+// What:     Imports `Build`, an Android class exposing the device's OS information.
+//           We use `Build.VERSION.SDK_INT` (the running Android API level as an integer)
+//           and `Build.VERSION_CODES.Q` (the constant for Android 10's API level, 29).
+// Why:      Older Android versions lack the `RELATIVE_PATH` column, so we branch on the
+//           API level to pick the right columns and base URI.
+// TS map:   `import { Build } from "android/os";` — think of it as a constants object
+//           describing the runtime environment, like reading `process.platform`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Build } from "android/os";
+// ```
 import android.os.Build
+
+// What:     Imports `MediaStore`, the Android class that names the system audio/video/image
+//           content database and all its column names and base URIs (e.g.
+//           `MediaStore.Audio.Media._ID`).
+// Why:      Every column name, the base collection URI, and the `IS_MUSIC` flag come from
+//           this class; it is the heart of the query.
+// TS map:   `import { MediaStore } from "android/provider";` — a deeply nested namespace
+//           of string constants and URI builders.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { MediaStore } from "android/provider";
+// ```
 import android.provider.MediaStore
+
+// What:     Imports `Log`, Android's logging facility. `Log.i(tag, message)` writes an
+//           "info"-level line to the system log (logcat).
+// Why:      We log the final row count so an on-device verification run can read back how
+//           many music tracks the query found.
+// TS map:   `import { Log } from "android/util";` — treat `Log.i` like `console.info`,
+//           but the first argument is a category "tag", not part of the message.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Log } from "android/util";
+// ```
 import android.util.Log
+
+// What:     Imports the `compareByCodePoint` function from this app's own `core` package.
+//           It compares two strings by Unicode code point and returns an `Int`: negative
+//           if the first sorts before the second, zero if equal, positive otherwise.
+// Why:      We sort the finished track list with it so the order matches the desktop's
+//           bytewise path sort exactly.
+// TS map:   `import { compareByCodePoint } from "./core";` — a plain function import; the
+//           returned `Int` plays the role of TS's `number` comparator result (-1/0/1).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { compareByCodePoint } from "./core";
+// ```
 import dev.monochromatic.musicplayer.core.compareByCodePoint
+
+// What:     Imports `Dispatchers`, a Kotlin coroutines object that names the thread pools
+//           coroutines can run on. We use `Dispatchers.IO`, the pool meant for blocking
+//           input/output work (file/network/database reads).
+// Why:      The `withContext(Dispatchers.IO)` call below moves the cursor reading off the
+//           main/UI thread so it never blocks the screen.
+// TS map:   No real TS equivalent — JS has one event loop, not labelled thread pools.
+//           Mentally: "run this on a background worker, not the main thread."
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // no equivalent — JS is single-threaded; picture a Worker pool named "IO"
+// ```
 import kotlinx.coroutines.Dispatchers
+
+// What:     Imports `withContext`, a coroutine function. `withContext(dispatcher) { ... }`
+//           runs the block on the given dispatcher (thread pool) and suspends the caller
+//           until it finishes, returning the block's value.
+// Why:      It is how `query` runs its body on `Dispatchers.IO` and still returns a value
+//           to the caller as if it were a normal function.
+// TS map:   Closest is wrapping work in a Promise that resolves off the main thread, e.g.
+//           `await runOnWorker(() => { ... })`; here the language hides the Promise.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { withContext } from "kotlinx/coroutines"; // ~ await runOnWorker(fn)
+// ```
 import kotlinx.coroutines.withContext
 
-/**
- * Reads the device's shared audio library from [MediaStore] and turns it into the [Track] list the
- * player consumes. This is the Android analog of the desktop's "scan a music root" step, with one
- * honest divergence: the desktop walks a single chosen folder, while MediaStore is the device-wide
- * audio collection, so this filters to `IS_MUSIC != 0` to drop ringtones, alarms, and notification
- * sounds (a chosen-root SAF source covers the desktop's "point at one folder" model and lands in a
- * later slice). Each row yields a playable `content://media/...` URI built with [ContentUris] and a
- * folder-relative display path; the rows are returned sorted by display path in Unicode code-point
- * order, matching the desktop's bytewise path sort so within-page load order is faithful.
- *
- * The query runs on [Dispatchers.IO] because it is cursor I/O over the whole collection.
- */
+// What:     `object MediaStoreSource { ... }` declares a singleton named `MediaStoreSource`.
+//           In Kotlin, `object` (not `class`) means "there is exactly one instance, created
+//           lazily on first use, and you call its members through the name directly"
+//           (`MediaStoreSource.query(...)`), never with `new`.
+// Why:      This source holds no per-instance state; it is a namespaced bag of one public
+//           function plus helpers, so a single shared instance is exactly right.
+// TS map:   Like exporting a plain object literal of functions, or a class with only
+//           `static` members: `export const MediaStoreSource = { query() {...} }`.
+// Gotcha:   `object` here is NOT a generic "any object" type like TS's `object`. It is
+//           Kotlin's keyword for a compiler-managed singleton.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export const MediaStoreSource = {
+//   // ...members below...
+// };
+// ```
 object MediaStoreSource {
-    /** Logcat tag for the on-device verification to read the row count back. */
+    // What:     `private const val SOURCE_TAG: String = "MediaStoreSource"` declares a
+    //           compile-time constant. `private` hides it outside this object; `const`
+    //           means the value is known at compile time and inlined; `val` means it can
+    //           never be reassigned; `: String` is the explicit type annotation.
+    // Why:      It is the logcat category tag passed to `Log.i` so the verification run can
+    //           grep the log for just this source's output.
+    // TS map:   `const SOURCE_TAG = "MediaStoreSource";` inside the object, kept private.
+    //           `const` in Kotlin is stricter than TS `const`: it must be a compile-time
+    //           literal, not just an unreassignable binding.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const SOURCE_TAG: string = "MediaStoreSource";
+    // ```
     private const val SOURCE_TAG: String = "MediaStoreSource"
 
-    /**
-     * Query the audio collection and return its music tracks, sorted by display path.
-     *
-     * The caller must hold the audio-read permission (`READ_MEDIA_AUDIO` on API 33+, otherwise
-     * `READ_EXTERNAL_STORAGE`) before calling; without it the cursor comes back empty rather than
-     * throwing. `DATA` (the absolute filesystem path) is referenced only as the pre-API-29 fallback
-     * for the display path, because `RELATIVE_PATH` does not exist before Android 10; it is
-     * deprecated under scoped storage but remains the only folder-aware display source on those old
-     * API levels, and it is never used to open the file (the `content://` URI is).
-     *
-     * @param resolver Content resolver to run the query against.
-     * @return Music tracks in code-point display-path order; empty when nothing is indexed or the
-     *   permission is missing.
-     */
+    // What:     `@Suppress("DEPRECATION")` is an annotation (metadata attached to the next
+    //           declaration), not a comment. It tells the Kotlin compiler "do not warn me
+    //           about using deprecated APIs inside `query`."
+    // Why:      `query` reads the legacy `DATA` column on old Android versions; that column
+    //           is deprecated under scoped storage but is the only folder-aware option pre
+    //           API 29, so we deliberately silence the warning here.
+    // TS map:   Closest is a per-line lint suppression directive, e.g.
+    //           `// eslint-disable-next-line @typescript-eslint/no-deprecated` placed above
+    //           the function; the suppression travels with the declaration it annotates.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // @ts-expect-error / eslint-disable-next-line — silence deprecated-API warning
+    // ```
     @Suppress("DEPRECATION")
+    // What:     `suspend fun query(resolver: ContentResolver): List<Track> = ...` declares a
+    //           function named `query` with one parameter `resolver` of type
+    //           `ContentResolver`. `suspend` marks it a coroutine function that may pause
+    //           and resume (so it can await background work); it must be called from another
+    //           coroutine. `: List<Track>` is the return type, a read-only list of `Track`.
+    //           The `=` form is an expression body: the function returns the value of the
+    //           single expression on the right (here the `withContext { ... }` block).
+    //           `resolver: ContentResolver` is a named param; Kotlin requires the type.
+    // Why:      This is the one public entry point: hand it a resolver, get back the device's
+    //           music tracks. `suspend` lets it do IO without blocking the UI thread.
+    // TS map:   `async function query(resolver: ContentResolver): Promise<Track[]>`. Kotlin's
+    //           `suspend` is the analog of `async`; `List<Track>` is `readonly Track[]`. The
+    //           `= expr` body is like a one-expression arrow function with an implicit return.
+    // Gotcha:   `List<Track>` is READ-ONLY (no `.add`); the mutable cousin is `MutableList`.
+    //           A `suspend` function looks synchronous but can only be called from a coroutine.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function query(resolver: ContentResolver): Promise<readonly Track[]> {
+    //   return await runOnWorker(/* IO pool */ async () => {
+    //     // ...body below...
+    //   });
+    // }
+    // ```
     suspend fun query(resolver: ContentResolver): List<Track> = withContext(Dispatchers.IO) {
+        // What:     `val hasRelativePath: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q`
+        //           declares an unreassignable local `Boolean`. `Build.VERSION.SDK_INT` is the
+        //           device's Android API level as an `Int`; `Build.VERSION_CODES.Q` is the
+        //           constant `29` (Android 10). The `>=` compares two ints, giving `true` when
+        //           the device is API 29 or newer.
+        // Why:      API 29+ has the `RELATIVE_PATH` column (a real folder path); older versions
+        //           do not. This flag gates every later "new vs old" branch in one place.
+        // TS map:   `const hasRelativePath: boolean = Build.VERSION.SDK_INT >= 29;` — identical
+        //           shape; `Boolean`/`Int` map to TS `boolean`/`number`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const hasRelativePath: boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+        // ```
         val hasRelativePath: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        // What:     `val collection = if (hasRelativePath) { A } else { B }`. In Kotlin `if`
+        //           is an EXPRESSION: each branch's last value becomes the result, and that
+        //           result is assigned to `collection` (a `Uri`). Branch A asks MediaStore for
+        //           the API-29+ "external volume" audio URI; branch B uses the legacy
+        //           `EXTERNAL_CONTENT_URI`. No explicit type is written; Kotlin infers `Uri`.
+        // Why:      The base URI we query (and later append row ids to) differs by API level;
+        //           this picks the correct one once.
+        // TS map:   TS `if` is a statement, so you would use a ternary:
+        //           `const collection = hasRelativePath ? A : B;`
+        // Gotcha:   Unlike TS, Kotlin's `if/else` returns a value, so this whole block is an
+        //           assignment, not a control-flow side effect.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const collection = hasRelativePath
+        //   ? MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        //   : MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        // ```
         val collection = if (hasRelativePath) {
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         } else {
@@ -50,53 +252,436 @@ object MediaStoreSource {
         // RELATIVE_PATH (API 29+) is the scoped-storage folder path; DATA is the legacy absolute path
         // kept only as the < API 29 fallback. Requesting RELATIVE_PATH on an older platform throws
         // "unknown column", so it is added conditionally.
+        // What:     `val projection: Array<String> = buildList { ... }.toTypedArray()`.
+        //           `buildList { ... }` is a Kotlin builder: inside the lambda you call `add(x)`
+        //           on an implicit list and it returns the finished read-only `List<String>`.
+        //           `.toTypedArray()` is a CONVERSION call that copies that list into a typed
+        //           `Array<String>` (a fixed-size array), because the Android query API wants an
+        //           `Array<String>` of column names, not a `List`. `: Array<String>` is the
+        //           explicit element type.
+        // Why:      We build the list of column names to read, adding the path column
+        //           conditionally so we never request a column the platform lacks.
+        // TS map:   `const projection: string[] = (() => { const a: string[] = []; a.push(...); return a; })();`
+        //           — `buildList {}` is an IIFE that fills and returns an array; `.toTypedArray()`
+        //           is a no-op in TS since arrays already are the array type.
+        // Gotcha:   The `buildList` Gotcha (carried from the inline comment above): requesting
+        //           `RELATIVE_PATH` on a pre-API-29 device throws "unknown column", which is the
+        //           whole reason the `add` for the path column is wrapped in the `if` below.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const projection: string[] = (() => {
+        //   const cols: string[] = [];
+        //   cols.push(MediaStore.Audio.Media._ID);
+        //   cols.push(MediaStore.Audio.Media.DISPLAY_NAME);
+        //   if (hasRelativePath) cols.push(MediaStore.Audio.Media.RELATIVE_PATH);
+        //   else cols.push(MediaStore.Audio.Media.DATA);
+        //   return cols;
+        // })();
+        // ```
         val projection: Array<String> = buildList {
+            // What:     `add(MediaStore.Audio.Media._ID)` appends the `_ID` column name (the
+            //           numeric row id) to the list being built inside `buildList`. `add` is the
+            //           implicit-receiver method the builder lambda exposes.
+            // Why:      We need each row's id to construct its playable per-track URI later.
+            // TS map:   `cols.push(MediaStore.Audio.Media._ID);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // cols.push(MediaStore.Audio.Media._ID);
+            // ```
             add(MediaStore.Audio.Media._ID)
+            // What:     `add(MediaStore.Audio.Media.DISPLAY_NAME)` appends the `DISPLAY_NAME`
+            //           column (the bare file name) to the builder list.
+            // Why:      We need the file name both as a display fallback and to append onto a
+            //           relative folder path.
+            // TS map:   `cols.push(MediaStore.Audio.Media.DISPLAY_NAME);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // cols.push(MediaStore.Audio.Media.DISPLAY_NAME);
+            // ```
             add(MediaStore.Audio.Media.DISPLAY_NAME)
+            // What:     `if (hasRelativePath) { ... } else { ... }` used here as a STATEMENT
+            //           (no value captured) to choose which path column to request. On API 29+
+            //           we add `RELATIVE_PATH`; otherwise the legacy `DATA` column.
+            // Why:      Requesting a column the platform does not define throws at query time;
+            //           this guards against that by only adding the column that exists.
+            // TS map:   Same `if/else` statement shape as TS; nothing exotic here.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (hasRelativePath) cols.push(MediaStore.Audio.Media.RELATIVE_PATH);
+            // else cols.push(MediaStore.Audio.Media.DATA);
+            // ```
             if (hasRelativePath) {
+                // What:     `add(MediaStore.Audio.Media.RELATIVE_PATH)` appends the scoped-storage
+                //           folder-path column name (e.g. `Music/Artist/`) to the builder list.
+                // Why:      On API 29+ this is the folder-aware display source we prefer.
+                // TS map:   `cols.push(MediaStore.Audio.Media.RELATIVE_PATH);`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // cols.push(MediaStore.Audio.Media.RELATIVE_PATH);
+                // ```
                 add(MediaStore.Audio.Media.RELATIVE_PATH)
             } else {
+                // What:     `add(MediaStore.Audio.Media.DATA)` appends the legacy absolute
+                //           filesystem-path column name to the builder list.
+                // Why:      Pre-API-29 there is no `RELATIVE_PATH`, so `DATA` is the only
+                //           folder-aware display source available.
+                // TS map:   `cols.push(MediaStore.Audio.Media.DATA);`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // cols.push(MediaStore.Audio.Media.DATA);
+                // ```
                 add(MediaStore.Audio.Media.DATA)
             }
         }.toTypedArray()
+        // What:     `val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"`. The
+        //           `"${ ... }"` is a string TEMPLATE: the `${expr}` is replaced by the value
+        //           of `expr` (here the column name string `IS_MUSIC`) inside the literal, so
+        //           the result is a SQL-style WHERE clause like `is_music != 0`. No explicit
+        //           type is written; Kotlin infers `String`.
+        // Why:      It is the query's filter so only rows flagged as music (not ringtones,
+        //           alarms, or notifications) come back.
+        // TS map:   `const selection = `${MediaStore.Audio.Media.IS_MUSIC} != 0`;` — Kotlin's
+        //           `"${ }"` is exactly TS's backtick template `${ }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const selection = `${MediaStore.Audio.Media.IS_MUSIC} != 0`;
+        // ```
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
+        // What:     `val tracks: MutableList<Track> = mutableListOf()` declares a growable,
+        //           mutable list of `Track`. `MutableList<Track>` is the explicit type (the
+        //           writable cousin of the read-only `List<Track>`); `mutableListOf()` is the
+        //           factory that creates an empty one.
+        // Why:      We accumulate one `Track` per cursor row, which needs a list we can `.add`
+        //           to as we iterate.
+        // TS map:   `const tracks: Track[] = [];` — TS arrays are always mutable, so there is
+        //           no separate read-only/mutable distinction at the value level.
+        // Gotcha:   The earlier `List<Track>` is read-only; this `MutableList<Track>` is the
+        //           one you can append to. Picking the wrong one is a compile error in Kotlin,
+        //           unlike TS where any array can be pushed to.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const tracks: Track[] = [];
+        // ```
         val tracks: MutableList<Track> = mutableListOf()
+        // What:     `resolver.query(collection, projection, selection, null, null)?.use { cursor -> ... }`.
+        //           `.query(...)` runs the database query and returns a `Cursor?` (a cursor that
+        //           might be null if the query failed). The `?.` is a SAFE-CALL: if the left side
+        //           is null, the whole `?.use { ... }` is skipped and evaluates to null; otherwise
+        //           `.use { ... }` runs the lambda and GUARANTEES the cursor is closed afterward
+        //           (even on exception). `{ cursor -> ... }` is a trailing lambda whose single
+        //           parameter `cursor` is the non-null cursor. The two `null`s are the unused
+        //           `selectionArgs` and `sortOrder` query arguments.
+        // Why:      We read every matching row from the cursor; `use` ensures the native cursor
+        //           handle is always released, and `?.` makes a null cursor a no-op instead of a
+        //           crash.
+        // TS map:   `resolver.query(...)?.use((cursor) => { ... })` where `use` is a
+        //           try/finally-close helper. Mentally:
+        //           `const c = resolver.query(...); if (c) { try { ... } finally { c.close(); } }`.
+        // Gotcha:   `?.` short-circuits the ENTIRE chained call on null (TS optional chaining works
+        //           the same), and `use {}` is Kotlin's resource-closing helper (like a `using`
+        //           block), not a plain method call.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const cursor = resolver.query(collection, projection, selection, null, null);
+        // if (cursor) {
+        //   try {
+        //     // ...body below, `cursor` is non-null here...
+        //   } finally {
+        //     cursor.close();
+        //   }
+        // }
+        // ```
         resolver.query(collection, projection, selection, null, null)?.use { cursor ->
+            // What:     `val idColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)`.
+            //           `getColumnIndexOrThrow(name)` returns the integer position of that column in
+            //           each row, or throws if the column is missing. `: Int` is the explicit type.
+            // Why:      Reading a value from a row is done by column index, not by name, so we look
+            //           up each column's index once before the loop.
+            // TS map:   `const idColumn: number = cursor.getColumnIndexOrThrow(...);` — `Int` is TS
+            //           `number`. Sibling integer types you might expect (`Long`, `Short`) are NOT
+            //           used here: a column index is small, and the Cursor API takes an `Int`.
+            // Why Int (not Long): the Cursor getX(index) API signature takes a 32-bit `Int`; a
+            //           `Long` would not even compile there, and a column index never approaches the
+            //           ~2.1 billion `Int` ceiling.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const idColumn: number = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
+            // ```
             val idColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            // What:     `val nameColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)`
+            //           looks up the column index of the file-name column, throwing if absent.
+            // Why:      We need the file-name column's position to read each row's name.
+            // TS map:   `const nameColumn: number = cursor.getColumnIndexOrThrow(...);` — again
+            //           `Int` not `Long`, because the Cursor API and small index value call for the
+            //           32-bit type.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const nameColumn: number = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME);
+            // ```
             val nameColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+            // What:     `val pathColumn: Int = if (hasRelativePath) { ... } else { ... }`. Another
+            //           `if` USED AS AN EXPRESSION: whichever branch runs, its
+            //           `getColumnIndexOrThrow` result (an `Int`) is assigned to `pathColumn`. On
+            //           API 29+ we resolve the `RELATIVE_PATH` index; otherwise the `DATA` index.
+            // Why:      The path column we request differs by API level (matching the projection
+            //           branch above), so its index must be looked up under the same branch.
+            // TS map:   `const pathColumn: number = hasRelativePath ? cursor.getColumnIndexOrThrow(REL) : cursor.getColumnIndexOrThrow(DATA);`
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const pathColumn: number = hasRelativePath
+            //   ? cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
+            //   : cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+            // ```
             val pathColumn: Int = if (hasRelativePath) {
+                // What:     `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)`
+                //           returns the index of the relative-folder-path column, throwing if it is
+                //           missing. As the branch's last expression it becomes the branch's value.
+                // Why:      Resolve the `RELATIVE_PATH` index on API 29+ for later per-row reads.
+                // TS map:   tail expression of the `then` branch:
+                //           `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
+                // ```
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
             } else {
+                // What:     `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)` returns the
+                //           index of the legacy absolute-path column, throwing if missing. As the
+                //           branch's last expression it becomes the branch's value.
+                // Why:      Resolve the `DATA` index pre-API-29 for later per-row reads.
+                // TS map:   tail expression of the `else` branch:
+                //           `cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                // ```
                 cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
             }
+            // What:     `while (cursor.moveToNext()) { ... }`. `moveToNext()` advances the cursor to
+            //           the next row and returns `true` while a row exists, `false` once exhausted.
+            //           The loop body reads the current row.
+            // Why:      Standard cursor iteration: process every matching row exactly once.
+            // TS map:   `while (cursor.moveToNext()) { ... }` — identical shape to a TS `while`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // while (cursor.moveToNext()) {
+            //   // ...read current row...
+            // }
+            // ```
             while (cursor.moveToNext()) {
+                // What:     `val name: String = cursor.getString(nameColumn) ?: continue`.
+                //           `getString(index)` returns a `String?` (nullable, the column may hold
+                //           null). The `?:` is the ELVIS operator: "use the left value if non-null,
+                //           otherwise evaluate the right side." Here the right side is `continue`,
+                //           which skips to the next loop iteration. So `name` is a guaranteed-non-null
+                //           `String`, or we move on.
+                // Why:      A row with no file name is unusable, so we drop it and keep scanning.
+                // TS map:   `const raw = cursor.getString(nameColumn); if (raw == null) continue; const name: string = raw;`
+                //           TS has no `?: continue` form, so the null check and `continue` are
+                //           written out explicitly.
+                // Gotcha:   `?:` is Elvis (null-coalescing-with-control-flow here), NOT the start of a
+                //           ternary; the right-hand `continue` is a statement, which Kotlin allows
+                //           because `continue` has the "never" type.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const maybeName = cursor.getString(nameColumn); // string | null
+                // if (maybeName == null) continue;
+                // const name: string = maybeName;
+                // ```
                 val name: String = cursor.getString(nameColumn) ?: continue
+                // What:     `val id: Long = cursor.getLong(idColumn)` reads the `_ID` value as a
+                //           `Long`, a 64-bit signed integer. `: Long` is the explicit type.
+                // Why:      MediaStore row ids are 64-bit, and the URI builder below
+                //           (`ContentUris.withAppendedId`) takes a `Long`, so we read it as one.
+                // TS map:   `const id: number = cursor.getLong(idColumn);` — TS has only `number`,
+                //           so the 64-bit-ness is invisible.
+                // Why Long (not Int): the `_ID` column is a 64-bit row id and
+                //           `ContentUris.withAppendedId(uri, id)` requires a `Long`; a 32-bit `Int`
+                //           could overflow on large libraries and would not type-check at that call.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const id: number = cursor.getLong(idColumn); // 64-bit row id, fits in JS number
+                // ```
                 val id: Long = cursor.getLong(idColumn)
+                // What:     `val rawPath: String? = cursor.getString(pathColumn)`. The `String?` type
+                //           (note the trailing `?`) means "a `String` OR null"; we keep the null here
+                //           rather than skipping, because a missing path is handled gracefully by the
+                //           display-path helper below.
+                // Why:      Some rows legitimately have no folder path; we want to fall back to the
+                //           bare name, not drop the track, so we preserve the nullability.
+                // TS map:   `const rawPath: string | null = cursor.getString(pathColumn);` — Kotlin's
+                //           `String?` is TS's `string | null`.
+                // Gotcha:   The trailing `?` on the TYPE (`String?`) marks nullability; do not confuse
+                //           it with the `?.` safe-call or `?:` Elvis operators.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const rawPath: string | null = cursor.getString(pathColumn);
+                // ```
                 val rawPath: String? = cursor.getString(pathColumn)
+                // What:     `val displayPath: String = displayPathOf(rawPath = rawPath, name = name, isRelative = hasRelativePath)`
+                //           calls the private helper with NAMED ARGUMENTS (`paramName = value`), which
+                //           label each argument at the call site. The result is a non-null `String`.
+                // Why:      Turn the row's raw path and name into the folder-relative display string the
+                //           UI shows and the sort uses.
+                // TS map:   TS has no named arguments, so you pass a positional list or an options
+                //           object: `const displayPath: string = displayPathOf(rawPath, name, hasRelativePath);`
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const displayPath: string = displayPathOf(rawPath, name, hasRelativePath);
+                // ```
                 val displayPath: String = displayPathOf(rawPath = rawPath, name = name, isRelative = hasRelativePath)
+                // What:     `val uri: String = ContentUris.withAppendedId(collection, id).toString()`.
+                //           `withAppendedId(baseUri, id)` builds a `Uri` pointing at this exact row by
+                //           appending the numeric id; `.toString()` is a CONVERSION call that turns
+                //           that `Uri` object into its `String` form (e.g. `content://media/...`).
+                // Why:      The player stores and opens tracks by string URI, so we materialize the
+                //           per-row `content://` URI as text here.
+                // TS map:   `const uri: string = ContentUris.withAppendedId(collection, id).toString();`
+                //           — `.toString()` is the same idea as TS `String(x)`/`x.toString()`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const uri: string = ContentUris.withAppendedId(collection, id).toString();
+                // ```
                 val uri: String = ContentUris.withAppendedId(collection, id).toString()
+                // What:     `tracks.add(Track(uri = uri, displayPath = displayPath))`. `Track(...)`
+                //           constructs a `Track` value (Kotlin calls the constructor WITHOUT a `new`
+                //           keyword); `uri = ...` / `displayPath = ...` are named constructor
+                //           arguments. `tracks.add(...)` appends the new `Track` to the mutable list.
+                // Why:      Record this row as a playable, displayable track in our accumulator.
+                // TS map:   `tracks.push({ uri, displayPath });` — TS uses `new Track(...)` or an
+                //           object literal; Kotlin constructs with just the type name and no `new`.
+                // Gotcha:   No `new` keyword: `Track(...)` IS the constructor call. The `name = value`
+                //           pairs are named args, not assignments.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // tracks.push(new Track(uri, displayPath)); // or { uri, displayPath }
+                // ```
                 tracks.add(Track(uri = uri, displayPath = displayPath))
             }
         }
+        // What:     `Log.i(SOURCE_TAG, "queried ${tracks.size} music tracks from MediaStore")`.
+        //           `Log.i(tag, message)` writes an info-level log line. The message is a string
+        //           template: `${tracks.size}` is replaced by the list's length (`size` is the
+        //           Kotlin property; TS calls it `length`).
+        // Why:      Emit the final count so an on-device verification can read back how many tracks
+        //           the query produced.
+        // TS map:   `console.info(`queried ${tracks.length} music tracks from MediaStore`);` — but
+        //           note Kotlin's `Log.i` takes the tag as a separate first argument.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // console.info(`[${SOURCE_TAG}] queried ${tracks.length} music tracks from MediaStore`);
+        // ```
         Log.i(SOURCE_TAG, "queried ${tracks.size} music tracks from MediaStore")
+        // What:     `tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`.
+        //           `sortedWith { ... }` returns a NEW sorted `List<Track>` (it does not mutate
+        //           `tracks`) ordered by the given comparator. `{ left, right -> ... }` is a trailing
+        //           lambda comparator: it receives two `Track`s and returns the `Int` from
+        //           `compareByCodePoint` (negative/zero/positive). With no trailing `;` this whole
+        //           expression is the block's value, hence the function's return value.
+        // Why:      Produce the final list ordered by display path in code-point order, matching the
+        //           desktop's bytewise sort, and hand it back to the caller.
+        // TS map:   `return [...tracks].sort((left, right) => compareByCodePoint(left.displayPath, right.displayPath));`
+        //           — `sortedWith` returns a fresh sorted copy, so the TS analog spreads into a new
+        //           array before `.sort` (which would otherwise mutate in place).
+        // Gotcha:   This is the TAIL EXPRESSION of the `withContext` block: no `return` keyword and no
+        //           `;`, yet its value is what `query` resolves to. `sortedWith` is non-mutating,
+        //           unlike TS's in-place `Array.prototype.sort`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return [...tracks].sort((left, right) =>
+        //   compareByCodePoint(left.displayPath, right.displayPath),
+        // );
+        // ```
         tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
     }
 
-    /**
-     * Build a row's folder-relative display path from its raw path column and file name.
-     *
-     * @param rawPath `RELATIVE_PATH` (a trailing-slash folder like `Plain/Music/`) on API 29+, or the
-     *   absolute `DATA` path below it; null when the column had no value.
-     * @param name `DISPLAY_NAME`, the bare file name.
-     * @param isRelative True when [rawPath] is a `RELATIVE_PATH` folder that needs the file name
-     *   appended; false when it is already a full `DATA` path to use as is.
-     * @return Display path: `<relative-folder>/<name>` on API 29+, the absolute `DATA` path on older
-     *   platforms, or the bare name when no path is available (a degenerate row).
-     */
+    // What:     `private fun displayPathOf(rawPath: String?, name: String, isRelative: Boolean): String = when { ... }`
+    //           declares a private helper with three params: `rawPath` (nullable `String?`), `name`
+    //           (`String`), `isRelative` (`Boolean`). It returns a non-null `String`. The `= when { ... }`
+    //           is an expression body whose value is a `when` (Kotlin's multi-branch conditional).
+    //           A `when { cond -> value }` with no subject is an if/else-if chain: the first branch whose
+    //           condition is true supplies the result.
+    // Why:      Centralizes the "how do we label this row" rule so the loop stays simple: relative
+    //           folder + name on new APIs, the absolute path on old ones, or the bare name when there
+    //           is no path at all.
+    // TS map:   `function displayPathOf(rawPath: string | null, name: string, isRelative: boolean): string { ... }`
+    //           where the `when { }` becomes an if/else-if chain returning a value.
+    // Gotcha:   `when { }` (no parentheses/subject) is NOT a `switch` on a value; it is an ordered
+    //           if/else-if chain. `String?` again means "string or null".
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function displayPathOf(rawPath: string | null, name: string, isRelative: boolean): string {
+    //   if (rawPath == null || rawPath === "") return name;
+    //   if (isRelative) return `${rawPath.replace(/\/$/, "")}/${name}`;
+    //   return rawPath;
+    // }
+    // ```
     private fun displayPathOf(rawPath: String?, name: String, isRelative: Boolean): String = when {
+        // What:     `rawPath.isNullOrEmpty() -> name`. `isNullOrEmpty()` is a Kotlin extension that
+        //           safely returns `true` when `rawPath` is either null OR the empty string (it can be
+        //           called even on a nullable value). The `-> name` makes this branch evaluate to
+        //           `name`, the bare file name.
+        // Why:      With no usable path, the only sensible label is the file name itself (a degenerate
+        //           row).
+        // TS map:   `if (rawPath == null || rawPath === "") return name;`
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (rawPath == null || rawPath === "") return name;
+        // ```
         rawPath.isNullOrEmpty() -> name
+        // What:     `isRelative -> "${rawPath.removeSuffix("/")}/$name"`. When `isRelative` is true,
+        //           the branch value is a string template: `rawPath.removeSuffix("/")` drops a single
+        //           trailing slash if present (so `Music/` becomes `Music`), then `/$name` appends a
+        //           slash and the file name. `$name` is the shorthand template form for `${name}`.
+        // Why:      `RELATIVE_PATH` is a trailing-slash folder; we join it to the file name with exactly
+        //           one slash to form `<folder>/<name>`.
+        // TS map:   `if (isRelative) return `${rawPath.replace(/\/$/, "")}/${name}`;` — `removeSuffix("/")`
+        //           is "strip one trailing slash"; `$name` is `${name}`.
+        // Gotcha:   At this branch `rawPath` is already known non-null (the null/empty case was handled
+        //           above), so calling a method on it directly is safe.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (isRelative) return `${rawPath.endsWith("/") ? rawPath.slice(0, -1) : rawPath}/${name}`;
+        // ```
         isRelative -> "${rawPath.removeSuffix("/")}/$name"
+        // What:     `else -> rawPath`. The catch-all branch: when there is a path and it is NOT a
+        //           relative folder (the pre-API-29 absolute `DATA` path), use it verbatim. As the
+        //           branch value it becomes the function's return.
+        // Why:      An absolute `DATA` path is already a full, usable display string, so we return it
+        //           as is.
+        // TS map:   `return rawPath;` (the final fall-through of the if/else-if chain).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return rawPath;
+        // ```
         else -> rawPath
     }
 }
