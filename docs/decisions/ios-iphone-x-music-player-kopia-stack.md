@@ -456,10 +456,16 @@ disqualified on this device), and the framework-specific in-process UI-test and 
   default 48 kHz output device on the iPhone X, and its render callback fired (the RemoteIO AudioUnit ran),
   with the AVAudioSession Playback shim supplied from the host (C# here; `objc2-avf-audio` in a Rust stack)
   and `AudioToolbox` linked. Real symphonia PCM, interruptions, and backgrounded audio remain stage-2.
-- Testing: in-process UI test is framework-specific (Slint testing backend, runComposeUiTest,
-  `flutter_test`, XCUITest, and so on); black-box e2e is XCUITest or Maestro/Appium; fuzz, mutation,
-  and property testing run once on the shared Rust core (cargo-fuzz, cargo-mutants, proptest) plus a
-  thin per-framework bridge/boundary fuzz.
+- Testing: now run to Android depth, not just enumerated, in two reports.
+  `ios-iphone-x-vet-reports/vet-ui-automation.md`: black-box e2e is XCUITest/WebDriverAgent (the iOS
+  primitive, the UiAutomator analog) wrapped by Appium 3.5.0 and Maestro 2.6.1; both drove a Flutter counter
+  0 to 2 on the iOS 26.5 simulator, and per-rendering-model accessibility-tree dumps were captured (WebView,
+  native UIKit, self-drawn Skia). `ios-iphone-x-vet-reports/vet-test-frameworks.md`: Rust unit plus proptest
+  pass on the `aarch64-apple-ios-sim` target, cargo-fuzz ran 34M executions clean, cargo-mutants caught 22/24
+  in a Mac Podman container (2 equivalent mutants), kotlin.test plus kotest-property pass on
+  `iosSimulatorArm64`, and fast-check property plus shrinking pass for the JS/TS layer. Real-device WDA
+  signing is the one deferred piece. In-process UI test stays framework-specific (runComposeUiTest,
+  `flutter_test`, `XCUIApplication`).
 
 ## Cross-cutting iOS constraints (any framework)
 
@@ -508,13 +514,22 @@ Posture by survivor, descending native-ness (this predicts fidelity, it does not
   UIAccessibility), Avalonia (AutomationPeer -> UIAccessibility), and Uno's default Skia renderer. Here the
   owner check is the load-bearing one: does VoiceOver actually read each self-drawn control and its state,
   and is focus order sane? For Uno, re-verify with its native-UIKit renderer, which is the a11y-safe config.
+  Partial on-device-tree evidence now exists (`ios-iphone-x-vet-reports/vet-ui-automation.md`): the Appium
+  element dump shows Flutter's self-drawn bridge already projects real roles (a title with `traits=Header`,
+  an action as an `XCUIElementTypeButton` with `traits=Button`), which is why Flutter sits in the
+  native-UIKit-risk group above; Compose Multiplatform projects its text as accessible `StaticText` with
+  correct labels, but the gate carried no interactive control, so Compose's control-role projection (a
+  Compose `Button` reaching the tree as a Button with state) stays the untested, load-bearing question.
 
 The owner-owed sweep, then, is: enable VoiceOver on the iPhone X and run each surviving gate, confirming the
 controls are spoken with correct labels and roles. It is low-risk for the WebKit-native and native-UIKit
 groups (a confirmation) and load-bearing for the self-drawn group (Compose, Avalonia, Uno-Skia), which is
 where a render PASS could still hide an a11y gap. This is the one vetting dimension that cannot be closed
 autonomously; everything it depends on (no iOS-17 a11y death, the framework renders on 16.7) is already
-device-confirmed.
+device-confirmed. The headless half is also now captured: the UI-automation vet
+(`ios-iphone-x-vet-reports/vet-ui-automation.md`) dumped each representative's accessibility tree, which
+records what VoiceOver would read (labels, roles, traits) minus the audible speech and focus-order check, so
+the remaining owner work is the speech-and-focus confirmation, not a from-scratch a11y audit.
 
 ## Stage 2 status (supporting stacks)
 
@@ -548,8 +563,15 @@ de-risks the kopia and music-player apps on every track at once. Status by capab
   (`UIBackgroundModes: audio` plus interruption handling): OWED. These are restructuring tasks shared by
   every framework, not binary capability probes, and need real backgrounding to verify; they do not block the
   framework choice.
-- Per-framework FFI marshaling and the in-process UI-test/e2e harnesses: the remaining stage-2 roadmap,
-  enumerated per framework in each `vet-*.md`; narrow and per-track, run once the framework is chosen.
+- Testing infrastructure (unit, property, fuzz, mutation, black-box e2e): now RUN to Android depth, not just
+  enumerated, in `ios-iphone-x-vet-reports/vet-test-frameworks.md` and `vet-ui-automation.md`. Black-box e2e
+  (Appium plus Maestro on WebDriverAgent), Rust unit/proptest on the iOS-sim target, cargo-fuzz, cargo-mutants
+  in a Mac container, Kotlin/Native kotlin.test plus kotest-property on the iOS-sim target, and fast-check for
+  the JS/TS layer all pass; the Kotlin/Native mutation gap (PITest is JVM-only) and the deferred real-device
+  WDA-signing leg are recorded there.
+- Per-framework FFI marshaling and the in-process UI-test harnesses (runComposeUiTest, `flutter_test`,
+  `XCUIApplication` compiled into the app): the remaining narrow per-track work, enumerated per framework in
+  each `vet-*.md`; run once the framework is chosen.
 
 So the stage-2 conclusion: the Rust-core capabilities that were genuinely in doubt for these two apps on this
 device (an in-app loopback server socket, CoreAudio output, and ring's TLS crypto) all run on the iPhone X
@@ -566,6 +588,9 @@ on-device gate results are persisted alongside this doc under `ios-iphone-x-vet-
 
 - On-device gates: `device-gate-results.md` (the signing mechanism, the render-vs-launch verification,
   the Capacitor and Flutter render passes, and the Slint disqualification, with exact evidence).
+- Testing depth (2026-06-13): `vet-ui-automation.md` (black-box e2e, Appium plus Maestro on
+  WebDriverAgent, per-rendering-model addressability) and `vet-test-frameworks.md` (unit, property, fuzz,
+  mutation per ecosystem, run to green).
 - Native (disqualified on device): `vet-slint.md`.
 - WKWebView substrate: `vet-capacitor.md`, `vet-cordova.md`, `vet-ionic.md`, `vet-framework7.md`,
   `vet-onsen.md`, `vet-quasar.md`.
@@ -574,9 +599,11 @@ on-device gate results are persisted alongside this doc under `ios-iphone-x-vet-
 - Jitless JS, native UI: `vet-react-native.md`, `vet-nativescript.md`, `vet-lynx.md`.
 - C++ static: `vet-qt.md`.
 
-The deeper supporting-stack vets (the shared Rust core, kopia packaging, in-app server, HTTPS
-streaming, background, audio, and per-framework bridge plus test harnesses, roughly 52 reports total)
-are stage 2 and not yet run; the inventory is enumerated per framework inside each `vet-*.md`.
+The testing-infrastructure axis (unit, property, fuzz, mutation, black-box e2e) has since been run to Android
+depth across the ecosystems the top survivors use, recorded in `vet-test-frameworks.md` and
+`vet-ui-automation.md`. The remaining deeper supporting-stack vets (kopia packaging, HTTPS streaming on the live
+network, background and audio restructuring, and the per-framework FFI bridge plus in-process UI-test harnesses)
+are stage 2 and per-track; the inventory is enumerated per framework inside each `vet-*.md`.
 
 ## Out of scope (owner-decided)
 
