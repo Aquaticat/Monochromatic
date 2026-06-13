@@ -205,6 +205,12 @@ constructs a decoder, `nativeSymphoniaSelfTest` initializes the prober + codec r
 tests)` via `am instrument`). The .so grew to 3.9 MB with all codecs and stays 16KB-aligned; it is kept on
 symphonia `all` deliberately (see Resolved decisions).
 
+Native decode port + benchmark (this session): `285ce21c` ports the desktop decode path
+(`Source`/`open`/`SymphoniaSource`/`OpusSource` + a minimal `PlayerError`, desktop module names kept for reuse) into
+the native crate and adds `nativeDecodeBenchmark`, the full-Rust go/no-go. Result: native opus decode ~0.032
+us/sample vs the Media3 MediaCodec ~0.33 us/sample baseline, about an order of magnitude faster (see "Native decode
+benchmark"). Strong GO; the engine build (Task #12) is greenlit. Light comments only (dum-dum deferred to Task #14).
+
 Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
 periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
 when a library becomes available), the engine-agnostic `measureAndCache` + `SweepOutcome`, the shared
@@ -244,6 +250,11 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
 - Decode (full-Rust variant): `symphonia` stays on the `all` feature set; do NOT narrow it for size (owner directive
   2026-06-12: APK size is not a concern for Android apps). Opus is decoded by the `opus` crate (opusic-sys/libopus),
   the one codec symphonia's meta-crate does not wire in.
+- FFI binding (full-Rust variant): raw JNI, not UniFFI (revises the ADR's UniFFI note). The `AudioEngine` seam is 11
+  methods; raw JNI is already proven on GrapheneOS (the smoke test), while UniFFI drags in JNA whose GrapheneOS
+  behavior is the exact unknown to avoid. Callbacks are kept pull-based (the UI already polls position) so no
+  native->JVM callback machinery (`AttachCurrentThread`, global refs, cached method ids) is needed. Decided
+  2026-06-12 (advisor-endorsed); settle the final shape when building the engine surface (Task #12).
 - Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
 - minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
   older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
@@ -312,6 +323,30 @@ stereo track" is ~21M samples.
   and `WM-WorkerWrapper: Starting work for ...PeakSweepWorker` confirms the real worker executes while charging. The
   session stayed `PAUSED` throughout (no audio). This path is invisible to `TestListenableWorkerBuilder`, which
   bypasses `WorkManager.getInstance()`, so it must be checked by launching the app, not only by the instrumented test.
+
+### Native decode benchmark (go/no-go, device-measured)
+
+`nativeDecodeBenchmark` (Task #15, `285ce21c`) decodes a real library file fully to interleaved f32 PCM on the
+device, decode-only (no output), and reports microseconds per interleaved sample, directly comparable to the Media3
+MediaCodec figures above. Measured on the Pixel 6 against files sourced from the device's `Plain` mirror:
+
+- opus (`Ahrix - Nova.opus`, symphonia Ogg demux + libopus): 0.032 us/sample (~320x realtime).
+- flac (a real Ado track, symphonia): 0.020 us/sample.
+
+Versus the recorded Media3 MediaCodec opus decode (~0.33 us/sample), native opus decode is about an order of
+magnitude faster: in-process libopus avoids the Codec2 binder round-trips and MediaCodec buffer plumbing the
+framework path pays per buffer. The am-instrument total (1.26s) matches the sum of the two decodes, so real decode
+work happened. This greenlights the full-Rust engine on the decode dimension (the native SIMD true-peak meter is
+expected to beat the ART meter on top of that). Caveat: this is a fresh same-file native measure against a recorded
+media3 aggregate, not a same-session same-file head-to-head; a media3 re-measure on `bench.opus` would tighten the
+exact ratio but cannot flip an order-of-magnitude gap.
+
+Fixture recipe (silent; reuse for re-runs): the rust flavor has no storage permission and scoped storage blocks
+direct `/sdcard/Plain` File access, so copy on-device into the rust app's external files dir and make it app-readable:
+`adb shell 'DIR=/sdcard/Android/data/dev.monochromatic.musicplayer.rust/files; mkdir -p "$DIR"; cp "/sdcard/Plain/Music/<file>" "$DIR/bench.opus"; chmod 0666 "$DIR/bench.opus"'`. The `chmod` is required: a shell-written
+file is owned `shell` mode 0660, which the app uid cannot read (`open` returns -2); `adb push` would instead assign
+app ownership. The benchmark test reads `bench.opus`/`bench.flac` from `getExternalFilesDir(null)` and skips (not
+fails) when absent.
 
 ### Resident-noise rule (standing constraint)
 
