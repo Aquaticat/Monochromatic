@@ -3,12 +3,13 @@ package dev.monochromatic.musicplayer
 import android.content.Context
 
 /**
- * Full-Rust flavor stub. The full reuse engine (the whole symphonia/opus/truepeak/queue core as a
- * `.so` via UniFFI) is not built yet; this keeps the flavor compiling so the three-engine
- * architecture is exercised end to end before the NDK work begins.
+ * Full-Rust flavor's engine factory, mirroring the Media3 flavor's `createAudioEngine` signature so
+ * [MainActivity] resolves the engine at compile time. Returns the native [RustEngine] (symphonia +
+ * libopus decode, AAudio output, in-process), the engine whose performance this variant exists to
+ * measure against Media3.
  *
- * @param context Unused until the Rust engine lands.
- * @returns Never returns; throws until implemented.
+ * @param context Handed to the engine for the content resolver (descriptor resolution) and the native
+ *   handle's lifetime.
+ * @returns A [RustEngine] backed by the native `.so`.
  */
-fun createAudioEngine(context: Context): AudioEngine =
-    throw NotImplementedError("full-Rust engine not built yet")
+fun createAudioEngine(context: Context): AudioEngine = RustEngine(context)

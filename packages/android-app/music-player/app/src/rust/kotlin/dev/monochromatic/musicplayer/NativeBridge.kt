@@ -20,4 +20,28 @@ object NativeBridge {
     external fun nativeDecodeFdBenchmark(fd: Int): Double
 
     external fun nativeOutputLatencyProbe(): Double
+
+    external fun nativeEngineCreate(): Long
+
+    external fun nativeEngineLoad(handle: Long, fd: Int, play: Boolean): Int
+
+    external fun nativeEnginePlay(handle: Long)
+
+    external fun nativeEnginePause(handle: Long)
+
+    external fun nativeEngineSeek(handle: Long, positionSec: Double)
+
+    external fun nativeEngineSetVolume(handle: Long, volume: Float)
+
+    external fun nativeEnginePositionSec(handle: Long): Double
+
+    external fun nativeEngineDurationSec(handle: Long): Double
+
+    external fun nativeEngineIsPlaying(handle: Long): Boolean
+
+    external fun nativeEngineIsEnded(handle: Long): Boolean
+
+    external fun nativeEnginePlayWhenReady(handle: Long): Boolean
+
+    external fun nativeEngineRelease(handle: Long)
 }
