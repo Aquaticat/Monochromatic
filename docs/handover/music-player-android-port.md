@@ -13,9 +13,10 @@ handover adds the working state, measured facts, and exact next steps.
   skeleton playing real audio on the Pixel 6) is DONE and committed. See "Build progress" below.
 - The real Media3 variant is well underway: the pure logic is ported to Kotlin (56 tests), the real Compose UI is
   built, the library reads the device's real MediaStore audio library, and the player is now hosted in a
-  `MediaSessionService` for background/lockscreen/notification, all verified on device. Remaining for this variant:
-  a SAF chosen-root source (the desktop's "point at one folder" model) and true-peak as a Media3 `AudioProcessor`.
-  See "Build progress" and "Next steps".
+  `MediaSessionService` for background/lockscreen/notification, all verified on device. The SAF chosen-root source,
+  the true-peak `AudioProcessor` (async measure-on-miss + shared cache), and the WorkManager charging background
+  sweep (`PeakSweepWorker`, low-priority decode) have all since landed and are verified on device, so the media3
+  variant is feature-complete; next is the full-Rust variant. See "Build progress" and "Next steps".
 
 ## Build progress (this session)
 
@@ -175,6 +176,17 @@ Then the performance pass (see "True-peak measure performance"): `db6efc2c` bulk
 `cd64fce2` `maxInteriorAbs` window-term hoist (~20% meter). `becdcd16` had reverted the block-the-start design
 back to async and added the debug-signed release build + `build:media3:release` task.
 
+Background true-peak sweep (this session): `1867fda2` adds `PeakSweepWorker` (a WorkManager `CoroutineWorker`,
+periodic, charging-only), `PeakSweepScheduler` (unique periodic, `KEEP`-deduped, enqueued from `PlaybackService`
+when a library becomes available), the engine-agnostic `measureAndCache` + `SweepOutcome`, the shared
+`LibrarySource` enumeration seam (extracted from `PlaybackService` so the sweep and playback fingerprint the same
+URIs and the cache actually hits), and a per-flavor `measureTrackPeak` seam mirroring `createAudioEngine` (media3
+decodes on a `nice 19` thread, hybrid/rust stubs throw). The offline decoder (`Media3TruePeakDecoder.measure`)
+gained an optional `dispatcher` param so the foreground measure-on-miss is unchanged. Verified on device via `am
+instrument` (not `connectedAndroidTest`, which uninstalls and wipes the SAF grant): the worker enumerated the real
+3638-track library, decoded+cached one track (7.2s, `audio/raw`), and a bounded re-run was a cache-hit skip; both
+instrumented tests pass.
+
 Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; those are not part of this work.
 
 ## Resolved decisions (do not relitigate; rationale in the ADR)
@@ -194,8 +206,12 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
   Background playback via `mediaPlayback` foreground service, notification, lockscreen, audio focus, headset.
 - UX: tap-to-play only (tap loads+plays, tap the playing row pauses); phone-first single column (drop the desktop
   900px two-pane).
-- True-peak: keep the eager whole-library sweep but run it via WorkManager constrained to charging + idle; measure
-  the loading track synchronously on a cache miss. The DSP and cache are unchanged.
+- True-peak: keep the eager whole-library sweep, run it via a WorkManager periodic worker constrained to charging
+  only. Device-idle was dropped (owner directive 2026-06-12): it trips Android Lint's IdleBatteryChargingConstraints
+  and would block the sweep while the phone is simply in use. Contention is handled instead by decoding at the lowest
+  thread priority (`nice 19`, the Android analog of the desktop's idle-priority worker), so the sweep yields to
+  playback while still progressing whenever plugged in. The loading track is measured asynchronously on a cache miss
+  (a one-time mid-song gain correction). The DSP and cache are unchanged.
 - Placement: `packages/android-app/music-player/` (new category). Identity: `dev.monochromatic.musicplayer`.
 - minSdk 36 (raised from 26 on 2026-06-12 by owner directive: single-target app for the owner's Pixel 6, so no
   older-release support and modern APIs without compat guards), compileSdk 37, targetSdk 36, JDK 21, AGP 9.x,
@@ -252,8 +268,10 @@ stereo track" is ~21M samples.
 - User decisions this session: (1) optimize the Kotlin meter now, full-Rust variant after the Kotlin variant is
   done; (2) on a cache miss, apply the gain mid-song when the measure lands (the current async behavior, a
   one-time level correction) rather than caching-only-for-next-play. So `Media3Engine.load` needs no change.
-- Sweep economics: ~19s/track x 3638 tracks ~= 19h of charge+idle for a full first sweep, so the WorkManager
-  sweep's cost rides on the same per-track decode cost; the Rust decode matters there too.
+- Sweep economics: ~19s/track x 3638 tracks ~= 19h of decode for a full first sweep, spread across charging windows
+  (15-min minimum periodic interval, ~10-min cap per run, resume-via-cache between runs). The decode runs at lowest
+  thread priority, so it is full-speed when the phone is idle and yields under playback; the Rust decode cost
+  matters here too.
 
 ### Resident-noise rule (standing constraint)
 
@@ -331,8 +349,10 @@ the pure-logic Kotlin port (the `core` package, 52 tests green). Remaining:
    playback from a `content://` document URI, cold-load after force-stop with no re-pick, and loose root files
    (no-slash display paths, which MediaStore never produces) grouped without breaking. The picker is the one
    interactive spot that needs a human tap (driven via adb to open it; the folder choice + grant is the user's).
-   Remaining: True-peak as a Media3 `AudioProcessor` (the deferred `process_sample` gain stage) plus the WorkManager
-   charging/idle sweep. Instrument metrics from the start.
+   DONE since: true-peak as a Media3 `AudioProcessor` (the `GainNormalizationProcessor` gain stage, async
+   measure-on-miss, shared `PeakCacheStore`) and the WorkManager charging sweep (`PeakSweepWorker`, low-priority
+   decode), both verified on device. The media3 variant is now feature-complete; next is the full-Rust variant.
+   Instrument metrics from the start.
 
 ### Deferred from the MediaSessionService review
 
