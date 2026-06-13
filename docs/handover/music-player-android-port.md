@@ -49,7 +49,24 @@ What/Why/TS-map/pseudocode teaching comments. Done with a mix of a Workflow fan-
 sessions (the workflow rate-limited on the last 25 Kotlin files, so those went to spawn-claude). Comments only: a
 per-file comment-stripped diff vs the pre-pass code is empty for all 60, all three flavors assemble, the unit tests
 pass, both androidTest source sets compile, and the Rust `max-lines` lint stays green (dum-dum comments are excluded
-from the budget). Only remaining task for the port is #9 (bisect minSdk to the true floor, an optimization).
+from the budget).
+
+Variant collapse + minSdk floor (#9, DONE, commit `19f591bb2`): the media3 and hybrid build flavors are deleted
+(owner directive: only the full-Rust variant has acceptable performance). The flavor dimension is gone, so the app
+is now a single variant: the `rust` source set folded into `src/main` (RustEngine, NativeBridge, EngineFactory,
+PeakMeasurer, plus `jniLibs`), the rust + worker instrumented tests folded into `src/androidTest`, and the media3
+engine, the offline `Media3TruePeakDecoder`, the ExoPlayer gain processors, and the per-flavor factories are removed.
+`media3-session` stays (the engine-agnostic session layer that projects to the system notification); `media3-exoplayer`
+is gone. mise tasks collapsed to the single variant (`build`, `build:native`, `install`, `test:unit`,
+`test:instrumented`, `lint`). With media3 deleted, the only thing gating the app above the native AAudio hard floor
+was `Context.RECEIVER_NOT_EXPORTED` (API 33) in RustEngine; routing it through `ContextCompat.registerReceiver` drops
+that ceiling, so the true floor is `minSdk = 26`. Confirmed measured, not guessed: lint `NewApi` at minSdk 26 reports
+zero API-level findings across the whole app, the native `.so` is rebuilt at `--platform 26` and its dynamic symbols
+import only base API-26 AAudio functions (no setUsage/28 or channelMask/32), and it stays 16KB-aligned. The previous
+`minSdk = 36` was an arbitrary single-target lock, not a real dependency. THE PORT IS COMPLETE: all tasks #4 to #17
+are done; the app is a single full-Rust-engine variant at the true minSdk floor of 26. (On-device re-verification of
+the collapsed APK was explicitly waived by the owner; the build, unit tests, instrumented-test assemble, and lint all
+pass on the collapsed structure.)
 
 Metric comparison (#13, decisive): a like-for-like fresh head-to-head, the same first 8 MediaStore tracks run through
 the same operation (full decode + 4x Catmull-Rom true peak) on each engine: `NativeBridgeTest.measureTruePeakOnDevice`
