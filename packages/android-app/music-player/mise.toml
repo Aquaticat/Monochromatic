@@ -107,6 +107,21 @@ dir = "{{config_root}}"
 depends = ["build:native"]
 run = "./gradlew :app:installDebug --no-daemon --console=plain"
 
+# Build the release APK, install it, and launch it on the connected device. adb is
+# the mise-provisioned one ($ANDROID_HOME/platform-tools, installed by
+# prepare:android) so it matches the version Gradle's installRelease uses and will
+# not bounce the adb server. The launch targets the MainActivity launcher component
+# (applicationId dev.monochromatic.musicplayer). The run steps are an array so mise
+# runs them in order and fails fast (CM2): install must finish before launch.
+[tasks."run:release"]
+description = "Build the debug-signed release APK, install it on the connected device, and launch it. Pin ANDROID_SERIAL if more than one device is attached."
+dir = "{{config_root}}"
+depends = ["build:release"]
+run = [
+  "./gradlew :app:installRelease --no-daemon --console=plain",
+  '"$ANDROID_HOME/platform-tools/adb" shell am start -n dev.monochromatic.musicplayer/.MainActivity',
+]
+
 [tasks."test:unit"]
 description = "Run host JVM unit tests for the pure-logic core (no device)"
 dir = "{{config_root}}"
