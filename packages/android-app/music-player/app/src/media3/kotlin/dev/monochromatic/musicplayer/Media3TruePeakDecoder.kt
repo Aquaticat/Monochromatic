@@ -269,7 +269,18 @@ object Media3TruePeakDecoder {
         }
         if (pcmEncoding == AudioFormat.ENCODING_PCM_16BIT) {
             val shorts = region.asShortBuffer()
-            return FloatArray(shorts.remaining()) { index -> shorts.get(index) / PCM_16BIT_SCALE }
+            val count: Int = shorts.remaining()
+            val raw = ShortArray(count)
+            // Bulk-copy the whole block once, then convert in a primitive loop. The per-element
+            // `shorts.get(index)` form this replaced cost about thirty seconds on a multi-minute opus
+            // track (device-measured): each call was a bounds-checked virtual read behind a lambda, so
+            // the conversion, not the MediaCodec decode (roughly seven seconds) or the meter, dominated.
+            shorts.get(raw)
+            val out = FloatArray(count)
+            for (index in 0 until count) {
+                out[index] = raw[index] / PCM_16BIT_SCALE
+            }
+            return out
         }
         throw IllegalStateException("unsupported PCM encoding $pcmEncoding from decoder")
     }
