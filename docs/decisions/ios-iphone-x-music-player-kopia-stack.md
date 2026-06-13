@@ -383,7 +383,11 @@ disqualified on this device), and the framework-specific in-process UI-test and 
 - Background transfer (wall 3): background `URLSession` plus `BGProcessingTask`, the snapshot chunked
   and resumable; identical restructuring work on every track.
 - Audio output: cpal CoreAudio/`RemoteIO` plus an AVAudioSession activation shim and
-  `UIBackgroundModes: audio`; the one piece of unavoidable iOS glue on any framework.
+  `UIBackgroundModes: audio`; the one piece of unavoidable iOS glue on any framework. Device-proven
+  2026-06-12 (`device-gate-results.md`, stage-2 probes): cpal cross-compiled to both iOS triples, opened the
+  default 48 kHz output device on the iPhone X, and its render callback fired (the RemoteIO AudioUnit ran),
+  with the AVAudioSession Playback shim supplied from the host (C# here; `objc2-avf-audio` in a Rust stack)
+  and `AudioToolbox` linked. Real symphonia PCM, interruptions, and backgrounded audio remain stage-2.
 - Testing: in-process UI test is framework-specific (Slint testing backend, runComposeUiTest,
   `flutter_test`, XCUITest, and so on); black-box e2e is XCUITest or Maestro/Appium; fuzz, mutation,
   and property testing run once on the shared Rust core (cargo-fuzz, cargo-mutants, proptest) plus a

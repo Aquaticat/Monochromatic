@@ -853,6 +853,35 @@ response. The bind-and-serve foundation those build on is now device-confirmed. 
 `/Volumes/MacData/ios-vet/mauigate` (the probe is additive; the original gate sources are backed up as
 `rust/src/lib.rs.orig` and `SceneDelegate.cs.orig`).
 
+### cpal CoreAudio output in a linked Rust staticlib: FULL PASS (both legs)
+
+Status: FULL PASS 2026-06-12. The music-player's load-bearing capability is audio output, and its Rust core
+uses cpal; the open question was whether cpal's iOS CoreAudio (RemoteIO AudioUnit) backend opens the output
+device and runs on the iPhone X. It does. The same `mauigate` Rust `.a` gained `rust_audio_probe`, which
+opens the cpal default output device, builds an output stream whose render callback writes silence only
+(zeros, so nothing is audible: the owner was asleep beside the device, HRM), plays for about 600 ms, and
+counts callback invocations; a non-zero count means CoreAudio actually pulled buffers, so the output path is
+live, not merely constructed. The .NET app activates an `AVAudioSession` (Playback category, the one piece of
+iOS glue the synthesis predicted) before calling the probe.
+
+- Device leg (the load-bearing test): on the iPhone X (iOS 16.7), Release/full-AOT, signed and held alive,
+  the screen reads "AUDIO OK dev=Default Device sr=48000 ch=2 cb=28": cpal opened the 48 kHz stereo CoreAudio
+  output device and its render callback fired 28 times in about 600 ms. So cpal's iOS backend builds and runs
+  the RemoteIO AudioUnit on the device, which means the music-player's symphonia-plus-cpal core needs no
+  AVAudioEngine rewrite, only the AVAudioSession activation shim (here from C#; in a Rust-only stack via
+  `objc2-avf-audio`).
+- Simulator leg (iPhone 17 Pro / iOS 26.5): same source, "AUDIO OK ... cb=54". Dual-target satisfied.
+
+Build note: cpal pulls coreaudio-rs/coreaudio-sys (bindgen), which cross-compiled cleanly to both
+`aarch64-apple-ios` and `aarch64-apple-ios-sim` with no extra flags; the only integration step was declaring
+`<Frameworks>AudioToolbox</Frameworks>` on the .NET `NativeReference`, because coreaudio-rs references
+AudioToolbox/AudioUnit C symbols the app must link (otherwise the device and sim links fail with undefined
+`_AudioUnit*` symbols). This is the music-player Rust-core audio path proven on the device, writing silence;
+producing actual sound is a one-line amplitude change, deferred because the device is unattended. NOT yet
+exercised: real decoded PCM through symphonia into the cpal buffer (this probe wrote zeros), interruption
+handling, and background audio with `UIBackgroundModes: audio` (a separate restructuring check). The parts
+that were uncertain on iOS, the output device opening and the render callback firing, are device-confirmed.
+
 ## Pending gates
 
 Device-verified to render so far: Capacitor (rank 2, covers the six web frameworks, which genuinely
