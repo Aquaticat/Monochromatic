@@ -271,7 +271,15 @@ stereo track" is ~21M samples.
 - Sweep economics: ~19s/track x 3638 tracks ~= 19h of decode for a full first sweep, spread across charging windows
   (15-min minimum periodic interval, ~10-min cap per run, resume-via-cache between runs). The decode runs at lowest
   thread priority, so it is full-speed when the phone is idle and yields under playback; the Rust decode cost
-  matters here too.
+  matters here too. Known minor cost: because the work is periodic-forever, every charging window re-runs
+  `LibrarySource.load` (a full `SafTreeSource` tree walk, or a MediaStore query) even once the library is fully
+  cached, so a future "wakeups while desk-charging" symptom traces to this re-enumeration; it is cheap per run and
+  batched by the system, not worth optimizing until observed.
+- Production scheduling verified on device (`1867fda2`, launched 2026-06-12): the enqueue path ran without crashing,
+  `dumpsys jobscheduler` shows the `#PeakSweepWorker#` job with `charging=true batteryNotLow=false deviceIdle=false`,
+  and `WM-WorkerWrapper: Starting work for ...PeakSweepWorker` confirms the real worker executes while charging. The
+  session stayed `PAUSED` throughout (no audio). This path is invisible to `TestListenableWorkerBuilder`, which
+  bypasses `WorkManager.getInstance()`, so it must be checked by launching the app, not only by the instrumented test.
 
 ### Resident-noise rule (standing constraint)
 
