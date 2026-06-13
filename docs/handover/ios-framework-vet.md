@@ -11,7 +11,15 @@ New Architecture, so no C++/JSI TurboModule was needed). NativeScript also FULL 
 V8 10.3.22 runs on the iPhone X with no AMFI/execmem kill (the iOS inverse of its Android DENY_EXECMEM
 death), and the Rust crossing renders "Rust: 720 / CROSSING OK" with zero hand-written native code (a
 C-ABI header + modulemap in `App_Resources/iOS/src` + a `-u` linker flag, the cleanest crossing yet).
-Remaining native and managed gates: Lynx, Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI;
+Lynx also FULL PASS on both legs: native UIKit `LynxView` (header-verified `: UIView`, no WKWebView), a
+jitless engine (PrimJS default / JSC fallback, both jitless on a non-entitled device) runs the bundle on
+the iPhone X with no AMFI/execmem kill, and the Rust crossing renders "Rust: 720 / CROSSING OK" on both
+legs via a pure-Objective-C `LynxModule` `.m` shim (not the `.mm` originally assumed). Three Lynx-specific
+build snags recorded in `device-gate-results.md`: per-file `-Werror` vs Xcode 26's `-Wc99-designator`
+(Podfile `post_install` appends `-Wno-error`); xcodegen's `framework:` dependency does not link a
+static-lib xcframework through CocoaPods (link the Rust lib via the `rust-gate` pod instead); and the
+Xcode 16+ debug-dylib split means an `nm` check on a Debug build must target `*.debug.dylib`, not the thin
+launcher. Remaining native and managed gates: Qt; then the owner-appended set Dioxus, SnapKit, UIKit, SwiftUI;
 then the six WKWebView frameworks, deferred to the very end per owner. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
 Qt is driven from Rust bindings (CXX-Qt/qmetaobject-rs); (b) every framework must render on BOTH the
@@ -250,8 +258,8 @@ Each must be render-verified (not just launched), and each adds only its own SDK
 (Xcode + signing + `rustup target add aarch64-apple-ios`).
 
 .NET trio (rank 3), Compose Multiplatform (rank 5), React Native (rank 6, including its Rust crossing), and
-NativeScript (rank 7, including its Rust crossing) are all DONE (FULL PASS, above). The next gate is Lynx
-(rank 8). Remaining, in order:
+NativeScript (rank 7, including its Rust crossing), and Lynx (rank 8, including its Rust crossing) are all
+DONE (FULL PASS, above). The next gate is Qt (rank 9). Remaining, in order:
 
 Owner constraint (2026-06-12): no C or C++ anywhere, including throwaway experiments. The Rust-crossing
 checks below that were written as C++/`.mm` glue must instead use Rust binding crates, a C-ABI boundary
@@ -283,8 +291,20 @@ Rust core for both `aarch64-apple-ios` and `aarch64-apple-ios-sim` and link by R
   that only JS references, so the runtime resolves null and asserts (Helpers.mm), the fix is
   `OTHER_LDFLAGS = -u _rust_gate_answer` in `App_Resources/iOS/build.xcconfig` (a local pod still links the
   dual-triple XCFramework). This C-ABI-header-in-a-modulemap pattern is the template for Lynx/Qt.
-- Lynx (rank 8, expected-pass): native UIKit (`LynxView : UIView`, no WKWebView); PrimJS jitless; a Rust
-  staticlib reached from a `LynxModule` written in Swift/Obj-C over a C ABI (not a `.mm`).
+- Lynx (rank 8, expected-pass): FULL PASS, DONE (above). Native UIKit (`LynxView : UIView`,
+  header-verified, no WKWebView); a jitless engine (PrimJS default / JSC fallback, both jitless on a
+  non-entitled device) runs the bundle on the iPhone X with no AMFI/execmem kill, render both legs; the
+  Rust crossing renders "Rust: 720 / CROSSING OK" on both legs. The native surface is a pure-Objective-C
+  `RustGateModule` (`LynxModule` protocol: `+name`, `+methodLookup`, registered via
+  `[LynxConfig registerModule:]`, called from JS as `NativeModules.RustGateModule.answer()`), a `.m` shim
+  (not the `.mm` originally assumed), linking the Rust staticlib through the `rust-gate` local pod. App at
+  `/Volumes/MacData/ios-vet/lynxgate` (rspeedy `react-ts` bundle + xcodegen/CocoaPods native app; build
+  the bundle with `npm run build`, then xcodegen `generate` + `pod install`, then build the `.xcworkspace`
+  with the vet-keychain wrapper). Three build snags, all in `device-gate-results.md`: per-file `-Werror`
+  vs Xcode 26 `-Wc99-designator` (Podfile `post_install` appends `-Wno-error` to each per-file
+  `COMPILER_FLAGS`); xcodegen's `framework:` dep does not link a static-lib xcframework through CocoaPods
+  (use the `rust-gate` pod + `-u _rust_gate_answer`); and the Xcode 16+ `ENABLE_DEBUG_DYLIB` split means a
+  Debug-build `nm` check must target `LynxGate.debug.dylib`, not the thin launcher.
 - Qt (rank 9, needs-device): pin Qt 6.5 LTS (6.11 needs iOS 17, will not install on the iPhone X);
   QML V4 interpreter renders; the app is driven from Rust bindings (CXX-Qt or qmetaobject-rs), not a C++
   shell, per the no-C/C++ constraint.

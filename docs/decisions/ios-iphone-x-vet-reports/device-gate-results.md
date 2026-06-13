@@ -491,12 +491,11 @@ so a rendered number proves V8 actually executed the bundle, not merely that the
     metadata bridge. No `.m`/`.c`/`.cpp`/`.mm`, no Swift glue: only a C-ABI declaration, a modulemap, and a
     linker flag, all config/declarations. This is the cleanest Rust crossing of any gate so far.
 
-### Lynx: device leg PASS + Rust crossing PASS (jitless engine survives AMFI); simulator leg pending
+### Lynx: FULL PASS (both legs), jitless engine survives AMFI, Rust crossing via a pure-ObjC LynxModule
 
-Status: device render + Rust crossing confirmed on the iPhone X 2026-06-12; the device leg is the
-load-bearing AMFI test and it passes. Simulator leg (iOS 26.5) still building at the time of this commit,
-so this is not yet a dual-target FULL PASS. The Rust crossing uses a pure Objective-C `LynxModule` `.m`
-shim (the owner-approved thin-bridge deviation), not a `.mm`.
+Status: render + dual-target + Rust crossing all confirmed 2026-06-12; the device leg is the load-bearing
+AMFI test and it passes. The Rust crossing uses a pure Objective-C `LynxModule` `.m` shim (the
+owner-approved thin-bridge deviation), not a `.mm`.
 
 Lynx 3.8.1 (`Lynx/Framework` + `PrimJS/quickjs,napi` 3.8.0, CocoaPods, no devtool) with an
 `@lynx-js/rspeedy` 0.14.5 `react-ts` bundle, assembled as a hand-built native app (xcodegen project +
@@ -518,6 +517,11 @@ number proves the JS engine executed the bundle, not merely that the process lau
   Built `-configuration Debug` from the xcodegen-generated `LynxGate.xcworkspace` with the proven
   vet-keychain wrapper (unlock + search-list add + `OTHER_CODE_SIGN_FLAGS=--keychain`), upgrade-installed,
   held alive with `idevicedebug -n run`.
+- Simulator leg (iPhone 17 Pro / iOS 26.5): same `.xcworkspace`, `-sdk iphonesimulator ARCHS=arm64
+  ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO` (arm64-only so the arm64-simulator Rust slice links; an
+  Intel-Mac sim would need an added `x86_64-apple-ios` slice). Same "Lynx Gate / JS: 720 / Rust: 720 /
+  CROSSING OK". Satisfies the dual-target criterion only; it does not (and cannot) validate the AMFI
+  question, since the simulator does not enforce AMFI.
 - a11y: `LynxView` renders native UIKit views, so a11y is native UIKit (VoiceOver owed, task #7).
 - Rust crossing (PASS on device): `rust_gate_answer() = 720` crosses Rust -> JS and renders "Rust: 720 /
   CROSSING OK". The native surface is a pure-Objective-C `RustGateModule` implementing the `LynxModule`
@@ -594,8 +598,10 @@ share its WKWebView), Flutter (rank 4), the full .NET trio (rank 3): substrate (
 interpreter, Rust FFI), MAUI, Avalonia, and Uno, Compose Multiplatform (rank 5, Kotlin/Native AOT,
 Skiko/Metal), React Native (rank 6, Hermes bytecode, native UIViews, Rust crossing PASS via a thin
 Obj-C shim + dual-triple XCFramework), and NativeScript (rank 7, jitless V8 10.3.22 survives AMFI on the
-iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), all render-verified,
-above. Slint (rank 1) was gated and FAILED (disqualified, above).
+iPhone X, render both legs, Rust crossing PASS with zero hand-written native code), and Lynx (rank 8,
+native UIKit `LynxView`, jitless PrimJS/JSC survives AMFI on the iPhone X, render both legs, Rust crossing
+PASS via a pure-ObjC `LynxModule` shim), all render-verified, above. Slint (rank 1) was gated and FAILED
+(disqualified, above).
 
 Dual-target status (owner directive 2026-06-12, see the gate mechanism): a PASS requires render on BOTH
 the device and the latest simulator from one codebase. The retroactive sweep is complete: Compose
@@ -632,9 +638,12 @@ no-crash runtime, not by launch success alone:
   the Rust crossing renders "Rust: 720 / CROSSING OK" on both legs with zero hand-written native code (a
   C-ABI header + modulemap in `App_Resources/iOS/src` + a `-u` linker flag). Toolchain installed: Node,
   `ns` CLI 9.0.6, Homebrew CMake, CocoaPods, xcodeproj gem 1.27.0.
-- Lynx (rank 8, expected-pass). UI renders as native UIKit (`LynxView : UIView`, no WKWebView in the
-  hierarchy); PrimJS fires jitless; a `LynxModule` `.mm` links a Rust staticlib. Toolchain: Node, pnpm
-  (rspeedy/ReactLynx), CocoaPods, Ruby/Bundler.
+- Lynx (rank 8, expected-pass): FULL PASS, DONE (above). UI renders as native UIKit (`LynxView : UIView`,
+  header-verified, no WKWebView); a jitless engine (PrimJS default / JSC fallback, both jitless on a
+  non-entitled device) runs the bundle on the iPhone X with no AMFI/execmem kill, render both legs; the
+  Rust crossing renders "Rust: 720 / CROSSING OK" on both legs via a pure-Objective-C `LynxModule` `.m`
+  shim (not the `.mm` originally assumed) linking the Rust staticlib through the `rust-gate` local pod.
+  Toolchain installed: Node, `@lynx-js/rspeedy`/`create-rspeedy`, xcodegen, CocoaPods, xcodeproj gem.
 - Qt (rank 9, needs-device). Hard constraint: pin Qt 6.5 LTS (iOS 14+). Qt 6.11 sets minimum iOS 17;
   the iPhone X (A11) caps at iOS 16.7, so a 6.11 binary will not install. Confirm a QML screen
   animates (V4 bytecode interpreter, no execmem kill) and a linked Rust value prints. Toolchain: Qt
