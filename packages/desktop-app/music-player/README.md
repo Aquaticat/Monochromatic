@@ -10,7 +10,7 @@ cpal (CoreAudio on macOS,
  so only the audio
 backend differs by target.
  Scope is deliberately small:
- an ad-hoc play queue and broad codec coverage.
+ a single watched Source Root and broad codec coverage.
 
 ## Scope
 
@@ -24,11 +24,15 @@ backend differs by target.
    The window is winit on every platform,
    so only the audio backend is platform-specific.
 - Source:
-   an ad-hoc queue.
-   Opening a folder replaces the queue with the audio files found under it,
-   scanning
-  subfolders recursively.
-   Command-line file or folder arguments are expanded the same way.
+   a single Source Root directory.
+   The queue is whatever audio files exist under that root (subfolders scanned recursively),
+   re-derived from disk rather than built up by hand;
+   opening a folder makes it the new Source Root.
+   The root is watched while the app runs,
+   so files added,
+   removed,
+   or renamed on disk are reflected live by a debounced rescan,
+   and that same rescan on launch self-corrects the restored queue.
 - Transport:
    play/pause,
    seek,
@@ -751,8 +755,8 @@ mise run //packages/desktop-app/music-player:test
 mise run //packages/desktop-app/music-player:build
 
 # build, install to ~/.local/bin + ~/.local/share/applications,
-# then run the GUI on the host (optional file/folder args)
-mise run //packages/desktop-app/music-player:run -- path/to/song.flac path/to/folder
+# then run the GUI on the host (optional single folder or file arg)
+mise run //packages/desktop-app/music-player:run -- path/to/folder
 
 # force the container path (asserts the container build still works on any host)
 mise run //packages/desktop-app/music-player:verify:container
@@ -761,16 +765,20 @@ mise run //packages/desktop-app/music-player:verify:container
 mise run //packages/desktop-app/music-player:gen:fixtures
 ```
 
-The binary also accepts file and folder paths as command-line arguments,
- which are enqueued on launch and loaded paused.
-Pass `--start-playing` to begin playback immediately instead;
- it is the only way to make the player auto-play on launch,
- so without it (and on every launch with no paths) the app opens paused and waits for the play button.
+The binary also accepts a single optional path argument:
+ a folder becomes the Source Root,
+ and a file makes its parent folder the Source Root with that file preselected.
+ A second positional argument is a parse error.
+The argument loads paused;
+ pass `--start-playing` to begin playback immediately instead.
+ It is the only way to make the player auto-play on launch,
+ so without it (and on every launch with no path) the app opens paused and waits for the play button.
 The Open button uses the XDG desktop portal folder picker,
- and a chosen folder is scanned recursively;
+ and a chosen folder becomes the new Source Root,
+ scanned recursively;
  a folder opened this way also loads paused.
- Individual
-files can be enqueued through command-line arguments (the portal cannot offer files and folders in one dialog).
+ The picker offers folders only,
+ so preselecting a single file is available only from the command line.
 Argument parsing uses the `clap` crate,
  so `--help` and `--version` are available.
 
@@ -825,9 +833,9 @@ the real credentials is a one-time human task documented in `HANDOVER.macos-sign
 
 ## Session
 
-On exit the engine saves the queue (file paths),
- current index,
- position,
+On exit the engine saves the Source Root path,
+ the Selected Track path (if one was selected),
+ the playback position,
  volume,
  shuffle mode,
  and the
@@ -836,25 +844,27 @@ repeat-track flag to a JSON file under the platform config directory (`$XDG_CONF
  the roaming AppData config directory on
 Windows,
  all resolved by the `directories` crate).
+It deliberately does not save the queue or a current index:
+ the queue is re-derived from the Source Root,
+ so only the root and the chosen track need persisting,
+ and an older session file written by a previous version (carrying a queue and index) degrades gracefully,
+ its unknown fields ignored and its missing ones defaulted.
 Because `run` executes on the host,
  this is the real `~/.config/musicplayer`,
  persisting naturally across runs.
 On launch,
- when no file
-arguments are given,
- the saved session is restored:
- the queue,
- settings,
- and current track are reinstated and the
-track is loaded paused at the saved position,
- with files that have since moved pruned out.
- Command-line path
-arguments take precedence over a saved session.
- When no arguments are given and no queue remains to restore (none
-was stored,
- or every saved file has since moved and was pruned away),
- the user's music directory is auto-loaded
-paused,
+ when no path
+argument is given,
+ the saved session is restored by re-scanning the saved Source Root to rebuild the queue from what is on disk now,
+ reselecting the saved track by path when it still exists,
+ and loading paused at the saved position.
+ That launch rescan is the restore auto-correction:
+ files added,
+ removed,
+ or renamed since the last run self-correct without a stale entry surviving.
+ A command-line path takes precedence over a saved session.
+ When the saved Source Root is missing or is no longer a directory,
+ the user's music directory is restored instead (carrying the saved settings but no selection),
  so the queue is populated without playing.
  The directory is resolved from `XDG_MUSIC_DIR`,
  then the XDG
