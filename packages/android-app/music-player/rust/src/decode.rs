@@ -4,6 +4,7 @@
 //! Ported from the desktop crate; dum-dum-non-ts comments deferred.
 
 use std::fs::File;
+use std::os::fd::{BorrowedFd, RawFd};
 use std::path::Path;
 
 use symphonia::core::codecs::audio::well_known::CODEC_ID_OPUS;
@@ -81,6 +82,26 @@ pub fn open_media_source(
         let source = SymphoniaSource::new(format, track, track_id)?;
         Ok(Box::new(source))
     }
+}
+
+/// Open a borrowed OS file descriptor (an Android `content://` PFD obtained via
+/// `ParcelFileDescriptor.getFd()`, which the JVM keeps owning) for decoding.
+/// Duplicates the fd (`F_DUPFD_CLOEXEC`) so this side owns only the dup and never
+/// closes the JVM's original; closing the original would be a deterministic fdsan
+/// `SIGABRT` on API 30+, since the PFD fdsan-tags its fd. The caller must pass
+/// `fd >= 0` (`BorrowedFd::borrow_raw` panics on -1) and invoke this synchronously
+/// while the PFD is still alive, so the dup lands before Kotlin's `use {}` closes
+/// the original. The dup is what the returned `Source` (and the engine worker that
+/// owns it) keeps.
+pub fn open_borrowed_fd(fd: RawFd) -> Result<Box<dyn Source>, PlayerError> {
+    // SAFETY: `fd` is a valid, open descriptor for this synchronous call (the Kotlin
+    // ParcelFileDescriptor is alive in its use{} block); it is only borrowed here.
+    let borrowed = unsafe { BorrowedFd::borrow_raw(fd) };
+    let owned = borrowed.try_clone_to_owned()?;
+    let file = File::from(owned);
+    // A regular on-disk file is a seekable MediaSource; wrap directly (no filename,
+    // so an empty Hint, relying on symphonia content sniffing).
+    open_media_source(Box::new(file), Hint::new())
 }
 
 /// Seek a demuxer to `secs` from the audible start, converting to an absolute

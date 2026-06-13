@@ -17,5 +17,7 @@ object NativeBridge {
 
     external fun nativeDecodeBenchmark(path: String): Double
 
+    external fun nativeDecodeFdBenchmark(fd: Int): Double
+
     external fun nativeOutputLatencyProbe(): Double
 }

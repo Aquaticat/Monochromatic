@@ -1,5 +1,8 @@
 package dev.monochromatic.musicplayer
 
+import android.content.ContentUris
+import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
@@ -61,5 +64,44 @@ class NativeBridgeTest {
         val latencyMs = NativeBridge.nativeOutputLatencyProbe()
         Log.i("NativeBench", "AAudio output latency = $latencyMs ms (ndk::audio, silent)")
         assertTrue("AAudio output probe failed (native code $latencyMs)", latencyMs > 0.0)
+    }
+
+    // Decodes a real library track straight from a content:// file descriptor, the
+    // exact path the full-Rust engine will use. Proves on this GrapheneOS device
+    // that (1) MediaProvider hands back a seekable regular-file fd, (2) symphonia
+    // probes and decodes over a borrowed ParcelFileDescriptor, and (3) the dup-based
+    // fd-ownership protocol does not double-close (a deterministic fdsan SIGABRT if
+    // it did). The fd is the borrowed pfd.fd (getFd) and decode happens synchronously
+    // inside use{}, so Rust dups before Kotlin closes the original. Needs
+    // READ_MEDIA_AUDIO (granted via `adb shell pm grant` before the run); skips (not
+    // fails) when the permission or the indexed library is absent. Silent
+    // (decode-only), so the resident-noise rule is not engaged.
+    @Test
+    fun decodeFromContentFd() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val resolver = context.contentResolver
+        val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        val projection = arrayOf(MediaStore.Audio.Media._ID, MediaStore.Audio.Media.DISPLAY_NAME)
+        val wantedExtensions = listOf(".flac", ".opus", ".mp3")
+        val firstByExtension = mutableMapOf<String, Uri>()
+        resolver.query(collection, projection, "${MediaStore.Audio.Media.IS_MUSIC} != 0", null, null)?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+            while (cursor.moveToNext() && firstByExtension.size < wantedExtensions.size) {
+                val name = cursor.getString(nameColumn)?.lowercase() ?: continue
+                val extension = wantedExtensions.firstOrNull { name.endsWith(it) } ?: continue
+                if (extension !in firstByExtension) {
+                    firstByExtension[extension] = ContentUris.withAppendedId(collection, cursor.getLong(idColumn))
+                }
+            }
+        }
+        assumeTrue("no indexed MediaStore audio (grant READ_MEDIA_AUDIO)", firstByExtension.isNotEmpty())
+        for ((extension, uri) in firstByExtension) {
+            val usPerSample = resolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                NativeBridge.nativeDecodeFdBenchmark(pfd.fd)
+            } ?: -100.0
+            Log.i("NativeBench", "content-fd $extension ($uri) -> $usPerSample us/sample (native symphonia/opus, decode-only)")
+            assertTrue("content-fd decode failed for $extension (native code $usPerSample)", usPerSample > 0.0)
+        }
     }
 }

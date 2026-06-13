@@ -11,6 +11,7 @@ mod error;
 mod opus;
 mod output;
 
+use std::os::fd::RawFd;
 use std::path::Path;
 use std::time::Instant;
 
@@ -54,26 +55,12 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
     1
 }
 
-/// Decode the file at `path` fully to interleaved f32 PCM and return decode
-/// throughput in microseconds per interleaved sample (directly comparable to the
-/// Media3 MediaCodec ~0.33 us/sample baseline). Times the decode loop only, not
-/// the open/probe. Negative returns are error codes: -1 bad path string, -2 open
-/// failed, -3 decode error, -4 zero samples.
-#[no_mangle]
-pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeBenchmark<'local>(
-    env: JNIEnv<'local>,
-    _class: JClass<'local>,
-    path: JString<'local>,
-) -> jdouble {
-    let mut env = env;
-    let path_str: String = match env.get_string(&path) {
-        Ok(value) => value.into(),
-        Err(_) => return -1.0,
-    };
-    let mut source = match decode::open(Path::new(&path_str)) {
-        Ok(source) => source,
-        Err(_) => return -2.0,
-    };
+/// Decode `source` fully to interleaved f32 PCM, timing only the decode loop, and
+/// return microseconds per interleaved sample (directly comparable to the Media3
+/// MediaCodec ~0.33 baseline). Exercises seek once untimed so the seek path is
+/// covered on-device too. Shared by the path and fd benchmarks. Negative returns:
+/// -3 decode error, -4 zero samples.
+fn benchmark_decode(mut source: Box<dyn decode::Source>) -> jdouble {
     let spec = source.spec();
     std::hint::black_box((spec.rate, spec.channels, spec.duration_secs));
     let start = Instant::now();
@@ -96,6 +83,53 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
         return -4.0;
     }
     (elapsed.as_nanos() as f64) / 1000.0 / (total_samples as f64)
+}
+
+/// Decode the file at `path` fully to interleaved f32 PCM and return decode
+/// throughput in microseconds per interleaved sample. Times the decode loop only,
+/// not the open/probe. Negative returns: -1 bad path string, -2 open failed, plus
+/// the shared codes from `benchmark_decode`.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeBenchmark<'local>(
+    env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    path: JString<'local>,
+) -> jdouble {
+    let mut env = env;
+    let path_str: String = match env.get_string(&path) {
+        Ok(value) => value.into(),
+        Err(_) => return -1.0,
+    };
+    let source = match decode::open(Path::new(&path_str)) {
+        Ok(source) => source,
+        Err(_) => return -2.0,
+    };
+    benchmark_decode(source)
+}
+
+/// Decode the `content://` file descriptor `fd` fully to interleaved f32 PCM and
+/// return decode throughput in microseconds per interleaved sample, proving the fd
+/// path (symphonia over a borrowed Android ParcelFileDescriptor, the way the engine
+/// loads tracks) decodes and seeks on-device. `fd` is the borrowed
+/// `ParcelFileDescriptor.getFd()`; `open_borrowed_fd` dups it synchronously so the
+/// JVM keeps and closes the original. Negative returns: -1 bad fd, -2 dup/open
+/// failed, plus the shared codes from `benchmark_decode`.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeFdBenchmark<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    fd: jint,
+) -> jdouble {
+    // BorrowedFd::borrow_raw panics on -1, and that panic across extern "system"
+    // would abort, so reject a negative fd here in the error-code convention.
+    if fd < 0 {
+        return -1.0;
+    }
+    let source = match decode::open_borrowed_fd(fd as RawFd) {
+        Ok(source) => source,
+        Err(_) => return -2.0,
+    };
+    benchmark_decode(source)
 }
 
 /// Open a silent low-latency AAudio output stream (raw ndk::audio) and return its
