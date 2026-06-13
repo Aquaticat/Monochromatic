@@ -29,3 +29,8 @@ opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc80
 # the opus crate above). Same version and feature set as the desktop crate; no C,
 # so it cross-compiles for Android with no extra toolchain.
 symphonia = { version = "0.6", features = ["all"] }
+
+# AAudio output (raw ndk::audio, the chosen output backend): pure-Rust FFI to the
+# NDK audio C API, no C/C++ build; links the sysroot libaaudio via #[link]. The
+# `audio` feature is off by default and pulls api-level-26 (the app targets 35).
+ndk = { version = "0.9", features = ["audio"] }

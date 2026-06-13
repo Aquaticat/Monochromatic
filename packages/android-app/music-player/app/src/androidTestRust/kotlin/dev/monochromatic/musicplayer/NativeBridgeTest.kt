@@ -51,4 +51,15 @@ class NativeBridgeTest {
             assertTrue("decode failed for $name (native code $usPerSample)", usPerSample > 0.0)
         }
     }
+
+    // Opens a silent low-latency AAudio output stream (raw ndk::audio) and reads
+    // its presentation latency, proving the pure-Rust AAudio output path opens and
+    // runs on this GrapheneOS device. Inaudible (writes zeros), so the
+    // resident-noise rule is not engaged.
+    @Test
+    fun aaudioOutputLatencyOnDevice() {
+        val latencyMs = NativeBridge.nativeOutputLatencyProbe()
+        Log.i("NativeBench", "AAudio output latency = $latencyMs ms (ndk::audio, silent)")
+        assertTrue("AAudio output probe failed (native code $latencyMs)", latencyMs > 0.0)
+    }
 }

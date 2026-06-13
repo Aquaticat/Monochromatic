@@ -16,4 +16,6 @@ object NativeBridge {
     external fun nativeSymphoniaSelfTest(): Int
 
     external fun nativeDecodeBenchmark(path: String): Double
+
+    external fun nativeOutputLatencyProbe(): Double
 }

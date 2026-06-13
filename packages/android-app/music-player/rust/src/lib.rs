@@ -9,6 +9,7 @@
 mod decode;
 mod error;
 mod opus;
+mod output;
 
 use std::path::Path;
 use std::time::Instant;
@@ -95,4 +96,18 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
         return -4.0;
     }
     (elapsed.as_nanos() as f64) / 1000.0 / (total_samples as f64)
+}
+
+/// Open a silent low-latency AAudio output stream (raw ndk::audio) and return its
+/// measured output latency in milliseconds, proving the pure-Rust AAudio path
+/// opens and runs on the device. Inaudible (writes zeros). -1.0 on failure.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOutputLatencyProbe<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+) -> jdouble {
+    match output::measure_output_latency_ms() {
+        Some(ms) => ms,
+        None => -1.0,
+    }
 }
