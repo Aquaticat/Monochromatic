@@ -1,0 +1,21 @@
+[package]
+name = "musicplayer-native"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Standalone crate: this Android package is a Gradle island that no parent cargo
+# workspace owns. An empty [workspace] table pins this crate as its own root, so a
+# future ancestor Cargo.toml cannot silently absorb it.
+[workspace]
+
+[lib]
+# System.loadLibrary("musicplayer_native") loads libmusicplayer_native.so, so the
+# lib name (not the package name) is what Kotlin references.
+name = "musicplayer_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+# Pure-Rust JNI bindings (no C), so the smoke-test stage cross-compiles with zero
+# native-C dependencies; libopus/symphonia (which compile C) arrive in a later stage.
+jni = "0.21"

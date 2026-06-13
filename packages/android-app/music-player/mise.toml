@@ -25,20 +25,51 @@ description = "Assemble the hybrid (Rust true-peak + Media3) debug APK"
 dir = "{{config_root}}"
 run = "./gradlew :app:assembleHybridDebug --no-daemon --console=plain"
 
+[tasks."build:rust:native"]
+description = "Cross-compile the native engine .so (arm64-v8a, 16KB-aligned) into the rust flavor jniLibs. Requires ANDROID_NDK_HOME (see docs/handover/music-player-android-port.md)."
+dir = "{{config_root}}/rust"
+shell = "node -e"
+run = '''
+const ndk = process.env.ANDROID_NDK_HOME;
+if (!ndk) {
+  throw new Error("ANDROID_NDK_HOME is unset; export it to an Android NDK path (see docs/handover/music-player-android-port.md). cargo-ndk dumps the whole environment on a missing-NDK panic, so this task refuses to run without it.");
+}
+const { execFileSync } = require("node:child_process");
+execFileSync(
+  "cargo",
+  ["ndk", "-t", "arm64-v8a", "--platform", "35", "-o", "../app/src/rust/jniLibs", "build", "--release"],
+  { stdio: "inherit", env: process.env },
+);
+'''
+
 [tasks."build:rust"]
-description = "Assemble the full-Rust-engine debug APK"
+description = "Assemble the full-Rust-engine debug APK (rebuilds the native .so first)"
 dir = "{{config_root}}"
+depends = ["build:rust:native"]
 run = "./gradlew :app:assembleRustDebug --no-daemon --console=plain"
 
 [tasks.build]
-description = "Assemble every flavor's debug APK"
+description = "Assemble every flavor's debug APK (rebuilds the native .so first, since the rust flavor needs it)"
 dir = "{{config_root}}"
+depends = ["build:rust:native"]
 run = "./gradlew :app:assembleDebug --no-daemon --console=plain"
 
 [tasks."install:media3"]
 description = "Install the Media3 debug APK on the connected device"
 dir = "{{config_root}}"
 run = "./gradlew :app:installMedia3Debug --no-daemon --console=plain"
+
+[tasks."install:rust"]
+description = "Install the full-Rust debug APK on the connected device (rebuilds the native .so first)"
+dir = "{{config_root}}"
+depends = ["build:rust:native"]
+run = "./gradlew :app:installRustDebug --no-daemon --console=plain"
+
+[tasks."test:instrumented:rust:build"]
+description = "Assemble the rust flavor app + instrumented-test APKs (native .so included; no device). Run on device with am instrument, not connectedAndroidTest."
+dir = "{{config_root}}"
+depends = ["build:rust:native"]
+run = "./gradlew :app:assembleRustDebug :app:assembleRustDebugAndroidTest --no-daemon --console=plain"
 
 [tasks."test:unit"]
 description = "Run host JVM unit tests for the pure-logic core (no device)"
