@@ -165,6 +165,16 @@ Android package (`packages/android-app/music-player/`), in order:
 - `1ef469de` fix: deliver folder picks via an activity-scoped launcher (composition teardown when the picker opened was dropping the result) and show a loading notice during scans (was flashing "No music found" for the whole scan); both found on device.
 - `ef90fd1a` fix: cancel a superseded library load so a folder re-pick is not overwritten by a slow concurrent self-load.
 
+True-peak foreground normalization (later in this session; intervening commits omitted, git log is the backstop):
+the offline decoder (`Media3TruePeakDecoder`, `MediaExtractor`+`MediaCodec`, verified against known-peak WAV
+fixtures), the `GainNormalizationProcessor` + `GainRenderersFactory` pipeline stage, the process-singleton
+`PeakCacheStore` (atomic JSON at `filesDir/peaks.json`) and `TrackFingerprint`, and async measure-on-miss in
+`Media3Engine.load` (immediate `playWhenReady`, gain resolved in parallel, applied under a generation guard).
+End-to-end verified on device (cache miss measures, persists, hits in ~23ms on restart). minSdk raised to 36.
+Then the performance pass (see "True-peak measure performance"): `db6efc2c` bulk PCM conversion (the 24x fix),
+`cd64fce2` `maxInteriorAbs` window-term hoist (~20% meter). `becdcd16` had reverted the block-the-start design
+back to async and added the debug-signed release build + `build:media3:release` task.
+
 Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; those are not part of this work.
 
 ## Resolved decisions (do not relitigate; rationale in the ADR)
@@ -213,6 +223,44 @@ Note: concurrent sessions (an iOS vet) interleave their own commits on `main`; t
 - Compose instrumented tests must pin `androidx.test >= 3.7.0` / `runner 1.7.0` on Android 15/16, or the Compose
   BOM's transitive Espresso 3.5.0 crashes (`InputManager.getInstance` removed). Maestro drives black-box E2E via
   `testTag`.
+
+### True-peak measure performance (media3 variant, device-profiled, release build)
+
+Profiled on the Pixel 6 against the real opus library by splitting the measure into stages (decode-only via a
+raw drain that sums output bytes; decode+convert; full decode+convert+meter; and an in-memory meter-only
+instrumented probe over a 20M-sample `FloatArray`, run via `am instrument` against the installed release app so
+ART optimizes the DSP). All numbers are per-sample so they compare across track lengths; a "3.7-minute opus
+stereo track" is ~21M samples.
+
+- MediaCodec opus decode (`audio/opus`, 2ch): ~0.33 us/sample (~7s/track, ~13x realtime). WAV (`audio/raw`)
+  decode is trivial (~0.21 us/sample) so WAV was always meter-bound; opus is decode-plus-meter bound.
+- short->float conversion: ~0.06 us/sample (~1.2s). This WAS ~1.39 us/sample (~29.5s, the single largest cost)
+  because `toFloatChunk` did one bounds-checked `ByteBuffer.get(index)` per sample through a lambda. Fixed in
+  `db6efc2c` by bulk-copying into a `ShortArray` then a primitive loop (24x). This was a real bug, not physics.
+- Catmull-Rom true-peak meter: ~0.42 us/sample isolated (in-memory probe), ~0.66 us/sample in-context
+  (decode-interleaved, ~1.5x cache/interleave penalty, NOT a little-core throttle). Hoisting the window-only
+  cubic terms out of the per-sample loop (`maxInteriorAbs`, `cd64fce2`) cut it ~20%; that 20% proves the cubic
+  arithmetic was not the dominant cost, so further Kotlin micro-optimization (flatten the window array, kill the
+  `i % channels` idiv) is diminishing returns. The ~0.42 us/sample is real ART scalar-FP cost (no SIMD,
+  un-elided bounds checks), which native Rust SIMD eliminates.
+- Full opus measure: ~36.5s+ before, ~19s after both fixes for a 3.2-minute track. Start latency is unaffected
+  (async, ~425ms, meets the "tap -> playing under 1s" rule); the measure runs in the background.
+- Do NOT claim native "won't be sub-1s on this device": the in-context decode/meter times were measured on the
+  background measure thread and are an upper bound, not a hardware floor. The full-Rust variant (symphonia
+  decode + native meter) IS the experiment that determines the true device floor; whether portable-Rust
+  symphonia beats the platform MediaCodec opus decoder on this CPU is unknown and must be measured there.
+- User decisions this session: (1) optimize the Kotlin meter now, full-Rust variant after the Kotlin variant is
+  done; (2) on a cache miss, apply the gain mid-song when the measure lands (the current async behavior, a
+  one-time level correction) rather than caching-only-for-next-play. So `Media3Engine.load` needs no change.
+- Sweep economics: ~19s/track x 3638 tracks ~= 19h of charge+idle for a full first sweep, so the WorkManager
+  sweep's cost rides on the same per-track decode cost; the Rust decode matters there too.
+
+### Resident-noise rule (standing constraint)
+
+The Pixel 6 is in a shared space. EVERY on-device playback test MUST pause the instant `dumpsys media_session`
+reports `state=PLAYING(3)`, via `adb shell input keyevent 127` (the match string is `state=PLAYING`, NOT
+`state=3`). The background measure continues after the pause (it is on a separate coroutine, independent of
+player state), so pausing the audio does not abort the measurement being profiled.
 
 ## Build environment (host, as of this session)
 
