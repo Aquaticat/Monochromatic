@@ -534,17 +534,19 @@ fn run(
         tx: self_tx,
         worker: thread::current(),
     };
-    // What:     `controller.watcher = crate::watch::SourceWatcher::new(self_sender);`. Create
-    //           the file watcher (or `None` if the OS watcher fails) and attach it.
+    // What:     `controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));`.
+    //           Create the file watcher (or `None` if the OS watcher fails) with a change
+    //           callback that enqueues `Rescan` and wakes this worker. The closure owns
+    //           `self_sender`.
     // Why:      Once attached, every open/restore re-points it at the current Source Root, so
-    //           on-disk changes drive live `Rescan`s.
-    // TS map:   `controller.watcher = SourceWatcher.new(selfSender);`
+    //           on-disk changes drive live `Rescan`s; the watcher itself stays engine-agnostic.
+    // TS map:   `controller.watcher = SourceWatcher.new(() => selfSender.send(Command.Rescan));`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // controller.watcher = SourceWatcher.new(selfSender);
+    // controller.watcher = SourceWatcher.new(() => selfSender.send(Command.Rescan));
     // ```
-    controller.watcher = crate::watch::SourceWatcher::new(self_sender);
+    controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));
 
     // What:     `loop { ... }`. The main worker loop (Rust's `while (true)`); we `break` on
     //           quit.

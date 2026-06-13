@@ -49,28 +49,6 @@ use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 // ```
 use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
 
-// What:     `use crate::command::Command;`. The engine command enum.
-// Why:      The handler sends `Command::Rescan`.
-// TS map:   `import { Command } from "./command";`
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Command } from "./command";
-// ```
-use crate::command::Command;
-
-// What:     `use crate::engine::CommandSender;`. The send-and-wake handle.
-// Why:      The handler must both enqueue `Rescan` AND unpark the worker thread, which is
-//           exactly what `CommandSender::send` does (a bare channel send would not wake an
-//           idle/parked worker).
-// TS map:   `import { CommandSender } from "./engine";`
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { CommandSender } from "./engine";
-// ```
-use crate::engine::CommandSender;
-
 // What:     `const DEBOUNCE_MS: u64 = 500;`. The debounce window in milliseconds.
 // Why:      Coalesce bursts (copying an album, an editor's atomic-rename temp files) into
 //           one rescan instead of one per raw event. Named (not an inline literal) per the
@@ -125,22 +103,28 @@ pub(crate) struct SourceWatcher {
 // class SourceWatcher { static new() {} watch() {} }
 // ```
 impl SourceWatcher {
-    // What:     `pub(crate) fn new(sender: CommandSender) -> Option<SourceWatcher>`. Build the
-    //           debouncer whose handler sends `Rescan`; `None` if the OS watcher cannot be
-    //           created.
-    // Why:      The app must still run (without live updates) if the watcher fails to start.
-    // TS map:   `static new(sender: CommandSender): SourceWatcher | null`
+    // What:     `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher> where F: Fn() + Send + 'static`.
+    //           Build the debouncer whose handler calls `on_change` on any change; `None` if
+    //           the OS watcher cannot be created.
+    // Why:      The watcher stays ignorant of the engine: the caller passes a closure (which
+    //           in the app enqueues `Command::Rescan` and wakes the worker), keeping this
+    //           module dependency-free and unit-testable. The app must still run (without live
+    //           updates) if the watcher fails to start.
+    // TS map:   `static new(onChange: () => void): SourceWatcher | null`
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // static new(sender: CommandSender): SourceWatcher | null { ... }
+    // static new(onChange: () => void): SourceWatcher | null { ... }
     // ```
-    pub(crate) fn new(sender: CommandSender) -> Option<SourceWatcher> {
+    pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>
+    where
+        F: Fn() + Send + 'static,
+    {
         // What:     `let debouncer = new_debouncer(Duration::from_millis(DEBOUNCE_MS), move |result| { ... }).ok()?;`.
         //           Create the debouncer with our window and a `move` handler that owns
-        //           `sender`. `.ok()?` turns a creation error into `None` (early return).
-        // Why:      The handler runs on the watcher's own thread, so it must own a `Send`
-        //           `CommandSender`; any event batch triggers a rescan.
+        //           `on_change`. `.ok()?` turns a creation error into `None` (early return).
+        // Why:      The handler runs on the watcher's own thread, so the captured closure must
+        //           be `Send + 'static`; any event batch triggers `on_change`.
         // TS map:   `const debouncer = newDebouncer(DEBOUNCE_MS, (result) => { ... });`
         //
         // In TS you'd write (pseudocode):
@@ -150,20 +134,20 @@ impl SourceWatcher {
         let debouncer = new_debouncer(
             Duration::from_millis(DEBOUNCE_MS),
             move |result: DebounceEventResult| {
-                // What:     `match result { Ok(events) if events.is_empty() => {}, _ => sender.send(Command::Rescan) }`.
+                // What:     `match result { Ok(events) if events.is_empty() => {}, _ => on_change() }`.
                 //           An empty `Ok` batch is ignored; any non-empty batch OR an error
-                //           (which may mean events were dropped) requests a rescan.
-                // Why:      We do not interpret the events; the rescan reconciles the queue
+                //           (which may mean events were dropped) calls `on_change`.
+                // Why:      We do not interpret the events; the callback reconciles the queue
                 //           with whatever is on disk now.
-                // TS map:   `if (result.ok && result.events.length) sender.send(Rescan); else if (!result.ok) sender.send(Rescan);`
+                // TS map:   `if (!result.ok || result.events.length) onChange();`
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (!result.ok || result.events.length) sender.send({ kind: "rescan" });
+                // if (!result.ok || result.events.length) onChange();
                 // ```
                 match result {
                     Ok(events) if events.is_empty() => {}
-                    _ => sender.send(Command::Rescan),
+                    _ => on_change(),
                 }
             },
         )
@@ -239,3 +223,16 @@ impl SourceWatcher {
         }
     }
 }
+
+// What:     `#[cfg(test)] #[path = "watch_tests.rs"] mod tests;`. Pull the integration test
+//           in from the sibling file `watch_tests.rs`; test builds only.
+// Why:      Keep `watch.rs` to production code; the test lives beside it.
+// TS map:   `watch.unit.test.ts` beside `watch.ts`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // watch_tests.rs is watch.unit.test.ts beside watch.ts
+// ```
+#[cfg(test)]
+#[path = "watch_tests.rs"]
+mod tests;
