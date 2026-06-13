@@ -86,8 +86,9 @@ the very end, and append Dioxus, SnapKit, UIKit, and SwiftUI just before that we
 - NativeScript (rank 7): pending, needs-device (prove jitless V8 plus libffi static trampolines, the
   iOS inverse of its Android disqualification).
 - Lynx (rank 8): pending, expected-pass.
-- Qt (rank 9): pending, needs-device; must pin Qt 6.5 LTS because Qt 6.11 requires iOS 17, which the
-  iPhone X never gets.
+- Qt (rank 9): CULLED 2026-06-12 (no prebuilt arm64-iphonesimulator slice; fails dual-target and the
+  no-hand-written-C++ rule). The other "pending" entries in this snapshot are all now FULL PASS; see
+  `ios-iphone-x-vet-reports/device-gate-results.md` for current status.
 - Appended (owner, gate after the above and before the deferred web block): Dioxus (Rust UI, the
   substantive one; historically renders on iOS via `wry`/WKWebView driven by AOT Rust, but verify the
   current backend at gate time, since Dioxus is moving to a native Blitz/WGPU renderer that would make
@@ -175,7 +176,13 @@ and full-AOT safety are real risks (MAUI is not trimmer-safe; reflection-using d
 `MtouchLink=Full`); P/Invoke marshaling of Rust structs/callbacks/buffers under AOT is fiddly;
 real-time audio callback threads versus the Mono GC need care; full UI rewrite.
 
-### Qt (static, V4 interpreter)
+### Qt (static, V4 interpreter): CULLED 2026-06-12
+
+Culled at the dual-target prerequisite: no prebuilt Qt kit ships an arm64-iphonesimulator slice (device
+arm64 plus simulator x86_64 only, all versions), so Qt cannot render on the M1's native arm64 iOS 26.5
+simulator, and the only arm64-sim path (a from-source build) independently breaks the no-hand-written-C++
+rule. Full reasoning in `ios-iphone-x-vet-reports/device-gate-results.md`. The assessment below is retained
+as the pre-cull analysis; Qt's positions in the capability ranking are void (see the ranking note).
 
 Needs-device, and gate-constrained: pin Qt 6.5 LTS (iOS 14+). Qt 6.11 sets minimum iOS 17, so a 6.11
 binary will not install on the A11 iPhone X. kopia links into a static Qt binary via `extern "C"`.
@@ -205,6 +212,15 @@ device-support maturity is the open question; full UI rewrite; smallest tooling 
 
 ## Ranking (analysis, not a recorded decision)
 
+Reconciliation note (2026-06-12): this capability ranking predates two later events and is kept as an
+as-of-date artifact. (1) Qt was CULLED at the dual-target prerequisite, so every Qt position below is void;
+read the line as if Qt were removed. (2) Four frameworks were gated after this ranking was written (Dioxus,
+SnapKit, UIKit, SwiftUI), all FULL PASS both legs; they are not placed in the capability order below.
+Dioxus in particular is the top pick on the separate language-minimization axis (see "Second-pass ranking"
+below), and the pure-Swift trio is baseline-only there. The whole funnel's current device status lives in
+`ios-iphone-x-vet-reports/device-gate-results.md`; treat that and the language-axis section as authoritative
+where they differ from the capability order here.
+
 Slint's disqualification removes the former top pick and the only no-UI-rewrite option, and it carries
 a method lesson: Slint was "expected-pass" on the desk audit and crashed on the device, so on-device
 verification status now weighs in the ranking. Three candidates are now device-verified to render
@@ -221,8 +237,9 @@ while keeping the Rust audio core behind FFI. If rewriting, the ranking is the k
 (incumbency no longer applies once the UI is rebuilt); the symphonia plus cpal core reuse holds on every
 track.
 
-kopia stack (and the music-player if its UI is rewritten):
-Flutter > .NET trio (MAUI) > WKWebView (Capacitor) > Compose Multiplatform > React Native > Qt > Lynx >
+kopia stack (and the music-player if its UI is rewritten), Qt now culled and removed from the order, the
+four appended frameworks not placed here (see the note above):
+Flutter > .NET trio (MAUI) > WKWebView (Capacitor) > Compose Multiplatform > React Native > Lynx >
 NativeScript.
 
 - Flutter over the .NET trio: both are now device-verified with native a11y and link the Rust/Go core
@@ -250,10 +267,10 @@ NativeScript.
 - Compose Multiplatform over React Native: both expected-pass and AOT/jitless-clean, but cinterop is a
   single C-ABI hop versus RN's C++ JSI/TurboModule, and RN's streaming pump and server still land in
   native code under a JS shell.
-- React Native over Qt: RN's Hermes is a clean no-JIT interpreter with a zero-copy JSI link and a large
-  ecosystem, versus Qt's hard iOS-17 ceiling forcing a 6.5 LTS pin and a heavier C++ toolchain.
-- Qt over Lynx: Qt is mature with a known static-link and audio story, versus Lynx's unproven device
-  maturity.
+- React Native over Lynx (Qt was between them in the original order and is now culled): both are jitless
+  native-UI-from-JS, but RN's Hermes is a clean no-JIT interpreter with a zero-copy native link, CocoaPods
+  proven, and a far larger ecosystem, versus Lynx's younger, less device-proven maturity. (Qt's old
+  rationale, mature C++ static-link and audio, is moot: it is culled for lacking an arm64 simulator slice.)
 - Lynx over NativeScript: both are jitless native-UI-from-JS, but Lynx is native UIKit by construction
   with no codegen risk, while NativeScript must prove its libffi static-trampoline path on hardware and
   carries the thinnest maintenance.
@@ -282,7 +299,7 @@ This is a re-vet of the survivors on a different axis from the capability rankin
 framework and the eventual port minimize Swift and every other non-allowed programming language (Objective-C
 `.m` shims, C, C++, Dart, C#). Non-programming languages are exempt: HTML, CSS, the Vue and QML markup
 templates, YAML, JSON, TOML, and XML do not count against a framework. This is a ranking axis, not a vet
-gate: every framework was still gated for completeness (all 16 render-verified both legs), but a framework
+gate: every framework was still gated for completeness (18 render-verified both legs), but a framework
 whose app code is authored in an allowed language is preferred. The two axes point in different directions,
 which is the whole reason to record this one separately: the capability ranking favours Flutter and the
 .NET trio, whereas those two author the app in Dart and C# and so fall on this axis.
@@ -424,7 +441,7 @@ Accessibility is an owner hard rule and the exact criterion that disqualified Sl
 separately from render. Two distinct a11y questions must not be conflated:
 
 - Crash-survival (does the framework's a11y code run on iOS 16.7, or does it reference an iOS-17 API and die
-  like Slint?). This question is now CLOSED for every survivor: all 16 render-verified on the iPhone X
+  like Slint?). This question is now CLOSED for every survivor: all 18 render-verified on the iPhone X
   without a dyld `Symbol not found` or an objc2 class-not-found, the two signatures of the Slint death. None
   depends on an iOS-17 a11y API.
 - VoiceOver fidelity (does VoiceOver actually read each control, its label, value, and state, in a sensible

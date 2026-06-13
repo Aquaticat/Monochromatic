@@ -1,8 +1,8 @@
 # iOS UI/app-shell framework vet for the iPhone X
 
 Status as of 2026-06-12 (fourth handover): signing path DONE; source-audit fan-out DONE (16 reports +
-synthesis); device gating COMPLETE (all 16 frameworks render-verified both legs, Slint disqualified, Qt
-culled); the stage-2 capabilities the synthesis flagged as uncertain are now device-proven framework-independently in
+synthesis); device gating COMPLETE (18 frameworks render-verified both legs, Slint disqualified and Qt
+culled, 20 examined: the 16-framework source-audit set minus Slint and Qt, plus the 4 owner-appended gates); the stage-2 capabilities the synthesis flagged as uncertain are now device-proven framework-independently in
 one linked Rust staticlib on the iPhone X (an in-app HTTP/S3 loopback server, cpal CoreAudio output with
 silence only, and ring's TLS crypto via X25519 + AES-GCM for the HTTPS-to-pCloud path), one render reads
 "Rust FFI: 720 / S3 SERVER OK / AUDIO OK / CRYPTO OK", see `device-gate-results.md` "Stage 2
@@ -47,8 +47,8 @@ and the four UI layers Ionic (`@ionic/core` 8.8.10, ESM web components upgraded 
 scheme), Framework7 (9.0.5, iOS theme), Onsen UI (2.12.8), and Quasar (2.20.0 + Vue 3.5.38, Material via the
 UMD build) all FULL PASS both legs, each rendering its own real components (not just text) in the proven
 Cordova/WKWebView shell with its npm distributable bundled in-app and 6!=720 computed in page JS. So the
-ENTIRE initial framework vet is now complete: 16 frameworks render-verified both legs, Slint disqualified,
-Qt culled. The pure-Swift gates (UIKit, SwiftUI, SnapKit) are baseline-only under the allowed-language rule.
+ENTIRE initial framework vet is now complete: 18 frameworks render-verified both legs (the 16-framework
+source-audit set minus Slint and Qt, plus the 4 owner-appended), Slint disqualified, Qt culled. The pure-Swift gates (UIKit, SwiftUI, SnapKit) are baseline-only under the allowed-language rule.
 What remains is not framework gating but the survivors' work: the second-pass language ranking (directive
 4), the stage-2 supporting-stack vets, and the on-device VoiceOver a11y sweep. Owner constraints (2026-06-12): (a) no C or C++
 anywhere, even experiments; Rust-crossing checks use Rust binding crates or a C-ABI/Swift boundary, and
