@@ -37,9 +37,11 @@ handover adds the working state, measured facts, and exact next steps.
   and an accurate mid-track seek. The full-Rust variant is now FEATURE-COMPLETE vs Media3 (Milestone 2 done): audio
   focus + becoming-noisy (`6ec84c84`), and true-peak normalization (`e641f76e`, native 4x-oversampled measure
   `7a5e632b` + gain wiring; the rust flavor's `measureTrackPeak` sweep seam is now implemented too, so its background
-  peak sweep works). Remaining is verification, not build: a brief AUDIBLE play (channel order, glitch-free) and the
-  Media3-vs-Rust metric comparison (#13). The queue/advance/shuffle stay in Kotlin's `PlayerController` (the native
-  engine is only the per-track primitive).
+  peak sweep works). Audible playback is CONFIRMED: the user tested the real app and confirmed the full-Rust variant
+  plays correctly (the human-ears check the volume-0 tests could not provide; channel order / glitch-free output now
+  verified by the user). Remaining is only the Media3-vs-Rust steady-state metric comparison (#13, the clean in-use
+  head-to-head; the 10x decode number is fresh-native-vs-recorded-media3, not yet a like-for-like playback comparison).
+  The queue/advance/shuffle stay in Kotlin's `PlayerController` (the native engine is only the per-track primitive).
 
 ## Build progress (this session)
 
