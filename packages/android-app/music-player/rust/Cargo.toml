@@ -34,3 +34,8 @@ symphonia = { version = "0.6", features = ["all"] }
 # NDK audio C API, no C/C++ build; links the sysroot libaaudio via #[link]. The
 # `audio` feature is off by default and pulls api-level-26 (the app targets 35).
 ndk = { version = "0.9", features = ["audio"] }
+
+# Lock-free SPSC ring buffer between the decode worker (producer) and the AAudio
+# data callback (consumer), so the realtime callback never decodes or allocates.
+# Same major version as the desktop crate, whose engine this one ports.
+ringbuf = "0.4"

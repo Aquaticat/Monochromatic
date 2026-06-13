@@ -7,6 +7,8 @@
 //! verbose dum-dum-non-ts comment blocks are deferred to the finalization pass.
 
 mod decode;
+mod engine;
+mod engine_worker;
 mod error;
 mod opus;
 mod output;
@@ -16,7 +18,7 @@ use std::path::Path;
 use std::time::Instant;
 
 use jni::objects::{JClass, JString};
-use jni::sys::{jdouble, jint};
+use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};
 use jni::JNIEnv;
 
 /// JNI smoke test: returns a fixed sentinel so the Kotlin side can confirm the
@@ -143,5 +145,190 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
     match output::measure_output_latency_ms() {
         Some(ms) => ms,
         None => -1.0,
+    }
+}
+
+/// Create the native playback engine and return an opaque handle (a boxed `Engine`
+/// pointer as a jlong), or 0 if the worker thread could not be spawned. The handle
+/// must be released exactly once with `nativeEngineRelease` and only used from the
+/// one Kotlin thread that owns it.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineCreate<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+) -> jlong {
+    match engine::Engine::new() {
+        Ok(engine_value) => Box::into_raw(Box::new(engine_value)) as jlong,
+        Err(_) => 0,
+    }
+}
+
+/// Load a `content://` fd into the engine and optionally start playing. `fd` is the
+/// borrowed `ParcelFileDescriptor.getFd()`, duplicated synchronously. Returns 0 on
+/// success, -1 bad fd, -2 dup/dispatch failed, -3 null handle.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineLoad<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+    fd: jint,
+    play: jboolean,
+) -> jint {
+    if handle == 0 {
+        return -3;
+    }
+    if fd < 0 {
+        return -1;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    match engine_ref.load(fd as RawFd, play != 0) {
+        Ok(()) => 0,
+        Err(_) => -2,
+    }
+}
+
+/// Resume playback of the loaded track.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlay<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) {
+    if handle == 0 {
+        return;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.play();
+}
+
+/// Pause playback, keeping the loaded track and buffered audio.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePause<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) {
+    if handle == 0 {
+        return;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.pause();
+}
+
+/// Seek the loaded track to `position_sec`.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSeek<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+    position_sec: jdouble,
+) {
+    if handle == 0 {
+        return;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.seek_to(position_sec);
+}
+
+/// Set the user volume (linear gain in 0.0..1.0).
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetVolume<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+    volume: jfloat,
+) {
+    if handle == 0 {
+        return;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.set_volume(volume);
+}
+
+/// Current playback position in seconds (0.0 when nothing is loaded).
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePositionSec<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) -> jdouble {
+    if handle == 0 {
+        return 0.0;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.position_sec()
+}
+
+/// Loaded track duration in seconds (0.0 when unknown).
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineDurationSec<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) -> jdouble {
+    if handle == 0 {
+        return 0.0;
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    engine_ref.duration_sec()
+}
+
+/// Whether the engine is actually sounding (playing and not yet ended).
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsPlaying<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) -> jboolean {
+    if handle == 0 {
+        return jboolean::from(false);
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    jboolean::from(engine_ref.is_playing())
+}
+
+/// Whether the loaded track has played through to its end.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsEnded<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) -> jboolean {
+    if handle == 0 {
+        return jboolean::from(false);
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    jboolean::from(engine_ref.is_ended())
+}
+
+/// Play intent (true from a play/load-and-play request until a pause).
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlayWhenReady<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) -> jboolean {
+    if handle == 0 {
+        return jboolean::from(false);
+    }
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    jboolean::from(engine_ref.play_when_ready())
+}
+
+/// Release the engine: stop the worker, close the AAudio stream, and free the handle.
+/// The handle must not be used afterwards.
+#[no_mangle]
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineRelease<'local>(
+    _env: JNIEnv<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) {
+    if handle == 0 {
+        return;
+    }
+    // SAFETY: `handle` came from a single `nativeEngineCreate` Box::into_raw and is
+    // released exactly once; reclaiming the Box drops the Engine (joining the worker).
+    unsafe {
+        drop(Box::from_raw(handle as *mut engine::Engine));
     }
 }

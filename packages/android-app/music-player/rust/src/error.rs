@@ -17,6 +17,8 @@ pub enum PlayerError {
     Opus(opus::Error),
     /// Unsupported file/codec situation, with a human-readable reason.
     Unsupported(String),
+    /// AAudio output failure (builder/stream open/start), with a debug message.
+    Audio(String),
 }
 
 impl fmt::Display for PlayerError {
@@ -26,6 +28,7 @@ impl fmt::Display for PlayerError {
             PlayerError::Decode(e) => write!(f, "decode error: {e}"),
             PlayerError::Opus(e) => write!(f, "opus error: {e}"),
             PlayerError::Unsupported(m) => write!(f, "unsupported: {m}"),
+            PlayerError::Audio(m) => write!(f, "audio output error: {m}"),
         }
     }
 }
